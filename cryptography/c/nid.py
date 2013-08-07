@@ -16,7 +16,6 @@ TYPES = [
     'static const int NID_dsa;',
     'static const int NID_dsaWithSHA;',
     'static const int NID_dsaWithSHA1;',
-#   'static const int NID_md2;',
     'static const int NID_md4;',
     'static const int NID_md5;',
     'static const int NID_mdc2;',
