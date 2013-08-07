@@ -1,0 +1,5 @@
+*.py[co]
+__pycache__/
+_build/
+.tox/
+*.egg-info/
