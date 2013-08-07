@@ -1,0 +1,4 @@
+When in doubt, refer to PEP 8 for Python code.
+
+Use PEP 257 for docstring conventions, except use Sphinx notation for
+arguments, attributes, et cetera.
