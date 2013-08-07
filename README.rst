@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/alex/cryptography.png?branch=master
+   :target: https://travis-ci.org/alex/cryptography
+
 Cryptography
 ============
 
