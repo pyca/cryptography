@@ -8,4 +8,4 @@ install:
     - pip install pytest flake8
 script:
     - py.test
-    - flake8 .
+    - "flake8 . --ignore='E128'"

@@ -27,24 +27,6 @@ class API(object):
     )
 
     _modules = [
-        'asn1',
-        'bio',
-        'bio_filter',
-        'bio_sink',
-        'err',
-        'evp',
-        'evp_md',
-        'evp_cipher',
-        'evp_cipher_listing',
-        'hmac',
-        'obj',
-        'openssl',
-        'nid',
-        'pkcs5',
-        'rand',
-        'ssl',
-        'ssleay',
-        'stdio',
     ]
 
     def __init__(self):
