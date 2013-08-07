@@ -1,8 +1,8 @@
-.. image:: https://travis-ci.org/alex/cryptography.png?branch=master
-   :target: https://travis-ci.org/alex/cryptography
-
 Cryptography
 ============
+
+.. image:: https://travis-ci.org/alex/cryptography.png?branch=master
+   :target: https://travis-ci.org/alex/cryptography
 
 ``cryptography`` is a package designed to expose cryptographic primitives and
 recipes to Python developers.
