@@ -5,7 +5,8 @@ python:
     - 3.2
     - 3.3
 install:
-    - pip install pytest flake8
+    - pip install pytest flake8 sphinx
 script:
     - py.test
     - "flake8 . --ignore='E128'"
+    - sphinx-build -W -bhtml docs/ docs/_build/html/
