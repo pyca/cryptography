@@ -16,6 +16,6 @@ from setuptools import setup
 
 setup(
     name="cryptography",
-    license="Apache License, Verison 2.0",
+    license="Apache License, Version 2.0",
     install_requires=["cffi>=0.6"],
 )
