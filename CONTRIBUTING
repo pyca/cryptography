@@ -1,7 +1,0 @@
-This repository has a mandatory code review policy. Contributions
-should happen through pull requests. Never commit to master directly.
-
-When in doubt, refer to PEP 8 for Python code.
-
-Use PEP 257 for docstring conventions, except use Sphinx notation for
-arguments, attributes, et cetera.
