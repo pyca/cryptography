@@ -53,6 +53,6 @@ Modes
                                         to be kept secret (they can be included
                                         in a transmitted message). Must be the
                                         same number of bytes as the
-                                        ``block_size`` of the cipher.
-                                        Initialization vectors should not be
-                                        reused with the same ``key``.
+                                        ``block_size`` of the cipher. Do not
+                                        reuse an ``initialization_vector`` with
+                                        a given ``key``.
