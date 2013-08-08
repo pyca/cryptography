@@ -12,8 +12,8 @@ where the encrypter and decrypter both use the same key.
 
     .. code-block:: pycon
 
-        >>> from cryptography.primitives.block import BlockCipher, cipher, mode
-        >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv))
+        >>> from cryptography.primitives.block import BlockCipher, cipher, mode, padding
+        >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv, padding.PKCS7()))
         >>> cipher.encrypt("my secret message") + cipher.finalize()
         # The ciphertext
         [...]
@@ -65,3 +65,5 @@ Modes
 
 Paddings
 ~~~~~~~~
+
+.. class:: cryptography.primitives.block.padding.PKCS7()
