@@ -13,9 +13,8 @@ or GCM). A simple example of encrypting content with AES is:
 
 .. code-block:: pycon
 
-    >>> from cryptography.primitives.aes import AES
-    >>> from cryptography.primitives.block import BlockCipher, CBC
-    >>> cipher = BlockCipher(AES(key), CBC(iv))
+    >>> from cryptography.primitives.block import BlockCipher, cipher, mode
+    >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv))
     >>> cipher.encrypt("my secret message") + cipher.finalize()
     # The ciphertext
     [...]
@@ -32,7 +31,7 @@ whatever data is left.
 Ciphers
 ~~~~~~~
 
-.. class:: cryptography.primitives.aes.AES(key)
+.. class:: cryptography.primitives.block.cipher.AES(key)
 
     AES (Advanced Encryption Standard) is a block cipher standardized by NIST.
     AES is both fast, and cryptographically strong. It is a good default
@@ -45,7 +44,7 @@ Ciphers
 Modes
 ~~~~~
 
-.. class:: cryptography.primitives.block.CBC(initialization_vector)
+.. class:: cryptography.primitives.block.mode.CBC(initialization_vector)
 
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
