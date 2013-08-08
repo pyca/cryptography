@@ -55,5 +55,3 @@ Modes
                                         in a transmitted message). Should be
                                         the same number of bytes as the ``key``
                                         for the cipher.
-                                        ``initialization_vectors`` should never
-                                        be reused across different messages.
