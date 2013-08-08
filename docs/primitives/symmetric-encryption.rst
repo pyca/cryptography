@@ -32,8 +32,14 @@ whatever data is left.
 Ciphers
 ~~~~~~~
 
-AES
-+++
+.. class:: cryptography.primitives.aes.AES(key)
+
+    AES (Advanced encryption standard) is a block cipher standardized by NIST.
+    AES is both fast, and cryptographically strong. It is a good default
+    choice for encryption.
+
+    :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
+
 
 Modes
 ~~~~~
