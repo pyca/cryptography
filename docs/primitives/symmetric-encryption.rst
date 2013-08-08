@@ -51,6 +51,8 @@ Modes
 
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
-                                        in a transmitted message). Should be
-                                        the same number of bytes as the
+                                        in a transmitted message). Must be the
+                                        same number of bytes as the
                                         ``block_size`` of the cipher.
+                                        Initialization vectors should not be
+                                        reused with the same ``key``.
