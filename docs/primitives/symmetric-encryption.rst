@@ -18,14 +18,17 @@ where the encrypter and decrypter both use the same key.
         # The ciphertext
         [...]
 
-    Here ``key`` is the encryption key (which must be kept secret), and ``iv``
-    is the initialization vector (which must be random). Exactly what form
-    these values should take is described for each of the ciphers and modes.
+    :param cipher: One of the ciphers described below.
+    :param mode: One of the modes described below.
 
-    ``encrypt()`` should be called repeatedly with additional plaintext, and it
-    will return the encrypted bytes, if there isn't enough data, it will buffer
-    it internally. ``finalize()`` should be called at the end, and will return
-    whatever data is left.
+    .. method:: encrypt(plaintext)
+
+        :param bytes plaintext: The text you wish to encrypt.
+        :return bytes: Returns the ciphertext that was added.
+
+    .. method:: finalize()
+
+        :return bytes: Returns the remainder of the ciphertext.
 
 Ciphers
 ~~~~~~~
