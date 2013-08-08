@@ -21,6 +21,9 @@ where the encrypter and decrypter both use the same key.
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
 
+    ``encrypt()`` should be called repeatedly with new plaintext, and once the
+    full plaintext is fed in, ``finalize()`` should be called.
+
     .. method:: encrypt(plaintext)
 
         :param bytes plaintext: The text you wish to encrypt.
