@@ -28,3 +28,15 @@ values should take is described for each of the ciphers and modes.
 will return the encrypted bytes, if there isn't enough data, it will buffer it
 internally. ``finalize()`` should be called at the end, and will return
 whatever data is left.
+
+Ciphers
+~~~~~~~
+
+AES
++++
+
+Modes
+~~~~~
+
+CBC
++++
