@@ -13,8 +13,8 @@ or GCM). A simple example of encrypting content with AES is:
 
 .. code-block:: pycon
 
-    >>> from cryptography.primitives import BlockCipher, CBC
     >>> from cryptography.primitives.aes import AES
+    >>> from cryptography.primitives.block import BlockCipher, CBC
     >>> cipher = BlockCipher(AES(key), CBC(iv))
     >>> cipher.encrypt("my secret message") + cipher.finalize()
     # The ciphertext
@@ -45,7 +45,7 @@ Ciphers
 Modes
 ~~~~~
 
-.. class:: cryptographically.primitives.CBC(initialization_vector)
+.. class:: cryptography.primitives.block.CBC(initialization_vector)
 
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
