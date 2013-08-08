@@ -1,7 +1,7 @@
 Community
 =========
 
-You can find ``crytography`` all over the web:
+You can find ``cryptography`` all over the web:
 
 * `Mailing list`_
 * `Source code`_
