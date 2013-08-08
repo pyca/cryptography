@@ -49,7 +49,7 @@ Ciphers
 Modes
 ~~~~~
 
-.. class:: cryptography.primitives.block.mode.CBC(initialization_vector)
+.. class:: cryptography.primitives.block.mode.CBC(initialization_vector, padding)
 
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
@@ -61,3 +61,7 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+    :param padding: One of the paddings described below.
+
+Paddings
+~~~~~~~~
