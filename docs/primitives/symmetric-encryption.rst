@@ -21,7 +21,7 @@ or GCM). A simple example of encrypting content with AES is:
     [...]
 
 Here ``key`` is the encryption key (which must be kept secret), and ``iv`` is
-the initialization vector (which should be random). Exactly what form these
+the initialization vector (which must be random). Exactly what form these
 values should take is described for each of the ciphers and modes.
 
 ``encrypt()`` should be called repeatedly with additional plaintext, and it
