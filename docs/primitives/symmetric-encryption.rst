@@ -39,10 +39,17 @@ Ciphers
     choice for encryption.
 
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
+                      This must be kept secret.
 
 
 Modes
 ~~~~~
 
-CBC
-+++
+.. class:: cryptographically.primitives.CBC(initialization_vector)
+
+    CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
+    considered cryptographically strong.
+
+    :param bytes initialization_vector: Must be random bytes. They do not need
+                                        to be kept secret (they can be included
+                                        in a transmitted message).
