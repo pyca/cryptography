@@ -1,0 +1,2 @@
+class NoPadding(object):
+    pass
