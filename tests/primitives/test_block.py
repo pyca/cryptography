@@ -16,5 +16,6 @@ class TestBlockCipher(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext

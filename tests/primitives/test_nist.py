@@ -38,7 +38,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCGFSbox192.rsp")
@@ -47,7 +48,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCGFSbox256.rsp")
@@ -56,7 +58,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCKeySbox128.rsp")
@@ -65,7 +68,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCKeySbox192.rsp")
@@ -74,7 +78,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCKeySbox256.rsp")
@@ -83,7 +88,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCVarKey128.rsp")
@@ -92,7 +98,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCVarKey192.rsp")
@@ -101,7 +108,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCVarKey256.rsp")
@@ -110,7 +118,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCVarTxt128.rsp")
@@ -119,7 +128,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCVarTxt192.rsp")
@@ -128,7 +138,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_kat_encrypt("CBCVarTxt256.rsp")
@@ -137,7 +148,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @paramterize_mmt_encrypt("CBCMMT128.rsp")
@@ -146,7 +158,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @paramterize_mmt_encrypt("CBCMMT192.rsp")
@@ -155,7 +168,8 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @paramterize_mmt_encrypt("CBCMMT256.rsp")
@@ -164,5 +178,6 @@ class TestAES_CBC(object):
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
         )
-        actual_ciphertext = cipher.encrypt(plaintext) + cipher.finalize()
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
