@@ -57,6 +57,7 @@ class API(object):
         if res == 0:
             # TODO: figure out openssl errors
             raise Exception
+        # TODO: this should depend on mode.padding
         self._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
