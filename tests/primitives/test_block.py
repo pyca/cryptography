@@ -4,16 +4,13 @@ import pytest
 
 from cryptography.primitives.block import BlockCipher, ciphers, modes, padding
 
+from ..utils import load_nist_vectors_from_file
+
 
 class TestBlockCipher(object):
-    @pytest.mark.parametrize(("key", "iv", "plaintext", "ciphertext"), [
-        (
-            b"9dc2c84a37850c11699818605f47958c",
-            b"256953b2feab2a04ae0180d8335bbed6",
-            b"2e586692e647f5028ec6fa47a55a2aab",
-            b"1b1ebd1fc45ec43037fd4844241a437f"
-        ),
-    ])
+    @pytest.mark.parametrize(("key", "iv", "plaintext", "ciphertext"),
+        load_nist_vectors_from_file("AES/KAT/CBCGFSbox256.rsp", "ENCRYPT", ["key", "iv", "plaintext", "ciphertext"])
+    )
     def test_aes_cbc_nopadding(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
