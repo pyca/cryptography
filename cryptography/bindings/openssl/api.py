@@ -65,7 +65,8 @@ class API(object):
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername)
         if evp_cipher == self._ffi.NULL:
             raise OpenSSLError(self)
-        # TODO: only use the key and initialization_vector as needed
+        # TODO: only use the key and initialization_vector as needed. Sometimes
+        # this needs to be a DecryptInit, when?
         res = self._lib.EVP_EncryptInit_ex(ctx, evp_cipher, self._ffi.NULL, cipher.key, mode.initialization_vector)
         if res == 0:
             raise OpenSSLError(self)

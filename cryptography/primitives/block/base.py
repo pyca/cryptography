@@ -14,6 +14,7 @@ class BlockCipher(object):
         return api.update_encrypt_context(self._ctx, plaintext)
 
     def finalize(self):
+        # TODO: this might be a decrypt context
         result = api.finalize_encrypt_context(self._ctx)
         self._ctx = None
         return result
