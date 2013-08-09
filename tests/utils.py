@@ -35,7 +35,7 @@ def load_nist_vectors(vector_data, op, fields):
 
     # We want to test only for a particular operation
     return [
-        tuple(vector[1][f] for f in fields)
+        tuple(vector[1][f].encode("ascii") for f in fields)
         for vector in sorted(data[op].items(), key=lambda v: v[0])
     ]
 

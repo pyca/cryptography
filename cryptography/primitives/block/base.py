@@ -9,7 +9,6 @@ class BlockCipher(object):
         self.mode = mode
         self._ctx = api.create_block_cipher_context(cipher, mode)
 
-
     def encrypt(self, plaintext):
         return api.update_encrypt_context(self._ctx, plaintext)
 

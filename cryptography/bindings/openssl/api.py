@@ -37,6 +37,8 @@ class API(object):
         self._lib = ffi.verify("""
         #include <openssl/evp.h>
         """)
+        self._lib.OpenSSL_add_all_algorithms()
+        self._lib.ERR_load_crypto_strings()
 
     def _populate_ffi(self, ffi):
         ffi.cdef("""
@@ -45,6 +47,9 @@ class API(object):
         } EVP_CIPHER_CTX;
         typedef ... EVP_CIPHER;
         typedef ... ENGINE;
+
+        void OpenSSL_add_all_algorithms();
+        void ERR_load_crypto_strings();
 
         const EVP_CIPHER *EVP_get_cipherbyname(const char *);
         int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *,
@@ -61,13 +66,18 @@ class API(object):
     def create_block_cipher_context(self, cipher, mode):
         ctx = self._ffi.new("EVP_CIPHER_CTX *")
         # TODO: compute name using a better algorithm
-        ciphername = "{0}-{1}-{2}".format(cipher.name, len(cipher.key) * 8, mode.name)
+        ciphername = "{0}-{1}-{2}".format(
+            cipher.name, len(cipher.key) * 8, mode.name
+        )
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
         if evp_cipher == self._ffi.NULL:
             raise OpenSSLError(self)
         # TODO: only use the key and initialization_vector as needed. Sometimes
         # this needs to be a DecryptInit, when?
-        res = self._lib.EVP_EncryptInit_ex(ctx, evp_cipher, self._ffi.NULL, cipher.key, mode.initialization_vector)
+        res = self._lib.EVP_EncryptInit_ex(
+            ctx, evp_cipher, self._ffi.NULL, cipher.key,
+            mode.initialization_vector
+        )
         if res == 0:
             raise OpenSSLError(self)
         # TODO: this should depend on mode.padding
@@ -77,7 +87,9 @@ class API(object):
     def update_encrypt_context(self, ctx, plaintext):
         buf = self._ffi.new("unsigned char[]", len(plaintext))
         outlen = self._ffi.new("int *")
-        res = self._lib.EVP_EncryptUpdate(ctx, buf, outlen, plaintext, len(plaintext))
+        res = self._lib.EVP_EncryptUpdate(
+            ctx, buf, outlen, plaintext, len(plaintext)
+        )
         if res == 0:
             raise OpenSSLError(self)
         return self._ffi.buffer(buf)[:outlen[0]]
