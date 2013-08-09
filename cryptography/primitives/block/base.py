@@ -10,9 +10,13 @@ class BlockCipher(object):
         self._ctx = api.create_block_cipher_context(cipher, mode)
 
     def encrypt(self, plaintext):
+        if self._ctx is None:
+            raise ValueError("BlockCipher was already finalized")
         return api.update_encrypt_context(self._ctx, plaintext)
 
     def finalize(self):
+        if self._ctx is None:
+            raise ValueError("BlockCipher was already finalized")
         # TODO: this might be a decrypt context
         result = api.finalize_encrypt_context(self._ctx)
         self._ctx = None
