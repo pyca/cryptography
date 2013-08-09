@@ -65,6 +65,7 @@ class API(object):
 
     def create_block_cipher_context(self, cipher, mode):
         ctx = self._ffi.new("EVP_CIPHER_CTX *")
+        ctx = self._ffi.gc(ctx, self._lib.EVP_CIPHER_CTX_cleanup)
         # TODO: compute name using a better algorithm
         ciphername = "{0}-{1}-{2}".format(
             cipher.name, len(cipher.key) * 8, mode.name
@@ -101,7 +102,6 @@ class API(object):
         res = self._lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
         if res == 0:
             raise OpenSSLError(self)
-        # TODO: this should also be called if the cipher isn't finalized.
         res = self._lib.EVP_CIPHER_CTX_cleanup(ctx)
         if res == 0:
             raise OpenSSLError(self)
