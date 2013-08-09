@@ -13,8 +13,8 @@ class TestBlockCipher(object):
     )
     def test_aes_cbc_nopadding(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            ciphers.AES(binascii.unhexlify(key.encode("ascii"))),
+            modes.CBC(binascii.unhexlify(iv.encode("ascii")), padding.NoPadding())
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()

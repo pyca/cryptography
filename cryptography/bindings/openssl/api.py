@@ -61,8 +61,8 @@ class API(object):
     def create_block_cipher_context(self, cipher, mode):
         ctx = self._ffi.new("EVP_CIPHER_CTX *")
         # TODO: compute name using a better algorithm
-        ciphername = b"{}-{}-{}".format(cipher.name, len(cipher.key) * 8, mode.name)
-        evp_cipher = self._lib.EVP_get_cipherbyname(ciphername)
+        ciphername = "{0}-{1}-{2}".format(cipher.name, len(cipher.key) * 8, mode.name)
+        evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
         if evp_cipher == self._ffi.NULL:
             raise OpenSSLError(self)
         # TODO: only use the key and initialization_vector as needed. Sometimes
