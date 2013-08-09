@@ -42,6 +42,7 @@ class API(object):
         int EVP_EncryptUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
                               unsigned char *, int);
         int EVP_EncryptFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
+        int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
         """)
 
     def create_block_cipher_context(self, cipher, mode):
@@ -75,6 +76,11 @@ class API(object):
         buf = self._ffi.new("unsigned char[]", 16)
         outlen = self._ffi.new("int *")
         res = self._lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
+        if res == 0:
+            # TODO: figure out openssl errors
+            raise Exception
+        # TODO: this should also be called if the cipher isn't finalized.
+        res = self._lib.EVP_CIPHER_CTX_cleanup(ctx)
         if res == 0:
             # TODO: figure out openssl errors
             raise Exception
