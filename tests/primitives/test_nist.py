@@ -10,8 +10,7 @@ from cryptography.primitives.block import BlockCipher, ciphers, modes, padding
 from ..utils import load_nist_vectors_from_file
 
 
-class TestAES_CBC:
-
+class TestAES_CBC(object):
     @pytest.mark.parametrize(("key", "iv", "plaintext", "ciphertext"),
         load_nist_vectors_from_file(
             "AES/KAT/CBCGFSbox128.rsp",
