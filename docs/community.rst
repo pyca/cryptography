@@ -7,9 +7,9 @@ You can find ``cryptography`` all over the web:
 * `Source code`_
 * `Issue tracker`_
 * `Documentation`_
-* IRC: ``#crytography-dev`` on ``irc.freenode.net``
+* IRC: ``#cryptography-dev`` on ``irc.freenode.net``
 
 .. _`Mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
-.. _`Source code`: https://github.com/alex/crytopgraphy
-.. _`Issue tracker`: https://github.com/alex/crytopgraphy/issues
+.. _`Source code`: https://github.com/alex/cryptography
+.. _`Issue tracker`: https://github.com/alex/cryptography/issues
 .. _`Documentation`: https://cryptography.readthedocs.org/
