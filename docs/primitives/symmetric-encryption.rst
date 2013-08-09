@@ -7,8 +7,8 @@ where the encrypter and decrypter both use the same key.
 .. class:: cryptography.primitives.block.BlockCipher(cipher, mode)
 
     Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
-    Theycombine an underlying algorithm (such as AES), with a mode (such as CBC,
-    CTR, or GCM). A simple example of encrypting content with AES is:
+    They combine an underlying algorithm (such as AES), with a mode (such as
+    CBC, CTR, or GCM). A simple example of encrypting content with AES is:
 
     .. code-block:: pycon
 
