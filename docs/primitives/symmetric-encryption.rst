@@ -13,7 +13,7 @@ where the encrypter and decrypter both use the same key.
     .. code-block:: pycon
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
-        >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv))
+        >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
         >>> cipher.encrypt("my secret message") + cipher.finalize()
         # The ciphertext
         [...]
