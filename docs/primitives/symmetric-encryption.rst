@@ -12,8 +12,8 @@ where the encrypter and decrypter both use the same key.
 
     .. code-block:: pycon
 
-        >>> from cryptography.primitives.block import BlockCipher, ciphers, modes, padding
-        >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv, padding.PKCS7()))
+        >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
+        >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv))
         >>> cipher.encrypt("my secret message") + cipher.finalize()
         # The ciphertext
         [...]
@@ -49,7 +49,7 @@ Ciphers
 Modes
 ~~~~~
 
-.. class:: cryptography.primitives.block.modes.CBC(initialization_vector, padding)
+.. class:: cryptography.primitives.block.modes.CBC(initialization_vector)
 
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
