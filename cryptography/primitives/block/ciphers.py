@@ -14,6 +14,7 @@
 
 class AES(object):
     name = "AES"
+    block_size = 128
     key_sizes = set([128, 192, 256])
 
     def __init__(self, key):
