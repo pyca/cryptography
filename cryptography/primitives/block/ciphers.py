@@ -20,6 +20,7 @@ class AES(object):
         super(AES, self).__init__()
         self.key = key
 
+        # Verify that the key size matches the expected key size
         if self.key_size not in self.key_sizes:
             raise ValueError("Invalid key size (%s) for %s".format(
                 self.key_size, self.name
