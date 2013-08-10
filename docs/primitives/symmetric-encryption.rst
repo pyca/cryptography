@@ -61,9 +61,3 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
-    :param padding: One of the paddings described below.
-
-Paddings
-~~~~~~~~
-
-.. class:: cryptography.primitives.block.padding.PKCS7()
