@@ -23,6 +23,12 @@ class BlockCipher(object):
         self._ctx = api.create_block_cipher_context(cipher, mode)
         self._operation = None
 
+    @property
+    def name(self):
+        return "{0}-{1}-{2}".format(
+            self.cipher.name, self.cipher.key_size, self.mode.name,
+        )
+
     def encrypt(self, plaintext):
         if self._ctx is None:
             raise ValueError("BlockCipher was already finalized")

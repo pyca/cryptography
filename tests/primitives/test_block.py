@@ -19,6 +19,13 @@ from cryptography.primitives.block import BlockCipher, ciphers, modes, padding
 
 
 class TestBlockCipher(object):
+    def test_cipher_name(self):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+        )
+        assert cipher.name == "AES-128-CBC"
+
     def test_use_after_finalize(self):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
