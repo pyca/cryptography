@@ -21,16 +21,29 @@ class BlockCipher(object):
         self.cipher = cipher
         self.mode = mode
         self._ctx = api.create_block_cipher_context(cipher, mode)
+        self._operation = None
 
     def encrypt(self, plaintext):
         if self._ctx is None:
             raise ValueError("BlockCipher was already finalized")
+
+        if self._operation is None:
+            self._operation = "encrypt"
+        elif self._operation != "encrypt":
+            raise ValueError("BlockCipher cannot encrypt when the operation is"
+                             " set to %s" % self._operation)
+
         return api.update_encrypt_context(self._ctx, plaintext)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("BlockCipher was already finalized")
-        # TODO: this might be a decrypt context
-        result = api.finalize_encrypt_context(self._ctx)
+
+        if self._operation == "encrypt":
+            result = api.finalize_encrypt_context(self._ctx)
+        else:
+            raise ValueError("BlockCipher cannot finalize the unknown "
+                             "operation %s" % self._operation)
+
         self._ctx = None
         return result

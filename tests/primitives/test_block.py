@@ -30,3 +30,23 @@ class TestBlockCipher(object):
             cipher.encrypt(b"b" * 16)
         with pytest.raises(ValueError):
             cipher.finalize()
+
+    def test_encrypt_with_invalid_operation(self):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+        )
+        cipher._operation = "decrypt"
+
+        with pytest.raises(ValueError):
+            cipher.encrypt(b"b" * 16)
+
+    def test_finalize_with_invalid_operation(self):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+        )
+        cipher._operation = "wat"
+
+        with pytest.raises(ValueError):
+            cipher.encrypt(b"b" * 16)
