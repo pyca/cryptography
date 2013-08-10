@@ -27,3 +27,7 @@ class TestAES(object):
     def test_key_size(self, key, keysize):
         cipher = AES(binascii.unhexlify(key))
         assert cipher.key_size == keysize
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            AES(binascii.unhexlify(b"0" * 12))

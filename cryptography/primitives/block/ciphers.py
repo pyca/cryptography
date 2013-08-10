@@ -14,10 +14,16 @@
 
 class AES(object):
     name = "AES"
+    key_sizes = {128, 192, 256}
 
     def __init__(self, key):
         super(AES, self).__init__()
         self.key = key
+
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size (%s) for %s".format(
+                self.key_size, self.name
+            ))
 
     @property
     def key_size(self):
