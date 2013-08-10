@@ -58,4 +58,4 @@ class TestBlockCipher(object):
         cipher._operation = pretend.stub(name="wat")
 
         with pytest.raises(ValueError):
-            cipher.encrypt(b"b" * 16)
+            cipher.finalize()
