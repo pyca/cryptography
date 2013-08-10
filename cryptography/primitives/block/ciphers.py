@@ -14,7 +14,7 @@
 
 class AES(object):
     name = "AES"
-    key_sizes = {128, 192, 256}
+    key_sizes = set([128, 192, 256])
 
     def __init__(self, key):
         super(AES, self).__init__()
