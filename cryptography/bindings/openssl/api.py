@@ -81,7 +81,9 @@ class API(object):
         )
         if res == 0:
             raise OpenSSLError(self)
-        # TODO: this should depend on mode.padding
+
+        # We purposely disable padding here as it's handled higher up in the
+        # API.
         self._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
