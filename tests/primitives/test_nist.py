@@ -19,7 +19,7 @@ import os
 
 import pytest
 
-from cryptography.primitives.block import BlockCipher, ciphers, modes, padding
+from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 from ..utils import load_nist_vectors_from_file
 
@@ -49,7 +49,7 @@ class TestAES_CBC(object):
     def test_KAT_GFSbox_128_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -59,7 +59,7 @@ class TestAES_CBC(object):
     def test_KAT_GFSbox_192_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -69,7 +69,7 @@ class TestAES_CBC(object):
     def test_KAT_GFSbox_256_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -79,7 +79,7 @@ class TestAES_CBC(object):
     def test_KAT_KeySbox_128_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -89,7 +89,7 @@ class TestAES_CBC(object):
     def test_KAT_KeySbox_192_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -99,7 +99,7 @@ class TestAES_CBC(object):
     def test_KAT_KeySbox_256_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -109,7 +109,7 @@ class TestAES_CBC(object):
     def test_KAT_VarKey_128_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -119,7 +119,7 @@ class TestAES_CBC(object):
     def test_KAT_VarKey_192_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -129,7 +129,7 @@ class TestAES_CBC(object):
     def test_KAT_VarKey_256_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -139,7 +139,7 @@ class TestAES_CBC(object):
     def test_KAT_VarTxt_128_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -149,7 +149,7 @@ class TestAES_CBC(object):
     def test_KAT_VarTxt_192_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -159,7 +159,7 @@ class TestAES_CBC(object):
     def test_KAT_VarTxt_256_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -169,7 +169,7 @@ class TestAES_CBC(object):
     def test_MMT_128_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -179,7 +179,7 @@ class TestAES_CBC(object):
     def test_MMT_192_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -189,7 +189,7 @@ class TestAES_CBC(object):
     def test_MMT_256_encrypt(self, key, iv, plaintext, ciphertext):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()

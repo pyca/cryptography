@@ -15,21 +15,21 @@ import binascii
 
 import pytest
 
-from cryptography.primitives.block import BlockCipher, ciphers, modes, padding
+from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 
 class TestBlockCipher(object):
     def test_cipher_name(self):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(b"0" * 32))
         )
         assert cipher.name == "AES-128-CBC"
 
     def test_use_after_finalize(self):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(b"0" * 32))
         )
         cipher.encrypt(b"a" * 16)
         cipher.finalize()
@@ -41,7 +41,7 @@ class TestBlockCipher(object):
     def test_encrypt_with_invalid_operation(self):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(b"0" * 32))
         )
         cipher._operation = "decrypt"
 
@@ -51,7 +51,7 @@ class TestBlockCipher(object):
     def test_finalize_with_invalid_operation(self):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32), padding.NoPadding())
+            modes.CBC(binascii.unhexlify(b"0" * 32))
         )
         cipher._operation = "wat"
 
