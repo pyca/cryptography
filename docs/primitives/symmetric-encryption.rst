@@ -12,8 +12,8 @@ where the encrypter and decrypter both use the same key.
 
     .. code-block:: pycon
 
-        >>> from cryptography.primitives.block import BlockCipher, cipher, mode, padding
-        >>> cipher = BlockCipher(cipher.AES(key), mode.CBC(iv, padding.PKCS7()))
+        >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
+        >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
         >>> cipher.encrypt("my secret message") + cipher.finalize()
         # The ciphertext
         [...]
@@ -36,7 +36,7 @@ where the encrypter and decrypter both use the same key.
 Ciphers
 ~~~~~~~
 
-.. class:: cryptography.primitives.block.cipher.AES(key)
+.. class:: cryptography.primitives.block.ciphers.AES(key)
 
     AES (Advanced Encryption Standard) is a block cipher standardized by NIST.
     AES is both fast, and cryptographically strong. It is a good default
@@ -49,7 +49,7 @@ Ciphers
 Modes
 ~~~~~
 
-.. class:: cryptography.primitives.block.mode.CBC(initialization_vector, padding)
+.. class:: cryptography.primitives.block.modes.CBC(initialization_vector)
 
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
