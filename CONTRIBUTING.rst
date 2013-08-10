@@ -10,6 +10,13 @@ Code
 
 When in doubt, refer to `PEP 8`_ for Python code.
 
+Every code file must start with the boilerplate notice of the Apache License.
+Additionally, every Python code file must contain
+
+.. code-block:: python
+
+    from __future__ import absolute_import, division, print_function
+
 Docs
 ====
 
@@ -17,12 +24,12 @@ Write docstrings like this:
 
 .. code-block:: python
 
-  def some_function(some_arg):
-      """
-      Does some things.
+    def some_function(some_arg):
+        """
+        Does some things.
 
-      :param some_arg: Some argument.
-      """
+        :param some_arg: Some argument.
+        """
 
 So, specifically:
 
