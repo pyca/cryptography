@@ -37,7 +37,7 @@ def parameterize_kat_encrypt(fname):
 def paramterize_mmt_encrypt(fname):
     return pytest.mark.parametrize(("key", "iv", "plaintext", "ciphertext"),
         load_nist_vectors_from_file(
-            os.path.join("AES/MMT", fname),
+            os.path.join("AES/MMT/", fname),
             "ENCRYPT",
             ["key", "iv", "plaintext", "ciphertext"],
         )
