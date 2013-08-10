@@ -11,14 +11,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import binascii
 
-class AES(object):
-    name = "AES"
+import pytest
 
-    def __init__(self, key):
-        super(AES, self).__init__()
-        self.key = key
+from cryptography.primitives.block.ciphers import AES
 
-    @property
-    def key_size(self):
-        return len(self.key) * 8
+
+class TestAES(object):
+    @pytest.mark.parametrize(("key", "keysize"), [
+        (b"0" * 32, 128),
+        (b"0" * 48, 192),
+        (b"0" * 64, 256),
+    ])
+    def test_key_size(self, key, keysize):
+        cipher = AES(binascii.unhexlify(key))
+        assert cipher.key_size == keysize

@@ -68,7 +68,7 @@ class API(object):
         ctx = self._ffi.gc(ctx, self._lib.EVP_CIPHER_CTX_cleanup)
         # TODO: compute name using a better algorithm
         ciphername = "{0}-{1}-{2}".format(
-            cipher.name, len(cipher.key) * 8, mode.name
+            cipher.name, cipher.key_size, mode.name
         )
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
         if evp_cipher == self._ffi.NULL:
