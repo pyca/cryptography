@@ -13,9 +13,11 @@
 
 import binascii
 
+import pretend
 import pytest
 
 from cryptography.primitives.block import BlockCipher, ciphers, modes
+from cryptography.primitives.block.base import _Operation
 
 
 class TestBlockCipher(object):
@@ -43,7 +45,7 @@ class TestBlockCipher(object):
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
-        cipher._operation = "decrypt"
+        cipher._operation = _Operation.decrypt
 
         with pytest.raises(ValueError):
             cipher.encrypt(b"b" * 16)
@@ -53,7 +55,7 @@ class TestBlockCipher(object):
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
-        cipher._operation = "wat"
+        cipher._operation = pretend.stub(name="wat")
 
         with pytest.raises(ValueError):
             cipher.encrypt(b"b" * 16)

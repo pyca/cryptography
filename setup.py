@@ -10,12 +10,19 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 
 from setuptools import setup
 
+install_requires = [
+    "cffi>=0.6",
+]
+
+if sys.version_info[:2] < (3, 4):
+    install_requires += ["enum34"]
 
 setup(
     name="cryptography",
     license="Apache License, Version 2.0",
-    install_requires=["cffi>=0.6"],
+    install_requires=install_requires,
 )

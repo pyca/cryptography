@@ -12,7 +12,14 @@
 # limitations under the License.
 
 # TODO: which binding is used should be an option somewhere
+from enum import Enum
+
 from cryptography.bindings.openssl import api
+
+
+class _Operation(Enum):
+    encrypt = "encrypt"
+    decrypt = "decrypt"
 
 
 class BlockCipher(object):
@@ -34,10 +41,10 @@ class BlockCipher(object):
             raise ValueError("BlockCipher was already finalized")
 
         if self._operation is None:
-            self._operation = "encrypt"
-        elif self._operation != "encrypt":
+            self._operation = _Operation.encrypt
+        elif self._operation is not _Operation.encrypt:
             raise ValueError("BlockCipher cannot encrypt when the operation is"
-                             " set to %s" % self._operation)
+                             " set to %s" % self._operation.name)
 
         return api.update_encrypt_context(self._ctx, plaintext)
 
@@ -45,11 +52,11 @@ class BlockCipher(object):
         if self._ctx is None:
             raise ValueError("BlockCipher was already finalized")
 
-        if self._operation == "encrypt":
+        if self._operation is _Operation.encrypt:
             result = api.finalize_encrypt_context(self._ctx)
         else:
             raise ValueError("BlockCipher cannot finalize the unknown "
-                             "operation %s" % self._operation)
+                             "operation %s" % self._operation.name)
 
         self._ctx = None
         return result
