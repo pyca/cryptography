@@ -14,13 +14,13 @@ Why a new crypto library for Python?
 We wanted to address a few issues with existing cryptography libraries in
 Python:
 
-* Lack of PyPy support
-* Lack of maintenance
+* Lack of PyPy support.
+* Lack of maintenance.
 * Use of poor implementations of algorithms (i.e. ones with known side-channel
-  attacks)
-* Lack of high level, "Cryptography for humans", APIs
-* Absence of algorithms such as AES-GCM
-* Poor introspectability, and thus poor testability
+  attacks).
+* Lack of high level, "Cryptography for humans", APIs.
+* Absence of algorithms such as AES-GCM.
+* Poor introspectability, and thus poor testability.
 
 
 Contents
