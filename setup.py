@@ -11,18 +11,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
+
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 
 setup(
     name="cryptography",
-    license="Apache License, Version 2.0",
-    install_requires=["cffi>=0.6"],
-    setup_requires=["nose>=1.0"],
-    test_suite="nose.collector",
-    url="https://github.com/alex/cryptography",
     description="cryptography is a package designed to expose cryptographic "
                 "primitives and recipes to Python developers.",
+    license="Apache License, Version 2.0",
+    url="https://github.com/alex/cryptography",
+    zip_safe=False, # for cffi
+    setup_requires=["cffi>=0.6"],
+    tests_require=["pytest"],
+    cmdclass = {"test": PyTest},
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -33,7 +48,7 @@ setup(
         "Operating System :: POSIX :: BSD",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
-        "Programming Language :: C",
+        #"Programming Language :: cffi",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.6",
