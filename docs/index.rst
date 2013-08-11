@@ -8,7 +8,24 @@ Welcome to ``cryptography``
 ``cryptography`` is a Python library which exposes cryptographic primitives and
 recipes.
 
-Contents:
+Why a new crypto library for Python?
+------------------------------------
+
+We wanted to address a few issues with existing cryptography libraries in
+Python:
+
+* Lack of PyPy support.
+* Lack of maintenance.
+* Use of poor implementations of algorithms (i.e. ones with known side-channel
+  attacks).
+* Lack of high level, "Cryptography for humans", APIs.
+* Absence of algorithms such as AES-GCM.
+* Poor introspectability, and thus poor testability.
+* Extremely error prone APIs, and bad defaults.
+
+
+Contents
+--------
 
 .. toctree::
     :maxdepth: 2
