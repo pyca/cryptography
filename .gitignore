@@ -4,3 +4,6 @@ _build/
 .tox/
 *.egg-info/
 .coverage
+cffi-*.egg/
+pycparser-*.egg/
+pytest-*.egg/
