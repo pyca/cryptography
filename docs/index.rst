@@ -21,6 +21,7 @@ Python:
 * Lack of high level, "Cryptography for humans", APIs.
 * Absence of algorithms such as AES-GCM.
 * Poor introspectability, and thus poor testability.
+* Extremely error prone APIs, and bad defaults.
 
 
 Contents
