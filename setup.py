@@ -20,7 +20,8 @@ setup(
                 "primitives and recipes to Python developers.",
     license="Apache License, Version 2.0",
     url="https://github.com/alex/cryptography",
-    zip_safe=False, # for cffi
+    # for cffi
+    zip_safe=False,
     setup_requires=["cffi>=0.6"],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
