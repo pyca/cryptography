@@ -10,18 +10,35 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from setuptools import setup
 
+about = {}
+with open("cryptography/__about__.py") as fp:
+    exec(fp.read(), about)
+
+
+CFFI_DEPENDENCY = "cffi>=0.6"
+
+install_requires = [
+    CFFI_DEPENDENCY,
+]
+
+setup_requires = [
+    CFFI_DEPENDENCY,
+]
+
+
 setup(
-    name="cryptography",
-    description="cryptography is a package designed to expose cryptographic "
-                "primitives and recipes to Python developers.",
-    license="Apache License, Version 2.0",
-    url="https://github.com/alex/cryptography",
-    # for cffi
-    zip_safe=False,
-    setup_requires=["cffi>=0.6"],
+    name=about["__title__"],
+    version=about["__version__"],
+
+    description=about["__summary__"],
+    license=about["__license__"],
+    url=about["__uri__"],
+
+    author=about["__author__"],
+    author_email=about["__email__"],
+
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -44,4 +61,10 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Security :: Cryptography",
     ],
+
+    install_requires=install_requires,
+    setup_requires=setup_requires,
+
+    # for cffi
+    zip_safe=False,
 )
