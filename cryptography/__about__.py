@@ -10,13 +10,23 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from cryptography.__about__ import (
-    __title__, __summary__, __uri__, __version__, __author__, __email__,
-    __license__, __copyright__
-)
-
+from __future__ import absolute_import, division, print_function
 
 __all__ = [
     "__title__", "__summary__", "__uri__", "__version__", "__author__",
     "__email__", "__license__", "__copyright__",
 ]
+
+__title__ = "cryptography"
+__summary__ = ("cryptography is a package designed to expose cryptographic "
+               "primitives and recipes to Python developers.")
+__uri__ = "https://github.com/alex/cryptography"
+
+__version__ = "0.1.dev1"
+
+__author__ = ("Alex Gaynor, Donald Stufft, Laurens van Houvten, "
+              "Jean-Paul Calderone, Chris Heime, and Indivdual Contributors")
+__email__ = "cryptography-dev@python.org"
+
+__license__ = "Apache License, Version 2.0"
+__copyright__ = "Copyright 2013 Donald Stufft"
