@@ -10,7 +10,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from setuptools import setup
+from setuptools import setup, find_packages
 
 about = {}
 with open("cryptography/__about__.py") as fp:
@@ -61,6 +61,8 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Security :: Cryptography",
     ],
+
+    packages=find_packages(exclude=["tests", "tests.*"]),
 
     install_requires=install_requires,
     setup_requires=setup_requires,
