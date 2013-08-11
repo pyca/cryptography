@@ -7,3 +7,4 @@ _build/
 cffi-*.egg/
 pycparser-*.egg/
 pytest-*.egg/
+dist/
