@@ -14,7 +14,7 @@ where the encrypter and decrypter both use the same key.
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
-        >>> cipher.encrypt("my secret message") + cipher.finalize()
+        >>> cipher.encrypt(b"a secret message") + cipher.finalize()
         # The ciphertext
         [...]
 
