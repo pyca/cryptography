@@ -19,6 +19,7 @@ Python:
 * Use of poor implementations of algorithms (i.e. ones with known side-channel
   attacks)
 * Lack of high level, "Cryptography for humans", APIs
+* Absence of algorithms such as AES-GCM
 
 
 Contents
