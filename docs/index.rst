@@ -21,7 +21,8 @@ Python:
 * Lack of high level, "Cryptography for humans", APIs
 
 
-Contents:
+Contents
+--------
 
 .. toctree::
     :maxdepth: 2
