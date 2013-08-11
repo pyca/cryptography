@@ -16,12 +16,3 @@ yet. It targets Python 2.6-2.7, Python 3.2+, as well as PyPy.
 You can find more documentation at `Read The Docs`_.
 
 .. _`Read The Docs`: https://cryptography.readthedocs.org/
-
-
-Why a new crypto library for Python?
-------------------------------------
-
-None of the existing ones work on PyPy, and many of them are unmaintained or
-are based around very poor implementations of algorithms (i.e ones with known
-side-channel attacks).
-
