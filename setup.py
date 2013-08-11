@@ -13,20 +13,6 @@
 
 import sys
 from setuptools import setup
-from setuptools.command.test import test as TestCommand
-
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errno = pytest.main(self.test_args)
-        sys.exit(errno)
-
 
 setup(
     name="cryptography",
@@ -36,8 +22,6 @@ setup(
     url="https://github.com/alex/cryptography",
     zip_safe=False, # for cffi
     setup_requires=["cffi>=0.6"],
-    tests_require=["pytest"],
-    cmdclass = {"test": PyTest},
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
