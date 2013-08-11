@@ -62,6 +62,8 @@ class API(object):
                               unsigned char *, int);
         int EVP_EncryptFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
         int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
+        EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
+        int EVP_CIPHER_block_size(const EVP_CIPHER *);
 
         unsigned long ERR_get_error();
         """)
@@ -101,8 +103,9 @@ class API(object):
         return self._ffi.buffer(buf)[:outlen[0]]
 
     def finalize_encrypt_context(self, ctx):
-        # TODO: use real block size
-        buf = self._ffi.new("unsigned char[]", 16)
+        cipher = self._lib.EVP_CIPHER_CTX_cipher(ctx)
+        block_size = self._lib.EVP_CIPHER_block_size(cipher)
+        buf = self._ffi.new("unsigned char[]", block_size)
         outlen = self._ffi.new("int *")
         res = self._lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
         if res == 0:
