@@ -20,8 +20,9 @@ class OpenSSLError(Exception):
     def __init__(self, api):
         e = api._lib.ERR_get_error()
         if e == 0:
-            raise SystemError("Tried to create an OpenSSLError when there was "
-                "None")
+            raise SystemError(
+                "Tried to create an OpenSSLError when there was None"
+            )
         msg = api._ffi.new("char[]", 120)
         api._lib.ERR_error_string(e, msg)
         super(OpenSSLError, self).__init__(api._ffi.string(msg))
