@@ -25,7 +25,8 @@ __uri__ = "https://github.com/alex/cryptography"
 __version__ = "0.1.dev1"
 
 __author__ = ("Alex Gaynor, Donald Stufft, Laurens van Houvten, "
-              "Jean-Paul Calderone, Chris Heime, and Indivdual Contributors")
+              "Jean-Paul Calderone, Christian Heimes, and Indivdual "
+              "Contributors")
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "Apache License, Version 2.0"
