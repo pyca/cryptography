@@ -14,7 +14,7 @@ Why a new crypto library for Python?
 We wanted to address a few issues with existing cryptography libraries in
 Python:
 
-* Lack of PyPy and Python3 support.
+* Lack of PyPy and Python 3 support.
 * Lack of maintenance.
 * Use of poor implementations of algorithms (i.e. ones with known side-channel
   attacks).
