@@ -13,15 +13,15 @@
 
 from __future__ import absolute_import, division, print_function
 
-# TODO: which binding is used should be an option somewhere
 from enum import Enum
 
+# TODO: which binding is used should be an option somewhere
 from cryptography.bindings.openssl import api
 
 
 class _Operation(Enum):
-    encrypt = "encrypt"
-    decrypt = "decrypt"
+    encrypt = 0
+    decrypt = 1
 
 
 class BlockCipher(object):
