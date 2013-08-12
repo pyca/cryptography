@@ -1,6 +1,13 @@
 Symmetric Encryption
 ====================
 
+.. testsetup::
+
+    import binascii
+    key = binascii.unhexlify(b"0" * 32)
+    iv = binascii.unhexlify(b"0" * 32)
+
+
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the encrypter and decrypter both use the same key.
 
@@ -10,13 +17,12 @@ where the encrypter and decrypter both use the same key.
     They combine an underlying algorithm (such as AES), with a mode (such as
     CBC, CTR, or GCM). A simple example of encrypting content with AES is:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
         >>> cipher.encrypt(b"a secret message") + cipher.finalize()
-        # The ciphertext
-        [...]
+        '...'
 
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
