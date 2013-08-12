@@ -38,6 +38,7 @@ class API(object):
         self._populate_ffi(ffi)
         self._ffi = ffi
         self._lib = ffi.verify("""
+        #include <openssl/err.h>
         #include <openssl/evp.h>
         """)
         self._lib.OpenSSL_add_all_algorithms()
