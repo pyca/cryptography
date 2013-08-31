@@ -26,11 +26,9 @@ class API(object):
         self._populate_ffi(ffi)
         self._ffi = ffi
         self._lib = ffi.verify("""
-        #include <openssl/err.h>
         #include <openssl/evp.h>
         """)
         self._lib.OpenSSL_add_all_algorithms()
-        self._lib.ERR_load_crypto_strings()
 
     def _populate_ffi(self, ffi):
         ffi.cdef("""
@@ -41,7 +39,6 @@ class API(object):
         typedef ... ENGINE;
 
         void OpenSSL_add_all_algorithms();
-        void ERR_load_crypto_strings();
 
         const EVP_CIPHER *EVP_get_cipherbyname(const char *);
         int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *,
@@ -53,8 +50,6 @@ class API(object):
         int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
         EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
         int EVP_CIPHER_block_size(const EVP_CIPHER *);
-
-        unsigned long ERR_get_error();
         """)
 
     def create_block_cipher_context(self, cipher, mode):
