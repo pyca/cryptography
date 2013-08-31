@@ -16,18 +16,6 @@ from __future__ import absolute_import, division, print_function
 import cffi
 
 
-class OpenSSLError(Exception):
-    def __init__(self, api):
-        e = api._lib.ERR_get_error()
-        if e == 0:
-            raise SystemError(
-                "Tried to create an OpenSSLError when there was None"
-            )
-        msg = api._ffi.new("char[]", 120)
-        api._lib.ERR_error_string(e, msg)
-        super(OpenSSLError, self).__init__(api._ffi.string(msg))
-
-
 class API(object):
     """
     OpenSSL API wrapper.
@@ -77,16 +65,14 @@ class API(object):
             cipher.name, cipher.key_size, mode.name
         )
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
-        if evp_cipher == self._ffi.NULL:
-            raise OpenSSLError(self)
+        assert evp_cipher != self._ffi.NULL
         # TODO: only use the key and initialization_vector as needed. Sometimes
         # this needs to be a DecryptInit, when?
         res = self._lib.EVP_EncryptInit_ex(
             ctx, evp_cipher, self._ffi.NULL, cipher.key,
             mode.initialization_vector
         )
-        if res == 0:
-            raise OpenSSLError(self)
+        assert res != 0
 
         # We purposely disable padding here as it's handled higher up in the
         # API.
@@ -99,8 +85,7 @@ class API(object):
         res = self._lib.EVP_EncryptUpdate(
             ctx, buf, outlen, plaintext, len(plaintext)
         )
-        if res == 0:
-            raise OpenSSLError(self)
+        assert res != 0
         return self._ffi.buffer(buf)[:outlen[0]]
 
     def finalize_encrypt_context(self, ctx):
@@ -109,11 +94,9 @@ class API(object):
         buf = self._ffi.new("unsigned char[]", block_size)
         outlen = self._ffi.new("int *")
         res = self._lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
-        if res == 0:
-            raise OpenSSLError(self)
+        assert res != 0
         res = self._lib.EVP_CIPHER_CTX_cleanup(ctx)
-        if res == 0:
-            raise OpenSSLError(self)
+        assert res != 0
         return self._ffi.buffer(buf)[:outlen[0]]
 
 
