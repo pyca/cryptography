@@ -30,10 +30,6 @@ setup_requires = [
     CFFI_DEPENDENCY,
 ]
 
-install_requires = [
-    "cffi>=0.6",
-]
-
 if sys.version_info[:2] < (3, 4):
     install_requires += ["enum34"]
 
