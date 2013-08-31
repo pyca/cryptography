@@ -10,7 +10,10 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
 from setuptools import setup, find_packages
+
 
 about = {}
 with open("cryptography/__about__.py") as fp:
@@ -27,6 +30,8 @@ setup_requires = [
     CFFI_DEPENDENCY,
 ]
 
+if sys.version_info[:2] < (3, 4):
+    install_requires += ["enum34"]
 
 setup(
     name=about["__title__"],
@@ -49,7 +54,6 @@ setup(
         "Operating System :: POSIX :: BSD",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
-        #"Programming Language :: cffi",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.6",
