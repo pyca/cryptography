@@ -25,7 +25,7 @@ class AES(object):
 
         # Verify that the key size matches the expected key size
         if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size (%s) for %s".format(
+            raise ValueError("Invalid key size ({0}) for {1}".format(
                 self.key_size, self.name
             ))
 

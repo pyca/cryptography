@@ -17,3 +17,14 @@ from cryptography.bindings.openssl import api
 class TestOpenSSL(object):
     def test_api_exists(self):
         assert api
+
+    def test_openssl_version_text(self):
+        """
+        This test checks the value of OPENSSL_VERSION_TEXT.
+
+        Unfortunately, this define does not appear to have a
+        formal content definition, so for now we'll test to see
+        if it starts with OpenSSL as that appears to be true
+        for every OpenSSL.
+        """
+        assert api.openssl_version_text().startswith("OpenSSL")
