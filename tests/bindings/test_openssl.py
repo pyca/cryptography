@@ -26,4 +26,4 @@ class TestOpenSSL(object):
         if it starts with OpenSSL as that appears to be true
         for every OpenSSL.
         """
-        assert api.openssl_version_text().find("OpenSSL") == 0
+        assert api.openssl_version_text().startswith("OpenSSL")
