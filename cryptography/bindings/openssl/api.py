@@ -56,7 +56,8 @@ class API(object):
         """)
 
     def openssl_version_text(self):
-        """ Friendly string name of linked OpenSSL.
+        """
+        Friendly string name of linked OpenSSL.
 
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """

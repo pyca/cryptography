@@ -19,7 +19,8 @@ class TestOpenSSL(object):
         assert api
 
     def test_openssl_version_text(self):
-        """ This test checks the value of OPENSSL_VERSION_TEXT.
+        """
+        This test checks the value of OPENSSL_VERSION_TEXT.
 
         Unfortunately, this define does not appear to have a
         formal content definition, so for now we'll test to see
