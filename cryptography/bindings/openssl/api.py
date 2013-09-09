@@ -55,9 +55,12 @@ class API(object):
         int EVP_CIPHER_block_size(const EVP_CIPHER *);
         """)
 
-    """ Friendly string name of linked OpenSSL. """
     def openssl_version_text(self):
-        return self._ffi.string(api._lib.OPENSSL_VERSION_TEXT)
+        """ Friendly string name of linked OpenSSL.
+
+        Example: OpenSSL 1.0.1e Feb 11, 2013
+        """
+        return self._ffi.string(api._lib.OPENSSL_VERSION_TEXT).decode("ascii")
 
     def create_block_cipher_context(self, cipher, mode):
         ctx = self._ffi.new("EVP_CIPHER_CTX *")
