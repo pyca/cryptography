@@ -17,3 +17,6 @@ from cryptography.bindings.openssl import api
 class TestOpenSSL(object):
     def test_api_exists(self):
         assert api
+
+    def test_openssl_version_text(self):
+        assert api.openssl_version_text().find("OpenSSL") == 0

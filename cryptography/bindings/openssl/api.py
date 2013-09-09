@@ -27,6 +27,7 @@ class API(object):
         self._ffi = ffi
         self._lib = ffi.verify("""
         #include <openssl/evp.h>
+        #include <openssl/opensslv.h>
         """)
         self._lib.OpenSSL_add_all_algorithms()
 
@@ -37,6 +38,8 @@ class API(object):
         } EVP_CIPHER_CTX;
         typedef ... EVP_CIPHER;
         typedef ... ENGINE;
+
+        static char *const OPENSSL_VERSION_TEXT;
 
         void OpenSSL_add_all_algorithms();
 
@@ -51,6 +54,10 @@ class API(object):
         const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
         int EVP_CIPHER_block_size(const EVP_CIPHER *);
         """)
+
+    """ Friendly string name of linked OpenSSL. """
+    def openssl_version_text(self):
+        return self._ffi.string(api._lib.OPENSSL_VERSION_TEXT)
 
     def create_block_cipher_context(self, cipher, mode):
         ctx = self._ffi.new("EVP_CIPHER_CTX *")
