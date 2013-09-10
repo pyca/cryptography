@@ -21,6 +21,12 @@ class CBC(object):
         super(CBC, self).__init__()
         self.initialization_vector = initialization_vector
 
+    def get_iv_or_nonce(self, api):
+        return self.initialization_vector
+
 
 class ECB(object):
     name = "ECB"
+
+    def get_iv_or_nonce(self, api):
+        return api.get_null_for_ecb()

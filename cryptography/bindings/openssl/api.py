@@ -72,13 +72,12 @@ class API(object):
         )
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
         assert evp_cipher != self._ffi.NULL
-        # TODO: only use the key and initialization_vector as needed. Sometimes
-        # this needs to be a DecryptInit, when?
-        iv = self._get_iv(mode)
+        iv_nonce = mode.get_iv_or_nonce(self)
 
+        # TODO: Sometimes this needs to be a DecryptInit, when?
         res = self._lib.EVP_EncryptInit_ex(
             ctx, evp_cipher, self._ffi.NULL, cipher.key,
-            iv
+            iv_nonce
         )
         assert res != 0
 
@@ -87,15 +86,8 @@ class API(object):
         self._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
-    def _get_iv(self, mode):
-        # TODO: refactor this to visitor pattern
-        klass_name = mode.__class__.__name__
-        if klass_name == 'CBC':
-            return mode.initialization_vector
-        elif klass_name == 'ECB':
-            return self._ffi.NULL
-        else:
-            raise NotImplementedError
+    def get_null_for_ecb(self):
+        return self._ffi.NULL
 
     def update_encrypt_context(self, ctx, plaintext):
         buf = self._ffi.new("unsigned char[]", len(plaintext))
