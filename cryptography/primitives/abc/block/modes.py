@@ -13,19 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.primitives.abc.block import modes
+import abc
 
 
-class CBC(object):
-    name = "CBC"
-
-    def __init__(self, initialization_vector):
-        super(CBC, self).__init__()
-        self.initialization_vector = initialization_vector
-
-
-class ECB(object):
-    name = "ECB"
-
-
-modes.ModeWithInitializationVector.register(CBC)
+ModeWithInitializationVector = abc.ABCMeta('ModeWithInitializationVector',
+                                           (object, ), {})
+ModeWithNonce = abc.ABCMeta('ModeWithNonce', (object, ), {})

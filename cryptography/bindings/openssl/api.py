@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.primitives.abc.block import modes
+
 import cffi
 
 
@@ -72,7 +74,7 @@ class API(object):
         )
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
         assert evp_cipher != self._ffi.NULL
-        iv_nonce = mode.get_iv_or_nonce(self)
+        iv_nonce = self._introspect(mode)
 
         # TODO: Sometimes this needs to be a DecryptInit, when?
         res = self._lib.EVP_EncryptInit_ex(
@@ -86,8 +88,13 @@ class API(object):
         self._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
-    def get_iv_for_ecb(self):
-        return self._ffi.NULL
+    def _introspect(self, mode):
+        if isinstance(mode, modes.ModeWithInitializationVector):
+            return mode.initialization_vector
+        elif isinstance(mode, modes.ModeWithNonce):
+            return mode.nonce
+        else:
+            return self._ffi.NULL
 
     def update_encrypt_context(self, ctx, plaintext):
         buf = self._ffi.new("unsigned char[]", len(plaintext))

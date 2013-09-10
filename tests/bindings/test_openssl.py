@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings.openssl import api
+from cryptography.bindings.openssl.api import api
 
 
 class TestOpenSSL(object):
@@ -28,6 +28,3 @@ class TestOpenSSL(object):
         for every OpenSSL.
         """
         assert api.openssl_version_text().startswith("OpenSSL")
-
-    def test_get_iv_for_ecb(self):
-        assert api.get_iv_for_ecb() == api._ffi.NULL
