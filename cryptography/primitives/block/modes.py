@@ -20,3 +20,10 @@ class CBC(object):
     def __init__(self, initialization_vector):
         super(CBC, self).__init__()
         self.initialization_vector = initialization_vector
+
+
+class ECB(object):
+    name = "ECB"
+
+    def __init__(self):
+        super(ECB, self).__init__()
