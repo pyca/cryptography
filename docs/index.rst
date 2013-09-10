@@ -32,4 +32,5 @@ Contents
 
     architecture
     primitives/index
+    contributing
     community
