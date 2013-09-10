@@ -11,7 +11,7 @@ forms. These can include:
 * Pull requests for both code and documentation
 * Patch reviews
 
-You can file bugs and submit pull requests on `Github`_. To discuss larger
+You can file bugs and submit pull requests on `GitHub`_. To discuss larger
 changes you can start a conversation on `our mailing list`_.
 
 Because cryptography is so complex, and the implications of getting it wrong so
@@ -74,7 +74,7 @@ So, specifically:
 - Use Sphinx parameter/attribute documentation `syntax`_.
 
 
-.. _`Github`: https://github.com/alex/cryptography
+.. _`GitHub`: https://github.com/alex/cryptography
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`PEP 8`: http://www.peps.io/8/
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
