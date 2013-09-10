@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from cryptography.bindings.openssl import api
 
 
@@ -28,3 +30,7 @@ class TestOpenSSL(object):
         for every OpenSSL.
         """
         assert api.openssl_version_text().startswith("OpenSSL")
+
+    def test_get_iv_invalid_mode(self):
+        with pytest.raises(NotImplementedError):
+            api._get_iv(None)
