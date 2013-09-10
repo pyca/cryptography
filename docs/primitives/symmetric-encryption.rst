@@ -57,7 +57,7 @@ Insecure Ciphers
 
 .. class:: cryptography.primitives.block.ciphers.TripleDES(key)
 
-    Triple DES (Data encryption standard), sometimes refered to as 3DES, is a
+    Triple DES (Data Encryption Standard), sometimes refered to as 3DES, is a
     block cipher standardized by NIST. Triple DES should be considered to be
     cryptographically broken and should not be used for new applications, old
     applications should strongly consider moving away from it.
