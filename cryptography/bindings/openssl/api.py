@@ -86,7 +86,7 @@ class API(object):
         self._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
-    def get_null_for_ecb(self):
+    def get_iv_for_ecb(self):
         return self._ffi.NULL
 
     def update_encrypt_context(self, ctx, plaintext):

@@ -29,5 +29,5 @@ class TestOpenSSL(object):
         """
         assert api.openssl_version_text().startswith("OpenSSL")
 
-    def test_get_null_for_ecb(self):
-        assert api.get_null_for_ecb() == api._ffi.NULL
+    def test_get_iv_for_ecb(self):
+        assert api.get_iv_for_ecb() == api._ffi.NULL

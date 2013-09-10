@@ -29,4 +29,4 @@ class ECB(object):
     name = "ECB"
 
     def get_iv_or_nonce(self, api):
-        return api.get_null_for_ecb()
+        return api.get_iv_for_ecb()
