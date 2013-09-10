@@ -78,3 +78,43 @@ class TestAES_CBC(object):
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
+
+
+class TestTripleDES_CBC(object):
+    @parameterize_encrypt_test("3DES", "KAT", [
+        "TCBCIinvperm.rsp",
+        "TCBCIpermop.rsp",
+        "TCBCIsubtab.rsp",
+        "TCBCIvarkey.rsp",
+        "TCBCIvartext.rsp",
+        "TCBCinvperm.rsp",
+        "TCBCpermop.rsp",
+        "TCBCsubtab.rsp",
+        "TCBCvarkey.rsp",
+        "TCBCvartext.rsp",
+    ])
+    def test_KAT(self, key, iv, plaintext, ciphertext):
+        cipher = BlockCipher(
+            ciphers.TripleDES(binascii.unhexlify(key)),
+            modes.CBC(binascii.unhexlify(iv))
+        )
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
+        assert binascii.hexlify(actual_ciphertext) == ciphertext
+
+    @parameterize_encrypt_test("3DES", "MMT", [
+        "TCBCIMMT1.rsp",
+        "TCBCIMMT2.rsp",
+        "TCBCIMMT3.rsp",
+        "TCBCMMT1.rsp",
+        "TCBCMMT2.rsp",
+        "TCBCMMT3.rsp",
+    ])
+    def test_MMT(self, key, iv, plaintext, ciphertext):
+        cipher = BlockCipher(
+            ciphers.TripleDES(binascii.unhexlify(key)),
+            modes.CBC(binascii.unhexlify(iv))
+        )
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
+        assert binascii.hexlify(actual_ciphertext) == ciphertext
