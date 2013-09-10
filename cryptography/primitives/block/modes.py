@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.primitives.abc.block import modes
+from cryptography.primitives import interfaces
 
 
 class CBC(object):
@@ -28,4 +28,4 @@ class ECB(object):
     name = "ECB"
 
 
-modes.ModeWithInitializationVector.register(CBC)
+interfaces.ModeWithInitializationVector.register(CBC)
