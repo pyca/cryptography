@@ -24,6 +24,3 @@ class CBC(object):
 
 class ECB(object):
     name = "ECB"
-
-    def __init__(self):
-        super(ECB, self).__init__()

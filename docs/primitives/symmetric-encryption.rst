@@ -72,6 +72,7 @@ Modes
 Insecure Modes
 --------------
 
+.. warning:: Do not use. This is an insecure mode.
 .. class:: cryptography.primitives.block.modes.ECB()
 
     ECB (Electronic Code Book) is the simplest mode of operation for block
