@@ -91,7 +91,7 @@ class TestAES_CBC(object):
 class TestTripleDES_CBC(object):
     @parameterize_encrypt_test(
         "3DES", "KAT",
-        ["keys", "iv", "plaintext", "ciphertext"],
+        ("keys", "iv", "plaintext", "ciphertext"),
         [
             "TCBCinvperm.rsp",
             "TCBCpermop.rsp",
@@ -111,7 +111,7 @@ class TestTripleDES_CBC(object):
 
     @parameterize_encrypt_test(
         "3DES", "KAT",
-        ["keys", "iv1", "iv2", "iv3", "plaintext", "ciphertext3"],
+        ("keys", "iv1", "iv2", "iv3", "plaintext", "ciphertext3"),
         [
             "TCBCIpermop.rsp",
             "TCBCIsubtab.rsp",
@@ -130,7 +130,7 @@ class TestTripleDES_CBC(object):
 
     @parameterize_encrypt_test(
         "3DES", "KAT",
-        ["keys", "iv1", "iv2", "iv3", "plaintext1", "ciphertext3"],
+        ("keys", "iv1", "iv2", "iv3", "plaintext1", "ciphertext3"),
         [
             "TCBCIinvperm.rsp",
         ]
@@ -146,7 +146,7 @@ class TestTripleDES_CBC(object):
 
     @parameterize_encrypt_test(
         "3DES", "MMT",
-        ["key1", "key2", "key3", "iv1", "iv2", "iv3", "plaintext", "ciphertext"],
+        ("key1", "key2", "key3", "iv1", "iv2", "iv3", "plaintext", "ciphertext"),
         [
             "TCBCIMMT1.rsp",
             "TCBCIMMT2.rsp",
@@ -164,7 +164,7 @@ class TestTripleDES_CBC(object):
 
     @parameterize_encrypt_test(
         "3DES", "MMT",
-        ["key1", "key2", "key3", "iv", "plaintext", "ciphertext"],
+        ("key1", "key2", "key3", "iv", "plaintext", "ciphertext"),
         [
             "TCBCMMT1.rsp",
             "TCBCMMT2.rsp",
