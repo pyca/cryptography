@@ -36,5 +36,14 @@ class OFB(object):
         self.nonce = nonce
 
 
+class CFB(object):
+    name = "CFB"
+
+    def __init__(self, initialization_vector):
+        super(CFB, self).__init__()
+        self.initialization_vector = initialization_vector
+
+
 interfaces.ModeWithInitializationVector.register(CBC)
 interfaces.ModeWithNonce.register(OFB)
+interfaces.ModeWithInitializationVector.register(CFB)
