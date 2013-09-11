@@ -68,18 +68,16 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
-.. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
+.. class:: cryptography.primitives.block.modes.OFB(nonce)
 
     OFB (Output Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
 
-    :param bytes initialization_vector: Must be random bytes. They do not need
-                                        to be kept secret (they can be included
-                                        in a transmitted message). Must be the
-                                        same number of bytes as the
-                                        ``block_size`` of the cipher. Do not
-                                        reuse an ``initialization_vector`` with
-                                        a given ``key``.
+    :param bytes nonce: Must be random bytes. They do not need to be kept
+                        secret (they can be included in a transmitted message).
+                        Must be the same number of bytes as the ``block_size``
+                        of the cipher.  Reuse of a ``nonce`` with a given
+                        ``key`` can allow recovery of the original plaintext.
 
 
 Insecure Modes
