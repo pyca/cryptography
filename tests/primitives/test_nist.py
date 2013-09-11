@@ -180,3 +180,50 @@ class TestAES_OFB(object):
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
+
+
+class TestAES_CFB(object):
+    @parameterize_encrypt_test(
+        "AES", "KAT",
+        ("key", "iv", "plaintext", "ciphertext"),
+        [
+            "CFB128GFSbox128.rsp",
+            "CFB128GFSbox192.rsp",
+            "CFB128GFSbox256.rsp",
+            "CFB128KeySbox128.rsp",
+            "CFB128KeySbox192.rsp",
+            "CFB128KeySbox256.rsp",
+            "CFB128VarKey128.rsp",
+            "CFB128VarKey192.rsp",
+            "CFB128VarKey256.rsp",
+            "CFB128VarTxt128.rsp",
+            "CFB128VarTxt192.rsp",
+            "CFB128VarTxt256.rsp",
+        ]
+    )
+    def test_KAT(self, key, iv, plaintext, ciphertext):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(key)),
+            modes.CFB(binascii.unhexlify(iv))
+        )
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
+        assert binascii.hexlify(actual_ciphertext) == ciphertext
+
+    @parameterize_encrypt_test(
+        "AES", "MMT",
+        ("key", "iv", "plaintext", "ciphertext"),
+        [
+            "CFB128MMT128.rsp",
+            "CFB128MMT192.rsp",
+            "CFB128MMT256.rsp",
+        ]
+    )
+    def test_MMT(self, key, iv, plaintext, ciphertext):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(key)),
+            modes.CFB(binascii.unhexlify(iv))
+        )
+        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
+        actual_ciphertext += cipher.finalize()
+        assert binascii.hexlify(actual_ciphertext) == ciphertext
