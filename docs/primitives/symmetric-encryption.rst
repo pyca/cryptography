@@ -67,3 +67,16 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+
+
+Insecure Modes
+--------------
+
+.. warning:: Do not use. This is an insecure mode.
+.. class:: cryptography.primitives.block.modes.ECB()
+
+    ECB (Electronic Code Book) is the simplest mode of operation for block
+    ciphers. The data is separated into blocks and each block is encrypted
+    separately. This means identical plaintext blocks will always result in
+    identical encrypted blocks. Due to this property it is not recommended
+    for use. Really, don't use it. Just. Don't.
