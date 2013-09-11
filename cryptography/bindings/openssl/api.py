@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.primitives import interfaces
+
 import cffi
 
 
@@ -72,11 +74,14 @@ class API(object):
         )
         evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
         assert evp_cipher != self._ffi.NULL
-        # TODO: only use the key and initialization_vector as needed. Sometimes
-        # this needs to be a DecryptInit, when?
+        if isinstance(mode, interfaces.ModeWithInitializationVector):
+            iv_nonce = mode.initialization_vector
+        else:
+            iv_nonce = self._ffi.NULL
+
+        # TODO: Sometimes this needs to be a DecryptInit, when?
         res = self._lib.EVP_EncryptInit_ex(
-            ctx, evp_cipher, self._ffi.NULL, cipher.key,
-            mode.initialization_vector
+            ctx, evp_cipher, self._ffi.NULL, cipher.key, iv_nonce
         )
         assert res != 0
 
