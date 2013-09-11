@@ -28,4 +28,13 @@ class ECB(object):
     name = "ECB"
 
 
+class OFB(object):
+    name = "OFB"
+
+    def __init__(self, initialization_vector):
+        super(OFB, self).__init__()
+        self.initialization_vector = initialization_vector
+
+
 interfaces.ModeWithInitializationVector.register(CBC)
+interfaces.ModeWithInitializationVector.register(OFB)
