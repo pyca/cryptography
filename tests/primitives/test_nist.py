@@ -44,7 +44,7 @@ def parameterize_encrypt_test(cipher, vector_type, params, fnames):
 class TestAES_CBC(object):
     @parameterize_encrypt_test(
         "AES", "KAT",
-        ["key", "iv", "plaintext", "ciphertext"],
+        ("key", "iv", "plaintext", "ciphertext"),
         [
             "CBCGFSbox128.rsp",
             "CBCGFSbox192.rsp",
@@ -71,7 +71,7 @@ class TestAES_CBC(object):
 
     @parameterize_encrypt_test(
         "AES", "MMT",
-        ["key", "iv", "plaintext", "ciphertext"],
+        ("key", "iv", "plaintext", "ciphertext"),
         [
             "CBCMMT128.rsp",
             "CBCMMT192.rsp",
