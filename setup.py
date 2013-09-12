@@ -32,9 +32,6 @@ setup_requires = [
     CFFI_DEPENDENCY,
 ]
 
-if sys.version_info[:2] < (3, 4):
-    install_requires += ["enum34"]
-
 setup(
     name=about["__title__"],
     version=about["__version__"],
