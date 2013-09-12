@@ -20,7 +20,3 @@ import six
 
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
     pass
-
-
-class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
-    pass
