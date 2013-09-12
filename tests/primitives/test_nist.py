@@ -66,7 +66,6 @@ class TestAES_CBC(object):
             modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_encrypt_test(
@@ -84,7 +83,6 @@ class TestAES_CBC(object):
             modes.CBC(binascii.unhexlify(iv)),
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
 
@@ -113,7 +111,6 @@ class TestAES_ECB(object):
             modes.ECB()
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_encrypt_test(
@@ -131,7 +128,6 @@ class TestAES_ECB(object):
             modes.ECB()
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
 
@@ -160,7 +156,6 @@ class TestAES_OFB(object):
             modes.OFB(binascii.unhexlify(iv))
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_encrypt_test(
@@ -178,7 +173,6 @@ class TestAES_OFB(object):
             modes.OFB(binascii.unhexlify(iv))
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
 
@@ -207,7 +201,6 @@ class TestAES_CFB(object):
             modes.CFB(binascii.unhexlify(iv))
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
 
     @parameterize_encrypt_test(
@@ -225,5 +218,4 @@ class TestAES_CFB(object):
             modes.CFB(binascii.unhexlify(iv))
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
         assert binascii.hexlify(actual_ciphertext) == ciphertext
