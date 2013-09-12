@@ -20,3 +20,7 @@ import six
 
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
     pass
+
+
+class Padding(six.with_metaclass(abc.ABCMeta)):
+    pass
