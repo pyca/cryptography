@@ -19,8 +19,6 @@ import pytest
 
 from cryptography.primitives.block.ciphers import AES, Camellia
 
-from cryptography.bindings.openssl.api import api
-
 
 class TestAES(object):
     @pytest.mark.parametrize(("key", "keysize"), [
