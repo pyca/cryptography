@@ -121,7 +121,10 @@ def load_openssl_vectors(vector_data, op):
             continue
 
         vector = line.split(":")
-        args_list = (vector[1], vector[2], vector[3], vector[4])
+        args_list = (vector[1].encode("ascii"),
+                     vector[2].encode("ascii"),
+                     vector[3].encode("ascii"),
+                     vector[4].encode("ascii"))
         # some OpenSSL vectors have a final field
         # 0 for decrypt, 1 for encrypt
         if len(vector) == 6:
