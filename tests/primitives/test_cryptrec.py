@@ -28,7 +28,7 @@ from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 from ..utils import load_cryptrec_vectors_from_file
 
-CAMELLIA_SUPPORTED = api.supports('camellia-128-ecb')
+CAMELLIA_ECB_SUPPORTED = api.supports('camellia-128-ecb')
 
 
 def parameterize_encrypt_test(cipher, vector_type, params, fnames):
@@ -42,7 +42,7 @@ def parameterize_encrypt_test(cipher, vector_type, params, fnames):
     )
 
 
-@pytest.mark.skipif("not CAMELLIA_SUPPORTED")
+@pytest.mark.skipif("not CAMELLIA_ECB_SUPPORTED")
 class TestCamelliaECB(object):
 
     @parameterize_encrypt_test(

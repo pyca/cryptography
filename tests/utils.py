@@ -75,12 +75,8 @@ def load_cryptrec_vectors(vector_data):
     for line in vector_data:
         line = line.strip()
 
-        # Blank lines are ignored
-        if not line:
-            continue
-
-        # Lines starting with # are comments
-        if line.startswith("#"):
+        # Blank lines and comments are ignored
+        if not line or line.startswith("#"):
             continue
 
         if line.startswith("K"):
@@ -104,3 +100,42 @@ def load_cryptrec_vectors(vector_data):
             )
 
     return cryptrec_list
+
+
+def load_openssl_vectors_from_file(filename, op):
+    base = os.path.join(
+        os.path.dirname(__file__), "primitives", "vectors", "OpenSSL",
+    )
+    with open(os.path.join(base, filename), "r") as vector_file:
+        return load_openssl_vectors(vector_file, op)
+
+
+def load_openssl_vectors(vector_data, op):
+    encrypt, decrypt = [], []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and comments are ignored
+        if not line or line.startswith("#"):
+            continue
+
+        vector = line.split(":")
+        args_list = (vector[1], vector[2], vector[3], vector[4])
+        # some OpenSSL vectors have a final field
+        # 0 for decrypt, 1 for encrypt
+        if len(vector) == 6:
+            if int(vector[5]) == 0:
+                decrypt.append(args_list)
+            else:
+                encrypt.append(args_list)
+        else:
+            # if they don't have 1 or 0 they are meant for both enc & dec
+            # and should be added to both the encrypt and decrypt list
+            encrypt.append(args_list)
+            decrypt.append(args_list)
+
+    if op == "ENCRYPT":
+        return encrypt
+    else:
+        return decrypt
