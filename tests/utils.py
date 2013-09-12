@@ -59,3 +59,44 @@ def load_nist_vectors_from_file(filename, op, fields):
     )
     with open(os.path.join(base, filename), "r") as vector_file:
         return load_nist_vectors(vector_file, op, fields)
+
+
+def load_cryptrec_vectors_from_file(filename):
+    base = os.path.join(
+        os.path.dirname(__file__), "primitives", "vectors", "CRYPTREC",
+    )
+    with open(os.path.join(base, filename), "r") as vector_file:
+        return load_cryptrec_vectors(vector_file)
+
+
+def load_cryptrec_vectors(vector_data):
+    keys, data = [], {}
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines are ignored
+        if not line:
+            continue
+
+        # Lines starting with # are comments
+        if line.startswith("#"):
+            continue
+
+        if line.startswith("K"):
+            keys.append(line.split(" : ")[1].replace(" ", ""))
+            # create an array under the key to hold all the P+C pairs
+            data[keys[-1]] = []
+        elif line.startswith("P"):
+            # create a new dict to hold the next P+C pair
+            data[keys[-1]].append({})
+            data[keys[-1]][-1]["P"] = line.split(" : ")[1].replace(" ", "")
+        elif line.startswith("C"):
+            data[keys[-1]][-1]["C"] = line.split(" : ")[1].replace(" ", "")
+
+    cryptrec_list = []
+    for key, value in data.items():
+        for pair in value:
+            cryptrec_list.append((key, pair["P"], pair["C"]))
+
+    return cryptrec_list

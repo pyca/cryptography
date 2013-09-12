@@ -51,6 +51,15 @@ Ciphers
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
+.. class:: cryptography.primitives.block.ciphers.Camellia(key)
+
+    Camellia is a block cipher approved for use by CRYPTREC and ISO/IEC.
+    It is considered to have comparable security and performance to AES, but
+    is not as widely studied or deployed.
+
+    :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
+                      This must be kept secret.
+
 
 Modes
 ~~~~~
