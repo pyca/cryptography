@@ -61,7 +61,7 @@ class PKCS7(object):
 
             # Ensure that the last padsize characters match our padchar
             if set(last_chunk[-padsize:]) != set([chr(padsize)]):
-                raise Exception("Bad Padding")
+                raise ValueError("Invalid padding bytes")
 
             # yield the last chunk of data with the padding removed
             yield last_chunk[:-padsize]
