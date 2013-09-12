@@ -97,6 +97,10 @@ def load_cryptrec_vectors(vector_data):
     cryptrec_list = []
     for key, value in data.items():
         for pair in value:
-            cryptrec_list.append((key, pair["P"], pair["C"]))
+            cryptrec_list.append(
+                (key.encode("ascii"),
+                 pair["P"].encode("ascii"),
+                 pair["C"].encode("ascii"))
+            )
 
     return cryptrec_list
