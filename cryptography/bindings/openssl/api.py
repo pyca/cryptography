@@ -22,40 +22,51 @@ class API(object):
     """
     OpenSSL API wrapper.
     """
+    # TODO: is there a way to enumerate the files in the cffi module
+    # rather than hardcode them?
+    _modules = [
+        'evp',
+        'opensslv',
+    ]
 
     def __init__(self):
-        ffi = cffi.FFI()
-        self._populate_ffi(ffi)
-        self._ffi = ffi
-        self._lib = ffi.verify("""
-        #include <openssl/evp.h>
-        #include <openssl/opensslv.h>
-        """)
+        self._ffi = cffi.FFI()
+        self.INCLUDES, self.TYPES, self.FUNCTIONS = [], [], []
+        self._import()
+        self._define()
+        self._verify()
+
         self._lib.OpenSSL_add_all_algorithms()
 
-    def _populate_ffi(self, ffi):
-        ffi.cdef("""
-        typedef struct {
-            ...;
-        } EVP_CIPHER_CTX;
-        typedef ... EVP_CIPHER;
-        typedef ... ENGINE;
+    def _import(self):
+        "import all library definitions"
+        for name in self._modules:
+            module = __import__('cryptography.bindings.openssl.cffi.' + name,
+                                fromlist=['*'])
+            self._import_definitions(module, 'INCLUDES')
+            self._import_definitions(module, 'TYPES')
+            self._import_definitions(module, 'FUNCTIONS')
 
-        static char *const OPENSSL_VERSION_TEXT;
+    def _import_definitions(self, module, name):
+        "import defintions named definitions from module"
+        container = getattr(self, name)
+        for definition in getattr(module, name, ()):
+            if definition not in container:
+                container.append(definition)
 
-        void OpenSSL_add_all_algorithms();
+    def _define(self):
+        "parse function definitions"
+        for typedef in self.TYPES:
+            self._ffi.cdef(typedef)
+        for function in self.FUNCTIONS:
+            self._ffi.cdef(function)
 
-        const EVP_CIPHER *EVP_get_cipherbyname(const char *);
-        int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *,
-                               ENGINE *, unsigned char *, unsigned char *);
-        int EVP_CIPHER_CTX_set_padding(EVP_CIPHER_CTX *, int);
-        int EVP_EncryptUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
-                              unsigned char *, int);
-        int EVP_EncryptFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
-        int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
-        const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
-        int EVP_CIPHER_block_size(const EVP_CIPHER *);
-        """)
+    def _verify(self):
+        "load openssl, create function attributes"
+        self._lib = self._ffi.verify(
+            source="\n".join(self.INCLUDES),
+            libraries=['crypto']
+        )
 
     def openssl_version_text(self):
         """
