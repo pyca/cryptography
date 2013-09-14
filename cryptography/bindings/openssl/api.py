@@ -16,46 +16,49 @@ from __future__ import absolute_import, division, print_function
 from cryptography.primitives import interfaces
 
 import cffi
+import sys
 
 
 class API(object):
     """
     OpenSSL API wrapper.
     """
+    _modules = [
+        "evp",
+        "opensslv",
+    ]
 
     def __init__(self):
-        ffi = cffi.FFI()
-        self._populate_ffi(ffi)
-        self._ffi = ffi
-        self._lib = ffi.verify("""
-        #include <openssl/evp.h>
-        #include <openssl/opensslv.h>
-        """)
+        self._ffi = cffi.FFI()
+        self.includes, self.types, self.functions = [], [], []
+        self._import()
+        self._define()
+        self._verify()
+
         self._lib.OpenSSL_add_all_algorithms()
 
-    def _populate_ffi(self, ffi):
-        ffi.cdef("""
-        typedef struct {
-            ...;
-        } EVP_CIPHER_CTX;
-        typedef ... EVP_CIPHER;
-        typedef ... ENGINE;
+    def _import(self):
+        """
+        Import all library definitions
+        """
+        for name in self._modules:
+            __import__('cryptography.bindings.openssl.' + name)
+            module = sys.modules['cryptography.bindings.openssl.' + name]
+            self.includes.append(module.INCLUDES)
+            self.types.append(module.TYPES)
+            self.functions.append(module.FUNCTIONS)
 
-        static char *const OPENSSL_VERSION_TEXT;
+    def _define(self):
+        for typedef in self.types:
+            self._ffi.cdef(typedef)
+        for function in self.functions:
+            self._ffi.cdef(function)
 
-        void OpenSSL_add_all_algorithms();
-
-        const EVP_CIPHER *EVP_get_cipherbyname(const char *);
-        int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *,
-                               ENGINE *, unsigned char *, unsigned char *);
-        int EVP_CIPHER_CTX_set_padding(EVP_CIPHER_CTX *, int);
-        int EVP_EncryptUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
-                              unsigned char *, int);
-        int EVP_EncryptFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
-        int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
-        const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
-        int EVP_CIPHER_block_size(const EVP_CIPHER *);
-        """)
+    def _verify(self):
+        self._lib = self._ffi.verify(
+            source="\n".join(self.includes),
+            libraries=['crypto']
+        )
 
     def openssl_version_text(self):
         """
