@@ -19,9 +19,9 @@ import pytest
 from cryptography.primitives import padding
 
 
-class TestPKCS7:
+class TestPKCS7(object):
 
-    @pytest.mark.parametrize(("size",), [(127,), (4096,)])
+    @pytest.mark.parametrize("size", [127, 4096])
     def test_invalid_block_size(self, size):
         with pytest.raises(ValueError):
             padding.PKCS7(size)
