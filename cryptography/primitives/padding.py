@@ -91,6 +91,3 @@ class PKCS7(object):
 
     def unpad(self, data):
         return b"".join(self.iter_unpad(data))
-
-
-interfaces.Padding.register(PKCS7)
