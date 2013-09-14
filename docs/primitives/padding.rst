@@ -11,7 +11,7 @@ multiple of the block size.
 
     PKCS7 padding works by appending ``N`` bytes with the value of ``chr(N)``,
     where ``N`` is the number of bytes required to make the final block of data
-    the same size as the cipher's block size. A Simple example of padding is:
+    the same size as the cipher's block size. A simple example of padding is:
 
     .. doctest::
 
