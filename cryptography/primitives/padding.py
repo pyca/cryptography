@@ -82,8 +82,9 @@ class PKCS7(object):
             raise ValueError("Invalid padding bytes")
 
         # Ensure the padding characters are correct
-        if set(six.iterbytes(last[-pad_size:])) != set([pad_size]):
-            raise ValueError("Invalid padding bytes")
+        for byte in six.iterbytes(last[-pad_size:]):
+            if byte != pad_size:
+                raise ValueError("Invalid padding bytes")
 
         yield last[:-pad_size]
 
