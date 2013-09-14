@@ -13,10 +13,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.primitives import interfaces
+import sys
 
 import cffi
-import sys
+
+from cryptography.primitives import interfaces
 
 
 class API(object):
@@ -30,34 +31,25 @@ class API(object):
 
     def __init__(self):
         self._ffi = cffi.FFI()
-        self.includes, self.types, self.functions = [], [], []
-        self._import()
-        self._define()
-        self._verify()
+        self._build_library()
 
         self._lib.OpenSSL_add_all_algorithms()
 
-    def _import(self):
+    def _build_library(self):
         """
-        Import all library definitions
+        Builds the library instance with all of the functions, types, and
+        includes from the modules listed in ``_modules``.
         """
+        includes = []
         for name in self._modules:
-            __import__('cryptography.bindings.openssl.' + name)
-            module = sys.modules['cryptography.bindings.openssl.' + name]
-            self.includes.append(module.INCLUDES)
-            self.types.append(module.TYPES)
-            self.functions.append(module.FUNCTIONS)
-
-    def _define(self):
-        for typedef in self.types:
-            self._ffi.cdef(typedef)
-        for function in self.functions:
-            self._ffi.cdef(function)
-
-    def _verify(self):
+            __import__("cryptography.bindings.openssl." + name)
+            module = sys.modules["cryptography.bindings.openssl." + name]
+            self._ffi.cdef(module.TYPES)
+            self._ffi.cdef(module.FUNCTIONS)
+            includes.append(module.INCLUDES)
         self._lib = self._ffi.verify(
-            source="\n".join(self.includes),
-            libraries=['crypto']
+            source="\n".join(includes),
+            libraries=["crypto"]
         )
 
     def openssl_version_text(self):
