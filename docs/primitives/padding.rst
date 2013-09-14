@@ -26,23 +26,23 @@ multiple of the block size.
     .. method:: pad(data)
 
         :param data: The data that should be padded, can be any iterable of
-                     bytes.
+                     bytes or integral byte values.
         :rtype bytes: The padded data.
 
     .. method:: iter_pad(data):
 
         :param data: The data that should be padded, can be any iterable of
-                     bytes.
+                     bytes or integral byte values.
         :rtype generator: A generator that yields blocks of padded data.
 
     .. method:: unpad(data)
 
         :param data: The data that should be unpadded, can be any iterable of
-                     bytes.
+                     bytes or integral byte values.
         :rtype bytes: The unpadded data.
 
     .. method:: iter_unpad(data):
 
         :param data: The data that should be unpadded, can be any iterable of
-                     bytes.
+                     bytes or integral byte values.
         :rtype generator: A generator that yields blocks of unpadded data.
