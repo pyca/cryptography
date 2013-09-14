@@ -16,22 +16,21 @@ from __future__ import absolute_import, division, print_function
 from cryptography.primitives import interfaces
 
 import cffi
+import sys
 
 
 class API(object):
     """
     OpenSSL API wrapper.
     """
-    # TODO: is there a way to enumerate the files in the cffi module
-    # rather than hardcode them?
     _modules = [
-        'evp',
-        'opensslv',
+        "evp",
+        "opensslv",
     ]
 
     def __init__(self):
         self._ffi = cffi.FFI()
-        self.INCLUDES, self.TYPES, self.FUNCTIONS = [], [], []
+        self.includes, self.types, self.functions = [], [], []
         self._import()
         self._define()
         self._verify()
@@ -39,32 +38,32 @@ class API(object):
         self._lib.OpenSSL_add_all_algorithms()
 
     def _import(self):
-        "import all library definitions"
+        """
+        Import all library definitions
+        """
         for name in self._modules:
-            module = __import__('cryptography.bindings.openssl.cffi.' + name,
-                                fromlist=['*'])
-            self._import_definitions(module, 'INCLUDES')
-            self._import_definitions(module, 'TYPES')
-            self._import_definitions(module, 'FUNCTIONS')
+            __import__('cryptography.bindings.openssl.' + name)
+            module = sys.modules['cryptography.bindings.openssl.' + name]
+            self._import_definitions(module, 'includes')
+            self._import_definitions(module, 'types')
+            self._import_definitions(module, 'functions')
 
     def _import_definitions(self, module, name):
-        "import defintions named definitions from module"
+        """
+        Import definitions named definitions from module
+        """
         container = getattr(self, name)
-        for definition in getattr(module, name, ()):
-            if definition not in container:
-                container.append(definition)
+        container.append(getattr(module, name))
 
     def _define(self):
-        "parse function definitions"
-        for typedef in self.TYPES:
+        for typedef in self.types:
             self._ffi.cdef(typedef)
-        for function in self.FUNCTIONS:
+        for function in self.functions:
             self._ffi.cdef(function)
 
     def _verify(self):
-        "load openssl, create function attributes"
         self._lib = self._ffi.verify(
-            source="\n".join(self.INCLUDES),
+            source="\n".join(self.includes),
             libraries=['crypto']
         )
 
