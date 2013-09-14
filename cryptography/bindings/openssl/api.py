@@ -31,15 +31,6 @@ class API(object):
 
     def __init__(self):
         self._ffi = cffi.FFI()
-        self._build_library()
-
-        self._lib.OpenSSL_add_all_algorithms()
-
-    def _build_library(self):
-        """
-        Builds the library instance with all of the functions, types, and
-        includes from the modules listed in ``_modules``.
-        """
         includes = []
         for name in self._modules:
             __import__("cryptography.bindings.openssl." + name)
@@ -47,10 +38,13 @@ class API(object):
             self._ffi.cdef(module.TYPES)
             self._ffi.cdef(module.FUNCTIONS)
             includes.append(module.INCLUDES)
+
         self._lib = self._ffi.verify(
             source="\n".join(includes),
             libraries=["crypto"]
         )
+
+        self._lib.OpenSSL_add_all_algorithms()
 
     def openssl_version_text(self):
         """
