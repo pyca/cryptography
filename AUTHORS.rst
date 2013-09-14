@@ -7,4 +7,5 @@ AUTHORS
 * Laurens Van Houtven <_@lvh.io>
 * Christian Heimes <christian@python.org>
 * Paul Kehrer <paul.l.kehrer@gmail.com>
+* Jarret Raim <jarito@gmail.com>
 
