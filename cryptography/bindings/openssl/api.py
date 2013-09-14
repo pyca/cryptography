@@ -44,16 +44,9 @@ class API(object):
         for name in self._modules:
             __import__('cryptography.bindings.openssl.' + name)
             module = sys.modules['cryptography.bindings.openssl.' + name]
-            self._import_definitions(module, 'includes')
-            self._import_definitions(module, 'types')
-            self._import_definitions(module, 'functions')
-
-    def _import_definitions(self, module, name):
-        """
-        Import definitions named definitions from module
-        """
-        container = getattr(self, name)
-        container.append(getattr(module, name))
+            self.includes.append(module.INCLUDES)
+            self.types.append(module.TYPES)
+            self.functions.append(module.FUNCTIONS)
 
     def _define(self):
         for typedef in self.types:

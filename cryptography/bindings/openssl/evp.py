@@ -11,17 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-includes = """
+INCLUDES = """
     #include <openssl/evp.h>
 """
 
-types = """
+TYPES = """
     typedef struct { ...; } EVP_CIPHER_CTX;
     typedef ... EVP_CIPHER;
     typedef ... ENGINE;
 """
 
-functions = """
+FUNCTIONS = """
     void OpenSSL_add_all_algorithms();
     const EVP_CIPHER *EVP_get_cipherbyname(const char *);
     int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *,

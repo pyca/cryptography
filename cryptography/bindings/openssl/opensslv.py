@@ -11,13 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-includes = """
+INCLUDES = """
     #include <openssl/opensslv.h>
 """
 
-types = """
+TYPES = """
     static char *const OPENSSL_VERSION_TEXT;
 """
 
 
-functions = ""
+FUNCTIONS = ""
