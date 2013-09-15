@@ -91,7 +91,7 @@ def load_cryptrec_vectors(vector_data):
             data[keys[-1]][-1]["C"] = line.split(" : ")[1].replace(" ", "")
 
     cryptrec_list = []
-    for key, value in data.items():
+    for key, value in sorted(data.items()):
         for pair in value:
             cryptrec_list.append(
                 (key.encode("ascii"),
