@@ -21,23 +21,24 @@ where the encrypter and decrypter both use the same key.
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
-        >>> cipher.encrypt(b"a secret message") + cipher.finalize()
+        >>> cipher.encrypt(b"a secret message")
         '...'
 
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
 
-    ``encrypt()`` should be called repeatedly with new plaintext, and once the
-    full plaintext is fed in, ``finalize()`` should be called.
+    ``encrypt()`` and ``iter_encrypt()`` should be called with any iterable of
+    bytes and will return the ciphertext as bytes or a generator respectively.
 
     .. method:: encrypt(plaintext)
 
         :param bytes plaintext: The text you wish to encrypt.
-        :return bytes: Returns the ciphertext that was added.
+        :return bytes: Returns the ciphertext.
 
-    .. method:: finalize()
+    .. method:: iter_encrypt(plaintext)
 
-        :return bytes: Returns the remainder of the ciphertext.
+        :param bytes plaintext: The text you wish to encrypt.
+        :return bytes: Returns a generator which yields the ciphertext.
 
 Ciphers
 ~~~~~~~
