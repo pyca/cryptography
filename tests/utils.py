@@ -70,7 +70,7 @@ def load_cryptrec_vectors_from_file(filename):
 
 
 def load_cryptrec_vectors(vector_data):
-    keys, data = [], {}
+    data = {}
 
     for line in vector_data:
         line = line.strip()
@@ -80,15 +80,18 @@ def load_cryptrec_vectors(vector_data):
             continue
 
         if line.startswith("K"):
-            keys.append(line.split(" : ")[1].replace(" ", ""))
+            key = line.split(" : ")[1].replace(" ", "")
             # create an array under the key to hold all the P+C pairs
-            data[keys[-1]] = []
+            # each key has many p+c pairs
+            data[key] = []
         elif line.startswith("P"):
             # create a new dict to hold the next P+C pair
-            data[keys[-1]].append({})
-            data[keys[-1]][-1]["P"] = line.split(" : ")[1].replace(" ", "")
+            pc_pair = {}
+            pc_pair["P"] = line.split(" : ")[1].replace(" ", "")
         elif line.startswith("C"):
-            data[keys[-1]][-1]["C"] = line.split(" : ")[1].replace(" ", "")
+            pc_pair["C"] = line.split(" : ")[1].replace(" ", "")
+            # after a C is found the P+C pair is complete
+            data[key].append(pc_pair)
 
     cryptrec_list = []
     for key, value in sorted(data.items()):
@@ -121,22 +124,22 @@ def load_openssl_vectors(vector_data, op):
             continue
 
         vector = line.split(":")
-        args_list = (vector[1].encode("ascii"),
-                     vector[2].encode("ascii"),
-                     vector[3].encode("ascii"),
-                     vector[4].encode("ascii"))
+        params = (vector[1].encode("ascii"),  # key
+                  vector[2].encode("ascii"),  # iv
+                  vector[3].encode("ascii"),  # ciphertext
+                  vector[4].encode("ascii"))  # plaintext
         # some OpenSSL vectors have a final field
         # 0 for decrypt, 1 for encrypt
         if len(vector) == 6:
             if int(vector[5]) == 0:
-                decrypt.append(args_list)
+                decrypt.append(params)
             else:
-                encrypt.append(args_list)
+                encrypt.append(params)
         else:
             # if they don't have 1 or 0 they are meant for both enc & dec
             # and should be added to both the encrypt and decrypt list
-            encrypt.append(args_list)
-            decrypt.append(args_list)
+            encrypt.append(params)
+            decrypt.append(params)
 
     if op == "ENCRYPT":
         return encrypt
