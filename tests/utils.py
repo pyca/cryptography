@@ -105,16 +105,16 @@ def load_cryptrec_vectors(vector_data):
     return cryptrec_list
 
 
-def load_openssl_vectors_from_file(filename, op):
+def load_openssl_vectors_from_file(filename):
     base = os.path.join(
         os.path.dirname(__file__), "primitives", "vectors", "OpenSSL",
     )
     with open(os.path.join(base, filename), "r") as vector_file:
-        return load_openssl_vectors(vector_file, op)
+        return load_openssl_vectors(vector_file)
 
 
-def load_openssl_vectors(vector_data, op):
-    encrypt, decrypt = [], []
+def load_openssl_vectors(vector_data):
+    vectors = []
 
     for line in vector_data:
         line = line.strip()
@@ -130,18 +130,5 @@ def load_openssl_vectors(vector_data, op):
                   vector[4].encode("ascii"))  # plaintext
         # some OpenSSL vectors have a final field
         # 0 for decrypt, 1 for encrypt
-        if len(vector) == 6:
-            if int(vector[5]) == 0:
-                decrypt.append(params)
-            else:
-                encrypt.append(params)
-        else:
-            # if they don't have 1 or 0 they are meant for both enc & dec
-            # and should be added to both the encrypt and decrypt list
-            encrypt.append(params)
-            decrypt.append(params)
-
-    if op == "ENCRYPT":
-        return encrypt
-    else:
-        return decrypt
+        vectors.append(params)
+    return vectors
