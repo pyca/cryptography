@@ -59,3 +59,66 @@ def load_nist_vectors_from_file(filename, op, fields):
     )
     with open(os.path.join(base, filename), "r") as vector_file:
         return load_nist_vectors(vector_file, op, fields)
+
+
+def load_cryptrec_vectors_from_file(filename):
+    base = os.path.join(
+        os.path.dirname(__file__), "primitives", "vectors", "CRYPTREC",
+    )
+    with open(os.path.join(base, filename), "r") as vector_file:
+        return load_cryptrec_vectors(vector_file)
+
+
+def load_cryptrec_vectors(vector_data):
+    cryptrec_list = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and comments are ignored
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("K"):
+            key = line.split(" : ")[1].replace(" ", "").encode("ascii")
+        elif line.startswith("P"):
+            pt = line.split(" : ")[1].replace(" ", "").encode("ascii")
+        elif line.startswith("C"):
+            ct = line.split(" : ")[1].replace(" ", "").encode("ascii")
+            # after a C is found the K+P+C tuple is complete
+            # there are many P+C pairs for each K
+            cryptrec_list.append((key, pt, ct))
+    return cryptrec_list
+
+
+def load_openssl_vectors_from_file(filename):
+    base = os.path.join(
+        os.path.dirname(__file__), "primitives", "vectors", "OpenSSL",
+    )
+    with open(os.path.join(base, filename), "r") as vector_file:
+        return load_openssl_vectors(vector_file)
+
+
+def load_openssl_vectors(vector_data):
+    vectors = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and comments are ignored
+        if not line or line.startswith("#"):
+            continue
+
+        vector = line.split(":")
+        params = (
+            # key
+            vector[1].encode("ascii"),
+            # iv
+            vector[2].encode("ascii"),
+            # plaintext
+            vector[3].encode("ascii"),
+            # ciphertext
+            vector[4].encode("ascii")
+        )
+        vectors.append(params)
+    return vectors
