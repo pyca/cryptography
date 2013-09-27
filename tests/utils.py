@@ -70,7 +70,7 @@ def load_cryptrec_vectors_from_file(filename):
 
 
 def load_cryptrec_vectors(vector_data):
-    data = {}
+    cryptrec_list = []
 
     for line in vector_data:
         line = line.strip()
@@ -80,28 +80,14 @@ def load_cryptrec_vectors(vector_data):
             continue
 
         if line.startswith("K"):
-            key = line.split(" : ")[1].replace(" ", "")
-            # create an array under the key to hold all the P+C pairs
-            # each key has many p+c pairs
-            data[key] = []
+            key = line.split(" : ")[1].replace(" ", "").encode("ascii")
         elif line.startswith("P"):
-            # create a new dict to hold the next P+C pair
-            pc_pair = {}
-            pc_pair["P"] = line.split(" : ")[1].replace(" ", "")
+            pt = line.split(" : ")[1].replace(" ", "").encode("ascii")
         elif line.startswith("C"):
-            pc_pair["C"] = line.split(" : ")[1].replace(" ", "")
-            # after a C is found the P+C pair is complete
-            data[key].append(pc_pair)
-
-    cryptrec_list = []
-    for key, value in sorted(data.items()):
-        for pair in value:
-            cryptrec_list.append(
-                (key.encode("ascii"),
-                 pair["P"].encode("ascii"),
-                 pair["C"].encode("ascii"))
-            )
-
+            ct = line.split(" : ")[1].replace(" ", "").encode("ascii")
+            # after a C is found the K+P+C tuple is complete
+            # there are many P+C pairs for each K
+            cryptrec_list.append((key, pt, ct))
     return cryptrec_list
 
 
@@ -124,11 +110,15 @@ def load_openssl_vectors(vector_data):
             continue
 
         vector = line.split(":")
-        params = (vector[1].encode("ascii"),  # key
-                  vector[2].encode("ascii"),  # iv
-                  vector[3].encode("ascii"),  # ciphertext
-                  vector[4].encode("ascii"))  # plaintext
-        # some OpenSSL vectors have a final field
-        # 0 for decrypt, 1 for encrypt
+        params = (
+            # key
+            vector[1].encode("ascii"),
+            # iv
+            vector[2].encode("ascii"),
+            # plaintext
+            vector[3].encode("ascii"),
+            # ciphertext
+            vector[4].encode("ascii")
+        )
         vectors.append(params)
     return vectors
