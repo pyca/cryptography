@@ -12,12 +12,12 @@
 # limitations under the License.
 
 INCLUDES = """
-    #include <openssl/opensslv.h>
+#include <openssl/opensslv.h>
 """
 
 TYPES = """
-    static char *const OPENSSL_VERSION_TEXT;
+static char *const OPENSSL_VERSION_TEXT;
 """
 
-
-FUNCTIONS = ""
+FUNCTIONS = """
+"""
