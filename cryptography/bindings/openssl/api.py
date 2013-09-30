@@ -43,7 +43,12 @@ class API(object):
             source="\n".join(includes),
             libraries=["crypto"],
             extra_compile_args=[
-                "-Qunused-arguments", "-Wno-deprecated",
+                # Disabled because on stock OS X there is an "-mno-fused-madd"
+                # which is ignored.
+                "-Qunused-arguments",
+                # All of OpenSSL is deprecated on OS X, so we ignore this.
+                "-Wno-deprecated",
+                # Be very loud about everything else
                 "-Wall", "-Werror", "-Wpedantic", "-Wconversion"
             ]
         )
