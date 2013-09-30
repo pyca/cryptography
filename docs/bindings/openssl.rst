@@ -1,6 +1,13 @@
 OpenSSL
 =======
 
+.. warning::
+
+    The OpenSSL API is not easy to use, small mistakes can lead to significant
+    security vulnerabilities. We strongly reccomend not using this directly,
+    and instead using one of the higher level APIs exposed by ``cryptography``.
+
+
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
 
 .. data:: cryptography.bindings.openssl.api
