@@ -30,21 +30,21 @@ class API(object):
     ]
 
     def __init__(self):
-        self._ffi = cffi.FFI()
+        self.ffi = cffi.FFI()
         includes = []
         for name in self._modules:
             __import__("cryptography.bindings.openssl." + name)
             module = sys.modules["cryptography.bindings.openssl." + name]
-            self._ffi.cdef(module.TYPES)
-            self._ffi.cdef(module.FUNCTIONS)
+            self.ffi.cdef(module.TYPES)
+            self.ffi.cdef(module.FUNCTIONS)
             includes.append(module.INCLUDES)
 
-        self._lib = self._ffi.verify(
+        self.lib = self.ffi.verify(
             source="\n".join(includes),
             libraries=["crypto"]
         )
 
-        self._lib.OpenSSL_add_all_algorithms()
+        self.lib.OpenSSL_add_all_algorithms()
 
     def openssl_version_text(self):
         """
@@ -52,52 +52,52 @@ class API(object):
 
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """
-        return self._ffi.string(api._lib.OPENSSL_VERSION_TEXT).decode("ascii")
+        return self.ffi.string(self.lib.OPENSSL_VERSION_TEXT).decode("ascii")
 
     def create_block_cipher_context(self, cipher, mode):
-        ctx = self._ffi.new("EVP_CIPHER_CTX *")
-        ctx = self._ffi.gc(ctx, self._lib.EVP_CIPHER_CTX_cleanup)
+        ctx = self.ffi.new("EVP_CIPHER_CTX *")
+        ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_cleanup)
         # TODO: compute name using a better algorithm
         ciphername = "{0}-{1}-{2}".format(
             cipher.name, cipher.key_size, mode.name
         )
-        evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
-        assert evp_cipher != self._ffi.NULL
+        evp_cipher = self.lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
+        assert evp_cipher != self.ffi.NULL
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
         else:
-            iv_nonce = self._ffi.NULL
+            iv_nonce = self.ffi.NULL
 
         # TODO: Sometimes this needs to be a DecryptInit, when?
-        res = self._lib.EVP_EncryptInit_ex(
-            ctx, evp_cipher, self._ffi.NULL, cipher.key, iv_nonce
+        res = self.lib.EVP_EncryptInit_ex(
+            ctx, evp_cipher, self.ffi.NULL, cipher.key, iv_nonce
         )
         assert res != 0
 
         # We purposely disable padding here as it's handled higher up in the
         # API.
-        self._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
+        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
     def update_encrypt_context(self, ctx, plaintext):
-        buf = self._ffi.new("unsigned char[]", len(plaintext))
-        outlen = self._ffi.new("int *")
-        res = self._lib.EVP_EncryptUpdate(
+        buf = self.ffi.new("unsigned char[]", len(plaintext))
+        outlen = self.ffi.new("int *")
+        res = self.lib.EVP_EncryptUpdate(
             ctx, buf, outlen, plaintext, len(plaintext)
         )
         assert res != 0
-        return self._ffi.buffer(buf)[:outlen[0]]
+        return self.ffi.buffer(buf)[:outlen[0]]
 
     def finalize_encrypt_context(self, ctx):
-        cipher = self._lib.EVP_CIPHER_CTX_cipher(ctx)
-        block_size = self._lib.EVP_CIPHER_block_size(cipher)
-        buf = self._ffi.new("unsigned char[]", block_size)
-        outlen = self._ffi.new("int *")
-        res = self._lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
+        cipher = self.lib.EVP_CIPHER_CTX_cipher(ctx)
+        block_size = self.lib.EVP_CIPHER_block_size(cipher)
+        buf = self.ffi.new("unsigned char[]", block_size)
+        outlen = self.ffi.new("int *")
+        res = self.lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
         assert res != 0
-        res = self._lib.EVP_CIPHER_CTX_cleanup(ctx)
+        res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
         assert res != 0
-        return self._ffi.buffer(buf)[:outlen[0]]
+        return self.ffi.buffer(buf)[:outlen[0]]
 
 
 api = API()
