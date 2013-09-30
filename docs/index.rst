@@ -32,5 +32,6 @@ Contents
 
     architecture
     primitives/index
+    bindings/index
     contributing
     community
