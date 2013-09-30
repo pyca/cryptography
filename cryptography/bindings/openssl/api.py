@@ -42,7 +42,10 @@ class API(object):
         self.lib = self.ffi.verify(
             source="\n".join(includes),
             libraries=["crypto"],
-            extra_compile_args=["-Wall", "-Werror", "-Wpedantic", "-Wconversion"]
+            extra_compile_args=[
+                "-Qunused-arguments", "-Wno-deprecated",
+                "-Wall", "-Werror", "-Wpedantic", "-Wconversion"
+            ]
         )
 
         self.lib.OpenSSL_add_all_algorithms()
