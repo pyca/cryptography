@@ -79,7 +79,7 @@ Development
 Working on ``cryptography`` requires the installation of a small number of
 development dependencies.
 The list of development dependencies can be found in ``requirements-dev.txt``.
-We recommend that you install these using ``virtualenv`` and ``pip``.
+We recommend that you install these using `virtualenv`_ and `pip`_.
 The following example shows how to create a ``cryptography`` development
 environment on Linux:
 
@@ -112,7 +112,7 @@ They are designed to be run using `pytest`_ as follows
 This runs the tests with the default Python interpreter.
 
 You can also verify that the tests pass on other supported Python interpreters.
-For this we use ``tox``, which will automatically create a ``virtualenv`` for
+For this we use `tox`_, which will automatically create a `virtualenv`_ for
 each supported Python version and run the tests.
 Here is an example:
 
@@ -127,23 +127,23 @@ Here is an example:
    py33: commands succeeded
    congratulations :)
 
-``tox`` can also be used to build the ``cryptography`` documentation.
+`tox`_ can also be used to build the ``cryptography`` documentation.
 That is described in the next section.
 
 Building Documentation
 ----------------------
 
 ``cryptography`` documentation is stored in the ``docs`` directory.
-It is written in ``ReST`` and built using ``sphinx``.
+It is written in `ReST`_ and built using `sphinx`_.
 
-The simplest way to build the documentation is to use ``tox``.
-The following example shows how to build the documentation using ``tox``:
+The simplest way to build the documentation is to use `tox`_.
+The following example demonstrates how:
 
 .. code-block:: sh
 
    tox -e doc
    ...
-   py33: commands succeeded
+   docs: commands succeeded
    congratulations :)
 
 The HTML documentation can now be found in the ``docs/_build/html``
@@ -158,4 +158,9 @@ sub-directory.
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`PEP 8`: http://www.peps.io/8/
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
-.. _`pytest`: http://pytest.org
+.. _`pytest`: https://pypi.python.org/pypi/pytest
+.. _`tox`: https://pypi.python.org/pypi/tox
+.. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
+.. _`pip`: https://pypi.python.org/pypi/pip
+.. _`sphinx`: https://pypi.python.org/pypi/sphinx
+.. _`ReST`: http://docutils.sourceforge.net/rst.html
