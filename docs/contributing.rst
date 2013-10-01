@@ -86,8 +86,8 @@ install ``cryptography`` in ``editable`` mode. For example:
 .. code-block:: sh
 
    # Create a virtualenv and activate it
-   pip install --requirement dev-requirements.txt
-   pip install --editable .
+   $ pip install --requirement dev-requirements.txt
+   $ pip install --editable .
 
 You are now ready to run the tests and build the documentation.
 
@@ -100,7 +100,7 @@ and are designed to be run using `pytest`_.
 
 .. code-block:: sh
 
-   py.test
+   $ py.test
    ...
    4294 passed in 15.24 seconds
 
@@ -112,7 +112,7 @@ each supported Python version and run the tests. For example:
 
 .. code-block:: sh
 
-   tox
+   $ tox
    ...
    ERROR:   py26: InterpreterNotFound: python2.6
     py27: commands succeeded
@@ -131,50 +131,16 @@ Building Documentation
 ``cryptography`` documentation is stored in the ``docs/`` directory.
 It is written in `Restructured Text`_ and rendered using `sphinx`_.
 
-The simplest way to build the documentation is to use `tox`_. For example:
+Use `tox`_ to build the documentation. For example:
 
 .. code-block:: sh
 
-   tox -e doc
+   $ tox -e docs
    ...
    docs: commands succeeded
    congratulations :)
 
-The HTML documentation can now be found in the ``docs/_build/html/``
-sub-directory.
-
-.. code-block:: sh
-
-   firefox docs/_build/html/index.html
-
-You can also build non-HTML documentation and run various documentation tests
-by running ``make`` in the ``docs/`` directory.
-Just type ``make`` to see the available options:
-
-.. code-block:: sh
-
-   make
-   ...
-   Please use `make <target>' where <target> is one of
-   html       to make standalone HTML files
-   dirhtml    to make HTML files named index.html in directories
-   singlehtml to make a single large HTML file
-   pickle     to make pickle files
-   json       to make JSON files
-   htmlhelp   to make HTML files and a HTML help project
-   qthelp     to make HTML files and a qthelp project
-   devhelp    to make HTML files and a Devhelp project
-   epub       to make an epub
-   latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
-   latexpdf   to make LaTeX files and run them through pdflatex
-   text       to make text files
-   man        to make manual pages
-   texinfo    to make Texinfo files
-   info       to make Texinfo files and run them through makeinfo
-   gettext    to make PO message catalogs
-   changes    to make an overview of all changed/added/deprecated items
-   linkcheck  to check all external links for integrity
-   doctest    to run all doctests embedded in the documentation (if enabled)
+The HTML documentation index can now be found at ``docs/_build/html/index.html``
 
 
 .. _`GitHub`: https://github.com/alex/cryptography
