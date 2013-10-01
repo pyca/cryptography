@@ -39,7 +39,7 @@ class API(object):
             self.ffi.cdef(module.FUNCTIONS)
             includes.append(module.INCLUDES)
 
-        # Be very loud about everything else
+        # Turn any warnings into an error
         extra_compile_args = ["-Werror"]
         if sys.platform == "darwin":
             # All of OpenSSL is deprecated on OS X, so we ignore this.
