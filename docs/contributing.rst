@@ -73,8 +73,83 @@ So, specifically:
 - No blank line at the end.
 - Use Sphinx parameter/attribute documentation `syntax`_.
 
+Development Environment
+-----------------------
+
+Working on ``cryptography`` requires the installation of a small number of
+development dependencies.
+These are listed in ``dev-requirements.txt``
+and they can be installed in a `virtualenv`_ using `pip`_.
+Once you've installed the dependencies,
+install ``cryptography`` in ``editable`` mode. For example:
+
+.. code-block:: sh
+
+   # Create a virtualenv and activate it
+   $ pip install --requirement dev-requirements.txt
+   $ pip install --editable .
+
+You are now ready to run the tests and build the documentation.
+
+Running Tests
+-------------
+
+``cryptography`` unit tests are found in the ``tests/`` directory.
+and are designed to be run using `pytest`_.
+`pytest`_ will discover the tests automatically, so all you have to do is:
+
+.. code-block:: sh
+
+   $ py.test
+   ...
+   4294 passed in 15.24 seconds
+
+This runs the tests with the default Python interpreter.
+
+You can also verify that the tests pass on other supported Python interpreters.
+For this we use `tox`_, which will automatically create a `virtualenv`_ for
+each supported Python version and run the tests. For example:
+
+.. code-block:: sh
+
+   $ tox
+   ...
+   ERROR:   py26: InterpreterNotFound: python2.6
+    py27: commands succeeded
+   ERROR:   pypy: InterpreterNotFound: pypy
+   ERROR:   py32: InterpreterNotFound: python3.2
+    py33: commands succeeded
+    docs: commands succeeded
+    pep8: commands succeeded
+
+You may not have all the required Python versions installed,
+in which case you will see one or more ``InterpreterNotFound`` errors.
+
+Building Documentation
+----------------------
+
+``cryptography`` documentation is stored in the ``docs/`` directory.
+It is written in `Restructured Text`_ and rendered using `sphinx`_.
+
+Use `tox`_ to build the documentation. For example:
+
+.. code-block:: sh
+
+   $ tox -e docs
+   ...
+   docs: commands succeeded
+   congratulations :)
+
+The HTML documentation index can now be found at ``docs/_build/html/index.html``
+
 
 .. _`GitHub`: https://github.com/alex/cryptography
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`PEP 8`: http://www.peps.io/8/
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
+.. _`pytest`: https://pypi.python.org/pypi/pytest
+.. _`tox`: https://pypi.python.org/pypi/tox
+.. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
+.. _`pip`: https://pypi.python.org/pypi/pip
+.. _`sphinx`: https://pypi.python.org/pypi/sphinx
+.. _`Restructured Text`: http://docutils.sourceforge.net/rst.html
