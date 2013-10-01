@@ -73,39 +73,34 @@ So, specifically:
 - No blank line at the end.
 - Use Sphinx parameter/attribute documentation `syntax`_.
 
-Development
------------
+Development Environment
+-----------------------
 
 Working on ``cryptography`` requires the installation of a small number of
 development dependencies.
-The list of development dependencies can be found in ``requirements-dev.txt``.
-We recommend that you install these using `virtualenv`_ and `pip`_.
-The following example shows how to create a ``cryptography`` development
-environment on Linux:
+These are listed in ``dev-requirements.txt``
+and they can be installed in a `virtualenv`_ using `pip`_.
+Once you've installed the dependencies,
+install ``cryptography`` in ``editable`` mode. For example:
 
 .. code-block:: sh
 
-   cd ~/projects
-   git clone git@github.com:<GITHUB_USER>/cryptography.git
-   cd cryptography
-   mkdir -p ~/.virtualenvs/cryptography
-   virtualenv --no-site-packages ~/.virtualenvs/cryptography
-   source ~/.virtualenvs/cryptography/bin/activate
-   pip install -r requirements-dev.txt
-   pip install -e .
+   # Create a virtualenv and activate it
+   pip install --requirement dev-requirements.txt
+   pip install --editable .
 
 You are now ready to run the tests and build the documentation.
-Those steps are described in the next sections.
 
-Testing
--------
+Running Tests
+-------------
 
-``cryptography`` unit tests are found in the ``tests`` directory.
-They are designed to be run using `pytest`_ as follows
+``cryptography`` unit tests are found in the ``tests/`` directory.
+and are designed to be run using `pytest`_.
+`pytest`_ will discover the tests automatically, so all you have to do is:
 
 .. code-block:: sh
 
-   py.test tests
+   py.test
    ...
    4294 passed in 15.24 seconds
 
@@ -113,31 +108,30 @@ This runs the tests with the default Python interpreter.
 
 You can also verify that the tests pass on other supported Python interpreters.
 For this we use `tox`_, which will automatically create a `virtualenv`_ for
-each supported Python version and run the tests.
-Here is an example:
+each supported Python version and run the tests. For example:
 
 .. code-block:: sh
 
-   tox -l
+   tox
    ...
-   py33
+   ERROR:   py26: InterpreterNotFound: python2.6
+    py27: commands succeeded
+   ERROR:   pypy: InterpreterNotFound: pypy
+   ERROR:   py32: InterpreterNotFound: python3.2
+    py33: commands succeeded
+    docs: commands succeeded
+    pep8: commands succeeded
 
-   tox -e py33
-   ...
-   py33: commands succeeded
-   congratulations :)
-
-`tox`_ can also be used to build the ``cryptography`` documentation.
-That is described in the next section.
+You may not have all the required Python versions installed,
+in which case you will see one or more ``InterpreterNotFound`` errors.
 
 Building Documentation
 ----------------------
 
-``cryptography`` documentation is stored in the ``docs`` directory.
-It is written in `ReST`_ and built using `sphinx`_.
+``cryptography`` documentation is stored in the ``docs/`` directory.
+It is written in `Restructured Text`_ and rendered using `sphinx`_.
 
-The simplest way to build the documentation is to use `tox`_.
-The following example demonstrates how:
+The simplest way to build the documentation is to use `tox`_. For example:
 
 .. code-block:: sh
 
@@ -146,12 +140,41 @@ The following example demonstrates how:
    docs: commands succeeded
    congratulations :)
 
-The HTML documentation can now be found in the ``docs/_build/html``
+The HTML documentation can now be found in the ``docs/_build/html/``
 sub-directory.
 
 .. code-block:: sh
 
    firefox docs/_build/html/index.html
+
+You can also build non-HTML documentation and run various documentation tests
+by running ``make`` in the ``docs/`` directory.
+Just type ``make`` to see the available options:
+
+.. code-block:: sh
+
+   make
+   ...
+   Please use `make <target>' where <target> is one of
+   html       to make standalone HTML files
+   dirhtml    to make HTML files named index.html in directories
+   singlehtml to make a single large HTML file
+   pickle     to make pickle files
+   json       to make JSON files
+   htmlhelp   to make HTML files and a HTML help project
+   qthelp     to make HTML files and a qthelp project
+   devhelp    to make HTML files and a Devhelp project
+   epub       to make an epub
+   latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
+   latexpdf   to make LaTeX files and run them through pdflatex
+   text       to make text files
+   man        to make manual pages
+   texinfo    to make Texinfo files
+   info       to make Texinfo files and run them through makeinfo
+   gettext    to make PO message catalogs
+   changes    to make an overview of all changed/added/deprecated items
+   linkcheck  to check all external links for integrity
+   doctest    to run all doctests embedded in the documentation (if enabled)
 
 
 .. _`GitHub`: https://github.com/alex/cryptography
@@ -163,4 +186,4 @@ sub-directory.
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
 .. _`pip`: https://pypi.python.org/pypi/pip
 .. _`sphinx`: https://pypi.python.org/pypi/sphinx
-.. _`ReST`: http://docutils.sourceforge.net/rst.html
+.. _`Restructured Text`: http://docutils.sourceforge.net/rst.html
