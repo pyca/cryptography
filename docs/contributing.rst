@@ -73,8 +73,89 @@ So, specifically:
 - No blank line at the end.
 - Use Sphinx parameter/attribute documentation `syntax`_.
 
+Development
+-----------
+
+Working on ``cryptography`` requires the installation of a small number of
+development dependencies.
+The list of development dependencies can be found in ``requirements-dev.txt``.
+We recommend that you install these using ``virtualenv`` and ``pip``.
+The following example shows how to create a ``cryptography`` development
+environment on Linux:
+
+.. code-block:: sh
+
+   cd ~/projects
+   git clone git@github.com:<GITHUB_USER>/cryptography.git
+   cd cryptography
+   mkdir -p ~/.virtualenvs/cryptography
+   virtualenv --no-site-packages ~/.virtualenvs/cryptography
+   source ~/.virtualenvs/cryptography/bin/activate
+   pip install -r requirements-dev.txt
+   pip install -e .
+
+You are now ready to run the tests and build the documentation.
+Those steps are described in the next sections.
+
+Testing
+-------
+
+``cryptography`` unit tests are found in the ``tests`` directory.
+They are designed to be run using `pytest`_ as follows
+
+.. code-block:: sh
+
+   py.test tests
+   ...
+   4294 passed in 15.24 seconds
+
+This runs the tests with the default Python interpreter.
+
+You can also verify that the tests pass on other supported Python interpreters.
+For this we use ``tox``, which will automatically create a ``virtualenv`` for
+each supported Python version and run the tests.
+Here is an example:
+
+.. code-block:: sh
+
+   tox -l
+   ...
+   py33
+
+   tox -e py33
+   ...
+   py33: commands succeeded
+   congratulations :)
+
+``tox`` can also be used to build the ``cryptography`` documentation.
+That is described in the next section.
+
+Building Documentation
+----------------------
+
+``cryptography`` documentation is stored in the ``docs`` directory.
+It is written in ``ReST`` and built using ``sphinx``.
+
+The simplest way to build the documentation is to use ``tox``.
+The following example shows how to build the documentation using ``tox``:
+
+.. code-block:: sh
+
+   tox -e doc
+   ...
+   py33: commands succeeded
+   congratulations :)
+
+The HTML documentation can now be found in the ``docs/_build/html``
+sub-directory.
+
+.. code-block:: sh
+
+   firefox docs/_build/html/index.html
+
 
 .. _`GitHub`: https://github.com/alex/cryptography
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`PEP 8`: http://www.peps.io/8/
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
+.. _`pytest`: http://pytest.org

@@ -1,8 +1,7 @@
--e .
-enum
+cffi
+flake8
+pretend
+pytest-cov
 six
 sphinx
 tox
-pytest
-cffi
-pretend
