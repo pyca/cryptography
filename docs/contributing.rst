@@ -77,11 +77,9 @@ Development Environment
 -----------------------
 
 Working on ``cryptography`` requires the installation of a small number of
-development dependencies.
-These are listed in ``dev-requirements.txt``
-and they can be installed in a `virtualenv`_ using `pip`_.
-Once you've installed the dependencies,
-install ``cryptography`` in ``editable`` mode. For example:
+development dependencies. These are listed in ``dev-requirements.txt`` and they
+can be installed in a `virtualenv`_ using `pip`_. Once you've installed the
+dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
 .. code-block:: sh
 
@@ -94,9 +92,9 @@ You are now ready to run the tests and build the documentation.
 Running Tests
 -------------
 
-``cryptography`` unit tests are found in the ``tests/`` directory.
-and are designed to be run using `pytest`_.
-`pytest`_ will discover the tests automatically, so all you have to do is:
+``cryptography`` unit tests are found in the ``tests/`` directory and are
+designed to be run using `pytest`_. `pytest`_ will discover the tests
+automatically, so all you have to do is:
 
 .. code-block:: sh
 
@@ -122,14 +120,14 @@ each supported Python version and run the tests. For example:
     docs: commands succeeded
     pep8: commands succeeded
 
-You may not have all the required Python versions installed,
-in which case you will see one or more ``InterpreterNotFound`` errors.
+You may not have all the required Python versions installed, in which case you
+will see one or more ``InterpreterNotFound`` errors.
 
 Building Documentation
 ----------------------
 
-``cryptography`` documentation is stored in the ``docs/`` directory.
-It is written in `Restructured Text`_ and rendered using `sphinx`_.
+``cryptography`` documentation is stored in the ``docs/`` directory. It is
+written in `reStructured Text`_ and rendered using `Sphinx`_.
 
 Use `tox`_ to build the documentation. For example:
 
@@ -152,4 +150,4 @@ The HTML documentation index can now be found at ``docs/_build/html/index.html``
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
 .. _`pip`: https://pypi.python.org/pypi/pip
 .. _`sphinx`: https://pypi.python.org/pypi/sphinx
-.. _`Restructured Text`: http://docutils.sourceforge.net/rst.html
+.. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
