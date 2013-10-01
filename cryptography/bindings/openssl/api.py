@@ -41,14 +41,7 @@ class API(object):
 
         extra_compile_args = [
             # Be very loud about everything else
-            "-Wall", "-Werror", "-Weverything",
-
-            "-Wno-unused-parameter",
-            "-Wno-unused-macros",
-            "-Wno-missing-prototypes",
-            "-Wno-missing-field-initializers",
-            "-Wno-unreachable-code",
-            "-Wno-padded",
+            "-Werror", "-Wconversion",
         ]
         if sys.platform == "darwin":
             # All of OpenSSL is deprecated on OS X, so we ignore this.
