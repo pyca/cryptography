@@ -39,10 +39,8 @@ class API(object):
             self.ffi.cdef(module.FUNCTIONS)
             includes.append(module.INCLUDES)
 
-        extra_compile_args = [
-            # Be very loud about everything else
-            "-Werror", "-Wconversion",
-        ]
+        # Be very loud about everything else
+        extra_compile_args = ["-Werror"]
         if sys.platform == "darwin":
             # All of OpenSSL is deprecated on OS X, so we ignore this.
             extra_compile_args.append("-Wno-deprecated")
