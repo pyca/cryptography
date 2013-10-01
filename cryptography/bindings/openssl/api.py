@@ -39,18 +39,21 @@ class API(object):
             self.ffi.cdef(module.FUNCTIONS)
             includes.append(module.INCLUDES)
 
+        extra_compile_args = [
+            # Be very loud about everything else
+            "-Wall", "-Werror", "-Wpedantic", "-Wconversion"
+        ]
+        if sys.platform == "darwin":
+            # All of OpenSSL is deprecated on OS X, so we ignore this.
+            extra_compile_args.append("-Wno-deprecated")
+            # Disabled because on stock OS X there is an "-mno-fused-madd"
+            # which is ignored.
+            extra_compile_args.append("-Qunused-arguments")
+
         self.lib = self.ffi.verify(
             source="\n".join(includes),
             libraries=["crypto"],
-            extra_compile_args=[
-                # Disabled because on stock OS X there is an "-mno-fused-madd"
-                # which is ignored.
-                "-Qunused-arguments",
-                # All of OpenSSL is deprecated on OS X, so we ignore this.
-                "-Wno-deprecated",
-                # Be very loud about everything else
-                "-Wall", "-Werror", "-Wpedantic", "-Wconversion"
-            ]
+            extra_compile_args=extra_compile_args,
         )
 
         self.lib.OpenSSL_add_all_algorithms()
