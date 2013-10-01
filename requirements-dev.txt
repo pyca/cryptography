@@ -1,0 +1,8 @@
+-e .
+enum
+six
+sphinx
+tox
+pytest
+cffi
+pretend
