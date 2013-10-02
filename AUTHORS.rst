@@ -1,7 +1,7 @@
 AUTHORS
 =======
 
-PGP key fingerprints are enclosed in paranthesis.
+PGP key fingerprints are enclosed in parentheses.
 
 * Alex Gaynor <alex.gaynor@gmail.com> (E27D 4AA0 1651 72CB C5D2  AF2B 125F 5C67 DFE9 4084)
 * Hynek Schlawack <hs@ox.cx>
