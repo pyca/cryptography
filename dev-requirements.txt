@@ -1,0 +1,5 @@
+flake8
+pretend
+pytest-cov
+sphinx
+tox
