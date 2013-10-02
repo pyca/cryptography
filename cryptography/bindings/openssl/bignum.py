@@ -18,9 +18,6 @@ INCLUDES = """
 TYPES = """
 typedef ... BIGNUM;
 typedef ... BN_ULONG;
-
-// Possibly belongs in an asn1.py
-typedef ... ASN1_INTEGER;
 """
 
 FUNCTIONS = """
@@ -34,5 +31,4 @@ int BN_hex2bn(BIGNUM **, const char *);
 """
 
 MACROS = """
-ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
 """
