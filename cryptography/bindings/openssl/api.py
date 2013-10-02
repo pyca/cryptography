@@ -32,26 +32,20 @@ class API(object):
     def __init__(self):
         self.ffi = cffi.FFI()
         includes = []
+        functions = []
         for name in self._modules:
             __import__("cryptography.bindings.openssl." + name)
             module = sys.modules["cryptography.bindings.openssl." + name]
             self.ffi.cdef(module.TYPES)
             self.ffi.cdef(module.FUNCTIONS)
+            self.ffi.cdef(module.MACROS)
+
+            functions.append(module.FUNCTIONS)
             includes.append(module.INCLUDES)
 
-        # Turn any warnings into an error
-        extra_compile_args = ["-Werror"]
-        if sys.platform == "darwin":
-            # All of OpenSSL is deprecated on OS X, so we ignore this.
-            extra_compile_args.append("-Wno-deprecated")
-            # Disabled because on stock OS X there is an "-mno-fused-madd"
-            # which is ignored.
-            extra_compile_args.append("-Qunused-arguments")
-
         self.lib = self.ffi.verify(
-            source="\n".join(includes),
+            source="\n".join(includes + functions),
             libraries=["crypto"],
-            extra_compile_args=extra_compile_args,
         )
 
         self.lib.OpenSSL_add_all_algorithms()

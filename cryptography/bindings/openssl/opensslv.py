@@ -21,3 +21,6 @@ static char *const OPENSSL_VERSION_TEXT;
 
 FUNCTIONS = """
 """
+
+MACROS = """
+"""
