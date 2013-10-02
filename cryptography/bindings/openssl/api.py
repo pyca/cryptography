@@ -43,6 +43,14 @@ class API(object):
             functions.append(module.FUNCTIONS)
             includes.append(module.INCLUDES)
 
+        # We include functions here so that if we got any of their definitions
+        # wrong, the underlying C compiler will explode. In C you are allowed
+        # to re-declare a function if it has the same signature. That is:
+        #   int foo(int);
+        #   int foo(int);
+        # is legal, but the following will fail to compile:
+        #   int foo(int);
+        #   int foo(short);
         self.lib = self.ffi.verify(
             source="\n".join(includes + functions),
             libraries=["crypto"],
