@@ -17,6 +17,7 @@ INCLUDES = """
 
 TYPES = """
 typedef ... BIGNUM;
+typedef ... BN_ULONG;
 
 // Possibly belongs in an asn1.py
 typedef ... ASN1_INTEGER;
@@ -26,10 +27,13 @@ FUNCTIONS = """
 BIGNUM *BN_new();
 void BN_free(BIGNUM *);
 
-int BN_set_word(BIGNUM *, unsigned long);
+int BN_set_word(BIGNUM *, BN_ULONG);
 
 char *BN_bn2hex(const BIGNUM *);
 int BN_hex2bn(BIGNUM **, const char *);
 
-ASN1_INTEGER *BN_to_ASN1_INTEGER(const BIGNUM *, ASN1_INTEGER *);
+ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
+"""
+
+MACROS = """
 """
