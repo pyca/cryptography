@@ -15,8 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-# TODO: which binding is used should be an option somewhere
-from cryptography.bindings.openssl import api
+from cryptography.bindings import _default_api
 
 
 class _Operation(Enum):
@@ -25,10 +24,15 @@ class _Operation(Enum):
 
 
 class BlockCipher(object):
-    def __init__(self, cipher, mode):
+    def __init__(self, cipher, mode, api=None):
         super(BlockCipher, self).__init__()
+
+        if api is None:
+            api = _default_api
+
         self.cipher = cipher
         self.mode = mode
+        self._api = api
         self._ctx = api.create_block_cipher_context(cipher, mode)
         self._operation = None
 
@@ -48,14 +52,14 @@ class BlockCipher(object):
             raise ValueError("BlockCipher cannot encrypt when the operation is"
                              " set to %s" % self._operation.name)
 
-        return api.update_encrypt_context(self._ctx, plaintext)
+        return self._api.update_encrypt_context(self._ctx, plaintext)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("BlockCipher was already finalized")
 
         if self._operation is _Operation.encrypt:
-            result = api.finalize_encrypt_context(self._ctx)
+            result = self._api.finalize_encrypt_context(self._ctx)
         else:
             raise ValueError("BlockCipher cannot finalize the unknown "
                              "operation %s" % self._operation.name)
