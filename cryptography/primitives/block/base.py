@@ -24,8 +24,12 @@ class _Operation(Enum):
 
 
 class BlockCipher(object):
-    def __init__(self, cipher, mode, api=_default_api):
+    def __init__(self, cipher, mode, api=None):
         super(BlockCipher, self).__init__()
+
+        if api is None:
+            api = _default_api
+
         self.cipher = cipher
         self.mode = mode
         self._api = api
