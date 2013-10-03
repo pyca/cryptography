@@ -60,10 +60,11 @@ class TestAES_CBC(object):
             "CBCVarTxt256.rsp",
         ]
     )
-    def test_KAT(self, key, iv, plaintext, ciphertext):
+    def test_KAT(self, key, iv, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv)),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -78,10 +79,11 @@ class TestAES_CBC(object):
             "CBCMMT256.rsp",
         ]
     )
-    def test_MMT(self, key, iv, plaintext, ciphertext):
+    def test_MMT(self, key, iv, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv)),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -107,10 +109,11 @@ class TestAES_ECB(object):
             "ECBVarTxt256.rsp",
         ]
     )
-    def test_KAT(self, key, plaintext, ciphertext):
+    def test_KAT(self, key, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.ECB()
+            modes.ECB(),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -125,10 +128,11 @@ class TestAES_ECB(object):
             "ECBMMT256.rsp",
         ]
     )
-    def test_MMT(self, key, plaintext, ciphertext):
+    def test_MMT(self, key, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.ECB()
+            modes.ECB(),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -154,10 +158,11 @@ class TestAES_OFB(object):
             "OFBVarTxt256.rsp",
         ]
     )
-    def test_KAT(self, key, iv, plaintext, ciphertext):
+    def test_KAT(self, key, iv, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.OFB(binascii.unhexlify(iv))
+            modes.OFB(binascii.unhexlify(iv)),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -172,10 +177,11 @@ class TestAES_OFB(object):
             "OFBMMT256.rsp",
         ]
     )
-    def test_MMT(self, key, iv, plaintext, ciphertext):
+    def test_MMT(self, key, iv, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.OFB(binascii.unhexlify(iv))
+            modes.OFB(binascii.unhexlify(iv)),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -201,10 +207,11 @@ class TestAES_CFB(object):
             "CFB128VarTxt256.rsp",
         ]
     )
-    def test_KAT(self, key, iv, plaintext, ciphertext):
+    def test_KAT(self, key, iv, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CFB(binascii.unhexlify(iv))
+            modes.CFB(binascii.unhexlify(iv)),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
@@ -219,10 +226,11 @@ class TestAES_CFB(object):
             "CFB128MMT256.rsp",
         ]
     )
-    def test_MMT(self, key, iv, plaintext, ciphertext):
+    def test_MMT(self, key, iv, plaintext, ciphertext, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(key)),
-            modes.CFB(binascii.unhexlify(iv))
+            modes.CFB(binascii.unhexlify(iv)),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
