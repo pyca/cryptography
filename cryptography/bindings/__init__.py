@@ -14,4 +14,4 @@
 from cryptography.bindings.openssl import api
 
 
-default_api = api
+_default_api = api

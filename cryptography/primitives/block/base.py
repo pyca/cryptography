@@ -15,7 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from cryptography.bindings import default_api
+from cryptography.bindings import _default_api
 
 
 class _Operation(Enum):
@@ -24,7 +24,7 @@ class _Operation(Enum):
 
 
 class BlockCipher(object):
-    def __init__(self, cipher, mode, api=default_api):
+    def __init__(self, cipher, mode, api=_default_api):
         super(BlockCipher, self).__init__()
         self.cipher = cipher
         self.mode = mode
