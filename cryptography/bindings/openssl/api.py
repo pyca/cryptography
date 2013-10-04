@@ -72,9 +72,9 @@ class API(object):
         """
         return self.ffi.string(self.lib.OPENSSL_VERSION_TEXT).decode("ascii")
 
-    def supports(self, ciphername):
-        return (self._ffi.NULL !=
-                self._lib.EVP_get_cipherbyname(ciphername.encode("ascii")))
+    def supports_cipher(self, ciphername):
+        return (self.ffi.NULL !=
+                self.lib.EVP_get_cipherbyname(ciphername.encode("ascii")))
 
     def create_block_cipher_context(self, cipher, mode):
         ctx = self.ffi.new("EVP_CIPHER_CTX *")
@@ -85,9 +85,8 @@ class API(object):
         ciphername = "{0}-{1}-{2}".format(
             cipher.name, cipher.key_size, mode.name
         ).lower()
-        evp_cipher = self._lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
-        if evp_cipher == self._ffi.NULL:
-            raise AssertionError("Unsupported cipher: {0}".format(ciphername))
+        evp_cipher = self.lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
+        assert evp_cipher != self.ffi.NULL
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
         else:

@@ -28,10 +28,6 @@ from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 from ..utils import load_openssl_vectors_from_file
 
-CAMELLIA_CBC_SUPPORTED = api.supports('camellia-128-cbc')
-CAMELLIA_OFB_SUPPORTED = api.supports('camellia-128-ofb')
-CAMELLIA_CFB_SUPPORTED = api.supports('camellia-128-cfb')
-
 
 def parameterize_encrypt_test(cipher, params, fnames):
     return pytest.mark.parametrize(params,
@@ -42,7 +38,6 @@ def parameterize_encrypt_test(cipher, params, fnames):
     )
 
 
-@pytest.mark.skipif("not CAMELLIA_CBC_SUPPORTED")
 class TestCamelliaCBC(object):
 
     @parameterize_encrypt_test(
@@ -53,6 +48,8 @@ class TestCamelliaCBC(object):
         ]
     )
     def test_OpenSSL(self, key, iv, plaintext, ciphertext):
+        if not api.supports_cipher('camellia-128-cbc'):
+            pytest.skip()
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv)),
@@ -62,7 +59,6 @@ class TestCamelliaCBC(object):
         assert binascii.hexlify(actual_ciphertext).upper() == ciphertext
 
 
-@pytest.mark.skipif("not CAMELLIA_OFB_SUPPORTED")
 class TestCamelliaOFB(object):
 
     @parameterize_encrypt_test(
@@ -73,6 +69,8 @@ class TestCamelliaOFB(object):
         ]
     )
     def test_OpenSSL(self, key, iv, plaintext, ciphertext):
+        if not api.supports_cipher('camellia-128-ofb'):
+            pytest.skip()
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.OFB(binascii.unhexlify(iv)),
@@ -82,7 +80,6 @@ class TestCamelliaOFB(object):
         assert binascii.hexlify(actual_ciphertext).upper() == ciphertext
 
 
-@pytest.mark.skipif("not CAMELLIA_CFB_SUPPORTED")
 class TestCamelliaCFB(object):
 
     @parameterize_encrypt_test(
@@ -93,6 +90,8 @@ class TestCamelliaCFB(object):
         ]
     )
     def test_OpenSSL(self, key, iv, plaintext, ciphertext):
+        if not api.supports_cipher('camellia-128-cfb'):
+            pytest.skip()
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.CFB(binascii.unhexlify(iv)),

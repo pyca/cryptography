@@ -11,8 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 from cryptography.bindings.openssl.api import api
 
 
@@ -31,18 +29,5 @@ class TestOpenSSL(object):
         """
         assert api.openssl_version_text().startswith("OpenSSL")
 
-    def test_supports(self):
-        assert api.supports("not-a-real-cipher") is False
-
-    def test_create_block_cipher_context_with_unsupported_cipher(self):
-        class FakeCipher(object):
-            name = "FakeCipher"
-            key_size = 24
-
-        class FakeMode(object):
-            name = "CCC"
-
-        with pytest.raises(AssertionError):
-            cipher = FakeCipher()
-            mode = FakeMode()
-            api.create_block_cipher_context(cipher, mode)
+    def test_supports_cipher(self):
+        assert api.supports_cipher("not-a-real-cipher") is False

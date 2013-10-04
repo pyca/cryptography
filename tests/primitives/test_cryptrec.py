@@ -23,12 +23,9 @@ import os
 
 import pytest
 
-from cryptography.bindings.openssl.api import api
 from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 from ..utils import load_cryptrec_vectors_from_file
-
-CAMELLIA_ECB_SUPPORTED = api.supports('camellia-128-ecb')
 
 
 def parameterize_encrypt_test(cipher, vector_type, params, fnames):
@@ -42,9 +39,7 @@ def parameterize_encrypt_test(cipher, vector_type, params, fnames):
     )
 
 
-@pytest.mark.skipif("not CAMELLIA_ECB_SUPPORTED")
 class TestCamelliaECB(object):
-
     @parameterize_encrypt_test(
         "Camellia", "NTT",
         ("key", "plaintext", "ciphertext"),
@@ -54,10 +49,13 @@ class TestCamelliaECB(object):
             "camellia-256-ecb.txt",
         ]
     )
-    def test_NTT(self, key, plaintext, ciphertext):
+    def test_NTT(self, key, plaintext, ciphertext, api):
+        if not api.supports_cipher('camellia-128-ecb'):
+            pytest.skip()
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.ECB(),
+            api
         )
         actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
         actual_ciphertext += cipher.finalize()
