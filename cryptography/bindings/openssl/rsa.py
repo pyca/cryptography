@@ -21,9 +21,9 @@ typedef ... BN_GENCB;
 """
 
 FUNCTIONS = """
-RSA * RSA_new(void);
-void RSA_free(RSA *r);
-int RSA_generate_key_ex(RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb);
+RSA* RSA_new();
+void RSA_free(RSA *);
+int RSA_generate_key_ex(RSA *rsa, int, BIGNUM *, BN_GENCB *);
 int RSA_check_key(const RSA *);
 """
 
