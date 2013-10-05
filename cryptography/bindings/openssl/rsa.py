@@ -23,7 +23,7 @@ typedef ... BN_GENCB;
 FUNCTIONS = """
 RSA* RSA_new();
 void RSA_free(RSA *);
-int RSA_generate_key_ex(RSA *rsa, int, BIGNUM *, BN_GENCB *);
+int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
 int RSA_check_key(const RSA *);
 """
 
