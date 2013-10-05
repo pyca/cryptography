@@ -30,6 +30,7 @@ class API(object):
         "dh",
         "dsa",
         "evp",
+        "rsa",
         "opensslv",
     ]
 
