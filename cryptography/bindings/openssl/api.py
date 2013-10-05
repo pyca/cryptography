@@ -27,6 +27,7 @@ class API(object):
     _modules = [
         "bignum",
         "crypto",
+        "dsa",
         "evp",
         "opensslv",
     ]
