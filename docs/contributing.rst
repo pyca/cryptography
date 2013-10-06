@@ -83,7 +83,7 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
 .. code-block:: console
 
-   # Create a virtualenv and activate it
+   $ # Create a virtualenv and activate it
    $ pip install --requirement dev-requirements.txt
    $ pip install --editable .
 
