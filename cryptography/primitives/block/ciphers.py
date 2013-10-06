@@ -17,7 +17,7 @@ from __future__ import absolute_import, division, print_function
 class AES(object):
     name = "AES"
     block_size = 128
-    key_sizes = set([128, 192, 256])
+    key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
         super(AES, self).__init__()
