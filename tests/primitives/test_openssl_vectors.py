@@ -23,7 +23,6 @@ import os
 
 import pytest
 
-from cryptography.bindings.openssl.api import api
 from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 from ..utils import load_openssl_vectors_from_file
@@ -47,9 +46,9 @@ class TestCamelliaCBC(object):
             "camellia-cbc.txt",
         ]
     )
-    def test_OpenSSL(self, key, iv, plaintext, ciphertext):
-        if not api.supports_cipher('camellia-128-cbc'):
-            pytest.skip()
+    def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
+        if not api.supports_cipher("camellia-128-cbc"):
+            pytest.skip("Does not support Camellia CBC")
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv)),
@@ -68,9 +67,9 @@ class TestCamelliaOFB(object):
             "camellia-ofb.txt",
         ]
     )
-    def test_OpenSSL(self, key, iv, plaintext, ciphertext):
-        if not api.supports_cipher('camellia-128-ofb'):
-            pytest.skip()
+    def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
+        if not api.supports_cipher("camellia-128-ofb"):
+            pytest.skip("Does not support Camellia OFB")
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.OFB(binascii.unhexlify(iv)),
@@ -89,9 +88,9 @@ class TestCamelliaCFB(object):
             "camellia-cfb.txt",
         ]
     )
-    def test_OpenSSL(self, key, iv, plaintext, ciphertext):
-        if not api.supports_cipher('camellia-128-cfb'):
-            pytest.skip()
+    def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
+        if not api.supports_cipher("camellia-128-cfb"):
+            pytest.skip("Does not support Camellia CFB")
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.CFB(binascii.unhexlify(iv)),

@@ -50,8 +50,8 @@ class TestCamelliaECB(object):
         ]
     )
     def test_NTT(self, key, plaintext, ciphertext, api):
-        if not api.supports_cipher('camellia-128-ecb'):
-            pytest.skip()
+        if not api.supports_cipher("camellia-128-ecb"):
+            pytest.skip("Does not support Camellia ECB")
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.ECB(),
