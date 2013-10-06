@@ -37,7 +37,7 @@ class AES(object):
 class Camellia(object):
     name = "camellia"
     block_size = 128
-    key_sizes = set([128, 192, 256])
+    key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
         super(Camellia, self).__init__()
