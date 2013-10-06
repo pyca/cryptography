@@ -81,7 +81,7 @@ development dependencies. These are listed in ``dev-requirements.txt`` and they
 can be installed in a `virtualenv`_ using `pip`_. Once you've installed the
 dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
-.. code-block:: sh
+.. code-block:: console
 
    # Create a virtualenv and activate it
    $ pip install --requirement dev-requirements.txt
@@ -96,7 +96,7 @@ Running Tests
 designed to be run using `pytest`_. `pytest`_ will discover the tests
 automatically, so all you have to do is:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ py.test
    ...
@@ -108,7 +108,7 @@ You can also verify that the tests pass on other supported Python interpreters.
 For this we use `tox`_, which will automatically create a `virtualenv`_ for
 each supported Python version and run the tests. For example:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ tox
    ...
@@ -131,7 +131,7 @@ written in `reStructured Text`_ and rendered using `Sphinx`_.
 
 Use `tox`_ to build the documentation. For example:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ tox -e docs
    ...
