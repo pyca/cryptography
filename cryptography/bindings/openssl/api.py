@@ -29,6 +29,7 @@ class API(object):
         "crypto",
         "dh",
         "dsa",
+        "err",
         "evp",
         "rand",
         "rsa",
@@ -63,6 +64,7 @@ class API(object):
         )
 
         self.lib.OpenSSL_add_all_algorithms()
+        self.lib.SSL_load_error_strings()
 
     def openssl_version_text(self):
         """
