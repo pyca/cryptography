@@ -20,7 +20,6 @@ typedef struct {
     ...;
 } EVP_CIPHER_CTX;
 typedef ... EVP_CIPHER;
-typedef ... ENGINE;
 """
 
 FUNCTIONS = """
