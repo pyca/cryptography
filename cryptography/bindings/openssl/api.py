@@ -29,6 +29,7 @@ class API(object):
         "crypto",
         "dh",
         "dsa",
+        "engine",
         "err",
         "evp",
         "rand",
