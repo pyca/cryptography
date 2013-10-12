@@ -17,8 +17,6 @@ import sys
 
 import cffi
 
-import six
-
 from cryptography.primitives import interfaces
 
 
@@ -56,8 +54,9 @@ class API(object):
         # loop over the functions & macros after declaring all the types
         # so we can set interdependent types in different files and still
         # have them all defined before we parse the funcs & macros
-        for func, macro in six.moves.zip(functions, macros):
+        for func in functions:
             self.ffi.cdef(func)
+        for macro in macros:
             self.ffi.cdef(macro)
 
         # We include functions here so that if we got any of their definitions
