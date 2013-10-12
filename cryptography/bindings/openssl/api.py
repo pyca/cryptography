@@ -41,15 +41,23 @@ class API(object):
         self.ffi = cffi.FFI()
         includes = []
         functions = []
+        macros = []
         for name in self._modules:
             __import__("cryptography.bindings.openssl." + name)
             module = sys.modules["cryptography.bindings.openssl." + name]
             self.ffi.cdef(module.TYPES)
-            self.ffi.cdef(module.FUNCTIONS)
-            self.ffi.cdef(module.MACROS)
 
+            macros.append(module.MACROS)
             functions.append(module.FUNCTIONS)
             includes.append(module.INCLUDES)
+
+        # loop over the functions & macros after declaring all the types
+        # so we can set interdependent types in different files and still
+        # have them all defined before we parse the funcs & macros
+        for func in functions:
+            self.ffi.cdef(func)
+        for macro in macros:
+            self.ffi.cdef(macro)
 
         # We include functions here so that if we got any of their definitions
         # wrong, the underlying C compiler will explode. In C you are allowed
