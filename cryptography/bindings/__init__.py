@@ -11,7 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings.openssl import api
+from cryptography.bindings import openssl
 
 
-_default_api = api
+_default_api = openssl.api
+_ALL_APIS = [
+    openssl.api
+]
