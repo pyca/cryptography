@@ -18,6 +18,7 @@ Test using the NIST Test Vectors
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import os
 
 from cryptography.primitives.block import ciphers, modes
 
@@ -28,8 +29,7 @@ from ..utils import load_nist_vectors_from_file
 class TestAES_CBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "KAT",
+        os.path.join("AES", "KAT"),
         [
             "CBCGFSbox128.rsp",
             "CBCGFSbox192.rsp",
@@ -50,8 +50,7 @@ class TestAES_CBC(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "MMT",
+        os.path.join("AES", "MMT"),
         [
             "CBCMMT128.rsp",
             "CBCMMT192.rsp",
@@ -65,8 +64,7 @@ class TestAES_CBC(object):
 class TestAES_ECB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "KAT",
+        os.path.join("AES", "KAT"),
         [
             "ECBGFSbox128.rsp",
             "ECBGFSbox192.rsp",
@@ -87,8 +85,7 @@ class TestAES_ECB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "MMT",
+        os.path.join("AES", "MMT"),
         [
             "ECBMMT128.rsp",
             "ECBMMT192.rsp",
@@ -102,8 +99,7 @@ class TestAES_ECB(object):
 class TestAES_OFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "KAT",
+        os.path.join("AES", "KAT"),
         [
             "OFBGFSbox128.rsp",
             "OFBGFSbox192.rsp",
@@ -124,8 +120,7 @@ class TestAES_OFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "MMT",
+        os.path.join("AES", "MMT"),
         [
             "OFBMMT128.rsp",
             "OFBMMT192.rsp",
@@ -139,8 +134,7 @@ class TestAES_OFB(object):
 class TestAES_CFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "KAT",
+        os.path.join("AES", "KAT"),
         [
             "CFB128GFSbox128.rsp",
             "CFB128GFSbox192.rsp",
@@ -162,8 +156,7 @@ class TestAES_CFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        "AES",
-        "MMT",
+        os.path.join("AES", "MMT"),
         [
             "CFB128MMT128.rsp",
             "CFB128MMT192.rsp",

@@ -23,78 +23,40 @@ import os
 
 import pytest
 
-from cryptography.primitives.block import BlockCipher, ciphers, modes
+from cryptography.primitives.block import ciphers, modes
 
+from .utils import generate_encrypt_test
 from ..utils import load_openssl_vectors_from_file
 
 
-def parameterize_encrypt_test(cipher, params, fnames):
-    return pytest.mark.parametrize(params,
-        list(itertools.chain.from_iterable(
-            load_openssl_vectors_from_file(os.path.join(cipher, fname))
-            for fname in fnames
-        ))
-    )
-
-
 class TestCamelliaCBC(object):
-
-    @parameterize_encrypt_test(
+    test_OpenSSL = generate_encrypt_test(
+        load_openssl_vectors_from_file,
         "Camellia",
-        ("key", "iv", "plaintext", "ciphertext"),
-        [
-            "camellia-cbc.txt",
-        ]
+        ["camellia-cbc.txt"],
+        lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
+        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda api: api.supports_cipher("camellia-128-cbc")
     )
-    def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
-        if not api.supports_cipher("camellia-128-cbc"):
-            pytest.skip("Does not support Camellia CBC")  # pragma: no cover
-        cipher = BlockCipher(
-            ciphers.Camellia(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv)),
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext).upper() == ciphertext
 
 
 class TestCamelliaOFB(object):
-
-    @parameterize_encrypt_test(
+    test_OpenSSL = generate_encrypt_test(
+        load_openssl_vectors_from_file,
         "Camellia",
-        ("key", "iv", "plaintext", "ciphertext"),
-        [
-            "camellia-ofb.txt",
-        ]
+        ["camellia-ofb.txt"],
+        lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
+        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda api: api.supports_cipher("camellia-128-ofb")
     )
-    def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
-        if not api.supports_cipher("camellia-128-ofb"):
-            pytest.skip("Does not support Camellia OFB")  # pragma: no cover
-        cipher = BlockCipher(
-            ciphers.Camellia(binascii.unhexlify(key)),
-            modes.OFB(binascii.unhexlify(iv)),
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext).upper() == ciphertext
 
 
 class TestCamelliaCFB(object):
-
-    @parameterize_encrypt_test(
+    test_OpenSSL = generate_encrypt_test(
+        load_openssl_vectors_from_file,
         "Camellia",
-        ("key", "iv", "plaintext", "ciphertext"),
-        [
-            "camellia-cfb.txt",
-        ]
+        ["camellia-cfb.txt"],
+        lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
+        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda api: api.supports_cipher("camellia-128-cfb")
     )
-    def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
-        if not api.supports_cipher("camellia-128-cfb"):
-            pytest.skip("Does not support Camellia CFB")  # pragma: no cover
-        cipher = BlockCipher(
-            ciphers.Camellia(binascii.unhexlify(key)),
-            modes.CFB(binascii.unhexlify(iv)),
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext).upper() == ciphertext

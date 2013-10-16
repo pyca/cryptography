@@ -7,18 +7,15 @@ from cryptography.bindings import openssl
 from cryptography.primitives.block import BlockCipher
 
 
-def generate_encrypt_test(param_loader, cipher_name, vector_type, file_names,
-                          cipher_factory, mode_factory,
-                          only_if=lambda api: True):
+def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
+                          mode_factory, only_if=lambda api: True):
     def test_encryption(self):
         for api in [openssl.api]:
             if not only_if(api):
                 yield encrypt_skipped
             else:
                 for file_name in file_names:
-                    for params in param_loader(
-                        os.path.join(cipher_name, vector_type, file_name)
-                    ):
+                    for params in param_loader(os.path.join(path, file_name)):
                         yield encrypt_test, api, cipher_factory, mode_factory, params
     return test_encryption
 

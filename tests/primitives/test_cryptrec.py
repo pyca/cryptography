@@ -18,6 +18,7 @@ Tests using the CRYPTREC (Camellia) Test Vectors
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import os
 
 from cryptography.primitives.block import ciphers, modes
 
@@ -28,8 +29,7 @@ from ..utils import load_cryptrec_vectors_from_file
 class TestCamelliaECB(object):
     test_NTT = generate_encrypt_test(
         load_cryptrec_vectors_from_file,
-        "Camellia",
-        "NTT",
+        os.path.join("Camellia", "NTT"),
         ["camellia-128-ecb", "camellia-192-ecb", "camellia-256"],
         lambda key: ciphers.Camellia(binascii.unhexlify((key))),
         lambda key: modes.EBC(),

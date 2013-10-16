@@ -112,15 +112,10 @@ def load_openssl_vectors(vector_data):
             continue
 
         vector = line.split(":")
-        params = (
-            # key
-            vector[1].encode("ascii"),
-            # iv
-            vector[2].encode("ascii"),
-            # plaintext
-            vector[3].encode("ascii"),
-            # ciphertext
-            vector[4].encode("ascii")
-        )
-        vectors.append(params)
+        vectors.append({
+            "key": vector[1].encode("ascii"),
+            "iv": vector[2].encode("ascii"),
+            "plaintext": vector[3].encode("ascii"),
+            "ciphertext": vector[4].encode("ascii"),
+        })
     return vectors

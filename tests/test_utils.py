@@ -304,30 +304,30 @@ def test_load_openssl_vectors():
     ).splitlines()
 
     assert load_openssl_vectors(vector_data) == [
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"000102030405060708090A0B0C0D0E0F",
-            b"6BC1BEE22E409F96E93D7E117393172A",
-            b"14F7646187817EB586599146B82BD719",
-        ),
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"14F7646187817EB586599146B82BD719",
-            b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            b"A53D28BB82DF741103EA4F921A44880B",
-        ),
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"000102030405060708090A0B0C0D0E0F",
-            b"6BC1BEE22E409F96E93D7E117393172A",
-            b"14F7646187817EB586599146B82BD719",
-        ),
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"14F7646187817EB586599146B82BD719",
-            b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            b"A53D28BB82DF741103EA4F921A44880B",
-        ),
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"000102030405060708090A0B0C0D0E0F",
+            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
+            "ciphertext": b"14F7646187817EB586599146B82BD719",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"14F7646187817EB586599146B82BD719",
+            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
+            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"000102030405060708090A0B0C0D0E0F",
+            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
+            "ciphertext": b"14F7646187817EB586599146B82BD719",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"14F7646187817EB586599146B82BD719",
+            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
+            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
+        },
     ]
 
 
@@ -335,28 +335,28 @@ def test_load_openssl_vectors_from_file():
     test_list = load_openssl_vectors_from_file("Camellia/camellia-ofb.txt")
     assert len(test_list) == 24
     assert test_list[:4] == [
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"000102030405060708090A0B0C0D0E0F",
-            b"6BC1BEE22E409F96E93D7E117393172A",
-            b"14F7646187817EB586599146B82BD719",
-        ),
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"50FE67CC996D32B6DA0937E99BAFEC60",
-            b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            b"25623DB569CA51E01482649977E28D84",
-        ),
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"D9A4DADA0892239F6B8B3D7680E15674",
-            b"30C81C46A35CE411E5FBC1191A0A52EF",
-            b"C776634A60729DC657D12B9FCA801E98",
-        ),
-        (
-            b"2B7E151628AED2A6ABF7158809CF4F3C",
-            b"A78819583F0308E7A6BF36B1386ABF23",
-            b"F69F2445DF4F9B17AD2B417BE66C3710",
-            b"D776379BE0E50825E681DA1A4C980E8E",
-        ),
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"000102030405060708090A0B0C0D0E0F",
+            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
+            "ciphertext": b"14F7646187817EB586599146B82BD719",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"50FE67CC996D32B6DA0937E99BAFEC60",
+            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
+            "ciphertext": b"25623DB569CA51E01482649977E28D84",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"D9A4DADA0892239F6B8B3D7680E15674",
+            "plaintext": b"30C81C46A35CE411E5FBC1191A0A52EF",
+            "ciphertext": b"C776634A60729DC657D12B9FCA801E98",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"A78819583F0308E7A6BF36B1386ABF23",
+            "plaintext": b"F69F2445DF4F9B17AD2B417BE66C3710",
+            "ciphertext": b"D776379BE0E50825E681DA1A4C980E8E",
+        },
     ]
