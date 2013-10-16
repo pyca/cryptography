@@ -18,33 +18,18 @@ Test using the NIST Test Vectors
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import itertools
 import os
 
-import pytest
+from cryptography.primitives.block import ciphers, modes
 
-from cryptography.primitives.block import BlockCipher, ciphers, modes
-
+from .utils import generate_encrypt_test
 from ..utils import load_nist_vectors_from_file
 
 
-def parameterize_encrypt_test(cipher, vector_type, params, fnames):
-    return pytest.mark.parametrize(params,
-        list(itertools.chain.from_iterable(
-            load_nist_vectors_from_file(
-                os.path.join(cipher, vector_type, fname),
-                "ENCRYPT",
-                params
-            )
-            for fname in fnames
-        ))
-    )
-
-
 class TestAES_CBC(object):
-    @parameterize_encrypt_test(
-        "AES", "KAT",
-        ("key", "iv", "plaintext", "ciphertext"),
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "KAT"),
         [
             "CBCGFSbox128.rsp",
             "CBCGFSbox192.rsp",
@@ -58,42 +43,28 @@ class TestAES_CBC(object):
             "CBCVarTxt128.rsp",
             "CBCVarTxt192.rsp",
             "CBCVarTxt256.rsp",
-        ]
+        ],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
-    def test_KAT(self, key, iv, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv)),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
-    @parameterize_encrypt_test(
-        "AES", "MMT",
-        ("key", "iv", "plaintext", "ciphertext"),
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "MMT"),
         [
             "CBCMMT128.rsp",
             "CBCMMT192.rsp",
             "CBCMMT256.rsp",
-        ]
+        ],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
-    def test_MMT(self, key, iv, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.CBC(binascii.unhexlify(iv)),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
 
 class TestAES_ECB(object):
-    @parameterize_encrypt_test(
-        "AES", "KAT",
-        ("key", "plaintext", "ciphertext"),
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "KAT"),
         [
             "ECBGFSbox128.rsp",
             "ECBGFSbox192.rsp",
@@ -107,42 +78,28 @@ class TestAES_ECB(object):
             "ECBVarTxt128.rsp",
             "ECBVarTxt192.rsp",
             "ECBVarTxt256.rsp",
-        ]
+        ],
+        lambda key: ciphers.AES(binascii.unhexlify(key)),
+        lambda key: modes.ECB(),
     )
-    def test_KAT(self, key, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.ECB(),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
-    @parameterize_encrypt_test(
-        "AES", "MMT",
-        ("key", "plaintext", "ciphertext"),
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "MMT"),
         [
             "ECBMMT128.rsp",
             "ECBMMT192.rsp",
             "ECBMMT256.rsp",
-        ]
+        ],
+        lambda key: ciphers.AES(binascii.unhexlify(key)),
+        lambda key: modes.ECB(),
     )
-    def test_MMT(self, key, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.ECB(),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
 
 class TestAES_OFB(object):
-    @parameterize_encrypt_test(
-        "AES", "KAT",
-        ("key", "iv", "plaintext", "ciphertext"),
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "KAT"),
         [
             "OFBGFSbox128.rsp",
             "OFBGFSbox192.rsp",
@@ -156,42 +113,28 @@ class TestAES_OFB(object):
             "OFBVarTxt128.rsp",
             "OFBVarTxt192.rsp",
             "OFBVarTxt256.rsp",
-        ]
+        ],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
     )
-    def test_KAT(self, key, iv, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.OFB(binascii.unhexlify(iv)),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
-    @parameterize_encrypt_test(
-        "AES", "MMT",
-        ("key", "iv", "plaintext", "ciphertext"),
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "MMT"),
         [
             "OFBMMT128.rsp",
             "OFBMMT192.rsp",
             "OFBMMT256.rsp",
-        ]
+        ],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
     )
-    def test_MMT(self, key, iv, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.OFB(binascii.unhexlify(iv)),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
 
 class TestAES_CFB(object):
-    @parameterize_encrypt_test(
-        "AES", "KAT",
-        ("key", "iv", "plaintext", "ciphertext"),
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "KAT"),
         [
             "CFB128GFSbox128.rsp",
             "CFB128GFSbox192.rsp",
@@ -205,33 +148,19 @@ class TestAES_CFB(object):
             "CFB128VarTxt128.rsp",
             "CFB128VarTxt192.rsp",
             "CFB128VarTxt256.rsp",
-        ]
+        ],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
-    def test_KAT(self, key, iv, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.CFB(binascii.unhexlify(iv)),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
 
-    @parameterize_encrypt_test(
-        "AES", "MMT",
-        ("key", "iv", "plaintext", "ciphertext"),
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("AES", "MMT"),
         [
             "CFB128MMT128.rsp",
             "CFB128MMT192.rsp",
             "CFB128MMT256.rsp",
-        ]
+        ],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
-    def test_MMT(self, key, iv, plaintext, ciphertext, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(key)),
-            modes.CFB(binascii.unhexlify(iv)),
-            api
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext
