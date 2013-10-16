@@ -28,3 +28,6 @@ class TestOpenSSL(object):
         for every OpenSSL.
         """
         assert api.openssl_version_text().startswith("OpenSSL")
+
+    def test_supports_cipher(self):
+        assert api.supports_cipher("not-a-real-cipher") is False

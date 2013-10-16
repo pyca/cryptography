@@ -32,3 +32,23 @@ class AES(object):
     @property
     def key_size(self):
         return len(self.key) * 8
+
+
+class Camellia(object):
+    name = "camellia"
+    block_size = 128
+    key_sizes = frozenset([128, 192, 256])
+
+    def __init__(self, key):
+        super(Camellia, self).__init__()
+        self.key = key
+
+        # Verify that the key size matches the expected key size
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                self.key_size, self.name
+            ))
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8

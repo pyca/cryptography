@@ -17,7 +17,7 @@ import binascii
 
 import pytest
 
-from cryptography.primitives.block.ciphers import AES
+from cryptography.primitives.block.ciphers import AES, Camellia
 
 
 class TestAES(object):
@@ -33,3 +33,18 @@ class TestAES(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             AES(binascii.unhexlify(b"0" * 12))
+
+
+class TestCamellia(object):
+    @pytest.mark.parametrize(("key", "keysize"), [
+        (b"0" * 32, 128),
+        (b"0" * 48, 192),
+        (b"0" * 64, 256),
+    ])
+    def test_key_size(self, key, keysize):
+        cipher = Camellia(binascii.unhexlify(key))
+        assert cipher.key_size == keysize
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            Camellia(binascii.unhexlify(b"0" * 12))
