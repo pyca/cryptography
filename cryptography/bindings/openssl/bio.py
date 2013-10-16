@@ -20,7 +20,7 @@ typedef struct bio_st BIO;
 typedef void bio_info_cb(BIO *, int, const char *, int, long, long);
 struct bio_method_st {
     int type;
-    const char * name;
+    const char *name;
     int (*bwrite)(BIO *, const char *, int);
     int (*bread)(BIO *, char *, int);
     int (*bputs)(BIO *, const char *);
@@ -54,7 +54,7 @@ typedef ... BUF_MEM;
 
 FUNCTIONS = """
 BIO* BIO_new(BIO_METHOD *);
-int BIO_set(BIO *a, BIO_METHOD *);
+int BIO_set(BIO *, BIO_METHOD *);
 int BIO_free(BIO *);
 void BIO_vfree(BIO *);
 void BIO_free_all(BIO *);
@@ -62,20 +62,23 @@ BIO *BIO_push(BIO *, BIO *);
 BIO *BIO_pop(BIO *);
 BIO *BIO_next(BIO *);
 BIO *BIO_find_type(BIO *, int);
-int BIO_method_type(const BIO *b);
-BIO_METHOD *BIO_s_mem(void);
-BIO *BIO_new_mem_buf(void *buf, int len);
-BIO_METHOD *BIO_s_file(void);
-BIO *BIO_new_file(const char *filename, const char *mode);
-BIO *BIO_new_fp(FILE *stream, int flags);
-BIO_METHOD *BIO_s_fd(void);
-BIO *BIO_new_fd(int fd, int close_flag);
-BIO_METHOD *BIO_s_socket(void);
-BIO *BIO_new_socket(int sock, int close_flag);
-BIO_METHOD *BIO_s_null(void);
+int BIO_method_type(const BIO *);
+BIO_METHOD *BIO_s_mem();
+BIO *BIO_new_mem_buf(void *, int);
+BIO_METHOD *BIO_s_file();
+BIO *BIO_new_file(const char *, const char *);
+BIO *BIO_new_fp(FILE *, int);
+BIO_METHOD *BIO_s_fd();
+BIO *BIO_new_fd(int, int);
+BIO_METHOD *BIO_s_socket();
+BIO *BIO_new_socket(int, int);
+BIO_METHOD *BIO_s_null();
 long BIO_ctrl(BIO *, int, long, void *);
-long BIO_callback_ctrl(BIO *, int, void (*fp)(struct bio_st *, int,
-                       const char *, int, long, long));
+long BIO_callback_ctrl(
+    BIO *,
+    int,
+    void (*)(struct bio_st *, int, const char *, int, long, long)
+);
 char* BIO_ptr_ctrl(BIO *bp, int cmd, long larg);
 long BIO_int_ctrl(BIO *bp, int cmd, long larg, int iarg);
 size_t BIO_ctrl_pending(BIO *b);
