@@ -164,3 +164,66 @@ class TestAES_CFB(object):
         lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
+
+
+class TestTripleDES_CBC(object):
+    test_KAT1 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "TCBCinvperm.rsp",
+            "TCBCpermop.rsp",
+            "TCBCsubtab.rsp",
+            "TCBCvarkey.rsp",
+            "TCBCvartext.rsp",
+        ],
+        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: modes.CBC(iv),
+    )
+
+    test_KAT2 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "TCBCIpermop.rsp",
+            "TCBCIsubtab.rsp",
+            "TCBCIvarkey.rsp",
+            "TCBCIvartext.rsp",
+        ],
+        lambda keys, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
+    )
+
+    test_KAT3 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "TCBCIinvperm.rsp",
+        ],
+        lambda keys, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
+    )
+
+    test_MMT1 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
+            "TCBCIMMT1.rsp",
+            "TCBCIMMT2.rsp",
+            "TCBCIMMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3)),
+        lambda key1, key2, key3, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
+    )
+
+    test_MMT1 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
+            "TCBCMMT1.rsp",
+            "TCBCMMT2.rsp",
+            "TCBCMMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv: ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3)),
+        lambda key1, key2, key3, iv: modes.CBC(iv),
+    )
