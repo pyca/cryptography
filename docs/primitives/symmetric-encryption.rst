@@ -77,6 +77,19 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
+.. class:: cryptography.primitives.block.modes.CTR(nonce)
+
+    CTR (Counter) is a mode of operation for block ciphers. It is considered
+    cryptographically strong.
+
+    :param bytes nonce: Must be random bytes. They do not need to be kept
+                        secret (they can be included in a transmitted
+                        message). Must be the same number of bytes as the
+                        ``block_size`` of the cipher. It is critical to
+                        never reuse a ``nonce`` with a given ``key``. Unlike
+                        CBC, reusing a nonce compromises the security of
+                        all data encrypted under the key (see: two time pad).
+
 .. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
 
     OFB (Output Feedback) is a mode of operation for block ciphers. It
