@@ -32,7 +32,7 @@ class TestCamelliaECB(object):
         os.path.join("Camellia", "NTT"),
         ["camellia-128-ecb.txt", "camellia-192-ecb.txt", "camellia-256-ecb.txt"],
         lambda key: ciphers.Camellia(binascii.unhexlify((key))),
-        lambda key: modes.EBC(),
+        lambda key: modes.ECB(),
         only_if=lambda api: api.supports_cipher("camellia-128-ecb"),
         skip_message="Does not support Camellia ECB",
     )
