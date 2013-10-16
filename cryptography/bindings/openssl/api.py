@@ -27,6 +27,7 @@ class API(object):
     _modules = [
         "bignum",
         "conf",
+        "bio",
         "crypto",
         "dh",
         "dsa",

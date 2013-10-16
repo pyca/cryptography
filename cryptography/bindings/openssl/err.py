@@ -21,7 +21,6 @@ struct ERR_string_data_st {
     const char *string;
 };
 typedef struct ERR_string_data_st ERR_STRING_DATA;
-typedef ... BIO;
 """
 
 FUNCTIONS = """
