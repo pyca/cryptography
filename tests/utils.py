@@ -14,7 +14,7 @@
 import os.path
 
 
-def load_nist_vectors(vector_data, op, fields):
+def load_nist_vectors(vector_data, op):
     section, count, data = None, None, {}
 
     for line in vector_data:
@@ -44,21 +44,19 @@ def load_nist_vectors(vector_data, op, fields):
         # For all other tokens we simply want the name, value stored in
         # the dictionary
         else:
-            data[section][count][name.lower()] = value
+            data[section][count][name.lower()] = value.encode("ascii")
 
-    # We want to test only for a particular operation
-    return [
-        tuple(vector[1][f].encode("ascii") for f in fields)
-        for vector in sorted(data[op].items(), key=lambda v: v[0])
-    ]
+    # We want to test only for a particular operation, we sort them for the
+    # benefit of the tests of this function.
+    return [v for k, v in sorted(data[op].items(), key=lambda kv: kv[0])]
 
 
-def load_nist_vectors_from_file(filename, op, fields):
+def load_nist_vectors_from_file(filename, op):
     base = os.path.join(
         os.path.dirname(__file__), "primitives", "vectors", "NIST",
     )
     with open(os.path.join(base, filename), "r") as vector_file:
-        return load_nist_vectors(vector_file, op, fields)
+        return load_nist_vectors(vector_file, op)
 
 
 def load_cryptrec_vectors_from_file(filename):
@@ -87,7 +85,11 @@ def load_cryptrec_vectors(vector_data):
             ct = line.split(" : ")[1].replace(" ", "").encode("ascii")
             # after a C is found the K+P+C tuple is complete
             # there are many P+C pairs for each K
-            cryptrec_list.append((key, pt, ct))
+            cryptrec_list.append({
+                "key": key,
+                "plaintext": pt,
+                "ciphertext": ct
+            })
     return cryptrec_list
 
 
