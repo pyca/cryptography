@@ -30,7 +30,11 @@ class TestCamelliaECB(object):
     test_NTT = generate_encrypt_test(
         load_cryptrec_vectors_from_file,
         os.path.join("Camellia", "NTT"),
-        ["camellia-128-ecb.txt", "camellia-192-ecb.txt", "camellia-256-ecb.txt"],
+        [
+            "camellia-128-ecb.txt",
+            "camellia-192-ecb.txt",
+            "camellia-256-ecb.txt"
+        ],
         lambda key: ciphers.Camellia(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
         only_if=lambda api: api.supports_cipher("camellia-128-ecb"),

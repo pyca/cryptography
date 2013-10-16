@@ -180,7 +180,7 @@ def test_load_nist_vectors_from_file_decrypt():
     assert load_nist_vectors_from_file(
         "AES/KAT/CBCGFSbox128.rsp",
         "DECRYPT",
-    ) ==  [
+    ) == [
         {
             "key": b"00000000000000000000000000000000",
             "iv": b"00000000000000000000000000000000",

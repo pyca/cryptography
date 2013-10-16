@@ -153,7 +153,6 @@ class TestAES_CFB(object):
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
 
-
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("AES", "MMT"),
