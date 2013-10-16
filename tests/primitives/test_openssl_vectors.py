@@ -18,10 +18,6 @@ Test using the OpenSSL Test Vectors
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import itertools
-import os
-
-import pytest
 
 from cryptography.primitives.block import ciphers, modes
 
@@ -36,7 +32,8 @@ class TestCamelliaCBC(object):
         ["camellia-cbc.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("camellia-128-cbc")
+        only_if=lambda api: api.supports_cipher("camellia-128-cbc"),
+        skip_message="Does not support Camellia CBC",
     )
 
 
@@ -47,7 +44,8 @@ class TestCamelliaOFB(object):
         ["camellia-ofb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("camellia-128-ofb")
+        only_if=lambda api: api.supports_cipher("camellia-128-ofb"),
+        skip_message="Does not support Camellia OFB",
     )
 
 
@@ -58,5 +56,6 @@ class TestCamelliaCFB(object):
         ["camellia-cfb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("camellia-128-cfb")
+        only_if=lambda api: api.supports_cipher("camellia-128-cfb"),
+        skip_message="Does not support Camellia CFB",
     )
