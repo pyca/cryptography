@@ -26,17 +26,18 @@ class API(object):
     """
     _modules = [
         "bignum",
-        "conf",
         "bio",
+        "conf",
         "crypto",
         "dh",
         "dsa",
         "engine",
         "err",
         "evp",
+        "opensslv",
         "rand",
         "rsa",
-        "opensslv",
+        "ssl",
     ]
 
     def __init__(self):
@@ -71,7 +72,7 @@ class API(object):
         #   int foo(short);
         self.lib = self.ffi.verify(
             source="\n".join(includes + functions),
-            libraries=["crypto"],
+            libraries=["crypto", "ssl"],
         )
 
         self.lib.OpenSSL_add_all_algorithms()
