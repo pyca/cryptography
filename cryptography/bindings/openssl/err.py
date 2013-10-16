@@ -24,7 +24,6 @@ typedef struct ERR_string_data_st ERR_STRING_DATA;
 """
 
 FUNCTIONS = """
-void SSL_load_error_strings();
 void ERR_load_crypto_strings();
 void ERR_free_strings();
 char* ERR_error_string(unsigned long, char *);
