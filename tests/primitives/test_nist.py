@@ -194,21 +194,15 @@ class TestTripleDES_CBC(object):
         lambda keys, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
     )
 
-    @parameterize_encrypt_test(
-        "3DES", "KAT",
-        ("keys", "iv1", "iv2", "iv3", "plaintext1", "ciphertext3"),
+    test_KAT3 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
         [
             "TCBCIinvperm.rsp",
-        ]
+        ],
+        lambda keys, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
     )
-    def test_KAT_3(self, keys, iv1, iv2, iv3, plaintext1, ciphertext3):
-        cipher = BlockCipher(
-            ciphers.TripleDES(binascii.unhexlify(keys)),
-            modes.CBC(binascii.unhexlify(iv1 + iv2 + iv3)),
-        )
-        actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext1))
-        actual_ciphertext += cipher.finalize()
-        assert binascii.hexlify(actual_ciphertext) == ciphertext3
 
     test_MMT1 = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
