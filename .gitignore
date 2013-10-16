@@ -8,3 +8,4 @@ cffi-*.egg/
 pycparser-*.egg/
 pytest-*.egg/
 dist/
+htmlcov/
