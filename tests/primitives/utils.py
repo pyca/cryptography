@@ -3,14 +3,14 @@ import os
 
 import pytest
 
-from cryptography.bindings import openssl
+from cryptography.bindings import _ALL_APIS
 from cryptography.primitives.block import BlockCipher
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
                           mode_factory, only_if=lambda api: True):
     def test_encryption(self):
-        for api in [openssl.api]:
+        for api in _ALL_APIS:
             if not only_if(api):
                 yield encrypt_skipped
             else:
