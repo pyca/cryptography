@@ -87,8 +87,11 @@ Modes
                         message). Must be the same number of bytes as the
                         ``block_size`` of the cipher. It is critical to
                         never reuse a ``nonce`` with a given ``key``. Unlike
-                        CBC, reusing a nonce compromises the security of
-                        all data encrypted under the key (see: two time pad).
+                        :class:`~cryptography.primitives.block.modes.CBC`,
+                        reusing a nonce compromises the security of all data
+                        encrypted under the key. Specifically,
+                        (pt1 xor keystream) xor (pt2 xor keystream) is
+                        equivalent to (pt1 xor pt2).
 
 .. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
 
