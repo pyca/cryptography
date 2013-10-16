@@ -39,4 +39,4 @@ def encrypt_test(api, cipher_factory, mode_factory, params, only_if,
     )
     actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
     actual_ciphertext += cipher.finalize()
-    assert binascii.hexlify(actual_ciphertext) == ciphertext
+    assert actual_ciphertext == binascii.unhexlify(ciphertext)
