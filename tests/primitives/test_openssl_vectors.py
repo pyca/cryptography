@@ -48,7 +48,7 @@ class TestCamelliaCBC(object):
     )
     def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
         if not api.supports_cipher("camellia-128-cbc"):
-            pytest.skip("Does not support Camellia CBC")
+            pytest.skip("Does not support Camellia CBC")  # pragma: no cover
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.CBC(binascii.unhexlify(iv)),
@@ -69,7 +69,7 @@ class TestCamelliaOFB(object):
     )
     def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
         if not api.supports_cipher("camellia-128-ofb"):
-            pytest.skip("Does not support Camellia OFB")
+            pytest.skip("Does not support Camellia OFB")  # pragma: no cover
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.OFB(binascii.unhexlify(iv)),
@@ -90,7 +90,7 @@ class TestCamelliaCFB(object):
     )
     def test_OpenSSL(self, key, iv, plaintext, ciphertext, api):
         if not api.supports_cipher("camellia-128-cfb"):
-            pytest.skip("Does not support Camellia CFB")
+            pytest.skip("Does not support Camellia CFB")  # pragma: no cover
         cipher = BlockCipher(
             ciphers.Camellia(binascii.unhexlify(key)),
             modes.CFB(binascii.unhexlify(iv)),
