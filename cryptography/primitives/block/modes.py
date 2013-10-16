@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.primitives import interfaces
+
 
 class CBC(object):
     name = "CBC"
@@ -20,3 +22,28 @@ class CBC(object):
     def __init__(self, initialization_vector):
         super(CBC, self).__init__()
         self.initialization_vector = initialization_vector
+
+
+class ECB(object):
+    name = "ECB"
+
+
+class OFB(object):
+    name = "OFB"
+
+    def __init__(self, initialization_vector):
+        super(OFB, self).__init__()
+        self.initialization_vector = initialization_vector
+
+
+class CFB(object):
+    name = "CFB"
+
+    def __init__(self, initialization_vector):
+        super(CFB, self).__init__()
+        self.initialization_vector = initialization_vector
+
+
+interfaces.ModeWithInitializationVector.register(CBC)
+interfaces.ModeWithInitializationVector.register(OFB)
+interfaces.ModeWithInitializationVector.register(CFB)

@@ -21,9 +21,11 @@ with open("cryptography/__about__.py") as fp:
 
 
 CFFI_DEPENDENCY = "cffi>=0.6"
+SIX_DEPENDENCY = "six>=1.4.1"
 
 install_requires = [
     CFFI_DEPENDENCY,
+    SIX_DEPENDENCY
 ]
 
 setup_requires = [

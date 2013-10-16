@@ -11,10 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+INCLUDES = """
+#include <openssl/dsa.h>
+"""
 
+TYPES = """
+typedef ... DSA;
+"""
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+FUNCTIONS = """
+DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
+                             void (*)(int, int, void *), void *);
+int DSA_generate_key(DSA *);
+void DSA_free(DSA *);
+"""
+
+MACROS = """
+"""

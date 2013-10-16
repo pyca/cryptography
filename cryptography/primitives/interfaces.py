@@ -11,10 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+from __future__ import absolute_import, division, print_function
+
+import abc
+
+import six
 
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
+    pass

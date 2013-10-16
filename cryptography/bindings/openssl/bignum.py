@@ -11,10 +11,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+INCLUDES = """
+#include <openssl/bn.h>
+"""
 
+TYPES = """
+typedef ... BIGNUM;
+typedef ... BN_ULONG;
+"""
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+FUNCTIONS = """
+BIGNUM *BN_new();
+void BN_free(BIGNUM *);
+
+int BN_set_word(BIGNUM *, BN_ULONG);
+
+char *BN_bn2hex(const BIGNUM *);
+int BN_hex2bn(BIGNUM **, const char *);
+"""
+
+MACROS = """
+"""

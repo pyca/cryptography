@@ -11,10 +11,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+INCLUDES = """
+#include <openssl/dh.h>
+"""
 
+TYPES = """
+typedef ... DH;
+"""
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+FUNCTIONS = """
+DH *DH_new();
+void DH_free(DH *);
+"""
+
+MACROS = """
+"""

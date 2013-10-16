@@ -11,10 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+INCLUDES = """
+#include <openssl/rsa.h>
+"""
 
+TYPES = """
+typedef ... RSA;
+typedef ... BN_GENCB;
+"""
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+FUNCTIONS = """
+RSA *RSA_new();
+void RSA_free(RSA *);
+int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
+int RSA_check_key(const RSA *);
+"""
+
+MACROS = """
+"""

@@ -13,7 +13,9 @@
 
 import textwrap
 
-from .utils import load_nist_vectors, load_nist_vectors_from_file
+from .utils import (load_nist_vectors, load_nist_vectors_from_file,
+    load_cryptrec_vectors, load_cryptrec_vectors_from_file,
+    load_openssl_vectors, load_openssl_vectors_from_file)
 
 
 def test_load_nist_vectors_encrypt():
@@ -54,21 +56,19 @@ def test_load_nist_vectors_encrypt():
     PLAINTEXT = 9798c4640bad75c7c3227db910174e72
     """).splitlines()
 
-    assert load_nist_vectors(vector_data, "ENCRYPT",
-        ["key", "iv", "plaintext", "ciphertext"],
-    ) == [
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"f34481ec3cc627bacd5dc3fb08f273e6",
-            b"0336763e966d92595a567cc9ce537f5e",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"9798c4640bad75c7c3227db910174e72",
-            b"a9a1631bf4996954ebc093957b234589",
-        ),
+    assert load_nist_vectors(vector_data, "ENCRYPT") == [
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"f34481ec3cc627bacd5dc3fb08f273e6",
+            "ciphertext": b"0336763e966d92595a567cc9ce537f5e",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"9798c4640bad75c7c3227db910174e72",
+            "ciphertext": b"a9a1631bf4996954ebc093957b234589",
+        },
     ]
 
 
@@ -110,121 +110,253 @@ def test_load_nist_vectors_decrypt():
     PLAINTEXT = 9798c4640bad75c7c3227db910174e72
     """).splitlines()
 
-    assert load_nist_vectors(vector_data, "DECRYPT",
-        ["key", "iv", "ciphertext", "plaintext"],
-    ) == [
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"0336763e966d92595a567cc9ce537f5e",
-            b"f34481ec3cc627bacd5dc3fb08f273e6",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"a9a1631bf4996954ebc093957b234589",
-            b"9798c4640bad75c7c3227db910174e72",
-        ),
+    assert load_nist_vectors(vector_data, "DECRYPT") == [
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"f34481ec3cc627bacd5dc3fb08f273e6",
+            "ciphertext": b"0336763e966d92595a567cc9ce537f5e",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"9798c4640bad75c7c3227db910174e72",
+            "ciphertext": b"a9a1631bf4996954ebc093957b234589",
+        },
     ]
 
 
 def test_load_nist_vectors_from_file_encrypt():
     assert load_nist_vectors_from_file(
         "AES/KAT/CBCGFSbox128.rsp",
-        "ENCRYPT",
-        ["key", "iv", "plaintext", "ciphertext"],
+        "ENCRYPT"
     ) == [
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"f34481ec3cc627bacd5dc3fb08f273e6",
-            b"0336763e966d92595a567cc9ce537f5e",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"9798c4640bad75c7c3227db910174e72",
-            b"a9a1631bf4996954ebc093957b234589",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"96ab5c2ff612d9dfaae8c31f30c42168",
-            b"ff4f8391a6a40ca5b25d23bedd44a597",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"6a118a874519e64e9963798a503f1d35",
-            b"dc43be40be0e53712f7e2bf5ca707209",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"cb9fceec81286ca3e989bd979b0cb284",
-            b"92beedab1895a94faa69b632e5cc47ce",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"b26aeb1874e47ca8358ff22378f09144",
-            b"459264f4798f6a78bacb89c15ed3d601",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"58c8e00b2631686d54eab84b91f0aca1",
-            b"08a4e2efec8a8e3312ca7460b9040bbf",
-        ),
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"f34481ec3cc627bacd5dc3fb08f273e6",
+            "ciphertext": b"0336763e966d92595a567cc9ce537f5e",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"9798c4640bad75c7c3227db910174e72",
+            "ciphertext": b"a9a1631bf4996954ebc093957b234589",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"96ab5c2ff612d9dfaae8c31f30c42168",
+            "ciphertext": b"ff4f8391a6a40ca5b25d23bedd44a597",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"6a118a874519e64e9963798a503f1d35",
+            "ciphertext": b"dc43be40be0e53712f7e2bf5ca707209",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"cb9fceec81286ca3e989bd979b0cb284",
+            "ciphertext": b"92beedab1895a94faa69b632e5cc47ce",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"b26aeb1874e47ca8358ff22378f09144",
+            "ciphertext": b"459264f4798f6a78bacb89c15ed3d601",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"58c8e00b2631686d54eab84b91f0aca1",
+            "ciphertext": b"08a4e2efec8a8e3312ca7460b9040bbf",
+        },
     ]
 
 
-def test_load_nist_vectors_from_file_decypt():
+def test_load_nist_vectors_from_file_decrypt():
     assert load_nist_vectors_from_file(
         "AES/KAT/CBCGFSbox128.rsp",
         "DECRYPT",
-        ["key", "iv", "ciphertext", "plaintext"],
     ) == [
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"0336763e966d92595a567cc9ce537f5e",
-            b"f34481ec3cc627bacd5dc3fb08f273e6",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"a9a1631bf4996954ebc093957b234589",
-            b"9798c4640bad75c7c3227db910174e72",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"ff4f8391a6a40ca5b25d23bedd44a597",
-            b"96ab5c2ff612d9dfaae8c31f30c42168",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"dc43be40be0e53712f7e2bf5ca707209",
-            b"6a118a874519e64e9963798a503f1d35",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"92beedab1895a94faa69b632e5cc47ce",
-            b"cb9fceec81286ca3e989bd979b0cb284",
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"459264f4798f6a78bacb89c15ed3d601",
-            b"b26aeb1874e47ca8358ff22378f09144"
-        ),
-        (
-            b"00000000000000000000000000000000",
-            b"00000000000000000000000000000000",
-            b"08a4e2efec8a8e3312ca7460b9040bbf",
-            b"58c8e00b2631686d54eab84b91f0aca1"
-        ),
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"f34481ec3cc627bacd5dc3fb08f273e6",
+            "ciphertext": b"0336763e966d92595a567cc9ce537f5e",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"9798c4640bad75c7c3227db910174e72",
+            "ciphertext": b"a9a1631bf4996954ebc093957b234589",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"96ab5c2ff612d9dfaae8c31f30c42168",
+            "ciphertext": b"ff4f8391a6a40ca5b25d23bedd44a597",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"6a118a874519e64e9963798a503f1d35",
+            "ciphertext": b"dc43be40be0e53712f7e2bf5ca707209",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"cb9fceec81286ca3e989bd979b0cb284",
+            "ciphertext": b"92beedab1895a94faa69b632e5cc47ce",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"b26aeb1874e47ca8358ff22378f09144",
+            "ciphertext": b"459264f4798f6a78bacb89c15ed3d601",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "iv": b"00000000000000000000000000000000",
+            "plaintext": b"58c8e00b2631686d54eab84b91f0aca1",
+            "ciphertext": b"08a4e2efec8a8e3312ca7460b9040bbf",
+        },
+    ]
+
+
+def test_load_cryptrec_vectors():
+    vector_data = textwrap.dedent("""
+    # Vectors taken from http://info.isl.ntt.co.jp/crypt/eng/camellia/
+    # Download is t_camelia.txt
+
+    # Camellia with 128-bit key
+
+    K No.001 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+    P No.001 : 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    C No.001 : 07 92 3A 39 EB 0A 81 7D 1C 4D 87 BD B8 2D 1F 1C
+
+    P No.002 : 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    C No.002 : 48 CD 64 19 80 96 72 D2 34 92 60 D8 9A 08 D3 D3
+
+    K No.002 : 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+    P No.001 : 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    C No.001 : 07 92 3A 39 EB 0A 81 7D 1C 4D 87 BD B8 2D 1F 1C
+    """).splitlines()
+
+    assert load_cryptrec_vectors(vector_data) == [
+        {
+            "key": b"00000000000000000000000000000000",
+            "plaintext": b"80000000000000000000000000000000",
+            "ciphertext": b"07923A39EB0A817D1C4D87BDB82D1F1C",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+            "plaintext": b"40000000000000000000000000000000",
+            "ciphertext": b"48CD6419809672D2349260D89A08D3D3",
+        },
+        {
+            "key": b"10000000000000000000000000000000",
+            "plaintext": b"80000000000000000000000000000000",
+            "ciphertext": b"07923A39EB0A817D1C4D87BDB82D1F1C",
+        },
+    ]
+
+
+def test_load_cryptrec_vectors_from_file_encrypt():
+    test_set = load_cryptrec_vectors_from_file(
+        "Camellia/NTT/camellia-128-ecb.txt"
+    )
+    assert test_set[0] == (
+        {
+            "key": b"00000000000000000000000000000000",
+            "plaintext": b"80000000000000000000000000000000",
+            "ciphertext": b"07923A39EB0A817D1C4D87BDB82D1F1C",
+        }
+    )
+    assert len(test_set) == 1280
+
+
+def test_load_openssl_vectors():
+    vector_data = textwrap.dedent(
+        """
+        # We don't support CFB{1,8}-CAMELLIAxxx.{En,De}crypt
+        # For all CFB128 encrypts and decrypts, the transformed sequence is
+        #   CAMELLIA-bits-CFB:key:IV/ciphertext':plaintext:ciphertext:encdec
+        # CFB128-CAMELLIA128.Encrypt
+        """
+        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
+        "000102030405060708090A0B0C0D0E0F:6BC1BEE22E409F96E93D7E117393172A:"
+        "14F7646187817EB586599146B82BD719:1\n"
+        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
+        "14F7646187817EB586599146B82BD719:AE2D8A571E03AC9C9EB76FAC45AF8E51:"
+        "A53D28BB82DF741103EA4F921A44880B:1\n\n"
+        "# CFB128-CAMELLIA128.Decrypt\n"
+        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
+        "000102030405060708090A0B0C0D0E0F:6BC1BEE22E409F96E93D7E117393172A:"
+        "14F7646187817EB586599146B82BD719:0\n"
+        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
+        "14F7646187817EB586599146B82BD719:AE2D8A571E03AC9C9EB76FAC45AF8E51:"
+        "A53D28BB82DF741103EA4F921A44880B:0"
+    ).splitlines()
+
+    assert load_openssl_vectors(vector_data) == [
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"000102030405060708090A0B0C0D0E0F",
+            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
+            "ciphertext": b"14F7646187817EB586599146B82BD719",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"14F7646187817EB586599146B82BD719",
+            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
+            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"000102030405060708090A0B0C0D0E0F",
+            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
+            "ciphertext": b"14F7646187817EB586599146B82BD719",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"14F7646187817EB586599146B82BD719",
+            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
+            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
+        },
+    ]
+
+
+def test_load_openssl_vectors_from_file():
+    test_list = load_openssl_vectors_from_file("Camellia/camellia-ofb.txt")
+    assert len(test_list) == 24
+    assert test_list[:4] == [
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"000102030405060708090A0B0C0D0E0F",
+            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
+            "ciphertext": b"14F7646187817EB586599146B82BD719",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"50FE67CC996D32B6DA0937E99BAFEC60",
+            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
+            "ciphertext": b"25623DB569CA51E01482649977E28D84",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"D9A4DADA0892239F6B8B3D7680E15674",
+            "plaintext": b"30C81C46A35CE411E5FBC1191A0A52EF",
+            "ciphertext": b"C776634A60729DC657D12B9FCA801E98",
+        },
+        {
+            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
+            "iv": b"A78819583F0308E7A6BF36B1386ABF23",
+            "plaintext": b"F69F2445DF4F9B17AD2B417BE66C3710",
+            "ciphertext": b"D776379BE0E50825E681DA1A4C980E8E",
+        },
     ]

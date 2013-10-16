@@ -11,10 +11,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+INCLUDES = """
+#include <openssl/rand.h>
+"""
 
+TYPES = """
+"""
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+FUNCTIONS = """
+void RAND_seed(const void *, int);
+void RAND_add(const void *, int, double);
+int RAND_status();
+int RAND_egd(const char *);
+int RAND_egd_bytes(const char *, int);
+int RAND_query_egd_bytes(const char *, unsigned char *, int);
+const char *RAND_file_name(char *, size_t);
+int RAND_load_file(const char *, long);
+int RAND_write_file(const char *);
+void RAND_cleanup();
+int RAND_bytes(unsigned char *, int);
+int RAND_pseudo_bytes(unsigned char *, int);
+"""
+
+MACROS = """
+"""

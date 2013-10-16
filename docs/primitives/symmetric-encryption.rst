@@ -51,6 +51,15 @@ Ciphers
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
+.. class:: cryptography.primitives.block.ciphers.Camellia(key)
+
+    Camellia is a block cipher approved for use by CRYPTREC and ISO/IEC.
+    It is considered to have comparable security and performance to AES, but
+    is not as widely studied or deployed.
+
+    :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
+                      This must be kept secret.
+
 
 Insecure Ciphers
 ----------------
@@ -86,3 +95,46 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+
+.. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
+
+    OFB (Output Feedback) is a mode of operation for block ciphers. It
+    transforms a block cipher into a stream cipher.
+
+    :param bytes initialization_vector: Must be random bytes. They do not need
+                                        to be kept secret (they can be included
+                                        in a transmitted message). Must be the
+                                        same number of bytes as the
+                                        ``block_size`` of the cipher. Do not
+                                        reuse an ``initialization_vector`` with
+                                        a given ``key``.
+
+.. class:: cryptography.primitives.block.modes.CFB(initialization_vector)
+
+    CFB (Cipher Feedback) is a mode of operation for block ciphers. It
+    transforms a block cipher into a stream cipher.
+
+    :param bytes initialization_vector: Must be random bytes. They do not need
+                                        to be kept secret (they can be included
+                                        in a transmitted message). Must be the
+                                        same number of bytes as the
+                                        ``block_size`` of the cipher. Do not
+                                        reuse an ``initialization_vector`` with
+                                        a given ``key``.
+
+
+Insecure Modes
+--------------
+
+.. warning::
+
+    These modes are insecure. New applications should never make use of them,
+    and existing applications should strongly consider migrating away.
+
+
+.. class:: cryptography.primitives.block.modes.ECB()
+
+    ECB (Electronic Code Book) is the simplest mode of operation for block
+    ciphers. Each block of data is encrypted in the same way. This means
+    identical plaintext blocks will always result in identical ciphertext
+    blocks, and thus result in information leakage

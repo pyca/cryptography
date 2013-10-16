@@ -11,10 +11,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings import openssl
+INCLUDES = """
+#include <openssl/crypto.h>
+"""
 
+TYPES = """
+"""
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
-]
+FUNCTIONS = """
+void CRYPTO_free(void *);
+int CRYPTO_mem_ctrl(int);
+int CRYPTO_is_mem_check_on();
+void CRYPTO_mem_leaks(struct bio_st *);
+void CRYPTO_cleanup_all_ex_data();
+"""
+
+MACROS = """
+void CRYPTO_add(int *, int, int);
+void CRYPTO_malloc_init();
+void CRYPTO_malloc_debug_init();
+#define CRYPTO_MEM_CHECK_ON ...
+#define CRYPTO_MEM_CHECK_OFF ...
+#define CRYPTO_MEM_CHECK_ENABLE ...
+#define CRYPTO_MEM_CHECK_DISABLE ...
+"""
