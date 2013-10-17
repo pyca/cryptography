@@ -29,7 +29,7 @@ class GetCipherByName(object):
 
     def __call__(self, api, cipher, mode):
         cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
-        return api.lib.EVP_get_cipherbyname(cipher_name)
+        return api.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
 class API(object):
