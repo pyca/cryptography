@@ -44,6 +44,15 @@ class CFB(object):
         self.initialization_vector = initialization_vector
 
 
+class CTR(object):
+    name = "CTR"
+
+    def __init__(self, nonce):
+        super(CTR, self).__init__()
+        self.nonce = nonce
+
+
 interfaces.ModeWithInitializationVector.register(CBC)
 interfaces.ModeWithInitializationVector.register(OFB)
 interfaces.ModeWithInitializationVector.register(CFB)
+interfaces.ModeWithNonce.register(CTR)

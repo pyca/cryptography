@@ -65,3 +65,15 @@ class TestCamelliaCFB(object):
         ),
         skip_message="Does not support Camellia CFB",
     )
+
+
+class TestAESCTR(object):
+    test_OpenSSL = generate_encrypt_test(
+        load_openssl_vectors_from_file,
+        "AES",
+        ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
+        only_if=lambda api: api.supports_cipher("aes-128-ctr"),
+        skip_message="Does not support AES CTR",
+    )
