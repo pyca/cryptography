@@ -103,6 +103,8 @@ class API(object):
         assert evp_cipher != self.ffi.NULL
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
+        elif isinstance(mode, interfaces.ModeWithNonce):
+            iv_nonce = mode.nonce
         else:
             iv_nonce = self.ffi.NULL
 
