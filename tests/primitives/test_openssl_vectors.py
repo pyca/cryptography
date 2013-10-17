@@ -74,6 +74,8 @@ class TestAESCTR(object):
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
         lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("aes-128-ctr"),
+        only_if=lambda api: api.supports_cipher(
+            ciphers.AES("\x00" * 16), modes.CTR("\x00" * 16)
+        ),
         skip_message="Does not support AES CTR",
     )
