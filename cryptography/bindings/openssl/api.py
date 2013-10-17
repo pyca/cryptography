@@ -13,11 +13,23 @@
 
 from __future__ import absolute_import, division, print_function
 
+import itertools
 import sys
 
 import cffi
 
 from cryptography.primitives import interfaces
+from cryptography.primitives.block.ciphers import AES, Camellia
+from cryptography.primitives.block.modes import CBC, ECB, OFB, CFB
+
+
+class GetCipherByName(object):
+    def __init__(self, fmt):
+        self._fmt = fmt
+
+    def __call__(self, api, cipher, mode):
+        cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
+        return api.lib.EVP_get_cipherbyname(cipher_name)
 
 
 class API(object):
@@ -78,6 +90,9 @@ class API(object):
         self.lib.OpenSSL_add_all_algorithms()
         self.lib.SSL_load_error_strings()
 
+        self._cipher_registry = {}
+        self._register_default_ciphers()
+
     def openssl_version_text(self):
         """
         Friendly string name of linked OpenSSL.
@@ -86,20 +101,41 @@ class API(object):
         """
         return self.ffi.string(self.lib.OPENSSL_VERSION_TEXT).decode("ascii")
 
-    def supports_cipher(self, ciphername):
-        return (self.ffi.NULL !=
-                self.lib.EVP_get_cipherbyname(ciphername.encode("ascii")))
+    def supports_cipher(self, cipher, mode):
+        try:
+            adapter = self._cipher_registry[type(cipher), type(mode)]
+        except KeyError:
+            return False
+        evp_cipher = adapter(self, cipher, mode)
+        return self.ffi.NULL != evp_cipher
+
+    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
+        if (cipher_cls, mode_cls) in self._cipher_registry:
+            raise ValueError("Duplicate registration for: {0} {1}".format(
+                cipher_cls, mode_cls)
+            )
+        self._cipher_registry[cipher_cls, mode_cls] = adapter
+
+    def _register_default_ciphers(self):
+        for cipher_cls, mode_cls in itertools.product(
+            [AES, Camellia],
+            [CBC, ECB, OFB, CFB],
+        ):
+            self.register_cipher_adapter(
+                cipher_cls,
+                mode_cls,
+                GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
+            )
 
     def create_block_cipher_context(self, cipher, mode):
         ctx = self.ffi.new("EVP_CIPHER_CTX *")
         res = self.lib.EVP_CIPHER_CTX_init(ctx)
         assert res != 0
         ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_cleanup)
-        # TODO: compute name using a better algorithm
-        ciphername = "{0}-{1}-{2}".format(
-            cipher.name, cipher.key_size, mode.name
-        ).lower()
-        evp_cipher = self.lib.EVP_get_cipherbyname(ciphername.encode("ascii"))
+        evp_cipher = self._cipher_registry[type(cipher), type(mode)](
+            self, cipher, mode
+        )
+
         assert evp_cipher != self.ffi.NULL
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
