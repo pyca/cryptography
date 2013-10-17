@@ -64,3 +64,13 @@ class TripleDES(object):
     def __init__(self, key):
         super(TripleDES, self).__init__()
         self.key = key
+
+        # Verify that the key size matches the expected key size
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                self.key_size, self.name
+            ))
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8

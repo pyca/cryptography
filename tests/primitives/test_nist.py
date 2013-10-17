@@ -26,6 +26,16 @@ from .utils import generate_encrypt_test
 from ..utils import load_nist_vectors_from_file
 
 
+def load_3des_nist_vectors_from_file(path, op):
+    vectors = load_nist_vectors_from_file(path, op)
+    for vector in vectors:
+        vector["ciphertext"] = vector["ciphertext3"]
+        del vector["ciphertext1"]
+        del vector["ciphertext2"]
+        del vector["ciphertext3"]
+    return vectors
+
+
 class TestAES_CBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
@@ -182,7 +192,7 @@ class TestTripleDES_CBC(object):
     )
 
     test_KAT2 = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_3des_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "KAT"),
         [
             "TCBCIpermop.rsp",
