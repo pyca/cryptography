@@ -89,9 +89,7 @@ Modes
                         never reuse a ``nonce`` with a given ``key``. Unlike
                         :class:`~cryptography.primitives.block.modes.CBC`,
                         reusing a nonce compromises the security of all data
-                        encrypted under the key. Specifically,
-                        (pt1 xor keystream) xor (pt2 xor keystream) is
-                        equivalent to (pt1 xor pt2).
+                        encrypted under the key.
 
 .. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
 
