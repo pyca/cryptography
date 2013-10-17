@@ -77,19 +77,25 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
+
 .. class:: cryptography.primitives.block.modes.CTR(nonce)
+
+    .. warning::
+
+        Counter mode is not recommended for use with block ciphers that have a
+        block size of less than 128-bits.
 
     CTR (Counter) is a mode of operation for block ciphers. It is considered
     cryptographically strong.
 
-    :param bytes nonce: Must be random bytes. They do not need to be kept
-                        secret (they can be included in a transmitted
-                        message). Must be the same number of bytes as the
-                        ``block_size`` of the cipher. It is critical to
-                        never reuse a ``nonce`` with a given ``key``. Unlike
-                        :class:`~cryptography.primitives.block.modes.CBC`,
-                        reusing a nonce compromises the security of all data
-                        encrypted under the key.
+    :param bytes nonce: Recommended to be random. It is critical to never reuse
+                        a ```nonce``` (or its subsequent incremented values)
+                        with a given key.  Any reuse of the nonce with the same
+                        key compromises the security of every message encrypted
+                        with that key. Must be the same number of bytes as the
+                        ```block_size``` of the cipher with a given key. The
+                        nonce does not need to be kept secret and may be
+                        included alongside the ciphertext.
 
 .. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
 
