@@ -20,7 +20,7 @@ import cffi
 
 from cryptography.primitives import interfaces
 from cryptography.primitives.block.ciphers import AES, Camellia
-from cryptography.primitives.block.modes import CBC, ECB, OFB, CFB
+from cryptography.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
 
 
 class GetCipherByName(object):
@@ -119,7 +119,7 @@ class API(object):
     def _register_default_ciphers(self):
         for cipher_cls, mode_cls in itertools.product(
             [AES, Camellia],
-            [CBC, ECB, OFB, CFB],
+            [CBC, CTR, ECB, OFB, CFB],
         ):
             self.register_cipher_adapter(
                 cipher_cls,
