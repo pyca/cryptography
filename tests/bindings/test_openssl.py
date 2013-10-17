@@ -11,7 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from cryptography.bindings.openssl.api import api
+from cryptography.primitives.block.ciphers import AES
+from cryptography.primitives.block.modes import CBC
 
 
 class TestOpenSSL(object):
@@ -31,3 +35,7 @@ class TestOpenSSL(object):
 
     def test_supports_cipher(self):
         assert api.supports_cipher(None, None) is False
+
+    def test_register_duplicate_cipher_adapter(self):
+        with pytest.raises(ValueError):
+            api.register_cipher_adapter(AES, CBC, None)
