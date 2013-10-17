@@ -26,7 +26,7 @@ from .utils import generate_encrypt_test
 from ..utils import load_nist_vectors_from_file
 
 
-class TestAES_CBC(object):
+class TestAESCBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("AES", "KAT"),
@@ -61,7 +61,7 @@ class TestAES_CBC(object):
     )
 
 
-class TestAES_ECB(object):
+class TestAESECB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("AES", "KAT"),
@@ -96,7 +96,7 @@ class TestAES_ECB(object):
     )
 
 
-class TestAES_OFB(object):
+class TestAESOFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("AES", "KAT"),
@@ -131,7 +131,7 @@ class TestAES_OFB(object):
     )
 
 
-class TestAES_CFB(object):
+class TestAESCFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("AES", "KAT"),
