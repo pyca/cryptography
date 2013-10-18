@@ -82,6 +82,15 @@ Wrap lines at 80 characters like so:
     long f(long, long,
            int *)
 
+Include a space after commas between parameters:
+
+.. code-block:: c
+
+    // Good
+    long f(int, char *)
+    // Bad
+    long f(int,char *)
+
 
 Documentation
 -------------
