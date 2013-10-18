@@ -27,6 +27,7 @@ struct asn1_string_st {
     unsigned char *data;
     long flags;
 };
+
 typedef struct asn1_string_st ASN1_OCTET_STRING;
 typedef struct asn1_string_st ASN1_IA5STRING;
 typedef ... ASN1_OBJECT;
