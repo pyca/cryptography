@@ -23,20 +23,11 @@ from cryptography.primitives.block.base import _Operation
 
 
 class TestBlockCipher(object):
-    def test_cipher_name(self, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32)),
-            api
-        )
-        assert cipher.name == "AES-128-CBC"
-
     def test_instantiate_without_api(self):
-        cipher = BlockCipher(
+        BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
-        assert cipher.name == "AES-128-CBC"
 
     def test_use_after_finalize(self, api):
         cipher = BlockCipher(
