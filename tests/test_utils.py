@@ -11,11 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 import textwrap
 
 from .utils import (load_nist_vectors, load_nist_vectors_from_file,
     load_cryptrec_vectors, load_cryptrec_vectors_from_file,
-    load_openssl_vectors, load_openssl_vectors_from_file)
+    load_openssl_vectors, load_openssl_vectors_from_file, load_hash_vectors,
+    load_hash_vectors_from_file)
 
 
 def test_load_nist_vectors_encrypt():
@@ -359,4 +362,56 @@ def test_load_openssl_vectors_from_file():
             "plaintext": b"F69F2445DF4F9B17AD2B417BE66C3710",
             "ciphertext": b"D776379BE0E50825E681DA1A4C980E8E",
         },
+    ]
+
+
+def test_load_hash_vectors():
+    vector_data = textwrap.dedent("""
+
+        # http://tools.ietf.org/html/rfc1321
+
+        Len = 0
+        Msg = 00
+        MD = d41d8cd98f00b204e9800998ecf8427e
+
+        Len = 8
+        Msg = 61
+        MD = 0cc175b9c0f1b6a831c399e269772661
+
+        Len = 24
+        Msg = 616263
+        MD = 900150983cd24fb0d6963f7d28e17f72
+
+        Len = 112
+        Msg = 6d65737361676520646967657374
+        MD = f96b697d7cb7938d525a2f31aaf161d0
+    """).splitlines()
+    assert load_hash_vectors(vector_data) == [
+        ('', 'd41d8cd98f00b204e9800998ecf8427e'),
+        ('61', '0cc175b9c0f1b6a831c399e269772661'),
+        ('616263', '900150983cd24fb0d6963f7d28e17f72'),
+        ('6d65737361676520646967657374', 'f96b697d7cb7938d525a2f31aaf161d0'),
+    ]
+
+
+def test_load_hash_vectors_bad_data():
+    vector_data = textwrap.dedent("""
+        # http://tools.ietf.org/html/rfc1321
+
+        Len = 0
+        Msg = 00
+        UNKNOWN=Hello World
+    """).splitlines()
+    with pytest.raises(ValueError):
+        load_hash_vectors(vector_data)
+
+
+def test_load_hash_vectors_from_file():
+    test_list = load_hash_vectors_from_file("RFC/MD5/rfc-1321.txt")
+    assert len(test_list) == 7
+    assert test_list[:4] == [
+        ('', 'd41d8cd98f00b204e9800998ecf8427e'),
+        ('61', '0cc175b9c0f1b6a831c399e269772661'),
+        ('616263', '900150983cd24fb0d6963f7d28e17f72'),
+        ('6d65737361676520646967657374', 'f96b697d7cb7938d525a2f31aaf161d0'),
     ]
