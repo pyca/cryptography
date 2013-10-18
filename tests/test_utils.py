@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 import textwrap
+
+import pytest
 
 from .utils import (load_nist_vectors, load_nist_vectors_from_file,
     load_cryptrec_vectors, load_cryptrec_vectors_from_file,
@@ -387,10 +387,10 @@ def test_load_hash_vectors():
         MD = f96b697d7cb7938d525a2f31aaf161d0
     """).splitlines()
     assert load_hash_vectors(vector_data) == [
-        ('', 'd41d8cd98f00b204e9800998ecf8427e'),
-        ('61', '0cc175b9c0f1b6a831c399e269772661'),
-        ('616263', '900150983cd24fb0d6963f7d28e17f72'),
-        ('6d65737361676520646967657374', 'f96b697d7cb7938d525a2f31aaf161d0'),
+        (b"", "d41d8cd98f00b204e9800998ecf8427e"),
+        (b"61", "0cc175b9c0f1b6a831c399e269772661"),
+        (b"616263", "900150983cd24fb0d6963f7d28e17f72"),
+        (b"6d65737361676520646967657374", "f96b697d7cb7938d525a2f31aaf161d0"),
     ]
 
 
@@ -410,8 +410,8 @@ def test_load_hash_vectors_from_file():
     test_list = load_hash_vectors_from_file("RFC/MD5/rfc-1321.txt")
     assert len(test_list) == 7
     assert test_list[:4] == [
-        ('', 'd41d8cd98f00b204e9800998ecf8427e'),
-        ('61', '0cc175b9c0f1b6a831c399e269772661'),
-        ('616263', '900150983cd24fb0d6963f7d28e17f72'),
-        ('6d65737361676520646967657374', 'f96b697d7cb7938d525a2f31aaf161d0'),
+        (b"", "d41d8cd98f00b204e9800998ecf8427e"),
+        (b"61", "0cc175b9c0f1b6a831c399e269772661"),
+        (b"616263", "900150983cd24fb0d6963f7d28e17f72"),
+        (b"6d65737361676520646967657374", "f96b697d7cb7938d525a2f31aaf161d0"),
     ]
