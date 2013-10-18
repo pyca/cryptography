@@ -369,6 +369,7 @@ def test_load_hash_vectors():
     vector_data = textwrap.dedent("""
 
         # http://tools.ietf.org/html/rfc1321
+        [irrelevant]
 
         Len = 0
         Msg = 00

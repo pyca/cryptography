@@ -127,7 +127,7 @@ def load_hash_vectors(vector_data):
     for line in vector_data:
         line = line.strip()
 
-        if not line or line.startswith("#"):
+        if not line or line.startswith("#") or line.startswith("["):
             continue
 
         if line.startswith("Len"):
