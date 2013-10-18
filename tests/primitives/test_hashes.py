@@ -86,3 +86,13 @@ class TestWhirlpool(object):
         only_if=lambda api: api.supports_hash(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
+
+
+class TestMD5(object):
+    test_MD5 = generate_base_hash_test(
+        hashes.MD5,
+        digest_size=16,
+        block_size=64,
+        only_if=lambda api: api.supports_hash(hashes.MD5),
+        skip_message="Does not support MD5",
+    )

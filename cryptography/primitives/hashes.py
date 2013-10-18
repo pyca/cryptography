@@ -82,3 +82,9 @@ class Whirlpool(BaseHash):
     name = "whirlpool"
     digest_size = 64
     block_size = 64
+
+
+class MD5(BaseHash):
+    name = "md5"
+    digest_size = 16
+    block_size = 64
