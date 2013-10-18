@@ -27,7 +27,7 @@ from ..utils import load_hash_vectors_from_file
 
 class TestSHA1(object):
     test_SHA1 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("NIST", "SHABYTE"),
         [
             "SHA1LongMsg.rsp",
@@ -41,7 +41,7 @@ class TestSHA1(object):
 
 class TestSHA224(object):
     test_SHA224 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("NIST", "SHABYTE"),
         [
             "SHA224LongMsg.rsp",
@@ -55,7 +55,7 @@ class TestSHA224(object):
 
 class TestSHA256(object):
     test_SHA256 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("NIST", "SHABYTE"),
         [
             "SHA256LongMsg.rsp",
@@ -69,7 +69,7 @@ class TestSHA256(object):
 
 class TestSHA384(object):
     test_SHA384 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("NIST", "SHABYTE"),
         [
             "SHA384LongMsg.rsp",
@@ -83,7 +83,7 @@ class TestSHA384(object):
 
 class TestSHA512(object):
     test_SHA512 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("NIST", "SHABYTE"),
         [
             "SHA512LongMsg.rsp",
@@ -97,7 +97,7 @@ class TestSHA512(object):
 
 class TestRIPEMD160(object):
     test_RIPEMD160 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("ISO", "ripemd160"),
         [
             "ripevectors.txt",
@@ -117,7 +117,7 @@ class TestRIPEMD160(object):
 
 class TestWhirlpool(object):
     test_whirlpool = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("ISO", "whirlpool"),
         [
             "iso-test-vectors.txt",
@@ -139,7 +139,7 @@ class TestWhirlpool(object):
 
 class TestMD5(object):
     test_md5 = generate_hash_test(
-        lambda path: load_hash_vectors_from_file(path),
+        load_hash_vectors_from_file,
         os.path.join("RFC", "MD5"),
         [
             "rfc-1321.txt",

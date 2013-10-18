@@ -16,7 +16,7 @@ SHA-1
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -24,7 +24,7 @@ SHA-1
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 
 SHA-2 Family
@@ -37,7 +37,7 @@ SHA-2 Family
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -45,7 +45,7 @@ SHA-2 Family
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 .. class:: cryptography.primitives.hashes.SHA256()
 
@@ -54,7 +54,7 @@ SHA-2 Family
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -62,7 +62,7 @@ SHA-2 Family
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 .. class:: cryptography.primitives.hashes.SHA384()
 
@@ -71,7 +71,7 @@ SHA-2 Family
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -79,7 +79,7 @@ SHA-2 Family
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 .. class:: cryptography.primitives.hashes.SHA512()
 
@@ -88,7 +88,7 @@ SHA-2 Family
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -96,7 +96,7 @@ SHA-2 Family
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 RIPEMD160
 ~~~~~~~
@@ -108,7 +108,7 @@ RIPEMD160
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -116,7 +116,7 @@ RIPEMD160
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 Whirlpool
 ~~~~~~~
@@ -128,7 +128,7 @@ Whirlpool
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -136,7 +136,7 @@ Whirlpool
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
 
 MD5
 ~~~~~~~
@@ -144,16 +144,16 @@ MD5
 .. warning::
 
     MD5 is a deprecated hash algorithm that has practical known collision
-    and pre-image attacks. You are strongly discouraged from using it.
+    attacks. You are strongly discouraged from using it.
 
 .. class:: cryptography.primitives.hashes.MD5()
 
     MD5 is a deprecated cryptographic hash function. It has a 160-bit message
-    digest and has practical known collision and pre-image attacks.
+    digest and has practical known collision attacks.
 
     .. method:: update(string)
 
-        :param bytes string: The text you wish to hash.
+        :param bytes string: The bytes you wish to hash.
 
     .. method:: digest()
 
@@ -161,4 +161,4 @@ MD5
 
     .. method:: hexdigest()
 
-        :return string: The message digest as hex.
+        :return str: The message digest as hex.
