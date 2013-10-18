@@ -20,6 +20,8 @@ typedef struct {
     ...;
 } EVP_CIPHER_CTX;
 typedef ... EVP_CIPHER;
+typedef ... EVP_MD;
+typedef struct env_md_ctx_st EVP_MD_CTX;
 """
 
 FUNCTIONS = """
@@ -35,6 +37,16 @@ int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
 const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_block_size(const EVP_CIPHER *);
 void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
+
+EVP_MD_CTX *EVP_MD_CTX_create();
+int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
+int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
+int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
+int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
+void EVP_MD_CTX_destroy(EVP_MD_CTX *);
+const EVP_MD *EVP_get_digestbyname(const char *);
+const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
+int EVP_MD_size(const EVP_MD *);
 """
 
 MACROS = """
