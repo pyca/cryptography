@@ -13,12 +13,16 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
 import binascii
+
+import six
 
 from cryptography.bindings import _default_api
 
 
-class BaseHash(object):
+class BaseHash(six.with_metaclass(abc.ABCMeta)):
     def __init__(self, api=None, ctx=None):
         if api is None:
             api = _default_api
