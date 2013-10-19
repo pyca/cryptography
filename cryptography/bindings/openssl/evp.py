@@ -76,4 +76,5 @@ int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
 MACROS = """
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
+int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
 """
