@@ -19,6 +19,9 @@
 
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
+
+.. _`CFFI`: http://cffi.readthedocs.org/
+.. _`OpenSSL`: https://www.openssl.org/
 """
 
 from __future__ import absolute_import, division, print_function
