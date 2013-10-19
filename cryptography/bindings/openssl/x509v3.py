@@ -78,12 +78,15 @@ typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
 
 FUNCTIONS = """
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
-void *X509V3_set_ctx_nodb(X509V3_CTX *);
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
+int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
+"""
+
+MACROS = """
+void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
-int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
 """
