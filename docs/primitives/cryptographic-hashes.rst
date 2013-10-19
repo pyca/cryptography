@@ -3,17 +3,16 @@ Message Digests
 
 .. class:: cryptography.primitives.hashes.BaseHash
 
-   Abstract base class that implements a common interface for
-   all hash algorithms that follow here
+   Abstract base class that implements a common interface for all hash
+   algorithms that follow here.
 
-    .. method:: update(string)
+    .. method:: update(data)
 
-        :param bytes string: The bytes you wish to hash.
+        :param bytes data The bytes you wish to hash.
 
     .. method:: copy()
 
-        :return: a new instance of this object with a
-         copied internal state.
+        :return: a new instance of this object with a copied internal state.
 
     .. method:: digest()
 
