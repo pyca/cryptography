@@ -139,14 +139,14 @@ class API(object):
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
-    def supports_hash(self, hashname):
+    def supports_hash(self, hash_cls):
         return (self.ffi.NULL !=
-                self.lib.EVP_get_digestbyname(hashname.encode("ascii")))
+                self.lib.EVP_get_digestbyname(hash_cls.name))
 
     def create_hash_context(self, hashobject):
         ctx = self.lib.EVP_MD_CTX_create()
         ctx = self.ffi.gc(ctx, self.lib.EVP_MD_CTX_destroy)
-        evp_md = self.lib.EVP_get_digestbyname(hashobject.name.encode("ascii"))
+        evp_md = self.lib.EVP_get_digestbyname(hashobject.name)
         assert evp_md != self.ffi.NULL
         res = self.lib.EVP_DigestInit_ex(ctx, evp_md, self.ffi.NULL)
         assert res != 0

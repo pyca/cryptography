@@ -23,6 +23,6 @@ class TestSHA1(object):
         hashes.SHA1,
         digest_size=20,
         block_size=64,
-        only_if=lambda api: api.supports_hash("sha1"),
+        only_if=lambda api: api.supports_hash(hashes.SHA1),
         skip_message="Does not support SHA1",
     )

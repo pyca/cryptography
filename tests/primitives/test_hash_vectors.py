@@ -30,6 +30,6 @@ class TestSHA1(object):
             "SHA1ShortMsg.rsp",
         ],
         hashes.SHA1,
-        only_if=lambda api: api.supports_hash("sha1"),
+        only_if=lambda api: api.supports_hash(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
