@@ -13,11 +13,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-import abc
-
-import six
+from enum import Enum
 
 from cryptography.bindings import _default_api
+
+
+class _Operation(Enum):
+    encrypt = 0
+    decrypt = 1
 
 
 class BlockCipher(object):
@@ -32,51 +35,39 @@ class BlockCipher(object):
         self._api = api
 
     def encryptor(self):
-        return _BlockCipherEncryptionContext(self.cipher, self.mode, self._api)
+        return _BlockCipherContext(self.cipher, self.mode, self._api,
+                                   _Operation.encrypt)
 
     def decryptor(self):
-        return _BlockCipherDecryptionContext(self.cipher, self.mode, self._api)
+        return _BlockCipherContext(self.cipher, self.mode, self._api,
+                                   _Operation.decrypt)
 
 
-class _BlockCipherContext(six.with_metaclass(abc.ABCMeta)):
-    def __init__(self, cipher, mode, api):
+class _BlockCipherContext(object):
+    def __init__(self, cipher, mode, api, operation):
         super(_BlockCipherContext, self).__init__()
-        self.cipher = cipher
-        self.mode = mode
         self._api = api
+        self._operation = operation
+        args = (cipher, mode)
+        if self._operation == _Operation.encrypt:
+            self._ctx = self._api.create_block_cipher_encrypt_context(*args)
+        else:
+            self._ctx = self._api.create_block_cipher_decrypt_context(*args)
 
-    def _check_ctx(self):
+    def update(self, data):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-
-
-class _BlockCipherEncryptionContext(_BlockCipherContext):
-    def __init__(self, cipher, mode, api):
-        super(_BlockCipherEncryptionContext, self).__init__(cipher, mode, api)
-        self._ctx = self._api.create_block_cipher_encrypt_context(cipher, mode)
-
-    def update(self, data):
-        self._check_ctx()
-        return self._api.update_encrypt_context(self._ctx, data)
+        if self._operation == _Operation.encrypt:
+            return self._api.update_encrypt_context(self._ctx, data)
+        else:
+            return self._api.update_decrypt_context(self._ctx, data)
 
     def finalize(self):
-        self._check_ctx()
-        data = self._api.finalize_encrypt_context(self._ctx)
-        self._ctx = None
-        return data
-
-
-class _BlockCipherDecryptionContext(_BlockCipherContext):
-    def __init__(self, cipher, mode, api):
-        super(_BlockCipherDecryptionContext, self).__init__(cipher, mode, api)
-        self._ctx = self._api.create_block_cipher_decrypt_context(cipher, mode)
-
-    def update(self, data):
-        self._check_ctx()
-        return self._api.update_decrypt_context(self._ctx, data)
-
-    def finalize(self):
-        self._check_ctx()
-        data = self._api.finalize_decrypt_context(self._ctx)
+        if self._ctx is None:
+            raise ValueError("Context was already finalized")
+        if self._operation == _Operation.encrypt:
+            data = self._api.finalize_encrypt_context(self._ctx)
+        else:
+            data = self._api.finalize_decrypt_context(self._ctx)
         self._ctx = None
         return data
