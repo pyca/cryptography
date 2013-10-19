@@ -37,7 +37,9 @@ int X509_NAME_cmp(const X509_NAME *, const X509_NAME *);
 char *X509_NAME_oneline(X509_NAME *, char *, int);
 X509_NAME *X509_NAME_dup(X509_NAME *);
 void X509_NAME_free(X509_NAME *);
+"""
 
+MACROS = """
 struct stack_st_X509_NAME *sk_X509_NAME_new_null();
 int sk_X509_NAME_num(struct stack_st_X509_NAME *);
 int sk_X509_NAME_push(struct stack_st_X509_NAME *, X509_NAME *);
