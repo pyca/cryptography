@@ -43,6 +43,6 @@ class BaseHash(object):
 
 
 class SHA1(BaseHash):
-    name = b"sha1"
+    name = "sha1"
     digest_size = 20
     block_size = 64

@@ -141,12 +141,12 @@ class API(object):
 
     def supports_hash(self, hash_cls):
         return (self.ffi.NULL !=
-                self.lib.EVP_get_digestbyname(hash_cls.name))
+                self.lib.EVP_get_digestbyname(hash_cls.name.encode("ascii")))
 
     def create_hash_context(self, hashobject):
         ctx = self.lib.EVP_MD_CTX_create()
         ctx = self.ffi.gc(ctx, self.lib.EVP_MD_CTX_destroy)
-        evp_md = self.lib.EVP_get_digestbyname(hashobject.name)
+        evp_md = self.lib.EVP_get_digestbyname(hashobject.name.encode("ascii"))
         assert evp_md != self.ffi.NULL
         res = self.lib.EVP_DigestInit_ex(ctx, evp_md, self.ffi.NULL)
         assert res != 0
