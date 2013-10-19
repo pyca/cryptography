@@ -6,6 +6,11 @@ env:
     - TOX_ENV=py32
     - TOX_ENV=py33
     - TOX_ENV=pypy
+    - TOX_ENV=py26 CC=clang
+    - TOX_ENV=py27 CC=clang
+    - TOX_ENV=py32 CC=clang
+    - TOX_ENV=py33 CC=clang
+    - TOX_ENV=pypy CC=clang
     - TOX_ENV=docs
     - TOX_ENV=pep8
 
