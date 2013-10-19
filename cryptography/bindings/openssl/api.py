@@ -38,6 +38,7 @@ class API(object):
         "nid",
         "opensslv",
         "pkcs7",
+        "pkcs12",
         "rand",
         "rsa",
         "ssl",
