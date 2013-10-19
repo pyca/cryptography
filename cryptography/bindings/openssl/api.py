@@ -98,9 +98,25 @@ class API(object):
         return (self.ffi.NULL !=
                 self.lib.EVP_get_cipherbyname(ciphername.encode("ascii")))
 
-    def create_block_cipher_context(self, cipher, mode):
-        ctx = self.lib.EVP_CIPHER_CTX_new()
-        ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_free)
+    def create_block_cipher_encrypt_context(self, cipher, mode):
+        ctx, args = self._create_block_cipher_context(cipher, mode)
+        res = self.lib.EVP_EncryptInit_ex(*args)
+        assert res != 0
+        self._disable_padding(ctx)
+        return ctx
+
+    def create_block_cipher_decrypt_context(self, cipher, mode):
+        ctx, args = self._create_block_cipher_context(cipher, mode)
+        res = self.lib.EVP_DecryptInit_ex(*args)
+        assert res != 0
+        self._disable_padding(ctx)
+        return ctx
+
+    def _create_block_cipher_context(self, cipher, mode):
+        ctx = self.ffi.new("EVP_CIPHER_CTX *")
+        res = self.lib.EVP_CIPHER_CTX_init(ctx)
+        assert res != 0
+        ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_cleanup)
         # TODO: compute name using a better algorithm
         ciphername = "{0}-{1}-{2}".format(
             cipher.name, cipher.key_size, mode.name
@@ -114,36 +130,51 @@ class API(object):
         else:
             iv_nonce = self.ffi.NULL
 
-        # TODO: Sometimes this needs to be a DecryptInit, when?
-        res = self.lib.EVP_EncryptInit_ex(
-            ctx, evp_cipher, self.ffi.NULL, cipher.key, iv_nonce
-        )
-        assert res != 0
+        return (ctx, (ctx, evp_cipher, self.ffi.NULL, cipher.key, iv_nonce))
 
+    def _disable_padding(self, ctx):
         # We purposely disable padding here as it's handled higher up in the
         # API.
         self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
-        return ctx
 
-    def update_encrypt_context(self, ctx, plaintext):
-        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
-        buf = self.ffi.new("unsigned char[]", len(plaintext) + block_size - 1)
-        outlen = self.ffi.new("int *")
-        res = self.lib.EVP_EncryptUpdate(
-            ctx, buf, outlen, plaintext, len(plaintext)
-        )
+    def update_encrypt_context(self, ctx, data):
+        buf, outlen = self._create_buf_out(ctx, len(data))
+        res = self.lib.EVP_EncryptUpdate(ctx, buf, outlen, data, len(data))
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
+
+    def update_decrypt_context(self, ctx, data):
+        buf, outlen = self._create_buf_out(ctx, len(data))
+        res = self.lib.EVP_DecryptUpdate(ctx, buf, outlen, data, len(data))
+        assert res != 0
+        return self.ffi.buffer(buf)[:outlen[0]]
+
+    def _create_buf_out(self, ctx, data_len):
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
+        buf = self.ffi.new("unsigned char[]", data_len + block_size - 1)
+        outlen = self.ffi.new("int *")
+        return (buf, outlen)
 
     def finalize_encrypt_context(self, ctx):
-        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
-        buf = self.ffi.new("unsigned char[]", block_size)
-        outlen = self.ffi.new("int *")
+        buf, outlen = self._create_final_buf_out(ctx)
         res = self.lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
         assert res != 0
+        self._cleanup_block_cipher(ctx)
+        return self.ffi.buffer(buf)[:outlen[0]]
+
+    def finalize_decrypt_context(self, ctx):
+        buf, outlen = self._create_final_buf_out(ctx)
+        res = self.lib.EVP_DecryptFinal_ex(ctx, buf, outlen)
+        assert res != 0
+        self._cleanup_block_cipher(ctx)
+        return self.ffi.buffer(buf)[:outlen[0]]
+
+    def _create_final_buf_out(self, ctx):
+        return self._create_buf_out(ctx, 1)
+
+    def _cleanup_block_cipher(self, ctx):
         res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
         assert res == 1
-        return self.ffi.buffer(buf)[:outlen[0]]
 
     def supports_hash(self, hash_cls):
         return (self.ffi.NULL !=
@@ -176,6 +207,5 @@ class API(object):
         res = self.lib.EVP_MD_CTX_copy_ex(copied_ctx, ctx)
         assert res != 0
         return copied_ctx
-
 
 api = API()

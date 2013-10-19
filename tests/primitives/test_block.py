@@ -15,11 +15,9 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
-import pretend
 import pytest
 
 from cryptography.primitives.block import BlockCipher, ciphers, modes
-from cryptography.primitives.block.base import _Operation
 
 
 class TestBlockCipher(object):
@@ -29,40 +27,42 @@ class TestBlockCipher(object):
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
 
+    def test_creates_encryptor(self):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32))
+        )
+        assert cipher.encryptor() is not None
+
+    def test_creates_decryptor(self):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32))
+        )
+        assert cipher.decryptor() is not None
+
+
+class TestBlockCipherContext(object):
     def test_use_after_finalize(self, api):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
             api
         )
-        cipher.encrypt(b"a" * 16)
-        cipher.finalize()
+        context = cipher.encryptor()
+        context.update(b"a" * 16)
+        context.finalize()
         with pytest.raises(ValueError):
-            cipher.encrypt(b"b" * 16)
+            context.update(b"b" * 16)
         with pytest.raises(ValueError):
-            cipher.finalize()
-
-    def test_encrypt_with_invalid_operation(self, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32)),
-            api
-        )
-        cipher._operation = _Operation.decrypt
-
+            context.finalize()
+        context = cipher.decryptor()
+        context.update(b"a" * 16)
+        context.finalize()
         with pytest.raises(ValueError):
-            cipher.encrypt(b"b" * 16)
-
-    def test_finalize_with_invalid_operation(self, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32)),
-            api
-        )
-        cipher._operation = pretend.stub(name="wat")
-
+            context.update(b"b" * 16)
         with pytest.raises(ValueError):
-            cipher.finalize()
+            context.finalize()
 
     def test_unaligned_block_encryption(self, api):
         cipher = BlockCipher(
@@ -70,7 +70,15 @@ class TestBlockCipher(object):
             modes.ECB(),
             api
         )
-        ct = cipher.encrypt(b"a" * 15)
+        context = cipher.encryptor()
+        ct = context.update(b"a" * 15)
         assert ct == b""
-        ct += cipher.encrypt(b"a" * 65)
+        ct += context.update(b"a" * 65)
         assert len(ct) == 80
+        ct += context.finalize()
+        context = cipher.decryptor()
+        pt = context.update(ct[:3])
+        assert pt == b""
+        pt += context.update(ct[3:])
+        assert len(pt) == 80
+        context.finalize()
