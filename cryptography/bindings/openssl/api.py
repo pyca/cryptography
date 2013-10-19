@@ -10,6 +10,16 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+.. warning::
+
+    The OpenSSL API is not easy to use, small mistakes can lead to significant
+    security vulnerabilities. We strongly recommend not using this directly,
+    and instead using one of the higher level APIs exposed by ``cryptography``.
+
+
+These are `CFFI`_ bindings to the `OpenSSL`_ C library.
+"""
 
 from __future__ import absolute_import, division, print_function
 
@@ -22,7 +32,7 @@ from cryptography.primitives import interfaces
 
 class API(object):
     """
-    OpenSSL API wrapper.
+    This is the exposed API for the OpenSSL bindings.
     """
     _modules = [
         "asn1",
@@ -43,6 +53,10 @@ class API(object):
 
     def __init__(self):
         self.ffi = cffi.FFI()
+        """
+        This is a :class:`cffi.FFI` instance. It can be used to allocate and
+        otherwise manipulate OpenSSL structures.
+        """
         includes = []
         functions = []
         macros = []
@@ -75,6 +89,10 @@ class API(object):
             source="\n".join(includes + functions),
             libraries=["crypto", "ssl"],
         )
+        """
+        This is a ``cffi`` library. It can be used to call OpenSSL functions,
+        and access constants.
+        """
 
         self.lib.OpenSSL_add_all_algorithms()
         self.lib.SSL_load_error_strings()
@@ -140,5 +158,5 @@ class API(object):
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
-
+#: The default api object to interact with.
 api = API()
