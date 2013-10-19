@@ -46,3 +46,27 @@ class SHA1(BaseHash):
     name = "sha1"
     digest_size = 20
     block_size = 64
+
+
+class SHA224(BaseHash):
+    name = "sha224"
+    digest_size = 28
+    block_size = 64
+
+
+class SHA256(BaseHash):
+    name = "sha256"
+    digest_size = 32
+    block_size = 64
+
+
+class SHA384(BaseHash):
+    name = "sha384"
+    digest_size = 48
+    block_size = 128
+
+
+class SHA512(BaseHash):
+    name = "sha512"
+    digest_size = 64
+    block_size = 128
