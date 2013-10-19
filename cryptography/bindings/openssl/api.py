@@ -36,6 +36,7 @@ class API(object):
         "err",
         "evp",
         "opensslv",
+        "pkcs7",
         "rand",
         "rsa",
         "ssl",
