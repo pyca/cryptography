@@ -76,3 +76,9 @@ class RIPEMD160(BaseHash):
     name = "ripemd160"
     digest_size = 20
     block_size = 64
+
+
+class Whirlpool(BaseHash):
+    name = "whirlpool"
+    digest_size = 64
+    block_size = 64

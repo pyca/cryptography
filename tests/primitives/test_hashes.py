@@ -76,3 +76,13 @@ class TestRIPEMD160(object):
         only_if=lambda api: api.supports_hash(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
+
+
+class TestWhirlpool(object):
+    test_Whirlpool = generate_base_hash_test(
+        hashes.Whirlpool,
+        digest_size=64,
+        block_size=64,
+        only_if=lambda api: api.supports_hash(hashes.Whirlpool),
+        skip_message="Does not support Whirlpool",
+    )

@@ -109,3 +109,25 @@ class TestRIPEMD160(object):
         only_if=lambda api: api.supports_hash(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
+
+
+class TestWhirlpool(object):
+    test_whirlpool = generate_hash_test(
+        load_hash_vectors_from_file,
+        os.path.join("ISO", "whirlpool"),
+        [
+            "iso-test-vectors.txt",
+        ],
+        hashes.Whirlpool,
+        only_if=lambda api: api.supports_hash(hashes.Whirlpool),
+        skip_message="Does not support Whirlpool",
+    )
+
+    test_whirlpool_long_string = generate_long_string_hash_test(
+        hashes.Whirlpool,
+        ("0c99005beb57eff50a7cf005560ddf5d29057fd86b2"
+         "0bfd62deca0f1ccea4af51fc15490eddc47af32bb2b"
+         "66c34ff9ad8c6008ad677f77126953b226e4ed8b01"),
+        only_if=lambda api: api.supports_hash(hashes.Whirlpool),
+        skip_message="Does not support Whirlpool",
+    )
