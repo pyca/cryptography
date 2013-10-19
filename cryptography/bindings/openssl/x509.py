@@ -72,8 +72,7 @@ X509 *X509_dup(X509 *);
 
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
 
-int X509_set_version(X509 x, long);
-long X509_get_version(X509 *);
+int X509_set_version(X509 *, long);
 
 EVP_PKEY *X509_get_pubkey(X509 *);
 int X509_set_pubkey(X509 *, EVP_PKEY *);
@@ -84,8 +83,6 @@ int X509_sign(X509 *, EVP_PKEY *, const EVP_MD *);
 int X509_digest(const X509 *, const EVP_MD *, unsigned char *, unsigned int *);
 
 ASN1_TIME *X509_gmtime_adj(ASN1_TIME *, long);
-ASN1_TIME *X509_get_notBefore(X509 *);
-ASN1_TIME *X509_get_notAfter(X509 *);
 
 unsigned long X509_subject_name_hash(X509 *);
 
@@ -104,29 +101,16 @@ ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
 
 int X509_REQ_set_version(X509_REQ *, long);
-long X509_REQ_get_version(X509_REQ *);
 X509_REQ *X509_REQ_new();
 void X509_REQ_free(X509_REQ *);
 int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
-X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
-struct stack_st_X509 *sk_X509_new_null();
-void sk_X509_free(struct stack_st_X509 *);
-int sk_X509_num(struct stack_st_X509 *);
-int sk_X509_push(struct stack_st_X509 *, X509 *);
-X509 *sk_X509_value(struct stack_st_X509 *, int);
-
 X509_EXTENSIONS *sk_X509_EXTENSION_new_null();
-int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
-X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
-int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
-void sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
-void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
@@ -134,8 +118,6 @@ ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
 X509_REVOKED *X509_REVOKED_new();
 void X509_REVOKED_free(X509_REVOKED *);
 
-int sk_X509_REVOKED_num(struct x509_revoked_st *);
-X509_REVOKED *sk_X509_REVOKED_value(struct x509_revoked_st *, int);
 int X509_REVOKED_set_serialNumber(X509_REVOKED *, ASN1_INTEGER *);
 
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
@@ -146,8 +128,6 @@ void X509_CRL_free(X509_CRL *);
 int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
 int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
-int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
-int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
 
@@ -176,4 +156,33 @@ int X509_set_serialNumber(X509 *, ASN1_INTEGER *);
 X509_STORE *X509_STORE_new();
 void X509_STORE_free(X509_STORE *);
 int X509_STORE_add_cert(X509_STORE *, X509 *);
+"""
+
+MACROS = """
+long X509_get_version(X509 *);
+
+ASN1_TIME *X509_get_notBefore(X509 *);
+ASN1_TIME *X509_get_notAfter(X509 *);
+
+long X509_REQ_get_version(X509_REQ *);
+X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
+
+struct stack_st_X509 *sk_X509_new_null();
+void sk_X509_free(struct stack_st_X509 *);
+int sk_X509_num(struct stack_st_X509 *);
+int sk_X509_push(struct stack_st_X509 *, X509 *);
+X509 *sk_X509_value(struct stack_st_X509 *, int);
+
+int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
+X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
+int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
+void sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
+void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
+
+int sk_X509_REVOKED_num(struct x509_revoked_st *);
+X509_REVOKED *sk_X509_REVOKED_value(struct x509_revoked_st *, int);
+
+/* These aren't macros these arguments are all const X on openssl > 1.0.x */
+int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
+int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
 """
