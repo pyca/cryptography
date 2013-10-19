@@ -16,8 +16,6 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef int time_t;
-
 typedef struct {
     ASN1_OBJECT *algorithm;
     ...;
