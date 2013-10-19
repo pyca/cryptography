@@ -25,6 +25,7 @@ class API(object):
     OpenSSL API wrapper.
     """
     _modules = [
+        "asn1",
         "bignum",
         "bio",
         "conf",
