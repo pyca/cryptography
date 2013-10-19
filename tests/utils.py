@@ -119,3 +119,38 @@ def load_openssl_vectors(vector_data):
             "ciphertext": vector[4].encode("ascii"),
         })
     return vectors
+
+
+def load_hash_vectors(vector_data):
+    vectors = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#") or line.startswith("["):
+            continue
+
+        if line.startswith("Len"):
+            length = int(line.split(" = ")[1])
+        elif line.startswith("Msg"):
+            """
+            In the NIST vectors they have chosen to represent an empty
+            string as hex 00, which is of course not actually an empty
+            string. So we parse the provided length and catch this edge case.
+            """
+            msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
+        elif line.startswith("MD"):
+            md = line.split(" = ")[1]
+            # after MD is found the Msg+MD tuple is complete
+            vectors.append((msg, md))
+        else:
+            raise ValueError("Unknown line in hash vector")
+    return vectors
+
+
+def load_hash_vectors_from_file(filename):
+    base = os.path.join(
+        os.path.dirname(__file__), "primitives", "vectors"
+    )
+    with open(os.path.join(base, filename), "r") as vector_file:
+        return load_hash_vectors(vector_file)
