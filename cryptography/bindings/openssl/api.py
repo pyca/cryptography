@@ -35,6 +35,7 @@ class API(object):
         "engine",
         "err",
         "evp",
+        "nid",
         "opensslv",
         "pkcs7",
         "rand",
