@@ -37,6 +37,7 @@ class API(object):
         "evp",
         "nid",
         "opensslv",
+        "pem",
         "pkcs7",
         "pkcs12",
         "rand",
