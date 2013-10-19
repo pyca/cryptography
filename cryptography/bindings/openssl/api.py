@@ -141,5 +141,35 @@ class API(object):
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
+    def supports_hash(self, hash_cls):
+        return (self.ffi.NULL !=
+                self.lib.EVP_get_digestbyname(hash_cls.name.encode("ascii")))
+
+    def create_hash_context(self, hashobject):
+        ctx = self.lib.EVP_MD_CTX_create()
+        ctx = self.ffi.gc(ctx, self.lib.EVP_MD_CTX_destroy)
+        evp_md = self.lib.EVP_get_digestbyname(hashobject.name.encode("ascii"))
+        assert evp_md != self.ffi.NULL
+        res = self.lib.EVP_DigestInit_ex(ctx, evp_md, self.ffi.NULL)
+        assert res != 0
+        return ctx
+
+    def update_hash_context(self, ctx, data):
+        res = self.lib.EVP_DigestUpdate(ctx, data, len(data))
+        assert res != 0
+
+    def finalize_hash_context(self, ctx, digest_size):
+        buf = self.ffi.new("unsigned char[]", digest_size)
+        res = self.lib.EVP_DigestFinal_ex(ctx, buf, self.ffi.NULL)
+        assert res != 0
+        return self.ffi.buffer(buf)[:digest_size]
+
+    def copy_hash_context(self, ctx):
+        copied_ctx = self.lib.EVP_MD_CTX_create()
+        copied_ctx = self.ffi.gc(copied_ctx, self.lib.EVP_MD_CTX_destroy)
+        res = self.lib.EVP_MD_CTX_copy_ex(copied_ctx, ctx)
+        assert res != 0
+        return copied_ctx
+
 
 api = API()
