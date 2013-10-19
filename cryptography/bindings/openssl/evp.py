@@ -22,10 +22,18 @@ typedef struct {
 typedef ... EVP_CIPHER;
 typedef ... EVP_MD;
 typedef struct env_md_ctx_st EVP_MD_CTX;
+
+typedef struct evp_pkey_st {
+    int type;
+    ...;
+} EVP_PKEY;
+static const int EVP_PKEY_RSA;
+static const int EVP_PKEY_DSA;
 """
 
 FUNCTIONS = """
 void OpenSSL_add_all_algorithms();
+
 const EVP_CIPHER *EVP_get_cipherbyname(const char *);
 int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
                        const unsigned char *, const unsigned char *);
@@ -43,11 +51,29 @@ int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
+int EVP_MD_CTX_cleanup(EVP_MD_CTX *);
 void EVP_MD_CTX_destroy(EVP_MD_CTX *);
 const EVP_MD *EVP_get_digestbyname(const char *);
 const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
 int EVP_MD_size(const EVP_MD *);
+
+EVP_PKEY *EVP_PKEY_new();
+void EVP_PKEY_free(EVP_PKEY *);
+int EVP_PKEY_type(int);
+int EVP_PKEY_bits(EVP_PKEY *);
+RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
+
+int EVP_SignInit(EVP_MD_CTX *, const EVP_MD *);
+int EVP_SignUpdate(EVP_MD_CTX *, const void *, size_t);
+int EVP_SignFinal(EVP_MD_CTX *, unsigned char *, unsigned int *, EVP_PKEY *);
+
+int EVP_VerifyInit(EVP_MD_CTX *, const EVP_MD *);
+int EVP_VerifyUpdate(EVP_MD_CTX *, const void *, size_t);
+int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
+                    EVP_PKEY *);
 """
 
 MACROS = """
+int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
+int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 """
