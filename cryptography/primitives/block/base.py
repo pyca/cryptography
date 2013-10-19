@@ -44,37 +44,39 @@ class _BlockCipherContext(six.with_metaclass(abc.ABCMeta)):
         self.cipher = cipher
         self.mode = mode
         self._api = api
-        if isinstance(self, _BlockCipherEncryptionContext):
-            ctx_method = self._api.create_block_cipher_encrypt_context
-        else:
-            ctx_method = self._api.create_block_cipher_decrypt_context
-        self._ctx = ctx_method(self.cipher, self.mode)
 
-    def finalize(self):
+    def _check_ctx(self):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-
-        if isinstance(self, _BlockCipherEncryptionContext):
-            result = self._api.finalize_encrypt_context(self._ctx)
-        else:
-            result = self._api.finalize_decrypt_context(self._ctx)
-
-        self._ctx = None
-        return result
-
-    def update(self, data):
-        if self._ctx is None:
-            raise ValueError("Context was already finalized")
-
-        if isinstance(self, _BlockCipherEncryptionContext):
-            return self._api.update_encrypt_context(self._ctx, data)
-        else:
-            return self._api.update_decrypt_context(self._ctx, data)
 
 
 class _BlockCipherEncryptionContext(_BlockCipherContext):
-    pass
+    def __init__(self, cipher, mode, api):
+        super(_BlockCipherEncryptionContext, self).__init__(cipher, mode, api)
+        self._ctx = self._api.create_block_cipher_encrypt_context(cipher, mode)
+
+    def update(self, data):
+        self._check_ctx()
+        return self._api.update_encrypt_context(self._ctx, data)
+
+    def finalize(self):
+        self._check_ctx()
+        data = self._api.finalize_encrypt_context(self._ctx)
+        self._ctx = None
+        return data
 
 
 class _BlockCipherDecryptionContext(_BlockCipherContext):
-    pass
+    def __init__(self, cipher, mode, api):
+        super(_BlockCipherDecryptionContext, self).__init__(cipher, mode, api)
+        self._ctx = self._api.create_block_cipher_decrypt_context(cipher, mode)
+
+    def update(self, data):
+        self._check_ctx()
+        return self._api.update_decrypt_context(self._ctx, data)
+
+    def finalize(self):
+        self._check_ctx()
+        data = self._api.finalize_decrypt_context(self._ctx)
+        self._ctx = None
+        return data
