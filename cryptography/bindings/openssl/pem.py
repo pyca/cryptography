@@ -16,7 +16,6 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... EVP_CIPHER;
 typedef int pem_password_cb(char *buf, int size, int rwflag, void *userdata);
 """
 
