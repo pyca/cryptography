@@ -63,3 +63,14 @@ class TestBlockCipher(object):
 
         with pytest.raises(ValueError):
             cipher.finalize()
+
+    def test_unaligned_block_encryption(self, api):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.ECB(),
+            api
+        )
+        ct = cipher.encrypt(b"a" * 15)
+        assert ct == b""
+        ct += cipher.encrypt(b"a" * 65)
+        assert len(ct) == 80
