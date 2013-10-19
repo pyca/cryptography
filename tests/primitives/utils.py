@@ -42,7 +42,7 @@ def encrypt_test(api, cipher_factory, mode_factory, params, only_if,
     assert actual_ciphertext == binascii.unhexlify(ciphertext)
 
 
-def generate_hash_test(param_loader, path, file_names, hash_factory,
+def generate_hash_test(param_loader, path, file_names, hash_cls,
                        only_if=lambda api: True, skip_message=None):
     def test_hash(self):
         for api in _ALL_APIS:
@@ -51,7 +51,7 @@ def generate_hash_test(param_loader, path, file_names, hash_factory,
                     yield (
                         hash_test,
                         api,
-                        hash_factory,
+                        hash_cls,
                         params,
                         only_if,
                         skip_message
@@ -59,24 +59,24 @@ def generate_hash_test(param_loader, path, file_names, hash_factory,
     return test_hash
 
 
-def hash_test(api, hash_factory, params, only_if, skip_message):
+def hash_test(api, hash_cls, params, only_if, skip_message):
     if not only_if(api):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
-    m = hash_factory(api)
+    m = hash_cls(api=api)
     m.update(binascii.unhexlify(msg))
     assert m.hexdigest() == md.replace(" ", "").lower()
 
 
-def generate_base_hash_test(hash_factory, digest_size, block_size,
+def generate_base_hash_test(hash_cls, digest_size, block_size,
                             only_if=lambda api: True, skip_message=None):
     def test_base_hash(self):
         for api in _ALL_APIS:
             yield (
                 base_hash_test,
                 api,
-                hash_factory,
+                hash_cls,
                 digest_size,
                 block_size,
                 only_if,
@@ -85,11 +85,11 @@ def generate_base_hash_test(hash_factory, digest_size, block_size,
     return test_base_hash
 
 
-def base_hash_test(api, hash_factory, digest_size, block_size, only_if,
+def base_hash_test(api, hash_cls, digest_size, block_size, only_if,
                    skip_message):
     if not only_if(api):
         pytest.skip(skip_message)
-    m = hash_factory(api=api)
+    m = hash_cls(api=api)
     assert m.digest_size == digest_size
     assert m.block_size == block_size
     m_copy = m.copy()

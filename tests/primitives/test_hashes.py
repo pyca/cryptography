@@ -20,7 +20,7 @@ from .utils import generate_base_hash_test
 
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(
-        lambda api: hashes.SHA1(api=api),
+        hashes.SHA1,
         digest_size=20,
         block_size=64,
         only_if=lambda api: api.supports_hash("sha1"),

@@ -29,7 +29,7 @@ class TestSHA1(object):
             "SHA1LongMsg.rsp",
             "SHA1ShortMsg.rsp",
         ],
-        lambda api: hashes.SHA1(api=api),
+        hashes.SHA1,
         only_if=lambda api: api.supports_hash("sha1"),
         skip_message="Does not support SHA1",
     )
