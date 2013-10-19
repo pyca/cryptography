@@ -45,6 +45,7 @@ class API(object):
         "ssl",
         "x509",
         "x509name",
+        "x509v3",
     ]
 
     def __init__(self):
