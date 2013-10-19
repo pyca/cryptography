@@ -110,8 +110,6 @@ EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
-X509_EXTENSIONS *sk_X509_EXTENSION_new_null();
-
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
 
@@ -173,6 +171,7 @@ int sk_X509_num(struct stack_st_X509 *);
 int sk_X509_push(struct stack_st_X509 *, X509 *);
 X509 *sk_X509_value(struct stack_st_X509 *, int);
 
+X509_EXTENSIONS *sk_X509_EXTENSION_new_null();
 int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
 X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
 int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
