@@ -41,8 +41,8 @@ class API(object):
         "rand",
         "rsa",
         "ssl",
+        "x509",
         "x509name",
-        "x509"
     ]
 
     def __init__(self):
