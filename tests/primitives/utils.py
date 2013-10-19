@@ -95,3 +95,26 @@ def base_hash_test(api, hash_cls, digest_size, block_size, only_if,
     m_copy = m.copy()
     assert m != m_copy
     assert m._ctx != m_copy._ctx
+
+
+def generate_long_string_hash_test(hash_factory, md, only_if=lambda api: True,
+                                   skip_message=None):
+    def test_long_string_hash(self):
+        for api in _ALL_APIS:
+            yield(
+                long_string_hash_test,
+                api,
+                hash_factory,
+                md,
+                only_if,
+                skip_message
+            )
+    return test_long_string_hash
+
+
+def long_string_hash_test(api, hash_factory, md, only_if, skip_message):
+    if not only_if(api):
+        pytest.skip(skip_message)
+    m = hash_factory(api)
+    m.update(b"a" * 1000000)
+    assert m.hexdigest() == md.lower()

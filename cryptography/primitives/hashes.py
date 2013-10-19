@@ -70,3 +70,9 @@ class SHA512(BaseHash):
     name = "sha512"
     digest_size = 64
     block_size = 128
+
+
+class RIPEMD160(BaseHash):
+    name = "ripemd160"
+    digest_size = 20
+    block_size = 64

@@ -17,7 +17,7 @@ import os
 
 from cryptography.primitives import hashes
 
-from .utils import generate_hash_test
+from .utils import generate_hash_test, generate_long_string_hash_test
 from ..utils import load_hash_vectors_from_file
 
 
@@ -88,4 +88,24 @@ class TestSHA512(object):
         hashes.SHA512,
         only_if=lambda api: api.supports_hash(hashes.SHA512),
         skip_message="Does not support SHA512",
+    )
+
+
+class TestRIPEMD160(object):
+    test_RIPEMD160 = generate_hash_test(
+        load_hash_vectors_from_file,
+        os.path.join("ISO", "ripemd160"),
+        [
+            "ripevectors.txt",
+        ],
+        hashes.RIPEMD160,
+        only_if=lambda api: api.supports_hash(hashes.RIPEMD160),
+        skip_message="Does not support RIPEMD160",
+    )
+
+    test_RIPEMD160_long_string = generate_long_string_hash_test(
+        hashes.RIPEMD160,
+        "52783243c1697bdbe16d37f97f68f08325dc1528",
+        only_if=lambda api: api.supports_hash(hashes.RIPEMD160),
+        skip_message="Does not support RIPEMD160",
     )

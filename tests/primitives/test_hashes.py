@@ -66,3 +66,13 @@ class TestSHA512(object):
         only_if=lambda api: api.supports_hash(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
+
+
+class TestRIPEMD160(object):
+    test_RIPEMD160 = generate_base_hash_test(
+        hashes.RIPEMD160,
+        digest_size=20,
+        block_size=64,
+        only_if=lambda api: api.supports_hash(hashes.RIPEMD160),
+        skip_message="Does not support RIPEMD160",
+    )
