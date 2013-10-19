@@ -128,7 +128,8 @@ class API(object):
         return ctx
 
     def update_encrypt_context(self, ctx, plaintext):
-        buf = self.ffi.new("unsigned char[]", len(plaintext))
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
+        buf = self.ffi.new("unsigned char[]", len(plaintext) + block_size - 1)
         outlen = self.ffi.new("int *")
         res = self.lib.EVP_EncryptUpdate(
             ctx, buf, outlen, plaintext, len(plaintext)
@@ -137,8 +138,7 @@ class API(object):
         return self.ffi.buffer(buf)[:outlen[0]]
 
     def finalize_encrypt_context(self, ctx):
-        cipher = self.lib.EVP_CIPHER_CTX_cipher(ctx)
-        block_size = self.lib.EVP_CIPHER_block_size(cipher)
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", block_size)
         outlen = self.ffi.new("int *")
         res = self.lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
