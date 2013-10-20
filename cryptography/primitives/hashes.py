@@ -29,8 +29,8 @@ class BaseHash(six.with_metaclass(abc.ABCMeta)):
         self._api = api
         self._ctx = self._api.create_hash_context(self) if ctx is None else ctx
 
-    def update(self, string):
-        self._api.update_hash_context(self._ctx, string)
+    def update(self, data):
+        self._api.update_hash_context(self._ctx, data)
 
     def copy(self):
         return self.__class__(ctx=self._copy_ctx())
