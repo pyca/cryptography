@@ -43,7 +43,7 @@ def encrypt_test(api, cipher_factory, mode_factory, params, only_if,
 
 
 def generate_hash_test(param_loader, path, file_names, hash_cls,
-                       only_if=lambda api: True, skip_message=None):
+                       only_if=None, skip_message=None):
     def test_hash(self):
         for api in _ALL_APIS:
             for file_name in file_names:
@@ -60,7 +60,7 @@ def generate_hash_test(param_loader, path, file_names, hash_cls,
 
 
 def hash_test(api, hash_cls, params, only_if, skip_message):
-    if not only_if(api):
+    if only_if is not None and not only_if(api):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
@@ -70,7 +70,7 @@ def hash_test(api, hash_cls, params, only_if, skip_message):
 
 
 def generate_base_hash_test(hash_cls, digest_size, block_size,
-                            only_if=lambda api: True, skip_message=None):
+                            only_if=None, skip_message=None):
     def test_base_hash(self):
         for api in _ALL_APIS:
             yield (
@@ -87,7 +87,7 @@ def generate_base_hash_test(hash_cls, digest_size, block_size,
 
 def base_hash_test(api, hash_cls, digest_size, block_size, only_if,
                    skip_message):
-    if not only_if(api):
+    if only_if is not None and not only_if(api):
         pytest.skip(skip_message)
     m = hash_cls(api=api)
     assert m.digest_size == digest_size
@@ -97,7 +97,7 @@ def base_hash_test(api, hash_cls, digest_size, block_size, only_if,
     assert m._ctx != m_copy._ctx
 
 
-def generate_long_string_hash_test(hash_factory, md, only_if=lambda api: True,
+def generate_long_string_hash_test(hash_factory, md, only_if=None,
                                    skip_message=None):
     def test_long_string_hash(self):
         for api in _ALL_APIS:
@@ -113,7 +113,7 @@ def generate_long_string_hash_test(hash_factory, md, only_if=lambda api: True,
 
 
 def long_string_hash_test(api, hash_factory, md, only_if, skip_message):
-    if not only_if(api):
+    if only_if is not None and not only_if(api):
         pytest.skip(skip_message)
     m = hash_factory(api)
     m.update(b"a" * 1000000)

@@ -269,6 +269,20 @@ def test_load_cryptrec_vectors():
     ]
 
 
+def test_load_cryptrec_vectors_invalid():
+    vector_data = textwrap.dedent("""
+    # Vectors taken from http://info.isl.ntt.co.jp/crypt/eng/camellia/
+    # Download is t_camelia.txt
+
+    # Camellia with 128-bit key
+
+    E No.001 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    """).splitlines()
+
+    with pytest.raises(ValueError):
+        load_cryptrec_vectors(vector_data)
+
+
 def test_load_cryptrec_vectors_from_file_encrypt():
     test_set = load_cryptrec_vectors_from_file(
         "Camellia/NTT/camellia-128-ecb.txt"
