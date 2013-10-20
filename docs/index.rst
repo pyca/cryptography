@@ -34,4 +34,5 @@ Contents
     primitives/index
     bindings/index
     contributing
+    security
     community

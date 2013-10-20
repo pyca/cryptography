@@ -32,11 +32,8 @@ devastating, ``cryptography`` has a strict code review policy:
 The purpose of these policies is to minimize the chances we merge a change
 which jeopardizes our users' security.
 
-We do not yet have a formal security contact. To report security issues in
-``cryptography`` you should email ``alex.gaynor@gmail.com``, messages may be
-encrypted with PGP to key fingerprint
-``E27D 4AA0 1651 72CB C5D2  AF2B 125F 5C67 DFE9 4084`` (this public key is
-available from most commonly-used keyservers).
+If you believe you've identified a security issue in ``cryptography``, please
+follow the directions on the :doc:`security page </security>`.
 
 Code
 ----
