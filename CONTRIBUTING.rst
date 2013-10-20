@@ -12,4 +12,4 @@ Examples of contributions include:
 Extensive contribution guidelines are available in the repository at
 ``docs/contributing.rst``, or online at:
 
-https://cryptography.readthedocs.org/en/latest/contributing/
+https://cryptography.io/en/latest/contributing/
