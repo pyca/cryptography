@@ -121,12 +121,10 @@ typedef int tlsext_servername_callback(const SSL *ssl, int *alert, void *arg);
 """
 
 FUNCTIONS = """
-void *OPENSSL_malloc(int);
 void OPENSSL_free(void *);
 int SSL_library_init();
 
 /*  methods */
-
 const SSL_METHOD *SSLv3_method();
 const SSL_METHOD *SSLv3_server_method();
 const SSL_METHOD *SSLv3_client_method();
@@ -180,8 +178,6 @@ int SSL_total_renegotiations(const SSL *);
 int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
-void SSL_set_shutdown(SSL *, int);
-int SSL_get_shutdown(const SSL *);
 struct stack_st_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 struct stack_st_X509_NAME *SSL_get_client_CA_list(const SSL *);
