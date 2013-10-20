@@ -13,9 +13,20 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
+import six
+
 from cryptography.primitives import hashes
 
 from .utils import generate_base_hash_test
+
+
+class TestBaseHash(object):
+    def test_base_hash_reject_unicode(self, api):
+        m = hashes.SHA1(api=api)
+        with pytest.raises(TypeError):
+            m.update(six.u("\u00FC"))
 
 
 class TestSHA1(object):
