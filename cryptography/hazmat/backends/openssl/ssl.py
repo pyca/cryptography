@@ -13,6 +13,14 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+/* This is a gross hack - if it is not here, as well as in the TYPES section,
+ * because it is needed to replace some function signatures in the FUNCTIONS
+ * section, and may be needed by PyOpenSSL
+ */
+typedef int verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx);
+typedef void info_callback(const SSL *ssl, int where, int ret);
+typedef int tlsext_servername_callback(const SSL *ssl, int *alert, void *arg);
 """
 
 TYPES = """
