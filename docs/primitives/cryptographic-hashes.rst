@@ -1,5 +1,5 @@
 Message Digests
-====================
+===============
 
 .. class:: cryptography.primitives.hashes.BaseHash
 
@@ -8,7 +8,7 @@ Message Digests
 
     .. method:: update(data)
 
-        :param bytes data The bytes you wish to hash.
+        :param bytes data: The bytes you wish to hash.
 
     .. method:: copy()
 
