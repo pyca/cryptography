@@ -131,3 +131,16 @@ class TestWhirlpool(object):
         only_if=lambda api: api.supports_hash(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
+
+
+class TestMD5(object):
+    test_md5 = generate_hash_test(
+        load_hash_vectors_from_file,
+        os.path.join("RFC", "MD5"),
+        [
+            "rfc-1321.txt",
+        ],
+        hashes.MD5,
+        only_if=lambda api: api.supports_hash(hashes.MD5),
+        skip_message="Does not support MD5",
+    )

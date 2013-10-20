@@ -13,20 +13,24 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
 import binascii
+
+import six
 
 from cryptography.bindings import _default_api
 
 
-class BaseHash(object):
+class BaseHash(six.with_metaclass(abc.ABCMeta)):
     def __init__(self, api=None, ctx=None):
         if api is None:
             api = _default_api
         self._api = api
         self._ctx = self._api.create_hash_context(self) if ctx is None else ctx
 
-    def update(self, string):
-        self._api.update_hash_context(self._ctx, string)
+    def update(self, data):
+        self._api.update_hash_context(self._ctx, data)
 
     def copy(self):
         return self.__class__(ctx=self._copy_ctx())
@@ -81,4 +85,10 @@ class RIPEMD160(BaseHash):
 class Whirlpool(BaseHash):
     name = "whirlpool"
     digest_size = 64
+    block_size = 64
+
+
+class MD5(BaseHash):
+    name = "md5"
+    digest_size = 16
     block_size = 64
