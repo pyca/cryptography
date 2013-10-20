@@ -45,6 +45,8 @@ int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
 const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_block_size(const EVP_CIPHER *);
 void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
+EVP_CIPHER_CTX *EVP_CIPHER_CTX_new();
+void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 
 EVP_MD_CTX *EVP_MD_CTX_create();
 int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
