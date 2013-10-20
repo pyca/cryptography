@@ -168,6 +168,8 @@ class API(object):
         buf = self.ffi.new("unsigned char[]", digest_size)
         res = self.lib.EVP_DigestFinal_ex(ctx, buf, self.ffi.NULL)
         assert res != 0
+        res = self.lib.EVP_MD_CTX_cleanup(ctx)
+        assert res != 0
         return self.ffi.buffer(buf)[:digest_size]
 
     def copy_hash_context(self, ctx):
