@@ -17,6 +17,8 @@ import pytest
 
 import six
 
+from cryptography.bindings import _default_api
+
 from cryptography.primitives import hashes
 
 from .utils import generate_base_hash_test
@@ -31,6 +33,15 @@ class TestBaseHash(object):
     def test_base_hash_hexdigest_string_type(self, api):
         m = hashes.SHA1(api=api, data=b"")
         assert isinstance(m.hexdigest(), str)
+
+
+class TestDefaultAPISHA1(object):
+    def test_default_api_creation(self):
+        """
+        This test assumes the presence of SHA1 in the default API.
+        """
+        h = hashes.SHA1()
+        assert h._api == _default_api
 
 
 class TestSHA1(object):
