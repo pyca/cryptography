@@ -135,15 +135,6 @@ const SSL_METHOD *SSLv23_method();
 const SSL_METHOD *SSLv23_server_method();
 const SSL_METHOD *SSLv23_client_method();
 
-/* SSLv2 support is compiled out of some versions of OpenSSL.  These will
- * get special support when we generate the bindings so that if they are
- * available they will be wrapped, but if they are not they won't cause
- * problems (like link errors).
- */
-SSL_METHOD *SSLv2_method();
-SSL_METHOD *SSLv2_server_method();
-SSL_METHOD *SSLv2_client_method();
-
 /*  SSL */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 SSL_SESSION *SSL_get1_session(SSL *);
@@ -152,11 +143,6 @@ int SSL_get_verify_mode(const SSL *);
 void SSL_set_verify_depth(SSL *, int);
 int SSL_get_verify_depth(const SSL *);
 int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
-long SSL_set_mode(SSL *, long);
-long SSL_get_mode(SSL *);
-long SSL_set_options(SSL *, long);
-long SSL_clear_options(SSL *, long);
-long SSL_get_options(SSL *);
 void SSL_set_info_callback(SSL *, void (*callback)());
 void (*SSL_get_info_callback(const SSL *))();
 SSL *SSL_new(SSL_CTX *);
@@ -172,9 +158,6 @@ int SSL_write(SSL *, const void *, int);
 int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
 struct stack_st_X509 *SSL_get_peer_cert_chain(const SSL *);
-int SSL_want_read(const SSL *);
-int SSL_want_write(const SSL *);
-int SSL_total_renegotiations(const SSL *);
 int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
@@ -183,10 +166,8 @@ const char *SSL_get_cipher_list(const SSL *, int);
 struct stack_st_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
 /*  context */
-SSL_CTX *SSL_CTX_new(SSL_METHOD *);
 void SSL_CTX_free(SSL_CTX *);
 long SSL_CTX_set_timeout(SSL_CTX *, long);
-long SSL_CTX_get_timeout(SSL_CTX *);
 int SSL_CTX_set_default_verify_paths(SSL_CTX *);
 void SSL_CTX_set_verify(SSL_CTX *, int, verify_callback);
 void SSL_CTX_set_verify_depth(SSL_CTX *, int);
@@ -274,6 +255,35 @@ void SSL_set_tlsext_host_name(SSL *, char *);
 const char *SSL_get_servername(const SSL *, const int);
 void SSL_CTX_set_tlsext_servername_callback(SSL_CTX *,
                                             tlsext_servername_callback);
+"""
+
+MACROS = """
+long SSL_set_mode(SSL *, long);
+long SSL_get_mode(SSL *);
+
+long SSL_set_options(SSL *, long);
+long SSL_clear_options(SSL *, long);
+long SSL_get_options(SSL *);
+
+int SSL_want_read(const SSL *);
+int SSL_want_write(const SSL *);
+
+int SSL_total_renegotiations(const SSL *);
+
+/*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
+
+/* SSLv2 support is compiled out of some versions of OpenSSL.  These will
+ * get special support when we generate the bindings so that if they are
+ * available they will be wrapped, but if they are not they won't cause
+ * problems (like link errors).
+ */
+const SSL_METHOD *SSLv2_method();
+const SSL_METHOD *SSLv2_server_method();
+const SSL_METHOD *SSLv2_client_method();
+
+/*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
+SSL_CTX *SSL_CTX_new(const SSL_METHOD *);
+long SSL_CTX_get_timeout(const SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
