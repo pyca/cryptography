@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pretend
+
 import pytest
 
 import six
@@ -33,6 +35,15 @@ class TestBaseHash(object):
     def test_base_hash_hexdigest_string_type(self, api):
         m = hashes.SHA1(api=api, data=b"")
         assert isinstance(m.hexdigest(), str)
+
+
+class TestCopyHash(object):
+    def test_copy_api_object(self):
+        pretend_api = pretend.stub(copy_hash_context=lambda a: "copiedctx")
+        pretend_ctx = pretend.stub()
+        h = hashes.SHA1(api=pretend_api, ctx=pretend_ctx)
+        assert h._api is pretend_api
+        assert h.copy()._api is h._api
 
 
 class TestDefaultAPISHA1(object):
