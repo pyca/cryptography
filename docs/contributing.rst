@@ -65,6 +65,16 @@ Don't name parameters:
     // Bad
     long f(long x);
 
+...unless they're inside a struct:
+
+.. code-block:: c
+
+    struct my_struct {
+        char *name;
+        int number;
+        ...;
+    };
+
 Don't include stray ``void`` parameters:
 
 .. code-block:: c
