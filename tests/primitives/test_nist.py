@@ -228,8 +228,12 @@ class TestTripleDES_CBC(object):
             "TCBCIMMT2.rsp",
             "TCBCIMMT3.rsp",
         ],
-        lambda key1, key2, key3, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3)),
-        lambda key1, key2, key3, iv1, iv2, iv3: modes.CBC(binascii.unhexlify(iv1 + iv2 + iv3)),
+        lambda key1, key2, key3, iv1, iv2, iv3: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
+        lambda key1, key2, key3, iv1, iv2, iv3: (
+            modes.CBC(binascii.unhexlify(iv1 + iv2 + iv3))
+        ),
     )
 
     test_MMT1 = generate_encrypt_test(
@@ -240,6 +244,16 @@ class TestTripleDES_CBC(object):
             "TCBCMMT2.rsp",
             "TCBCMMT3.rsp",
         ],
-        lambda key1, key2, key3, iv: ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3)),
+        lambda key1, key2, key3, iv: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
         lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
     )
+
+
+class TestTripleDES_OFB(object):
+    pass
+
+
+class TestTripleDES_CFB(object):
+    pass
