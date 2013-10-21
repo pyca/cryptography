@@ -224,6 +224,20 @@ class TestTripleDES_CBC(object):
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "MMT"),
         [
+            "TCBCMMT1.rsp",
+            "TCBCMMT2.rsp",
+            "TCBCMMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
+        lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
+    )
+
+    test_MMT2 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
             "TCBCIMMT1.rsp",
             "TCBCIMMT2.rsp",
             "TCBCIMMT3.rsp",
@@ -236,13 +250,15 @@ class TestTripleDES_CBC(object):
         ),
     )
 
+
+class TestTripleDES_OFB(object):
     test_MMT1 = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "MMT"),
         [
-            "TCBCMMT1.rsp",
-            "TCBCMMT2.rsp",
-            "TCBCMMT3.rsp",
+            "TOFBMMT1.rsp",
+            "TOFBMMT2.rsp",
+            "TOFBMMT3.rsp",
         ],
         lambda key1, key2, key3, iv: (
             ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
@@ -250,9 +266,21 @@ class TestTripleDES_CBC(object):
         lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
-
-class TestTripleDES_OFB(object):
-    pass
+    test_MMT2 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
+            "TOFBIMMT1.rsp",
+            "TOFBIMMT2.rsp",
+            "TOFBIMMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv1, iv2, iv3: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
+        lambda key1, key2, key3, iv1, iv2, iv3: (
+            modes.CBC(binascii.unhexlify(iv1 + iv2 + iv3))
+        ),
+    )
 
 
 class TestTripleDES_CFB(object):
