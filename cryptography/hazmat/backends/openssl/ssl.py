@@ -117,6 +117,7 @@ static const int TLSEXT_NAMETYPE_host_name;
 """
 
 FUNCTIONS = """
+void SSL_load_error_strings();
 int SSL_library_init();
 
 /*  SSL */
