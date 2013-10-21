@@ -158,19 +158,10 @@ void SSL_CTX_set_verify_depth(SSL_CTX *, int);
 int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
 void SSL_CTX_set_info_callback(SSL_CTX *, void (*cb)(const SSL *, int, int));
 void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
-long SSL_CTX_set_options(SSL_CTX *, long);
-long SSL_CTX_clear_options(SSL_CTX *, long);
-long SSL_CTX_get_options(SSL_CTX *);
-long SSL_CTX_set_mode(SSL_CTX *, long);
-long SSL_CTX_get_mode(SSL_CTX *);
-long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
-long SSL_CTX_get_session_cache_mode(SSL_CTX *);
 int SSL_CTX_get_verify_mode(const SSL_CTX *);
 int SSL_CTX_get_verify_depth(const SSL_CTX *);
 int SSL_CTX_set_cipher_list(SSL_CTX *, const char *);
 int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
-long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
-long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
 void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
 int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
@@ -254,6 +245,16 @@ int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
 int SSL_total_renegotiations(const SSL *);
+
+long SSL_CTX_set_options(SSL_CTX *, long);
+long SSL_CTX_clear_options(SSL_CTX *, long);
+long SSL_CTX_get_options(SSL_CTX *);
+long SSL_CTX_set_mode(SSL_CTX *, long);
+long SSL_CTX_get_mode(SSL_CTX *);
+long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
+long SSL_CTX_get_session_cache_mode(SSL_CTX *);
+long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
+long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
 
