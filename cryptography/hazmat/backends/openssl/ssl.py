@@ -170,7 +170,7 @@ void SSL_CTX_set_verify(SSL_CTX *, int, verify_callback);
 void SSL_CTX_set_verify_depth(SSL_CTX *, int);
 int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
 void SSL_CTX_set_info_callback(SSL_CTX *, info_callback);
-void (*SSL_CTX_get_info_callback(const SSL_CTX *))();
+void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 long SSL_CTX_set_options(SSL_CTX *, long);
 long SSL_CTX_clear_options(SSL_CTX *, long);
 long SSL_CTX_get_options(SSL_CTX *);
