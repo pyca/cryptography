@@ -35,6 +35,7 @@ class API(object):
         "engine",
         "err",
         "evp",
+        "hmac",
         "nid",
         "opensslv",
         "pem",
