@@ -13,14 +13,6 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
-
-/* This is a gross hack - if it is not here, as well as in the TYPES section,
- * because it is needed to replace some function signatures in the FUNCTIONS
- * section, and may be needed by PyOpenSSL
- */
-typedef int verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx);
-typedef void info_callback(const SSL *ssl, int where, int ret);
-typedef int tlsext_servername_callback(const SSL *ssl, int *alert, void *arg);
 """
 
 TYPES = """
@@ -122,10 +114,6 @@ typedef struct {
 } SSL;
 
 static const int TLSEXT_NAMETYPE_host_name;
-
-typedef int verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx);
-typedef void info_callback(const SSL *ssl, int where, int ret);
-typedef int tlsext_servername_callback(const SSL *ssl, int *alert, void *arg);
 """
 
 FUNCTIONS = """
@@ -165,10 +153,10 @@ struct stack_st_X509_NAME *SSL_get_client_CA_list(const SSL *);
 void SSL_CTX_free(SSL_CTX *);
 long SSL_CTX_set_timeout(SSL_CTX *, long);
 int SSL_CTX_set_default_verify_paths(SSL_CTX *);
-void SSL_CTX_set_verify(SSL_CTX *, int, verify_callback);
+void SSL_CTX_set_verify(SSL_CTX *, int, int (*callback)(int, X509_STORE_CTX *));
 void SSL_CTX_set_verify_depth(SSL_CTX *, int);
 int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
-void SSL_CTX_set_info_callback(SSL_CTX *, info_callback);
+void SSL_CTX_set_info_callback(SSL_CTX *, void (*cb)(const SSL *, int, int));
 void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 long SSL_CTX_set_options(SSL_CTX *, long);
 long SSL_CTX_clear_options(SSL_CTX *, long);
@@ -249,8 +237,9 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
  */
 void SSL_set_tlsext_host_name(SSL *, char *);
 const char *SSL_get_servername(const SSL *, const int);
-void SSL_CTX_set_tlsext_servername_callback(SSL_CTX *,
-                                            tlsext_servername_callback);
+void SSL_CTX_set_tlsext_servername_callback(
+    SSL_CTX *,
+    int (*cb)(const SSL *, int *, void *));
 """
 
 MACROS = """
