@@ -132,17 +132,6 @@ FUNCTIONS = """
 void OPENSSL_free(void *);
 int SSL_library_init();
 
-/*  methods */
-const SSL_METHOD *SSLv3_method();
-const SSL_METHOD *SSLv3_server_method();
-const SSL_METHOD *SSLv3_client_method();
-const SSL_METHOD *TLSv1_method();
-const SSL_METHOD *TLSv1_server_method();
-const SSL_METHOD *TLSv1_client_method();
-const SSL_METHOD *SSLv23_method();
-const SSL_METHOD *SSLv23_server_method();
-const SSL_METHOD *SSLv23_client_method();
-
 /*  SSL */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 SSL_SESSION *SSL_get1_session(SSL *);
@@ -288,6 +277,17 @@ int SSL_total_renegotiations(const SSL *);
 const SSL_METHOD *SSLv2_method();
 const SSL_METHOD *SSLv2_server_method();
 const SSL_METHOD *SSLv2_client_method();
+
+/*  methods */
+const SSL_METHOD *SSLv3_method();
+const SSL_METHOD *SSLv3_server_method();
+const SSL_METHOD *SSLv3_client_method();
+const SSL_METHOD *TLSv1_method();
+const SSL_METHOD *TLSv1_server_method();
+const SSL_METHOD *TLSv1_client_method();
+const SSL_METHOD *SSLv23_method();
+const SSL_METHOD *SSLv23_server_method();
+const SSL_METHOD *SSLv23_client_method();
 
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(const SSL_METHOD *);
