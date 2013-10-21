@@ -15,14 +15,17 @@ where the encrypter and decrypter both use the same key.
 
     Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
     They combine an underlying algorithm (such as AES), with a mode (such as
-    CBC, CTR, or GCM). A simple example of encrypting content with AES is:
+    CBC, CTR, or GCM). A simple example of encrypting (and then decrypting)
+    content with AES is:
 
     .. doctest::
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
-        >>> context = cipher.encryptor()
-        >>> context.update(b"a secret message") + context.finalize()
+        >>> encrypt = cipher.encryptor()
+        >>> ct = encrypt.update(b"a secret message") + encrypt.finalize()
+        >>> decrypt = cipher.decryptor()
+        >>> decrypt.update(ct) + decrypt.finalize()
         '...'
 
     :param cipher: One of the ciphers described below.

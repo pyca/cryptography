@@ -49,20 +49,20 @@ class TestBlockCipherContext(object):
             modes.CBC(binascii.unhexlify(b"0" * 32)),
             api
         )
-        context = cipher.encryptor()
-        context.update(b"a" * 16)
-        context.finalize()
+        encryptor = cipher.encryptor()
+        encryptor.update(b"a" * 16)
+        encryptor.finalize()
         with pytest.raises(ValueError):
-            context.update(b"b" * 16)
+            encryptor.update(b"b" * 16)
         with pytest.raises(ValueError):
-            context.finalize()
-        context = cipher.decryptor()
-        context.update(b"a" * 16)
-        context.finalize()
+            encryptor.finalize()
+        decryptor = cipher.decryptor()
+        decryptor.update(b"a" * 16)
+        decryptor.finalize()
         with pytest.raises(ValueError):
-            context.update(b"b" * 16)
+            decryptor.update(b"b" * 16)
         with pytest.raises(ValueError):
-            context.finalize()
+            decryptor.finalize()
 
     def test_unaligned_block_encryption(self, api):
         cipher = BlockCipher(
@@ -70,15 +70,16 @@ class TestBlockCipherContext(object):
             modes.ECB(),
             api
         )
-        context = cipher.encryptor()
-        ct = context.update(b"a" * 15)
+        encryptor = cipher.encryptor()
+        ct = encryptor.update(b"a" * 15)
         assert ct == b""
-        ct += context.update(b"a" * 65)
+        ct += encryptor.update(b"a" * 65)
         assert len(ct) == 80
-        ct += context.finalize()
-        context = cipher.decryptor()
-        pt = context.update(ct[:3])
+        ct += encryptor.finalize()
+        decryptor = cipher.decryptor()
+        pt = decryptor.update(ct[:3])
         assert pt == b""
-        pt += context.update(ct[3:])
+        pt += decryptor.update(ct[3:])
         assert len(pt) == 80
-        context.finalize()
+        assert pt == b"a" * 80
+        decryptor.finalize()
