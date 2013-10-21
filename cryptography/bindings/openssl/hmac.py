@@ -16,8 +16,7 @@ INCLUDES = """
 """
 
 TYPES = """
-struct hmac_ctx_st { ...; };
-typedef struct hmac_ctx_st HMAC_CTX;
+typedef struct { ...; } HMAC_CTX;
 """
 
 FUNCTIONS = """
