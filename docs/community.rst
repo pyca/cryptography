@@ -12,4 +12,4 @@ You can find ``cryptography`` all over the web:
 .. _`Mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`Source code`: https://github.com/pyca/cryptography
 .. _`Issue tracker`: https://github.com/pyca/cryptography/issues
-.. _`Documentation`: https://cryptography.readthedocs.org/
+.. _`Documentation`: https://cryptography.io/

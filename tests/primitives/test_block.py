@@ -23,20 +23,11 @@ from cryptography.primitives.block.base import _Operation
 
 
 class TestBlockCipher(object):
-    def test_cipher_name(self, api):
-        cipher = BlockCipher(
-            ciphers.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32)),
-            api
-        )
-        assert cipher.name == "AES-128-CBC"
-
     def test_instantiate_without_api(self):
-        cipher = BlockCipher(
+        BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
-        assert cipher.name == "AES-128-CBC"
 
     def test_use_after_finalize(self, api):
         cipher = BlockCipher(
@@ -72,3 +63,14 @@ class TestBlockCipher(object):
 
         with pytest.raises(ValueError):
             cipher.finalize()
+
+    def test_unaligned_block_encryption(self, api):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.ECB(),
+            api
+        )
+        ct = cipher.encrypt(b"a" * 15)
+        assert ct == b""
+        ct += cipher.encrypt(b"a" * 65)
+        assert len(ct) == 80

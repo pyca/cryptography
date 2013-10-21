@@ -37,6 +37,7 @@ class API(object):
     OpenSSL API wrapper.
     """
     _modules = [
+        "asn1",
         "bignum",
         "bio",
         "conf",
@@ -46,10 +47,18 @@ class API(object):
         "engine",
         "err",
         "evp",
+        "hmac",
+        "nid",
         "opensslv",
+        "pem",
+        "pkcs7",
+        "pkcs12",
         "rand",
         "rsa",
         "ssl",
+        "x509",
+        "x509name",
+        "x509v3",
     ]
 
     def __init__(self):
@@ -128,14 +137,11 @@ class API(object):
             )
 
     def create_block_cipher_context(self, cipher, mode):
-        ctx = self.ffi.new("EVP_CIPHER_CTX *")
-        res = self.lib.EVP_CIPHER_CTX_init(ctx)
-        assert res != 0
-        ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_cleanup)
+        ctx = self.lib.EVP_CIPHER_CTX_new()
+        ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_free)
         evp_cipher = self._cipher_registry[type(cipher), type(mode)](
             self, cipher, mode
         )
-
         assert evp_cipher != self.ffi.NULL
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
@@ -156,7 +162,8 @@ class API(object):
         return ctx
 
     def update_encrypt_context(self, ctx, plaintext):
-        buf = self.ffi.new("unsigned char[]", len(plaintext))
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
+        buf = self.ffi.new("unsigned char[]", len(plaintext) + block_size - 1)
         outlen = self.ffi.new("int *")
         res = self.lib.EVP_EncryptUpdate(
             ctx, buf, outlen, plaintext, len(plaintext)
@@ -165,15 +172,46 @@ class API(object):
         return self.ffi.buffer(buf)[:outlen[0]]
 
     def finalize_encrypt_context(self, ctx):
-        cipher = self.lib.EVP_CIPHER_CTX_cipher(ctx)
-        block_size = self.lib.EVP_CIPHER_block_size(cipher)
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", block_size)
         outlen = self.ffi.new("int *")
         res = self.lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
         assert res != 0
         res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
-        assert res != 0
+        assert res == 1
         return self.ffi.buffer(buf)[:outlen[0]]
+
+    def supports_hash(self, hash_cls):
+        return (self.ffi.NULL !=
+                self.lib.EVP_get_digestbyname(hash_cls.name.encode("ascii")))
+
+    def create_hash_context(self, hashobject):
+        ctx = self.lib.EVP_MD_CTX_create()
+        ctx = self.ffi.gc(ctx, self.lib.EVP_MD_CTX_destroy)
+        evp_md = self.lib.EVP_get_digestbyname(hashobject.name.encode("ascii"))
+        assert evp_md != self.ffi.NULL
+        res = self.lib.EVP_DigestInit_ex(ctx, evp_md, self.ffi.NULL)
+        assert res != 0
+        return ctx
+
+    def update_hash_context(self, ctx, data):
+        res = self.lib.EVP_DigestUpdate(ctx, data, len(data))
+        assert res != 0
+
+    def finalize_hash_context(self, ctx, digest_size):
+        buf = self.ffi.new("unsigned char[]", digest_size)
+        res = self.lib.EVP_DigestFinal_ex(ctx, buf, self.ffi.NULL)
+        assert res != 0
+        res = self.lib.EVP_MD_CTX_cleanup(ctx)
+        assert res == 1
+        return self.ffi.buffer(buf)[:digest_size]
+
+    def copy_hash_context(self, ctx):
+        copied_ctx = self.lib.EVP_MD_CTX_create()
+        copied_ctx = self.ffi.gc(copied_ctx, self.lib.EVP_MD_CTX_destroy)
+        res = self.lib.EVP_MD_CTX_copy_ex(copied_ctx, ctx)
+        assert res != 0
+        return copied_ctx
 
 
 api = API()
