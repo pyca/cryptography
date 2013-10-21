@@ -24,6 +24,8 @@ int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on();
 void CRYPTO_mem_leaks(struct bio_st *);
 void CRYPTO_cleanup_all_ex_data();
+
+void OPENSSL_free(void *);
 """
 
 MACROS = """

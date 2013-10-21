@@ -129,7 +129,6 @@ typedef int tlsext_servername_callback(const SSL *ssl, int *alert, void *arg);
 """
 
 FUNCTIONS = """
-void OPENSSL_free(void *);
 int SSL_library_init();
 
 /*  SSL */
