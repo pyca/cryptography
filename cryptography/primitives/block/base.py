@@ -15,8 +15,6 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from cryptography.bindings import _default_api
-
 
 class _Operation(Enum):
     encrypt = 0
@@ -28,7 +26,7 @@ class BlockCipher(object):
         super(BlockCipher, self).__init__()
 
         if api is None:
-            api = _default_api
+            from cryptography.bindings import _default_api as api
 
         self.cipher = cipher
         self.mode = mode
