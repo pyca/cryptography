@@ -16,6 +16,14 @@ from __future__ import absolute_import, division, print_function
 from cryptography.primitives import interfaces
 
 
+def register(iface):
+    def register_decorator(klass):
+        iface.register(klass)
+        return klass
+    return register_decorator
+
+
+@register(interfaces.ModeWithInitializationVector)
 class CBC(object):
     name = "CBC"
 
@@ -28,6 +36,7 @@ class ECB(object):
     name = "ECB"
 
 
+@register(interfaces.ModeWithInitializationVector)
 class OFB(object):
     name = "OFB"
 
@@ -36,6 +45,7 @@ class OFB(object):
         self.initialization_vector = initialization_vector
 
 
+@register(interfaces.ModeWithInitializationVector)
 class CFB(object):
     name = "CFB"
 
@@ -44,6 +54,10 @@ class CFB(object):
         self.initialization_vector = initialization_vector
 
 
-interfaces.ModeWithInitializationVector.register(CBC)
-interfaces.ModeWithInitializationVector.register(OFB)
-interfaces.ModeWithInitializationVector.register(CFB)
+@register(interfaces.ModeWithNonce)
+class CTR(object):
+    name = "CTR"
+
+    def __init__(self, nonce):
+        super(CTR, self).__init__()
+        self.nonce = nonce

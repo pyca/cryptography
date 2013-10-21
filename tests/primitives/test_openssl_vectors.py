@@ -32,7 +32,9 @@ class TestCamelliaCBC(object):
         ["camellia-cbc.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("camellia-128-cbc"),
+        only_if=lambda api: api.supports_cipher(
+            ciphers.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
+        ),
         skip_message="Does not support Camellia CBC",
     )
 
@@ -44,7 +46,9 @@ class TestCamelliaOFB(object):
         ["camellia-ofb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("camellia-128-ofb"),
+        only_if=lambda api: api.supports_cipher(
+            ciphers.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
+        ),
         skip_message="Does not support Camellia OFB",
     )
 
@@ -56,6 +60,22 @@ class TestCamelliaCFB(object):
         ["camellia-cfb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
-        only_if=lambda api: api.supports_cipher("camellia-128-cfb"),
+        only_if=lambda api: api.supports_cipher(
+            ciphers.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
+        ),
         skip_message="Does not support Camellia CFB",
+    )
+
+
+class TestAESCTR(object):
+    test_OpenSSL = generate_encrypt_test(
+        load_openssl_vectors_from_file,
+        "AES",
+        ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
+        only_if=lambda api: api.supports_cipher(
+            ciphers.AES("\x00" * 16), modes.CTR("\x00" * 16)
+        ),
+        skip_message="Does not support AES CTR",
     )

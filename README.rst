@@ -15,7 +15,10 @@ yet. It targets Python 2.6-2.7, Python 3.2+, as well as PyPy.
 
 You can find more documentation at `Read The Docs`_.
 
-.. _`Read The Docs`: https://cryptography.readthedocs.org/
+You can find more information in the `documentation`_.
+
+.. _`documentation`: https://cryptography.io/
+
 
 Discussion
 ~~~~~~~~~~

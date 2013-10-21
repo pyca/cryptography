@@ -20,8 +20,8 @@ devastating, ``cryptography`` has a strict code review policy:
 * Patches must *never* be pushed directly to ``master``, all changes (even the
   most trivial typo fixes!) must be submitted as a pull request.
 * A committer may *never* merge their own pull request, a second party must
-  merge their changes. If multiple people work on a pull request, the merger
-  may not be any of them.
+  merge their changes. If multiple people work on a pull request, it must be
+  merged by someone who did not work on it.
 * A patch which breaks tests, or introduces regressions by changing or removing
   existing tests should not be merged. Tests must always be passing on
   ``master``.
@@ -32,11 +32,8 @@ devastating, ``cryptography`` has a strict code review policy:
 The purpose of these policies is to minimize the chances we merge a change
 which jeopardizes our users' security.
 
-We do not yet have a formal security contact. To report security issues in
-``cryptography`` you should email ``alex.gaynor@gmail.com``, messages may be
-encrypted with PGP to key fingerprint
-``E27D 4AA0 1651 72CB C5D2  AF2B 125F 5C67 DFE9 4084`` (this public key is
-available from most commonly-used keyservers).
+If you believe you've identified a security issue in ``cryptography``, please
+follow the directions on the :doc:`security page </security>`.
 
 Code
 ----
@@ -49,6 +46,58 @@ Additionally, every Python code file must contain
 .. code-block:: python
 
     from __future__ import absolute_import, division, print_function
+
+C bindings
+----------
+
+When binding C code with ``cffi`` we have our own style guide, it's pretty
+simple.
+
+Don't name parameters:
+
+.. code-block:: c
+
+    // Good
+    long f(long);
+    // Bad
+    long f(long x);
+
+...unless they're inside a struct:
+
+.. code-block:: c
+
+    struct my_struct {
+        char *name;
+        int number;
+        ...;
+    };
+
+Don't include stray ``void`` parameters:
+
+.. code-block:: c
+
+    // Good
+    long f();
+    // Bad
+    long f(void);
+
+Wrap lines at 80 characters like so:
+
+.. code-block:: c
+
+    // Pretend this went to 80 characters
+    long f(long, long,
+           int *)
+
+Include a space after commas between parameters:
+
+.. code-block:: c
+
+    // Good
+    long f(int, char *)
+    // Bad
+    long f(int,char *)
+
 
 Documentation
 -------------
