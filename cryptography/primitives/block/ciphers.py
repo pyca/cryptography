@@ -63,6 +63,10 @@ class TripleDES(object):
 
     def __init__(self, key):
         super(TripleDES, self).__init__()
+        if len(key) == 8:
+            key += key + key
+        elif len(key) == 16:
+            key += key[:8]
         self.key = key
 
         # Verify that the key size matches the expected key size

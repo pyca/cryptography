@@ -27,12 +27,18 @@ from ..utils import load_nist_vectors_from_file
 
 
 def load_3des_nist_vectors_from_file(path, op):
-    vectors = load_nist_vectors_from_file(path, op)
-    for vector in vectors:
-        vector["ciphertext"] = vector["ciphertext3"]
-        del vector["ciphertext1"]
-        del vector["ciphertext2"]
-        del vector["ciphertext3"]
+    vectors = []
+    for vector in load_nist_vectors_from_file(path, op):
+        for i in xrange(1, 4):
+            plaintext = vector.get("plaintext{0}".format(i))
+            if plaintext is None:
+                plaintext = vector["plaintext"]
+            vectors.append({
+                "key": vector["keys"],
+                "iv": vector["iv{0}".format(i)],
+                "ciphertext": vector["ciphertext{0}".format(i)],
+                "plaintext": plaintext,
+            })
     return vectors
 
 
@@ -188,7 +194,7 @@ class TestTripleDES_CBC(object):
             "TCBCvartext.rsp",
         ],
         lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.CBC(iv),
+        lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_KAT2 = generate_encrypt_test(
@@ -200,18 +206,18 @@ class TestTripleDES_CBC(object):
             "TCBCIvarkey.rsp",
             "TCBCIvartext.rsp",
         ],
-        lambda keys, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
+        lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_KAT3 = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_3des_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "KAT"),
         [
             "TCBCIinvperm.rsp",
         ],
-        lambda keys, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
+        lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_MMT1 = generate_encrypt_test(
@@ -223,7 +229,7 @@ class TestTripleDES_CBC(object):
             "TCBCIMMT3.rsp",
         ],
         lambda key1, key2, key3, iv1, iv2, iv3: ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3)),
-        lambda key1, key2, key3, iv1, iv2, iv3: modes.CBC(iv1 + iv2 + iv3),
+        lambda key1, key2, key3, iv1, iv2, iv3: modes.CBC(binascii.unhexlify(iv1 + iv2 + iv3)),
     )
 
     test_MMT1 = generate_encrypt_test(
@@ -235,5 +241,5 @@ class TestTripleDES_CBC(object):
             "TCBCMMT3.rsp",
         ],
         lambda key1, key2, key3, iv: ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3)),
-        lambda key1, key2, key3, iv: modes.CBC(iv),
+        lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
     )
