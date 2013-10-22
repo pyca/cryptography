@@ -10,8 +10,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-
 from setuptools import setup, find_packages
 
 
@@ -31,9 +29,6 @@ install_requires = [
 setup_requires = [
     CFFI_DEPENDENCY,
 ]
-
-if sys.version_info[:2] < (3, 4):
-    install_requires += ["enum34"]
 
 setup(
     name=about["__title__"],

@@ -13,12 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from enum import Enum
-
-
-class _Operation(Enum):
-    encrypt = 0
-    decrypt = 1
+from cryptography.primitives import interfaces
 
 
 class BlockCipher(object):
@@ -31,30 +26,49 @@ class BlockCipher(object):
         self.cipher = cipher
         self.mode = mode
         self._api = api
-        self._ctx = api.create_block_cipher_context(cipher, mode)
-        self._operation = None
 
-    def encrypt(self, plaintext):
+    def encryptor(self):
+        return _CipherEncryptionContext(self.cipher, self.mode, self._api)
+
+    def decryptor(self):
+        return _CipherDecryptionContext(self.cipher, self.mode, self._api)
+
+
+@interfaces.register(interfaces.CipherContext)
+class _CipherEncryptionContext(object):
+    def __init__(self, cipher, mode, api):
+        super(_CipherEncryptionContext, self).__init__()
+        self._api = api
+        self._ctx = self._api.create_block_cipher_encrypt_context(cipher, mode)
+
+    def update(self, data):
         if self._ctx is None:
-            raise ValueError("BlockCipher was already finalized")
-
-        if self._operation is None:
-            self._operation = _Operation.encrypt
-        elif self._operation is not _Operation.encrypt:
-            raise ValueError("BlockCipher cannot encrypt when the operation is"
-                             " set to %s" % self._operation.name)
-
-        return self._api.update_encrypt_context(self._ctx, plaintext)
+            raise ValueError("Context was already finalized")
+        return self._api.update_encrypt_context(self._ctx, data)
 
     def finalize(self):
         if self._ctx is None:
-            raise ValueError("BlockCipher was already finalized")
-
-        if self._operation is _Operation.encrypt:
-            result = self._api.finalize_encrypt_context(self._ctx)
-        else:
-            raise ValueError("BlockCipher cannot finalize the unknown "
-                             "operation %s" % self._operation.name)
-
+            raise ValueError("Context was already finalized")
+        data = self._api.finalize_encrypt_context(self._ctx)
         self._ctx = None
-        return result
+        return data
+
+
+@interfaces.register(interfaces.CipherContext)
+class _CipherDecryptionContext(object):
+    def __init__(self, cipher, mode, api):
+        super(_CipherDecryptionContext, self).__init__()
+        self._api = api
+        self._ctx = self._api.create_block_cipher_decrypt_context(cipher, mode)
+
+    def update(self, data):
+        if self._ctx is None:
+            raise ValueError("Context was already finalized")
+        return self._api.update_decrypt_context(self._ctx, data)
+
+    def finalize(self):
+        if self._ctx is None:
+            raise ValueError("Context was already finalized")
+        data = self._api.finalize_decrypt_context(self._ctx)
+        self._ctx = None
+        return data

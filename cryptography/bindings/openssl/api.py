@@ -142,7 +142,27 @@ class API(object):
                 GetCipherByName("des-ede3-{mode.name}")
             )
 
-    def create_block_cipher_context(self, cipher, mode):
+    def create_block_cipher_encrypt_context(self, cipher, mode):
+        ctx, evp, iv_nonce = self._create_block_cipher_context(cipher, mode)
+        res = self.lib.EVP_EncryptInit_ex(ctx, evp, api.ffi.NULL, cipher.key,
+                                          iv_nonce)
+        assert res != 0
+        # We purposely disable padding here as it's handled higher up in the
+        # API.
+        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
+        return ctx
+
+    def create_block_cipher_decrypt_context(self, cipher, mode):
+        ctx, evp, iv_nonce = self._create_block_cipher_context(cipher, mode)
+        res = self.lib.EVP_DecryptInit_ex(ctx, evp, api.ffi.NULL, cipher.key,
+                                          iv_nonce)
+        assert res != 0
+        # We purposely disable padding here as it's handled higher up in the
+        # API.
+        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
+        return ctx
+
+    def _create_block_cipher_context(self, cipher, mode):
         ctx = self.lib.EVP_CIPHER_CTX_new()
         ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_free)
         evp_cipher = self._cipher_registry[type(cipher), type(mode)](
@@ -156,24 +176,21 @@ class API(object):
         else:
             iv_nonce = self.ffi.NULL
 
-        # TODO: Sometimes this needs to be a DecryptInit, when?
-        res = self.lib.EVP_EncryptInit_ex(
-            ctx, evp_cipher, self.ffi.NULL, cipher.key, iv_nonce
-        )
-        assert res != 0
+        return (ctx, evp_cipher, iv_nonce)
 
-        # We purposely disable padding here as it's handled higher up in the
-        # API.
-        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
-        return ctx
-
-    def update_encrypt_context(self, ctx, plaintext):
+    def update_encrypt_context(self, ctx, data):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
-        buf = self.ffi.new("unsigned char[]", len(plaintext) + block_size - 1)
+        buf = self.ffi.new("unsigned char[]", len(data) + block_size - 1)
         outlen = self.ffi.new("int *")
-        res = self.lib.EVP_EncryptUpdate(
-            ctx, buf, outlen, plaintext, len(plaintext)
-        )
+        res = self.lib.EVP_EncryptUpdate(ctx, buf, outlen, data, len(data))
+        assert res != 0
+        return self.ffi.buffer(buf)[:outlen[0]]
+
+    def update_decrypt_context(self, ctx, data):
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
+        buf = self.ffi.new("unsigned char[]", len(data) + block_size - 1)
+        outlen = self.ffi.new("int *")
+        res = self.lib.EVP_DecryptUpdate(ctx, buf, outlen, data, len(data))
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
@@ -182,6 +199,16 @@ class API(object):
         buf = self.ffi.new("unsigned char[]", block_size)
         outlen = self.ffi.new("int *")
         res = self.lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
+        assert res != 0
+        res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
+        assert res == 1
+        return self.ffi.buffer(buf)[:outlen[0]]
+
+    def finalize_decrypt_context(self, ctx):
+        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
+        buf = self.ffi.new("unsigned char[]", block_size)
+        outlen = self.ffi.new("int *")
+        res = self.lib.EVP_DecryptFinal_ex(ctx, buf, outlen)
         assert res != 0
         res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
         assert res == 1

@@ -37,9 +37,14 @@ def encrypt_test(api, cipher_factory, mode_factory, params, only_if,
         mode_factory(**params),
         api
     )
-    actual_ciphertext = cipher.encrypt(binascii.unhexlify(plaintext))
-    actual_ciphertext += cipher.finalize()
+    encryptor = cipher.encryptor()
+    actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
+    actual_ciphertext += encryptor.finalize()
     assert actual_ciphertext == binascii.unhexlify(ciphertext)
+    decryptor = cipher.decryptor()
+    actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+    actual_plaintext += decryptor.finalize()
+    assert actual_plaintext == binascii.unhexlify(plaintext)
 
 
 def generate_hash_test(param_loader, path, file_names, hash_cls,
