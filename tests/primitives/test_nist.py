@@ -247,24 +247,28 @@ class TestTripleDES_OFB(object):
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "KAT"),
         [
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBpermop.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBsubtab.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBvarkey.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBvartext.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBinvperm.rsp",
+            "TOFBpermop.rsp",
+            "TOFBsubtab.rsp",
+            "TOFBvarkey.rsp",
+            "TOFBvartext.rsp",
+            "TOFBinvperm.rsp",
         ],
+        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_KAT2 = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "KAT"),
         [
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIinvperm.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIpermop.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIsubtab.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIvarkey.rsp",
-            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIvartext.rsp",
+            "TOFBIinvperm.rsp",
+            "TOFBIpermop.rsp",
+            "TOFBIsubtab.rsp",
+            "TOFBIvarkey.rsp",
+            "TOFBIvartext.rsp",
         ],
+        lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_MMT1 = generate_encrypt_test(
