@@ -13,15 +13,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.bindings import _default_api
-
 
 class BlockCipher(object):
     def __init__(self, cipher, mode, api=None):
         super(BlockCipher, self).__init__()
 
         if api is None:
-            api = _default_api
+            from cryptography.bindings import _default_api as api
 
         self.cipher = cipher
         self.mode = mode
