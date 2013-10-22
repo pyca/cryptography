@@ -33,11 +33,15 @@ where the encrypter and decrypter both use the same key.
 
     .. method:: encryptor()
 
-        :return :class:`CipherContext`: encryption instance
+        :return: An encrypting
+            :class:`~cryptography.primitives.interfaces.CipherContext`
+            provider.
 
     .. method:: decryptor()
 
-        :return :class:`CipherContext`: decryption instance
+        :return: A decrypting
+            :class:`~cryptography.primitives.interfaces.CipherContext`
+            provider.
 
 .. class:: cryptography.primitives.interfaces.CipherContext()
 
