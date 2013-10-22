@@ -61,6 +61,23 @@ Ciphers
                       This must be kept secret.
 
 
+.. class:: cryptography.primitives.block.ciphers.TripleDES(key)
+
+    Triple DES (Data Encryption Standard), sometimes refered to as 3DES, is a
+    block cipher standardized by NIST. Triple DES has known cryptoanalytic
+    flaws, however none of them currently enable a practical attack.
+    Nonetheless, Triples DES is not reccomended for new applications because it
+    is incredibly slow; old applications should consider moving away from it.
+
+    :param bytes key: The secret key, either ``64``, ``128``, or ``192`` bits
+                      (note that DES functionally uses ``56``, ``112``, or
+                      ``168`` bits of the key, there is a parity byte in each
+                      component of the key), in some materials these are
+                      referred to as being up to three separate keys (each
+                      ``56`` bits long), they can simply be concatenated to
+                      produce the full key. This must be kept secret.
+
+
 Modes
 ~~~~~
 

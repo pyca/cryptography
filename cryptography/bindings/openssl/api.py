@@ -19,7 +19,7 @@ import sys
 import cffi
 
 from cryptography.primitives import interfaces
-from cryptography.primitives.block.ciphers import AES, Camellia
+from cryptography.primitives.block.ciphers import AES, Camellia, TripleDES
 from cryptography.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
 
 
@@ -134,6 +134,12 @@ class API(object):
                 cipher_cls,
                 mode_cls,
                 GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
+            )
+        for mode_cls in [CBC, CFB, OFB]:
+            self.register_cipher_adapter(
+                TripleDES,
+                mode_cls,
+                GetCipherByName("des-ede3-{mode.name}")
             )
 
     def create_block_cipher_context(self, cipher, mode):

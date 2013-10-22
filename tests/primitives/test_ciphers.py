@@ -17,7 +17,7 @@ import binascii
 
 import pytest
 
-from cryptography.primitives.block.ciphers import AES, Camellia
+from cryptography.primitives.block.ciphers import AES, Camellia, TripleDES
 
 
 class TestAES(object):
@@ -48,3 +48,18 @@ class TestCamellia(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             Camellia(binascii.unhexlify(b"0" * 12))
+
+
+class TestTripleDES(object):
+    @pytest.mark.parametrize("key", [
+        b"0" * 16,
+        b"0" * 32,
+        b"0" * 48,
+    ])
+    def test_key_size(self, key):
+        cipher = TripleDES(binascii.unhexlify(key))
+        assert cipher.key_size == 192
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            TripleDES(binascii.unhexlify(b"0" * 12))

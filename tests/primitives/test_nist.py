@@ -164,3 +164,93 @@ class TestAES_CFB(object):
         lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
+
+
+class TestTripleDES_CBC(object):
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "TCBCinvperm.rsp",
+            "TCBCpermop.rsp",
+            "TCBCsubtab.rsp",
+            "TCBCvarkey.rsp",
+            "TCBCvartext.rsp",
+        ],
+        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
+    )
+
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
+            "TCBCMMT1.rsp",
+            "TCBCMMT2.rsp",
+            "TCBCMMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
+        lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
+    )
+
+
+class TestTripleDES_OFB(object):
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "TOFBpermop.rsp",
+            "TOFBsubtab.rsp",
+            "TOFBvarkey.rsp",
+            "TOFBvartext.rsp",
+            "TOFBinvperm.rsp",
+        ],
+        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: modes.OFB(binascii.unhexlify(iv)),
+    )
+
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
+            "TOFBMMT1.rsp",
+            "TOFBMMT2.rsp",
+            "TOFBMMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
+        lambda key1, key2, key3, iv: modes.OFB(binascii.unhexlify(iv)),
+    )
+
+
+class TestTripleDES_CFB(object):
+    test_KAT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "TCFB64invperm.rsp",
+            "TCFB64permop.rsp",
+            "TCFB64subtab.rsp",
+            "TCFB64varkey.rsp",
+            "TCFB64vartext.rsp",
+        ],
+        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: modes.CFB(binascii.unhexlify(iv)),
+    )
+
+    test_MMT = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "MMT"),
+        [
+            "TCFB64MMT1.rsp",
+            "TCFB64MMT2.rsp",
+            "TCFB64MMT3.rsp",
+        ],
+        lambda key1, key2, key3, iv: (
+            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        ),
+        lambda key1, key2, key3, iv: modes.CFB(binascii.unhexlify(iv)),
+    )

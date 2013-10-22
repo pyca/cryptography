@@ -52,3 +52,27 @@ class Camellia(object):
     @property
     def key_size(self):
         return len(self.key) * 8
+
+
+class TripleDES(object):
+    name = "3DES"
+    block_size = 64
+    key_sizes = frozenset([64, 128, 192])
+
+    def __init__(self, key):
+        super(TripleDES, self).__init__()
+        if len(key) == 8:
+            key += key + key
+        elif len(key) == 16:
+            key += key[:8]
+        self.key = key
+
+        # Verify that the key size matches the expected key size
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                self.key_size, self.name
+            ))
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8
