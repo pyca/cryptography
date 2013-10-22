@@ -86,5 +86,5 @@ MD5
 
 .. class:: cryptography.primitives.hashes.MD5()
 
-    MD5 is a deprecated cryptographic hash function. It has a 160-bit message
+    MD5 is a deprecated cryptographic hash function. It has a 128-bit message
     digest and has practical known collision attacks.
