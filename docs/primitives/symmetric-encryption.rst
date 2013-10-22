@@ -15,7 +15,7 @@ where the encrypter and decrypter both use the same key.
 
     Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
     They combine an underlying algorithm (such as AES), with a mode (such as
-    CBC, CTR, or GCM). A simple example of encrypting (and then decrypting)
+    CBC, CTR, or GCM).A simple example of encrypting (and then decrypting)
     content with AES is:
 
     .. doctest::
@@ -31,17 +31,32 @@ where the encrypter and decrypter both use the same key.
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
 
-    ``encrypt()`` should be called repeatedly with new plaintext, and once the
-    full plaintext is fed in, ``finalize()`` should be called.
+    .. method:: encryptor()
 
-    .. method:: encrypt(plaintext)
+        :return :ref:`CipherContext <ciphercontext>`: encryption instance
 
-        :param bytes plaintext: The text you wish to encrypt.
-        :return bytes: Returns the ciphertext that was added.
+    .. method:: decryptor()
+
+        :return :ref:`CipherContext <ciphercontext>`: decryption instance
+
+.. _ciphercontext:
+.. class:: cryptography.primitives.interfaces.CipherContext()
+
+    When calling ``encryptor()`` or ``decryptor()`` on a BlockCipher object you
+    will receive a return object conforming to the CipherContext interface. You
+    can then call ``update(data)`` with data until you have fed everything into
+    the context. Once that is done call ``finalize()`` to finish the operation and
+    obtain the remainder of the data.
+
+
+    .. method:: update(data)
+
+        :param bytes data: The text you wish to pass into the context.
+        :return bytes: Returns the data that was encrypted or decrypted.
 
     .. method:: finalize()
 
-        :return bytes: Returns the remainder of the ciphertext.
+        :return bytes: Returns the remainder of the data.
 
 Ciphers
 ~~~~~~~

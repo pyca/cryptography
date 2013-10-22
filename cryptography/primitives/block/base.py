@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.primitives import interfaces
+
 
 class BlockCipher(object):
     def __init__(self, cipher, mode, api=None):
@@ -26,15 +28,16 @@ class BlockCipher(object):
         self._api = api
 
     def encryptor(self):
-        return _BlockCipherEncryptionContext(self.cipher, self.mode, self._api)
+        return _CipherEncryptionContext(self.cipher, self.mode, self._api)
 
     def decryptor(self):
-        return _BlockCipherDecryptionContext(self.cipher, self.mode, self._api)
+        return _CipherDecryptionContext(self.cipher, self.mode, self._api)
 
 
-class _BlockCipherEncryptionContext(object):
+@interfaces.register(interfaces.CipherContext)
+class _CipherEncryptionContext(object):
     def __init__(self, cipher, mode, api):
-        super(_BlockCipherEncryptionContext, self).__init__()
+        super(_CipherEncryptionContext, self).__init__()
         self._api = api
         self._ctx = self._api.create_block_cipher_encrypt_context(cipher, mode)
 
@@ -51,9 +54,10 @@ class _BlockCipherEncryptionContext(object):
         return data
 
 
-class _BlockCipherDecryptionContext(object):
+@interfaces.register(interfaces.CipherContext)
+class _CipherDecryptionContext(object):
     def __init__(self, cipher, mode, api):
-        super(_BlockCipherDecryptionContext, self).__init__()
+        super(_CipherDecryptionContext, self).__init__()
         self._api = api
         self._ctx = self._api.create_block_cipher_decrypt_context(cipher, mode)
 
