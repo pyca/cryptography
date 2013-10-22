@@ -22,10 +22,10 @@ where the encrypter and decrypter both use the same key.
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
-        >>> encrypt = cipher.encryptor()
-        >>> ct = encrypt.update(b"a secret message") + encrypt.finalize()
-        >>> decrypt = cipher.decryptor()
-        >>> decrypt.update(ct) + decrypt.finalize()
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
         '...'
 
     :param cipher: One of the ciphers described below.
