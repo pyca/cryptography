@@ -1,7 +1,8 @@
 import pytest
 
-from .utils import (base_hash_test, encrypt_test, hash_test,
-    long_string_hash_test)
+from .utils import (
+    base_hash_test, encrypt_test, hash_test, long_string_hash_test
+)
 
 
 class TestEncryptTest(object):

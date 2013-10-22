@@ -67,6 +67,8 @@ def hash_test(api, hash_cls, params, only_if, skip_message):
     m = hash_cls(api=api)
     m.update(binascii.unhexlify(msg))
     assert m.hexdigest() == md.replace(" ", "").lower()
+    digest = hash_cls(api=api, data=binascii.unhexlify(msg)).hexdigest()
+    assert digest == md.replace(" ", "").lower()
 
 
 def generate_base_hash_test(hash_cls, digest_size, block_size,
@@ -115,6 +117,6 @@ def generate_long_string_hash_test(hash_factory, md, only_if=None,
 def long_string_hash_test(api, hash_factory, md, only_if, skip_message):
     if only_if is not None and not only_if(api):
         pytest.skip(skip_message)
-    m = hash_factory(api)
+    m = hash_factory(api=api)
     m.update(b"a" * 1000000)
     assert m.hexdigest() == md.lower()
