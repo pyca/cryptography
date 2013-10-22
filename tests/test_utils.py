@@ -15,10 +15,12 @@ import textwrap
 
 import pytest
 
-from .utils import (load_nist_vectors, load_nist_vectors_from_file,
-    load_cryptrec_vectors, load_cryptrec_vectors_from_file,
-    load_openssl_vectors, load_openssl_vectors_from_file, load_hash_vectors,
-    load_hash_vectors_from_file)
+from .utils import (
+    load_nist_vectors, load_nist_vectors_from_file, load_cryptrec_vectors,
+    load_cryptrec_vectors_from_file, load_openssl_vectors,
+    load_openssl_vectors_from_file, load_hash_vectors,
+    load_hash_vectors_from_file
+)
 
 
 def test_load_nist_vectors_encrypt():
