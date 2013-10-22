@@ -205,15 +205,6 @@ class TestTripleDES_CBC(object):
             "TCBCIsubtab.rsp",
             "TCBCIvarkey.rsp",
             "TCBCIvartext.rsp",
-        ],
-        lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-    )
-
-    test_KAT3 = generate_encrypt_test(
-        lambda path: load_3des_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "KAT"),
-        [
             "TCBCIinvperm.rsp",
         ],
         lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
