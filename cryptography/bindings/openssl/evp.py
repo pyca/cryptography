@@ -29,6 +29,9 @@ typedef struct evp_pkey_st {
 } EVP_PKEY;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
+static const int EVP_CTRL_GCM_SET_IVLEN;
+static const int EVP_CTRL_GCM_GET_TAG;
+static const int EVP_CTRL_GCM_SET_TAG;
 """
 
 FUNCTIONS = """
@@ -84,4 +87,5 @@ MACROS = """
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
+int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 """
