@@ -238,7 +238,7 @@ class TestTripleDES_OFB(object):
             "TOFBinvperm.rsp",
         ],
         lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda keys, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
     test_KAT2 = generate_encrypt_test(
@@ -252,7 +252,7 @@ class TestTripleDES_OFB(object):
             "TOFBIvartext.rsp",
         ],
         lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
     test_MMT1 = generate_encrypt_test(
@@ -266,7 +266,7 @@ class TestTripleDES_OFB(object):
         lambda key1, key2, key3, iv: (
             ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
         ),
-        lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda key1, key2, key3, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
 
