@@ -243,6 +243,30 @@ class TestTripleDES_CBC(object):
 
 
 class TestTripleDES_OFB(object):
+    test_KAT1 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBpermop.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBsubtab.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBvarkey.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBvartext.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBinvperm.rsp",
+        ],
+    )
+
+    test_KAT2 = generate_encrypt_test(
+        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        os.path.join("3DES", "KAT"),
+        [
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIinvperm.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIpermop.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIsubtab.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIvarkey.rsp",
+            "tests/primitives/vectors/NIST/3DES/KAT/TOFBIvartext.rsp",
+        ],
+    )
+
     test_MMT1 = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "MMT"),
