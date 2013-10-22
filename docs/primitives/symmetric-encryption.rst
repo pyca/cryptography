@@ -26,20 +26,19 @@ where the encrypter and decrypter both use the same key.
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
-        "a secret message"
+        'a secret message'
 
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
 
     .. method:: encryptor()
 
-        :return :ref:`CipherContext <ciphercontext>`: encryption instance
+        :return :class:`CipherContext`: encryption instance
 
     .. method:: decryptor()
 
-        :return :ref:`CipherContext <ciphercontext>`: decryption instance
+        :return :class:`CipherContext`: decryption instance
 
-.. _ciphercontext:
 .. class:: cryptography.primitives.interfaces.CipherContext()
 
     When calling ``encryptor()`` or ``decryptor()`` on a BlockCipher object you
