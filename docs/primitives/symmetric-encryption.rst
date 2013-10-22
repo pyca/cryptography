@@ -1,6 +1,8 @@
 Symmetric Encryption
 ====================
 
+.. currentmodule:: cryptography.primitives.block
+
 .. testsetup::
 
     import binascii
@@ -11,7 +13,7 @@ Symmetric Encryption
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the encrypter and decrypter both use the same key.
 
-.. class:: cryptography.primitives.block.BlockCipher(cipher, mode)
+.. class:: BlockCipher(cipher, mode)
 
     Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
     They combine an underlying algorithm (such as AES), with a mode (such as
@@ -43,7 +45,9 @@ where the encrypter and decrypter both use the same key.
             :class:`~cryptography.primitives.interfaces.CipherContext`
             provider.
 
-.. class:: cryptography.primitives.interfaces.CipherContext()
+.. currentmodule:: cryptography.primitives.interfaces
+
+.. class:: CipherContext()
 
     When calling ``encryptor()`` or ``decryptor()`` on a BlockCipher object you
     will receive a return object conforming to the CipherContext interface. You
@@ -64,7 +68,9 @@ where the encrypter and decrypter both use the same key.
 Ciphers
 ~~~~~~~
 
-.. class:: cryptography.primitives.block.ciphers.AES(key)
+.. currentmodule:: cryptography.primitives.block.ciphers
+
+.. class:: AES(key)
 
     AES (Advanced Encryption Standard) is a block cipher standardized by NIST.
     AES is both fast, and cryptographically strong. It is a good default
@@ -73,7 +79,7 @@ Ciphers
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
-.. class:: cryptography.primitives.block.ciphers.Camellia(key)
+.. class:: Camellia(key)
 
     Camellia is a block cipher approved for use by CRYPTREC and ISO/IEC.
     It is considered to have comparable security and performance to AES, but
@@ -83,7 +89,7 @@ Ciphers
                       This must be kept secret.
 
 
-.. class:: cryptography.primitives.block.ciphers.TripleDES(key)
+.. class:: TripleDES(key)
 
     Triple DES (Data Encryption Standard), sometimes refered to as 3DES, is a
     block cipher standardized by NIST. Triple DES has known cryptoanalytic
@@ -103,7 +109,9 @@ Ciphers
 Modes
 ~~~~~
 
-.. class:: cryptography.primitives.block.modes.CBC(initialization_vector)
+.. currentmodule:: cryptography.primitives.block.modes
+
+.. class:: CBC(initialization_vector)
 
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
@@ -117,7 +125,7 @@ Modes
                                         a given ``key``.
 
 
-.. class:: cryptography.primitives.block.modes.CTR(nonce)
+.. class:: CTR(nonce)
 
     .. warning::
 
@@ -135,7 +143,7 @@ Modes
                         with a given key. The nonce does not need to be kept
                         secret and may be included alongside the ciphertext.
 
-.. class:: cryptography.primitives.block.modes.OFB(initialization_vector)
+.. class:: OFB(initialization_vector)
 
     OFB (Output Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
@@ -148,7 +156,7 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
-.. class:: cryptography.primitives.block.modes.CFB(initialization_vector)
+.. class:: CFB(initialization_vector)
 
     CFB (Cipher Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
@@ -171,7 +179,7 @@ Insecure Modes
     and existing applications should strongly consider migrating away.
 
 
-.. class:: cryptography.primitives.block.modes.ECB()
+.. class:: ECB()
 
     ECB (Electronic Code Book) is the simplest mode of operation for block
     ciphers. Each block of data is encrypted in the same way. This means
