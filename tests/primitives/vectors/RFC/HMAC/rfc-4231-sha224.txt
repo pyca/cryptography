@@ -1,0 +1,38 @@
+# Test Cases for HMAC-SHA224
+
+Len = 64
+Key = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
+# "Hi There"
+Msg = 4869205468657265
+MD = 896fb1128abbdf196832107cd49df33f47b4b1169912ba4f53684b22
+
+Len = 224
+# "Jefe"
+Key = 4a656665
+# "what do ya want for nothing?"
+Msg = 7768617420646f2079612077616e7420666f72206e6f7468696e673f
+MD = a30e01098bc6dbbf45690f3a7e9e6d0f8bbea2a39e6148008fd05e44
+
+Len = 400
+Key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Msg = dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+MD = 7fb3cb3588c6c1f6ffa9694d7d6ad2649365b0c1f65d69d1ec8333ea
+
+Len = 400
+Key = 0102030405060708090a0b0c0d0e0f10111213141516171819
+Msg = cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd
+MD = 6c11506874013cac6a2abc1bb382627cec6a90d86efc012de7afec5a
+
+# truncation test from RFC not added
+
+Len = 432
+Key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+# "Test Using Larger Than Block-Size Key - Hash Key First"
+Msg = 54657374205573696e67204c6172676572205468616e20426c6f636b2d53697a65204b6579202d2048617368204b6579204669727374
+MD = 95e9a0db962095adaebe9b2d6f0dbce2d499f112f2d2b7273fa6870e
+
+Len = 1216
+Key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+# "Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data"
+Msg = 5468697320697320612074657374207573696e672061206c6172676572207468616e20626c6f636b2d73697a65206b657920616e642061206c6172676572207468616e20626c6f636b2d73697a6520646174612e20546865206b6579206e6565647320746f20626520686173686564206265666f7265206265696e6720757365642062792074686520484d414320616c676f726974686d2e
+MD = 3a854166ac5d9f023f54d517d0b39dbd946770db9c2b95c9f6f565d1

@@ -1,0 +1,43 @@
+# Test Cases for HMAC-RIPEMD160
+
+Len = 64
+Key = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
+# "Hi There"
+Msg = 4869205468657265
+MD = 24cb4bd67d20fc1a5d2ed7732dcc39377f0a5668
+
+Len = 224
+# "Jefe"
+Key = 4a656665
+# "what do ya want for nothing?"
+Msg = 7768617420646f2079612077616e7420666f72206e6f7468696e673f
+MD = dda6c0213a485a9e24f4742064a7f033b43c4069
+
+Len = 400
+Key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Msg = dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+MD = b0b105360de759960ab4f35298e116e295d8e7c1
+
+Len = 400
+Key = 0102030405060708090a0b0c0d0e0f10111213141516171819
+Msg = cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd
+MD = d5ca862f4d21d5e610e18b4cf1beb97a4365ecf4
+
+Len = 160
+Key = 0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c
+# Note: We test the full MD rather than the truncated one in this test
+# "Test With Truncation"
+Msg = 546573742057697468205472756e636174696f6e
+MD = 7619693978f91d90539ae786500ff3d8e0518e39
+
+Len = 432
+Key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+# "Test Using Larger Than Block-Size Key - Hash Key First"
+Msg = 54657374205573696e67204c6172676572205468616e20426c6f636b2d53697a65204b6579202d2048617368204b6579204669727374
+MD = 6466ca07ac5eac29e1bd523e5ada7605b791fd8b
+
+Len = 584
+Key = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+# "Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data"
+Msg = 54657374205573696e67204c6172676572205468616e20426c6f636b2d53697a65204b657920616e64204c6172676572205468616e204f6e6520426c6f636b2d53697a652044617461
+MD = 69ea60798d71616cce5fd0871e23754cd75d5a0a
