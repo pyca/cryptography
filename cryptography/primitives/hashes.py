@@ -23,13 +23,17 @@ from cryptography.bindings import _default_api
 
 
 class BaseHash(six.with_metaclass(abc.ABCMeta)):
-    def __init__(self, api=None, ctx=None):
+    def __init__(self, data=None, api=None, ctx=None):
         if api is None:
             api = _default_api
         self._api = api
         self._ctx = self._api.create_hash_context(self) if ctx is None else ctx
+        if data is not None:
+            self.update(data)
 
     def update(self, data):
+        if isinstance(data, six.text_type):
+            raise TypeError("Unicode-objects must be encoded before hashing")
         self._api.update_hash_context(self._ctx, data)
 
     def copy(self):
