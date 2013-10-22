@@ -67,7 +67,7 @@ Ciphers
     block cipher standardized by NIST. Triple DES has known cryptoanalytic
     flaws, however none of them currently enable a practical attack.
     Nonetheless, Triples DES is not reccomended for new applications because it
-    is incredibly slow, old applications should consider moving away from it.
+    is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key, either ``64``, ``128``, or ``192`` bits
                       (note that DES functionally uses ``56``, ``112``, or
