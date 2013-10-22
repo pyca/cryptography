@@ -57,9 +57,7 @@ class Camellia(object):
 class TripleDES(object):
     name = "3DES"
     block_size = 64
-    # TODO: is there a better way to represent the fact that the effective key
-    # size is 56 bits?
-    key_sizes = set([64, 128, 192])
+    key_sizes = frozenset([64, 128, 192])
 
     def __init__(self, key):
         super(TripleDES, self).__init__()
