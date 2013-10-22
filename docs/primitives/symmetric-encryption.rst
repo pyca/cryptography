@@ -26,7 +26,7 @@ where the encrypter and decrypter both use the same key.
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
-        b"a secret message"
+        "a secret message"
 
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
