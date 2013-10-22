@@ -25,6 +25,7 @@ MD = d5ca862f4d21d5e610e18b4cf1beb97a4365ecf4
 
 Len = 160
 Key = 0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c
+# Note: We test the full MD rather than the truncated one in this test
 # "Test With Truncation"
 Msg = 546573742057697468205472756e636174696f6e
 MD = 7619693978f91d90539ae786500ff3d8e0518e39
