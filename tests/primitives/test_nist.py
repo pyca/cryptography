@@ -26,22 +26,6 @@ from .utils import generate_encrypt_test
 from ..utils import load_nist_vectors_from_file
 
 
-def load_3des_nist_vectors_from_file(path, op):
-    vectors = []
-    for vector in load_nist_vectors_from_file(path, op):
-        for i in range(1, 4):
-            plaintext = vector.get("plaintext{0}".format(i))
-            if plaintext is None:
-                plaintext = vector["plaintext"]
-            vectors.append({
-                "key": vector["keys"],
-                "iv": vector["iv{0}".format(i)],
-                "ciphertext": vector["ciphertext{0}".format(i)],
-                "plaintext": plaintext,
-            })
-    return vectors
-
-
 class TestAES_CBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
@@ -183,7 +167,7 @@ class TestAES_CFB(object):
 
 
 class TestTripleDES_CBC(object):
-    test_KAT1 = generate_encrypt_test(
+    test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "KAT"),
         [
@@ -197,21 +181,7 @@ class TestTripleDES_CBC(object):
         lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
-    test_KAT2 = generate_encrypt_test(
-        lambda path: load_3des_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "KAT"),
-        [
-            "TCBCIpermop.rsp",
-            "TCBCIsubtab.rsp",
-            "TCBCIvarkey.rsp",
-            "TCBCIvartext.rsp",
-            "TCBCIinvperm.rsp",
-        ],
-        lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-    )
-
-    test_MMT1 = generate_encrypt_test(
+    test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "MMT"),
         [
@@ -227,7 +197,7 @@ class TestTripleDES_CBC(object):
 
 
 class TestTripleDES_OFB(object):
-    test_KAT1 = generate_encrypt_test(
+    test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "KAT"),
         [
@@ -241,21 +211,7 @@ class TestTripleDES_OFB(object):
         lambda keys, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
-    test_KAT2 = generate_encrypt_test(
-        lambda path: load_3des_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "KAT"),
-        [
-            "TOFBIinvperm.rsp",
-            "TOFBIpermop.rsp",
-            "TOFBIsubtab.rsp",
-            "TOFBIvarkey.rsp",
-            "TOFBIvartext.rsp",
-        ],
-        lambda key, iv: ciphers.TripleDES(binascii.unhexlify(key)),
-        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-    )
-
-    test_MMT1 = generate_encrypt_test(
+    test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("3DES", "MMT"),
         [
