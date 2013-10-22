@@ -15,7 +15,7 @@ where the encrypter and decrypter both use the same key.
 
     Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
     They combine an underlying algorithm (such as AES), with a mode (such as
-    CBC, CTR, or GCM).A simple example of encrypting (and then decrypting)
+    CBC, CTR, or GCM). A simple example of encrypting (and then decrypting)
     content with AES is:
 
     .. doctest::
@@ -26,7 +26,7 @@ where the encrypter and decrypter both use the same key.
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
-        '...'
+        b"a secret message"
 
     :param cipher: One of the ciphers described below.
     :param mode: One of the modes described below.
