@@ -1,10 +1,12 @@
 Message Digests
 ===============
 
-.. class:: cryptography.primitives.hashes.BaseHash
+.. class:: cryptography.primitives.hashes.BaseHash(data=None)
 
    Abstract base class that implements a common interface for all hash
    algorithms that follow here.
+
+   If ``data`` is provided ``update(data)`` is called upon construction.
 
     .. method:: update(data)
 
