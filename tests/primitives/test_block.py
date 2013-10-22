@@ -17,6 +17,7 @@ import binascii
 
 import pytest
 
+from cryptography.primitives import interfaces
 from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 
@@ -32,14 +33,14 @@ class TestBlockCipher(object):
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
-        assert cipher.encryptor() is not None
+        assert isinstance(cipher.encryptor(), interfaces.CipherContext)
 
     def test_creates_decryptor(self):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
-        assert cipher.decryptor() is not None
+        assert isinstance(cipher.decryptor(), interfaces.CipherContext)
 
 
 class TestBlockCipherContext(object):
