@@ -52,7 +52,7 @@ class TestDefaultAPISHA1(object):
         This test assumes the presence of SHA1 in the default API.
         """
         h = hashes.SHA1()
-        assert h._api == _default_api
+        assert h._api is _default_api
 
 
 class TestSHA1(object):
