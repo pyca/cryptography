@@ -29,7 +29,7 @@ from ..utils import load_nist_vectors_from_file
 def load_3des_nist_vectors_from_file(path, op):
     vectors = []
     for vector in load_nist_vectors_from_file(path, op):
-        for i in xrange(1, 4):
+        for i in range(1, 4):
             plaintext = vector.get("plaintext{0}".format(i))
             if plaintext is None:
                 plaintext = vector["plaintext"]
