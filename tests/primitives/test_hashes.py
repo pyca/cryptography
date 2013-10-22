@@ -28,6 +28,10 @@ class TestBaseHash(object):
         with pytest.raises(TypeError):
             m.update(six.u("\u00FC"))
 
+    def test_base_hash_hexdigest_string_type(self, api):
+        m = hashes.SHA1(api=api, data=b"")
+        assert isinstance(m.hexdigest(), str)
+
 
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(

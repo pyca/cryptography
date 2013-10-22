@@ -44,7 +44,7 @@ class BaseHash(six.with_metaclass(abc.ABCMeta)):
                                                self.digest_size)
 
     def hexdigest(self):
-        return binascii.hexlify(self.digest()).decode("ascii")
+        return str(binascii.hexlify(self.digest()).decode("ascii"))
 
     def _copy_ctx(self):
         return self._api.copy_hash_context(self._ctx)
