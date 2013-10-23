@@ -19,35 +19,38 @@ import binascii
 
 import six
 
-from cryptography.bindings import _default_api
-
 
 class BaseHash(six.with_metaclass(abc.ABCMeta)):
-    def __init__(self, data=None, api=None, ctx=None):
-        if api is None:
-            api = _default_api
-        self._api = api
-        self._ctx = self._api.create_hash_context(self) if ctx is None else ctx
+    def __init__(self, data=None, backend=None, ctx=None):
+        if backend is None:
+            from cryptography.bindings import _default_backend
+            backend = _default_backend
+        self._backend = backend
+        if ctx is None:
+            self._ctx = self._backend.create_hash_context(self)
+        else:
+            self._ctx = None
+
         if data is not None:
             self.update(data)
 
     def update(self, data):
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._api.update_hash_context(self._ctx, data)
+        self._backend.update_hash_context(self._ctx, data)
 
     def copy(self):
-        return self.__class__(api=self._api, ctx=self._copy_ctx())
+        return self.__class__(backend=self._backend, ctx=self._copy_ctx())
 
     def digest(self):
-        return self._api.finalize_hash_context(self._copy_ctx(),
-                                               self.digest_size)
+        return self._backend.finalize_hash_context(self._copy_ctx(),
+                                                   self.digest_size)
 
     def hexdigest(self):
         return str(binascii.hexlify(self.digest()).decode("ascii"))
 
     def _copy_ctx(self):
-        return self._api.copy_hash_context(self._ctx)
+        return self._backend.copy_hash_context(self._ctx)
 
 
 class SHA1(BaseHash):

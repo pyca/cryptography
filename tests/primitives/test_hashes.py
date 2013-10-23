@@ -19,7 +19,7 @@ import pytest
 
 import six
 
-from cryptography.bindings import _default_api
+from cryptography.bindings import _default_backend
 
 from cryptography.primitives import hashes
 
@@ -27,32 +27,32 @@ from .utils import generate_base_hash_test
 
 
 class TestBaseHash(object):
-    def test_base_hash_reject_unicode(self, api):
-        m = hashes.SHA1(api=api)
+    def test_base_hash_reject_unicode(self, backend):
+        m = hashes.SHA1(backend=backend)
         with pytest.raises(TypeError):
             m.update(six.u("\u00FC"))
 
-    def test_base_hash_hexdigest_string_type(self, api):
-        m = hashes.SHA1(api=api, data=b"")
+    def test_base_hash_hexdigest_string_type(self, backend):
+        m = hashes.SHA1(backend=backend, data=b"")
         assert isinstance(m.hexdigest(), str)
 
 
 class TestCopyHash(object):
-    def test_copy_api_object(self):
-        pretend_api = pretend.stub(copy_hash_context=lambda a: "copiedctx")
+    def test_copy_backend_object(self):
+        pretend_backend = pretend.stub(copy_hash_context=lambda a: "copiedctx")
         pretend_ctx = pretend.stub()
-        h = hashes.SHA1(api=pretend_api, ctx=pretend_ctx)
-        assert h._api is pretend_api
-        assert h.copy()._api is h._api
+        h = hashes.SHA1(backend=pretend_backend, ctx=pretend_ctx)
+        assert h._backend is pretend_backend
+        assert h.copy()._backend is h._backend
 
 
 class TestDefaultAPISHA1(object):
-    def test_default_api_creation(self):
+    def test_default_backend_creation(self):
         """
         This test assumes the presence of SHA1 in the default API.
         """
         h = hashes.SHA1()
-        assert h._api is _default_api
+        assert h._backend is _default_backend
 
 
 class TestSHA1(object):
@@ -60,7 +60,7 @@ class TestSHA1(object):
         hashes.SHA1,
         digest_size=20,
         block_size=64,
-        only_if=lambda api: api.supports_hash(hashes.SHA1),
+        only_if=lambda backend: backend.supports_hash(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
 
@@ -70,7 +70,7 @@ class TestSHA224(object):
         hashes.SHA224,
         digest_size=28,
         block_size=64,
-        only_if=lambda api: api.supports_hash(hashes.SHA224),
+        only_if=lambda backend: backend.supports_hash(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
 
@@ -80,7 +80,7 @@ class TestSHA256(object):
         hashes.SHA256,
         digest_size=32,
         block_size=64,
-        only_if=lambda api: api.supports_hash(hashes.SHA256),
+        only_if=lambda backend: backend.supports_hash(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
 
@@ -90,7 +90,7 @@ class TestSHA384(object):
         hashes.SHA384,
         digest_size=48,
         block_size=128,
-        only_if=lambda api: api.supports_hash(hashes.SHA384),
+        only_if=lambda backend: backend.supports_hash(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -100,7 +100,7 @@ class TestSHA512(object):
         hashes.SHA512,
         digest_size=64,
         block_size=128,
-        only_if=lambda api: api.supports_hash(hashes.SHA512),
+        only_if=lambda backend: backend.supports_hash(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
 
@@ -110,7 +110,7 @@ class TestRIPEMD160(object):
         hashes.RIPEMD160,
         digest_size=20,
         block_size=64,
-        only_if=lambda api: api.supports_hash(hashes.RIPEMD160),
+        only_if=lambda backend: backend.supports_hash(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
@@ -120,7 +120,7 @@ class TestWhirlpool(object):
         hashes.Whirlpool,
         digest_size=64,
         block_size=64,
-        only_if=lambda api: api.supports_hash(hashes.Whirlpool),
+        only_if=lambda backend: backend.supports_hash(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
@@ -130,6 +130,6 @@ class TestMD5(object):
         hashes.MD5,
         digest_size=16,
         block_size=64,
-        only_if=lambda api: api.supports_hash(hashes.MD5),
+        only_if=lambda backend: backend.supports_hash(hashes.MD5),
         skip_message="Does not support MD5",
     )

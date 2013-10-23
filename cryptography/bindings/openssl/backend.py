@@ -27,12 +27,12 @@ class GetCipherByName(object):
     def __init__(self, fmt):
         self._fmt = fmt
 
-    def __call__(self, api, cipher, mode):
+    def __call__(self, backend, cipher, mode):
         cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
-        return api.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
+        return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
-class API(object):
+class Backend(object):
     """
     OpenSSL API wrapper.
     """
@@ -144,7 +144,7 @@ class API(object):
 
     def create_block_cipher_encrypt_context(self, cipher, mode):
         ctx, evp, iv_nonce = self._create_block_cipher_context(cipher, mode)
-        res = self.lib.EVP_EncryptInit_ex(ctx, evp, api.ffi.NULL, cipher.key,
+        res = self.lib.EVP_EncryptInit_ex(ctx, evp, self.ffi.NULL, cipher.key,
                                           iv_nonce)
         assert res != 0
         # We purposely disable padding here as it's handled higher up in the
@@ -154,7 +154,7 @@ class API(object):
 
     def create_block_cipher_decrypt_context(self, cipher, mode):
         ctx, evp, iv_nonce = self._create_block_cipher_context(cipher, mode)
-        res = self.lib.EVP_DecryptInit_ex(ctx, evp, api.ffi.NULL, cipher.key,
+        res = self.lib.EVP_DecryptInit_ex(ctx, evp, self.ffi.NULL, cipher.key,
                                           iv_nonce)
         assert res != 0
         # We purposely disable padding here as it's handled higher up in the
@@ -247,4 +247,4 @@ class API(object):
         return copied_ctx
 
 
-api = API()
+backend = Backend()

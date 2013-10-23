@@ -10,7 +10,7 @@ class TestEncryptTest(object):
         with pytest.raises(pytest.skip.Exception) as exc_info:
             encrypt_test(
                 None, None, None, None,
-                only_if=lambda api: False,
+                only_if=lambda backend: False,
                 skip_message="message!"
             )
         assert exc_info.value.args[0] == "message!"
@@ -21,7 +21,7 @@ class TestHashTest(object):
         with pytest.raises(pytest.skip.Exception) as exc_info:
             hash_test(
                 None, None, None,
-                only_if=lambda api: False,
+                only_if=lambda backend: False,
                 skip_message="message!"
             )
         assert exc_info.value.args[0] == "message!"
@@ -32,7 +32,7 @@ class TestBaseHashTest(object):
         with pytest.raises(pytest.skip.Exception) as exc_info:
             base_hash_test(
                 None, None, None, None,
-                only_if=lambda api: False,
+                only_if=lambda backend: False,
                 skip_message="message!"
             )
         assert exc_info.value.args[0] == "message!"
@@ -43,7 +43,7 @@ class TestLongHashTest(object):
         with pytest.raises(pytest.skip.Exception) as exc_info:
             long_string_hash_test(
                 None, None, None,
-                only_if=lambda api: False,
+                only_if=lambda backend: False,
                 skip_message="message!"
             )
         assert exc_info.value.args[0] == "message!"

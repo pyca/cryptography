@@ -37,7 +37,7 @@ class TestCamelliaECB(object):
         ],
         lambda key: ciphers.Camellia(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
-        only_if=lambda api: api.supports_cipher(
+        only_if=lambda backend: backend.supports_cipher(
             ciphers.Camellia("\x00" * 16), modes.ECB()
         ),
         skip_message="Does not support Camellia ECB",

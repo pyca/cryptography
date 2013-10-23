@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings.openssl.api import api
+from cryptography.bindings.openssl.backend import backend
 
 
-__all__ = ["api"]
+__all__ = ["backend"]

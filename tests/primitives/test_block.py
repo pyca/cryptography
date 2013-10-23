@@ -22,7 +22,7 @@ from cryptography.primitives.block import BlockCipher, ciphers, modes
 
 
 class TestBlockCipher(object):
-    def test_instantiate_without_api(self):
+    def test_instantiate_without_backend(self):
         BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32))
@@ -44,11 +44,11 @@ class TestBlockCipher(object):
 
 
 class TestBlockCipherContext(object):
-    def test_use_after_finalize(self, api):
+    def test_use_after_finalize(self, backend):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            api
+            backend
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -65,11 +65,11 @@ class TestBlockCipherContext(object):
         with pytest.raises(ValueError):
             decryptor.finalize()
 
-    def test_unaligned_block_encryption(self, api):
+    def test_unaligned_block_encryption(self, backend):
         cipher = BlockCipher(
             ciphers.AES(binascii.unhexlify(b"0" * 32)),
             modes.ECB(),
-            api
+            backend
         )
         encryptor = cipher.encryptor()
         ct = encryptor.update(b"a" * 15)

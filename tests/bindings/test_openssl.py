@@ -13,14 +13,14 @@
 
 import pytest
 
-from cryptography.bindings.openssl.api import api
+from cryptography.bindings.openssl.backend import backend
 from cryptography.primitives.block.ciphers import AES
 from cryptography.primitives.block.modes import CBC
 
 
 class TestOpenSSL(object):
-    def test_api_exists(self):
-        assert api
+    def test_backend_exists(self):
+        assert backend
 
     def test_openssl_version_text(self):
         """
@@ -31,11 +31,11 @@ class TestOpenSSL(object):
         if it starts with OpenSSL as that appears to be true
         for every OpenSSL.
         """
-        assert api.openssl_version_text().startswith("OpenSSL")
+        assert backend.openssl_version_text().startswith("OpenSSL")
 
     def test_supports_cipher(self):
-        assert api.supports_cipher(None, None) is False
+        assert backend.supports_cipher(None, None) is False
 
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
-            api.register_cipher_adapter(AES, CBC, None)
+            backend.register_cipher_adapter(AES, CBC, None)
