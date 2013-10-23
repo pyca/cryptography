@@ -3,20 +3,20 @@ import os
 
 import pytest
 
-from cryptography.bindings import _ALL_APIS
+from cryptography.bindings import _ALL_BACKENDS
 from cryptography.primitives.block import BlockCipher
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
-                          mode_factory, only_if=lambda api: True,
+                          mode_factory, only_if=lambda backend: True,
                           skip_message=None):
     def test_encryption(self):
-        for api in _ALL_APIS:
+        for backend in _ALL_BACKENDS:
             for file_name in file_names:
                 for params in param_loader(os.path.join(path, file_name)):
                     yield (
                         encrypt_test,
-                        api,
+                        backend,
                         cipher_factory,
                         mode_factory,
                         params,
@@ -26,16 +26,16 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
     return test_encryption
 
 
-def encrypt_test(api, cipher_factory, mode_factory, params, only_if,
+def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
                  skip_message):
-    if not only_if(api):
+    if not only_if(backend):
         pytest.skip(skip_message)
     plaintext = params.pop("plaintext")
     ciphertext = params.pop("ciphertext")
     cipher = BlockCipher(
         cipher_factory(**params),
         mode_factory(**params),
-        api
+        backend
     )
     encryptor = cipher.encryptor()
     actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
@@ -50,12 +50,12 @@ def encrypt_test(api, cipher_factory, mode_factory, params, only_if,
 def generate_hash_test(param_loader, path, file_names, hash_cls,
                        only_if=None, skip_message=None):
     def test_hash(self):
-        for api in _ALL_APIS:
+        for backend in _ALL_BACKENDS:
             for file_name in file_names:
                 for params in param_loader(os.path.join(path, file_name)):
                     yield (
                         hash_test,
-                        api,
+                        backend,
                         hash_cls,
                         params,
                         only_if,
@@ -64,25 +64,25 @@ def generate_hash_test(param_loader, path, file_names, hash_cls,
     return test_hash
 
 
-def hash_test(api, hash_cls, params, only_if, skip_message):
-    if only_if is not None and not only_if(api):
+def hash_test(backend, hash_cls, params, only_if, skip_message):
+    if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
-    m = hash_cls(api=api)
+    m = hash_cls(backend=backend)
     m.update(binascii.unhexlify(msg))
     assert m.hexdigest() == md.replace(" ", "").lower()
-    digest = hash_cls(api=api, data=binascii.unhexlify(msg)).hexdigest()
-    assert digest == md.replace(" ", "").lower()
+    digst = hash_cls(backend=backend, data=binascii.unhexlify(msg)).hexdigest()
+    assert digst == md.replace(" ", "").lower()
 
 
 def generate_base_hash_test(hash_cls, digest_size, block_size,
                             only_if=None, skip_message=None):
     def test_base_hash(self):
-        for api in _ALL_APIS:
+        for backend in _ALL_BACKENDS:
             yield (
                 base_hash_test,
-                api,
+                backend,
                 hash_cls,
                 digest_size,
                 block_size,
@@ -92,11 +92,11 @@ def generate_base_hash_test(hash_cls, digest_size, block_size,
     return test_base_hash
 
 
-def base_hash_test(api, hash_cls, digest_size, block_size, only_if,
+def base_hash_test(backend, hash_cls, digest_size, block_size, only_if,
                    skip_message):
-    if only_if is not None and not only_if(api):
+    if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
-    m = hash_cls(api=api)
+    m = hash_cls(backend=backend)
     assert m.digest_size == digest_size
     assert m.block_size == block_size
     m_copy = m.copy()
@@ -107,10 +107,10 @@ def base_hash_test(api, hash_cls, digest_size, block_size, only_if,
 def generate_long_string_hash_test(hash_factory, md, only_if=None,
                                    skip_message=None):
     def test_long_string_hash(self):
-        for api in _ALL_APIS:
+        for backend in _ALL_BACKENDS:
             yield(
                 long_string_hash_test,
-                api,
+                backend,
                 hash_factory,
                 md,
                 only_if,
@@ -119,9 +119,9 @@ def generate_long_string_hash_test(hash_factory, md, only_if=None,
     return test_long_string_hash
 
 
-def long_string_hash_test(api, hash_factory, md, only_if, skip_message):
-    if only_if is not None and not only_if(api):
+def long_string_hash_test(backend, hash_factory, md, only_if, skip_message):
+    if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
-    m = hash_factory(api=api)
+    m = hash_factory(backend=backend)
     m.update(b"a" * 1000000)
     assert m.hexdigest() == md.lower()

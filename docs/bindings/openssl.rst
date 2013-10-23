@@ -3,16 +3,16 @@ OpenSSL
 
 .. warning::
 
-    The OpenSSL API is not easy to use, small mistakes can lead to significant
+    The OpenSSL backend is not easy to use, small mistakes can lead to significant
     security vulnerabilities. We strongly recommend not using this directly,
     and instead using one of the higher level APIs exposed by ``cryptography``.
 
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
 
-.. data:: cryptography.bindings.openssl.api
+.. data:: cryptography.bindings.openssl.backend
 
-    This is the exposed API for the OpenSSL bindings. It has two public
+    This is the exposed backend for the OpenSSL bindings. It has two public
     attributes:
 
     .. attribute:: ffi

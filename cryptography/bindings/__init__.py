@@ -14,7 +14,7 @@
 from cryptography.bindings import openssl
 
 
-_default_api = openssl.api
-_ALL_APIS = [
-    openssl.api
+_default_backend = openssl.backend
+_ALL_BACKENDS = [
+    openssl.backend
 ]
