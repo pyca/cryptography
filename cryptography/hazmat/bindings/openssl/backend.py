@@ -287,6 +287,7 @@ class HMACs(object):
         buflen[0] = digest_size
         res = self._backend.lib.HMAC_Final(ctx, buf, buflen)
         assert res != 0
+        self._backend.lib.HMAC_CTX_cleanup(ctx)
         return self._backend.ffi.buffer(buf)[:digest_size]
 
     def copy_ctx(self, ctx):
