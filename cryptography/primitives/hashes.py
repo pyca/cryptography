@@ -40,7 +40,7 @@ class BaseHash(six.with_metaclass(abc.ABCMeta)):
         self._backend.update_hash_context(self._ctx, data)
 
     def copy(self):
-        return self.__class__(api=self._api, ctx=self._copy_ctx())
+        return self.__class__(backend=self._backend, ctx=self._copy_ctx())
 
     def digest(self):
         return self._backend.finalize_hash_context(self._copy_ctx(),

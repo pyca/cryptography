@@ -19,7 +19,7 @@ import pytest
 
 import six
 
-from cryptography.bindings import _default_api
+from cryptography.bindings import _default_backend
 
 from cryptography.primitives import hashes
 
@@ -38,21 +38,21 @@ class TestBaseHash(object):
 
 
 class TestCopyHash(object):
-    def test_copy_api_object(self):
-        pretend_api = pretend.stub(copy_hash_context=lambda a: "copiedctx")
+    def test_copy_backend_object(self):
+        pretend_backend = pretend.stub(copy_hash_context=lambda a: "copiedctx")
         pretend_ctx = pretend.stub()
-        h = hashes.SHA1(api=pretend_api, ctx=pretend_ctx)
-        assert h._api is pretend_api
-        assert h.copy()._api is h._api
+        h = hashes.SHA1(backend=pretend_backend, ctx=pretend_ctx)
+        assert h._backend is pretend_backend
+        assert h.copy()._backend is h._backend
 
 
 class TestDefaultAPISHA1(object):
-    def test_default_api_creation(self):
+    def test_default_backend_creation(self):
         """
         This test assumes the presence of SHA1 in the default API.
         """
         h = hashes.SHA1()
-        assert h._api is _default_api
+        assert h._backend is _default_backend
 
 
 class TestSHA1(object):
