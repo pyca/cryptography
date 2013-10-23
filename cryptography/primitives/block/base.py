@@ -39,19 +39,17 @@ class _CipherEncryptionContext(object):
     def __init__(self, cipher, mode, backend):
         super(_CipherEncryptionContext, self).__init__()
         self._backend = backend
-        self._ctx = self._backend.create_block_cipher_encrypt_context(
-            cipher, mode
-        )
+        self._ctx = self._backend.ciphers.create_encrypt_ctx(cipher, mode)
 
     def update(self, data):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        return self._backend.update_encrypt_context(self._ctx, data)
+        return self._backend.ciphers.update_encrypt_ctx(self._ctx, data)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        data = self._backend.finalize_encrypt_context(self._ctx)
+        data = self._backend.ciphers.finalize_encrypt_ctx(self._ctx)
         self._ctx = None
         return data
 
@@ -61,18 +59,16 @@ class _CipherDecryptionContext(object):
     def __init__(self, cipher, mode, backend):
         super(_CipherDecryptionContext, self).__init__()
         self._backend = backend
-        self._ctx = self._backend.create_block_cipher_decrypt_context(
-            cipher, mode
-        )
+        self._ctx = self._backend.ciphers.create_decrypt_ctx(cipher, mode)
 
     def update(self, data):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        return self._backend.update_decrypt_context(self._ctx, data)
+        return self._backend.ciphers.update_decrypt_ctx(self._ctx, data)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        data = self._backend.finalize_decrypt_context(self._ctx)
+        data = self._backend.ciphers.finalize_decrypt_ctx(self._ctx)
         self._ctx = None
         return data

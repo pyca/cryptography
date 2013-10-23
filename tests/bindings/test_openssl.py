@@ -34,8 +34,8 @@ class TestOpenSSL(object):
         assert backend.openssl_version_text().startswith("OpenSSL")
 
     def test_supports_cipher(self):
-        assert backend.supports_cipher(None, None) is False
+        assert backend.ciphers.supported(None, None) is False
 
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
-            backend.register_cipher_adapter(AES, CBC, None)
+            backend.ciphers.register_cipher_adapter(AES, CBC, None)
