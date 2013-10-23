@@ -21,8 +21,6 @@ from .utils import generate_hmac_test
 from ...utils import load_hash_vectors_from_file
 
 
-#TODO: find HMAC whirlpool vectors?
-
 class TestHMAC_MD5(object):
     test_hmac_md5 = generate_hmac_test(
         load_hash_vectors_from_file,
