@@ -27,7 +27,7 @@ class BaseHash(six.with_metaclass(abc.ABCMeta)):
             backend = _default_backend
         self._backend = backend
         if ctx is None:
-            self._ctx = self._backend.create_hash_context(self)
+            self._ctx = self._backend.hashes.create_ctx(self)
         else:
             self._ctx = None
 
@@ -37,20 +37,20 @@ class BaseHash(six.with_metaclass(abc.ABCMeta)):
     def update(self, data):
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.update_hash_context(self._ctx, data)
+        self._backend.hashes.update_ctx(self._ctx, data)
 
     def copy(self):
         return self.__class__(backend=self._backend, ctx=self._copy_ctx())
 
     def digest(self):
-        return self._backend.finalize_hash_context(self._copy_ctx(),
-                                                   self.digest_size)
+        return self._backend.hashes.finalize_ctx(self._copy_ctx(),
+                                                 self.digest_size)
 
     def hexdigest(self):
         return str(binascii.hexlify(self.digest()).decode("ascii"))
 
     def _copy_ctx(self):
-        return self._backend.copy_hash_context(self._ctx)
+        return self._backend.hashes.copy_ctx(self._ctx)
 
 
 class SHA1(BaseHash):

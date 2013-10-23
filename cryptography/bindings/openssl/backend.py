@@ -23,15 +23,6 @@ from cryptography.primitives.block.ciphers import AES, Camellia, TripleDES
 from cryptography.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
 
 
-class GetCipherByName(object):
-    def __init__(self, fmt):
-        self._fmt = fmt
-
-    def __call__(self, backend, cipher, mode):
-        cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
-        return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
-
-
 class Backend(object):
     """
     OpenSSL API wrapper.
@@ -99,8 +90,8 @@ class Backend(object):
         self.lib.OpenSSL_add_all_algorithms()
         self.lib.SSL_load_error_strings()
 
-        self._cipher_registry = {}
-        self._register_default_ciphers()
+        self.ciphers = Ciphers(self.ffi, self.lib)
+        self.hashes = Hashes(self.ffi, self.lib)
 
     def openssl_version_text(self):
         """
@@ -110,7 +101,25 @@ class Backend(object):
         """
         return self.ffi.string(self.lib.OPENSSL_VERSION_TEXT).decode("ascii")
 
-    def supports_cipher(self, cipher, mode):
+
+class GetCipherByName(object):
+    def __init__(self, fmt):
+        self._fmt = fmt
+
+    def __call__(self, backend, cipher, mode):
+        cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
+        return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
+
+
+class Ciphers(object):
+    def __init__(self, ffi, lib):
+        super(Ciphers, self).__init__()
+        self.ffi = ffi
+        self.lib = lib
+        self._cipher_registry = {}
+        self._register_default_ciphers()
+
+    def supported(self, cipher, mode):
         try:
             adapter = self._cipher_registry[type(cipher), type(mode)]
         except KeyError:
@@ -142,8 +151,8 @@ class Backend(object):
                 GetCipherByName("des-ede3-{mode.name}")
             )
 
-    def create_block_cipher_encrypt_context(self, cipher, mode):
-        ctx, evp, iv_nonce = self._create_block_cipher_context(cipher, mode)
+    def create_encrypt_ctx(self, cipher, mode):
+        ctx, evp, iv_nonce = self._create_ctx(cipher, mode)
         res = self.lib.EVP_EncryptInit_ex(ctx, evp, self.ffi.NULL, cipher.key,
                                           iv_nonce)
         assert res != 0
@@ -152,8 +161,8 @@ class Backend(object):
         self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
-    def create_block_cipher_decrypt_context(self, cipher, mode):
-        ctx, evp, iv_nonce = self._create_block_cipher_context(cipher, mode)
+    def create_decrypt_ctx(self, cipher, mode):
+        ctx, evp, iv_nonce = self._create_ctx(cipher, mode)
         res = self.lib.EVP_DecryptInit_ex(ctx, evp, self.ffi.NULL, cipher.key,
                                           iv_nonce)
         assert res != 0
@@ -162,7 +171,7 @@ class Backend(object):
         self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
         return ctx
 
-    def _create_block_cipher_context(self, cipher, mode):
+    def _create_ctx(self, cipher, mode):
         ctx = self.lib.EVP_CIPHER_CTX_new()
         ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_free)
         evp_cipher = self._cipher_registry[type(cipher), type(mode)](
@@ -178,7 +187,7 @@ class Backend(object):
 
         return (ctx, evp_cipher, iv_nonce)
 
-    def update_encrypt_context(self, ctx, data):
+    def update_encrypt_ctx(self, ctx, data):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", len(data) + block_size - 1)
         outlen = self.ffi.new("int *")
@@ -186,7 +195,7 @@ class Backend(object):
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
-    def update_decrypt_context(self, ctx, data):
+    def update_decrypt_ctx(self, ctx, data):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", len(data) + block_size - 1)
         outlen = self.ffi.new("int *")
@@ -194,7 +203,7 @@ class Backend(object):
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
-    def finalize_encrypt_context(self, ctx):
+    def finalize_encrypt_ctx(self, ctx):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", block_size)
         outlen = self.ffi.new("int *")
@@ -204,7 +213,7 @@ class Backend(object):
         assert res == 1
         return self.ffi.buffer(buf)[:outlen[0]]
 
-    def finalize_decrypt_context(self, ctx):
+    def finalize_decrypt_ctx(self, ctx):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", block_size)
         outlen = self.ffi.new("int *")
@@ -214,11 +223,18 @@ class Backend(object):
         assert res == 1
         return self.ffi.buffer(buf)[:outlen[0]]
 
-    def supports_hash(self, hash_cls):
+
+class Hashes(object):
+    def __init__(self, ffi, lib):
+        super(Hashes, self).__init__()
+        self.ffi = ffi
+        self.lib = lib
+
+    def supported(self, hash_cls):
         return (self.ffi.NULL !=
                 self.lib.EVP_get_digestbyname(hash_cls.name.encode("ascii")))
 
-    def create_hash_context(self, hashobject):
+    def create_ctx(self, hashobject):
         ctx = self.lib.EVP_MD_CTX_create()
         ctx = self.ffi.gc(ctx, self.lib.EVP_MD_CTX_destroy)
         evp_md = self.lib.EVP_get_digestbyname(hashobject.name.encode("ascii"))
@@ -227,11 +243,11 @@ class Backend(object):
         assert res != 0
         return ctx
 
-    def update_hash_context(self, ctx, data):
+    def update_ctx(self, ctx, data):
         res = self.lib.EVP_DigestUpdate(ctx, data, len(data))
         assert res != 0
 
-    def finalize_hash_context(self, ctx, digest_size):
+    def finalize_ctx(self, ctx, digest_size):
         buf = self.ffi.new("unsigned char[]", digest_size)
         res = self.lib.EVP_DigestFinal_ex(ctx, buf, self.ffi.NULL)
         assert res != 0
@@ -239,7 +255,7 @@ class Backend(object):
         assert res == 1
         return self.ffi.buffer(buf)[:digest_size]
 
-    def copy_hash_context(self, ctx):
+    def copy_ctx(self, ctx):
         copied_ctx = self.lib.EVP_MD_CTX_create()
         copied_ctx = self.ffi.gc(copied_ctx, self.lib.EVP_MD_CTX_destroy)
         res = self.lib.EVP_MD_CTX_copy_ex(copied_ctx, ctx)
