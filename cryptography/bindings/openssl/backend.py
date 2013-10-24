@@ -111,6 +111,7 @@ class GetCipherByName(object):
         return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
+@interfaces.register(interfaces.CipherContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
