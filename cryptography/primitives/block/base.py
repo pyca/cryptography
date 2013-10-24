@@ -28,47 +28,27 @@ class BlockCipher(object):
         self._backend = backend
 
     def encryptor(self):
-        return _CipherEncryptionContext(self.cipher, self.mode, self._backend)
+        return _CipherContext(
+            self._backend.ciphers.create_encrypt_ctx(self.cipher, self.mode))
 
     def decryptor(self):
-        return _CipherDecryptionContext(self.cipher, self.mode, self._backend)
+        return _CipherContext(
+            self._backend.ciphers.create_decrypt_ctx(self.cipher, self.mode))
 
 
 @interfaces.register(interfaces.CipherContext)
-class _CipherEncryptionContext(object):
-    def __init__(self, cipher, mode, backend):
-        super(_CipherEncryptionContext, self).__init__()
-        self._backend = backend
-        self._ctx = self._backend.ciphers.create_encrypt_ctx(cipher, mode)
+class _CipherContext(object):
+    def __init__(self, ctx):
+        self._ctx = ctx
 
     def update(self, data):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        return self._backend.ciphers.update_ctx(self._ctx, data)
+        return self._ctx.update(data)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        data = self._backend.ciphers.finalize_ctx(self._ctx)
-        self._ctx = None
-        return data
-
-
-@interfaces.register(interfaces.CipherContext)
-class _CipherDecryptionContext(object):
-    def __init__(self, cipher, mode, backend):
-        super(_CipherDecryptionContext, self).__init__()
-        self._backend = backend
-        self._ctx = self._backend.ciphers.create_decrypt_ctx(cipher, mode)
-
-    def update(self, data):
-        if self._ctx is None:
-            raise ValueError("Context was already finalized")
-        return self._backend.ciphers.update_ctx(self._ctx, data)
-
-    def finalize(self):
-        if self._ctx is None:
-            raise ValueError("Context was already finalized")
-        data = self._backend.ciphers.finalize_ctx(self._ctx)
+        data = self._ctx.finalize()
         self._ctx = None
         return data
