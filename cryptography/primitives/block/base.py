@@ -28,16 +28,16 @@ class BlockCipher(object):
         self._backend = backend
 
     def encryptor(self):
-        return _OneTimeCipherContext(
+        return _CipherContext(
             self._backend.ciphers.create_encrypt_ctx(self.cipher, self.mode))
 
     def decryptor(self):
-        return _OneTimeCipherContext(
+        return _CipherContext(
             self._backend.ciphers.create_decrypt_ctx(self.cipher, self.mode))
 
 
 @interfaces.register(interfaces.CipherContext)
-class _OneTimeCipherContext(object):
+class _CipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
 
