@@ -112,6 +112,9 @@ class GetCipherByName(object):
 
 
 class Ciphers(object):
+    OPENSSL_ENCRYPT = 1
+    OPENSSL_DECRYPT = 0
+
     def __init__(self, ffi, lib):
         super(Ciphers, self).__init__()
         self.ffi = ffi
@@ -152,26 +155,12 @@ class Ciphers(object):
             )
 
     def create_encrypt_ctx(self, cipher, mode):
-        ctx, evp, iv_nonce = self._create_ctx(cipher, mode)
-        res = self.lib.EVP_EncryptInit_ex(ctx, evp, self.ffi.NULL, cipher.key,
-                                          iv_nonce)
-        assert res != 0
-        # We purposely disable padding here as it's handled higher up in the
-        # API.
-        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
-        return ctx
+        return self._create_ctx(cipher, mode, self.OPENSSL_ENCRYPT)
 
     def create_decrypt_ctx(self, cipher, mode):
-        ctx, evp, iv_nonce = self._create_ctx(cipher, mode)
-        res = self.lib.EVP_DecryptInit_ex(ctx, evp, self.ffi.NULL, cipher.key,
-                                          iv_nonce)
-        assert res != 0
-        # We purposely disable padding here as it's handled higher up in the
-        # API.
-        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
-        return ctx
+        return self._create_ctx(cipher, mode, self.OPENSSL_DECRYPT)
 
-    def _create_ctx(self, cipher, mode):
+    def _create_ctx(self, cipher, mode, enc):
         ctx = self.lib.EVP_CIPHER_CTX_new()
         ctx = self.ffi.gc(ctx, self.lib.EVP_CIPHER_CTX_free)
         evp_cipher = self._cipher_registry[type(cipher), type(mode)](
@@ -184,40 +173,27 @@ class Ciphers(object):
             iv_nonce = mode.nonce
         else:
             iv_nonce = self.ffi.NULL
+        res = self.lib.EVP_CipherInit_ex(ctx, evp_cipher, self.ffi.NULL,
+                                         cipher.key, iv_nonce, enc)
+        assert res != 0
+        # We purposely disable padding here as it's handled higher up in the
+        # API.
+        self.lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
+        return ctx
 
-        return (ctx, evp_cipher, iv_nonce)
-
-    def update_encrypt_ctx(self, ctx, data):
+    def update_ctx(self, ctx, data):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", len(data) + block_size - 1)
         outlen = self.ffi.new("int *")
-        res = self.lib.EVP_EncryptUpdate(ctx, buf, outlen, data, len(data))
+        res = self.lib.EVP_CipherUpdate(ctx, buf, outlen, data, len(data))
         assert res != 0
         return self.ffi.buffer(buf)[:outlen[0]]
 
-    def update_decrypt_ctx(self, ctx, data):
-        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
-        buf = self.ffi.new("unsigned char[]", len(data) + block_size - 1)
-        outlen = self.ffi.new("int *")
-        res = self.lib.EVP_DecryptUpdate(ctx, buf, outlen, data, len(data))
-        assert res != 0
-        return self.ffi.buffer(buf)[:outlen[0]]
-
-    def finalize_encrypt_ctx(self, ctx):
+    def finalize_ctx(self, ctx):
         block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
         buf = self.ffi.new("unsigned char[]", block_size)
         outlen = self.ffi.new("int *")
-        res = self.lib.EVP_EncryptFinal_ex(ctx, buf, outlen)
-        assert res != 0
-        res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
-        assert res == 1
-        return self.ffi.buffer(buf)[:outlen[0]]
-
-    def finalize_decrypt_ctx(self, ctx):
-        block_size = self.lib.EVP_CIPHER_CTX_block_size(ctx)
-        buf = self.ffi.new("unsigned char[]", block_size)
-        outlen = self.ffi.new("int *")
-        res = self.lib.EVP_DecryptFinal_ex(ctx, buf, outlen)
+        res = self.lib.EVP_CipherFinal_ex(ctx, buf, outlen)
         assert res != 0
         res = self.lib.EVP_CIPHER_CTX_cleanup(ctx)
         assert res == 1

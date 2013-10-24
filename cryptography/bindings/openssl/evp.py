@@ -49,6 +49,11 @@ int EVP_DecryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
 int EVP_DecryptUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
                       const unsigned char *, int);
 int EVP_DecryptFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
+int EVP_CipherInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
+                      const unsigned char *, const unsigned char *, int);
+int EVP_CipherUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
+                     const unsigned char *, int);
+int EVP_CipherFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
 int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
 const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_block_size(const EVP_CIPHER *);
