@@ -44,12 +44,12 @@ class _CipherEncryptionContext(object):
     def update(self, data):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        return self._backend.ciphers.update_encrypt_ctx(self._ctx, data)
+        return self._backend.ciphers.update_ctx(self._ctx, data)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        data = self._backend.ciphers.finalize_encrypt_ctx(self._ctx)
+        data = self._backend.ciphers.finalize_ctx(self._ctx)
         self._ctx = None
         return data
 
@@ -64,11 +64,11 @@ class _CipherDecryptionContext(object):
     def update(self, data):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        return self._backend.ciphers.update_decrypt_ctx(self._ctx, data)
+        return self._backend.ciphers.update_ctx(self._ctx, data)
 
     def finalize(self):
         if self._ctx is None:
             raise ValueError("Context was already finalized")
-        data = self._backend.ciphers.finalize_decrypt_ctx(self._ctx)
+        data = self._backend.ciphers.finalize_ctx(self._ctx)
         self._ctx = None
         return data
