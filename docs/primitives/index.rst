@@ -6,3 +6,4 @@ Primitives
 
     cryptographic-hashes
     symmetric-encryption
+    padding
