@@ -45,6 +45,22 @@ where the encrypter and decrypter both use the same key.
             :class:`~cryptography.primitives.interfaces.CipherContext`
             provider.
 
+    .. method:: encrypt(data)
+
+        This is the equivalent of getting an encryptor, updating it with the
+        data, and calling ``finalize``.
+
+        :param bytes data: The bytes to encrypt
+        :return bytes: Returns the data that was encrypted
+
+    .. method:: decrypt(data)
+
+        This is the equivalent of getting an decryptor, updating it with the
+        data, and calling ``finalize``.
+
+        :param bytes data: The bytes to decrypt
+        :return bytes: Returns the data that was decrypted
+
 .. currentmodule:: cryptography.primitives.interfaces
 
 .. class:: CipherContext()
