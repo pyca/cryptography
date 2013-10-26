@@ -51,4 +51,9 @@ int ERR_get_next_error_library();
 """
 
 MACROS = """
+unsigned long ERR_PACK(int, int, int);
+int ERR_GET_LIB(unsigned long);
+int ERR_GET_FUNC(unsigned long);
+int ERR_GET_REASON(unsigned long);
+int ERR_FATAL_ERROR(unsigned long);
 """
