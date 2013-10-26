@@ -24,6 +24,11 @@ where the encrypter and decrypter both use the same key.
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
+        >>> ct = cipher.encrypt(b"a secret message")
+        >>> cipher.decrypt(ct)
+        'a secret message'
+
+        >>> # which is really just syntactic sugar for
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
