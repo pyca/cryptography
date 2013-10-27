@@ -127,7 +127,9 @@ def load_openssl_vectors(vector_data):
 
 def load_hash_vectors(vector_data):
     vectors = []
-    key, msg, md = None, None, None
+    key = None
+    msg = None
+    md = None
 
     for line in vector_data:
         line = line.strip()
@@ -154,8 +156,13 @@ def load_hash_vectors(vector_data):
             # after MD is found the Msg+MD (+ potential key) tuple is complete
             if key is not None:
                 vectors.append((msg, md, key))
+                key = None
+                msg = None
+                md = None
             else:
                 vectors.append((msg, md))
+                msg = None
+                md = None
         else:
             raise ValueError("Unknown line in hash vector")
     return vectors

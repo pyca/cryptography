@@ -27,7 +27,7 @@ message.
     .. doctest::
 
         >>> from cryptography.primitives import hashes, hmac
-        >>> h = hmac.HMAC(key, hashes.SHA1)
+        >>> h = hmac.HMAC(key, hashes.SHA256)
         >>> h.update(b"message to hash")
         >>> h.hexdigest()
         '...'
