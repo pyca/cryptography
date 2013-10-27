@@ -1,7 +1,7 @@
 Message Digests
 ===============
 
-.. currentmodule:: cryptography.primitives.hashes
+.. currentmodule:: cryptography.hazmat.primitives.hashes
 
 .. class:: BaseHash(data=None)
 

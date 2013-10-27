@@ -1,7 +1,7 @@
 Symmetric Encryption
 ====================
 
-.. currentmodule:: cryptography.primitives.block
+.. currentmodule:: cryptography.hazmat.primitives.block
 
 .. testsetup::
 
@@ -22,7 +22,7 @@ where the encrypter and decrypter both use the same key.
 
     .. doctest::
 
-        >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
+        >>> from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -36,16 +36,16 @@ where the encrypter and decrypter both use the same key.
     .. method:: encryptor()
 
         :return: An encrypting
-            :class:`~cryptography.primitives.interfaces.CipherContext`
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
     .. method:: decryptor()
 
         :return: A decrypting
-            :class:`~cryptography.primitives.interfaces.CipherContext`
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
-.. currentmodule:: cryptography.primitives.interfaces
+.. currentmodule:: cryptography.hazmat.primitives.interfaces
 
 .. class:: CipherContext()
 
@@ -68,7 +68,7 @@ where the encrypter and decrypter both use the same key.
 Ciphers
 ~~~~~~~
 
-.. currentmodule:: cryptography.primitives.block.ciphers
+.. currentmodule:: cryptography.hazmat.primitives.block.ciphers
 
 .. class:: AES(key)
 
@@ -109,7 +109,7 @@ Ciphers
 Modes
 ~~~~~
 
-.. currentmodule:: cryptography.primitives.block.modes
+.. currentmodule:: cryptography.hazmat.primitives.block.modes
 
 .. class:: CBC(initialization_vector)
 

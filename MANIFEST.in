@@ -4,4 +4,4 @@ include CONTRIBUTING.rst
 include README.rst
 
 recursive-include tests *.py
-recursive-include tests/primitives/vectors *
+recursive-include tests/hazmat/primitives/vectors *

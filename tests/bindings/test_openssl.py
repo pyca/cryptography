@@ -14,8 +14,8 @@
 import pytest
 
 from cryptography.bindings.openssl.backend import backend
-from cryptography.primitives.block.ciphers import AES
-from cryptography.primitives.block.modes import CBC
+from cryptography.hazmat.primitives.block.ciphers import AES
+from cryptography.hazmat.primitives.block.modes import CBC
 
 
 class TestOpenSSL(object):

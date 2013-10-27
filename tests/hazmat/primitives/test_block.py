@@ -17,8 +17,8 @@ import binascii
 
 import pytest
 
-from cryptography.primitives import interfaces
-from cryptography.primitives.block import BlockCipher, ciphers, modes
+from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
 
 
 class TestBlockCipher(object):

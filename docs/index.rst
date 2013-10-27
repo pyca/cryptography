@@ -31,8 +31,15 @@ Contents
     :maxdepth: 2
 
     architecture
-    primitives/index
     bindings/index
     contributing
     security
     community
+
+Hazard Materials
+----------------
+
+.. toctree::
+    :maxdepth: 2
+
+    hazmat/primitives/index

@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.primitives import interfaces
+from cryptography.hazmat.primitives import interfaces
 
 
 class BlockCipher(object):

@@ -19,7 +19,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
-from cryptography.primitives.block import ciphers, modes
+from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
 from ..utils import load_openssl_vectors_from_file

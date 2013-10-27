@@ -18,9 +18,11 @@ import sys
 
 import cffi
 
-from cryptography.primitives import interfaces
-from cryptography.primitives.block.ciphers import AES, Camellia, TripleDES
-from cryptography.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
+from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.block.ciphers import (
+    AES, Camellia, TripleDES,
+)
+from cryptography.hazmat.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
 
 
 class Backend(object):

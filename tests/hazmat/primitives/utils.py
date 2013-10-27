@@ -4,7 +4,7 @@ import os
 import pytest
 
 from cryptography.bindings import _ALL_BACKENDS
-from cryptography.primitives.block import BlockCipher
+from cryptography.hazmat.primitives.block import BlockCipher
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,

@@ -20,7 +20,7 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-from cryptography.primitives.block import ciphers, modes
+from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
 from ..utils import load_nist_vectors_from_file
