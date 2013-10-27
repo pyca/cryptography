@@ -1,11 +1,11 @@
 OpenSSL
 =======
 
-.. warning::
+.. danger::
 
-    The OpenSSL API is not easy to use, small mistakes can lead to significant
-    security vulnerabilities. We strongly recommend not using this directly,
-    and instead using one of the higher level APIs exposed by ``cryptography``.
+    This is a "Hazardous Materials" module. You should **ONLY** use it if
+    you're 100% absolutely sure that you know what you're doing because this
+    module is full of land mines, dragons, and dinosaurs with laser guns.
 
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
