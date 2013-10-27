@@ -56,3 +56,13 @@ class CTR(object):
 
     def __init__(self, nonce):
         self.nonce = nonce
+
+
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithTweak)
+class XTS(object):
+    name = "XTS"
+
+    def __init__(self, tweak):
+        super(XTS, self).__init__()
+        self.tweak = tweak

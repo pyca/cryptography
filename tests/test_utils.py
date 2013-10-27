@@ -18,7 +18,7 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors,
+    load_openssl_vectors, load_hash_vectors
 )
 
 

@@ -56,6 +56,10 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class ModeWithTweak(six.with_metaclass(abc.ABCMeta)):
+    pass
+
+
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):

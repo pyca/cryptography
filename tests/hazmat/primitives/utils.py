@@ -37,8 +37,14 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
                  skip_message):
     if not only_if(backend):
         pytest.skip(skip_message)
-    plaintext = params.pop("plaintext")
-    ciphertext = params.pop("ciphertext")
+    if params.get("plaintext"):
+        plaintext = params.pop("plaintext")
+    else:
+        plaintext = params.pop("pt")
+    if params.get("ciphertext"):
+        ciphertext = params.pop("ciphertext")
+    else:
+        ciphertext = params.pop("ct")
     cipher = Cipher(
         cipher_factory(**params),
         mode_factory(**params),
@@ -47,7 +53,7 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
     encryptor = cipher.encryptor()
     actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
     actual_ciphertext += encryptor.finalize()
-    assert actual_ciphertext == binascii.unhexlify(ciphertext)
+    assert binascii.hexlify(actual_ciphertext) == ciphertext.lower()
     decryptor = cipher.decryptor()
     actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
     actual_plaintext += decryptor.finalize()

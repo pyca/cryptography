@@ -52,6 +52,13 @@ class TestCipher(object):
         with pytest.raises(TypeError):
             Cipher(algorithm, mode=None, backend=backend)
 
+    def test_aes_large_key_non_xts(self):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"0" * 64),
+                modes.ECB()
+            )
+
 
 class TestCipherContext(object):
     def test_use_after_finalize(self, backend):
