@@ -11,7 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings.openssl.backend import backend
+from cryptography.hazmat.bindings import openssl
 
 
-__all__ = ["backend"]
+_default_backend = openssl.backend
+_ALL_BACKENDS = [
+    openssl.backend
+]

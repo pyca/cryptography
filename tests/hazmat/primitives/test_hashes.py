@@ -19,8 +19,7 @@ import pytest
 
 import six
 
-from cryptography.bindings import _default_backend
-
+from cryptography.hazmat.bindings import _default_backend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_base_hash_test

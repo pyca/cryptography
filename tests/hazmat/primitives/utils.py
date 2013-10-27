@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from cryptography.bindings import _ALL_BACKENDS
+from cryptography.hazmat.bindings import _ALL_BACKENDS
 from cryptography.hazmat.primitives.block import BlockCipher
 
 

@@ -10,7 +10,7 @@ OpenSSL
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
 
-.. data:: cryptography.bindings.openssl.backend
+.. data:: cryptography.hazmat.bindings.openssl.backend
 
     This is the exposed API for the OpenSSL bindings. It has two public
     attributes:

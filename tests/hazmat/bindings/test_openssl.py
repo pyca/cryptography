@@ -13,7 +13,7 @@
 
 import pytest
 
-from cryptography.bindings.openssl.backend import backend
+from cryptography.hazmat.bindings.openssl.backend import backend
 from cryptography.hazmat.primitives.block.ciphers import AES
 from cryptography.hazmat.primitives.block.modes import CBC
 

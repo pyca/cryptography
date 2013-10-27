@@ -31,7 +31,6 @@ Contents
     :maxdepth: 2
 
     architecture
-    bindings/index
     contributing
     security
     community
@@ -43,3 +42,4 @@ Hazard Materials
     :maxdepth: 2
 
     hazmat/primitives/index
+    hazmat/bindings/index

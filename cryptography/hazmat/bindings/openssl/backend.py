@@ -60,8 +60,10 @@ class Backend(object):
         functions = []
         macros = []
         for name in self._modules:
-            __import__("cryptography.bindings.openssl." + name)
-            module = sys.modules["cryptography.bindings.openssl." + name]
+            __import__("cryptography.hazmat.bindings.openssl." + name)
+            module = (
+                sys.modules["cryptography.hazmat.bindings.openssl." + name]
+            )
             self.ffi.cdef(module.TYPES)
 
             macros.append(module.MACROS)
