@@ -18,7 +18,7 @@ import os
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_hash_test, generate_long_string_hash_test
-from ..utils import load_hash_vectors_from_file
+from ...utils import load_hash_vectors_from_file
 
 
 class TestSHA1(object):

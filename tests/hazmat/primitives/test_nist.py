@@ -23,7 +23,7 @@ import os
 from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
-from ..utils import load_nist_vectors_from_file
+from ...utils import load_nist_vectors_from_file
 
 
 class TestAES_CBC(object):

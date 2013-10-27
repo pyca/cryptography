@@ -22,7 +22,7 @@ import binascii
 from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
-from ..utils import load_openssl_vectors_from_file
+from ...utils import load_openssl_vectors_from_file
 
 
 class TestCamelliaCBC(object):
