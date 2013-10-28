@@ -19,34 +19,38 @@ import six
 
 
 class HMAC(object):
-    def __init__(self, key, hash_cls, data=None, ctx=None, backend=None):
+    def __init__(self, key, msg=None, digestmod=None, ctx=None, backend=None):
         super(HMAC, self).__init__()
         if backend is None:
             from cryptography.hazmat.bindings import _default_backend
             backend = _default_backend
+
+        if digestmod is None:
+            raise ValueError("digestmod is a required argument")
+
         self._backend = backend
-        self.hash_cls = hash_cls
+        self.digestmod = digestmod
         self.key = key
         if ctx is None:
-            self._ctx = self._backend.hmacs.create_ctx(key, self.hash_cls)
+            self._ctx = self._backend.hmacs.create_ctx(key, self.digestmod)
         else:
             self._ctx = ctx
 
-        if data is not None:
-            self.update(data)
+        if msg is not None:
+            self.update(msg)
 
-    def update(self, data):
-        if isinstance(data, six.text_type):
+    def update(self, msg):
+        if isinstance(msg, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.hmacs.update_ctx(self._ctx, data)
+        self._backend.hmacs.update_ctx(self._ctx, msg)
 
     def copy(self):
-        return self.__class__(self.key, hash_cls=self.hash_cls,
+        return self.__class__(self.key, digestmod=self.digestmod,
                               backend=self._backend, ctx=self._copy_ctx())
 
     def digest(self):
         return self._backend.hmacs.finalize_ctx(self._copy_ctx(),
-                                                self.hash_cls.digest_size)
+                                                self.digestmod.digest_size)
 
     def hexdigest(self):
         return str(binascii.hexlify(self.digest()).decode("ascii"))
