@@ -42,7 +42,7 @@ class TestHMAC(object):
         assert isinstance(h.hexdigest(), str)
 
     def test_hmac_no_digestmod(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             hmac.HMAC(key=b"shortkey")
 
 

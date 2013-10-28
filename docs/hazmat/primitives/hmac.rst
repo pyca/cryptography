@@ -34,7 +34,7 @@ message.
 
     .. method:: update(msg)
 
-        :param bytes msg The bytes you wish to hash.
+        :param bytes msg: The bytes you wish to hash.
 
     .. method:: copy()
 

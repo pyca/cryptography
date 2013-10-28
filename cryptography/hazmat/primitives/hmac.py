@@ -26,7 +26,7 @@ class HMAC(object):
             backend = _default_backend
 
         if digestmod is None:
-            raise ValueError("digestmod is a required argument")
+            raise TypeError("digestmod is a required argument")
 
         self._backend = backend
         self.digestmod = digestmod
