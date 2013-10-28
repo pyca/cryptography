@@ -35,8 +35,8 @@ Contents
     security
     community
 
-Hazard Materials
-----------------
+Hazardous Materials
+-------------------
 
 .. toctree::
     :maxdepth: 2
