@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.primitives import interfaces
+from cryptography.hazmat.primitives import interfaces
 
 
 class BlockCipher(object):
@@ -21,7 +21,9 @@ class BlockCipher(object):
         super(BlockCipher, self).__init__()
 
         if backend is None:
-            from cryptography.bindings import _default_backend as backend
+            from cryptography.hazmat.bindings import (
+                _default_backend as backend,
+            )
 
         self.cipher = cipher
         self.mode = mode

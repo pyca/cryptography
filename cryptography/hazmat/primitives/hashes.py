@@ -23,7 +23,7 @@ import six
 class BaseHash(six.with_metaclass(abc.ABCMeta)):
     def __init__(self, data=None, backend=None, ctx=None):
         if backend is None:
-            from cryptography.bindings import _default_backend
+            from cryptography.hazmat.bindings import _default_backend
             backend = _default_backend
         self._backend = backend
         if ctx is None:

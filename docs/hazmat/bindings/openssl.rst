@@ -1,16 +1,16 @@
+.. danger::
+
+    This is a "Hazardous Materials" module. You should **ONLY** use it if
+    you're 100% absolutely sure that you know what you're doing because this
+    module is full of land mines, dragons, and dinosaurs with laser guns.
+
+
 OpenSSL
 =======
 
-.. warning::
-
-    The OpenSSL API is not easy to use, small mistakes can lead to significant
-    security vulnerabilities. We strongly recommend not using this directly,
-    and instead using one of the higher level APIs exposed by ``cryptography``.
-
-
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
 
-.. data:: cryptography.bindings.openssl.backend
+.. data:: cryptography.hazmat.bindings.openssl.backend
 
     This is the exposed API for the OpenSSL bindings. It has two public
     attributes:

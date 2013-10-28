@@ -18,9 +18,11 @@ import sys
 
 import cffi
 
-from cryptography.primitives import interfaces
-from cryptography.primitives.block.ciphers import AES, Camellia, TripleDES
-from cryptography.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
+from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.block.ciphers import (
+    AES, Camellia, TripleDES,
+)
+from cryptography.hazmat.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
 
 
 class Backend(object):
@@ -58,8 +60,10 @@ class Backend(object):
         functions = []
         macros = []
         for name in self._modules:
-            __import__("cryptography.bindings.openssl." + name)
-            module = sys.modules["cryptography.bindings.openssl." + name]
+            module_name = "cryptography.hazmat.bindings.openssl." + name
+            __import__(module_name)
+            module = sys.modules[module_name]
+
             self.ffi.cdef(module.TYPES)
 
             macros.append(module.MACROS)

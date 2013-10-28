@@ -11,7 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.bindings.openssl.backend import backend
+from __future__ import absolute_import, division, print_function
+
+from cryptography.hazmat.primitives.block.base import BlockCipher
 
 
-__all__ = ["backend"]
+__all__ = [
+    "BlockCipher",
+]

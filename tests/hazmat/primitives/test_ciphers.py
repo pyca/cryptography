@@ -17,7 +17,9 @@ import binascii
 
 import pytest
 
-from cryptography.primitives.block.ciphers import AES, Camellia, TripleDES
+from cryptography.hazmat.primitives.block.ciphers import (
+    AES, Camellia, TripleDES,
+)
 
 
 class TestAES(object):

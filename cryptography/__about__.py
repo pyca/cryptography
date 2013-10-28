@@ -19,7 +19,7 @@ __all__ = [
 
 __title__ = "cryptography"
 __summary__ = ("cryptography is a package designed to expose cryptographic "
-               "primitives and recipes to Python developers.")
+               "recipes and primitives to Python developers.")
 __uri__ = "https://github.com/pyca/cryptography"
 
 __version__ = "0.1.dev1"
