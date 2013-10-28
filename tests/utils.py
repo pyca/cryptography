@@ -136,6 +136,11 @@ def load_hash_vectors(vector_data):
 
         if line.startswith("Len"):
             length = int(line.split(" = ")[1])
+        elif line.startswith("Key"):
+            """
+            HMAC vectors contain a key attribute. Hash vectors do not.
+            """
+            key = line.split(" = ")[1].encode("ascii")
         elif line.startswith("Msg"):
             """
             In the NIST vectors they have chosen to represent an empty
@@ -145,8 +150,11 @@ def load_hash_vectors(vector_data):
             msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
         elif line.startswith("MD"):
             md = line.split(" = ")[1]
-            # after MD is found the Msg+MD tuple is complete
-            vectors.append((msg, md))
+            # after MD is found the Msg+MD (+ potential key) tuple is complete
+            try:
+                vectors.append((msg, md, key))
+            except:
+                vectors.append((msg, md))
         else:
             raise ValueError("Unknown line in hash vector")
     return vectors
