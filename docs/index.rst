@@ -5,8 +5,8 @@ Welcome to ``cryptography``
 
     ``cryptography`` is very young, and very incomplete.
 
-``cryptography`` is a Python library which exposes cryptographic primitives and
-recipes.
+``cryptography`` is a Python library which exposes cryptographic recipes and
+primitives.
 
 Why a new crypto library for Python?
 ------------------------------------
