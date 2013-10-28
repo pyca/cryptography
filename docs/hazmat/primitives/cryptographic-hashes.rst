@@ -12,10 +12,19 @@ Message Digests
 
 .. class:: BaseHash(data=None)
 
-   Abstract base class that implements a common interface for all hash
-   algorithms that follow here.
+    Abstract base class that implements a common interface for all hash
+    algorithms that follow here.
 
-   If ``data`` is provided ``update(data)`` is called upon construction.
+    If ``data`` is provided ``update(data)`` is called upon construction.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> digest = hashes.SHA256()
+        >>> digest.update(b"abc")
+        >>> digest.update(b"123")
+        >>> digest.hexdigest()
+        '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090'
 
     .. method:: update(data)
 
