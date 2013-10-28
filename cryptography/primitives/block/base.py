@@ -35,6 +35,16 @@ class BlockCipher(object):
         return _CipherContext(
             self._backend.ciphers.create_decrypt_ctx(self.cipher, self.mode))
 
+    def encrypt(self, data):
+        encryptor = self.encryptor()
+        result = encryptor.update(data)
+        return result + encryptor.finalize()
+
+    def decrypt(self, data):
+        decryptor = self.decryptor()
+        result = decryptor.update(data)
+        return result + decryptor.finalize()
+
 
 @interfaces.register(interfaces.CipherContext)
 class _CipherContext(object):

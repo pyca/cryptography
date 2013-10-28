@@ -24,6 +24,11 @@ where the encrypter and decrypter both use the same key.
 
         >>> from cryptography.primitives.block import BlockCipher, ciphers, modes
         >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
+        >>> ct = cipher.encrypt(b"a secret message")
+        >>> cipher.decrypt(ct)
+        'a secret message'
+
+        >>> # which is really just syntactic sugar for
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
@@ -44,6 +49,22 @@ where the encrypter and decrypter both use the same key.
         :return: A decrypting
             :class:`~cryptography.primitives.interfaces.CipherContext`
             provider.
+
+    .. method:: encrypt(data)
+
+        This is the equivalent of getting an encryptor, updating it with the
+        data, and calling ``finalize``.
+
+        :param bytes data: The bytes to encrypt
+        :return bytes: Returns the data that was encrypted
+
+    .. method:: decrypt(data)
+
+        This is the equivalent of getting an decryptor, updating it with the
+        data, and calling ``finalize``.
+
+        :param bytes data: The bytes to decrypt
+        :return bytes: Returns the data that was decrypted
 
 .. currentmodule:: cryptography.primitives.interfaces
 

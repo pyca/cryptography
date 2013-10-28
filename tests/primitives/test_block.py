@@ -42,6 +42,15 @@ class TestBlockCipher(object):
         )
         assert isinstance(cipher.decryptor(), interfaces.CipherContext)
 
+    def test_encrypt_decrypt(self, backend):
+        cipher = BlockCipher(
+            ciphers.AES(binascii.unhexlify(b"0" * 32)),
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
+        )
+        plaintext = b"a" * 16
+        assert plaintext == cipher.decrypt(cipher.encrypt(plaintext))
+
 
 class TestBlockCipherContext(object):
     def test_use_after_finalize(self, backend):
