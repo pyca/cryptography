@@ -301,7 +301,8 @@ Modes
     XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode of
     operation for block ciphers. It is commonly used in disk encryption.
     This mode requires 512-bit keys for 256-bit encryption and 256-bit keys for
-    128-bit encryption.
+    128-bit encryption. To use this mode split the key using ``split_key``,
+    then pass the first half to the cipher object and second half to the mode.
 
     .. doctest::
 
@@ -322,10 +323,12 @@ Modes
                                           splitting the encryption key in half
                                           manually or using ``split_key``
 
-    This method can be used to split a large key into equal key halves to pass
-    to the cipher and mode object.
-
     .. method:: split_key(key)
+
+    This method can be used to split a large key into equal key halves to pass
+    to the cipher and mode object. This is necessary because XTS requires
+    512-bit keys for 256-bit encryption, but the cipher object may not accept
+    that key size.
 
         :return: A tuple containing two elements representing each half of the
                  key.
