@@ -109,9 +109,12 @@ class _PKCS7UnpaddingContext(object):
         if pad_size > self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
+        mismatch = 0
         for b in six.iterbytes(self._buffer[-pad_size:]):
-            if b != pad_size:
-                raise ValueError("Invalid padding bytes")
+            mismatch |= b ^ pad_size
+
+        if mismatch != 0:
+            raise ValueError("Invalid padding bytes")
 
         res = self._buffer[:-pad_size]
         self._buffer = None
