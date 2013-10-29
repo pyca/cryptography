@@ -47,6 +47,16 @@ class TestPKCS7(object):
             b"111111111111111122222222222222",
             b"111111111111111122222222222222\x02\x02",
         ),
+        (
+            128,
+            b"1" * 16,
+            b"1" * 16 + b"\x10" * 16,
+        ),
+        (
+            128,
+            b"1" * 17,
+            b"1" * 17 + b"\x0F" * 15,
+        )
     ])
     def test_pad(self, size, unpadded, padded):
         padder = padding.PKCS7(size)

@@ -48,11 +48,12 @@ class _PKCS7PaddingContext(object):
             raise ValueError("Context was already finalized")
 
         self._buffer += data
-        result = b""
 
-        while len(self._buffer) >= self.block_size // 8:
-            result += self._buffer[:self.block_size // 8]
-            self._buffer = self._buffer[self.block_size // 8:]
+        finished_blocks = len(self._buffer) // (self.block_size // 8)
+
+        result = self._buffer[:finished_blocks * (self.block_size // 8)]
+        self._buffer = self._buffer[finished_blocks * (self.block_size // 8):]
+
         return result
 
     def finalize(self):
@@ -79,10 +80,15 @@ class _PKCS7UnpaddingContext(object):
             raise ValueError("Context was already finalized")
 
         self._buffer += data
-        result = b""
-        while len(self._buffer) >= 2 * (self.block_size // 8):
-            result += self._buffer[:self.block_size // 8]
-            self._buffer = self._buffer[self.block_size // 8:]
+
+        finished_blocks = max(
+            len(self._buffer) // (self.block_size // 8) - 1,
+            0
+        )
+
+        result = self._buffer[:finished_blocks * (self.block_size // 8)]
+        self._buffer = self._buffer[finished_blocks * (self.block_size // 8):]
+
         return result
 
     def finalize(self):
