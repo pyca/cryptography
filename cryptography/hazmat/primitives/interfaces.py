@@ -45,3 +45,17 @@ class CipherContext(six.with_metaclass(abc.ABCMeta)):
         """
         finalize return bytes
         """
+
+
+class PaddingContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        update takes bytes and return bytes
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        finalize return bytes
+        """
