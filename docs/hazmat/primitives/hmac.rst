@@ -8,6 +8,8 @@
 Hash-based Message Authentication Codes
 =======================================
 
+.. currentmodule:: cryptography.hazmat.primitives.hmac
+
 .. testsetup::
 
     import binascii
@@ -18,7 +20,7 @@ message authentication codes using a cryptographic hash function coupled with a
 secret key. You can use an HMAC to verify integrity as well as authenticate a
 message.
 
-.. class:: cryptography.hazmat.primitives.hmac.HMAC(key, msg=None, digestmod=None)
+.. class:: HMAC(key, msg=None, digestmod=None)
 
     HMAC objects take a ``key``, a hash class derived from
     :class:`~cryptography.primitives.hashes.BaseHash`, and optional message.
