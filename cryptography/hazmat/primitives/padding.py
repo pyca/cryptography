@@ -47,6 +47,9 @@ class _PKCS7PaddingContext(object):
         if self._buffer is None:
             raise ValueError("Context was already finalized")
 
+        if isinstance(data, six.text_type):
+            raise TypeError("Unicode-objects must be encoded before padding")
+
         self._buffer += data
 
         finished_blocks = len(self._buffer) // (self.block_size // 8)
@@ -78,6 +81,9 @@ class _PKCS7UnpaddingContext(object):
     def update(self, data):
         if self._buffer is None:
             raise ValueError("Context was already finalized")
+
+        if isinstance(data, six.text_type):
+            raise TypeError("Unicode-objects must be encoded before unpadding")
 
         self._buffer += data
 

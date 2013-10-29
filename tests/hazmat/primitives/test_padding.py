@@ -13,6 +13,8 @@
 
 import pytest
 
+import six
+
 from cryptography.hazmat.primitives import padding
 
 
@@ -33,6 +35,14 @@ class TestPKCS7(object):
         with pytest.raises(ValueError):
             unpadder.update(padded)
             unpadder.finalize()
+
+    def test_non_bytes(self):
+        padder = padding.PKCS7(128).padder()
+        with pytest.raises(TypeError):
+            padder.update(six.u("abc"))
+        unpadder = padding.PKCS7(128).unpadder()
+        with pytest.raises(TypeError):
+            unpadder.update(six.u("abc"))
 
     @pytest.mark.parametrize(("size", "unpadded", "padded"), [
         (
