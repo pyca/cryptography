@@ -240,7 +240,8 @@ class GetXTSCipherByName(object):
         self._fmt = fmt
 
     def __call__(self, backend, cipher, mode):
-        bit_length = cipher.key_size//2
+        full_key = cipher.key + mode.additional_key_data
+        bit_length = (len(full_key) * 8) // 2
         cipher_name = self._fmt.format(cipher=cipher,
                                        bit_length=bit_length).lower()
         return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
@@ -283,15 +284,19 @@ class _CipherContext(object):
                                                   self._backend.ffi.NULL,
                                                   operation)
         assert res != 0
+        if isinstance(mode, XTS):
+            key = cipher.key + mode.additional_key_data
+        else:
+            key = cipher.key
         # set the key length to handle variable key ciphers
         res = self._backend.lib.EVP_CIPHER_CTX_set_key_length(
-            ctx, len(cipher.key)
+            ctx, len(key)
         )
         assert res != 0
         # pass key/iv
         res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
                                                   self._backend.ffi.NULL,
-                                                  cipher.key,
+                                                  key,
                                                   iv_nonce,
                                                   operation)
         assert res != 0

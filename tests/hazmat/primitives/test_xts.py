@@ -14,22 +14,21 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import os
+import pytest
 
-from cryptography.hazmat.primitives.block import ciphers, modes
-
-from .utils import generate_encrypt_test
-from ...utils import load_xts_vectors_from_file
+from cryptography.hazmat.primitives.ciphers import modes
 
 
-class TestAES_XTS(object):
-    test_KAT = generate_encrypt_test(
-        lambda path: load_xts_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "XTSTestVectors", "tweak-128hexstr"),
-        [
-            "XTSGenAES128.rsp",
-            "XTSGenAES256.rsp",
-        ],
-        lambda key, i, dataunitlen: ciphers.AES(binascii.unhexlify(key)),
-        lambda key, i, dataunitlen: modes.XTS(binascii.unhexlify(i)),
-    )
+class TestXTS(object):
+    def test_xts_split_key(self):
+        key1 = binascii.unhexlify(b"a650f2e235896ad144eef966ff00406e")
+        key2 = binascii.unhexlify(b"156b537b7cd17a46551686f9561f3ddc")
+        key = key1 + key2
+        actual_key1, actual_key2 = modes.XTS.split_key(key)
+        assert actual_key1 == key1
+        assert actual_key2 == key2
+
+    def test_xts_split_key_invalid_key_size(self):
+        key = binascii.unhexlify(b"a650f2e235896ad144eef966ff00406eaa")
+        with pytest.raises(ValueError):
+            modes.XTS.split_key(key)

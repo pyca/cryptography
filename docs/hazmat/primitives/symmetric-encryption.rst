@@ -9,8 +9,9 @@ Symmetric Encryption
 .. testsetup::
 
     import binascii
-    key = binascii.unhexlify(b"0" * 32)
+    key = binascii.unhexlify(b"0" * 64)
     iv = binascii.unhexlify(b"0" * 32)
+    tweak = binascii.unhexlify(b"0" * 32)
 
     from cryptography.hazmat.bindings import default_backend
     backend = default_backend()
@@ -294,6 +295,40 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+
+.. class:: XTS(tweak, additional_key_material=None)
+
+    XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode of
+    operation for block ciphers. It is commonly used in disk encryption.
+    This mode requires 512-bit keys for 256-bit encryption and 256-bit keys for
+    128-bit encryption.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
+        >>> key1, key2 = modes.XTS.split_key(key)
+        >>> cipher = BlockCipher(ciphers.AES(key1), modes.XTS(tweak, key2))
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
+    :param bytes tweak: Must be unique bytes. Typically derived via drive
+                        geometry for disk encryption.
+
+    :param bytes additional_key_material: The second half of the key used for
+                                          encryption. This can be obtained by
+                                          splitting the encryption key in half
+                                          manually or using ``split_key``
+
+    This method can be used to split a large key into equal key halves to pass
+    to the cipher and mode object.
+
+    .. method:: split_key(key)
+
+        :return: A tuple containing two elements representing each half of the
+                 key.
 
 
 Insecure Modes

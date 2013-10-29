@@ -16,19 +16,12 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 
 class Cipher(object):
     def __init__(self, algorithm, mode, backend):
         if not isinstance(algorithm, interfaces.CipherAlgorithm):
             raise TypeError("Expected interface of interfaces.CipherAlgorithm")
-
-        if (isinstance(algorithm, algorithms.AES) and
-                algorithm.key_size == 512 and
-                not isinstance(mode, modes.XTS)):
-            raise ValueError(
-                "AES key size must be 256 or less if mode is not XTS")
 
         self.algorithm = algorithm
         self.mode = mode

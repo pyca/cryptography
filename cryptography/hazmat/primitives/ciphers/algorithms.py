@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives import interfaces
 class AES(object):
     name = "AES"
     block_size = 128
-    key_sizes = frozenset([128, 192, 256, 512])
+    key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
         self.key = key

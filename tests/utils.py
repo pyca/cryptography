@@ -143,3 +143,22 @@ def load_hash_vectors(vector_data):
         else:
             raise ValueError("Unknown line in hash vector")
     return vectors
+
+
+def load_xts_vectors(vector_data):
+    parsed_vectors = load_nist_vectors(vector_data)
+    scrubbed_vectors = []
+    for vector in parsed_vectors:
+        # remove vectors that aren't byte aligned data since OpenSSL does not
+        # support them
+        if int(vector["dataunitlen"]) % 8 == 0:
+            # split key into key/additional_key_data. This is done because
+            # XTS requires double the keying material for a given cipher
+            # strength and we don't want to corrupt the AES cipher object
+            # with this knowledge
+            key1 = vector["key"][:len(vector["key"])//2]
+            key2 = vector["key"][len(vector["key"])//2:]
+            vector["key"] = key1
+            vector["additional_key_data"] = key2
+            scrubbed_vectors.append(vector)
+    return scrubbed_vectors
