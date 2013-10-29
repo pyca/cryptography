@@ -45,7 +45,7 @@ class _PaddingContext(object):
         super(_PaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
-        # zero-buffer
+        # zero-buffer (#193)
         self._buffer = b""
 
     def update(self, data):
@@ -75,7 +75,7 @@ class _UnpaddingContext(object):
         super(_UnpaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
-        # zero-buffer
+        # zero-buffer (#193)
         self._buffer = b""
 
     def update(self, data):
