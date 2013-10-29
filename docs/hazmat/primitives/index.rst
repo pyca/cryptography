@@ -12,4 +12,5 @@ Primitives
     :maxdepth: 1
 
     cryptographic-hashes
+    hmac
     symmetric-encryption
