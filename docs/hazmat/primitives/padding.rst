@@ -37,16 +37,6 @@ multiple of the block size.
     :param block_size: The size of the block in bits that the data is being
                        padded to.
 
-    .. method:: pad(data)
-
-        :param data: The data that should be padded.
-        :rtype bytes: The padded data.
-
-    .. method:: unpad(data)
-
-        :param data: The data that should be unpadded.
-        :rtype bytes: The unpadded data.
-
     .. method:: padder()
 
         :returns: A padding
