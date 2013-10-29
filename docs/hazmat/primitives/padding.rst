@@ -28,7 +28,10 @@ multiple of the block size.
 
         >>> from cryptography.hazmat.primitives import padding
         >>> padder = padding.PKCS7(128)
-        >>> padder.pad(b"1111111111")
+        >>> padder = padder.padder()
+        >>> padder.update(b"1111111111")
+        ''
+        >>> padder.finalize()
         '1111111111\x06\x06\x06\x06\x06\x06'
 
     :param block_size: The size of the block in bits that the data is being

@@ -31,8 +31,10 @@ class TestPKCS7(object):
     def test_invalid_padding(self, size, padded):
         padder = padding.PKCS7(size)
 
+        unpadder = padder.unpadder()
         with pytest.raises(ValueError):
-            padder.unpad(padded)
+            unpadder.update(padded)
+            unpadder.finalize()
 
     @pytest.mark.parametrize(("size", "unpadded", "padded"), [
         (
@@ -48,7 +50,10 @@ class TestPKCS7(object):
     ])
     def test_pad(self, size, unpadded, padded):
         padder = padding.PKCS7(size)
-        assert padder.pad(unpadded) == padded
+        padder = padder.padder()
+        result = padder.update(unpadded)
+        result += padder.finalize()
+        assert result == padded
 
     @pytest.mark.parametrize(("size", "unpadded", "padded"), [
         (
@@ -64,7 +69,10 @@ class TestPKCS7(object):
     ])
     def test_unpad(self, size, unpadded, padded):
         padder = padding.PKCS7(size)
-        assert padder.unpad(padded) == unpadded
+        unpadder = padder.unpadder()
+        result = unpadder.update(padded)
+        result += unpadder.finalize()
+        assert result == unpadded
 
     def test_use_after_finalize(self):
         p = padding.PKCS7(128)

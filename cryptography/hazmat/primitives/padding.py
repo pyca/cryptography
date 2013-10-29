@@ -33,14 +33,6 @@ class PKCS7(object):
     def unpadder(self):
         return _PKCS7UnpaddingContext(self.block_size)
 
-    def pad(self, data):
-        padder = self.padder()
-        return padder.update(data) + padder.finalize()
-
-    def unpad(self, data):
-        unpadder = self.unpadder()
-        return unpadder.update(data) + unpadder.finalize()
-
 
 @interfaces.register(interfaces.PaddingContext)
 class _PKCS7PaddingContext(object):
