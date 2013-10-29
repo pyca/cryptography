@@ -27,8 +27,7 @@ multiple of the block size.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives import padding
-        >>> padder = padding.PKCS7(128)
-        >>> padder = padder.padder()
+        >>> padder = padding.PKCS7(128).padder()
         >>> padder.update(b"1111111111")
         ''
         >>> padder.finalize()
