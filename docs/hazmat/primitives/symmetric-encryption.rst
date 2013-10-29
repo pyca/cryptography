@@ -54,18 +54,17 @@ where the encrypter and decrypter both use the same key.
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
 
-.. class:: CipherContext()
+.. class:: CipherContext
 
-    When calling ``encryptor()`` or ``decryptor()`` on a BlockCipher object you
-    will receive a return object conforming to the CipherContext interface. You
-    can then call ``update(data)`` with data until you have fed everything into
-    the context. Once that is done call ``finalize()`` to finish the operation and
-    obtain the remainder of the data.
-
+    When calling ``encryptor()`` or ``decryptor()`` on a ``BlockCipher`` object
+    you will receive a return object conforming to the ``CipherContext``
+    interface. You can then call ``update(data)`` with data until you have fed
+    everything into the context. Once that is done call ``finalize()`` to
+    finish the operation and obtain the remainder of the data.
 
     .. method:: update(data)
 
-        :param bytes data: The text you wish to pass into the context.
+        :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was encrypted or decrypted.
 
     .. method:: finalize()

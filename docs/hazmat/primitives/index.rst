@@ -14,3 +14,4 @@ Primitives
     cryptographic-hashes
     hmac
     symmetric-encryption
+    padding
