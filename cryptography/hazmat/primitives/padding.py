@@ -28,10 +28,10 @@ class PKCS7(object):
         self.block_size = block_size
 
     def padder(self):
-        return _PaddingContext(self.block_size)
+        return _PKCS7PaddingContext(self.block_size)
 
     def unpadder(self):
-        return _UnpaddingContext(self.block_size)
+        return _PKCS7UnpaddingContext(self.block_size)
 
     def pad(self, data):
         padder = self.padder()
@@ -43,9 +43,9 @@ class PKCS7(object):
 
 
 @interfaces.register(interfaces.PaddingContext)
-class _PaddingContext(object):
+class _PKCS7PaddingContext(object):
     def __init__(self, block_size):
-        super(_PaddingContext, self).__init__()
+        super(_PKCS7PaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
         # zero-buffer (#193)
@@ -74,9 +74,9 @@ class _PaddingContext(object):
 
 
 @interfaces.register(interfaces.PaddingContext)
-class _UnpaddingContext(object):
+class _PKCS7UnpaddingContext(object):
     def __init__(self, block_size):
-        super(_UnpaddingContext, self).__init__()
+        super(_PKCS7UnpaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
         # zero-buffer (#193)
