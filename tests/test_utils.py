@@ -411,6 +411,22 @@ def test_load_hash_vectors():
     ]
 
 
+def test_load_hmac_vectors():
+    vector_data = textwrap.dedent("""
+Len = 224
+# "Jefe"
+Key = 4a656665
+# "what do ya want for nothing?"
+Msg = 7768617420646f2079612077616e7420666f72206e6f7468696e673f
+MD = 750c783e6ab0b503eaa86e310a5db738
+    """).splitlines()
+    assert load_hash_vectors(vector_data) == [
+        (b"7768617420646f2079612077616e7420666f72206e6f7468696e673f",
+         "750c783e6ab0b503eaa86e310a5db738",
+         b"4a656665"),
+    ]
+
+
 def test_load_hash_vectors_bad_data():
     vector_data = textwrap.dedent("""
         # http://tools.ietf.org/html/rfc1321

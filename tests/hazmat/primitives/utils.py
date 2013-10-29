@@ -4,6 +4,7 @@ import os
 import pytest
 
 from cryptography.hazmat.bindings import _ALL_BACKENDS
+from cryptography.hazmat.primitives import hmac
 from cryptography.hazmat.primitives.block import BlockCipher
 
 
@@ -92,11 +93,11 @@ def generate_base_hash_test(hash_cls, digest_size, block_size,
     return test_base_hash
 
 
-def base_hash_test(backend, hash_cls, digest_size, block_size, only_if,
+def base_hash_test(backend, digestmod, digest_size, block_size, only_if,
                    skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
-    m = hash_cls(backend=backend)
+    m = digestmod(backend=backend)
     assert m.digest_size == digest_size
     assert m.block_size == block_size
     m_copy = m.copy()
@@ -125,3 +126,57 @@ def long_string_hash_test(backend, hash_factory, md, only_if, skip_message):
     m = hash_factory(backend=backend)
     m.update(b"a" * 1000000)
     assert m.hexdigest() == md.lower()
+
+
+def generate_hmac_test(param_loader, path, file_names, digestmod,
+                       only_if=None, skip_message=None):
+    def test_hmac(self):
+        for backend in _ALL_BACKENDS:
+            for file_name in file_names:
+                for params in param_loader(os.path.join(path, file_name)):
+                    yield (
+                        hmac_test,
+                        backend,
+                        digestmod,
+                        params,
+                        only_if,
+                        skip_message
+                    )
+    return test_hmac
+
+
+def hmac_test(backend, digestmod, params, only_if, skip_message):
+    if only_if is not None and not only_if(backend):
+        pytest.skip(skip_message)
+    msg = params[0]
+    md = params[1]
+    key = params[2]
+    h = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod)
+    h.update(binascii.unhexlify(msg))
+    assert h.hexdigest() == md
+    digest = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod,
+                       msg=binascii.unhexlify(msg)).hexdigest()
+    assert digest == md
+
+
+def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
+    def test_base_hmac(self):
+        for backend in _ALL_BACKENDS:
+            yield (
+                base_hmac_test,
+                backend,
+                hash_cls,
+                only_if,
+                skip_message,
+            )
+    return test_base_hmac
+
+
+def base_hmac_test(backend, digestmod, only_if, skip_message):
+    if only_if is not None and not only_if(backend):
+        pytest.skip(skip_message)
+    key = b"ab"
+    h = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod)
+    h_copy = h.copy()
+    assert h != h_copy
+    assert h._ctx != h_copy._ctx
