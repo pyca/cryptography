@@ -32,3 +32,8 @@ class TestXTS(object):
         key = binascii.unhexlify(b"a650f2e235896ad144eef966ff00406eaa")
         with pytest.raises(ValueError):
             modes.XTS.split_key(key)
+
+    def test_xts_init_invalid_key_size(self):
+        key = binascii.unhexlify(b"a650f2e235896ad144eef966ff00406eaa")
+        with pytest.raises(ValueError):
+            modes.XTS(b"0" * 16, key)

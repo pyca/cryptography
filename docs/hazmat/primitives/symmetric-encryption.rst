@@ -296,7 +296,7 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
-.. class:: XTS(tweak, additional_key_material=None)
+.. class:: XTS(tweak, additional_key_material)
 
     XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode of
     operation for block ciphers. It is commonly used in disk encryption.

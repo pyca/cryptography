@@ -63,10 +63,15 @@ class CTR(object):
 class XTS(object):
     name = "XTS"
     _key_sizes = frozenset([256, 512])
+    _additional_key_sizes = frozenset([128, 256])
 
-    def __init__(self, tweak, additional_key_data=None):
+    def __init__(self, tweak, additional_key_data):
         super(XTS, self).__init__()
         self.tweak = tweak
+        if len(additional_key_data) * 8 not in self._additional_key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                len(additional_key_data) * 8, self.name
+            ))
         self.additional_key_data = additional_key_data
 
     @classmethod
