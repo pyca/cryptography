@@ -26,7 +26,7 @@ multiple of the block size.
 
     .. doctest::
 
-        >>> from cryptography.primitives import padding
+        >>> from cryptography.hazmat.primitives import padding
         >>> padder = padding.PKCS7(128)
         >>> padder.pad(b"1111111111")
         '1111111111\x06\x06\x06\x06\x06\x06'
