@@ -117,10 +117,17 @@ Docstrings should be written like this:
 
 So, specifically:
 
-- Always use three double quotes.
-- Put the three double quotes on their own line.
-- No blank line at the end.
-- Use Sphinx parameter/attribute documentation `syntax`_.
+* Always use three double quotes.
+* Put the three double quotes on their own line.
+* No blank line at the end.
+* Use Sphinx parameter/attribute documentation `syntax`_.
+
+When documenting a new module in the ``hazmat`` package, its documentation
+should begin with the "Hazardous Materials" warning:
+
+.. code-block:: rest
+
+    .. hazmat::
 
 Development Environment
 -----------------------
