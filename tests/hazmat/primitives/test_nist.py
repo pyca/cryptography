@@ -29,7 +29,7 @@ from ...utils import load_nist_vectors_from_file
 class TestAES_CBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "KAT"),
+        os.path.join("ciphers", "AES", "KAT"),
         [
             "CBCGFSbox128.rsp",
             "CBCGFSbox192.rsp",
@@ -50,7 +50,7 @@ class TestAES_CBC(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "MMT"),
+        os.path.join("ciphers", "AES", "MMT"),
         [
             "CBCMMT128.rsp",
             "CBCMMT192.rsp",
@@ -64,7 +64,7 @@ class TestAES_CBC(object):
 class TestAES_ECB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "KAT"),
+        os.path.join("ciphers", "AES", "KAT"),
         [
             "ECBGFSbox128.rsp",
             "ECBGFSbox192.rsp",
@@ -85,7 +85,7 @@ class TestAES_ECB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "MMT"),
+        os.path.join("ciphers", "AES", "MMT"),
         [
             "ECBMMT128.rsp",
             "ECBMMT192.rsp",
@@ -99,7 +99,7 @@ class TestAES_ECB(object):
 class TestAES_OFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "KAT"),
+        os.path.join("ciphers", "AES", "KAT"),
         [
             "OFBGFSbox128.rsp",
             "OFBGFSbox192.rsp",
@@ -120,7 +120,7 @@ class TestAES_OFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "MMT"),
+        os.path.join("ciphers", "AES", "MMT"),
         [
             "OFBMMT128.rsp",
             "OFBMMT192.rsp",
@@ -134,7 +134,7 @@ class TestAES_OFB(object):
 class TestAES_CFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "KAT"),
+        os.path.join("ciphers", "AES", "KAT"),
         [
             "CFB128GFSbox128.rsp",
             "CFB128GFSbox192.rsp",
@@ -155,7 +155,7 @@ class TestAES_CFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("AES", "MMT"),
+        os.path.join("ciphers", "AES", "MMT"),
         [
             "CFB128MMT128.rsp",
             "CFB128MMT192.rsp",
@@ -169,7 +169,7 @@ class TestAES_CFB(object):
 class TestTripleDES_CBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "KAT"),
+        os.path.join("ciphers", "3DES", "KAT"),
         [
             "TCBCinvperm.rsp",
             "TCBCpermop.rsp",
@@ -183,7 +183,7 @@ class TestTripleDES_CBC(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "MMT"),
+        os.path.join("ciphers", "3DES", "MMT"),
         [
             "TCBCMMT1.rsp",
             "TCBCMMT2.rsp",
@@ -199,7 +199,7 @@ class TestTripleDES_CBC(object):
 class TestTripleDES_OFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "KAT"),
+        os.path.join("ciphers", "3DES", "KAT"),
         [
             "TOFBpermop.rsp",
             "TOFBsubtab.rsp",
@@ -213,7 +213,7 @@ class TestTripleDES_OFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "MMT"),
+        os.path.join("ciphers", "3DES", "MMT"),
         [
             "TOFBMMT1.rsp",
             "TOFBMMT2.rsp",
@@ -229,7 +229,7 @@ class TestTripleDES_OFB(object):
 class TestTripleDES_CFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "KAT"),
+        os.path.join("ciphers", "3DES", "KAT"),
         [
             "TCFB64invperm.rsp",
             "TCFB64permop.rsp",
@@ -243,7 +243,7 @@ class TestTripleDES_CFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("3DES", "MMT"),
+        os.path.join("ciphers", "3DES", "MMT"),
         [
             "TCFB64MMT1.rsp",
             "TCFB64MMT2.rsp",

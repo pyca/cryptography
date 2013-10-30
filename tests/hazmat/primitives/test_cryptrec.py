@@ -29,7 +29,7 @@ from ...utils import load_cryptrec_vectors_from_file
 class TestCamelliaECB(object):
     test_NTT = generate_encrypt_test(
         load_cryptrec_vectors_from_file,
-        os.path.join("Camellia", "NTT"),
+        os.path.join("ciphers", "Camellia"),
         [
             "camellia-128-ecb.txt",
             "camellia-192-ecb.txt",

@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import textwrap
 
 import pytest
@@ -133,7 +134,7 @@ def test_load_nist_vectors_decrypt():
 
 def test_load_nist_vectors_from_file_encrypt():
     assert load_nist_vectors_from_file(
-        "AES/KAT/CBCGFSbox128.rsp",
+        os.path.join("ciphers", "AES", "KAT", "CBCGFSbox128.rsp"),
         "ENCRYPT"
     ) == [
         {
@@ -183,7 +184,7 @@ def test_load_nist_vectors_from_file_encrypt():
 
 def test_load_nist_vectors_from_file_decrypt():
     assert load_nist_vectors_from_file(
-        "AES/KAT/CBCGFSbox128.rsp",
+        os.path.join("ciphers", "AES", "KAT", "CBCGFSbox128.rsp"),
         "DECRYPT",
     ) == [
         {
@@ -287,7 +288,7 @@ def test_load_cryptrec_vectors_invalid():
 
 def test_load_cryptrec_vectors_from_file_encrypt():
     test_set = load_cryptrec_vectors_from_file(
-        "Camellia/NTT/camellia-128-ecb.txt"
+        os.path.join("ciphers", "Camellia", "camellia-128-ecb.txt"),
     )
     assert test_set[0] == (
         {
@@ -351,7 +352,9 @@ def test_load_openssl_vectors():
 
 
 def test_load_openssl_vectors_from_file():
-    test_list = load_openssl_vectors_from_file("Camellia/camellia-ofb.txt")
+    test_list = load_openssl_vectors_from_file(
+        os.path.join("ciphers", "Camellia", "camellia-ofb.txt")
+    )
     assert len(test_list) == 24
     assert test_list[:4] == [
         {
@@ -440,7 +443,9 @@ def test_load_hash_vectors_bad_data():
 
 
 def test_load_hash_vectors_from_file():
-    test_list = load_hash_vectors_from_file("RFC/MD5/rfc-1321.txt")
+    test_list = load_hash_vectors_from_file(
+        os.path.join("hashes", "MD5", "rfc-1321.txt")
+    )
     assert len(test_list) == 7
     assert test_list[:4] == [
         (b"", "d41d8cd98f00b204e9800998ecf8427e"),

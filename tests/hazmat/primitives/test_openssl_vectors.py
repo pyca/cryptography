@@ -19,6 +19,8 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 
+import os
+
 from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
@@ -28,7 +30,7 @@ from ...utils import load_openssl_vectors_from_file
 class TestCamelliaCBC(object):
     test_OpenSSL = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "Camellia",
+        os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
@@ -42,7 +44,7 @@ class TestCamelliaCBC(object):
 class TestCamelliaOFB(object):
     test_OpenSSL = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "Camellia",
+        os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
@@ -56,7 +58,7 @@ class TestCamelliaOFB(object):
 class TestCamelliaCFB(object):
     test_OpenSSL = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "Camellia",
+        os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
@@ -70,7 +72,7 @@ class TestCamelliaCFB(object):
 class TestAESCTR(object):
     test_OpenSSL = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "AES",
+        os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
         lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
