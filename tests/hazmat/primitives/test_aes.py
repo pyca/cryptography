@@ -23,7 +23,9 @@ import os
 from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
-from ...utils import load_nist_vectors_from_file
+from ...utils import (
+    load_nist_vectors_from_file, load_openssl_vectors_from_file
+)
 
 
 class TestAES_CBC(object):
@@ -166,91 +168,15 @@ class TestAES_CFB(object):
     )
 
 
-class TestTripleDES_CBC(object):
-    test_KAT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "KAT"),
-        [
-            "TCBCinvperm.rsp",
-            "TCBCpermop.rsp",
-            "TCBCsubtab.rsp",
-            "TCBCvarkey.rsp",
-            "TCBCvartext.rsp",
-        ],
-        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "MMT"),
-        [
-            "TCBCMMT1.rsp",
-            "TCBCMMT2.rsp",
-            "TCBCMMT3.rsp",
-        ],
-        lambda key1, key2, key3, iv: (
-            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+class TestAES_CTR(object):
+    test_OpenSSL = generate_encrypt_test(
+        load_openssl_vectors_from_file,
+        os.path.join("ciphers", "AES", "CTR"),
+        ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
+        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.ciphers.supported(
+            ciphers.AES("\x00" * 16), modes.CTR("\x00" * 16)
         ),
-        lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
-    )
-
-
-class TestTripleDES_OFB(object):
-    test_KAT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "KAT"),
-        [
-            "TOFBpermop.rsp",
-            "TOFBsubtab.rsp",
-            "TOFBvarkey.rsp",
-            "TOFBvartext.rsp",
-            "TOFBinvperm.rsp",
-        ],
-        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.OFB(binascii.unhexlify(iv)),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "MMT"),
-        [
-            "TOFBMMT1.rsp",
-            "TOFBMMT2.rsp",
-            "TOFBMMT3.rsp",
-        ],
-        lambda key1, key2, key3, iv: (
-            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
-        ),
-        lambda key1, key2, key3, iv: modes.OFB(binascii.unhexlify(iv)),
-    )
-
-
-class TestTripleDES_CFB(object):
-    test_KAT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "KAT"),
-        [
-            "TCFB64invperm.rsp",
-            "TCFB64permop.rsp",
-            "TCFB64subtab.rsp",
-            "TCFB64varkey.rsp",
-            "TCFB64vartext.rsp",
-        ],
-        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.CFB(binascii.unhexlify(iv)),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "MMT"),
-        [
-            "TCFB64MMT1.rsp",
-            "TCFB64MMT2.rsp",
-            "TCFB64MMT3.rsp",
-        ],
-        lambda key1, key2, key3, iv: (
-            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
-        ),
-        lambda key1, key2, key3, iv: modes.CFB(binascii.unhexlify(iv)),
+        skip_message="Does not support AES CTR",
     )
