@@ -13,26 +13,26 @@
 
 from __future__ import absolute_import, division, print_function
 
-import abc
-
-import binascii
-
 import six
 
+from cryptography.hazmat.primitives import interfaces
 
-class BaseHash(six.with_metaclass(abc.ABCMeta)):
-    def __init__(self, data=None, backend=None, ctx=None):
+
+@interfaces.register(interfaces.HashContext)
+class Hash(object):
+    def __init__(self, algorithm, backend=None, ctx=None):
+        self.algorithm = algorithm
+
         if backend is None:
             from cryptography.hazmat.bindings import _default_backend
             backend = _default_backend
+
         self._backend = backend
+
         if ctx is None:
-            self._ctx = self._backend.hashes.create_ctx(self)
+            self._ctx = self._backend.hashes.create_ctx(self.algorithm)
         else:
             self._ctx = None
-
-        if data is not None:
-            self.update(data)
 
     def update(self, data):
         if isinstance(data, six.text_type):
@@ -40,62 +40,68 @@ class BaseHash(six.with_metaclass(abc.ABCMeta)):
         self._backend.hashes.update_ctx(self._ctx, data)
 
     def copy(self):
-        return self.__class__(backend=self._backend, ctx=self._copy_ctx())
+        return self.__class__(self.algorithm, backend=self._backend,
+                              ctx=self._copy_ctx())
 
-    def digest(self):
-        return self._backend.hashes.finalize_ctx(self._copy_ctx(),
-                                                 self.digest_size)
-
-    def hexdigest(self):
-        return str(binascii.hexlify(self.digest()).decode("ascii"))
+    def finalize(self):
+        return self._backend.hashes.finalize_ctx(self._ctx,
+                                                 self.algorithm.digest_size)
 
     def _copy_ctx(self):
         return self._backend.hashes.copy_ctx(self._ctx)
 
 
-class SHA1(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class SHA1(object):
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
-class SHA224(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class SHA224(object):
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
-class SHA256(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class SHA256(object):
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
-class SHA384(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class SHA384(object):
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
-class SHA512(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class SHA512(object):
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
-class RIPEMD160(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class RIPEMD160(object):
     name = "ripemd160"
     digest_size = 20
     block_size = 64
 
 
-class Whirlpool(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class Whirlpool(object):
     name = "whirlpool"
     digest_size = 64
     block_size = 64
 
 
-class MD5(BaseHash):
+@interfaces.register(interfaces.HashAlgorithm)
+class MD5(object):
     name = "md5"
     digest_size = 16
     block_size = 64

@@ -59,3 +59,49 @@ class PaddingContext(six.with_metaclass(abc.ABCMeta)):
         """
         finalize return bytes
         """
+
+
+class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this algorithm. (ex. sha256, md5)
+        """
+
+    @abc.abstractproperty
+    def digest_size(self):
+        """
+        The size of the resulting digest in bytes.
+        """
+
+    @abc.abstractproperty
+    def block_size(self):
+        """
+        The internal block size of the hash algorithm in bytes.
+        """
+
+
+class HashContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def algorithm(self):
+        """
+        A HashAlgorithm that will be used by this context.
+        """
+
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        hash data as bytes
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        finalize this copy of the hash and return the digest as bytes.
+        """
+
+    @abc.abstractmethod
+    def copy(self):
+        """
+        return a HashContext that is a copy of the current context.
+        """

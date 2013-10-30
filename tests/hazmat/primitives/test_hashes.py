@@ -27,13 +27,9 @@ from .utils import generate_base_hash_test
 
 class TestBaseHash(object):
     def test_base_hash_reject_unicode(self, backend):
-        m = hashes.SHA1(backend=backend)
+        m = hashes.Hash(hashes.SHA1, backend=backend)
         with pytest.raises(TypeError):
             m.update(six.u("\u00FC"))
-
-    def test_base_hash_hexdigest_string_type(self, backend):
-        m = hashes.SHA1(backend=backend, data=b"")
-        assert isinstance(m.hexdigest(), str)
 
 
 class TestCopyHash(object):
@@ -41,7 +37,7 @@ class TestCopyHash(object):
         pretend_hashes = pretend.stub(copy_ctx=lambda a: "copiedctx")
         pretend_backend = pretend.stub(hashes=pretend_hashes)
         pretend_ctx = pretend.stub()
-        h = hashes.SHA1(backend=pretend_backend, ctx=pretend_ctx)
+        h = hashes.Hash(hashes.SHA1, backend=pretend_backend, ctx=pretend_ctx)
         assert h._backend is pretend_backend
         assert h.copy()._backend is h._backend
 
@@ -51,7 +47,7 @@ class TestDefaultBackendSHA1(object):
         """
         This test assumes the presence of SHA1 in the default backend.
         """
-        h = hashes.SHA1()
+        h = hashes.Hash(hashes.SHA1)
         assert h._backend is _default_backend
 
 
@@ -90,7 +86,7 @@ class TestSHA384(object):
         hashes.SHA384,
         digest_size=48,
         block_size=128,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
+         only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -120,7 +116,7 @@ class TestWhirlpool(object):
         hashes.Whirlpool,
         digest_size=64,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+         only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
