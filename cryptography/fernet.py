@@ -3,6 +3,8 @@ import os
 import struct
 import time
 
+import six
+
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
@@ -34,3 +36,30 @@ class Fernet(object):
         return base64.urlsafe_b64encode(
             b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext + hmac
         )
+
+    def decrypt(self, data, ttl=None):
+        # TODO: whole function is a giant hack job with no error checking
+        data = base64.urlsafe_b64decode(data)
+        assert data[0] == b"\x80"
+        if ttl is not None:
+            if struct.unpack(">Q", data[1:9])[0] + ttl > int(time.time()):
+                raise ValueError
+        h = HMAC(self.signing_key, digestmod=hashes.SHA256)
+        h.update(data[:-32])
+        hmac = h.digest()
+        if not constant_time_compare(hmac, data[-32:]):
+            raise ValueError
+        unencryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(data[9:25])).unencryptor()
+        plaintext_padded = unencryptor.update(data[25:-32]) + unencryptor.finalize()
+        unpadder = padding.PKCS7(ciphers.AES.block_size).unpadder()
+        return unpadder.update(plaintext_padded) + unpadder.finalize()
+
+def constant_time_compare(a, b):
+    # TOOD: replace with a cffi function
+    assert isinstance(a, bytes) and isinstance(b, bytes)
+    if len(a) != len(b):
+        return False
+    result = 0
+    for i in xrange(len(a)):
+        result |= six.indexbytes(a, i) ^ six.indexbytes(b, i)
+    return result == 0
