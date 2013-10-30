@@ -4,3 +4,4 @@ branch = True
 [report]
 exclude_lines =
     @abc.abstractmethod
+    @abc.abstractproperty
