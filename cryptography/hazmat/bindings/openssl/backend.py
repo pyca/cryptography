@@ -138,9 +138,23 @@ class _CipherContext(object):
             iv_nonce = mode.nonce
         else:
             iv_nonce = self._backend.ffi.NULL
+        # begin init with cipher and operation type
         res = self._backend.lib.EVP_CipherInit_ex(ctx, evp_cipher,
                                                   self._backend.ffi.NULL,
-                                                  cipher.key, iv_nonce,
+                                                  self._backend.ffi.NULL,
+                                                  self._backend.ffi.NULL,
+                                                  operation)
+        assert res != 0
+        # set the key length to handle variable key ciphers
+        res = self._backend.lib.EVP_CIPHER_CTX_set_key_length(
+            ctx, len(cipher.key)
+        )
+        assert res != 0
+        # pass key/iv
+        res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
+                                                  self._backend.ffi.NULL,
+                                                  cipher.key,
+                                                  iv_nonce,
                                                   operation)
         assert res != 0
         # We purposely disable padding here as it's handled higher up in the
