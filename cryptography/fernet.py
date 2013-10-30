@@ -41,16 +41,20 @@ class Fernet(object):
         # TODO: whole function is a giant hack job with no error checking
         data = base64.urlsafe_b64decode(data)
         assert data[0] == b"\x80"
+        timestamp = data[1:9]
+        iv = data[9:25]
+        ciphertext = data[25:-32]
+        hmac = data[-32:]
         if ttl is not None:
-            if struct.unpack(">Q", data[1:9])[0] + ttl > int(time.time()):
+            if struct.unpack(">Q", timestamp)[0] + ttl > int(time.time()):
                 raise ValueError
         h = HMAC(self.signing_key, digestmod=hashes.SHA256)
         h.update(data[:-32])
         hmac = h.digest()
         if not constant_time_compare(hmac, data[-32:]):
             raise ValueError
-        unencryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(data[9:25])).unencryptor()
-        plaintext_padded = unencryptor.update(data[25:-32]) + unencryptor.finalize()
+        unencryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(iv)).unencryptor()
+        plaintext_padded = unencryptor.update(ciphertext) + unencryptor.finalize()
         unpadder = padding.PKCS7(ciphers.AES.block_size).unpadder()
         return unpadder.update(plaintext_padded) + unpadder.finalize()
 
