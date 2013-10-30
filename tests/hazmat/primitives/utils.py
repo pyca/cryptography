@@ -125,7 +125,7 @@ def long_string_hash_test(backend, algorithm, md, only_if, skip_message):
         pytest.skip(skip_message)
     m = hashes.Hash(algorithm, backend=backend)
     m.update(b"a" * 1000000)
-    assert m.finalize() == binascii.unhexlify(md.lower())
+    assert m.finalize() == binascii.unhexlify(md.lower().encode('ascii'))
 
 
 def generate_hmac_test(param_loader, path, file_names, digestmod,

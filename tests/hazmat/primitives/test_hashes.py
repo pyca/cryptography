@@ -86,7 +86,7 @@ class TestSHA384(object):
         hashes.SHA384,
         digest_size=48,
         block_size=128,
-         only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
+        only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -116,7 +116,7 @@ class TestWhirlpool(object):
         hashes.Whirlpool,
         digest_size=64,
         block_size=64,
-         only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
