@@ -53,7 +53,7 @@ def load_nist_vectors(vector_data, op):
 
 def load_nist_vectors_from_file(filename, op):
     base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors", "NIST",
+        os.path.dirname(__file__), "hazmat", "primitives", "vectors",
     )
     with open(os.path.join(base, filename), "r") as vector_file:
         return load_nist_vectors(vector_file, op)
@@ -62,7 +62,7 @@ def load_nist_vectors_from_file(filename, op):
 def load_cryptrec_vectors_from_file(filename):
     base = os.path.join(
         os.path.dirname(__file__),
-        "hazmat", "primitives", "vectors", "CRYPTREC",
+        "hazmat", "primitives", "vectors",
     )
     with open(os.path.join(base, filename), "r") as vector_file:
         return load_cryptrec_vectors(vector_file)
@@ -99,7 +99,7 @@ def load_cryptrec_vectors(vector_data):
 def load_openssl_vectors_from_file(filename):
     base = os.path.join(
         os.path.dirname(__file__),
-        "hazmat", "primitives", "vectors", "OpenSSL",
+        "hazmat", "primitives", "vectors",
     )
     with open(os.path.join(base, filename), "r") as vector_file:
         return load_openssl_vectors(vector_file)
