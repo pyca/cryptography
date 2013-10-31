@@ -1,6 +1,7 @@
+coverage
 flake8
+iso8601
 pretend
 pytest
-coverage
 sphinx
 tox
