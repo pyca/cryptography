@@ -25,35 +25,36 @@ from cryptography.hazmat.primitives import hashes
 from .utils import generate_base_hash_test
 
 
-class TestBaseHash(object):
-    def test_base_hash_reject_unicode(self, backend):
-        m = hashes.Hash(hashes.SHA1, backend=backend)
+class TestHashContext(object):
+    def test_hash_reject_unicode(self, backend):
+        m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             m.update(six.u("\u00FC"))
 
-
-class TestCopyHash(object):
     def test_copy_backend_object(self):
         pretend_hashes = pretend.stub(copy_ctx=lambda a: "copiedctx")
         pretend_backend = pretend.stub(hashes=pretend_hashes)
         pretend_ctx = pretend.stub()
-        h = hashes.Hash(hashes.SHA1, backend=pretend_backend, ctx=pretend_ctx)
+        h = hashes.Hash(hashes.SHA1(), backend=pretend_backend,
+                        ctx=pretend_ctx)
         assert h._backend is pretend_backend
         assert h.copy()._backend is h._backend
 
-
-class TestDefaultBackendSHA1(object):
     def test_default_backend_creation(self):
         """
         This test assumes the presence of SHA1 in the default backend.
         """
-        h = hashes.Hash(hashes.SHA1)
+        h = hashes.Hash(hashes.SHA1())
         assert h._backend is _default_backend
+
+    def test_hash_algorithm_instance(self):
+        with pytest.raises(TypeError):
+            hashes.Hash(hashes.SHA1)
 
 
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(
-        hashes.SHA1,
+        hashes.SHA1(),
         digest_size=20,
         block_size=64,
         only_if=lambda backend: backend.hashes.supported(hashes.SHA1),
@@ -63,7 +64,7 @@ class TestSHA1(object):
 
 class TestSHA224(object):
     test_SHA224 = generate_base_hash_test(
-        hashes.SHA224,
+        hashes.SHA224(),
         digest_size=28,
         block_size=64,
         only_if=lambda backend: backend.hashes.supported(hashes.SHA224),
@@ -73,7 +74,7 @@ class TestSHA224(object):
 
 class TestSHA256(object):
     test_SHA256 = generate_base_hash_test(
-        hashes.SHA256,
+        hashes.SHA256(),
         digest_size=32,
         block_size=64,
         only_if=lambda backend: backend.hashes.supported(hashes.SHA256),
@@ -83,7 +84,7 @@ class TestSHA256(object):
 
 class TestSHA384(object):
     test_SHA384 = generate_base_hash_test(
-        hashes.SHA384,
+        hashes.SHA384(),
         digest_size=48,
         block_size=128,
         only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
@@ -93,7 +94,7 @@ class TestSHA384(object):
 
 class TestSHA512(object):
     test_SHA512 = generate_base_hash_test(
-        hashes.SHA512,
+        hashes.SHA512(),
         digest_size=64,
         block_size=128,
         only_if=lambda backend: backend.hashes.supported(hashes.SHA512),
@@ -103,7 +104,7 @@ class TestSHA512(object):
 
 class TestRIPEMD160(object):
     test_RIPEMD160 = generate_base_hash_test(
-        hashes.RIPEMD160,
+        hashes.RIPEMD160(),
         digest_size=20,
         block_size=64,
         only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
@@ -113,7 +114,7 @@ class TestRIPEMD160(object):
 
 class TestWhirlpool(object):
     test_Whirlpool = generate_base_hash_test(
-        hashes.Whirlpool,
+        hashes.Whirlpool(),
         digest_size=64,
         block_size=64,
         only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
@@ -123,7 +124,7 @@ class TestWhirlpool(object):
 
 class TestMD5(object):
     test_MD5 = generate_base_hash_test(
-        hashes.MD5,
+        hashes.MD5(),
         digest_size=16,
         block_size=64,
         only_if=lambda backend: backend.hashes.supported(hashes.MD5),

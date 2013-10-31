@@ -66,12 +66,12 @@ def generate_hash_test(param_loader, path, file_names, hash_cls,
     return test_hash
 
 
-def hash_test(backend, hash_cls, params, only_if, skip_message):
+def hash_test(backend, algorithm, params, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
-    m = hashes.Hash(hash_cls, backend=backend)
+    m = hashes.Hash(algorithm, backend=backend)
     m.update(binascii.unhexlify(msg))
     expected_md = md.replace(" ", "").lower().encode("ascii")
     assert m.finalize() == binascii.unhexlify(expected_md)
