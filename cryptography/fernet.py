@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
 class Fernet(object):
     def __init__(self, key):
         super(Fernet, self).__init__()
+        assert len(key) == 32
         self.signing_key = key[:16]
         self.encryption_key = key[16:]
 
