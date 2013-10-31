@@ -25,11 +25,12 @@ lib = ffi.verify("""
 #include <stdbool.h>
 
 bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b, size_t len_b) {
+    size_t i = 0;
+    int result = 0;
     if (len_a != len_b) {
         return false;
     }
-    int result = 0;
-    for (size_t i = 0; i < len_a; i++) {
+    for (i = 0; i < len_a; i++) {
         result |= a[i] ^ b[i];
     }
     return result == 0;
