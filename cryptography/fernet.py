@@ -25,7 +25,9 @@ class Fernet(object):
     def _encrypt_from_parts(self, data, current_time, iv):
         padder = padding.PKCS7(ciphers.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
-        encryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(iv)).encryptor()
+        encryptor = BlockCipher(
+            ciphers.AES(self.encryption_key), modes.CBC(iv)
+        ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
         h = HMAC(self.signing_key, digestmod=hashes.SHA256)
@@ -55,10 +57,13 @@ class Fernet(object):
         hmac = h.digest()
         if not constant_time_compare(hmac, data[-32:]):
             raise ValueError
-        decryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(iv)).decryptor()
+        decryptor = BlockCipher(
+            ciphers.AES(self.encryption_key), modes.CBC(iv)
+        ).decryptor()
         plaintext_padded = decryptor.update(ciphertext) + decryptor.finalize()
         unpadder = padding.PKCS7(ciphers.AES.block_size).unpadder()
         return unpadder.update(plaintext_padded) + unpadder.finalize()
+
 
 def constant_time_compare(a, b):
     # TOOD: replace with a cffi function
