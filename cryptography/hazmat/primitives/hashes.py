@@ -43,14 +43,11 @@ class Hash(object):
 
     def copy(self):
         return self.__class__(self.algorithm, backend=self._backend,
-                              ctx=self._copy_ctx())
+                              ctx=self._backend.hashes.copy_ctx(self._ctx))
 
     def finalize(self):
         return self._backend.hashes.finalize_ctx(self._ctx,
                                                  self.algorithm.digest_size)
-
-    def _copy_ctx(self):
-        return self._backend.hashes.copy_ctx(self._ctx)
 
 
 @interfaces.register(interfaces.HashAlgorithm)
