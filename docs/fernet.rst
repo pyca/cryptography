@@ -22,6 +22,9 @@ using it cannot be manipulated or read without the key.
         >>> from cryptography.fernet import Fernet
         >>> f = Fernet(key)
         >>> ciphertext = f.encrypt(b"my deep dark secret")
+        # Secret bytes.
+        >>> ciphertext
+        '...'
         >>> f.decrypt(ciphertext)
         'my deep dark secret'
 
@@ -33,7 +36,7 @@ using it cannot be manipulated or read without the key.
 
         :param bytes plaintext: The message you would like to encrypt.
         :returns bytes: A secure message which cannot be read or altered
-                        without the key.
+                        without the key. It is URL safe base64-encoded.
 
     .. method:: decrypt(ciphertext, ttl=None)
 
