@@ -47,7 +47,6 @@ class Fernet(object):
         timestamp = data[1:9]
         iv = data[9:25]
         ciphertext = data[25:-32]
-        hmac = data[-32:]
         if ttl is not None:
             if struct.unpack(">Q", timestamp)[0] + ttl < current_time:
                 raise ValueError
