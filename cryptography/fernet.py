@@ -45,7 +45,7 @@ class Fernet(object):
         if current_time is None:
             current_time = int(time.time())
         data = base64.urlsafe_b64decode(data)
-        assert data[0] == b"\x80"
+        assert six.indexbytes(data, 0) == 0x80
         timestamp = data[1:9]
         iv = data[9:25]
         ciphertext = data[25:-32]
