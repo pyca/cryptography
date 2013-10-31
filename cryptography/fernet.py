@@ -24,7 +24,8 @@ bool constant_time_compare(uint8_t *, size_t, uint8_t *, size_t);
 lib = ffi.verify("""
 #include <stdbool.h>
 
-bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b, size_t len_b) {
+bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
+                           size_t len_b) {
     size_t i = 0;
     int result = 0;
     if (len_a != len_b) {
@@ -36,6 +37,7 @@ bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b, size_t len_b) {
     return result == 0;
 }
 """)
+
 
 class Fernet(object):
     def __init__(self, key):
