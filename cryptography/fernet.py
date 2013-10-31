@@ -71,6 +71,6 @@ def constant_time_compare(a, b):
     if len(a) != len(b):
         return False
     result = 0
-    for i in xrange(len(a)):
+    for i in range(len(a)):
         result |= six.indexbytes(a, i) ^ six.indexbytes(b, i)
     return result == 0
