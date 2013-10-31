@@ -30,6 +30,7 @@ Contents
 .. toctree::
     :maxdepth: 2
 
+    fernet
     architecture
     contributing
     security
