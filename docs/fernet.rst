@@ -44,7 +44,9 @@ using it cannot be manipulated or read without the key.
         :param int ttl: Optionally, the number of seconds old a message may be
                         for it to be valid. If the message is older than
                         ``ttl`` seconds (from the time it was originally
-                        created) an exception will be raised.
+                        created) an exception will be raised. If ``ttl`` is not
+                        provided (or is ``None``), the age of the message is
+                        not considered.
         :returns bytes: The original plaintext.
 
 
