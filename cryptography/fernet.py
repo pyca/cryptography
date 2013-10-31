@@ -1,4 +1,5 @@
 import base64
+import binascii
 import os
 import struct
 import time
@@ -60,7 +61,7 @@ class Fernet(object):
 
         try:
             data = base64.urlsafe_b64decode(data)
-        except TypeError:
+        except (TypeError, binascii.Error):
             raise InvalidToken
 
         assert six.indexbytes(data, 0) == 0x80
