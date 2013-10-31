@@ -16,7 +16,7 @@ class TestFernet(object):
             b"".join(map(six.int2byte, range(16))),
         )
         assert token == (b"gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM"
-                         "4BLLF_5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==")
+                         b"4BLLF_5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==")
 
     def test_verify(self):
         f = Fernet(base64.urlsafe_b64decode(
@@ -24,7 +24,7 @@ class TestFernet(object):
         ))
         payload = f.decrypt(
             (b"gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_5CV9dO"
-             "PmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA=="),
+             b"PmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA=="),
             ttl=60,
             current_time=499162801
         )
