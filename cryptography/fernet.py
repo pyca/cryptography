@@ -53,8 +53,8 @@ class Fernet(object):
         hmac = h.digest()
         if not constant_time_compare(hmac, data[-32:]):
             raise ValueError
-        unencryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(iv)).unencryptor()
-        plaintext_padded = unencryptor.update(ciphertext) + unencryptor.finalize()
+        decryptor = BlockCipher(ciphers.AES(self.encryption_key), modes.CBC(iv)).decryptor()
+        plaintext_padded = decryptor.update(ciphertext) + decryptor.finalize()
         unpadder = padding.PKCS7(ciphers.AES.block_size).unpadder()
         return unpadder.update(plaintext_padded) + unpadder.finalize()
 
