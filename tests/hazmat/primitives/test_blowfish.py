@@ -29,6 +29,10 @@ class TestBlowfish(object):
         ["bf-ecb.txt"],
         lambda key: ciphers.Blowfish(binascii.unhexlify(key)),
         lambda key: modes.ECB(),
+        only_if=lambda backend: backend.ciphers.supported(
+            ciphers.Blowfish("\x00" * 56), modes.ECB()
+        ),
+        skip_message="Does not support Blowfish ECB",
     )
 
     test_CBC = generate_encrypt_test(
@@ -37,6 +41,10 @@ class TestBlowfish(object):
         ["bf-cbc.txt"],
         lambda key, iv: ciphers.Blowfish(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.ciphers.supported(
+            ciphers.Blowfish("\x00" * 56), modes.CBC("\x00" * 8)
+        ),
+        skip_message="Does not support Blowfish CBC",
     )
 
     test_OFB = generate_encrypt_test(
@@ -45,6 +53,10 @@ class TestBlowfish(object):
         ["bf-ofb.txt"],
         lambda key, iv: ciphers.Blowfish(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.ciphers.supported(
+            ciphers.Blowfish("\x00" * 56), modes.OFB("\x00" * 8)
+        ),
+        skip_message="Does not support Blowfish OFB",
     )
 
     test_CFB = generate_encrypt_test(
@@ -53,4 +65,8 @@ class TestBlowfish(object):
         ["bf-cfb.txt"],
         lambda key, iv: ciphers.Blowfish(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.ciphers.supported(
+            ciphers.Blowfish("\x00" * 56), modes.CFB("\x00" * 8)
+        ),
+        skip_message="Does not support Blowfish CFB",
     )
