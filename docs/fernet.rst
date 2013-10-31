@@ -6,7 +6,7 @@ Fernet
 .. testsetup::
 
     import binascii
-    key = binascii.unhexlify(b"0" * 32)
+    key = binascii.unhexlify(b"0" * 64)
 
 
 `Fernet`_ is an implementation of symmetric (also known as "secret key")
