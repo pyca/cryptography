@@ -33,7 +33,7 @@ class TestFernet(object):
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
             b"".join(map(six.int2byte, iv))
         )
-        assert actual_token == token
+        assert actual_token == token.encode("ascii")
 
     @json_parametrize(
         ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
@@ -44,7 +44,7 @@ class TestFernet(object):
         payload = f.decrypt(
             token.encode("ascii"), ttl=ttl_sec, current_time=current_time
         )
-        assert payload == src
+        assert payload == src.encode("ascii")
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
     def test_invalid(self, secret, token, now, ttl_sec):
