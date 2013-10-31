@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests using the CRYPTREC (Camellia) Test Vectors
-"""
-
 from __future__ import absolute_import, division, print_function
 
 import binascii
@@ -28,7 +24,7 @@ from ...utils import (
 )
 
 
-class TestCamelliaECB(object):
+class TestCamellia(object):
     test_ECB = generate_encrypt_test(
         load_cryptrec_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
@@ -45,8 +41,6 @@ class TestCamelliaECB(object):
         skip_message="Does not support Camellia ECB",
     )
 
-
-class TestCamelliaCBC(object):
     test_CBC = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
@@ -59,8 +53,6 @@ class TestCamelliaCBC(object):
         skip_message="Does not support Camellia CBC",
     )
 
-
-class TestCamelliaOFB(object):
     test_OFB = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
@@ -73,8 +65,6 @@ class TestCamelliaOFB(object):
         skip_message="Does not support Camellia OFB",
     )
 
-
-class TestCamelliaCFB(object):
     test_CFB = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),

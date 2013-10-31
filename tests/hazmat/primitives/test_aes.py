@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Test using the NIST Test Vectors
-"""
-
 from __future__ import absolute_import, division, print_function
 
 import binascii
@@ -28,7 +24,7 @@ from ...utils import (
 )
 
 
-class TestAES_CBC(object):
+class TestAES(object):
     test_CBC = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("ciphers", "AES", "CBC"),
@@ -53,8 +49,6 @@ class TestAES_CBC(object):
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
-
-class TestAES_ECB(object):
     test_ECB = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("ciphers", "AES", "ECB"),
@@ -79,8 +73,6 @@ class TestAES_ECB(object):
         lambda key: modes.ECB(),
     )
 
-
-class TestAES_OFB(object):
     test_OFB = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("ciphers", "AES", "OFB"),
@@ -105,8 +97,6 @@ class TestAES_OFB(object):
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
-
-class TestAES_CFB(object):
     test_CFB = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
         os.path.join("ciphers", "AES", "CFB"),
@@ -131,8 +121,6 @@ class TestAES_CFB(object):
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
 
-
-class TestAES_CTR(object):
     test_CTR = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "AES", "CTR"),
