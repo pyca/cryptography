@@ -4,6 +4,8 @@ import os
 import struct
 import time
 
+import cffi
+
 import six
 
 from cryptography.hazmat.primitives import padding, hashes
@@ -14,6 +16,25 @@ from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
 class InvalidToken(Exception):
     pass
 
+
+ffi = cffi.FFI()
+ffi.cdef("""
+bool constant_time_compare(uint8_t *, size_t, uint8_t *, size_t);
+""")
+lib = ffi.verify("""
+#include <stdbool.h>
+
+bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b, size_t len_b) {
+    if (len_a != len_b) {
+        return false;
+    }
+    int result = 0;
+    for (size_t i = 0; i < len_a; i++) {
+        result |= a[i] ^ b[i];
+    }
+    return result == 0;
+}
+""")
 
 class Fernet(object):
     def __init__(self, key):
@@ -75,7 +96,7 @@ class Fernet(object):
         h.update(data[:-32])
         hmac = h.digest()
 
-        if not constant_time_compare(hmac, data[-32:]):
+        if not lib.constant_time_compare(hmac, len(hmac), data[-32:], 32):
             raise InvalidToken
 
         decryptor = BlockCipher(
@@ -90,14 +111,3 @@ class Fernet(object):
         except ValueError:
             raise InvalidToken
         return unpadded
-
-
-def constant_time_compare(a, b):
-    # TOOD: replace with a cffi function
-    assert isinstance(a, bytes) and isinstance(b, bytes)
-    if len(a) != len(b):
-        return False
-    result = 0
-    for i in range(len(a)):
-        result |= six.indexbytes(a, i) ^ six.indexbytes(b, i)
-    return result == 0
