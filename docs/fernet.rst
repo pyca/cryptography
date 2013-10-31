@@ -22,7 +22,6 @@ using it cannot be manipulated or read without the key.
         >>> from cryptography.fernet import Fernet
         >>> f = Fernet(key)
         >>> ciphertext = f.encrypt(b"my deep dark secret")
-        # Secret bytes.
         >>> ciphertext
         '...'
         >>> f.decrypt(ciphertext)
