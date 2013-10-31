@@ -107,11 +107,21 @@ Ciphers
                       ``56`` bits long), they can simply be concatenated to
                       produce the full key. This must be kept secret.
 
+Weak Ciphers
+------------
+
+.. warning::
+
+    These ciphers are considered weak for a variety of reasons. New
+    applications should avoid their use and existing applications should
+    strongly consider migrating away.
+
 .. class:: Blowfish(key)
 
     Blowfish is a block cipher developed by Bruce Schneier. It is known to be
     susceptible to attacks when using weak keys. The author has recommended
-    that users of Blowfish move to newer algorithms like AES.
+    that users of Blowfish move to newer algorithms like
+    :class:`AES`.
 
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
