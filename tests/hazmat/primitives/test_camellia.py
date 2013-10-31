@@ -29,7 +29,7 @@ from ...utils import (
 
 
 class TestCamelliaECB(object):
-    test_NTT = generate_encrypt_test(
+    test_ECB = generate_encrypt_test(
         load_cryptrec_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         [
@@ -47,7 +47,7 @@ class TestCamelliaECB(object):
 
 
 class TestCamelliaCBC(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_CBC = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
@@ -61,7 +61,7 @@ class TestCamelliaCBC(object):
 
 
 class TestCamelliaOFB(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_OFB = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
@@ -75,7 +75,7 @@ class TestCamelliaOFB(object):
 
 
 class TestCamelliaCFB(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_CFB = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
