@@ -73,7 +73,8 @@ def hash_test(backend, hash_cls, params, only_if, skip_message):
     md = params[1]
     m = hashes.Hash(hash_cls, backend=backend)
     m.update(binascii.unhexlify(msg))
-    assert m.finalize() == binascii.unhexlify(md.replace(" ", "").lower())
+    expected_md = md.replace(" ", "").lower().encode("ascii")
+    assert m.finalize() == binascii.unhexlify(expected_md)
 
 
 def generate_base_hash_test(algorithm, digest_size, block_size,
@@ -125,7 +126,7 @@ def long_string_hash_test(backend, algorithm, md, only_if, skip_message):
         pytest.skip(skip_message)
     m = hashes.Hash(algorithm, backend=backend)
     m.update(b"a" * 1000000)
-    assert m.finalize() == binascii.unhexlify(md.lower().encode('ascii'))
+    assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
 
 
 def generate_hmac_test(param_loader, path, file_names, digestmod,
