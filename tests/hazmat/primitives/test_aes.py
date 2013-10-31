@@ -29,9 +29,9 @@ from ...utils import (
 
 
 class TestAES_CBC(object):
-    test_KAT = generate_encrypt_test(
+    test_CBC = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "KAT"),
+        os.path.join("ciphers", "AES", "CBC"),
         [
             "CBCGFSbox128.rsp",
             "CBCGFSbox192.rsp",
@@ -45,15 +45,6 @@ class TestAES_CBC(object):
             "CBCVarTxt128.rsp",
             "CBCVarTxt192.rsp",
             "CBCVarTxt256.rsp",
-        ],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "MMT"),
-        [
             "CBCMMT128.rsp",
             "CBCMMT192.rsp",
             "CBCMMT256.rsp",
@@ -64,9 +55,9 @@ class TestAES_CBC(object):
 
 
 class TestAES_ECB(object):
-    test_KAT = generate_encrypt_test(
+    test_ECB = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "KAT"),
+        os.path.join("ciphers", "AES", "ECB"),
         [
             "ECBGFSbox128.rsp",
             "ECBGFSbox192.rsp",
@@ -80,15 +71,6 @@ class TestAES_ECB(object):
             "ECBVarTxt128.rsp",
             "ECBVarTxt192.rsp",
             "ECBVarTxt256.rsp",
-        ],
-        lambda key: ciphers.AES(binascii.unhexlify(key)),
-        lambda key: modes.ECB(),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "MMT"),
-        [
             "ECBMMT128.rsp",
             "ECBMMT192.rsp",
             "ECBMMT256.rsp",
@@ -99,9 +81,9 @@ class TestAES_ECB(object):
 
 
 class TestAES_OFB(object):
-    test_KAT = generate_encrypt_test(
+    test_OFB = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "KAT"),
+        os.path.join("ciphers", "AES", "OFB"),
         [
             "OFBGFSbox128.rsp",
             "OFBGFSbox192.rsp",
@@ -115,15 +97,6 @@ class TestAES_OFB(object):
             "OFBVarTxt128.rsp",
             "OFBVarTxt192.rsp",
             "OFBVarTxt256.rsp",
-        ],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "MMT"),
-        [
             "OFBMMT128.rsp",
             "OFBMMT192.rsp",
             "OFBMMT256.rsp",
@@ -134,9 +107,9 @@ class TestAES_OFB(object):
 
 
 class TestAES_CFB(object):
-    test_KAT = generate_encrypt_test(
+    test_CFB = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "KAT"),
+        os.path.join("ciphers", "AES", "CFB"),
         [
             "CFB128GFSbox128.rsp",
             "CFB128GFSbox192.rsp",
@@ -150,15 +123,6 @@ class TestAES_CFB(object):
             "CFB128VarTxt128.rsp",
             "CFB128VarTxt192.rsp",
             "CFB128VarTxt256.rsp",
-        ],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
-    )
-
-    test_MMT = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "AES", "MMT"),
-        [
             "CFB128MMT128.rsp",
             "CFB128MMT192.rsp",
             "CFB128MMT256.rsp",
@@ -169,7 +133,7 @@ class TestAES_CFB(object):
 
 
 class TestAES_CTR(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_CTR = generate_encrypt_test(
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],

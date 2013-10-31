@@ -134,7 +134,7 @@ def test_load_nist_vectors_decrypt():
 
 def test_load_nist_vectors_from_file_encrypt():
     assert load_nist_vectors_from_file(
-        os.path.join("ciphers", "AES", "KAT", "CBCGFSbox128.rsp"),
+        os.path.join("ciphers", "AES", "CBC", "CBCGFSbox128.rsp"),
         "ENCRYPT"
     ) == [
         {
@@ -184,7 +184,7 @@ def test_load_nist_vectors_from_file_encrypt():
 
 def test_load_nist_vectors_from_file_decrypt():
     assert load_nist_vectors_from_file(
-        os.path.join("ciphers", "AES", "KAT", "CBCGFSbox128.rsp"),
+        os.path.join("ciphers", "AES", "CBC", "CBCGFSbox128.rsp"),
         "DECRYPT",
     ) == [
         {

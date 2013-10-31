@@ -29,7 +29,7 @@ from ...utils import load_nist_vectors_from_file
 class TestTripleDES_CBC(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "KAT"),
+        os.path.join("ciphers", "3DES", "CBC"),
         [
             "TCBCinvperm.rsp",
             "TCBCpermop.rsp",
@@ -43,7 +43,7 @@ class TestTripleDES_CBC(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "MMT"),
+        os.path.join("ciphers", "3DES", "CBC"),
         [
             "TCBCMMT1.rsp",
             "TCBCMMT2.rsp",
@@ -59,7 +59,7 @@ class TestTripleDES_CBC(object):
 class TestTripleDES_OFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "KAT"),
+        os.path.join("ciphers", "3DES", "OFB"),
         [
             "TOFBpermop.rsp",
             "TOFBsubtab.rsp",
@@ -73,7 +73,7 @@ class TestTripleDES_OFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "MMT"),
+        os.path.join("ciphers", "3DES", "OFB"),
         [
             "TOFBMMT1.rsp",
             "TOFBMMT2.rsp",
@@ -89,7 +89,7 @@ class TestTripleDES_OFB(object):
 class TestTripleDES_CFB(object):
     test_KAT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "KAT"),
+        os.path.join("ciphers", "3DES", "CFB"),
         [
             "TCFB64invperm.rsp",
             "TCFB64permop.rsp",
@@ -103,7 +103,7 @@ class TestTripleDES_CFB(object):
 
     test_MMT = generate_encrypt_test(
         lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
-        os.path.join("ciphers", "3DES", "MMT"),
+        os.path.join("ciphers", "3DES", "CFB"),
         [
             "TCFB64MMT1.rsp",
             "TCFB64MMT2.rsp",

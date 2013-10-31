@@ -24,7 +24,7 @@ from ...utils import load_hash_vectors_from_file
 class TestSHA1(object):
     test_SHA1 = generate_hash_test(
         load_hash_vectors_from_file,
-        os.path.join("hashes", "SHABYTE"),
+        os.path.join("hashes", "SHA1"),
         [
             "SHA1LongMsg.rsp",
             "SHA1ShortMsg.rsp",
@@ -38,7 +38,7 @@ class TestSHA1(object):
 class TestSHA224(object):
     test_SHA224 = generate_hash_test(
         load_hash_vectors_from_file,
-        os.path.join("hashes", "SHABYTE"),
+        os.path.join("hashes", "SHA2"),
         [
             "SHA224LongMsg.rsp",
             "SHA224ShortMsg.rsp",
@@ -52,7 +52,7 @@ class TestSHA224(object):
 class TestSHA256(object):
     test_SHA256 = generate_hash_test(
         load_hash_vectors_from_file,
-        os.path.join("hashes", "SHABYTE"),
+        os.path.join("hashes", "SHA2"),
         [
             "SHA256LongMsg.rsp",
             "SHA256ShortMsg.rsp",
@@ -66,7 +66,7 @@ class TestSHA256(object):
 class TestSHA384(object):
     test_SHA384 = generate_hash_test(
         load_hash_vectors_from_file,
-        os.path.join("hashes", "SHABYTE"),
+        os.path.join("hashes", "SHA2"),
         [
             "SHA384LongMsg.rsp",
             "SHA384ShortMsg.rsp",
@@ -80,7 +80,7 @@ class TestSHA384(object):
 class TestSHA512(object):
     test_SHA512 = generate_hash_test(
         load_hash_vectors_from_file,
-        os.path.join("hashes", "SHABYTE"),
+        os.path.join("hashes", "SHA2"),
         [
             "SHA512LongMsg.rsp",
             "SHA512ShortMsg.rsp",
