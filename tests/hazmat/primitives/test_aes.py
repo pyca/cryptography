@@ -144,6 +144,11 @@ class TestAES(object):
             binascii.unhexlify(key)
         ),
         lambda key, i, dataunitlen, additional_key_data: modes.XTS(
-            binascii.unhexlify(i), binascii.unhexlify(additional_key_data)
-        )
+            binascii.unhexlify(i),
+            binascii.unhexlify(additional_key_data)
+        ),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.XTS("\x00" * 16, "\x00" * 16)
+        ),
+        skip_message="Does not support AES XTS",
     )
