@@ -12,23 +12,44 @@
 # limitations under the License.
 
 """
-Test using the OpenSSL Test Vectors
+Tests using the CRYPTREC (Camellia) Test Vectors
 """
 
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import os
 
 from cryptography.hazmat.primitives.block import ciphers, modes
 
 from .utils import generate_encrypt_test
-from ...utils import load_openssl_vectors_from_file
+from ...utils import (
+    load_cryptrec_vectors_from_file, load_openssl_vectors_from_file
+)
+
+
+class TestCamelliaECB(object):
+    test_ECB = generate_encrypt_test(
+        load_cryptrec_vectors_from_file,
+        os.path.join("ciphers", "Camellia"),
+        [
+            "camellia-128-ecb.txt",
+            "camellia-192-ecb.txt",
+            "camellia-256-ecb.txt"
+        ],
+        lambda key: ciphers.Camellia(binascii.unhexlify((key))),
+        lambda key: modes.ECB(),
+        only_if=lambda backend: backend.ciphers.supported(
+            ciphers.Camellia("\x00" * 16), modes.ECB()
+        ),
+        skip_message="Does not support Camellia ECB",
+    )
 
 
 class TestCamelliaCBC(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_CBC = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "Camellia",
+        os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
@@ -40,9 +61,9 @@ class TestCamelliaCBC(object):
 
 
 class TestCamelliaOFB(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_OFB = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "Camellia",
+        os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
@@ -54,9 +75,9 @@ class TestCamelliaOFB(object):
 
 
 class TestCamelliaCFB(object):
-    test_OpenSSL = generate_encrypt_test(
+    test_CFB = generate_encrypt_test(
         load_openssl_vectors_from_file,
-        "Camellia",
+        os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
         lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
@@ -64,18 +85,4 @@ class TestCamelliaCFB(object):
             ciphers.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
         ),
         skip_message="Does not support Camellia CFB",
-    )
-
-
-class TestAESCTR(object):
-    test_OpenSSL = generate_encrypt_test(
-        load_openssl_vectors_from_file,
-        "AES",
-        ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
-            ciphers.AES("\x00" * 16), modes.CTR("\x00" * 16)
-        ),
-        skip_message="Does not support AES CTR",
     )
