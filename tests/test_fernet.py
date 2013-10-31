@@ -61,3 +61,10 @@ class TestFernet(object):
             f.encrypt(six.u(""))
         with pytest.raises(TypeError):
             f.decrypt(six.u(""))
+
+    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
+    def test_roundtrips(self, message):
+        f = Fernet(b"\x00" * 32)
+        ciphertext = f.encrypt(message)
+        plaintext = f.decrypt(ciphertext)
+        assert plaintext == message
