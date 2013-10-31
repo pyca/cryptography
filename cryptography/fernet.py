@@ -37,8 +37,10 @@ class Fernet(object):
             b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext + hmac
         )
 
-    def decrypt(self, data, ttl=None):
+    def decrypt(self, data, ttl=None, current_time=None):
         # TODO: whole function is a giant hack job with no error checking
+        if current_time is None:
+            current_time = int(time.time())
         data = base64.urlsafe_b64decode(data)
         assert data[0] == b"\x80"
         timestamp = data[1:9]
@@ -46,7 +48,7 @@ class Fernet(object):
         ciphertext = data[25:-32]
         hmac = data[-32:]
         if ttl is not None:
-            if struct.unpack(">Q", timestamp)[0] + ttl > int(time.time()):
+            if struct.unpack(">Q", timestamp)[0] + ttl < current_time:
                 raise ValueError
         h = HMAC(self.signing_key, digestmod=hashes.SHA256)
         h.update(data[:-32])
