@@ -40,21 +40,19 @@ class TestFernet(object):
     )
     def test_verify(self, secret, now, src, ttl_sec, token):
         f = Fernet(base64.urlsafe_b64decode(secret.encode("ascii")))
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         payload = f.decrypt(
-            token.encode("ascii"),
-            ttl=ttl_sec,
-            current_time=calendar.timegm(iso8601.parse_date(now).utctimetuple())
+            token.encode("ascii"), ttl=ttl_sec, current_time=current_time
         )
         assert payload == src
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
     def test_invalid(self, secret, token, now, ttl_sec):
         f = Fernet(base64.urlsafe_b64decode(secret.encode("ascii")))
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         with pytest.raises(InvalidToken):
             f.decrypt(
-                token.encode("ascii"),
-                ttl=ttl_sec,
-                current_time=calendar.timegm(iso8601.parse_date(now).utctimetuple())
+                token.encode("ascii"), ttl=ttl_sec, current_time=current_time
             )
 
     def test_unicode(self):

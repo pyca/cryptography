@@ -28,7 +28,9 @@ class Fernet(object):
 
     def _encrypt_from_parts(self, data, current_time, iv):
         if isinstance(data, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before encryption")
+            raise TypeError(
+                "Unicode-objects must be encoded before encryption"
+            )
 
         padder = padding.PKCS7(ciphers.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
@@ -49,7 +51,9 @@ class Fernet(object):
 
     def decrypt(self, data, ttl=None, current_time=None):
         if isinstance(data, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before decryption")
+            raise TypeError(
+                "Unicode-objects must be encoded before decryption"
+            )
 
         if current_time is None:
             current_time = int(time.time())
