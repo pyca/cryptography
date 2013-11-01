@@ -64,12 +64,12 @@ class Fernet(object):
         ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
-        h = HMAC(self.signing_key, digestmod=hashes.SHA256)
+        h = HMAC(self.signing_key, hashes.SHA256())
         h.update(b"\x80")
         h.update(struct.pack(">Q", current_time))
         h.update(iv)
         h.update(ciphertext)
-        hmac = h.digest()
+        hmac = h.finalize()
         return base64.urlsafe_b64encode(
             b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext + hmac
         )
@@ -95,9 +95,9 @@ class Fernet(object):
         if ttl is not None:
             if struct.unpack(">Q", timestamp)[0] + ttl < current_time:
                 raise InvalidToken
-        h = HMAC(self.signing_key, digestmod=hashes.SHA256)
+        h = HMAC(self.signing_key, hashes.SHA256())
         h.update(data[:-32])
-        hmac = h.digest()
+        hmac = h.finalize()
 
         if not lib.constant_time_compare(hmac, len(hmac), data[-32:], 32):
             raise InvalidToken
