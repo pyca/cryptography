@@ -7,10 +7,16 @@ Message Digests
 
 .. class:: Hash(algorithm)
 
-    Abstract base class that implements a common interface for all hash
-    algorithms that follow here.
+    A cryptographic hash function takes an arbitrary block of data and
+    calculates a fixed-size bit string (a digest), such that different data
+    results (with a high probability) in different digests.
 
-    If ``data`` is provided ``update(data)`` is called upon construction.
+    This is an implementation of
+    :class:`cryptography.hazmat.primitives.interfaces.HashContext` meant to
+    be used with
+    :class:`cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+    implementations to provide an incremental interface to calculating
+    various message digests.
 
     .. doctest::
 
@@ -30,6 +36,9 @@ Message Digests
         :return: a new instance of this object with a copied internal state.
 
     .. method:: finalize()
+        Finalize the current context and return the message digest as bytes.
+
+        Once ``finalize`` is called this object can no longer be used.
 
         :return bytes: The message digest as bytes.
 
