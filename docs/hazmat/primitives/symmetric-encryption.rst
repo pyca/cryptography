@@ -66,8 +66,8 @@ where the encrypter and decrypter both use the same key.
         When the ``BlockCipher`` was constructed in a mode turns it into a
         stream cipher (e.g.
         :class:`cryptography.hazmat.primitives.block.modes.CTR`), this will
-        return bytes immediately, however in other modes it will return blocks
-        in chunks, whose size is determined by the cipher's block size.
+        return bytes immediately, however in other modes it will return chunks,
+        whose size is determined by the cipher's block size.
 
     .. method:: finalize()
 
