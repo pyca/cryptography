@@ -36,6 +36,7 @@ Message Digests
         :return: a new instance of this object with a copied internal state.
 
     .. method:: finalize()
+
         Finalize the current context and return the message digest as bytes.
 
         Once ``finalize`` is called this object can no longer be used.
