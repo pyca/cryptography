@@ -18,7 +18,7 @@ import binascii
 import pytest
 
 from cryptography.hazmat.primitives.block.ciphers import (
-    AES, Camellia, TripleDES,
+    AES, Camellia, TripleDES, Blowfish, CAST5
 )
 
 
@@ -65,3 +65,29 @@ class TestTripleDES(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             TripleDES(binascii.unhexlify(b"0" * 12))
+
+
+class TestBlowfish(object):
+    @pytest.mark.parametrize(("key", "keysize"), [
+        (b"0" * (keysize // 4), keysize) for keysize in range(32, 449, 8)
+    ])
+    def test_key_size(self, key, keysize):
+        cipher = Blowfish(binascii.unhexlify(key))
+        assert cipher.key_size == keysize
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            Blowfish(binascii.unhexlify(b"0" * 6))
+
+
+class TestCAST5(object):
+    @pytest.mark.parametrize(("key", "keysize"), [
+        (b"0" * (keysize // 4), keysize) for keysize in range(40, 129, 8)
+    ])
+    def test_key_size(self, key, keysize):
+        cipher = CAST5(binascii.unhexlify(key))
+        assert cipher.key_size == keysize
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            CAST5(binascii.unhexlify(b"0" * 34))

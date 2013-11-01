@@ -26,32 +26,25 @@ from .utils import generate_base_hmac_test
 
 class TestHMAC(object):
     test_copy = generate_base_hmac_test(
-        hashes.MD5,
+        hashes.MD5(),
         only_if=lambda backend: backend.hashes.supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
 
     def test_hmac_reject_unicode(self, backend):
-        h = hmac.HMAC(key=b"mykey", digestmod=hashes.SHA1, backend=backend)
+        h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             h.update(six.u("\u00FC"))
 
-    def test_base_hash_hexdigest_string_type(self, backend):
-        h = hmac.HMAC(key=b"mykey", digestmod=hashes.SHA1, backend=backend,
-                      msg=b"")
-        assert isinstance(h.hexdigest(), str)
-
-    def test_hmac_no_digestmod(self):
-        with pytest.raises(TypeError):
-            hmac.HMAC(key=b"shortkey")
-
-
-class TestCopyHMAC(object):
     def test_copy_backend_object(self):
         pretend_hmac = pretend.stub(copy_ctx=lambda a: True)
         pretend_backend = pretend.stub(hmacs=pretend_hmac)
         pretend_ctx = pretend.stub()
-        h = hmac.HMAC(b"key", digestmod=hashes.SHA1, backend=pretend_backend,
+        h = hmac.HMAC(b"key", hashes.SHA1(), backend=pretend_backend,
                       ctx=pretend_ctx)
         assert h._backend is pretend_backend
         assert h.copy()._backend is pretend_backend
+
+    def test_hmac_algorithm_instance(self):
+        with pytest.raises(TypeError):
+            hmac.HMAC(b"key", hashes.SHA1)

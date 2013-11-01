@@ -5,21 +5,27 @@ Message Digests
 
 .. currentmodule:: cryptography.hazmat.primitives.hashes
 
-.. class:: BaseHash(data=None)
+.. class:: Hash(algorithm)
 
-    Abstract base class that implements a common interface for all hash
-    algorithms that follow here.
+    A cryptographic hash function takes an arbitrary block of data and
+    calculates a fixed-size bit string (a digest), such that different data
+    results (with a high probability) in different digests.
 
-    If ``data`` is provided ``update(data)`` is called upon construction.
+    This is an implementation of
+    :class:`cryptography.hazmat.primitives.interfaces.HashContext` meant to
+    be used with
+    :class:`cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+    implementations to provide an incremental interface to calculating
+    various message digests.
 
     .. doctest::
 
         >>> from cryptography.hazmat.primitives import hashes
-        >>> digest = hashes.SHA256()
+        >>> digest = hashes.Hash(hashes.SHA256())
         >>> digest.update(b"abc")
         >>> digest.update(b"123")
-        >>> digest.hexdigest()
-        '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090'
+        >>> digest.finalize()
+        'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
     .. method:: update(data)
 
@@ -29,13 +35,14 @@ Message Digests
 
         :return: a new instance of this object with a copied internal state.
 
-    .. method:: digest()
+    .. method:: finalize()
+
+        Finalize the current context and return the message digest as bytes.
+
+        Once ``finalize`` is called this object can no longer be used.
 
         :return bytes: The message digest as bytes.
 
-    .. method:: hexdigest()
-
-        :return str: The message digest as hex.
 
 SHA-1
 ~~~~~

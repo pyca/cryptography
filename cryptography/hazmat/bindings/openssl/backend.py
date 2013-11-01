@@ -20,7 +20,7 @@ import cffi
 
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.block.ciphers import (
-    AES, Camellia, TripleDES,
+    AES, Blowfish, Camellia, CAST5, TripleDES,
 )
 from cryptography.hazmat.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
 
@@ -221,6 +221,17 @@ class Ciphers(object):
                 mode_cls,
                 GetCipherByName("des-ede3-{mode.name}")
             )
+        for mode_cls in [CBC, CFB, OFB, ECB]:
+            self.register_cipher_adapter(
+                Blowfish,
+                mode_cls,
+                GetCipherByName("bf-{mode.name}")
+            )
+        self.register_cipher_adapter(
+            CAST5,
+            ECB,
+            GetCipherByName("cast5-ecb")
+        )
 
     def create_encrypt_ctx(self, cipher, mode):
         return _CipherContext(self._backend, cipher, mode,

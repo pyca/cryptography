@@ -13,31 +13,29 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
-
 import six
 
+from cryptography.hazmat.primitives import interfaces
 
+
+@interfaces.register(interfaces.HashContext)
 class HMAC(object):
-    def __init__(self, key, msg=None, digestmod=None, ctx=None, backend=None):
+    def __init__(self, key, algorithm, ctx=None, backend=None):
         super(HMAC, self).__init__()
+        if not isinstance(algorithm, interfaces.HashAlgorithm):
+            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+        self.algorithm = algorithm
+
         if backend is None:
             from cryptography.hazmat.bindings import _default_backend
             backend = _default_backend
 
-        if digestmod is None:
-            raise TypeError("digestmod is a required argument")
-
         self._backend = backend
-        self.digestmod = digestmod
-        self.key = key
+        self._key = key
         if ctx is None:
-            self._ctx = self._backend.hmacs.create_ctx(key, self.digestmod)
+            self._ctx = self._backend.hmacs.create_ctx(key, self.algorithm)
         else:
             self._ctx = ctx
-
-        if msg is not None:
-            self.update(msg)
 
     def update(self, msg):
         if isinstance(msg, six.text_type):
@@ -45,15 +43,9 @@ class HMAC(object):
         self._backend.hmacs.update_ctx(self._ctx, msg)
 
     def copy(self):
-        return self.__class__(self.key, digestmod=self.digestmod,
-                              backend=self._backend, ctx=self._copy_ctx())
+        return self.__class__(self._key, self.algorithm, backend=self._backend,
+                              ctx=self._backend.hmacs.copy_ctx(self._ctx))
 
-    def digest(self):
-        return self._backend.hmacs.finalize_ctx(self._copy_ctx(),
-                                                self.digestmod.digest_size)
-
-    def hexdigest(self):
-        return str(binascii.hexlify(self.digest()).decode("ascii"))
-
-    def _copy_ctx(self):
-        return self._backend.hmacs.copy_ctx(self._ctx)
+    def finalize(self):
+        return self._backend.hmacs.finalize_ctx(self._ctx,
+                                                self.algorithm.digest_size)
