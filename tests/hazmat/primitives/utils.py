@@ -154,7 +154,7 @@ def hmac_test(backend, algorithm, params, only_if, skip_message):
     key = params[2]
     h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h.update(binascii.unhexlify(msg))
-    assert h.finalize() == binascii.unhexlify(md)
+    assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
 
 
 def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
