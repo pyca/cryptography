@@ -63,6 +63,11 @@ where the encrypter and decrypter both use the same key.
         :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was encrypted or decrypted.
 
+        When the ``BlockCipher`` was constructed in a mode turns it into a
+        stream cipher, this will return bytes immediately, however in other
+        modes it will return blocks in chunks, whose size is determined by the
+        cipher's block size.
+
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
@@ -162,7 +167,8 @@ Modes
         block size of less than 128-bits.
 
     CTR (Counter) is a mode of operation for block ciphers. It is considered
-    cryptographically strong.
+    cryptographically strong. It transforms a block cipher into a stream
+    cipher.
 
     :param bytes nonce: Should be random bytes. It is critical to never reuse a
                         ``nonce`` with a given key.  Any reuse of a nonce
