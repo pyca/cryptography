@@ -47,4 +47,4 @@ class TestHMAC(object):
 
     def test_hmac_algorithm_instance(self):
         with pytest.raises(TypeError):
-            hmac.HMAC(hashes.SHA1)
+            hmac.HMAC(b"key", hashes.SHA1)
