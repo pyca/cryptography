@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
-
 import six
 
 from cryptography.hazmat.primitives import interfaces
