@@ -96,3 +96,23 @@ class Blowfish(object):
     @property
     def key_size(self):
         return len(self.key) * 8
+
+
+class CAST5(object):
+    name = "CAST5"
+    block_size = 64
+    key_sizes = frozenset([40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128])
+
+    def __init__(self, key):
+        super(CAST5, self).__init__()
+        self.key = key
+
+        # Verify that the key size matches the expected key size
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                self.key_size, self.name
+            ))
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8
