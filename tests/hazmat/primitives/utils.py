@@ -129,7 +129,7 @@ def long_string_hash_test(backend, algorithm, md, only_if, skip_message):
     assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
 
 
-def generate_hmac_test(param_loader, path, file_names, digestmod,
+def generate_hmac_test(param_loader, path, file_names, algorithm,
                        only_if=None, skip_message=None):
     def test_hmac(self):
         for backend in _ALL_BACKENDS:
@@ -138,7 +138,7 @@ def generate_hmac_test(param_loader, path, file_names, digestmod,
                     yield (
                         hmac_test,
                         backend,
-                        digestmod,
+                        algorithm,
                         params,
                         only_if,
                         skip_message
@@ -146,18 +146,15 @@ def generate_hmac_test(param_loader, path, file_names, digestmod,
     return test_hmac
 
 
-def hmac_test(backend, digestmod, params, only_if, skip_message):
+def hmac_test(backend, algorithm, params, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
     key = params[2]
-    h = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h.update(binascii.unhexlify(msg))
-    assert h.hexdigest() == md
-    digest = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod,
-                       msg=binascii.unhexlify(msg)).hexdigest()
-    assert digest == md
+    assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
 
 
 def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
@@ -173,11 +170,11 @@ def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
     return test_base_hmac
 
 
-def base_hmac_test(backend, digestmod, only_if, skip_message):
+def base_hmac_test(backend, algorithm, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     key = b"ab"
-    h = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h_copy = h.copy()
     assert h != h_copy
     assert h._ctx != h_copy._ctx
