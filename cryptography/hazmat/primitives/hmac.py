@@ -22,6 +22,8 @@ from cryptography.hazmat.primitives import interfaces
 class HMAC(object):
     def __init__(self, key, algorithm, ctx=None, backend=None):
         super(HMAC, self).__init__()
+        if not isinstance(algorithm, interfaces.HashAlgorithm):
+            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
         self.algorithm = algorithm
 
         if backend is None:
