@@ -227,12 +227,11 @@ class Ciphers(object):
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
             )
-        for mode_cls in [CBC, CFB, OFB, ECB]:
-            self.register_cipher_adapter(
-                CAST5,
-                mode_cls,
-                GetCipherByName("cast5-{mode.name}")
-            )
+        self.register_cipher_adapter(
+            CAST5,
+            ECB,
+            GetCipherByName("cast5-ecb")
+        )
 
     def create_encrypt_ctx(self, cipher, mode):
         return _CipherContext(self._backend, cipher, mode,
