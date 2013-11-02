@@ -17,6 +17,7 @@ import binascii
 
 import pytest
 
+from cryptography.exceptions import NoSuchAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
 
@@ -84,3 +85,13 @@ class TestBlockCipherContext(object):
         assert len(pt) == 80
         assert pt == b"a" * 80
         decryptor.finalize()
+
+    def test_nonexistant_cipher(self, backend):
+        cipher = BlockCipher(
+            object(), object(), backend
+        )
+        with pytest.raises(NoSuchAlgorithm):
+            cipher.encryptor()
+
+        with pytest.raises(NoSuchAlgorithm):
+            cipher.decryptor()

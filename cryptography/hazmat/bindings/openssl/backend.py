@@ -18,6 +18,7 @@ import sys
 
 import cffi
 
+from cryptography.exceptions import NoSuchAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.block.ciphers import (
     AES, Blowfish, Camellia, CAST5, TripleDES,
@@ -128,9 +129,12 @@ class _CipherContext(object):
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
 
         registry = self._backend.ciphers._cipher_registry
-        evp_cipher = registry[type(cipher), type(mode)](
-            self._backend, cipher, mode
-        )
+        try:
+            adapter = registry[type(cipher), type(mode)]
+        except KeyError:
+            raise NoSuchAlgorithm
+
+        evp_cipher = adapter(self._backend, cipher, mode)
         assert evp_cipher != self._backend.ffi.NULL
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
