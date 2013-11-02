@@ -18,7 +18,7 @@ import sys
 
 import cffi
 
-from cryptography.exceptions import NoSuchAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.block.ciphers import (
     AES, Blowfish, Camellia, CAST5, TripleDES,
@@ -132,7 +132,7 @@ class _CipherContext(object):
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
-            raise NoSuchAlgorithm
+            raise UnsupportedAlgorithm
 
         evp_cipher = adapter(self._backend, cipher, mode)
         assert evp_cipher != self._backend.ffi.NULL

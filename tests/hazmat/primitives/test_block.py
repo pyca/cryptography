@@ -17,7 +17,7 @@ import binascii
 
 import pytest
 
-from cryptography.exceptions import NoSuchAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
 
@@ -90,8 +90,8 @@ class TestBlockCipherContext(object):
         cipher = BlockCipher(
             object(), object(), backend
         )
-        with pytest.raises(NoSuchAlgorithm):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
 
-        with pytest.raises(NoSuchAlgorithm):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()

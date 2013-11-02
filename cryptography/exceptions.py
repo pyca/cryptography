@@ -12,5 +12,5 @@
 # limitations under the License.
 
 
-class NoSuchAlgorithm(Exception):
+class UnsupportedAlgorithm(Exception):
     pass

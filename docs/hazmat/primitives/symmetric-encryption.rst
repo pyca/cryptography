@@ -43,8 +43,8 @@ where the encrypter and decrypter both use the same key.
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` a :class:`cryptography.exceptions.NoSuchAlgorithm` will
-        be raised.
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
 
     .. method:: decryptor()
 
@@ -53,8 +53,8 @@ where the encrypter and decrypter both use the same key.
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` a :class:`cryptography.exceptions.NoSuchAlgorithm` will
-        be raised.
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
 
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
