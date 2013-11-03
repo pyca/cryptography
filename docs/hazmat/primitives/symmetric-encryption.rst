@@ -42,11 +42,20 @@ where the encrypter and decrypter both use the same key.
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
+        If the backend doesn't support the requested combination of ``cipher``
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
+
     .. method:: decryptor()
 
         :return: A decrypting
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
+
+        If the backend doesn't support the requested combination of ``cipher``
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
+
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
 
