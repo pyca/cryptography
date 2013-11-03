@@ -18,7 +18,8 @@ Glossary
 
     key
         Secret data is encoded with a function using this key. Sometimes
-        multiple keys are used.
+        multiple keys are used. These **must** be kept secret, if a key is
+        exposed to an attacker, any data encrypted with it will be exposed.
 
     symmetric cryptography
         Cryptographic operations where encryption and decryption use the same
