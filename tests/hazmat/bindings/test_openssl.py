@@ -11,11 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import binascii
+
 import pytest
 
-from cryptography.hazmat.bindings.openssl.backend import backend
-from cryptography.hazmat.primitives.block.ciphers import AES
-from cryptography.hazmat.primitives.block.modes import CBC
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.bindings.openssl.backend import backend, Backend
+from cryptography.hazmat.primitives.block import BlockCipher
+from cryptography.hazmat.primitives.block.ciphers import AES, TripleDES
+from cryptography.hazmat.primitives.block.modes import CBC, ECB
 
 
 class TestOpenSSL(object):
@@ -39,3 +43,15 @@ class TestOpenSSL(object):
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
             backend.ciphers.register_cipher_adapter(AES, CBC, None)
+
+    def test_nonexistant_cipher(self):
+        b = Backend()
+        # TODO: this test assumes that 3DES-ECB doesn't exist
+        b.ciphers.register_cipher_adapter(
+            TripleDES, ECB, lambda backend, cipher, mode: backend.ffi.NULL
+        )
+        cipher = BlockCipher(
+            TripleDES(binascii.unhexlify(b"0" * 16)), ECB(), backend=b
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cipher.encryptor()
