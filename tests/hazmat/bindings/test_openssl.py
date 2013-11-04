@@ -44,7 +44,7 @@ class TestOpenSSL(object):
         with pytest.raises(ValueError):
             backend.ciphers.register_cipher_adapter(AES, CBC, None)
 
-    def test_nonexistant_cipher(self):
+    def test_nonexistent_cipher(self):
         b = Backend()
         # TODO: this test assumes that 3DES-ECB doesn't exist
         b.ciphers.register_cipher_adapter(
