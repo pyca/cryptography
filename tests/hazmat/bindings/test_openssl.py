@@ -40,5 +40,7 @@ class TestOpenSSL(object):
         with pytest.raises(ValueError):
             backend.ciphers.register_cipher_adapter(AES, CBC, None)
 
-    def test_instantiates(self):
-        Backend()
+    def test_instances_share_ffi(self):
+        b = Backend()
+        assert b.ffi is backend.ffi
+        assert b.lib is backend.lib
