@@ -13,7 +13,7 @@
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.backend import backend
+from cryptography.hazmat.bindings.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives.block.ciphers import AES
 from cryptography.hazmat.primitives.block.modes import CBC
 
@@ -39,3 +39,6 @@ class TestOpenSSL(object):
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
             backend.ciphers.register_cipher_adapter(AES, CBC, None)
+
+    def test_instantiates(self):
+        Backend()
