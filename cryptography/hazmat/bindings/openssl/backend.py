@@ -55,17 +55,31 @@ class Backend(object):
         "x509v3",
     ]
 
+    ffi = None
+    lib = None
+
     def __init__(self):
-        self.ffi = cffi.FFI()
+        self._ensure_ffi_initialized()
+
+        self.ciphers = Ciphers(self)
+        self.hashes = Hashes(self)
+        self.hmacs = HMACs(self)
+
+    @classmethod
+    def _ensure_ffi_initialized(cls):
+        if cls.ffi is not None and cls.lib is not None:
+            return
+
+        ffi = cffi.FFI()
         includes = []
         functions = []
         macros = []
-        for name in self._modules:
+        for name in cls._modules:
             module_name = "cryptography.hazmat.bindings.openssl." + name
             __import__(module_name)
             module = sys.modules[module_name]
 
-            self.ffi.cdef(module.TYPES)
+            ffi.cdef(module.TYPES)
 
             macros.append(module.MACROS)
             functions.append(module.FUNCTIONS)
@@ -75,9 +89,9 @@ class Backend(object):
         # so we can set interdependent types in different files and still
         # have them all defined before we parse the funcs & macros
         for func in functions:
-            self.ffi.cdef(func)
+            ffi.cdef(func)
         for macro in macros:
-            self.ffi.cdef(macro)
+            ffi.cdef(macro)
 
         # We include functions here so that if we got any of their definitions
         # wrong, the underlying C compiler will explode. In C you are allowed
@@ -87,17 +101,15 @@ class Backend(object):
         # is legal, but the following will fail to compile:
         #   int foo(int);
         #   int foo(short);
-        self.lib = self.ffi.verify(
+        lib = ffi.verify(
             source="\n".join(includes + functions),
             libraries=["crypto", "ssl"],
         )
 
-        self.lib.OpenSSL_add_all_algorithms()
-        self.lib.SSL_load_error_strings()
-
-        self.ciphers = Ciphers(self)
-        self.hashes = Hashes(self)
-        self.hmacs = HMACs(self)
+        cls.ffi = ffi
+        cls.lib = lib
+        cls.lib.OpenSSL_add_all_algorithms()
+        cls.lib.SSL_load_error_strings()
 
     def openssl_version_text(self):
         """
