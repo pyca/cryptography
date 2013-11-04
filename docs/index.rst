@@ -32,6 +32,7 @@ Contents
 
     architecture
     exceptions
+    glossary
     contributing
     security
     community
