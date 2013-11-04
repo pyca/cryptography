@@ -23,6 +23,8 @@ message.
     equal in length to the ``digest_size`` of the hash function chosen.
     You must keep the ``key`` secret.
 
+    This is an implementation of :rfc:`2104`.
+
     .. doctest::
 
         >>> from cryptography.hazmat.primitives import hashes, hmac
