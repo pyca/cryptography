@@ -324,7 +324,7 @@ class HMACs(object):
         return ctx
 
     def update_ctx(self, ctx, data):
-        res = self._backend.lib.HMAC_Update(ctx, data, len(data))
+        res = self._backend.lib.Cryptography_HMAC_Update(ctx, data, len(data))
         assert res != 0
 
     def finalize_ctx(self, ctx, digest_size):

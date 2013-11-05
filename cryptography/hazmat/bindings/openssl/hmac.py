@@ -24,8 +24,8 @@ void HMAC_CTX_init(HMAC_CTX *);
 void HMAC_CTX_cleanup(HMAC_CTX *);
 
 int Cryptography_HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *, ENGINE *);
-int HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
-int HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
+int Cryptography_HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
+int Cryptography_HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
 int HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
 """
 
@@ -42,4 +42,25 @@ int Cryptography_HMAC_Init_ex(HMAC_CTX *ctx, const void *key, int key_len,
     return 1;
 #endif
 }
+
+int Cryptography_HMAC_Update(HMAC_CTX *ctx, const unsigned char *data,
+                             size_t data_len) {
+#if OPENSSL_VERSION_NUMBER >= 0x010000000
+    return HMAC_Update(ctx, data, data_len);
+#else
+    HMAC_Update(ctx, data, data_len);
+    return 1;
+#endif
+}
+
+int Cryptography_HMAC_Final(HMAC_CTX *ctx, unsigned char *digest,
+    unsigned int *digest_len) {
+#if OPENSSL_VERSION_NUMBER >= 0x010000000
+    return HMAC_Final(ctx, digest, digest_len);
+#else
+    HMAC_Final(ctx, digest, digest_len);
+    return 1;
+#endif
+}
+
 """
