@@ -29,9 +29,9 @@ typedef struct evp_pkey_st {
 } EVP_PKEY;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
-static const int EVP_CTRL_GCM_SET_IVLEN;
-static const int EVP_CTRL_GCM_GET_TAG;
-static const int EVP_CTRL_GCM_SET_TAG;
+static const int Cryptography_EVP_CTRL_GCM_SET_IVLEN;
+static const int Cryptography_EVP_CTRL_GCM_GET_TAG;
+static const int Cryptography_EVP_CTRL_GCM_SET_TAG;
 """
 
 FUNCTIONS = """
@@ -97,4 +97,13 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 """
 
 CUSTOMIZATIONS = """
+#ifdef EVP_CTRL_GCM_SET_TAG
+const int Cryptography_EVP_CTRL_GCM_GET_TAG = EVP_CTRL_GCM_GET_TAG;
+const int Cryptography_EVP_CTRL_GCM_SET_TAG = EVP_CTRL_GCM_SET_TAG;
+const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = EVP_CTRL_GCM_SET_IVLEN;
+#else
+const int Cryptography_EVP_CTRL_GCM_GET_TAG = -1;
+const int Cryptography_EVP_CTRL_GCM_SET_TAG = -1;
+const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = -1;
+#endif
 """
