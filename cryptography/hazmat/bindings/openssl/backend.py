@@ -317,8 +317,9 @@ class HMACs(object):
         evp_md = self._backend.lib.EVP_get_digestbyname(
             hash_cls.name.encode('ascii'))
         assert evp_md != self._backend.ffi.NULL
-        res = self._backend.lib.HMAC_Init_ex(ctx, key, len(key), evp_md,
-                                             self._backend.ffi.NULL)
+        res = self._backend.lib.Cryptography_HMAC_Init_ex(
+            ctx, key, len(key), evp_md, self._backend.ffi.NULL
+        )
         assert res != 0
         return ctx
 
