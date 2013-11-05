@@ -25,6 +25,19 @@ env:
     - TOX_ENV=pep8
     - TOX_ENV=py3pep8
 
+matrix:
+    allow_failures:
+        - TOX_ENV=py26 OPENSSL=0.9.8
+        - TOX_ENV=py27 OPENSSL=0.9.8
+        - TOX_ENV=py32 OPENSSL=0.9.8
+        - TOX_ENV=py33 OPENSSL=0.9.8
+        - TOX_ENV=pypy OPENSSL=0.9.8
+        - TOX_ENV=py26 CC=clang OPENSSL=0.9.8
+        - TOX_ENV=py27 CC=clang OPENSSL=0.9.8
+        - TOX_ENV=py32 CC=clang OPENSSL=0.9.8
+        - TOX_ENV=py33 CC=clang OPENSSL=0.9.8
+        - TOX_ENV=pypy CC=clang OPENSSL=0.9.8
+
 install:
     - "[[ ${OPENSSL} == \"0.9.8\" ]] && sudo add-apt-repository \"deb http://archive.ubuntu.com/ubuntu lucid main\" || true"
     - "[[ ${OPENSSL} == \"0.9.8\" ]] && sudo apt-get -y update && sudo apt-get -y --force-yes install libssl-dev/lucid || true"
