@@ -58,7 +58,9 @@ class TestOpenSSL(object):
     def test_nonexistent_cipher(self):
         b = Backend()
         b.ciphers.register_cipher_adapter(
-            FakeCipher, FakeMode, lambda backend, cipher, mode: backend.ffi.NULL
+            FakeCipher,
+            FakeMode,
+            lambda backend, cipher, mode: backend.ffi.NULL
         )
         cipher = BlockCipher(
             FakeCipher(), FakeMode(), backend=b,
