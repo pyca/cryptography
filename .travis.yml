@@ -36,9 +36,6 @@ install:
     - pip install tox
 
 script:
-    # Make sure that if we installed an OPENSSL version then we got that
-    # version installed.
-    - "[[ ${OPENSSL} != \"\" ]] && openssl version | grep ${OPENSSL}"
     - tox -e $TOX_ENV
 
 notifications:
