@@ -13,9 +13,19 @@
 
 import pytest
 
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.openssl.backend import backend, Backend
+from cryptography.hazmat.primitives.block import BlockCipher
 from cryptography.hazmat.primitives.block.ciphers import AES
 from cryptography.hazmat.primitives.block.modes import CBC
+
+
+class FakeMode(object):
+    pass
+
+
+class FakeCipher(object):
+    pass
 
 
 class TestOpenSSL(object):
@@ -44,3 +54,16 @@ class TestOpenSSL(object):
         b = Backend()
         assert b.ffi is backend.ffi
         assert b.lib is backend.lib
+
+    def test_nonexistent_cipher(self):
+        b = Backend()
+        b.ciphers.register_cipher_adapter(
+            FakeCipher,
+            FakeMode,
+            lambda backend, cipher, mode: backend.ffi.NULL
+        )
+        cipher = BlockCipher(
+            FakeCipher(), FakeMode(), backend=b,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cipher.encryptor()

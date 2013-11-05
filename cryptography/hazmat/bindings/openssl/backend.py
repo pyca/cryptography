@@ -147,7 +147,9 @@ class _CipherContext(object):
             raise UnsupportedAlgorithm
 
         evp_cipher = adapter(self._backend, cipher, mode)
-        assert evp_cipher != self._backend.ffi.NULL
+        if evp_cipher == self._backend.ffi.NULL:
+            raise UnsupportedAlgorithm
+
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
         elif isinstance(mode, interfaces.ModeWithNonce):
