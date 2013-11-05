@@ -95,3 +95,6 @@ int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 """
+
+CUSTOMIZATIONS = """
+"""

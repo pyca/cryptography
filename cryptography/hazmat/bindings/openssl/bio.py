@@ -168,3 +168,6 @@ long BIO_set_buffer_read_data(BIO *, void *, long);
 #define BIO_TYPE_BASE64 ...
 #define BIO_TYPE_FILTER ...
 """
+
+CUSTOMIZATIONS = """
+"""

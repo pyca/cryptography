@@ -24,3 +24,6 @@ void SSL_load_error_strings();
 
 MACROS = """
 """
+
+CUSTOMIZATIONS = """
+"""

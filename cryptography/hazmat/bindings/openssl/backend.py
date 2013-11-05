@@ -74,6 +74,7 @@ class Backend(object):
         includes = []
         functions = []
         macros = []
+        customizations = []
         for name in cls._modules:
             module_name = "cryptography.hazmat.bindings.openssl." + name
             __import__(module_name)
@@ -84,6 +85,7 @@ class Backend(object):
             macros.append(module.MACROS)
             functions.append(module.FUNCTIONS)
             includes.append(module.INCLUDES)
+            customizations.append(module.CUSTOMIZATIONS)
 
         # loop over the functions & macros after declaring all the types
         # so we can set interdependent types in different files and still
@@ -102,7 +104,7 @@ class Backend(object):
         #   int foo(int);
         #   int foo(short);
         lib = ffi.verify(
-            source="\n".join(includes + functions),
+            source="\n".join(includes + functions + customizations),
             libraries=["crypto", "ssl"],
         )
 

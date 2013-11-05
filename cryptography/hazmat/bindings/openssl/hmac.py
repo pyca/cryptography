@@ -22,11 +22,24 @@ typedef struct { ...; } HMAC_CTX;
 FUNCTIONS = """
 void HMAC_CTX_init(HMAC_CTX *);
 void HMAC_CTX_cleanup(HMAC_CTX *);
-int HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *, ENGINE *);
+
+int Cryptography_HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *, ENGINE *);
 int HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
 int HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
 int HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
 """
 
 MACROS = """
+"""
+
+CUSTOMIZATIONS = """
+int Cryptography_HMAC_Init_ex(HMAC_CTX *ctx, const void *key, int key_len,
+                              const EVP_MD *md, ENGINE *impl) {
+#if OPENSSL_VERSION_NUMBER >= 0x010000000
+    return HMAC_Init_ex(ctx, key, key_len, md, impl);
+#else
+    HMAC_Init_ex(ctx, key, key_len, md, impl);
+    return 1;
+#endif
+}
 """

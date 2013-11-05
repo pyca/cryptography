@@ -57,3 +57,6 @@ int ERR_GET_FUNC(unsigned long);
 int ERR_GET_REASON(unsigned long);
 int ERR_FATAL_ERROR(unsigned long);
 """
+
+CUSTOMIZATIONS = """
+"""

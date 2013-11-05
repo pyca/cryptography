@@ -46,3 +46,6 @@ int sk_X509_NAME_push(struct stack_st_X509_NAME *, X509_NAME *);
 X509_NAME *sk_X509_NAME_value(struct stack_st_X509_NAME *, int);
 void sk_X509_NAME_free(struct stack_st_X509_NAME *);
 """
+
+CUSTOMIZATIONS = """
+"""
