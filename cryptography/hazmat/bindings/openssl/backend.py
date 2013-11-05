@@ -330,7 +330,7 @@ class HMACs(object):
     def finalize_ctx(self, ctx, digest_size):
         buf = self._backend.ffi.new("unsigned char[]", digest_size)
         buflen = self._backend.ffi.new("unsigned int *", digest_size)
-        res = self._backend.lib.HMAC_Final(ctx, buf, buflen)
+        res = self._backend.lib.Cryptography_HMAC_Final(ctx, buf, buflen)
         assert res != 0
         self._backend.lib.HMAC_CTX_cleanup(ctx)
         return self._backend.ffi.buffer(buf)[:digest_size]
