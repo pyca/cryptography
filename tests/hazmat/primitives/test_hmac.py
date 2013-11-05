@@ -33,7 +33,7 @@ class TestHMAC(object):
     )
 
     def test_hmac_reject_unicode(self, backend):
-        h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
+        h = hmac.HMAC(b"mykey", hashes.SHA1(), backend)
         with pytest.raises(TypeError):
             h.update(six.u("\u00FC"))
 
@@ -42,17 +42,16 @@ class TestHMAC(object):
         pretend_backend = pretend.stub(hmacs=pretend_hmac)
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hmac.HMAC(b"key", hashes.SHA1(), backend=pretend_backend,
-                      ctx=pretend_ctx)
+        h = hmac.HMAC(b"key", hashes.SHA1(), pretend_backend, ctx=pretend_ctx)
         assert h._backend is pretend_backend
         assert h.copy()._backend is pretend_backend
 
-    def test_hmac_algorithm_instance(self):
+    def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
-            hmac.HMAC(b"key", hashes.SHA1)
+            hmac.HMAC(b"key", hashes.SHA1, backend)
 
-    def test_raises_after_finalize(self):
-        h = hmac.HMAC(b"key", hashes.SHA1())
+    def test_raises_after_finalize(self, backend):
+        h = hmac.HMAC(b"key", hashes.SHA1(), backend)
         h.finalize()
 
         with pytest.raises(AlreadyFinalized):

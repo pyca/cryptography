@@ -121,7 +121,7 @@ def hash_test(backend, algorithm, params, only_if, skip_message):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
-    m = hashes.Hash(algorithm, backend=backend)
+    m = hashes.Hash(algorithm, backend)
     m.update(binascii.unhexlify(msg))
     expected_md = md.replace(" ", "").lower().encode("ascii")
     assert m.finalize() == binascii.unhexlify(expected_md)
@@ -148,7 +148,7 @@ def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
 
-    m = hashes.Hash(algorithm, backend=backend)
+    m = hashes.Hash(algorithm, backend)
     assert m.algorithm.digest_size == digest_size
     assert m.algorithm.block_size == block_size
     m_copy = m.copy()
@@ -180,7 +180,7 @@ def generate_long_string_hash_test(hash_factory, md, only_if=None,
 def long_string_hash_test(backend, algorithm, md, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
-    m = hashes.Hash(algorithm, backend=backend)
+    m = hashes.Hash(algorithm, backend)
     m.update(b"a" * 1000000)
     assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
 
@@ -211,7 +211,7 @@ def hmac_test(backend, algorithm, params, only_if, skip_message):
     msg = params[0]
     md = params[1]
     key = params[2]
-    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend)
     h.update(binascii.unhexlify(msg))
     assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
 
@@ -233,7 +233,7 @@ def base_hmac_test(backend, algorithm, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     key = b"ab"
-    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend)
     h_copy = h.copy()
     assert h != h_copy
     assert h._ctx != h_copy._ctx

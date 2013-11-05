@@ -31,23 +31,19 @@ class DummyCipher(object):
 
 
 class TestCipher(object):
-    def test_instantiate_without_backend(self):
-        Cipher(
-            algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32))
-        )
-
-    def test_creates_encryptor(self):
+    def test_creates_encryptor(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32))
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
         )
         assert isinstance(cipher.encryptor(), interfaces.CipherContext)
 
-    def test_creates_decryptor(self):
+    def test_creates_decryptor(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32))
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
         )
         assert isinstance(cipher.decryptor(), interfaces.CipherContext)
 
