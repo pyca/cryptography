@@ -47,10 +47,13 @@ install:
     # This is required because we need to get rid of the Travis installed PyPy
     # or it'll take precedence over the PPA installed one.
     - "[[ ${TOX_ENV} == pypy ]] && sudo rm -rf /usr/local/pypy/bin || true"
-    - pip install tox
+    - pip install tox coveralls
 
 script:
     - tox -e $TOX_ENV
+
+after_success:
+    - coveralls
 
 notifications:
     irc:
