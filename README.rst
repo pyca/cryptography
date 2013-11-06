@@ -2,7 +2,11 @@ Cryptography
 ============
 
 .. image:: https://travis-ci.org/pyca/cryptography.png?branch=master
-   :target: https://travis-ci.org/pyca/cryptography
+    :target: https://travis-ci.org/pyca/cryptography
+
+.. image:: https://coveralls.io/repos/pyca/cryptography/badge.png?branch=master
+    :target: https://coveralls.io/r/pyca/cryptography?branch=master
+
 
 ``cryptography`` is a package designed to expose cryptographic recipes and
 primitives to Python developers.
