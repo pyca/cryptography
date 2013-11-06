@@ -12,7 +12,7 @@ Cryptography
 primitives to Python developers.
 
 It is currently in early development and isn't recommended for general usage
-yet. It targets Python 2.6-2.7, Python 3.2+, as well as PyPy.
+yet. It targets Python 2.6-2.7, Python 3.2+, and PyPy.
 
 You can find more information in the `documentation`_.
 
