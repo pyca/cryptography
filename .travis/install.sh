@@ -25,4 +25,4 @@ if [[ "${TOX_ENV}" == "pypy" ]]; then
     sudo rm -rf /usr/local/pypy/bin
 fi
 
-pip install tox coverage
+pip install tox coveralls
