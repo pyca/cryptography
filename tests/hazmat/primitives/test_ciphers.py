@@ -17,7 +17,7 @@ import binascii
 
 import pytest
 
-from cryptography.hazmat.primitives.block.ciphers import (
+from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Camellia, TripleDES, Blowfish, CAST5
 )
 

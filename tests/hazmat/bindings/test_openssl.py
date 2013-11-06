@@ -15,9 +15,9 @@ import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.openssl.backend import backend, Backend
-from cryptography.hazmat.primitives.block import BlockCipher
-from cryptography.hazmat.primitives.block.ciphers import AES
-from cryptography.hazmat.primitives.block.modes import CBC
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
+from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
 class FakeMode(object):
@@ -62,7 +62,7 @@ class TestOpenSSL(object):
             FakeMode,
             lambda backend, cipher, mode: backend.ffi.NULL
         )
-        cipher = BlockCipher(
+        cipher = Cipher(
             FakeCipher(), FakeMode(), backend=b,
         )
         with pytest.raises(UnsupportedAlgorithm):

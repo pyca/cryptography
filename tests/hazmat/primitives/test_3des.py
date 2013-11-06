@@ -20,7 +20,7 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-from cryptography.hazmat.primitives.block import ciphers, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors_from_file
@@ -37,7 +37,7 @@ class TestTripleDES_CBC(object):
             "TCBCvarkey.rsp",
             "TCBCvartext.rsp",
         ],
-        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: algorithms.TripleDES(binascii.unhexlify(keys)),
         lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
@@ -50,7 +50,7 @@ class TestTripleDES_CBC(object):
             "TCBCMMT3.rsp",
         ],
         lambda key1, key2, key3, iv: (
-            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+            algorithms.TripleDES(binascii.unhexlify(key1 + key2 + key3))
         ),
         lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
     )
@@ -67,7 +67,7 @@ class TestTripleDES_OFB(object):
             "TOFBvartext.rsp",
             "TOFBinvperm.rsp",
         ],
-        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: algorithms.TripleDES(binascii.unhexlify(keys)),
         lambda keys, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
@@ -80,7 +80,7 @@ class TestTripleDES_OFB(object):
             "TOFBMMT3.rsp",
         ],
         lambda key1, key2, key3, iv: (
-            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+            algorithms.TripleDES(binascii.unhexlify(key1 + key2 + key3))
         ),
         lambda key1, key2, key3, iv: modes.OFB(binascii.unhexlify(iv)),
     )
@@ -97,7 +97,7 @@ class TestTripleDES_CFB(object):
             "TCFB64varkey.rsp",
             "TCFB64vartext.rsp",
         ],
-        lambda keys, iv: ciphers.TripleDES(binascii.unhexlify(keys)),
+        lambda keys, iv: algorithms.TripleDES(binascii.unhexlify(keys)),
         lambda keys, iv: modes.CFB(binascii.unhexlify(iv)),
     )
 
@@ -110,7 +110,7 @@ class TestTripleDES_CFB(object):
             "TCFB64MMT3.rsp",
         ],
         lambda key1, key2, key3, iv: (
-            ciphers.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+            algorithms.TripleDES(binascii.unhexlify(key1 + key2 + key3))
         ),
         lambda key1, key2, key3, iv: modes.CFB(binascii.unhexlify(iv)),
     )

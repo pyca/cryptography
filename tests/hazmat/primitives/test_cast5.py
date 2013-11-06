@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-from cryptography.hazmat.primitives.block import ciphers, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors_from_file
@@ -29,10 +29,10 @@ class TestCAST5(object):
         [
             "cast5-ecb.txt",
         ],
-        lambda key: ciphers.CAST5(binascii.unhexlify((key))),
+        lambda key: algorithms.CAST5(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
         only_if=lambda backend: backend.ciphers.supported(
-            ciphers.CAST5("\x00" * 16), modes.ECB()
+            algorithms.CAST5("\x00" * 16), modes.ECB()
         ),
         skip_message="Does not support CAST5 ECB",
     )
