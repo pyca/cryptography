@@ -23,7 +23,8 @@ FUNCTIONS = """
 void HMAC_CTX_init(HMAC_CTX *);
 void HMAC_CTX_cleanup(HMAC_CTX *);
 
-int Cryptography_HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *, ENGINE *);
+int Cryptography_HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *,
+                              ENGINE *);
 int Cryptography_HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
 int Cryptography_HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
 int HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
