@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.primitives.ciphers.algorithms import Cipher
+from cryptography.hazmat.primitives.ciphers.base import Cipher
 
 
 __all__ = [
