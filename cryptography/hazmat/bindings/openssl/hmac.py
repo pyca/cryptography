@@ -27,7 +27,7 @@ int Cryptography_HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *,
                               ENGINE *);
 int Cryptography_HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
 int Cryptography_HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
-int HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
+int Cryptography_HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
 """
 
 MACROS = """
@@ -64,4 +64,27 @@ int Cryptography_HMAC_Final(HMAC_CTX *ctx, unsigned char *digest,
 #endif
 }
 
+int Cryptography_HMAC_CTX_copy(HMAC_CTX *dst_ctx, HMAC_CTX *src_ctx) {
+#if OPENSSL_VERSION_NUMBER >= 0x010000000
+    return HMAC_CTX_copy(dst_ctx, src_ctx);
+#else
+    HMAC_CTX_init(dst_ctx);
+    if (!EVP_MD_CTX_copy_ex(&dst_ctx->i_ctx, &src_ctx->i_ctx)) {
+        goto err;
+    }
+    if (!EVP_MD_CTX_copy_ex(&dst_ctx->o_ctx, &src_ctx->o_ctx)) {
+        goto err;
+    }
+    if (!EVP_MD_CTX_copy_ex(&dst_ctx->md_ctx, &src_ctx->md_ctx)) {
+        goto err;
+    }
+    memcpy(dst_ctx->key, src_ctx->key, HMAC_MAX_MD_CBLOCK);
+    dst_ctx->key_length = src_ctx->key_length;
+    dst_ctx->md = src_ctx->md;
+    return 1;
+
+    err:
+        return 0;
+#endif
+}
 """

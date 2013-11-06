@@ -340,7 +340,7 @@ class HMACs(object):
         self._backend.lib.HMAC_CTX_init(copied_ctx)
         copied_ctx = self._backend.ffi.gc(copied_ctx,
                                           self._backend.lib.HMAC_CTX_cleanup)
-        res = self._backend.lib.HMAC_CTX_copy(copied_ctx, ctx)
+        res = self._backend.lib.Cryptography_HMAC_CTX_copy(copied_ctx, ctx)
         assert res != 0
         return copied_ctx
 
