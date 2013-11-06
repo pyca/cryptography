@@ -185,3 +185,6 @@ X509_REVOKED *sk_X509_REVOKED_value(struct x509_revoked_st *, int);
 int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
 """
+
+CUSTOMIZATIONS = """
+"""

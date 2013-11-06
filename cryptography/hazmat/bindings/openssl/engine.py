@@ -50,3 +50,6 @@ MACROS = """
 #define ENGINE_METHOD_ALL ...
 #define ENGINE_METHOD_NONE ...
 """
+
+CUSTOMIZATIONS = """
+"""

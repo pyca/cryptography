@@ -29,3 +29,6 @@ int RSA_check_key(const RSA *);
 
 MACROS = """
 """
+
+CUSTOMIZATIONS = """
+"""

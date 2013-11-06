@@ -74,6 +74,7 @@ class Backend(object):
         includes = []
         functions = []
         macros = []
+        customizations = []
         for name in cls._modules:
             module_name = "cryptography.hazmat.bindings.openssl." + name
             __import__(module_name)
@@ -84,6 +85,7 @@ class Backend(object):
             macros.append(module.MACROS)
             functions.append(module.FUNCTIONS)
             includes.append(module.INCLUDES)
+            customizations.append(module.CUSTOMIZATIONS)
 
         # loop over the functions & macros after declaring all the types
         # so we can set interdependent types in different files and still
@@ -102,7 +104,7 @@ class Backend(object):
         #   int foo(int);
         #   int foo(short);
         lib = ffi.verify(
-            source="\n".join(includes + functions),
+            source="\n".join(includes + functions + customizations),
             libraries=["crypto", "ssl"],
         )
 
@@ -315,19 +317,20 @@ class HMACs(object):
         evp_md = self._backend.lib.EVP_get_digestbyname(
             hash_cls.name.encode('ascii'))
         assert evp_md != self._backend.ffi.NULL
-        res = self._backend.lib.HMAC_Init_ex(ctx, key, len(key), evp_md,
-                                             self._backend.ffi.NULL)
+        res = self._backend.lib.Cryptography_HMAC_Init_ex(
+            ctx, key, len(key), evp_md, self._backend.ffi.NULL
+        )
         assert res != 0
         return ctx
 
     def update_ctx(self, ctx, data):
-        res = self._backend.lib.HMAC_Update(ctx, data, len(data))
+        res = self._backend.lib.Cryptography_HMAC_Update(ctx, data, len(data))
         assert res != 0
 
     def finalize_ctx(self, ctx, digest_size):
         buf = self._backend.ffi.new("unsigned char[]", digest_size)
         buflen = self._backend.ffi.new("unsigned int *", digest_size)
-        res = self._backend.lib.HMAC_Final(ctx, buf, buflen)
+        res = self._backend.lib.Cryptography_HMAC_Final(ctx, buf, buflen)
         assert res != 0
         self._backend.lib.HMAC_CTX_cleanup(ctx)
         return self._backend.ffi.buffer(buf)[:digest_size]
@@ -337,7 +340,7 @@ class HMACs(object):
         self._backend.lib.HMAC_CTX_init(copied_ctx)
         copied_ctx = self._backend.ffi.gc(copied_ctx,
                                           self._backend.lib.HMAC_CTX_cleanup)
-        res = self._backend.lib.HMAC_CTX_copy(copied_ctx, ctx)
+        res = self._backend.lib.Cryptography_HMAC_CTX_copy(copied_ctx, ctx)
         assert res != 0
         return copied_ctx
 
