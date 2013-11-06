@@ -36,7 +36,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, mode
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()

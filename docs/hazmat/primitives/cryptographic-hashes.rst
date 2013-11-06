@@ -19,6 +19,7 @@ Message Digests
     various message digests.
 
     .. doctest::
+
         >>> from cryptography.hazmat.bindings import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> digest = hashes.Hash(hashes.SHA256(), default_backend())
