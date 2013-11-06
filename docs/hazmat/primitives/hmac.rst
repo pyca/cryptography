@@ -15,7 +15,7 @@ message authentication codes using a cryptographic hash function coupled with a
 secret key. You can use an HMAC to verify integrity as well as authenticate a
 message.
 
-.. class:: HMAC(key, algorithm)
+.. class:: HMAC(key, algorithm, backend)
 
     HMAC objects take a ``key`` and a provider of
     :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`.
@@ -27,8 +27,9 @@ message.
 
     .. doctest::
 
+        >>> from cryptography.hazmat.bindings import default_backend
         >>> from cryptography.hazmat.primitives import hashes, hmac
-        >>> h = hmac.HMAC(key, hashes.SHA256())
+        >>> h = hmac.HMAC(key, hashes.SHA256(), default_backend())
         >>> h.update(b"message to hash")
         >>> h.finalize()
         '#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'

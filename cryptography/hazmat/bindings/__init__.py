@@ -14,7 +14,10 @@
 from cryptography.hazmat.bindings import openssl
 
 
-_default_backend = openssl.backend
 _ALL_BACKENDS = [
     openssl.backend
 ]
+
+
+def default_backend():
+    return openssl.backend

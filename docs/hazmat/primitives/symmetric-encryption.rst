@@ -12,6 +12,9 @@ Symmetric Encryption
     key = binascii.unhexlify(b"0" * 32)
     iv = binascii.unhexlify(b"0" * 32)
 
+    from cryptography.hazmat.bindings import default_backend
+    backend = default_backend()
+
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the sender and receiver both use the same key. Note that symmetric
@@ -22,7 +25,7 @@ For this reason it is *strongly* recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
 an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
-.. class:: Cipher(algorithm, mode)
+.. class:: Cipher(algorithm, mode, backend)
 
     Cipher objects combine an algorithm (such as
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`) with a
@@ -33,8 +36,8 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, mode
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
