@@ -26,11 +26,19 @@ def register(iface):
 
 
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def iv(self):
+        """
+        The value of the initialization vector for this mode.
+        """
 
 
 class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def nonce(self):
+        """
+        The value of the nonce for this mode.
+        """
 
 
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
