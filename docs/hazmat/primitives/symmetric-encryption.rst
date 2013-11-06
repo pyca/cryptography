@@ -149,6 +149,16 @@ Weak Ciphers
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
 
+.. class:: ARC4(key)
+
+    ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
+    initial stream output. Its use is strongly discouraged. ARC4 does not use
+    mode constructions.
+
+    :param bytes key: The secret key, ``40``, ``56``, ``64``, ``80``, ``128``,
+                      ``192``, or ``256`` bits in length.  This must be kept
+                      secret.
+
 Modes
 ~~~~~
 

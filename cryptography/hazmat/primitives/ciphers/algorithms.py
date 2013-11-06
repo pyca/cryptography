@@ -116,3 +116,22 @@ class CAST5(object):
     @property
     def key_size(self):
         return len(self.key) * 8
+
+
+class ARC4(object):
+    name = "RC4"
+    key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
+
+    def __init__(self, key):
+        super(ARC4, self).__init__()
+        self.key = key
+
+        # Verify that the key size matches the expected key size
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                self.key_size, self.name
+            ))
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8

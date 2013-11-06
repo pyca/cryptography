@@ -49,6 +49,45 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
     assert actual_plaintext == binascii.unhexlify(plaintext)
 
 
+def generate_stream_encryption_test(param_loader, path, file_names,
+                                    cipher_factory, only_if=None,
+                                    skip_message=None):
+    def test_stream_encryption(self):
+        for backend in _ALL_BACKENDS:
+            for file_name in file_names:
+                for params in param_loader(os.path.join(path, file_name)):
+                    yield (
+                        stream_encryption_test,
+                        backend,
+                        cipher_factory,
+                        params,
+                        only_if,
+                        skip_message
+                    )
+    return test_stream_encryption
+
+
+def stream_encryption_test(backend, cipher_factory, params, only_if,
+                           skip_message):
+    if not only_if(backend):
+        pytest.skip(skip_message)
+    plaintext = params.pop("plaintext")
+    ciphertext = params.pop("ciphertext")
+    offset = params.pop("offset")
+    cipher = Cipher(cipher_factory(**params), None, backend)
+    encryptor = cipher.encryptor()
+    # throw away offset bytes
+    encryptor.update(b"\x00" * int(offset))
+    actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
+    actual_ciphertext += encryptor.finalize()
+    assert actual_ciphertext == binascii.unhexlify(ciphertext)
+    decryptor = cipher.decryptor()
+    decryptor.update(b"\x00" * int(offset))
+    actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+    actual_plaintext += decryptor.finalize()
+    assert actual_plaintext == binascii.unhexlify(plaintext)
+
+
 def generate_hash_test(param_loader, path, file_names, hash_cls,
                        only_if=None, skip_message=None):
     def test_hash(self):
