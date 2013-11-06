@@ -17,7 +17,7 @@ if [[ "${OPENSSL}" == "0.9.8" ]]; then
     sudo apt-get install -y --force-yes libssl-dev/lucid
 fi
 
-if [[ "${TOX_ENV}" == "pypy"]]; then
+if [[ "${TOX_ENV}" == "pypy" ]]; then
     sudo apt-get install -y pypy
 
     # This is required because we need to get rid of the Travis installed PyPy
