@@ -20,10 +20,12 @@ import cffi
 
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
-from cryptography.hazmat.primitives.block.ciphers import (
+from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES,
 )
-from cryptography.hazmat.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
+from cryptography.hazmat.primitives.ciphers.modes import (
+    CBC, CTR, ECB, OFB, CFB
+)
 
 
 class Backend(object):

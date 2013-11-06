@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-from cryptography.hazmat.primitives.block import ciphers, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
@@ -45,7 +45,7 @@ class TestAES(object):
             "CBCMMT192.rsp",
             "CBCMMT256.rsp",
         ],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
     )
 
@@ -69,7 +69,7 @@ class TestAES(object):
             "ECBMMT192.rsp",
             "ECBMMT256.rsp",
         ],
-        lambda key: ciphers.AES(binascii.unhexlify(key)),
+        lambda key: algorithms.AES(binascii.unhexlify(key)),
         lambda key: modes.ECB(),
     )
 
@@ -93,7 +93,7 @@ class TestAES(object):
             "OFBMMT192.rsp",
             "OFBMMT256.rsp",
         ],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
     )
 
@@ -117,7 +117,7 @@ class TestAES(object):
             "CFB128MMT192.rsp",
             "CFB128MMT256.rsp",
         ],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
     )
 
@@ -125,10 +125,10 @@ class TestAES(object):
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
-        lambda key, iv: ciphers.AES(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
         lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.ciphers.supported(
-            ciphers.AES("\x00" * 16), modes.CTR("\x00" * 16)
+            algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
         ),
         skip_message="Does not support AES CTR",
     )

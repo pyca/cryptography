@@ -6,7 +6,7 @@ import pytest
 from cryptography.hazmat.bindings import _ALL_BACKENDS
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import hmac
-from cryptography.hazmat.primitives.block import BlockCipher
+from cryptography.hazmat.primitives.ciphers import Cipher
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
@@ -34,7 +34,7 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
         pytest.skip(skip_message)
     plaintext = params.pop("plaintext")
     ciphertext = params.pop("ciphertext")
-    cipher = BlockCipher(
+    cipher = Cipher(
         cipher_factory(**params),
         mode_factory(**params),
         backend

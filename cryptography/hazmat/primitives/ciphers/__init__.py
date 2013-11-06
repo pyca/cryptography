@@ -13,9 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.primitives.block.base import BlockCipher
+from cryptography.hazmat.primitives.ciphers.base import Cipher
 
 
 __all__ = [
-    "BlockCipher",
+    "Cipher",
 ]
