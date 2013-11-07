@@ -53,11 +53,12 @@ bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
 
 
 class Fernet(object):
-    def __init__(self, key):
+    def __init__(self, key, backend=None):
         super(Fernet, self).__init__()
         assert len(key) == 32
         self.signing_key = key[:16]
         self.encryption_key = key[16:]
+        self.backend = backend
 
     def encrypt(self, data):
         current_time = int(time.time())
@@ -73,11 +74,11 @@ class Fernet(object):
         padder = padding.PKCS7(ciphers.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
         encryptor = BlockCipher(
-            ciphers.AES(self.encryption_key), modes.CBC(iv)
+            ciphers.AES(self.encryption_key), modes.CBC(iv), self.backend
         ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
-        h = HMAC(self.signing_key, hashes.SHA256())
+        h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
         h.update(b"\x80")
         h.update(struct.pack(">Q", current_time))
         h.update(iv)
@@ -108,7 +109,7 @@ class Fernet(object):
         if ttl is not None:
             if struct.unpack(">Q", timestamp)[0] + ttl < current_time:
                 raise InvalidToken
-        h = HMAC(self.signing_key, hashes.SHA256())
+        h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
         h.update(data[:-32])
         hmac = h.finalize()
 
@@ -116,7 +117,7 @@ class Fernet(object):
             raise InvalidToken
 
         decryptor = BlockCipher(
-            ciphers.AES(self.encryption_key), modes.CBC(iv)
+            ciphers.AES(self.encryption_key), modes.CBC(iv), self.backend
         ).decryptor()
         plaintext_padded = decryptor.update(ciphertext) + decryptor.finalize()
         unpadder = padding.PKCS7(ciphers.AES.block_size).unpadder()
