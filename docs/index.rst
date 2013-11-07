@@ -32,6 +32,8 @@ Contents
 
     fernet
     architecture
+    exceptions
+    glossary
     contributing
     security
     community

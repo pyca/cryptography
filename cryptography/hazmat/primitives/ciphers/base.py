@@ -16,26 +16,28 @@ from __future__ import absolute_import, division, print_function
 from cryptography.hazmat.primitives import interfaces
 
 
-class BlockCipher(object):
-    def __init__(self, cipher, mode, backend=None):
-        super(BlockCipher, self).__init__()
+class Cipher(object):
+    def __init__(self, algorithm, mode, backend=None):
+        super(Cipher, self).__init__()
 
         if backend is None:
             from cryptography.hazmat.bindings import (
                 _default_backend as backend,
             )
 
-        self.cipher = cipher
+        self.algorithm = algorithm
         self.mode = mode
         self._backend = backend
 
     def encryptor(self):
         return _CipherContext(
-            self._backend.ciphers.create_encrypt_ctx(self.cipher, self.mode))
+            self._backend.ciphers.create_encrypt_ctx(self.algorithm,
+                                                     self.mode))
 
     def decryptor(self):
         return _CipherContext(
-            self._backend.ciphers.create_decrypt_ctx(self.cipher, self.mode))
+            self._backend.ciphers.create_decrypt_ctx(self.algorithm,
+                                                     self.mode))
 
 
 @interfaces.register(interfaces.CipherContext)

@@ -32,3 +32,6 @@ int PKCS7_type_is_enveloped(PKCS7 *);
 int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
 int PKCS7_type_is_data(PKCS7 *);
 """
+
+CUSTOMIZATIONS = """
+"""

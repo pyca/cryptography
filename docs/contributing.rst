@@ -206,4 +206,4 @@ The HTML documentation index can now be found at ``docs/_build/html/index.html``
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
 .. _`pip`: https://pypi.python.org/pypi/pip
 .. _`sphinx`: https://pypi.python.org/pypi/sphinx
-.. _`reStructured Text`: http://docutils.sourceforge.net/rst.html
+.. _`reStructured Text`: http://sphinx-doc.org/rest.html

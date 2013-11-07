@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-from cryptography.hazmat.primitives.block import ciphers, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
@@ -33,10 +33,10 @@ class TestCamellia(object):
             "camellia-192-ecb.txt",
             "camellia-256-ecb.txt"
         ],
-        lambda key: ciphers.Camellia(binascii.unhexlify((key))),
+        lambda key: algorithms.Camellia(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
         only_if=lambda backend: backend.ciphers.supported(
-            ciphers.Camellia("\x00" * 16), modes.ECB()
+            algorithms.Camellia("\x00" * 16), modes.ECB()
         ),
         skip_message="Does not support Camellia ECB",
     )
@@ -45,10 +45,10 @@ class TestCamellia(object):
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
-        lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.ciphers.supported(
-            ciphers.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
+            algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
         ),
         skip_message="Does not support Camellia CBC",
     )
@@ -57,10 +57,10 @@ class TestCamellia(object):
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
-        lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.ciphers.supported(
-            ciphers.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
+            algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
         ),
         skip_message="Does not support Camellia OFB",
     )
@@ -69,10 +69,10 @@ class TestCamellia(object):
         load_openssl_vectors_from_file,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
-        lambda key, iv: ciphers.Camellia(binascii.unhexlify(key)),
+        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.ciphers.supported(
-            ciphers.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
+            algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
         ),
         skip_message="Does not support Camellia CFB",
     )

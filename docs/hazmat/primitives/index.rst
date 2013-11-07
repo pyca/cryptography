@@ -10,3 +10,4 @@ Primitives
     hmac
     symmetric-encryption
     padding
+    interfaces

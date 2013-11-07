@@ -18,11 +18,14 @@ import sys
 
 import cffi
 
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
-from cryptography.hazmat.primitives.block.ciphers import (
+from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES,
 )
-from cryptography.hazmat.primitives.block.modes import CBC, CTR, ECB, OFB, CFB
+from cryptography.hazmat.primitives.ciphers.modes import (
+    CBC, CTR, ECB, OFB, CFB
+)
 
 
 class Backend(object):
@@ -54,29 +57,45 @@ class Backend(object):
         "x509v3",
     ]
 
+    ffi = None
+    lib = None
+
     def __init__(self):
-        self.ffi = cffi.FFI()
+        self._ensure_ffi_initialized()
+
+        self.ciphers = Ciphers(self)
+        self.hashes = Hashes(self)
+        self.hmacs = HMACs(self)
+
+    @classmethod
+    def _ensure_ffi_initialized(cls):
+        if cls.ffi is not None and cls.lib is not None:
+            return
+
+        ffi = cffi.FFI()
         includes = []
         functions = []
         macros = []
-        for name in self._modules:
+        customizations = []
+        for name in cls._modules:
             module_name = "cryptography.hazmat.bindings.openssl." + name
             __import__(module_name)
             module = sys.modules[module_name]
 
-            self.ffi.cdef(module.TYPES)
+            ffi.cdef(module.TYPES)
 
             macros.append(module.MACROS)
             functions.append(module.FUNCTIONS)
             includes.append(module.INCLUDES)
+            customizations.append(module.CUSTOMIZATIONS)
 
         # loop over the functions & macros after declaring all the types
         # so we can set interdependent types in different files and still
         # have them all defined before we parse the funcs & macros
         for func in functions:
-            self.ffi.cdef(func)
+            ffi.cdef(func)
         for macro in macros:
-            self.ffi.cdef(macro)
+            ffi.cdef(macro)
 
         # We include functions here so that if we got any of their definitions
         # wrong, the underlying C compiler will explode. In C you are allowed
@@ -86,17 +105,15 @@ class Backend(object):
         # is legal, but the following will fail to compile:
         #   int foo(int);
         #   int foo(short);
-        self.lib = self.ffi.verify(
-            source="\n".join(includes + functions),
+        lib = ffi.verify(
+            source="\n".join(includes + functions + customizations),
             libraries=["crypto", "ssl"],
         )
 
-        self.lib.OpenSSL_add_all_algorithms()
-        self.lib.SSL_load_error_strings()
-
-        self.ciphers = Ciphers(self)
-        self.hashes = Hashes(self)
-        self.hmacs = HMACs(self)
+        cls.ffi = ffi
+        cls.lib = lib
+        cls.lib.OpenSSL_add_all_algorithms()
+        cls.lib.SSL_load_error_strings()
 
     def openssl_version_text(self):
         """
@@ -128,10 +145,15 @@ class _CipherContext(object):
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
 
         registry = self._backend.ciphers._cipher_registry
-        evp_cipher = registry[type(cipher), type(mode)](
-            self._backend, cipher, mode
-        )
-        assert evp_cipher != self._backend.ffi.NULL
+        try:
+            adapter = registry[type(cipher), type(mode)]
+        except KeyError:
+            raise UnsupportedAlgorithm
+
+        evp_cipher = adapter(self._backend, cipher, mode)
+        if evp_cipher == self._backend.ffi.NULL:
+            raise UnsupportedAlgorithm
+
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
         elif isinstance(mode, interfaces.ModeWithNonce):
@@ -297,19 +319,20 @@ class HMACs(object):
         evp_md = self._backend.lib.EVP_get_digestbyname(
             hash_cls.name.encode('ascii'))
         assert evp_md != self._backend.ffi.NULL
-        res = self._backend.lib.HMAC_Init_ex(ctx, key, len(key), evp_md,
-                                             self._backend.ffi.NULL)
+        res = self._backend.lib.Cryptography_HMAC_Init_ex(
+            ctx, key, len(key), evp_md, self._backend.ffi.NULL
+        )
         assert res != 0
         return ctx
 
     def update_ctx(self, ctx, data):
-        res = self._backend.lib.HMAC_Update(ctx, data, len(data))
+        res = self._backend.lib.Cryptography_HMAC_Update(ctx, data, len(data))
         assert res != 0
 
     def finalize_ctx(self, ctx, digest_size):
         buf = self._backend.ffi.new("unsigned char[]", digest_size)
         buflen = self._backend.ffi.new("unsigned int *", digest_size)
-        res = self._backend.lib.HMAC_Final(ctx, buf, buflen)
+        res = self._backend.lib.Cryptography_HMAC_Final(ctx, buf, buflen)
         assert res != 0
         self._backend.lib.HMAC_CTX_cleanup(ctx)
         return self._backend.ffi.buffer(buf)[:digest_size]
@@ -319,7 +342,7 @@ class HMACs(object):
         self._backend.lib.HMAC_CTX_init(copied_ctx)
         copied_ctx = self._backend.ffi.gc(copied_ctx,
                                           self._backend.lib.HMAC_CTX_cleanup)
-        res = self._backend.lib.HMAC_CTX_copy(copied_ctx, ctx)
+        res = self._backend.lib.Cryptography_HMAC_CTX_copy(copied_ctx, ctx)
         assert res != 0
         return copied_ctx
 

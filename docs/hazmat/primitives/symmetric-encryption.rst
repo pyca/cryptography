@@ -4,7 +4,7 @@
 Symmetric Encryption
 ====================
 
-.. currentmodule:: cryptography.hazmat.primitives.block
+.. currentmodule:: cryptography.hazmat.primitives.ciphers
 
 .. testsetup::
 
@@ -16,24 +16,23 @@ Symmetric Encryption
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the encrypter and decrypter both use the same key.
 
-.. class:: BlockCipher(cipher, mode)
+.. class:: Cipher(algorithm, mode)
 
-    Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
-    They combine an underlying algorithm (such as AES), with a mode (such as
+    Cipher objects combine an algorithm (such as AES) with a mode (such as
     CBC, CTR, or GCM). A simple example of encrypting (and then decrypting)
     content with AES is:
 
     .. doctest::
 
-        >>> from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
-        >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 
-    :param cipher: One of the ciphers described below.
+    :param algorithms: One of the algorithms described below.
     :param mode: One of the modes described below.
 
     .. method:: encryptor()
@@ -42,17 +41,26 @@ where the encrypter and decrypter both use the same key.
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
+        If the backend doesn't support the requested combination of ``cipher``
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
+
     .. method:: decryptor()
 
         :return: A decrypting
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
+        If the backend doesn't support the requested combination of ``cipher``
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
+
+
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
 
 .. class:: CipherContext
 
-    When calling ``encryptor()`` or ``decryptor()`` on a ``BlockCipher`` object
+    When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     you will receive a return object conforming to the ``CipherContext``
     interface. You can then call ``update(data)`` with data until you have fed
     everything into the context. Once that is done call ``finalize()`` to
@@ -63,14 +71,20 @@ where the encrypter and decrypter both use the same key.
         :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was encrypted or decrypted.
 
+        When the ``Cipher`` was constructed in a mode that turns it into a
+        stream cipher (e.g.
+        :class:`cryptography.hazmat.primitives.ciphers.modes.CTR`), this will
+        return bytes immediately, however in other modes it will return chunks,
+        whose size is determined by the cipher's block size.
+
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
 
-Ciphers
-~~~~~~~
+Algorithms
+~~~~~~~~~~
 
-.. currentmodule:: cryptography.hazmat.primitives.block.ciphers
+.. currentmodule:: cryptography.hazmat.primitives.ciphers.algorithms
 
 .. class:: AES(key)
 
@@ -135,10 +149,13 @@ Weak Ciphers
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
 
+
+.. _symmetric-encryption-modes:
+
 Modes
 ~~~~~
 
-.. currentmodule:: cryptography.hazmat.primitives.block.modes
+.. currentmodule:: cryptography.hazmat.primitives.ciphers.modes
 
 .. class:: CBC(initialization_vector)
 
@@ -149,9 +166,29 @@ Modes
                                         to be kept secret (they can be included
                                         in a transmitted message). Must be the
                                         same number of bytes as the
-                                        ``block_size`` of the cipher. Do not
-                                        reuse an ``initialization_vector`` with
-                                        a given ``key``.
+                                        ``block_size`` of the cipher. Each time
+                                        something is encrypted a new
+                                        ``initialization_vector`` should be
+                                        generated. Do not reuse an
+                                        ``initialization_vector`` with
+                                        a given ``key``, and particularly do
+                                        not use a constant
+                                        ``initialization_vector``.
+
+    A good construction looks like:
+
+    .. code-block:: pycon
+
+        >>> import os
+        >>> iv = os.urandom(16)
+        >>> mode = CBC(iv)
+
+    While the following is bad and will leak information:
+
+    .. code-block:: pycon
+
+        >>> iv = "a" * 16
+        >>> mode = CBC(iv)
 
 
 .. class:: CTR(nonce)
@@ -162,7 +199,8 @@ Modes
         block size of less than 128-bits.
 
     CTR (Counter) is a mode of operation for block ciphers. It is considered
-    cryptographically strong.
+    cryptographically strong. It transforms a block cipher into a stream
+    cipher.
 
     :param bytes nonce: Should be random bytes. It is critical to never reuse a
                         ``nonce`` with a given key.  Any reuse of a nonce

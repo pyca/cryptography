@@ -32,3 +32,6 @@ int PKCS12_parse(PKCS12 *, const char *, EVP_PKEY **, X509 **,
 PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
                       struct stack_st_X509 *, int, int, int, int, int);
 """
+
+CUSTOMIZATIONS = """
+"""

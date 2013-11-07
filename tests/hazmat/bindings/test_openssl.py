@@ -13,9 +13,19 @@
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.backend import backend
-from cryptography.hazmat.primitives.block.ciphers import AES
-from cryptography.hazmat.primitives.block.modes import CBC
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.bindings.openssl.backend import backend, Backend
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
+from cryptography.hazmat.primitives.ciphers.modes import CBC
+
+
+class FakeMode(object):
+    pass
+
+
+class FakeCipher(object):
+    pass
 
 
 class TestOpenSSL(object):
@@ -39,3 +49,21 @@ class TestOpenSSL(object):
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
             backend.ciphers.register_cipher_adapter(AES, CBC, None)
+
+    def test_instances_share_ffi(self):
+        b = Backend()
+        assert b.ffi is backend.ffi
+        assert b.lib is backend.lib
+
+    def test_nonexistent_cipher(self):
+        b = Backend()
+        b.ciphers.register_cipher_adapter(
+            FakeCipher,
+            FakeMode,
+            lambda backend, cipher, mode: backend.ffi.NULL
+        )
+        cipher = Cipher(
+            FakeCipher(), FakeMode(), backend=b,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cipher.encryptor()

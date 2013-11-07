@@ -41,4 +41,8 @@ PKCS7 *PEM_read_bio_PKCS7(BIO *, PKCS7 **, pem_password_cb *, void *);
 DH *PEM_read_bio_DHparams(BIO *, DH **, pem_password_cb *, void *);
 """
 
-MACROS = ""
+MACROS = """
+"""
+
+CUSTOMIZATIONS = """
+"""
