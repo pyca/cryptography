@@ -163,9 +163,29 @@ Modes
                                         to be kept secret (they can be included
                                         in a transmitted message). Must be the
                                         same number of bytes as the
-                                        ``block_size`` of the cipher. Do not
-                                        reuse an ``initialization_vector`` with
-                                        a given ``key``.
+                                        ``block_size`` of the cipher. Each time
+                                        something is encrypted a new
+                                        ``initialization_vector`` should be
+                                        generated. Do not reuse an
+                                        ``initialization_vector`` with
+                                        a given ``key``, and particularly do
+                                        not use a constant
+                                        ``initialization_vector``.
+
+    A good construction looks like:
+
+    .. code-block:: pycon
+
+        >>> import os
+        >>> iv = os.urandom(16)
+        >>> mode = CBC(iv)
+
+    While the following is bad and will leak information:
+
+    .. code-block:: pycon
+
+        >>> iv = "a" * 16
+        >>> mode = CBC(iv)
 
 
 .. class:: CTR(nonce)
