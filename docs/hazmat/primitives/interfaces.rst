@@ -5,8 +5,8 @@ Interfaces
 
 
 ``cryptography`` uses `Abstract Base Classes`_ as interfaces to describe the
-properties and methods of most primitive constructs.  Backends may also use
-this information to influence their operation.  Interfaces should also be used
+properties and methods of most primitive constructs. Backends may also use
+this information to influence their operation. Interfaces should also be used
 to document argument and return types.
 
 .. _`Abstract Base Classes`: http://www.python.org/dev/peps/pep-3119/
