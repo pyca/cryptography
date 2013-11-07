@@ -164,7 +164,7 @@ Modes
                                         in a transmitted message). Must be the
                                         same number of bytes as the
                                         ``block_size`` of the cipher. Each time
-                                        someting is encrypted a new
+                                        something is encrypted a new
                                         ``initialization_vector`` should be
                                         generated. Do not reuse an
                                         ``initialization_vector`` with
