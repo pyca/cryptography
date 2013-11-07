@@ -23,7 +23,7 @@ import six
 
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.hmac import HMAC
-from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
 class InvalidToken(Exception):
@@ -71,10 +71,10 @@ class Fernet(object):
                 "Unicode-objects must be encoded before encryption"
             )
 
-        padder = padding.PKCS7(ciphers.AES.block_size).padder()
+        padder = padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
-        encryptor = BlockCipher(
-            ciphers.AES(self.encryption_key), modes.CBC(iv), self.backend
+        encryptor = Cipher(
+            algorithms.AES(self.encryption_key), modes.CBC(iv), self.backend
         ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
@@ -116,11 +116,11 @@ class Fernet(object):
         if not lib.constant_time_compare(hmac, len(hmac), data[-32:], 32):
             raise InvalidToken
 
-        decryptor = BlockCipher(
-            ciphers.AES(self.encryption_key), modes.CBC(iv), self.backend
+        decryptor = Cipher(
+            algorithms.AES(self.encryption_key), modes.CBC(iv), self.backend
         ).decryptor()
         plaintext_padded = decryptor.update(ciphertext) + decryptor.finalize()
-        unpadder = padding.PKCS7(ciphers.AES.block_size).unpadder()
+        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
 
         unpadded = unpadder.update(plaintext_padded)
         try:
