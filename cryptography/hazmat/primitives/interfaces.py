@@ -37,7 +37,7 @@ class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def initialization_vector(self):
         """
-        The value of the initialization vector for this mode.
+        The value of the initialization vector for this mode as bytes.
         """
 
 
@@ -45,7 +45,7 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def nonce(self):
         """
-        The value of the nonce for this mode.
+        The value of the nonce for this mode as bytes.
         """
 
 
