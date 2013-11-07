@@ -149,6 +149,9 @@ Weak Ciphers
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
 
+
+.. _symmetric-encryption-modes:
+
 Modes
 ~~~~~
 

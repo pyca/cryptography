@@ -25,12 +25,28 @@ def register(iface):
     return register_decorator
 
 
+class Mode(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode.  (e.g. ECB, CBC)
+        """
+
+
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def initialization_vector(self):
+        """
+        The value of the initialization vector for this mode as bytes.
+        """
 
 
 class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def nonce(self):
+        """
+        The value of the nonce for this mode as bytes.
+        """
 
 
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
@@ -65,7 +81,7 @@ class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):
         """
-        A string naming this algorithm. (ex. sha256, md5)
+        A string naming this algorithm. (e.g. sha256, md5)
         """
 
     @abc.abstractproperty
