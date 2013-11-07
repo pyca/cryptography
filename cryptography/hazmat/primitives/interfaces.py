@@ -27,7 +27,7 @@ def register(iface):
 
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
-    def iv(self):
+    def initialization_vector(self):
         """
         The value of the initialization vector for this mode.
         """
