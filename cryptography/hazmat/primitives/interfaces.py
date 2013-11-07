@@ -25,6 +25,14 @@ def register(iface):
     return register_decorator
 
 
+class Mode(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode.  (ex. ECB, CBC)
+        """
+
+
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def initialization_vector(self):
