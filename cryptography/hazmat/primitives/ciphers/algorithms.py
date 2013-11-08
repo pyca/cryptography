@@ -14,105 +14,56 @@
 from __future__ import absolute_import, division, print_function
 
 
-class AES(object):
+class CipherAlgorithm(object):
+
+    def __init__(self, key):
+        if type(self) == CipherAlgorithm:
+            raise NotImplementedError
+        self.key = key
+
+        # Verify that the key size matches the expected key size
+        if self.key_size not in self.key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                self.key_size, self.name
+            ))
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8
+
+
+class AES(CipherAlgorithm):
     name = "AES"
     block_size = 128
     key_sizes = frozenset([128, 192, 256])
 
-    def __init__(self, key):
-        super(AES, self).__init__()
-        self.key = key
 
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
-
-    @property
-    def key_size(self):
-        return len(self.key) * 8
+class Blowfish(CipherAlgorithm):
+    name = "Blowfish"
+    block_size = 64
+    key_sizes = frozenset(range(32, 449, 8))
 
 
-class Camellia(object):
+class Camellia(CipherAlgorithm):
     name = "camellia"
     block_size = 128
     key_sizes = frozenset([128, 192, 256])
 
-    def __init__(self, key):
-        super(Camellia, self).__init__()
-        self.key = key
 
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
-
-    @property
-    def key_size(self):
-        return len(self.key) * 8
+class CAST5(CipherAlgorithm):
+    name = "CAST5"
+    block_size = 64
+    key_sizes = frozenset([40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128])
 
 
-class TripleDES(object):
+class TripleDES(CipherAlgorithm):
     name = "3DES"
     block_size = 64
     key_sizes = frozenset([64, 128, 192])
 
     def __init__(self, key):
-        super(TripleDES, self).__init__()
         if len(key) == 8:
             key += key + key
         elif len(key) == 16:
             key += key[:8]
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
-
-    @property
-    def key_size(self):
-        return len(self.key) * 8
-
-
-class Blowfish(object):
-    name = "Blowfish"
-    block_size = 64
-    key_sizes = frozenset(range(32, 449, 8))
-
-    def __init__(self, key):
-        super(Blowfish, self).__init__()
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
-
-    @property
-    def key_size(self):
-        return len(self.key) * 8
-
-
-class CAST5(object):
-    name = "CAST5"
-    block_size = 64
-    key_sizes = frozenset([40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128])
-
-    def __init__(self, key):
-        super(CAST5, self).__init__()
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
-
-    @property
-    def key_size(self):
-        return len(self.key) * 8
+        super(TripleDES, self).__init__(key)

@@ -18,7 +18,7 @@ import binascii
 import pytest
 
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Camellia, TripleDES, Blowfish, CAST5
+    CipherAlgorithm, AES, Camellia, TripleDES, Blowfish, CAST5
 )
 
 
@@ -91,3 +91,22 @@ class TestCAST5(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             CAST5(binascii.unhexlify(b"0" * 34))
+
+
+class TestCipherAlgorithm(object):
+
+    def test_direct_instantiation(self):
+        with pytest.raises(NotImplementedError):
+            CipherAlgorithm(b"0" * 16)
+
+    @pytest.mark.parametrize(("key", "keysize"), [
+        (b"0" * (keysize // 4), keysize) for keysize in range(64, 256, 8)
+    ])
+    def test_key_size(self, key, keysize):
+        class TestAlg(CipherAlgorithm):
+            name = "TestAlg"
+            key_sizes = frozenset([keysize])
+
+        assert TestAlg(binascii.unhexlify(key)).key_size == keysize
+        with pytest.raises(ValueError):
+            TestAlg(binascii.unhexlify(key+b"00"))
