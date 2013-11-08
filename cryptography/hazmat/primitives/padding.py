@@ -14,6 +14,7 @@
 import cffi
 
 import six
+from six.moves import xrange
 
 from cryptography.hazmat.primitives import interfaces
 
