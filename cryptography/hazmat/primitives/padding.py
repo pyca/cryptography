@@ -40,6 +40,7 @@ unsigned int Cryptography_constant_time_lt(unsigned int a, unsigned int b) {
 }
 """)
 
+
 class PKCS7(object):
     def __init__(self, block_size):
         super(PKCS7, self).__init__()
@@ -134,7 +135,6 @@ class _PKCS7UnpaddingContext(object):
         pad_size = six.indexbytes(self._buffer, -1)
         if pad_size > self.block_size // 8:
             raise ValueError("Invalid padding bytes")
-
 
         mismatch = 0
         for i in xrange(self.block_size // 8):
