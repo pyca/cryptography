@@ -126,15 +126,10 @@ class _PKCS7UnpaddingContext(object):
         if self._buffer is None:
             raise ValueError("Context was already finalized")
 
-        if not self._buffer:
-            raise ValueError("Invalid padding bytes")
-
         if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
         pad_size = six.indexbytes(self._buffer, -1)
-        if pad_size > self.block_size // 8:
-            raise ValueError("Invalid padding bytes")
 
         mismatch = 0
         for i in xrange(self.block_size // 8):
@@ -142,7 +137,7 @@ class _PKCS7UnpaddingContext(object):
             b = six.indexbytes(self._buffer, self.block_size // 8 - 1 - i)
             mismatch |= (mask & (pad_size ^ b))
 
-        if mismatch != 0:
+        if mismatch != 0 or not (0 < pad_size <= self.block_size // 8):
             raise ValueError("Invalid padding bytes")
 
         res = self._buffer[:-pad_size]
