@@ -29,6 +29,7 @@ class TestPKCS7(object):
         (128, b"1111111111111111"),
         (128, b"111111111111111\x06"),
         (128, b""),
+        (128, b"\x06" * 6),
     ])
     def test_invalid_padding(self, size, padded):
         unpadder = padding.PKCS7(size).unpadder()

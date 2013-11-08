@@ -11,10 +11,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cffi
+
 import six
 
 from cryptography.hazmat.primitives import interfaces
 
+
+_ffi = cffi.FFI()
+_ffi.cdef("""
+unsigned int Cryptography_constant_time_lt(unsigned int, unsigned int);
+""")
+_lib = _ffi.verify("""
+/* Returns the value of the input with the most-significant-bit copied to all
+   of the bits. This relies on implementation details of computers with 2's
+   complement representations of integers, which is not required by the C
+   standard. */
+static unsigned int Cryptography_DUPLICATE_MSB_TO_ALL(unsigned int a) {
+    return (unsigned int)((int)(a) >> (sizeof(int) * 8 - 1));
+}
+
+/* This returns 0xFF if a < b else 0x00, but does so in a constant time
+   fashion */
+unsigned int Cryptography_constant_time_lt(unsigned int a, unsigned int b) {
+    a -= b;
+    return Cryptography_DUPLICATE_MSB_TO_ALL(a);
+}
+""")
 
 class PKCS7(object):
     def __init__(self, block_size):
@@ -104,14 +127,19 @@ class _PKCS7UnpaddingContext(object):
         if not self._buffer:
             raise ValueError("Invalid padding bytes")
 
-        pad_size = six.indexbytes(self._buffer, -1)
+        if len(self._buffer) != self.block_size // 8:
+            raise ValueError("Invalid padding bytes")
 
+        pad_size = six.indexbytes(self._buffer, -1)
         if pad_size > self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
+
         mismatch = 0
-        for b in six.iterbytes(self._buffer[-pad_size:]):
-            mismatch |= b ^ pad_size
+        for i in xrange(self.block_size // 8):
+            mask = _lib.Cryptography_constant_time_lt(i, pad_size)
+            b = six.indexbytes(self._buffer, self.block_size // 8 - 1 - i)
+            mismatch |= (mask & (pad_size ^ b))
 
         if mismatch != 0:
             raise ValueError("Invalid padding bytes")
