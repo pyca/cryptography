@@ -12,9 +12,9 @@ Message Digests
     results (with a high probability) in different digests.
 
     This is an implementation of
-    :class:`cryptography.hazmat.primitives.interfaces.HashContext` meant to
+    :class:`~cryptography.hazmat.primitives.interfaces.HashContext` meant to
     be used with
-    :class:`cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+    :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
     implementations to provide an incremental interface to calculating
     various message digests.
 
@@ -102,7 +102,8 @@ MD5
 .. warning::
 
     MD5 is a deprecated hash algorithm that has practical known collision
-    attacks. You are strongly discouraged from using it.
+    attacks. You are strongly discouraged from using it. Existing applications
+    should strongly consider moving away.
 
 .. class:: MD5()
 

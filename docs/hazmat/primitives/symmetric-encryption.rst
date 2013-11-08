@@ -14,13 +14,22 @@ Symmetric Encryption
 
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
-where the encrypter and decrypter both use the same key.
+where the encrypter and decrypter both use the same key. Note that symmetric
+encryption is **not** sufficient for most applications, because it only
+provides secrecy (an attacker can't see the message) but not authenticity (an
+attacker can create bogus messages and force the application to decrypt them).
+For this reason it is *strongly* reccomended to combine encryption with a
+message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
+an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
 .. class:: Cipher(algorithm, mode)
 
-    Cipher objects combine an algorithm (such as AES) with a mode (such as
-    CBC, CTR, or GCM). A simple example of encrypting (and then decrypting)
-    content with AES is:
+    Cipher objects combine an algorithm (such as
+    :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`) with a
+    mode (such as
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` or
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`). A simple
+    example of encrypting (and then decrypting) content with AES is:
 
     .. doctest::
 
@@ -143,8 +152,7 @@ Weak Ciphers
 
     Blowfish is a block cipher developed by Bruce Schneier. It is known to be
     susceptible to attacks when using weak keys. The author has recommended
-    that users of Blowfish move to newer algorithms like
-    :class:`AES`.
+    that users of Blowfish move to newer algorithms, such as :class:`AES`.
 
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
@@ -252,3 +260,6 @@ Insecure Modes
     ciphers. Each block of data is encrypted in the same way. This means
     identical plaintext blocks will always result in identical ciphertext
     blocks, and thus result in information leakage
+
+
+.. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
