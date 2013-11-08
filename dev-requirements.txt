@@ -4,3 +4,4 @@ pytest
 coverage
 sphinx
 tox
+-e .
