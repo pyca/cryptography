@@ -159,6 +159,17 @@ Weak Ciphers
                       ``192``, or ``256`` bits in length.  This must be kept
                       secret.
 
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> algorithm = algorithms.ARC4(key)
+        >>> cipher = Cipher(algorithm, mode=None)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        'a secret message'
+
 
 .. _symmetric-encryption-modes:
 
