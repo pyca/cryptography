@@ -16,6 +16,12 @@ INCLUDES = """
 """
 
 TYPES = """
+/* Internally invented symbol to tell us if SSLv2 is supported */
+static const int PYOPENSSL_NO_SSL2;
+
+/* Internally invented symbol to tell us if SNI is supported */
+static const int PYOPENSSL_TLSEXT_HOSTNAME;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -285,4 +291,23 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
+#ifdef OPENSSL_NO_SSL2
+static const int PYOPENSSL_NO_SSL2 = 1;
+SSL_METHOD* (*SSLv2_method)() = NULL;
+SSL_METHOD* (*SSLv2_client_method)() = NULL;
+SSL_METHOD* (*SSLv2_server_method)() = NULL;
+#else
+static const int PYOPENSSL_NO_SSL2 = 0;
+#endif
+
+#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
+static const int PYOPENSSL_TLSEXT_HOSTNAME = 1;
+#else
+static const int PYOPENSSL_TLSEXT_HOSTNAME = 0;
+void (*SSL_set_tlsext_host_name)(SSL *, char *) = NULL;
+const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
+void (*SSL_CTX_set_tlsext_servername_callback)(
+    SSL_CTX *,
+    int (*cb)(const SSL *, int *, void *)) = NULL;
+#endif
 """
