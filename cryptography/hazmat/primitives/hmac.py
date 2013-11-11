@@ -15,11 +15,12 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
-@interfaces.register(interfaces.HashContext)
+@utils.register_interface(interfaces.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, ctx=None, backend=None):
         if not isinstance(algorithm, interfaces.HashAlgorithm):

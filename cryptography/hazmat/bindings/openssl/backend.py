@@ -18,7 +18,12 @@ import sys
 
 import cffi
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.bindings.interfaces import (
+    CiphersProviderBackend, CiphersProvider, HashesProviderBackend,
+    HashesProvider, HMACsProviderBackend, HMACsProvider
+)
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES, ARC4,
@@ -28,6 +33,9 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 )
 
 
+@utils.register_interface(CiphersProviderBackend)
+@utils.register_interface(HashesProviderBackend)
+@utils.register_interface(HMACsProviderBackend)
 class Backend(object):
     """
     OpenSSL API wrapper.
@@ -196,7 +204,7 @@ class GetCipherByName(object):
         return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
-@interfaces.register(interfaces.CipherContext)
+@utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
