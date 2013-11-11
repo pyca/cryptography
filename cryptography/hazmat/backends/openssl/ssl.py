@@ -148,13 +148,10 @@ int SSL_pending(const SSL *);
 int SSL_write(SSL *, const void *, int);
 int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
-struct stack_st_X509 *SSL_get_peer_cert_chain(const SSL *);
 int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
-struct stack_st_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
-struct stack_st_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -176,11 +173,9 @@ int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
-struct stack_st_X509_NAME *SSL_CTX_get_client_CA_list(const SSL_CTX *);
 void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
-void SSL_CTX_set_client_CA_list(SSL_CTX *, struct stack_st_X509_NAME *);
 
 /*  X509_STORE_CTX */
 int X509_STORE_CTX_get_error(X509_STORE_CTX *);
