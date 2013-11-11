@@ -15,7 +15,9 @@ import os.path
 
 
 def load_nist_vectors(vector_data, op):
-    section, count, data = None, None, {}
+    section = None
+    count = None
+    data = {}
 
     for line in vector_data:
         line = line.strip()
@@ -31,7 +33,9 @@ def load_nist_vectors(vector_data, op):
         # Look for section headers
         if line.startswith("[") and line.endswith("]"):
             section = line[1:-1]
-            data[section] = {}
+            continue
+
+        if section != op:
             continue
 
         # Build our data using a simple Key = Value format
@@ -40,15 +44,15 @@ def load_nist_vectors(vector_data, op):
         # COUNT is a special token that indicates a new block of data
         if name.upper() == "COUNT":
             count = value
-            data[section][count] = {}
+            data[count] = {}
         # For all other tokens we simply want the name, value stored in
         # the dictionary
         else:
-            data[section][count][name.lower()] = value.encode("ascii")
+            data[count][name.lower()] = value.encode("ascii")
 
     # We want to test only for a particular operation, we sort them for the
     # benefit of the tests of this function.
-    return [v for k, v in sorted(data[op].items(), key=lambda kv: kv[0])]
+    return [v for k, v in sorted(data.items(), key=lambda kv: kv[0])]
 
 
 def load_nist_vectors_from_file(filename, op):
