@@ -26,7 +26,7 @@ from ...utils import (
 
 class TestAES(object):
     test_CBC = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "AES", "CBC"),
         [
             "CBCGFSbox128.rsp",
@@ -50,7 +50,7 @@ class TestAES(object):
     )
 
     test_ECB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "AES", "ECB"),
         [
             "ECBGFSbox128.rsp",
@@ -74,7 +74,7 @@ class TestAES(object):
     )
 
     test_OFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "AES", "OFB"),
         [
             "OFBGFSbox128.rsp",
@@ -98,7 +98,7 @@ class TestAES(object):
     )
 
     test_CFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "AES", "CFB"),
         [
             "CFB128GFSbox128.rsp",

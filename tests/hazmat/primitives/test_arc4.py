@@ -23,8 +23,8 @@ from ...utils import load_nist_vectors_from_file
 
 
 class TestARC4(object):
-    test_thing = generate_stream_encryption_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+    test_rfc = generate_stream_encryption_test(
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "ARC4"),
         [
             "rfc-6229-40.txt",
