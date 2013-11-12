@@ -250,6 +250,7 @@ def test_load_hash_vectors_bad_data():
     with pytest.raises(ValueError):
         load_hash_vectors(vector_data)
 
+
 def test_load_vectors_from_file():
     vectors = load_vectors_from_file(
         os.path.join("ciphers", "Blowfish", "bf-cfb.txt"),
