@@ -116,6 +116,61 @@ static const int TLSEXT_NAMETYPE_host_name;
 
 FUNCTIONS = """
 void SSL_load_error_strings();
+
+int SSL_library_init();
+
+/*  SSL */
+SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
+SSL_SESSION *SSL_get1_session(SSL *);
+int SSL_set_session(SSL *, SSL_SESSION *);
+int SSL_get_verify_mode(const SSL *);
+void SSL_set_verify_depth(SSL *, int);
+int SSL_get_verify_depth(const SSL *);
+SSL *SSL_new(SSL_CTX *);
+void SSL_free(SSL *);
+int SSL_set_fd(SSL *, int);
+void SSL_set_bio(SSL *, BIO *, BIO *);
+void SSL_set_connect_state(SSL *);
+void SSL_set_accept_state(SSL *);
+void SSL_set_shutdown(SSL *, int);
+int SSL_get_shutdown(const SSL *);
+int SSL_pending(const SSL *);
+int SSL_write(SSL *, const void *, int);
+int SSL_read(SSL *, void *, int);
+X509 *SSL_get_peer_certificate(const SSL *);
+int SSL_get_error(const SSL *, int);
+int SSL_do_handshake(SSL *);
+int SSL_shutdown(SSL *);
+const char *SSL_get_cipher_list(const SSL *, int);
+
+/*  context */
+void SSL_CTX_free(SSL_CTX *);
+long SSL_CTX_set_timeout(SSL_CTX *, long);
+int SSL_CTX_set_default_verify_paths(SSL_CTX *);
+void SSL_CTX_set_verify_depth(SSL_CTX *, int);
+int SSL_CTX_get_verify_mode(const SSL_CTX *);
+int SSL_CTX_get_verify_depth(const SSL_CTX *);
+int SSL_CTX_set_cipher_list(SSL_CTX *, const char *);
+int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
+void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
+void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
+int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
+int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
+int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
+int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
+int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
+void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
+X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
+int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
+
+/*  X509_STORE_CTX */
+int X509_STORE_CTX_get_error(X509_STORE_CTX *);
+void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
+int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
+X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
+
+/*  SSL_SESSION */
+void SSL_SESSION_free(SSL_SESSION *);
 """
 
 MACROS = """
