@@ -312,44 +312,66 @@ class Hashes(object):
         return copied_ctx
 
 
+@interfaces.register(interfaces.HashContext)
+class _HMACContext(object):
+    def __init__(self, backend, key, algorithm, ctx=None):
+        self.algorithm = algorithm
+
+        self._backend = backend
+
+        if ctx is None:
+            ctx = self._backend.ffi.new("HMAC_CTX *")
+            self._backend.lib.HMAC_CTX_init(ctx)
+            ctx = self._backend.ffi.gc(ctx, self._backend.lib.HMAC_CTX_cleanup)
+            evp_md = self._backend.lib.EVP_get_digestbyname(
+                algorithm.name.encode('ascii'))
+            assert evp_md != self._backend.ffi.NULL
+            res = self._backend.lib.Cryptography_HMAC_Init_ex(
+                ctx, key, len(key), evp_md, self._backend.ffi.NULL
+            )
+            assert res != 0
+
+        self._ctx = ctx
+        self._key = key
+
+    def copy(self):
+        copied_ctx = self._backend.ffi.new("HMAC_CTX *")
+        self._backend.lib.HMAC_CTX_init(copied_ctx)
+        copied_ctx = self._backend.ffi.gc(
+            copied_ctx, self._backend.lib.HMAC_CTX_cleanup
+        )
+        res = self._backend.lib.Cryptography_HMAC_CTX_copy(
+            copied_ctx, self._ctx
+        )
+        assert res != 0
+        return self.__class__(
+            self._backend, self._key, self.algorithm, ctx=copied_ctx
+        )
+
+    def update(self, data):
+        res = self._backend.lib.Cryptography_HMAC_Update(
+            self._ctx, data, len(data)
+        )
+        assert res != 0
+
+    def finalize(self):
+        buf = self._backend.ffi.new("unsigned char[]",
+                                    self.algorithm.digest_size)
+        buflen = self._backend.ffi.new("unsigned int *",
+                                       self.algorithm.digest_size)
+        res = self._backend.lib.Cryptography_HMAC_Final(self._ctx, buf, buflen)
+        assert res != 0
+        self._backend.lib.HMAC_CTX_cleanup(self._ctx)
+        return self._backend.ffi.buffer(buf)[:self.algorithm.digest_size]
+
+
 class HMACs(object):
     def __init__(self, backend):
         super(HMACs, self).__init__()
         self._backend = backend
 
-    def create_ctx(self, key, hash_cls):
-        ctx = self._backend.ffi.new("HMAC_CTX *")
-        self._backend.lib.HMAC_CTX_init(ctx)
-        ctx = self._backend.ffi.gc(ctx, self._backend.lib.HMAC_CTX_cleanup)
-        evp_md = self._backend.lib.EVP_get_digestbyname(
-            hash_cls.name.encode('ascii'))
-        assert evp_md != self._backend.ffi.NULL
-        res = self._backend.lib.Cryptography_HMAC_Init_ex(
-            ctx, key, len(key), evp_md, self._backend.ffi.NULL
-        )
-        assert res != 0
-        return ctx
-
-    def update_ctx(self, ctx, data):
-        res = self._backend.lib.Cryptography_HMAC_Update(ctx, data, len(data))
-        assert res != 0
-
-    def finalize_ctx(self, ctx, digest_size):
-        buf = self._backend.ffi.new("unsigned char[]", digest_size)
-        buflen = self._backend.ffi.new("unsigned int *", digest_size)
-        res = self._backend.lib.Cryptography_HMAC_Final(ctx, buf, buflen)
-        assert res != 0
-        self._backend.lib.HMAC_CTX_cleanup(ctx)
-        return self._backend.ffi.buffer(buf)[:digest_size]
-
-    def copy_ctx(self, ctx):
-        copied_ctx = self._backend.ffi.new("HMAC_CTX *")
-        self._backend.lib.HMAC_CTX_init(copied_ctx)
-        copied_ctx = self._backend.ffi.gc(copied_ctx,
-                                          self._backend.lib.HMAC_CTX_cleanup)
-        res = self._backend.lib.Cryptography_HMAC_CTX_copy(copied_ctx, ctx)
-        assert res != 0
-        return copied_ctx
+    def create_ctx(self, key, algorithm):
+        return _HMACContext(self._backend, key, algorithm)
 
 
 backend = Backend()

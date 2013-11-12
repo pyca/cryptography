@@ -40,12 +40,13 @@ class HMAC(object):
     def update(self, msg):
         if isinstance(msg, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.hmacs.update_ctx(self._ctx, msg)
+        self._ctx.update(msg)
 
     def copy(self):
-        return self.__class__(self._key, self.algorithm, backend=self._backend,
-                              ctx=self._backend.hmacs.copy_ctx(self._ctx))
+        return self.__class__(
+            self._key, self.algorithm, ctx=self._ctx.copy(),
+            backend=self._backend
+        )
 
     def finalize(self):
-        return self._backend.hmacs.finalize_ctx(self._ctx,
-                                                self.algorithm.digest_size)
+        return self._ctx.finalize()
