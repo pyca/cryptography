@@ -24,7 +24,7 @@ from ...utils import load_nist_vectors_from_file
 
 class TestBlowfish(object):
     test_ECB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "Blowfish"),
         ["bf-ecb.txt"],
         lambda key: algorithms.Blowfish(binascii.unhexlify(key)),
@@ -36,7 +36,7 @@ class TestBlowfish(object):
     )
 
     test_CBC = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "Blowfish"),
         ["bf-cbc.txt"],
         lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
@@ -48,7 +48,7 @@ class TestBlowfish(object):
     )
 
     test_OFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "Blowfish"),
         ["bf-ofb.txt"],
         lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
@@ -60,7 +60,7 @@ class TestBlowfish(object):
     )
 
     test_CFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "Blowfish"),
         ["bf-cfb.txt"],
         lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),

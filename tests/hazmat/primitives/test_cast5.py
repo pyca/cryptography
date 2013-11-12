@@ -24,11 +24,9 @@ from ...utils import load_nist_vectors_from_file
 
 class TestCAST5(object):
     test_ECB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        lambda path: load_nist_vectors_from_file(path),
         os.path.join("ciphers", "CAST5"),
-        [
-            "cast5-ecb.txt",
-        ],
+        ["cast5-ecb.txt"],
         lambda key: algorithms.CAST5(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
         only_if=lambda backend: backend.ciphers.supported(
