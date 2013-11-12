@@ -34,7 +34,7 @@ class Hash(object):
         if ctx is None:
             self._ctx = self._backend.hashes.create_ctx(self.algorithm)
         else:
-            self._ctx = None
+            self._ctx = ctx
 
     def update(self, data):
         if isinstance(data, six.text_type):

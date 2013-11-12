@@ -155,6 +155,12 @@ def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
     assert m != m_copy
     assert m._ctx != m_copy._ctx
 
+    m.update(b"abc")
+    copy = m.copy()
+    copy.update(b"123")
+    m.update(b"123")
+    assert copy.finalize() == m.finalize()
+
 
 def generate_long_string_hash_test(hash_factory, md, only_if=None,
                                    skip_message=None):
