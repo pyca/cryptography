@@ -268,3 +268,133 @@ def test_load_vectors_from_file():
             ),
         }
     ]
+
+
+def test_load_nist_gcm_vectors():
+    vector_data = textwrap.dedent("""
+        [Keylen = 128]
+        [IVlen = 96]
+        [PTlen = 0]
+        [AADlen = 0]
+        [Taglen = 128]
+
+        Count = 0
+        Key = 11754cd72aec309bf52f7687212e8957
+        IV = 3c819d9a9bed087615030b65
+        PT =
+        AAD =
+        CT =
+        Tag = 250327c674aaf477aef2675748cf6971
+
+        Count = 1
+        Key = 272f16edb81a7abbea887357a58c1917
+        IV = 794ec588176c703d3d2a7a07
+        PT =
+        AAD =
+        CT =
+        Tag = b6e6f197168f5049aeda32dafbdaeb
+
+        Count = 2
+        Key = a49a5e26a2f8cb63d05546c2a62f5343
+        IV = 907763b19b9b4ab6bd4f0281
+        CT =
+        AAD =
+        Tag = a2be08210d8c470a8df6e8fbd79ec5cf
+        FAIL
+
+        Count = 3
+        Key = 5c1155084cc0ede76b3bc22e9f7574ef
+        IV = 9549e4ba69a61cad7856efc1
+        PT = d1448fa852b84408e2dad8381f363de7
+        AAD = e98e9d9c618e46fef32660976f854ee3
+        CT = f78b60ca125218493bea1c50a2e12ef4
+        Tag = d72da7f5c6cf0bca7242c71835809449
+
+        [Keylen = 128]
+        [IVlen = 96]
+        [PTlen = 0]
+        [AADlen = 0]
+        [Taglen = 120]
+
+        Count = 0
+        Key = eac258e99c55e6ae8ef1da26640613d7
+        IV = 4e8df20faaf2c8eebe922902
+        CT =
+        AAD =
+        Tag = e39aeaebe86aa309a4d062d6274339
+        PT =
+
+        Count = 1
+        Key = 3726cf02fcc6b8639a5497652c94350d
+        IV = 55fef82cde693ce76efcc193
+        CT =
+        AAD =
+        Tag = 3d68111a81ed22d2ef5bccac4fc27f
+        FAIL
+
+        Count = 2
+        Key = f202299d5fd74f03b12d2119a6c4c038
+        IV = eec51e7958c3f20a1bb71815
+        CT =
+        AAD =
+        Tag = a81886b3fb26e51fca87b267e1e157
+        FAIL
+
+        Count = 3
+        Key = fd52925f39546b4c55ffb6b20c59898c
+        IV = f5cf3227444afd905a5f6dba
+        CT =
+        AAD =
+        Tag = 1665b0f1a0b456e1664cfd3de08ccd
+        PT =
+    """).splitlines()
+    assert load_nist_vectors(vector_data) == [
+        {'aad': b'',
+         'pt': b'',
+         'iv': b'4e8df20faaf2c8eebe922902',
+         'tag': b'e39aeaebe86aa309a4d062d6274339',
+         'key': b'eac258e99c55e6ae8ef1da26640613d7',
+         'ct': b''},
+        {'aad': b'',
+         'iv': b'55fef82cde693ce76efcc193',
+         'tag': b'3d68111a81ed22d2ef5bccac4fc27f',
+         'key': b'3726cf02fcc6b8639a5497652c94350d',
+         'ct': b'',
+         'fail': True},
+        {'aad': b'',
+         'iv': b'eec51e7958c3f20a1bb71815',
+         'tag': b'a81886b3fb26e51fca87b267e1e157',
+         'key': b'f202299d5fd74f03b12d2119a6c4c038',
+         'ct': b'',
+         'fail': True},
+        {'aad': b'',
+         'pt': b'',
+         'iv': b'f5cf3227444afd905a5f6dba',
+         'tag': b'1665b0f1a0b456e1664cfd3de08ccd',
+         'key': b'fd52925f39546b4c55ffb6b20c59898c',
+         'ct': b''},
+        {'aad': b'',
+         'pt': b'',
+         'iv': b'3c819d9a9bed087615030b65',
+         'tag': b'250327c674aaf477aef2675748cf6971',
+         'key': b'11754cd72aec309bf52f7687212e8957',
+         'ct': b''},
+        {'aad': b'',
+         'pt': b'',
+         'iv': b'794ec588176c703d3d2a7a07',
+         'tag': b'b6e6f197168f5049aeda32dafbdaeb',
+         'key': b'272f16edb81a7abbea887357a58c1917',
+         'ct': b''},
+        {'aad': b'',
+         'iv': b'907763b19b9b4ab6bd4f0281',
+         'tag': b'a2be08210d8c470a8df6e8fbd79ec5cf',
+         'key': b'a49a5e26a2f8cb63d05546c2a62f5343',
+         'ct': b'',
+         'fail': True},
+        {'aad': b'e98e9d9c618e46fef32660976f854ee3',
+         'pt': b'd1448fa852b84408e2dad8381f363de7',
+         'iv': b'9549e4ba69a61cad7856efc1',
+         'tag': b'd72da7f5c6cf0bca7242c71835809449',
+         'key': b'5c1155084cc0ede76b3bc22e9f7574ef',
+         'ct': b'f78b60ca125218493bea1c50a2e12ef4'},
+    ]
