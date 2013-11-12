@@ -140,6 +140,7 @@ class _CipherContext(object):
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
+        self._cipher = cipher
 
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
@@ -185,9 +186,8 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
-        block_size = self._backend.lib.EVP_CIPHER_CTX_block_size(self._ctx)
         buf = self._backend.ffi.new("unsigned char[]",
-                                    len(data) + block_size - 1)
+                                    len(data) + self._cipher.block_size - 1)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                  len(data))
@@ -195,8 +195,7 @@ class _CipherContext(object):
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
-        block_size = self._backend.lib.EVP_CIPHER_CTX_block_size(self._ctx)
-        buf = self._backend.ffi.new("unsigned char[]", block_size)
+        buf = self._backend.ffi.new("unsigned char[]", self._cipher.block_size)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         assert res != 0
