@@ -14,6 +14,14 @@
 import os.path
 
 
+def load_vectors_from_file(filename, loader):
+    base = os.path.join(
+        os.path.dirname(__file__), "hazmat", "primitives", "vectors",
+    )
+    with open(os.path.join(base, filename), "r") as vector_file:
+        return loader(vector_file)
+
+
 def load_nist_vectors(vector_data):
     section = None
     count = None
@@ -52,23 +60,6 @@ def load_nist_vectors(vector_data):
     return [v for k, v in sorted(data.items(), key=lambda kv: kv[0])]
 
 
-def load_nist_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_nist_vectors(vector_file)
-
-
-def load_cryptrec_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__),
-        "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_cryptrec_vectors(vector_file)
-
-
 def load_cryptrec_vectors(vector_data):
     cryptrec_list = []
 
@@ -95,15 +86,6 @@ def load_cryptrec_vectors(vector_data):
         else:
             raise ValueError("Invalid line in file '{}'".format(line))
     return cryptrec_list
-
-
-def load_openssl_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__),
-        "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_openssl_vectors(vector_file)
 
 
 def load_openssl_vectors(vector_data):
@@ -167,11 +149,3 @@ def load_hash_vectors(vector_data):
         else:
             raise ValueError("Unknown line in hash vector")
     return vectors
-
-
-def load_hash_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors"
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_hash_vectors(vector_file)

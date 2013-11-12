@@ -17,10 +17,8 @@ import textwrap
 import pytest
 
 from .utils import (
-    load_nist_vectors, load_nist_vectors_from_file, load_cryptrec_vectors,
-    load_cryptrec_vectors_from_file, load_openssl_vectors,
-    load_openssl_vectors_from_file, load_hash_vectors,
-    load_hash_vectors_from_file
+    load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
+    load_openssl_vectors, load_hash_vectors,
 )
 
 
@@ -91,8 +89,9 @@ def test_load_nist_vectors():
 
 
 def test_load_nist_vectors_from_file():
-    assert load_nist_vectors_from_file(
-        os.path.join("ciphers", "AES", "CBC", "CBCGFSbox128.rsp")
+    assert load_vectors_from_file(
+        os.path.join("ciphers", "AES", "CBC", "CBCGFSbox128.rsp"),
+        load_nist_vectors
     ) == [
         {
             "key": b"00000000000000000000000000000000",
@@ -236,8 +235,9 @@ def test_load_cryptrec_vectors_invalid():
 
 
 def test_load_cryptrec_vectors_from_file_encrypt():
-    test_set = load_cryptrec_vectors_from_file(
+    test_set = load_vectors_from_file(
         os.path.join("ciphers", "Camellia", "camellia-128-ecb.txt"),
+        load_cryptrec_vectors
     )
     assert test_set[0] == (
         {
@@ -301,8 +301,9 @@ def test_load_openssl_vectors():
 
 
 def test_load_openssl_vectors_from_file():
-    test_list = load_openssl_vectors_from_file(
-        os.path.join("ciphers", "Camellia", "camellia-ofb.txt")
+    test_list = load_vectors_from_file(
+        os.path.join("ciphers", "Camellia", "camellia-ofb.txt"),
+        load_openssl_vectors
     )
     assert len(test_list) == 24
     assert test_list[:4] == [
@@ -392,8 +393,9 @@ def test_load_hash_vectors_bad_data():
 
 
 def test_load_hash_vectors_from_file():
-    test_list = load_hash_vectors_from_file(
-        os.path.join("hashes", "MD5", "rfc-1321.txt")
+    test_list = load_vectors_from_file(
+        os.path.join("hashes", "MD5", "rfc-1321.txt"),
+        load_hash_vectors
     )
     assert len(test_list) == 7
     assert test_list[:4] == [

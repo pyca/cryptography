@@ -19,12 +19,12 @@ import os
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
-from ...utils import load_nist_vectors_from_file
+from ...utils import load_nist_vectors
 
 
 class TestCAST5(object):
     test_ECB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path),
+        load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ecb.txt"],
         lambda key: algorithms.CAST5(binascii.unhexlify((key))),

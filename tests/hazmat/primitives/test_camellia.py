@@ -20,13 +20,13 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
-    load_cryptrec_vectors_from_file, load_openssl_vectors_from_file
+    load_cryptrec_vectors, load_openssl_vectors
 )
 
 
 class TestCamellia(object):
     test_ECB = generate_encrypt_test(
-        load_cryptrec_vectors_from_file,
+        load_cryptrec_vectors,
         os.path.join("ciphers", "Camellia"),
         [
             "camellia-128-ecb.txt",
@@ -42,7 +42,7 @@ class TestCamellia(object):
     )
 
     test_CBC = generate_encrypt_test(
-        load_openssl_vectors_from_file,
+        load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
         lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
@@ -54,7 +54,7 @@ class TestCamellia(object):
     )
 
     test_OFB = generate_encrypt_test(
-        load_openssl_vectors_from_file,
+        load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
         lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
@@ -66,7 +66,7 @@ class TestCamellia(object):
     )
 
     test_CFB = generate_encrypt_test(
-        load_openssl_vectors_from_file,
+        load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
         lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),

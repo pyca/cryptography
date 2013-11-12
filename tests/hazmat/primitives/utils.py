@@ -8,6 +8,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 
+from ...utils import load_vectors_from_file
+
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
                           mode_factory, only_if=lambda backend: True,
@@ -15,7 +17,10 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
     def test_encryption(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         encrypt_test,
                         backend,
@@ -55,7 +60,10 @@ def generate_stream_encryption_test(param_loader, path, file_names,
     def test_stream_encryption(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         stream_encryption_test,
                         backend,
@@ -93,7 +101,10 @@ def generate_hash_test(param_loader, path, file_names, hash_cls,
     def test_hash(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         hash_test,
                         backend,
@@ -173,7 +184,10 @@ def generate_hmac_test(param_loader, path, file_names, algorithm,
     def test_hmac(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         hmac_test,
                         backend,

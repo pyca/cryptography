@@ -20,13 +20,13 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
-    load_nist_vectors_from_file, load_openssl_vectors_from_file
+    load_nist_vectors, load_openssl_vectors,
 )
 
 
 class TestAES(object):
     test_CBC = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path),
+        load_nist_vectors,
         os.path.join("ciphers", "AES", "CBC"),
         [
             "CBCGFSbox128.rsp",
@@ -50,7 +50,7 @@ class TestAES(object):
     )
 
     test_ECB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path),
+        load_nist_vectors,
         os.path.join("ciphers", "AES", "ECB"),
         [
             "ECBGFSbox128.rsp",
@@ -74,7 +74,7 @@ class TestAES(object):
     )
 
     test_OFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path),
+        load_nist_vectors,
         os.path.join("ciphers", "AES", "OFB"),
         [
             "OFBGFSbox128.rsp",
@@ -98,7 +98,7 @@ class TestAES(object):
     )
 
     test_CFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path),
+        load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
         [
             "CFB128GFSbox128.rsp",
@@ -122,7 +122,7 @@ class TestAES(object):
     )
 
     test_CTR = generate_encrypt_test(
-        load_openssl_vectors_from_file,
+        load_openssl_vectors,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
         lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
