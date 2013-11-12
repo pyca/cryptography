@@ -269,47 +269,61 @@ class Ciphers(object):
                               _CipherContext._DECRYPT)
 
 
+@interfaces.register(interfaces.HashContext)
+class _HashContext(object):
+    def __init__(self, backend, algorithm, ctx=None):
+        self.algorithm = algorithm
+
+        self._backend = backend
+
+        if ctx is None:
+            ctx = self._backend.lib.EVP_MD_CTX_create()
+            ctx = self._backend.ffi.gc(ctx,
+                                       self._backend.lib.EVP_MD_CTX_destroy)
+            evp_md = self._backend.lib.EVP_get_digestbyname(
+                algorithm.name.encode("ascii"))
+            assert evp_md != self._backend.ffi.NULL
+            res = self._backend.lib.EVP_DigestInit_ex(ctx, evp_md,
+                                                      self._backend.ffi.NULL)
+            assert res != 0
+
+        self._ctx = ctx
+
+    def copy(self):
+        copied_ctx = self._backend.lib.EVP_MD_CTX_create()
+        copied_ctx = self._backend.ffi.gc(copied_ctx,
+                                          self._backend.lib.EVP_MD_CTX_destroy)
+        res = self._backend.lib.EVP_MD_CTX_copy_ex(copied_ctx, self._ctx)
+        assert res != 0
+        return _HashContext(self._backend, self.algorithm, ctx=copied_ctx)
+
+    def update(self, data):
+        res = self._backend.lib.EVP_DigestUpdate(self._ctx, data, len(data))
+        assert res != 0
+
+    def finalize(self):
+        buf = self._backend.ffi.new("unsigned char[]",
+                                    self.algorithm.digest_size)
+        res = self._backend.lib.EVP_DigestFinal_ex(self._ctx, buf,
+                                                   self._backend.ffi.NULL)
+        assert res != 0
+        res = self._backend.lib.EVP_MD_CTX_cleanup(self._ctx)
+        assert res == 1
+        return self._backend.ffi.buffer(buf)[:self.algorithm.digest_size]
+
+
 class Hashes(object):
     def __init__(self, backend):
         super(Hashes, self).__init__()
         self._backend = backend
 
-    def supported(self, hash_cls):
+    def supported(self, algorithm):
         return (self._backend.ffi.NULL !=
                 self._backend.lib.EVP_get_digestbyname(
-                    hash_cls.name.encode("ascii")))
+                    algorithm.name.encode("ascii")))
 
-    def create_ctx(self, hashobject):
-        ctx = self._backend.lib.EVP_MD_CTX_create()
-        ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_MD_CTX_destroy)
-        evp_md = self._backend.lib.EVP_get_digestbyname(
-            hashobject.name.encode("ascii"))
-        assert evp_md != self._backend.ffi.NULL
-        res = self._backend.lib.EVP_DigestInit_ex(ctx, evp_md,
-                                                  self._backend.ffi.NULL)
-        assert res != 0
-        return ctx
-
-    def update_ctx(self, ctx, data):
-        res = self._backend.lib.EVP_DigestUpdate(ctx, data, len(data))
-        assert res != 0
-
-    def finalize_ctx(self, ctx, digest_size):
-        buf = self._backend.ffi.new("unsigned char[]", digest_size)
-        res = self._backend.lib.EVP_DigestFinal_ex(ctx, buf,
-                                                   self._backend.ffi.NULL)
-        assert res != 0
-        res = self._backend.lib.EVP_MD_CTX_cleanup(ctx)
-        assert res == 1
-        return self._backend.ffi.buffer(buf)[:digest_size]
-
-    def copy_ctx(self, ctx):
-        copied_ctx = self._backend.lib.EVP_MD_CTX_create()
-        copied_ctx = self._backend.ffi.gc(copied_ctx,
-                                          self._backend.lib.EVP_MD_CTX_destroy)
-        res = self._backend.lib.EVP_MD_CTX_copy_ex(copied_ctx, ctx)
-        assert res != 0
-        return copied_ctx
+    def create_ctx(self, algorithm):
+        return _HashContext(self._backend, algorithm)
 
 
 class HMACs(object):

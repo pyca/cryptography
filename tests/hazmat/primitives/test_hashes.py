@@ -32,9 +32,9 @@ class TestHashContext(object):
             m.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        pretend_hashes = pretend.stub(copy_ctx=lambda a: "copiedctx")
-        pretend_backend = pretend.stub(hashes=pretend_hashes)
-        pretend_ctx = pretend.stub()
+        pretend_backend = pretend.stub()
+        copied_ctx = pretend.stub()
+        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hashes.Hash(hashes.SHA1(), backend=pretend_backend,
                         ctx=pretend_ctx)
         assert h._backend is pretend_backend

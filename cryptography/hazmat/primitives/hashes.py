@@ -34,20 +34,19 @@ class Hash(object):
         if ctx is None:
             self._ctx = self._backend.hashes.create_ctx(self.algorithm)
         else:
-            self._ctx = None
+            self._ctx = ctx
 
     def update(self, data):
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.hashes.update_ctx(self._ctx, data)
+        self._ctx.update(data)
 
     def copy(self):
         return self.__class__(self.algorithm, backend=self._backend,
-                              ctx=self._backend.hashes.copy_ctx(self._ctx))
+                              ctx=self._ctx.copy())
 
     def finalize(self):
-        return self._backend.hashes.finalize_ctx(self._ctx,
-                                                 self.algorithm.digest_size)
+        return self._ctx.finalize()
 
 
 @interfaces.register(interfaces.HashAlgorithm)
