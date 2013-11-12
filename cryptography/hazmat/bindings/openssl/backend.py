@@ -207,7 +207,6 @@ class _CipherContext(object):
 
 class Ciphers(object):
     def __init__(self, backend):
-        super(Ciphers, self).__init__()
         self._backend = backend
         self._cipher_registry = {}
         self._register_default_ciphers()
@@ -314,7 +313,6 @@ class _HashContext(object):
 
 class Hashes(object):
     def __init__(self, backend):
-        super(Hashes, self).__init__()
         self._backend = backend
 
     def supported(self, algorithm):
@@ -329,7 +327,6 @@ class Hashes(object):
 
 class HMACs(object):
     def __init__(self, backend):
-        super(HMACs, self).__init__()
         self._backend = backend
 
     def create_ctx(self, key, hash_cls):

@@ -42,8 +42,9 @@ class Hash(object):
         self._ctx.update(data)
 
     def copy(self):
-        return self.__class__(self.algorithm, backend=self._backend,
-                              ctx=self._ctx.copy())
+        return Hash(
+            self.algorithm, backend=self._backend, ctx=self._ctx.copy()
+        )
 
     def finalize(self):
         return self._ctx.finalize()
