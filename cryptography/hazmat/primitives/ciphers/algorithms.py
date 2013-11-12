@@ -120,6 +120,7 @@ class CAST5(object):
 
 class ARC4(object):
     name = "RC4"
+    block_size = 1
     key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
 
     def __init__(self, key):
