@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import textwrap
 
+import py
 import pytest
 
 from .utils import (
@@ -88,98 +88,6 @@ def test_load_nist_vectors():
     ]
 
 
-def test_load_nist_vectors_from_file():
-    assert load_vectors_from_file(
-        os.path.join("ciphers", "AES", "CBC", "CBCGFSbox128.rsp"),
-        load_nist_vectors
-    ) == [
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"f34481ec3cc627bacd5dc3fb08f273e6",
-            "ciphertext": b"0336763e966d92595a567cc9ce537f5e",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"9798c4640bad75c7c3227db910174e72",
-            "ciphertext": b"a9a1631bf4996954ebc093957b234589",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"96ab5c2ff612d9dfaae8c31f30c42168",
-            "ciphertext": b"ff4f8391a6a40ca5b25d23bedd44a597",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"6a118a874519e64e9963798a503f1d35",
-            "ciphertext": b"dc43be40be0e53712f7e2bf5ca707209",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"cb9fceec81286ca3e989bd979b0cb284",
-            "ciphertext": b"92beedab1895a94faa69b632e5cc47ce",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"b26aeb1874e47ca8358ff22378f09144",
-            "ciphertext": b"459264f4798f6a78bacb89c15ed3d601",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"58c8e00b2631686d54eab84b91f0aca1",
-            "ciphertext": b"08a4e2efec8a8e3312ca7460b9040bbf",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"f34481ec3cc627bacd5dc3fb08f273e6",
-            "ciphertext": b"0336763e966d92595a567cc9ce537f5e",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"9798c4640bad75c7c3227db910174e72",
-            "ciphertext": b"a9a1631bf4996954ebc093957b234589",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"96ab5c2ff612d9dfaae8c31f30c42168",
-            "ciphertext": b"ff4f8391a6a40ca5b25d23bedd44a597",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"6a118a874519e64e9963798a503f1d35",
-            "ciphertext": b"dc43be40be0e53712f7e2bf5ca707209",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"cb9fceec81286ca3e989bd979b0cb284",
-            "ciphertext": b"92beedab1895a94faa69b632e5cc47ce",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"b26aeb1874e47ca8358ff22378f09144",
-            "ciphertext": b"459264f4798f6a78bacb89c15ed3d601",
-        },
-        {
-            "key": b"00000000000000000000000000000000",
-            "iv": b"00000000000000000000000000000000",
-            "plaintext": b"58c8e00b2631686d54eab84b91f0aca1",
-            "ciphertext": b"08a4e2efec8a8e3312ca7460b9040bbf",
-        },
-    ]
-
-
 def test_load_cryptrec_vectors():
     vector_data = textwrap.dedent("""
     # Vectors taken from http://info.isl.ntt.co.jp/crypt/eng/camellia/
@@ -234,21 +142,6 @@ def test_load_cryptrec_vectors_invalid():
         load_cryptrec_vectors(vector_data)
 
 
-def test_load_cryptrec_vectors_from_file_encrypt():
-    test_set = load_vectors_from_file(
-        os.path.join("ciphers", "Camellia", "camellia-128-ecb.txt"),
-        load_cryptrec_vectors
-    )
-    assert test_set[0] == (
-        {
-            "key": b"00000000000000000000000000000000",
-            "plaintext": b"80000000000000000000000000000000",
-            "ciphertext": b"07923A39EB0A817D1C4D87BDB82D1F1C",
-        }
-    )
-    assert len(test_set) == 1280
-
-
 def test_load_openssl_vectors():
     vector_data = textwrap.dedent(
         """
@@ -296,40 +189,6 @@ def test_load_openssl_vectors():
             "iv": b"14F7646187817EB586599146B82BD719",
             "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
             "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
-        },
-    ]
-
-
-def test_load_openssl_vectors_from_file():
-    test_list = load_vectors_from_file(
-        os.path.join("ciphers", "Camellia", "camellia-ofb.txt"),
-        load_openssl_vectors
-    )
-    assert len(test_list) == 24
-    assert test_list[:4] == [
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"000102030405060708090A0B0C0D0E0F",
-            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
-            "ciphertext": b"14F7646187817EB586599146B82BD719",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"50FE67CC996D32B6DA0937E99BAFEC60",
-            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            "ciphertext": b"25623DB569CA51E01482649977E28D84",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"D9A4DADA0892239F6B8B3D7680E15674",
-            "plaintext": b"30C81C46A35CE411E5FBC1191A0A52EF",
-            "ciphertext": b"C776634A60729DC657D12B9FCA801E98",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"A78819583F0308E7A6BF36B1386ABF23",
-            "plaintext": b"F69F2445DF4F9B17AD2B417BE66C3710",
-            "ciphertext": b"D776379BE0E50825E681DA1A4C980E8E",
         },
     ]
 
@@ -391,16 +250,14 @@ def test_load_hash_vectors_bad_data():
     with pytest.raises(ValueError):
         load_hash_vectors(vector_data)
 
-
-def test_load_hash_vectors_from_file():
-    test_list = load_vectors_from_file(
-        os.path.join("hashes", "MD5", "rfc-1321.txt"),
-        load_hash_vectors
+def test_load_vectors_from_file(request):
+    path = py.path.local(__file__).dirpath().join(
+        "hazmat", "primitives", "vectors", "t.txt"
     )
-    assert len(test_list) == 7
-    assert test_list[:4] == [
-        (b"", "d41d8cd98f00b204e9800998ecf8427e"),
-        (b"61", "0cc175b9c0f1b6a831c399e269772661"),
-        (b"616263", "900150983cd24fb0d6963f7d28e17f72"),
-        (b"6d65737361676520646967657374", "f96b697d7cb7938d525a2f31aaf161d0"),
-    ]
+    path.write(textwrap.dedent("""
+    abc
+    123
+    """))
+    request.addfinalizer(path.remove)
+    vectors = load_vectors_from_file("t.txt", lambda f: f.readlines())
+    assert vectors == ["\n", "abc\n", "123\n"]
