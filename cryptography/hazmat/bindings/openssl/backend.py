@@ -140,6 +140,7 @@ class _CipherContext(object):
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
+        self._cipher = cipher
 
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
@@ -185,9 +186,8 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
-        block_size = self._backend.lib.EVP_CIPHER_CTX_block_size(self._ctx)
         buf = self._backend.ffi.new("unsigned char[]",
-                                    len(data) + block_size - 1)
+                                    len(data) + self._cipher.block_size - 1)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                  len(data))
@@ -195,8 +195,7 @@ class _CipherContext(object):
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
-        block_size = self._backend.lib.EVP_CIPHER_CTX_block_size(self._ctx)
-        buf = self._backend.ffi.new("unsigned char[]", block_size)
+        buf = self._backend.ffi.new("unsigned char[]", self._cipher.block_size)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         assert res != 0
@@ -207,7 +206,6 @@ class _CipherContext(object):
 
 class Ciphers(object):
     def __init__(self, backend):
-        super(Ciphers, self).__init__()
         self._backend = backend
         self._cipher_registry = {}
         self._register_default_ciphers()
@@ -269,54 +267,67 @@ class Ciphers(object):
                               _CipherContext._DECRYPT)
 
 
-class Hashes(object):
-    def __init__(self, backend):
-        super(Hashes, self).__init__()
+@interfaces.register(interfaces.HashContext)
+class _HashContext(object):
+    def __init__(self, backend, algorithm, ctx=None):
+        self.algorithm = algorithm
+
         self._backend = backend
 
-    def supported(self, hash_cls):
-        return (self._backend.ffi.NULL !=
-                self._backend.lib.EVP_get_digestbyname(
-                    hash_cls.name.encode("ascii")))
+        if ctx is None:
+            ctx = self._backend.lib.EVP_MD_CTX_create()
+            ctx = self._backend.ffi.gc(ctx,
+                                       self._backend.lib.EVP_MD_CTX_destroy)
+            evp_md = self._backend.lib.EVP_get_digestbyname(
+                algorithm.name.encode("ascii"))
+            assert evp_md != self._backend.ffi.NULL
+            res = self._backend.lib.EVP_DigestInit_ex(ctx, evp_md,
+                                                      self._backend.ffi.NULL)
+            assert res != 0
 
-    def create_ctx(self, hashobject):
-        ctx = self._backend.lib.EVP_MD_CTX_create()
-        ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_MD_CTX_destroy)
-        evp_md = self._backend.lib.EVP_get_digestbyname(
-            hashobject.name.encode("ascii"))
-        assert evp_md != self._backend.ffi.NULL
-        res = self._backend.lib.EVP_DigestInit_ex(ctx, evp_md,
-                                                  self._backend.ffi.NULL)
-        assert res != 0
-        return ctx
+        self._ctx = ctx
 
-    def update_ctx(self, ctx, data):
-        res = self._backend.lib.EVP_DigestUpdate(ctx, data, len(data))
-        assert res != 0
-
-    def finalize_ctx(self, ctx, digest_size):
-        buf = self._backend.ffi.new("unsigned char[]", digest_size)
-        res = self._backend.lib.EVP_DigestFinal_ex(ctx, buf,
-                                                   self._backend.ffi.NULL)
-        assert res != 0
-        res = self._backend.lib.EVP_MD_CTX_cleanup(ctx)
-        assert res == 1
-        return self._backend.ffi.buffer(buf)[:digest_size]
-
-    def copy_ctx(self, ctx):
+    def copy(self):
         copied_ctx = self._backend.lib.EVP_MD_CTX_create()
         copied_ctx = self._backend.ffi.gc(copied_ctx,
                                           self._backend.lib.EVP_MD_CTX_destroy)
-        res = self._backend.lib.EVP_MD_CTX_copy_ex(copied_ctx, ctx)
+        res = self._backend.lib.EVP_MD_CTX_copy_ex(copied_ctx, self._ctx)
         assert res != 0
-        return copied_ctx
+        return _HashContext(self._backend, self.algorithm, ctx=copied_ctx)
+
+    def update(self, data):
+        res = self._backend.lib.EVP_DigestUpdate(self._ctx, data, len(data))
+        assert res != 0
+
+    def finalize(self):
+        buf = self._backend.ffi.new("unsigned char[]",
+                                    self.algorithm.digest_size)
+        res = self._backend.lib.EVP_DigestFinal_ex(self._ctx, buf,
+                                                   self._backend.ffi.NULL)
+        assert res != 0
+        res = self._backend.lib.EVP_MD_CTX_cleanup(self._ctx)
+        assert res == 1
+        return self._backend.ffi.buffer(buf)[:self.algorithm.digest_size]
+
+
+class Hashes(object):
+    def __init__(self, backend):
+        self._backend = backend
+
+    def supported(self, algorithm):
+        digest = self._backend.lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii")
+        )
+        return digest != self._backend.ffi.NULL
+
+    def create_ctx(self, algorithm):
+        return _HashContext(self._backend, algorithm)
 
 
 @interfaces.register(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
         self.algorithm = algorithm
-
         self._backend = backend
 
         if ctx is None:
@@ -367,7 +378,6 @@ class _HMACContext(object):
 
 class HMACs(object):
     def __init__(self, backend):
-        super(HMACs, self).__init__()
         self._backend = backend
 
     def create_ctx(self, key, algorithm):

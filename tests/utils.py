@@ -43,8 +43,12 @@ def load_nist_vectors(vector_data):
             section = line[1:-1]
             continue
 
+        if line.strip() == "FAIL":
+            data[section, count]["fail"] = True
+            continue
+
         # Build our data using a simple Key = Value format
-        name, value = line.split(" = ")
+        name, value = [c.strip() for c in line.split("=")]
 
         # COUNT is a special token that indicates a new block of data
         if name.upper() == "COUNT":

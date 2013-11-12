@@ -18,8 +18,6 @@ from cryptography.hazmat.primitives import interfaces
 
 class Cipher(object):
     def __init__(self, algorithm, mode, backend=None):
-        super(Cipher, self).__init__()
-
         if backend is None:
             from cryptography.hazmat.bindings import (
                 _default_backend as backend,

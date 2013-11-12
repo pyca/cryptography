@@ -20,7 +20,6 @@ class AES(object):
     key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
-        super(AES, self).__init__()
         self.key = key
 
         # Verify that the key size matches the expected key size
@@ -40,7 +39,6 @@ class Camellia(object):
     key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
-        super(Camellia, self).__init__()
         self.key = key
 
         # Verify that the key size matches the expected key size
@@ -60,7 +58,6 @@ class TripleDES(object):
     key_sizes = frozenset([64, 128, 192])
 
     def __init__(self, key):
-        super(TripleDES, self).__init__()
         if len(key) == 8:
             key += key + key
         elif len(key) == 16:
@@ -84,7 +81,6 @@ class Blowfish(object):
     key_sizes = frozenset(range(32, 449, 8))
 
     def __init__(self, key):
-        super(Blowfish, self).__init__()
         self.key = key
 
         # Verify that the key size matches the expected key size
@@ -104,7 +100,6 @@ class CAST5(object):
     key_sizes = frozenset([40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128])
 
     def __init__(self, key):
-        super(CAST5, self).__init__()
         self.key = key
 
         # Verify that the key size matches the expected key size
@@ -120,10 +115,10 @@ class CAST5(object):
 
 class ARC4(object):
     name = "RC4"
+    block_size = 1
     key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
 
     def __init__(self, key):
-        super(ARC4, self).__init__()
         self.key = key
 
         # Verify that the key size matches the expected key size
