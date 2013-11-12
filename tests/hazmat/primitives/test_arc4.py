@@ -19,12 +19,12 @@ import os
 from cryptography.hazmat.primitives.ciphers import algorithms
 
 from .utils import generate_stream_encryption_test
-from ...utils import load_nist_vectors_from_file
+from ...utils import load_nist_vectors
 
 
 class TestARC4(object):
     test_rfc = generate_stream_encryption_test(
-        lambda path: load_nist_vectors_from_file(path),
+        load_nist_vectors,
         os.path.join("ciphers", "ARC4"),
         [
             "rfc-6229-40.txt",

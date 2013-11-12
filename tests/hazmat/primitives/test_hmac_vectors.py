@@ -16,12 +16,12 @@ from __future__ import absolute_import, division, print_function
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_hmac_test
-from ...utils import load_hash_vectors_from_file
+from ...utils import load_hash_vectors
 
 
 class TestHMAC_MD5(object):
     test_hmac_md5 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-2202-md5.txt",
@@ -34,7 +34,7 @@ class TestHMAC_MD5(object):
 
 class TestHMAC_SHA1(object):
     test_hmac_sha1 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-2202-sha1.txt",
@@ -47,7 +47,7 @@ class TestHMAC_SHA1(object):
 
 class TestHMAC_SHA224(object):
     test_hmac_sha224 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-4231-sha224.txt",
@@ -60,7 +60,7 @@ class TestHMAC_SHA224(object):
 
 class TestHMAC_SHA256(object):
     test_hmac_sha256 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-4231-sha256.txt",
@@ -73,7 +73,7 @@ class TestHMAC_SHA256(object):
 
 class TestHMAC_SHA384(object):
     test_hmac_sha384 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-4231-sha384.txt",
@@ -86,7 +86,7 @@ class TestHMAC_SHA384(object):
 
 class TestHMAC_SHA512(object):
     test_hmac_sha512 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-4231-sha512.txt",
@@ -99,7 +99,7 @@ class TestHMAC_SHA512(object):
 
 class TestHMAC_RIPEMD160(object):
     test_hmac_ripemd160 = generate_hmac_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         "HMAC",
         [
             "rfc-2286-ripemd160.txt",
