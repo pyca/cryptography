@@ -43,7 +43,7 @@ class HMAC(object):
         self._ctx.update(msg)
 
     def copy(self):
-        return self.__class__(
+        return HMAC(
             self._key, self.algorithm, ctx=self._ctx.copy(),
             backend=self._backend
         )

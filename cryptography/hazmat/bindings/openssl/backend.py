@@ -344,7 +344,7 @@ class _HMACContext(object):
             copied_ctx, self._ctx
         )
         assert res != 0
-        return self.__class__(
+        return _HMACContext(
             self._backend, self._key, self.algorithm, ctx=copied_ctx
         )
 
