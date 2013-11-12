@@ -318,9 +318,10 @@ class Hashes(object):
         self._backend = backend
 
     def supported(self, algorithm):
-        return (self._backend.ffi.NULL !=
-                self._backend.lib.EVP_get_digestbyname(
-                    algorithm.name.encode("ascii")))
+        digest = self._backend.lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii")
+        )
+        return digest != self._backend.ffi.NULL
 
     def create_ctx(self, algorithm):
         return _HashContext(self._backend, algorithm)
