@@ -21,7 +21,6 @@ from cryptography.hazmat.primitives import interfaces
 @interfaces.register(interfaces.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, ctx=None, backend=None):
-        super(HMAC, self).__init__()
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
         self.algorithm = algorithm
@@ -43,8 +42,12 @@ class HMAC(object):
         self._backend.hmacs.update_ctx(self._ctx, msg)
 
     def copy(self):
-        return self.__class__(self._key, self.algorithm, backend=self._backend,
-                              ctx=self._backend.hmacs.copy_ctx(self._ctx))
+        return HMAC(
+            self._key,
+            self.algorithm,
+            backend=self._backend,
+            ctx=self._backend.hmacs.copy_ctx(self._ctx)
+        )
 
     def finalize(self):
         return self._backend.hmacs.finalize_ctx(self._ctx,

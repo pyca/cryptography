@@ -18,7 +18,6 @@ from cryptography.hazmat.primitives import interfaces
 
 class PKCS7(object):
     def __init__(self, block_size):
-        super(PKCS7, self).__init__()
         if not (0 <= block_size < 256):
             raise ValueError("block_size must be in range(0, 256)")
 
@@ -37,7 +36,6 @@ class PKCS7(object):
 @interfaces.register(interfaces.PaddingContext)
 class _PKCS7PaddingContext(object):
     def __init__(self, block_size):
-        super(_PKCS7PaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
         # zero-buffer (#193)
@@ -72,7 +70,6 @@ class _PKCS7PaddingContext(object):
 @interfaces.register(interfaces.PaddingContext)
 class _PKCS7UnpaddingContext(object):
     def __init__(self, block_size):
-        super(_PKCS7UnpaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
         # zero-buffer (#193)
