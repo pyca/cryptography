@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import textwrap
 
-import py
 import pytest
 
 from .utils import (
@@ -250,14 +250,20 @@ def test_load_hash_vectors_bad_data():
     with pytest.raises(ValueError):
         load_hash_vectors(vector_data)
 
-def test_load_vectors_from_file(request):
-    path = py.path.local(__file__).dirpath().join(
-        "hazmat", "primitives", "vectors", "t.txt"
+def test_load_vectors_from_file():
+    vectors = load_vectors_from_file(
+        os.path.join("ciphers", "Blowfish", "bf-cfb.txt"),
+        load_nist_vectors,
     )
-    path.write(textwrap.dedent("""
-    abc
-    123
-    """))
-    request.addfinalizer(path.remove)
-    vectors = load_vectors_from_file("t.txt", lambda f: f.readlines())
-    assert vectors == ["\n", "abc\n", "123\n"]
+    assert vectors == [
+        {
+            "key": "0123456789ABCDEFF0E1D2C3B4A59687",
+            "iv": "FEDCBA9876543210",
+            "plaintext": (
+                "37363534333231204E6F77206973207468652074696D6520666F722000"
+            ),
+            "ciphertext": (
+                "E73214A2822139CAF26ECF6D2EB9E76E3DA3DE04D1517200519D57A6C3"
+            ),
+        }
+    ]
