@@ -307,7 +307,7 @@ class _HashContext(object):
         assert res != 0
         res = self._backend.lib.EVP_MD_CTX_cleanup(self._ctx)
         assert res == 1
-        return self._backend.ffi.buffer(buf)[:self.algorithm.digest_size]
+        return self._backend.ffi.buffer(buf)[:]
 
 
 class Hashes(object):
@@ -373,7 +373,7 @@ class _HMACContext(object):
         res = self._backend.lib.Cryptography_HMAC_Final(self._ctx, buf, buflen)
         assert res != 0
         self._backend.lib.HMAC_CTX_cleanup(self._ctx)
-        return self._backend.ffi.buffer(buf)[:self.algorithm.digest_size]
+        return self._backend.ffi.buffer(buf)[:]
 
 
 class HMACs(object):
