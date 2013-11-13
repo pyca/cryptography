@@ -131,8 +131,8 @@ as much as possible. To that end:
   :class:`cryptography.hazmat.primitives.hashes.MD5`)
 * When giving prescriptive advice, always provide references and supporting
   material.
-* When there is disagreement about legitimate cryptographic experts, represent
-  both sides of the argument and describe the tradeoffs clearly.
+* When there is real disagreement between cryptographic experts, represent both
+  sides of the argument and describe the tradeoffs clearly.
 
 When documenting a new module in the ``hazmat`` package, its documentation
 should begin with the "Hazardous Materials" warning:
