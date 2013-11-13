@@ -32,7 +32,7 @@ class HMAC(object):
         self._backend = backend
         self._key = key
         if ctx is None:
-            self._ctx = self._backend.hmacs.create_ctx(key, self.algorithm)
+            self._ctx = self._backend.create_hmac_ctx(key, self.algorithm)
         else:
             self._ctx = ctx
 

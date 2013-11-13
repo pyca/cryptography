@@ -57,7 +57,7 @@ class TestSHA1(object):
         hashes.SHA1(),
         digest_size=20,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA1),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
 
@@ -67,7 +67,7 @@ class TestSHA224(object):
         hashes.SHA224(),
         digest_size=28,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA224),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
 
@@ -77,7 +77,7 @@ class TestSHA256(object):
         hashes.SHA256(),
         digest_size=32,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA256),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
 
@@ -87,7 +87,7 @@ class TestSHA384(object):
         hashes.SHA384(),
         digest_size=48,
         block_size=128,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -97,7 +97,7 @@ class TestSHA512(object):
         hashes.SHA512(),
         digest_size=64,
         block_size=128,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA512),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
 
@@ -107,7 +107,7 @@ class TestRIPEMD160(object):
         hashes.RIPEMD160(),
         digest_size=20,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
@@ -117,7 +117,7 @@ class TestWhirlpool(object):
         hashes.Whirlpool(),
         digest_size=64,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
@@ -127,6 +127,6 @@ class TestMD5(object):
         hashes.MD5(),
         digest_size=16,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.MD5),
+        only_if=lambda backend: backend.hash_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
