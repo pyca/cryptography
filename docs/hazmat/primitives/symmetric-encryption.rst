@@ -92,7 +92,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :return bytes: Returns the remainder of the data.
 
         Once ``finalize`` is called this object can no longer be used and
-        :meth:`update` will raise
+        :meth:`update` and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
 
 Algorithms
