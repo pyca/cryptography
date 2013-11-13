@@ -14,7 +14,7 @@ Extensive contribution guidelines are available in the repository at
 
 https://cryptography.io/en/latest/contributing/
 
-.. highlights::
+.. pull-quote::
 
     To report a security issue, please follow the special `security reporting
     guidelines`_, do not report them in the public issue tracker.
