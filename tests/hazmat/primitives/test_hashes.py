@@ -62,6 +62,9 @@ class TestHashContext(object):
         with pytest.raises(AlreadyFinalized):
             h.copy()
 
+        with pytest.raises(AlreadyFinalized):
+            h.finalize()
+
 
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(

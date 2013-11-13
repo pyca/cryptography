@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -45,12 +46,12 @@ class _CipherContext(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
         return self._ctx.update(data)
 
     def finalize(self):
         if self._ctx is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
         data = self._ctx.finalize()
         self._ctx = None
         return data
