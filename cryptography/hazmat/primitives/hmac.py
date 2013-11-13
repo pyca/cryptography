@@ -39,14 +39,14 @@ class HMAC(object):
 
     def update(self, msg):
         if self._ctx is None:
-            raise AlreadyFinalized()
+            raise AlreadyFinalized("Context was already finalized")
         if isinstance(msg, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
         self._ctx.update(msg)
 
     def copy(self):
         if self._ctx is None:
-            raise AlreadyFinalized()
+            raise AlreadyFinalized("Context was already finalized")
         return HMAC(
             self._key,
             self.algorithm,
@@ -56,8 +56,7 @@ class HMAC(object):
 
     def finalize(self):
         if self._ctx is None:
-            raise AlreadyFinalized()
-
+            raise AlreadyFinalized("Context was already finalized")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
