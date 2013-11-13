@@ -63,7 +63,8 @@ class Backend(object):
     def __init__(self):
         self._ensure_ffi_initialized()
 
-        self.ciphers = Ciphers(self)
+        self._cipher_registry = {}
+        self._register_default_ciphers()
 
     @classmethod
     def _ensure_ffi_initialized(cls):
@@ -131,6 +132,60 @@ class Backend(object):
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
 
+    def cipher_supported(self, cipher, mode):
+        try:
+            adapter = self._cipher_registry[type(cipher), type(mode)]
+        except KeyError:
+            return False
+        evp_cipher = adapter(self, cipher, mode)
+        return self.ffi.NULL != evp_cipher
+
+    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
+        if (cipher_cls, mode_cls) in self._cipher_registry:
+            raise ValueError("Duplicate registration for: {0} {1}".format(
+                cipher_cls, mode_cls)
+            )
+        self._cipher_registry[cipher_cls, mode_cls] = adapter
+
+    def _register_default_ciphers(self):
+        for cipher_cls, mode_cls in itertools.product(
+            [AES, Camellia],
+            [CBC, CTR, ECB, OFB, CFB],
+        ):
+            self.register_cipher_adapter(
+                cipher_cls,
+                mode_cls,
+                GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
+            )
+        for mode_cls in [CBC, CFB, OFB]:
+            self.register_cipher_adapter(
+                TripleDES,
+                mode_cls,
+                GetCipherByName("des-ede3-{mode.name}")
+            )
+        for mode_cls in [CBC, CFB, OFB, ECB]:
+            self.register_cipher_adapter(
+                Blowfish,
+                mode_cls,
+                GetCipherByName("bf-{mode.name}")
+            )
+        self.register_cipher_adapter(
+            CAST5,
+            ECB,
+            GetCipherByName("cast5-ecb")
+        )
+        self.register_cipher_adapter(
+            ARC4,
+            type(None),
+            GetCipherByName("rc4")
+        )
+
+    def create_symmetric_encryption_ctx(self, cipher, mode):
+        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+
+    def create_symmetric_decryption_ctx(self, cipher, mode):
+        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
@@ -153,7 +208,7 @@ class _CipherContext(object):
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
 
-        registry = self._backend.ciphers._cipher_registry
+        registry = self._backend._cipher_registry
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
@@ -210,69 +265,6 @@ class _CipherContext(object):
         res = self._backend.lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend.ffi.buffer(buf)[:outlen[0]]
-
-
-class Ciphers(object):
-    def __init__(self, backend):
-        self._backend = backend
-        self._cipher_registry = {}
-        self._register_default_ciphers()
-
-    def supported(self, cipher, mode):
-        try:
-            adapter = self._cipher_registry[type(cipher), type(mode)]
-        except KeyError:
-            return False
-        evp_cipher = adapter(self._backend, cipher, mode)
-        return self._backend.ffi.NULL != evp_cipher
-
-    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
-        if (cipher_cls, mode_cls) in self._cipher_registry:
-            raise ValueError("Duplicate registration for: {0} {1}".format(
-                cipher_cls, mode_cls)
-            )
-        self._cipher_registry[cipher_cls, mode_cls] = adapter
-
-    def _register_default_ciphers(self):
-        for cipher_cls, mode_cls in itertools.product(
-            [AES, Camellia],
-            [CBC, CTR, ECB, OFB, CFB],
-        ):
-            self.register_cipher_adapter(
-                cipher_cls,
-                mode_cls,
-                GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
-            )
-        for mode_cls in [CBC, CFB, OFB]:
-            self.register_cipher_adapter(
-                TripleDES,
-                mode_cls,
-                GetCipherByName("des-ede3-{mode.name}")
-            )
-        for mode_cls in [CBC, CFB, OFB, ECB]:
-            self.register_cipher_adapter(
-                Blowfish,
-                mode_cls,
-                GetCipherByName("bf-{mode.name}")
-            )
-        self.register_cipher_adapter(
-            CAST5,
-            ECB,
-            GetCipherByName("cast5-ecb")
-        )
-        self.register_cipher_adapter(
-            ARC4,
-            type(None),
-            GetCipherByName("rc4")
-        )
-
-    def create_encrypt_ctx(self, cipher, mode):
-        return _CipherContext(self._backend, cipher, mode,
-                              _CipherContext._ENCRYPT)
-
-    def create_decrypt_ctx(self, cipher, mode):
-        return _CipherContext(self._backend, cipher, mode,
-                              _CipherContext._DECRYPT)
 
 
 @interfaces.register(interfaces.HashContext)

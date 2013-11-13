@@ -29,7 +29,7 @@ class TestCAST5(object):
         ["cast5-ecb.txt"],
         lambda key: algorithms.CAST5(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.CAST5("\x00" * 16), modes.ECB()
         ),
         skip_message="Does not support CAST5 ECB",

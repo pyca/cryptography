@@ -28,14 +28,14 @@ class Cipher(object):
         self._backend = backend
 
     def encryptor(self):
-        return _CipherContext(
-            self._backend.ciphers.create_encrypt_ctx(self.algorithm,
-                                                     self.mode))
+        return _CipherContext(self._backend.create_symmetric_encryption_ctx(
+            self.algorithm, self.mode
+        ))
 
     def decryptor(self):
-        return _CipherContext(
-            self._backend.ciphers.create_decrypt_ctx(self.algorithm,
-                                                     self.mode))
+        return _CipherContext(self._backend.create_symmetric_decryption_ctx(
+            self.algorithm, self.mode
+        ))
 
 
 @interfaces.register(interfaces.CipherContext)

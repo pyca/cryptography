@@ -35,7 +35,7 @@ class TestCamellia(object):
         ],
         lambda key: algorithms.Camellia(binascii.unhexlify((key))),
         lambda key: modes.ECB(),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.ECB()
         ),
         skip_message="Does not support Camellia ECB",
@@ -47,7 +47,7 @@ class TestCamellia(object):
         ["camellia-cbc.txt"],
         lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
         ),
         skip_message="Does not support Camellia CBC",
@@ -59,7 +59,7 @@ class TestCamellia(object):
         ["camellia-ofb.txt"],
         lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
         ),
         skip_message="Does not support Camellia OFB",
@@ -71,7 +71,7 @@ class TestCamellia(object):
         ["camellia-cfb.txt"],
         lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
         ),
         skip_message="Does not support Camellia CFB",
