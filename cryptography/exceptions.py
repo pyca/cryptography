@@ -14,3 +14,7 @@
 
 class UnsupportedAlgorithm(Exception):
     pass
+
+
+class AlreadyFinalized(Exception):
+    pass
