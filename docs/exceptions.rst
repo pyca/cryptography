@@ -5,7 +5,7 @@ Exceptions
 
 .. class:: AlreadyFinalized
 
-    This is raised when a context is used after being it has been finalized.
+    This is raised when a context is used after being finalized.
 
 
 .. class:: UnsupportedAlgorithm
