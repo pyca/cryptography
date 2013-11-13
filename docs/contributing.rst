@@ -122,7 +122,7 @@ So, specifically:
 * No blank line at the end.
 * Use Sphinx parameter/attribute documentation `syntax`_.
 
-Because of the inherit challenges in implementing correct cryptographic
+Because of the inherent challenges in implementing correct cryptographic
 systems, we want to make our documentation point people in the right directions
 as much as possible. To that end:
 
