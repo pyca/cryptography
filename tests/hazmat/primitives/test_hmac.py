@@ -19,6 +19,7 @@ import pytest
 
 import six
 
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
@@ -49,3 +50,16 @@ class TestHMAC(object):
     def test_hmac_algorithm_instance(self):
         with pytest.raises(TypeError):
             hmac.HMAC(b"key", hashes.SHA1)
+
+    def test_raises_after_finalize(self):
+        h = hmac.HMAC(b"key", hashes.SHA1())
+        h.finalize()
+
+        with pytest.raises(AlreadyFinalized):
+            h.update(b"foo")
+
+        with pytest.raises(AlreadyFinalized):
+            h.copy()
+
+        with pytest.raises(AlreadyFinalized):
+            h.finalize()
