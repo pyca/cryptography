@@ -15,7 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
-from cryptography import exceptions
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -39,14 +39,14 @@ class Hash(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise exceptions.AlreadyFinalized()
+            raise AlreadyFinalized()
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
         self._ctx.update(data)
 
     def copy(self):
         if self._ctx is None:
-            raise exceptions.AlreadyFinalized()
+            raise AlreadyFinalized()
         return Hash(
             self.algorithm, backend=self._backend, ctx=self._ctx.copy()
         )

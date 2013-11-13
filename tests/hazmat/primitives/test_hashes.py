@@ -19,7 +19,7 @@ import pytest
 
 import six
 
-from cryptography import exceptions
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings import _default_backend
 from cryptography.hazmat.primitives import hashes
 
@@ -56,10 +56,10 @@ class TestHashContext(object):
         h = hashes.Hash(hashes.SHA1())
         h.finalize()
 
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             h.update(b"foo")
 
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             h.copy()
 
 
