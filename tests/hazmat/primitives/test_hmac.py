@@ -37,9 +37,10 @@ class TestHMAC(object):
             h.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        pretend_hmac = pretend.stub(copy_ctx=lambda a: True)
+        pretend_hmac = pretend.stub()
         pretend_backend = pretend.stub(hmacs=pretend_hmac)
-        pretend_ctx = pretend.stub()
+        copied_ctx = pretend.stub()
+        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hmac.HMAC(b"key", hashes.SHA1(), backend=pretend_backend,
                       ctx=pretend_ctx)
         assert h._backend is pretend_backend
