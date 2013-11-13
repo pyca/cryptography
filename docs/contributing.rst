@@ -129,7 +129,7 @@ as much as possible. To that end:
 * When documenting a generic interface, use a strong algorithm in examples.
   (e.g. when showing a hashing example, don't use
   :class:`cryptography.hazmat.primitives.hashes.MD5`)
-* When giving perscriptive advice, always provide references and supporting
+* When giving prescriptive advice, always provide references and supporting
   material.
 * When there is disagreement about legitimate cryptographic experts, represent
   both sides of the argument and describe the tradeoffs clearly.
