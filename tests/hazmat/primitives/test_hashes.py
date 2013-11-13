@@ -19,6 +19,7 @@ import pytest
 
 import six
 
+from cryptography import exceptions
 from cryptography.hazmat.bindings import _default_backend
 from cryptography.hazmat.primitives import hashes
 
@@ -50,6 +51,16 @@ class TestHashContext(object):
     def test_hash_algorithm_instance(self):
         with pytest.raises(TypeError):
             hashes.Hash(hashes.SHA1)
+
+    def test_raises_after_finalize(self):
+        h = hashes.Hash(hashes.SHA1())
+        h.finalize()
+
+        with pytest.raises(exceptions.AlreadyFinalized):
+            h.update(b"foo")
+
+        with pytest.raises(exceptions.AlreadyFinalized):
+            h.copy()
 
 
 class TestSHA1(object):
