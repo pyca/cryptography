@@ -27,7 +27,7 @@ from .utils import generate_base_hmac_test
 class TestHMAC(object):
     test_copy = generate_base_hmac_test(
         hashes.MD5(),
-        only_if=lambda backend: backend.hashes.supported(hashes.MD5),
+        only_if=lambda backend: backend.hash_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
 

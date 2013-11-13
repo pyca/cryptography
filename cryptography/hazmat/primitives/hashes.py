@@ -32,7 +32,7 @@ class Hash(object):
         self._backend = backend
 
         if ctx is None:
-            self._ctx = self._backend.hashes.create_ctx(self.algorithm)
+            self._ctx = self._backend.create_hash_ctx(self.algorithm)
         else:
             self._ctx = ctx
 

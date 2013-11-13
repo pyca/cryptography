@@ -64,8 +64,6 @@ class Backend(object):
         self._ensure_ffi_initialized()
 
         self.ciphers = Ciphers(self)
-        self.hashes = Hashes(self)
-        self.hmacs = HMACs(self)
 
     @classmethod
     def _ensure_ffi_initialized(cls):
@@ -122,6 +120,16 @@ class Backend(object):
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """
         return self.ffi.string(self.lib.OPENSSL_VERSION_TEXT).decode("ascii")
+
+    def create_hmac_ctx(self, key, algorithm):
+        return _HMACContext(self, key, algorithm)
+
+    def hash_supported(self, algorithm):
+        digest = self.lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
+        return digest != self.ffi.NULL
+
+    def create_hash_ctx(self, algorithm):
+        return _HashContext(self, algorithm)
 
 
 class GetCipherByName(object):
@@ -310,20 +318,6 @@ class _HashContext(object):
         return self._backend.ffi.buffer(buf)[:]
 
 
-class Hashes(object):
-    def __init__(self, backend):
-        self._backend = backend
-
-    def supported(self, algorithm):
-        digest = self._backend.lib.EVP_get_digestbyname(
-            algorithm.name.encode("ascii")
-        )
-        return digest != self._backend.ffi.NULL
-
-    def create_ctx(self, algorithm):
-        return _HashContext(self._backend, algorithm)
-
-
 @interfaces.register(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
@@ -374,14 +368,6 @@ class _HMACContext(object):
         assert res != 0
         self._backend.lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend.ffi.buffer(buf)[:]
-
-
-class HMACs(object):
-    def __init__(self, backend):
-        self._backend = backend
-
-    def create_ctx(self, key, algorithm):
-        return _HMACContext(self._backend, key, algorithm)
 
 
 backend = Backend()

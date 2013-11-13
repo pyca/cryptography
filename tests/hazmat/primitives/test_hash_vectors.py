@@ -30,7 +30,7 @@ class TestSHA1(object):
             "SHA1ShortMsg.rsp",
         ],
         hashes.SHA1(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA1),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
 
@@ -44,7 +44,7 @@ class TestSHA224(object):
             "SHA224ShortMsg.rsp",
         ],
         hashes.SHA224(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA224),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
 
@@ -58,7 +58,7 @@ class TestSHA256(object):
             "SHA256ShortMsg.rsp",
         ],
         hashes.SHA256(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA256),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
 
@@ -72,7 +72,7 @@ class TestSHA384(object):
             "SHA384ShortMsg.rsp",
         ],
         hashes.SHA384(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -86,7 +86,7 @@ class TestSHA512(object):
             "SHA512ShortMsg.rsp",
         ],
         hashes.SHA512(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA512),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
 
@@ -99,14 +99,14 @@ class TestRIPEMD160(object):
             "ripevectors.txt",
         ],
         hashes.RIPEMD160(),
-        only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
     test_RIPEMD160_long_string = generate_long_string_hash_test(
         hashes.RIPEMD160(),
         "52783243c1697bdbe16d37f97f68f08325dc1528",
-        only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
@@ -119,7 +119,7 @@ class TestWhirlpool(object):
             "iso-test-vectors.txt",
         ],
         hashes.Whirlpool(),
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
@@ -128,7 +128,7 @@ class TestWhirlpool(object):
         ("0c99005beb57eff50a7cf005560ddf5d29057fd86b2"
          "0bfd62deca0f1ccea4af51fc15490eddc47af32bb2b"
          "66c34ff9ad8c6008ad677f77126953b226e4ed8b01"),
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
@@ -141,6 +141,6 @@ class TestMD5(object):
             "rfc-1321.txt",
         ],
         hashes.MD5(),
-        only_if=lambda backend: backend.hashes.supported(hashes.MD5),
+        only_if=lambda backend: backend.hash_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
