@@ -27,6 +27,12 @@ Message Digests
         >>> digest.finalize()
         'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
+    Keep in mind that attacks against cryptographic hashes only get stronger
+    with time, and that often algorithms that were once thought to be strong,
+    become broken. Because of this it's important to include a plan for
+    upgrading the hash algorithm you use over time. For more information, see
+    `Lifetimes of cryptographic hash functions`_.
+
     .. method:: update(data)
 
         :param bytes data: The bytes you wish to hash.
@@ -109,3 +115,6 @@ MD5
 
     MD5 is a deprecated cryptographic hash function. It has a 128-bit message
     digest and has practical known collision attacks.
+
+
+.. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
