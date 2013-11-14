@@ -79,6 +79,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
         :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was encrypted or decrypted.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
         When the ``Cipher`` was constructed in a mode that turns it into a
         stream cipher (e.g.
@@ -89,6 +90,10 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
+
+        Once ``finalize`` is called this object can no longer be used and
+        :meth:`update` and :meth:`finalize` will raise
+        :class:`~cryptography.exceptions.AlreadyFinalized`.
 
 Algorithms
 ~~~~~~~~~~

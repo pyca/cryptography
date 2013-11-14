@@ -53,7 +53,7 @@ Message Digests
         Finalize the current context and return the message digest as bytes.
 
         Once ``finalize`` is called this object can no longer be used and
-        :meth:`update` and :meth:`copy` will raise
+        :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
 
         :return bytes: The message digest as bytes.

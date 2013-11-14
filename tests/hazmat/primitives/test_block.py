@@ -17,7 +17,7 @@ import binascii
 
 import pytest
 
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
@@ -56,16 +56,16 @@ class TestCipherContext(object):
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
         encryptor.finalize()
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             encryptor.update(b"b" * 16)
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             encryptor.finalize()
         decryptor = cipher.decryptor()
         decryptor.update(b"a" * 16)
         decryptor.finalize()
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             decryptor.update(b"b" * 16)
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             decryptor.finalize()
 
     def test_unaligned_block_encryption(self, backend):

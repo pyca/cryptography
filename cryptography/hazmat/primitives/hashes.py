@@ -39,19 +39,21 @@ class Hash(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise AlreadyFinalized()
+            raise AlreadyFinalized("Context was already finalized")
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
         self._ctx.update(data)
 
     def copy(self):
         if self._ctx is None:
-            raise AlreadyFinalized()
+            raise AlreadyFinalized("Context was already finalized")
         return Hash(
             self.algorithm, backend=self._backend, ctx=self._ctx.copy()
         )
 
     def finalize(self):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
