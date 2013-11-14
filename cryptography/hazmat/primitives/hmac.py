@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -37,11 +38,15 @@ class HMAC(object):
             self._ctx = ctx
 
     def update(self, msg):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         if isinstance(msg, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
         self._ctx.update(msg)
 
     def copy(self):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         return HMAC(
             self._key,
             self.algorithm,
@@ -50,4 +55,8 @@ class HMAC(object):
         )
 
     def finalize(self):
-        return self._ctx.finalize()
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        digest = self._ctx.finalize()
+        self._ctx = None
+        return digest

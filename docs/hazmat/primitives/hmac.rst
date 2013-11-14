@@ -36,15 +36,25 @@ message.
     .. method:: update(msg)
 
         :param bytes msg: The bytes to hash and authenticate.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
     .. method:: copy()
 
-        :return: a new instance of this object with a copied internal state.
+        Copy this :class:`HMAC` instance, usually so that we may call
+        :meth:`finalize` and get an intermediate digest value while we continue
+        to call :meth:`update` on the original.
+
+        :return: A new instance of :class:`HMAC` which can be updated
+            and finalized independently of the original instance.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
     .. method:: finalize()
 
         Finalize the current context and return the message digest as bytes.
 
-        Once ``finalize`` is called this object can no longer be used.
+        Once ``finalize`` is called this object can no longer be used and
+        :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise
+        :class:`~cryptography.exceptions.AlreadyFinalized`.
 
         :return bytes: The message digest as bytes.
+        :raises cryptography.exceptions.AlreadyFinalized:
