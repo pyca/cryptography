@@ -14,7 +14,6 @@
 import cffi
 
 import six
-from six.moves import xrange
 
 from cryptography.hazmat.primitives import interfaces
 
@@ -53,7 +52,6 @@ bool Cryptography_check_padding(uint8_t *data, unsigned int block_len) {
     return mismatch == 0;
 }
 """)
-
 
 
 class PKCS7(object):
@@ -146,7 +144,9 @@ class _PKCS7UnpaddingContext(object):
 
         pad_size = six.indexbytes(self._buffer, -1)
 
-        valid = _lib.Cryptography_check_padding(self._buffer, self.block_size // 8)
+        valid = _lib.Cryptography_check_padding(
+            self._buffer, self.block_size // 8
+        )
 
         if not valid or not (0 < pad_size <= self.block_size // 8):
             raise ValueError("Invalid padding bytes")
