@@ -21,9 +21,11 @@ from cryptography.hazmat.primitives import interfaces
 
 _ffi = cffi.FFI()
 _ffi.cdef("""
-unsigned int Cryptography_constant_time_lt(unsigned int, unsigned int);
+bool Cryptography_check_padding(uint8_t *, unsigned int);
 """)
 _lib = _ffi.verify("""
+#include <stdbool.h>
+
 /* Returns the value of the input with the most-significant-bit copied to all
    of the bits. This relies on implementation details of computers with 2's
    complement representations of integers, which is not required by the C
@@ -38,7 +40,20 @@ unsigned int Cryptography_constant_time_lt(unsigned int a, unsigned int b) {
     a -= b;
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
+
+bool Cryptography_check_padding(uint8_t *data, unsigned int block_len) {
+    unsigned int i;
+    uint8_t pad_size = data[block_len - 1];
+    uint8_t mismatch = 0;
+    for (i = 0; i < block_len; i++) {
+        unsigned int mask = Cryptography_constant_time_lt(i, pad_size);
+        uint8_t b = data[block_len - 1 - i];
+        mismatch |= (mask & (pad_size ^ b));
+    }
+    return mismatch == 0;
+}
 """)
+
 
 
 class PKCS7(object):
@@ -131,13 +146,9 @@ class _PKCS7UnpaddingContext(object):
 
         pad_size = six.indexbytes(self._buffer, -1)
 
-        mismatch = 0
-        for i in xrange(self.block_size // 8):
-            mask = _lib.Cryptography_constant_time_lt(i, pad_size)
-            b = six.indexbytes(self._buffer, self.block_size // 8 - 1 - i)
-            mismatch |= (mask & (pad_size ^ b))
+        valid = _lib.Cryptography_check_padding(self._buffer, self.block_size // 8)
 
-        if mismatch != 0 or not (0 < pad_size <= self.block_size // 8):
+        if not valid or not (0 < pad_size <= self.block_size // 8):
             raise ValueError("Invalid padding bytes")
 
         res = self._buffer[:-pad_size]
