@@ -18,17 +18,9 @@ import abc
 import six
 
 
-class CiphersProviderBackend(six.with_metaclass(abc.ABCMeta)):
-    @abc.abstractproperty
-    def ciphers(self):
-        """
-        An instance of CiphersProvider
-        """
-
-
-class CiphersProvider(six.with_metaclass(abc.ABCMeta)):
+class CipherBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
-    def supported(self, cipher, mode):
+    def cipher_supported(self, cipher, mode):
         """
         """
 
@@ -38,76 +30,30 @@ class CiphersProvider(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
-    def create_encrypt_ctx(self, cipher, mode):
+    def create_symmetric_encryption_ctx(self, cipher, mode):
         """
         """
 
     @abc.abstractmethod
-    def create_decrypt_ctx(self, cipher, mode):
+    def create_symmetric_decryption_ctx(self, cipher, mode):
         """
         """
 
 
-class HashesProviderBackend(six.with_metaclass(abc.ABCMeta)):
-    @abc.abstractproperty
-    def hashes(self):
-        """
-        An instance of HashesProvider
-        """
-
-
-class HashesProvider(six.with_metaclass(abc.ABCMeta)):
+class HashBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
-    def supported(self, algorithm):
+    def hash_supported(self, algorithm):
         """
         """
 
     @abc.abstractmethod
-    def create_ctx(self, algorithm):
+    def create_hash_ctx(self, algorithm):
         """
         """
 
+
+class HMACBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
-    def update_ctx(self, ctx, data):
-        """
-        """
-
-    @abc.abstractmethod
-    def finalize_ctx(self, ctx, digest_size):
-        """
-        """
-
-    @abc.abstractmethod
-    def copy_ctx(self, ctx):
-        """
-        """
-
-
-class HMACsProviderBackend(six.with_metaclass(abc.ABCMeta)):
-    @abc.abstractproperty
-    def hmacs(self):
-        """
-        An instance of HMACsProvider
-        """
-
-
-class HMACsProvider(six.with_metaclass(abc.ABCMeta)):
-    @abc.abstractmethod
-    def create_ctx(self, key, algorithm):
-        """
-        """
-
-    @abc.abstractmethod
-    def update_ctx(self, ctx, data):
-        """
-        """
-
-    @abc.abstractmethod
-    def finalize_ctx(self, ctx, digest_size):
-        """
-        """
-
-    @abc.abstractmethod
-    def copy_ctx(self, ctx):
+    def create_hmac_ctx(self, key, algorithm):
         """
         """
