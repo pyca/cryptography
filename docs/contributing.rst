@@ -132,7 +132,7 @@ as much as possible. To that end:
 * When giving prescriptive advice, always provide references and supporting
   material.
 * When there is real disagreement between cryptographic experts, represent both
-  sides of the argument and describe the tradeoffs clearly.
+  sides of the argument and describe the trade-offs clearly.
 
 When documenting a new module in the ``hazmat`` package, its documentation
 should begin with the "Hazardous Materials" warning:
