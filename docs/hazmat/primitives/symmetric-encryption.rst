@@ -14,7 +14,7 @@ Symmetric Encryption
 
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
-where the encrypter and decrypter both use the same key. Note that symmetric
+where the sender and receiver both use the same key. Note that symmetric
 encryption is **not** sufficient for most applications, because it only
 provides secrecy (an attacker can't see the message) but not authenticity (an
 attacker can create bogus messages and force the application to decrypt them).
