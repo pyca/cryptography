@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'cryptography-docs',
+    'sphinxcontrib.spelling',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

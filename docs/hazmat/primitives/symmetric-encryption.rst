@@ -18,7 +18,7 @@ where the encrypter and decrypter both use the same key. Note that symmetric
 encryption is **not** sufficient for most applications, because it only
 provides secrecy (an attacker can't see the message) but not authenticity (an
 attacker can create bogus messages and force the application to decrypt them).
-For this reason it is *strongly* reccomended to combine encryption with a
+For this reason it is *strongly* recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
 an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
@@ -121,10 +121,10 @@ Algorithms
 
 .. class:: TripleDES(key)
 
-    Triple DES (Data Encryption Standard), sometimes refered to as 3DES, is a
-    block cipher standardized by NIST. Triple DES has known cryptoanalytic
+    Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
+    block cipher standardized by NIST. Triple DES has known crypto-analytic
     flaws, however none of them currently enable a practical attack.
-    Nonetheless, Triples DES is not reccomended for new applications because it
+    Nonetheless, Triples DES is not recommended for new applications because it
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key, either ``64``, ``128``, or ``192`` bits

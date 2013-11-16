@@ -27,4 +27,4 @@ Glossary
 
     asymmetric cryptography
         Cryptographic operations where encryption and decryption use different
-        keys. There are seperate encryption and decryption keys.
+        keys. There are separate encryption and decryption keys.
