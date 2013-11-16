@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import interfaces
 
 _ffi = cffi.FFI()
 _ffi.cdef("""
-bool Cryptography_check_padding(uint8_t *, unsigned int);
+bool Cryptography_check_padding(const uint8_t *, unsigned int);
 """)
 _lib = _ffi.verify("""
 #include <stdbool.h>
@@ -40,7 +40,7 @@ unsigned int Cryptography_constant_time_lt(unsigned int a, unsigned int b) {
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
 
-bool Cryptography_check_padding(uint8_t *data, unsigned int block_len) {
+bool Cryptography_check_padding(const uint8_t *data, unsigned int block_len) {
     unsigned int i;
     uint8_t pad_size = data[block_len - 1];
     uint8_t mismatch = 0;
