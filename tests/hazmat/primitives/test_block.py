@@ -24,6 +24,11 @@ from cryptography.hazmat.primitives.ciphers import (
 )
 
 
+@interfaces.register(interfaces.CipherAlgorithm)
+class DummyCipher(object):
+    pass
+
+
 class TestCipher(object):
     def test_instantiate_without_backend(self):
         Cipher(
@@ -44,6 +49,11 @@ class TestCipher(object):
             modes.CBC(binascii.unhexlify(b"0" * 32))
         )
         assert isinstance(cipher.decryptor(), interfaces.CipherContext)
+
+    def test_instantiate_with_non_algorithm(self):
+        algorithm = object()
+        with pytest.raises(TypeError):
+            Cipher(algorithm, mode=None)
 
 
 class TestCipherContext(object):
@@ -90,7 +100,7 @@ class TestCipherContext(object):
 
     def test_nonexistent_cipher(self, backend):
         cipher = Cipher(
-            object(), object(), backend
+            DummyCipher(), object(), backend
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()

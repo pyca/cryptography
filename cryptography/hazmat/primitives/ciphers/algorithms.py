@@ -13,7 +13,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.hazmat.primitives import interfaces
 
+
+@interfaces.register(interfaces.CipherAlgorithm)
 class AES(object):
     name = "AES"
     block_size = 128
@@ -33,6 +36,7 @@ class AES(object):
         return len(self.key) * 8
 
 
+@interfaces.register(interfaces.CipherAlgorithm)
 class Camellia(object):
     name = "camellia"
     block_size = 128
@@ -52,6 +56,7 @@ class Camellia(object):
         return len(self.key) * 8
 
 
+@interfaces.register(interfaces.CipherAlgorithm)
 class TripleDES(object):
     name = "3DES"
     block_size = 64
@@ -75,6 +80,7 @@ class TripleDES(object):
         return len(self.key) * 8
 
 
+@interfaces.register(interfaces.CipherAlgorithm)
 class Blowfish(object):
     name = "Blowfish"
     block_size = 64
@@ -94,6 +100,7 @@ class Blowfish(object):
         return len(self.key) * 8
 
 
+@interfaces.register(interfaces.CipherAlgorithm)
 class CAST5(object):
     name = "CAST5"
     block_size = 64
@@ -113,6 +120,7 @@ class CAST5(object):
         return len(self.key) * 8
 
 
+@interfaces.register(interfaces.CipherAlgorithm)
 class ARC4(object):
     name = "RC4"
     block_size = 1

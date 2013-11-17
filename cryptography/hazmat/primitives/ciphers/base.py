@@ -24,6 +24,9 @@ class Cipher(object):
                 _default_backend as backend,
             )
 
+        if not isinstance(algorithm, interfaces.CipherAlgorithm):
+            raise TypeError("Expected interface of interfaces.CipherAlgorithm")
+
         self.algorithm = algorithm
         self.mode = mode
         self._backend = backend

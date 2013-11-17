@@ -15,16 +15,18 @@ import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.openssl.backend import backend, Backend
+from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
-class FakeMode(object):
+class DummyMode(object):
     pass
 
 
-class FakeCipher(object):
+@interfaces.register(interfaces.CipherAlgorithm)
+class DummyCipher(object):
     pass
 
 
@@ -58,12 +60,12 @@ class TestOpenSSL(object):
     def test_nonexistent_cipher(self):
         b = Backend()
         b.register_cipher_adapter(
-            FakeCipher,
-            FakeMode,
+            DummyCipher,
+            DummyMode,
             lambda backend, cipher, mode: backend.ffi.NULL
         )
         cipher = Cipher(
-            FakeCipher(), FakeMode(), backend=b,
+            DummyCipher(), DummyMode(), backend=b,
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
