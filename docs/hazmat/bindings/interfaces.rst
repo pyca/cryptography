@@ -8,36 +8,111 @@ Backend Interfaces
 
 .. class:: CipherBackend
 
+    A backend which provides methods for using ciphers for encryption
+    and decryption.
+
     .. method:: cipher_supported(cipher, mode)
 
-        pass
+        Check if a ``cipher`` and ``mode`` combination is supported by
+        this backend.
+
+        :param cipher: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            provider.
+        :param mode: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider.
+
+        :returns: ``True`` if the specified ``cipher`` and ``mode`` combination
+            is supported by this backend, otherwise ``False``
 
     .. method:: register_cipher_adapter(cipher_cls, mode_cls, adapter)
 
-        pass
+        Register an adapter which can be used to create a backend specific
+        object from instances of the
+        :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm` and
+        the :class:`~cryptography.hazmat.primitives.interfaces.Mode` primitives.
+
+        :param cipher_cls: A class whose instances provide
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+        :param mode_cls: A class whose instances provide:
+            :class:`~cryptography.hazmat.primitives.interfaces.Mode`
+        :param adapter: A ``function`` that takes 3 arguments, ``backend`` (a
+            :class:`CipherBackend` provider), ``cipher`` (a
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            provider ), and ``mode`` (a
+            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider).
+            It returns a backend specific object which may be used to construct
+            a :class:`~cryptogrpahy.hazmat.primitives.interfaces.CipherContext`.
+
 
     .. method:: create_symmetric_encryption_ctx(cipher, mode)
 
-        pass
+        Create a
+        :class:`~cryptogrpahy.hazmat.primitives.interfaces.CipherContext` that
+        can be used for encrypting data with the symmetric ``cipher`` using
+        the given ``mode``.
+
+        :param cipher: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            provider.
+        :param mode: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
+
 
     .. method:: create_symmetric_decryption_ctx(cipher, mode)
 
-        pass
+        Create a
+        :class:`~cryptogrpahy.hazmat.primitives.interfaces.CipherContext` that
+        can be used for decrypting data with the symmetric ``cipher`` using
+        the given ``mode``.
+
+        :param cipher: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            provider.
+        :param mode: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
 
 
 .. class:: HashBackend
 
+    A backend with methods for using cryptographic hash functions.
+
     .. method:: hash_supported(algorithm)
 
-        pass
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns: ``True`` if the specified ``algorithm`` is supported by this
+            backend, otherwise ``False``.
+
 
     .. method:: create_hash_ctx(algorithm)
 
-        pass
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
 
 
 .. class:: HMACBackend
 
+    A backend with methods for using cryptographic hash functions as message
+    authentication codes.
+
     .. method:: create_hmac_ctx(algorithm)
 
-        pass
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
