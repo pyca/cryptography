@@ -34,7 +34,7 @@ static unsigned int Cryptography_DUPLICATE_MSB_TO_ALL(unsigned int a) {
     return (unsigned int)((int)(a) >> (sizeof(int) * 8 - 1));
 }
 
-/* This returns 0xFF if a < b else 0x00, but does so in a constant time
+/* This returns 0xFFFF if a < b else 0x00, but does so in a constant time
    fashion */
 unsigned int Cryptography_constant_time_lt(unsigned int a, unsigned int b) {
     a -= b;
