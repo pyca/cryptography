@@ -22,21 +22,25 @@ class CipherBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def cipher_supported(self, cipher, mode):
         """
+        Return True if the given cipher and mode are supported.
         """
 
     @abc.abstractmethod
-    def register_cipher_adapter(self, cipher, mode):
+    def register_cipher_adapter(self, cipher, mode, adapter):
         """
+        Register an adapter for a cipher and mode to a backend specific object.
         """
 
     @abc.abstractmethod
     def create_symmetric_encryption_ctx(self, cipher, mode):
         """
+        Get a CipherContext that can be used for encryption.
         """
 
     @abc.abstractmethod
     def create_symmetric_decryption_ctx(self, cipher, mode):
         """
+        Get a CipherContext that can be used for decryption.
         """
 
 
@@ -44,11 +48,13 @@ class HashBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def hash_supported(self, algorithm):
         """
+        Return True if the hash algorithm is supported by this backend.
         """
 
     @abc.abstractmethod
     def create_hash_ctx(self, algorithm):
         """
+        Create a HashContext for calculating a message digest.
         """
 
 
@@ -56,4 +62,5 @@ class HMACBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def create_hmac_ctx(self, key, algorithm):
         """
+        Create a HashContext for calculating a message authentication code.
         """
