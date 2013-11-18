@@ -85,6 +85,8 @@ Backend Interfaces
 
     .. method:: hash_supported(algorithm)
 
+        Check if the specified ``algorithm`` is supported by this backend.
+
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
@@ -94,6 +96,10 @@ Backend Interfaces
 
 
     .. method:: create_hash_ctx(algorithm)
+
+        Create a
+        :class:`~cryptogrpahy.hazmat.primitives.interfaces.HashContext` that
+        uses the specified ``algorithm`` to calculate a message digest.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -109,6 +115,11 @@ Backend Interfaces
     authentication codes.
 
     .. method:: create_hmac_ctx(algorithm)
+
+        Create a
+        :class:`~cryptogrpahy.hazmat.primitives.interfaces.HashContext` that
+        uses the specified ``algorithm`` to calculate a hash-based message
+        authentication code.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
