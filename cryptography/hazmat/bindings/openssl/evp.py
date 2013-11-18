@@ -16,10 +16,13 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef ... EVP_CIPHER;
 typedef struct {
+    const EVP_CIPHER *cipher;
+    ENGINE *engine;
+    int encrypt;
     ...;
 } EVP_CIPHER_CTX;
-typedef ... EVP_CIPHER;
 typedef ... EVP_MD;
 typedef struct env_md_ctx_st EVP_MD_CTX;
 
