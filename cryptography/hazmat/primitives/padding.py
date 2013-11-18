@@ -26,11 +26,9 @@ _lib = _ffi.verify("""
 #include <stdbool.h>
 
 /* Returns the value of the input with the most-significant-bit copied to all
-   of the bits. This relies on implementation details of computers with 2's
-   complement representations of integers, which is not required by the C
-   standard. */
+   of the bits. */
 static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
-    return (uint8_t)((int8_t)(a) >> (sizeof(int8_t) * 8 - 1));
+    return -(a >> (sizeof(uint8_t) * 8 - 1));
 }
 
 /* This returns 0xFF if a < b else 0x00, but does so in a constant time
