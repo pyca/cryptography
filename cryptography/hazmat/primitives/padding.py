@@ -24,6 +24,7 @@ bool Cryptography_check_padding(const uint8_t *, unsigned int);
 """)
 _lib = _ffi.verify("""
 #include <stdbool.h>
+#include <stdio.h>
 
 /* Returns the value of the input with the most-significant-bit copied to all
    of the bits. This relies on implementation details of computers with 2's
@@ -49,7 +50,13 @@ bool Cryptography_check_padding(const uint8_t *data, unsigned int block_len) {
         uint8_t b = data[block_len - 1 - i];
         mismatch |= (mask & (pad_size ^ b));
     }
-    return mismatch == 0;
+
+    /* Make sure any bits set are copied to the lowest bit */
+    mismatch |= mismatch >> 4;
+    mismatch |= mismatch >> 2;
+    mismatch |= mismatch >> 1;
+    /* Now check the low bit to see if it's set */
+    return (mismatch & 1) == 0;
 }
 """)
 
