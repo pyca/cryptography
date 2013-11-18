@@ -30,24 +30,39 @@ class InvalidToken(Exception):
     pass
 
 
-ffi = cffi.FFI()
-ffi.cdef("""
-bool constant_time_compare(uint8_t *, size_t, uint8_t *, size_t);
+_ffi = cffi.FFI()
+_ffi.cdef("""
+bool Cryptography_constant_time_compare(uint8_t *, size_t, uint8_t *, size_t);
 """)
-lib = ffi.verify("""
+_lib = _ffi.verify("""
 #include <stdbool.h>
 
-bool constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
-                           size_t len_b) {
+
+/* Returns the value of the input with the most-significant-bit copied to all
+   of the bits. This relies on implementation details of computers with 2's
+   complement representations of integers, which is not required by the C
+   standard. */
+static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
+    return (uint8_t)((int8_t)(a) >> (sizeof(int8_t) * 8 - 1));
+}
+
+bool Cryptography_constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
+                                        size_t len_b) {
     size_t i = 0;
-    int result = 0;
+    uint8_t mismatch = 0;
     if (len_a != len_b) {
         return false;
     }
     for (i = 0; i < len_a; i++) {
-        result |= a[i] ^ b[i];
+        mismatch |= a[i] ^ b[i];
     }
-    return result == 0;
+
+    /* Make sure any bits set are copied to the lowest bit */
+    mismatch |= mismatch >> 4;
+    mismatch |= mismatch >> 2;
+    mismatch |= mismatch >> 1;
+    /* Now check the low bit to see if it's set */
+    return (mismatch & 1) == 0;
 }
 """)
 
@@ -112,8 +127,10 @@ class Fernet(object):
         h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
         h.update(data[:-32])
         hmac = h.finalize()
-
-        if not lib.constant_time_compare(hmac, len(hmac), data[-32:], 32):
+        valid = _lib.Cryptography_constant_time_compare(
+            hmac, len(hmac), data[-32:], 32
+        )
+        if not valid:
             raise InvalidToken
 
         decryptor = Cipher(
