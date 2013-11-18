@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
@@ -42,7 +43,7 @@ class Cipher(object):
         ))
 
 
-@interfaces.register(interfaces.CipherContext)
+@utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx

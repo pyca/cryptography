@@ -18,6 +18,7 @@ import sys
 
 import cffi
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -196,7 +197,7 @@ class GetCipherByName(object):
         return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
-@interfaces.register(interfaces.CipherContext)
+@utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
@@ -267,7 +268,7 @@ class _CipherContext(object):
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
 
-@interfaces.register(interfaces.HashContext)
+@utils.register_interface(interfaces.HashContext)
 class _HashContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         self.algorithm = algorithm
@@ -310,7 +311,7 @@ class _HashContext(object):
         return self._backend.ffi.buffer(buf)[:]
 
 
-@interfaces.register(interfaces.HashContext)
+@utils.register_interface(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
         self.algorithm = algorithm

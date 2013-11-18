@@ -18,13 +18,6 @@ import abc
 import six
 
 
-def register(iface):
-    def register_decorator(klass):
-        iface.register(klass)
-        return klass
-    return register_decorator
-
-
 class CipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):

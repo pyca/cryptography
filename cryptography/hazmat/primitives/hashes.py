@@ -15,11 +15,12 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
-@interfaces.register(interfaces.HashContext)
+@utils.register_interface(interfaces.HashContext)
 class Hash(object):
     def __init__(self, algorithm, backend=None, ctx=None):
         if not isinstance(algorithm, interfaces.HashAlgorithm):
@@ -59,56 +60,56 @@ class Hash(object):
         return digest
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA1(object):
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA224(object):
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA256(object):
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA384(object):
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA512(object):
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class RIPEMD160(object):
     name = "ripemd160"
     digest_size = 20
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class Whirlpool(object):
     name = "whirlpool"
     digest_size = 64
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class MD5(object):
     name = "md5"
     digest_size = 16
