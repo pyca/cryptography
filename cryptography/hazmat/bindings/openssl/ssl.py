@@ -173,7 +173,43 @@ X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 void SSL_SESSION_free(SSL_SESSION *);
 """
 
-MACROS = """
+MACROS = MACROS = """
+long SSL_set_mode(SSL *, long);
+long SSL_get_mode(SSL *);
+
+long SSL_set_options(SSL *, long);
+long SSL_get_options(SSL *);
+
+int SSL_want_read(const SSL *);
+int SSL_want_write(const SSL *);
+
+int SSL_total_renegotiations(const SSL *);
+
+long SSL_CTX_set_options(SSL_CTX *, long);
+long SSL_CTX_get_options(SSL_CTX *);
+long SSL_CTX_set_mode(SSL_CTX *, long);
+long SSL_CTX_get_mode(SSL_CTX *);
+long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
+long SSL_CTX_get_session_cache_mode(SSL_CTX *);
+long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
+long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
+
+/*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
+
+/*  methods */
+const SSL_METHOD *SSLv3_method();
+const SSL_METHOD *SSLv3_server_method();
+const SSL_METHOD *SSLv3_client_method();
+const SSL_METHOD *TLSv1_method();
+const SSL_METHOD *TLSv1_server_method();
+const SSL_METHOD *TLSv1_client_method();
+const SSL_METHOD *SSLv23_method();
+const SSL_METHOD *SSLv23_server_method();
+const SSL_METHOD *SSLv23_client_method();
+
+/*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
+SSL_CTX *SSL_CTX_new(const SSL_METHOD *);
+long SSL_CTX_get_timeout(const SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
