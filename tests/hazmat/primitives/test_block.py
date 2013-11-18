@@ -17,6 +17,7 @@ import binascii
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
@@ -24,7 +25,7 @@ from cryptography.hazmat.primitives.ciphers import (
 )
 
 
-@interfaces.register(interfaces.CipherAlgorithm)
+@utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     pass
 

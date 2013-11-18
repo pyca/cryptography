@@ -13,11 +13,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
 
-@interfaces.register(interfaces.Mode)
-@interfaces.register(interfaces.ModeWithInitializationVector)
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithInitializationVector)
 class CBC(object):
     name = "CBC"
 
@@ -25,13 +26,13 @@ class CBC(object):
         self.initialization_vector = initialization_vector
 
 
-@interfaces.register(interfaces.Mode)
+@utils.register_interface(interfaces.Mode)
 class ECB(object):
     name = "ECB"
 
 
-@interfaces.register(interfaces.Mode)
-@interfaces.register(interfaces.ModeWithInitializationVector)
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithInitializationVector)
 class OFB(object):
     name = "OFB"
 
@@ -39,8 +40,8 @@ class OFB(object):
         self.initialization_vector = initialization_vector
 
 
-@interfaces.register(interfaces.Mode)
-@interfaces.register(interfaces.ModeWithInitializationVector)
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithInitializationVector)
 class CFB(object):
     name = "CFB"
 
@@ -48,8 +49,8 @@ class CFB(object):
         self.initialization_vector = initialization_vector
 
 
-@interfaces.register(interfaces.Mode)
-@interfaces.register(interfaces.ModeWithNonce)
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithNonce)
 class CTR(object):
     name = "CTR"
 

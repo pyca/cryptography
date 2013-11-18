@@ -13,6 +13,7 @@
 
 import six
 
+from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -33,7 +34,7 @@ class PKCS7(object):
         return _PKCS7UnpaddingContext(self.block_size)
 
 
-@interfaces.register(interfaces.PaddingContext)
+@utils.register_interface(interfaces.PaddingContext)
 class _PKCS7PaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
@@ -67,7 +68,7 @@ class _PKCS7PaddingContext(object):
         return result
 
 
-@interfaces.register(interfaces.PaddingContext)
+@utils.register_interface(interfaces.PaddingContext)
 class _PKCS7UnpaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size

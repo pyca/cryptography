@@ -13,6 +13,7 @@
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces
@@ -25,7 +26,7 @@ class DummyMode(object):
     pass
 
 
-@interfaces.register(interfaces.CipherAlgorithm)
+@utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     pass
 
