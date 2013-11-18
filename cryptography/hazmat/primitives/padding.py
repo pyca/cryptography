@@ -33,7 +33,7 @@ static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
 
 /* This returns 0xFF if a < b else 0x00, but does so in a constant time
    fashion */
-uint8_t Cryptography_constant_time_lt(uint8_t a, uint8_t b) {
+static uint8_t Cryptography_constant_time_lt(uint8_t a, uint8_t b) {
     a -= b;
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
