@@ -37,15 +37,6 @@ bool Cryptography_constant_time_compare(uint8_t *, size_t, uint8_t *, size_t);
 _lib = _ffi.verify("""
 #include <stdbool.h>
 
-
-/* Returns the value of the input with the most-significant-bit copied to all
-   of the bits. This relies on implementation details of computers with 2's
-   complement representations of integers, which is not required by the C
-   standard. */
-static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
-    return (uint8_t)((int8_t)(a) >> (sizeof(int8_t) * 8 - 1));
-}
-
 bool Cryptography_constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
                                         size_t len_b) {
     size_t i = 0;
