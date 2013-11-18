@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import interfaces
 
 _ffi = cffi.FFI()
 _ffi.cdef("""
-bool Cryptography_check_padding(const uint8_t *, unsigned int);
+bool Cryptography_check_padding(const uint8_t *, uint8_t);
 """)
 _lib = _ffi.verify("""
 #include <stdbool.h>
@@ -30,19 +30,19 @@ _lib = _ffi.verify("""
    of the bits. This relies on implementation details of computers with 2's
    complement representations of integers, which is not required by the C
    standard. */
-static unsigned int Cryptography_DUPLICATE_MSB_TO_ALL(unsigned int a) {
-    return (unsigned int)((int)(a) >> (sizeof(int) * 8 - 1));
+static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
+    return (uint8_t)((int8_t)(a) >> (sizeof(int8_t) * 8 - 1));
 }
 
-/* This returns 0xFFFF if a < b else 0x00, but does so in a constant time
+/* This returns 0xFF if a < b else 0x00, but does so in a constant time
    fashion */
-unsigned int Cryptography_constant_time_lt(unsigned int a, unsigned int b) {
+uint8_t Cryptography_constant_time_lt(uint8_t a, uint8_t b) {
     a -= b;
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
 
-bool Cryptography_check_padding(const uint8_t *data, unsigned int block_len) {
-    unsigned int i;
+bool Cryptography_check_padding(const uint8_t *data, uint8_t block_len) {
+    uint8_t i;
     uint8_t pad_size = data[block_len - 1];
     uint8_t mismatch = 0;
     for (i = 0; i < block_len; i++) {
