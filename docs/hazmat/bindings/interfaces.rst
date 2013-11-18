@@ -6,6 +6,14 @@ Backend Interfaces
 .. currentmodule:: cryptography.hazmat.bindings.interfaces
 
 
+Backend implementations may provide a number of interfaces to support operations
+such as :doc:`/hazmat/primitives/symmetric-encryption`,
+:doc:`/hazmat/primitives/cryptographic-hashes`, and
+:doc:`/hazmat/primitives/hmac`.
+
+A specific ``backend`` may provide one or more of these interfaces.
+
+
 .. class:: CipherBackend
 
     A backend which provides methods for using ciphers for encryption
