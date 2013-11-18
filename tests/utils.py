@@ -40,7 +40,15 @@ def load_nist_vectors(vector_data):
 
         # Look for section headers
         if line.startswith("[") and line.endswith("]"):
-            section = line[1:-1]
+            if "=" in line:
+                # GCM section headers
+                if "Keylen" in line:
+                    section = line[1:-1]
+                else:
+                    section += line[1:-1]
+            else:
+                # non-GCM section headers
+                section = line[1:-1]
             continue
 
         if line.strip() == "FAIL":

@@ -347,8 +347,28 @@ def test_load_nist_gcm_vectors():
         AAD =
         Tag = 1665b0f1a0b456e1664cfd3de08ccd
         PT =
+
+        [Keylen = 128]
+        [IVlen = 8]
+        [PTlen = 104]
+        [AADlen = 0]
+        [Taglen = 128]
+
+        Count = 0
+        Key = 58fab7632bcf10d2bcee58520bf37414
+        IV = 3c
+        CT = 15c4db4cbb451211179d57017f
+        AAD =
+        Tag = eae841d4355feeb3f786bc86625f1e5b
+        FAIL
     """).splitlines()
     assert load_nist_vectors(vector_data) == [
+        {'aad': b'',
+         'iv': b'3c',
+         'tag': b'eae841d4355feeb3f786bc86625f1e5b',
+         'key': b'58fab7632bcf10d2bcee58520bf37414',
+         'ct': b'15c4db4cbb451211179d57017f',
+         'fail': True},
         {'aad': b'',
          'pt': b'',
          'iv': b'4e8df20faaf2c8eebe922902',
