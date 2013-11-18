@@ -24,7 +24,6 @@ bool Cryptography_check_padding(const uint8_t *, uint8_t);
 """)
 _lib = _ffi.verify("""
 #include <stdbool.h>
-#include <stdio.h>
 
 /* Returns the value of the input with the most-significant-bit copied to all
    of the bits. This relies on implementation details of computers with 2's
