@@ -23,36 +23,19 @@ def load_vectors_from_file(filename, loader):
 
 
 def load_nist_vectors(vector_data):
-    section = None
-    count = None
-    data = {}
+    test_data = None
+    data = []
 
     for line in vector_data:
         line = line.strip()
 
-        # Blank lines are ignored
-        if not line:
-            continue
-
-        # Lines starting with # are comments
-        if line.startswith("#"):
-            continue
-
-        # Look for section headers
-        if line.startswith("[") and line.endswith("]"):
-            if "=" in line:
-                # GCM section headers
-                if "Keylen" in line:
-                    section = line[1:-1]
-                else:
-                    section += line[1:-1]
-            else:
-                # non-GCM section headers
-                section = line[1:-1]
+        # Blank lines, comments, and section headers are ignored
+        if not line or line.startswith("#") or (line.startswith("[")
+                                                and line.endswith("]")):
             continue
 
         if line.strip() == "FAIL":
-            data[section, count]["fail"] = True
+            test_data["fail"] = True
             continue
 
         # Build our data using a simple Key = Value format
@@ -60,16 +43,15 @@ def load_nist_vectors(vector_data):
 
         # COUNT is a special token that indicates a new block of data
         if name.upper() == "COUNT":
-            count = value
-            data[section, count] = {}
+            test_data = {}
+            data.append(test_data)
+            continue
         # For all other tokens we simply want the name, value stored in
         # the dictionary
         else:
-            data[section, count][name.lower()] = value.encode("ascii")
+            test_data[name.lower()] = value.encode("ascii")
 
-    # We want to test only for a particular operation, we sort them for the
-    # benefit of the tests of this function.
-    return [v for k, v in sorted(data.items(), key=lambda kv: kv[0])]
+    return data
 
 
 def load_cryptrec_vectors(vector_data):
