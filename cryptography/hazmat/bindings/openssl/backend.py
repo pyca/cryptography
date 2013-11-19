@@ -20,6 +20,9 @@ import cffi
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.bindings.interfaces import (
+    CipherBackend, HashBackend, HMACBackend
+)
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES, ARC4,
@@ -29,6 +32,9 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 )
 
 
+@utils.register_interface(CipherBackend)
+@utils.register_interface(HashBackend)
+@utils.register_interface(HMACBackend)
 class Backend(object):
     """
     OpenSSL API wrapper.
