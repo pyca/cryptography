@@ -150,7 +150,6 @@ class _PKCS7UnpaddingContext(object):
         if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
-
         valid = _lib.Cryptography_check_padding(
             self._buffer, self.block_size // 8
         )
