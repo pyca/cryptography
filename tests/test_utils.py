@@ -347,8 +347,46 @@ def test_load_nist_gcm_vectors():
         AAD =
         Tag = 1665b0f1a0b456e1664cfd3de08ccd
         PT =
+
+        [Keylen = 128]
+        [IVlen = 8]
+        [PTlen = 104]
+        [AADlen = 0]
+        [Taglen = 128]
+
+        Count = 0
+        Key = 58fab7632bcf10d2bcee58520bf37414
+        IV = 3c
+        CT = 15c4db4cbb451211179d57017f
+        AAD =
+        Tag = eae841d4355feeb3f786bc86625f1e5b
+        FAIL
     """).splitlines()
     assert load_nist_vectors(vector_data) == [
+        {'aad': b'',
+         'pt': b'',
+         'iv': b'3c819d9a9bed087615030b65',
+         'tag': b'250327c674aaf477aef2675748cf6971',
+         'key': b'11754cd72aec309bf52f7687212e8957',
+         'ct': b''},
+        {'aad': b'',
+         'pt': b'',
+         'iv': b'794ec588176c703d3d2a7a07',
+         'tag': b'b6e6f197168f5049aeda32dafbdaeb',
+         'key': b'272f16edb81a7abbea887357a58c1917',
+         'ct': b''},
+        {'aad': b'',
+         'iv': b'907763b19b9b4ab6bd4f0281',
+         'tag': b'a2be08210d8c470a8df6e8fbd79ec5cf',
+         'key': b'a49a5e26a2f8cb63d05546c2a62f5343',
+         'ct': b'',
+         'fail': True},
+        {'aad': b'e98e9d9c618e46fef32660976f854ee3',
+         'pt': b'd1448fa852b84408e2dad8381f363de7',
+         'iv': b'9549e4ba69a61cad7856efc1',
+         'tag': b'd72da7f5c6cf0bca7242c71835809449',
+         'key': b'5c1155084cc0ede76b3bc22e9f7574ef',
+         'ct': b'f78b60ca125218493bea1c50a2e12ef4'},
         {'aad': b'',
          'pt': b'',
          'iv': b'4e8df20faaf2c8eebe922902',
@@ -374,27 +412,9 @@ def test_load_nist_gcm_vectors():
          'key': b'fd52925f39546b4c55ffb6b20c59898c',
          'ct': b''},
         {'aad': b'',
-         'pt': b'',
-         'iv': b'3c819d9a9bed087615030b65',
-         'tag': b'250327c674aaf477aef2675748cf6971',
-         'key': b'11754cd72aec309bf52f7687212e8957',
-         'ct': b''},
-        {'aad': b'',
-         'pt': b'',
-         'iv': b'794ec588176c703d3d2a7a07',
-         'tag': b'b6e6f197168f5049aeda32dafbdaeb',
-         'key': b'272f16edb81a7abbea887357a58c1917',
-         'ct': b''},
-        {'aad': b'',
-         'iv': b'907763b19b9b4ab6bd4f0281',
-         'tag': b'a2be08210d8c470a8df6e8fbd79ec5cf',
-         'key': b'a49a5e26a2f8cb63d05546c2a62f5343',
-         'ct': b'',
+         'iv': b'3c',
+         'tag': b'eae841d4355feeb3f786bc86625f1e5b',
+         'key': b'58fab7632bcf10d2bcee58520bf37414',
+         'ct': b'15c4db4cbb451211179d57017f',
          'fail': True},
-        {'aad': b'e98e9d9c618e46fef32660976f854ee3',
-         'pt': b'd1448fa852b84408e2dad8381f363de7',
-         'iv': b'9549e4ba69a61cad7856efc1',
-         'tag': b'd72da7f5c6cf0bca7242c71835809449',
-         'key': b'5c1155084cc0ede76b3bc22e9f7574ef',
-         'ct': b'f78b60ca125218493bea1c50a2e12ef4'},
     ]
