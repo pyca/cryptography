@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import interfaces
 
 _ffi = cffi.FFI()
 _ffi.cdef("""
-bool Cryptography_check_padding(const uint8_t *, uint8_t);
+bool Cryptography_check_pkcs7_padding(const uint8_t *, uint8_t);
 """)
 _lib = _ffi.verify("""
 #include <stdbool.h>
@@ -38,7 +38,7 @@ static uint8_t Cryptography_constant_time_lt(uint8_t a, uint8_t b) {
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
 
-bool Cryptography_check_padding(const uint8_t *data, uint8_t block_len) {
+bool Cryptography_check_pkcs7_padding(const uint8_t *data, uint8_t block_len) {
     uint8_t i;
     uint8_t pad_size = data[block_len - 1];
     uint8_t mismatch = 0;
@@ -150,7 +150,7 @@ class _PKCS7UnpaddingContext(object):
         if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
-        valid = _lib.Cryptography_check_padding(
+        valid = _lib.Cryptography_check_pkcs7_padding(
             self._buffer, self.block_size // 8
         )
 
