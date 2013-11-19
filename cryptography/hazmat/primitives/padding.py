@@ -48,6 +48,9 @@ bool Cryptography_check_padding(const uint8_t *data, uint8_t block_len) {
         mismatch |= (mask & (pad_size ^ b));
     }
 
+    /* Check to make sure the pad_size was within the valid range. */
+    mismatch |= ~(0 < pad_size <= block_len);
+
     /* Make sure any bits set are copied to the lowest bit */
     mismatch |= mismatch >> 4;
     mismatch |= mismatch >> 2;
@@ -146,15 +149,15 @@ class _PKCS7UnpaddingContext(object):
         if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
-        pad_size = six.indexbytes(self._buffer, -1)
 
         valid = _lib.Cryptography_check_padding(
             self._buffer, self.block_size // 8
         )
 
-        if not valid or not (0 < pad_size <= self.block_size // 8):
+        if not valid:
             raise ValueError("Invalid padding bytes")
 
+        pad_size = six.indexbytes(self._buffer, -1)
         res = self._buffer[:-pad_size]
         self._buffer = None
         return res
