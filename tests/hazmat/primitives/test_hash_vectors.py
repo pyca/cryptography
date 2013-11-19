@@ -18,108 +18,108 @@ import os
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_hash_test, generate_long_string_hash_test
-from ...utils import load_hash_vectors_from_file
+from ...utils import load_hash_vectors
 
 
 class TestSHA1(object):
     test_SHA1 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "SHA1"),
         [
             "SHA1LongMsg.rsp",
             "SHA1ShortMsg.rsp",
         ],
         hashes.SHA1(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA1),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
 
 
 class TestSHA224(object):
     test_SHA224 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
             "SHA224LongMsg.rsp",
             "SHA224ShortMsg.rsp",
         ],
         hashes.SHA224(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA224),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
 
 
 class TestSHA256(object):
     test_SHA256 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
             "SHA256LongMsg.rsp",
             "SHA256ShortMsg.rsp",
         ],
         hashes.SHA256(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA256),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
 
 
 class TestSHA384(object):
     test_SHA384 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
             "SHA384LongMsg.rsp",
             "SHA384ShortMsg.rsp",
         ],
         hashes.SHA384(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
 
 class TestSHA512(object):
     test_SHA512 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "SHA2"),
         [
             "SHA512LongMsg.rsp",
             "SHA512ShortMsg.rsp",
         ],
         hashes.SHA512(),
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA512),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
 
 
 class TestRIPEMD160(object):
     test_RIPEMD160 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "ripemd160"),
         [
             "ripevectors.txt",
         ],
         hashes.RIPEMD160(),
-        only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
     test_RIPEMD160_long_string = generate_long_string_hash_test(
         hashes.RIPEMD160(),
         "52783243c1697bdbe16d37f97f68f08325dc1528",
-        only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
 
 class TestWhirlpool(object):
     test_whirlpool = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "whirlpool"),
         [
             "iso-test-vectors.txt",
         ],
         hashes.Whirlpool(),
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
@@ -128,19 +128,19 @@ class TestWhirlpool(object):
         ("0c99005beb57eff50a7cf005560ddf5d29057fd86b2"
          "0bfd62deca0f1ccea4af51fc15490eddc47af32bb2b"
          "66c34ff9ad8c6008ad677f77126953b226e4ed8b01"),
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
 
 class TestMD5(object):
     test_md5 = generate_hash_test(
-        load_hash_vectors_from_file,
+        load_hash_vectors,
         os.path.join("hashes", "MD5"),
         [
             "rfc-1321.txt",
         ],
         hashes.MD5(),
-        only_if=lambda backend: backend.hashes.supported(hashes.MD5),
+        only_if=lambda backend: backend.hash_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )

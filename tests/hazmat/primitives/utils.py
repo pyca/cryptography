@@ -8,6 +8,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 
+from ...utils import load_vectors_from_file
+
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
                           mode_factory, only_if=lambda backend: True,
@@ -15,7 +17,10 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
     def test_encryption(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         encrypt_test,
                         backend,
@@ -49,12 +54,57 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
     assert actual_plaintext == binascii.unhexlify(plaintext)
 
 
+def generate_stream_encryption_test(param_loader, path, file_names,
+                                    cipher_factory, only_if=None,
+                                    skip_message=None):
+    def test_stream_encryption(self):
+        for backend in _ALL_BACKENDS:
+            for file_name in file_names:
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
+                    yield (
+                        stream_encryption_test,
+                        backend,
+                        cipher_factory,
+                        params,
+                        only_if,
+                        skip_message
+                    )
+    return test_stream_encryption
+
+
+def stream_encryption_test(backend, cipher_factory, params, only_if,
+                           skip_message):
+    if not only_if(backend):
+        pytest.skip(skip_message)
+    plaintext = params.pop("plaintext")
+    ciphertext = params.pop("ciphertext")
+    offset = params.pop("offset")
+    cipher = Cipher(cipher_factory(**params), None, backend)
+    encryptor = cipher.encryptor()
+    # throw away offset bytes
+    encryptor.update(b"\x00" * int(offset))
+    actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
+    actual_ciphertext += encryptor.finalize()
+    assert actual_ciphertext == binascii.unhexlify(ciphertext)
+    decryptor = cipher.decryptor()
+    decryptor.update(b"\x00" * int(offset))
+    actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+    actual_plaintext += decryptor.finalize()
+    assert actual_plaintext == binascii.unhexlify(plaintext)
+
+
 def generate_hash_test(param_loader, path, file_names, hash_cls,
                        only_if=None, skip_message=None):
     def test_hash(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         hash_test,
                         backend,
@@ -105,6 +155,12 @@ def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
     assert m != m_copy
     assert m._ctx != m_copy._ctx
 
+    m.update(b"abc")
+    copy = m.copy()
+    copy.update(b"123")
+    m.update(b"123")
+    assert copy.finalize() == m.finalize()
+
 
 def generate_long_string_hash_test(hash_factory, md, only_if=None,
                                    skip_message=None):
@@ -134,7 +190,10 @@ def generate_hmac_test(param_loader, path, file_names, algorithm,
     def test_hmac(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         hmac_test,
                         backend,

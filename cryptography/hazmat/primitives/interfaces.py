@@ -18,11 +18,18 @@ import abc
 import six
 
 
-def register(iface):
-    def register_decorator(klass):
-        iface.register(klass)
-        return klass
-    return register_decorator
+class CipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode.  (e.g. AES, Camellia)
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The size of the key being used as an integer in bits.  (e.g. 128, 256)
+        """
 
 
 class Mode(six.with_metaclass(abc.ABCMeta)):

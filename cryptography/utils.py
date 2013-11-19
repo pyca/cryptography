@@ -11,10 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-class UnsupportedAlgorithm(Exception):
-    pass
+from __future__ import absolute_import, division, print_function
 
 
-class AlreadyFinalized(Exception):
-    pass
+def register_interface(iface):
+    def register_decorator(klass):
+        iface.register(klass)
+        return klass
+    return register_decorator

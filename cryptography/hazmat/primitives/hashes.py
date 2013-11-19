@@ -15,10 +15,12 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
-@interfaces.register(interfaces.HashContext)
+@utils.register_interface(interfaces.HashContext)
 class Hash(object):
     def __init__(self, algorithm, backend=None, ctx=None):
         if not isinstance(algorithm, interfaces.HashAlgorithm):
@@ -32,74 +34,82 @@ class Hash(object):
         self._backend = backend
 
         if ctx is None:
-            self._ctx = self._backend.hashes.create_ctx(self.algorithm)
+            self._ctx = self._backend.create_hash_ctx(self.algorithm)
         else:
-            self._ctx = None
+            self._ctx = ctx
 
     def update(self, data):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.hashes.update_ctx(self._ctx, data)
+        self._ctx.update(data)
 
     def copy(self):
-        return self.__class__(self.algorithm, backend=self._backend,
-                              ctx=self._backend.hashes.copy_ctx(self._ctx))
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        return Hash(
+            self.algorithm, backend=self._backend, ctx=self._ctx.copy()
+        )
 
     def finalize(self):
-        return self._backend.hashes.finalize_ctx(self._ctx,
-                                                 self.algorithm.digest_size)
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        digest = self._ctx.finalize()
+        self._ctx = None
+        return digest
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA1(object):
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA224(object):
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA256(object):
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA384(object):
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class SHA512(object):
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class RIPEMD160(object):
     name = "ripemd160"
     digest_size = 20
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class Whirlpool(object):
     name = "whirlpool"
     digest_size = 64
     block_size = 64
 
 
-@interfaces.register(interfaces.HashAlgorithm)
+@utils.register_interface(interfaces.HashAlgorithm)
 class MD5(object):
     name = "md5"
     digest_size = 16

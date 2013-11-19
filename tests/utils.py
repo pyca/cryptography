@@ -14,58 +14,44 @@
 import os.path
 
 
-def load_nist_vectors(vector_data, op):
-    section, count, data = None, None, {}
-
-    for line in vector_data:
-        line = line.strip()
-
-        # Blank lines are ignored
-        if not line:
-            continue
-
-        # Lines starting with # are comments
-        if line.startswith("#"):
-            continue
-
-        # Look for section headers
-        if line.startswith("[") and line.endswith("]"):
-            section = line[1:-1]
-            data[section] = {}
-            continue
-
-        # Build our data using a simple Key = Value format
-        name, value = line.split(" = ")
-
-        # COUNT is a special token that indicates a new block of data
-        if name.upper() == "COUNT":
-            count = value
-            data[section][count] = {}
-        # For all other tokens we simply want the name, value stored in
-        # the dictionary
-        else:
-            data[section][count][name.lower()] = value.encode("ascii")
-
-    # We want to test only for a particular operation, we sort them for the
-    # benefit of the tests of this function.
-    return [v for k, v in sorted(data[op].items(), key=lambda kv: kv[0])]
-
-
-def load_nist_vectors_from_file(filename, op):
+def load_vectors_from_file(filename, loader):
     base = os.path.join(
         os.path.dirname(__file__), "hazmat", "primitives", "vectors",
     )
     with open(os.path.join(base, filename), "r") as vector_file:
-        return load_nist_vectors(vector_file, op)
+        return loader(vector_file)
 
 
-def load_cryptrec_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__),
-        "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_cryptrec_vectors(vector_file)
+def load_nist_vectors(vector_data):
+    test_data = None
+    data = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines, comments, and section headers are ignored
+        if not line or line.startswith("#") or (line.startswith("[")
+                                                and line.endswith("]")):
+            continue
+
+        if line.strip() == "FAIL":
+            test_data["fail"] = True
+            continue
+
+        # Build our data using a simple Key = Value format
+        name, value = [c.strip() for c in line.split("=")]
+
+        # COUNT is a special token that indicates a new block of data
+        if name.upper() == "COUNT":
+            test_data = {}
+            data.append(test_data)
+            continue
+        # For all other tokens we simply want the name, value stored in
+        # the dictionary
+        else:
+            test_data[name.lower()] = value.encode("ascii")
+
+    return data
 
 
 def load_cryptrec_vectors(vector_data):
@@ -94,15 +80,6 @@ def load_cryptrec_vectors(vector_data):
         else:
             raise ValueError("Invalid line in file '{}'".format(line))
     return cryptrec_list
-
-
-def load_openssl_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__),
-        "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_openssl_vectors(vector_file)
 
 
 def load_openssl_vectors(vector_data):
@@ -166,11 +143,3 @@ def load_hash_vectors(vector_data):
         else:
             raise ValueError("Unknown line in hash vector")
     return vectors
-
-
-def load_hash_vectors_from_file(filename):
-    base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors"
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return load_hash_vectors(vector_file)

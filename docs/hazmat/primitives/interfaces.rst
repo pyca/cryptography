@@ -12,10 +12,32 @@ to document argument and return types.
 .. _`Abstract Base Classes`: http://docs.python.org/3.2/library/abc.html
 
 
-Cipher Modes
-~~~~~~~~~~~~
+Symmetric Ciphers
+~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
+
+
+.. class:: CipherAlgorithm
+
+    A named symmetric encryption algorithm.
+
+    .. attribute:: name
+
+        :type: str
+
+        The standard name for the mode, for example, "AES", "Camellia", or
+        "Blowfish".
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The number of bits in the key being used.
+
+
+Cipher Modes
+------------
 
 Interfaces used by the symmetric cipher modes described in
 :ref:`Symmetric Encryption Modes <symmetric-encryption-modes>`.

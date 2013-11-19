@@ -15,13 +15,14 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
-@interfaces.register(interfaces.HashContext)
+@utils.register_interface(interfaces.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, ctx=None, backend=None):
-        super(HMAC, self).__init__()
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
         self.algorithm = algorithm
@@ -33,19 +34,30 @@ class HMAC(object):
         self._backend = backend
         self._key = key
         if ctx is None:
-            self._ctx = self._backend.hmacs.create_ctx(key, self.algorithm)
+            self._ctx = self._backend.create_hmac_ctx(key, self.algorithm)
         else:
             self._ctx = ctx
 
     def update(self, msg):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         if isinstance(msg, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.hmacs.update_ctx(self._ctx, msg)
+        self._ctx.update(msg)
 
     def copy(self):
-        return self.__class__(self._key, self.algorithm, backend=self._backend,
-                              ctx=self._backend.hmacs.copy_ctx(self._ctx))
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        return HMAC(
+            self._key,
+            self.algorithm,
+            backend=self._backend,
+            ctx=self._ctx.copy()
+        )
 
     def finalize(self):
-        return self._backend.hmacs.finalize_ctx(self._ctx,
-                                                self.algorithm.digest_size)
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        digest = self._ctx.finalize()
+        self._ctx = None
+        return digest

@@ -19,53 +19,53 @@ import os
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
-from ...utils import load_nist_vectors_from_file
+from ...utils import load_nist_vectors
 
 
 class TestBlowfish(object):
     test_ECB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ecb.txt"],
         lambda key: algorithms.Blowfish(binascii.unhexlify(key)),
         lambda key: modes.ECB(),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.ECB()
         ),
         skip_message="Does not support Blowfish ECB",
     )
 
     test_CBC = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cbc.txt"],
         lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
         lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.CBC("\x00" * 8)
         ),
         skip_message="Does not support Blowfish CBC",
     )
 
     test_OFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ofb.txt"],
         lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
         lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.OFB("\x00" * 8)
         ),
         skip_message="Does not support Blowfish OFB",
     )
 
     test_CFB = generate_encrypt_test(
-        lambda path: load_nist_vectors_from_file(path, "ENCRYPT"),
+        load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cfb.txt"],
         lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
         lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.ciphers.supported(
+        only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.CFB("\x00" * 8)
         ),
         skip_message="Does not support Blowfish CFB",

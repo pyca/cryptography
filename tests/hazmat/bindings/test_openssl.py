@@ -13,18 +13,21 @@
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.openssl.backend import backend, Backend
+from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
-class FakeMode(object):
+class DummyMode(object):
     pass
 
 
-class FakeCipher(object):
+@utils.register_interface(interfaces.CipherAlgorithm)
+class DummyCipher(object):
     pass
 
 
@@ -44,11 +47,11 @@ class TestOpenSSL(object):
         assert backend.openssl_version_text().startswith("OpenSSL")
 
     def test_supports_cipher(self):
-        assert backend.ciphers.supported(None, None) is False
+        assert backend.cipher_supported(None, None) is False
 
     def test_register_duplicate_cipher_adapter(self):
         with pytest.raises(ValueError):
-            backend.ciphers.register_cipher_adapter(AES, CBC, None)
+            backend.register_cipher_adapter(AES, CBC, None)
 
     def test_instances_share_ffi(self):
         b = Backend()
@@ -57,13 +60,13 @@ class TestOpenSSL(object):
 
     def test_nonexistent_cipher(self):
         b = Backend()
-        b.ciphers.register_cipher_adapter(
-            FakeCipher,
-            FakeMode,
+        b.register_cipher_adapter(
+            DummyCipher,
+            DummyMode,
             lambda backend, cipher, mode: backend.ffi.NULL
         )
         cipher = Cipher(
-            FakeCipher(), FakeMode(), backend=b,
+            DummyCipher(), DummyMode(), backend=b,
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()

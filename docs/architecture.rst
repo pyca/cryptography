@@ -1,11 +1,6 @@
 Architecture
 ============
 
-.. warning::
-
-    Because ``cryptography`` is so young, much of this document is
-    aspirational, rather than documentation.
-
 ``cryptography`` has three different layers:
 
 * ``cryptography``: This package contains higher level recipes, for example

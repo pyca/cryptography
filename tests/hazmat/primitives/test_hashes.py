@@ -19,6 +19,7 @@ import pytest
 
 import six
 
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings import _default_backend
 from cryptography.hazmat.primitives import hashes
 
@@ -32,9 +33,9 @@ class TestHashContext(object):
             m.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        pretend_hashes = pretend.stub(copy_ctx=lambda a: "copiedctx")
-        pretend_backend = pretend.stub(hashes=pretend_hashes)
-        pretend_ctx = pretend.stub()
+        pretend_backend = pretend.stub()
+        copied_ctx = pretend.stub()
+        pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hashes.Hash(hashes.SHA1(), backend=pretend_backend,
                         ctx=pretend_ctx)
         assert h._backend is pretend_backend
@@ -51,13 +52,26 @@ class TestHashContext(object):
         with pytest.raises(TypeError):
             hashes.Hash(hashes.SHA1)
 
+    def test_raises_after_finalize(self):
+        h = hashes.Hash(hashes.SHA1())
+        h.finalize()
+
+        with pytest.raises(AlreadyFinalized):
+            h.update(b"foo")
+
+        with pytest.raises(AlreadyFinalized):
+            h.copy()
+
+        with pytest.raises(AlreadyFinalized):
+            h.finalize()
+
 
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(
         hashes.SHA1(),
         digest_size=20,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA1),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
 
@@ -67,7 +81,7 @@ class TestSHA224(object):
         hashes.SHA224(),
         digest_size=28,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA224),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
 
@@ -77,7 +91,7 @@ class TestSHA256(object):
         hashes.SHA256(),
         digest_size=32,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA256),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
 
@@ -87,7 +101,7 @@ class TestSHA384(object):
         hashes.SHA384(),
         digest_size=48,
         block_size=128,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA384),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -97,7 +111,7 @@ class TestSHA512(object):
         hashes.SHA512(),
         digest_size=64,
         block_size=128,
-        only_if=lambda backend: backend.hashes.supported(hashes.SHA512),
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
 
@@ -107,7 +121,7 @@ class TestRIPEMD160(object):
         hashes.RIPEMD160(),
         digest_size=20,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
 
@@ -117,7 +131,7 @@ class TestWhirlpool(object):
         hashes.Whirlpool(),
         digest_size=64,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.Whirlpool),
+        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
         skip_message="Does not support Whirlpool",
     )
 
@@ -127,6 +141,6 @@ class TestMD5(object):
         hashes.MD5(),
         digest_size=16,
         block_size=64,
-        only_if=lambda backend: backend.hashes.supported(hashes.MD5),
+        only_if=lambda backend: backend.hash_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )

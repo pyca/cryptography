@@ -12,9 +12,9 @@ Message Digests
     results (with a high probability) in different digests.
 
     This is an implementation of
-    :class:`cryptography.hazmat.primitives.interfaces.HashContext` meant to
+    :class:`~cryptography.hazmat.primitives.interfaces.HashContext` meant to
     be used with
-    :class:`cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+    :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
     implementations to provide an incremental interface to calculating
     various message digests.
 
@@ -27,19 +27,34 @@ Message Digests
         >>> digest.finalize()
         'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
+    Keep in mind that attacks against cryptographic hashes only get stronger
+    with time, and that often algorithms that were once thought to be strong,
+    become broken. Because of this it's important to include a plan for
+    upgrading the hash algorithm you use over time. For more information, see
+    `Lifetimes of cryptographic hash functions`_.
+
     .. method:: update(data)
 
         :param bytes data: The bytes you wish to hash.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
     .. method:: copy()
 
-        :return: a new instance of this object with a copied internal state.
+        Copy this :class:`Hash` instance, usually so that we may call
+        :meth:`finalize` and get an intermediate digest value while we continue
+        to call :meth:`update` on the original.
+
+        :return: A new instance of :class:`Hash` which can be updated
+            and finalized independently of the original instance.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
     .. method:: finalize()
 
         Finalize the current context and return the message digest as bytes.
 
-        Once ``finalize`` is called this object can no longer be used.
+        Once ``finalize`` is called this object can no longer be used and
+        :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise
+        :class:`~cryptography.exceptions.AlreadyFinalized`.
 
         :return bytes: The message digest as bytes.
 
@@ -102,9 +117,13 @@ MD5
 .. warning::
 
     MD5 is a deprecated hash algorithm that has practical known collision
-    attacks. You are strongly discouraged from using it.
+    attacks. You are strongly discouraged from using it. Existing applications
+    should strongly consider moving away.
 
 .. class:: MD5()
 
     MD5 is a deprecated cryptographic hash function. It has a 128-bit message
     digest and has practical known collision attacks.
+
+
+.. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html

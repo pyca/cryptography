@@ -2,6 +2,7 @@
 __pycache__/
 _build/
 .tox/
+.cache/
 *.egg-info/
 .coverage
 cffi-*.egg/

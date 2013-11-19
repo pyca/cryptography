@@ -13,46 +13,49 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
 class Cipher(object):
     def __init__(self, algorithm, mode, backend=None):
-        super(Cipher, self).__init__()
-
         if backend is None:
             from cryptography.hazmat.bindings import (
                 _default_backend as backend,
             )
+
+        if not isinstance(algorithm, interfaces.CipherAlgorithm):
+            raise TypeError("Expected interface of interfaces.CipherAlgorithm")
 
         self.algorithm = algorithm
         self.mode = mode
         self._backend = backend
 
     def encryptor(self):
-        return _CipherContext(
-            self._backend.ciphers.create_encrypt_ctx(self.algorithm,
-                                                     self.mode))
+        return _CipherContext(self._backend.create_symmetric_encryption_ctx(
+            self.algorithm, self.mode
+        ))
 
     def decryptor(self):
-        return _CipherContext(
-            self._backend.ciphers.create_decrypt_ctx(self.algorithm,
-                                                     self.mode))
+        return _CipherContext(self._backend.create_symmetric_decryption_ctx(
+            self.algorithm, self.mode
+        ))
 
 
-@interfaces.register(interfaces.CipherContext)
+@utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
 
     def update(self, data):
         if self._ctx is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
         return self._ctx.update(data)
 
     def finalize(self):
         if self._ctx is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
         data = self._ctx.finalize()
         self._ctx = None
         return data

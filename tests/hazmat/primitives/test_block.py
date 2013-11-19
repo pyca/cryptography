@@ -17,11 +17,17 @@ import binascii
 
 import pytest
 
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
+
+
+@utils.register_interface(interfaces.CipherAlgorithm)
+class DummyCipher(object):
+    pass
 
 
 class TestCipher(object):
@@ -45,6 +51,11 @@ class TestCipher(object):
         )
         assert isinstance(cipher.decryptor(), interfaces.CipherContext)
 
+    def test_instantiate_with_non_algorithm(self):
+        algorithm = object()
+        with pytest.raises(TypeError):
+            Cipher(algorithm, mode=None)
+
 
 class TestCipherContext(object):
     def test_use_after_finalize(self, backend):
@@ -56,16 +67,16 @@ class TestCipherContext(object):
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
         encryptor.finalize()
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             encryptor.update(b"b" * 16)
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             encryptor.finalize()
         decryptor = cipher.decryptor()
         decryptor.update(b"a" * 16)
         decryptor.finalize()
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             decryptor.update(b"b" * 16)
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             decryptor.finalize()
 
     def test_unaligned_block_encryption(self, backend):
@@ -90,7 +101,7 @@ class TestCipherContext(object):
 
     def test_nonexistent_cipher(self, backend):
         cipher = Cipher(
-            object(), object(), backend
+            DummyCipher(), object(), backend
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()

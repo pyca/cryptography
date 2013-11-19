@@ -16,21 +16,28 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
+from cryptography.hazmat.primitives.ciphers import algorithms
 
-from .utils import generate_encrypt_test
+from .utils import generate_stream_encryption_test
 from ...utils import load_nist_vectors
 
 
-class TestCAST5(object):
-    test_ECB = generate_encrypt_test(
+class TestARC4(object):
+    test_rfc = generate_stream_encryption_test(
         load_nist_vectors,
-        os.path.join("ciphers", "CAST5"),
-        ["cast5-ecb.txt"],
-        lambda key: algorithms.CAST5(binascii.unhexlify((key))),
-        lambda key: modes.ECB(),
+        os.path.join("ciphers", "ARC4"),
+        [
+            "rfc-6229-40.txt",
+            "rfc-6229-56.txt",
+            "rfc-6229-64.txt",
+            "rfc-6229-80.txt",
+            "rfc-6229-128.txt",
+            "rfc-6229-192.txt",
+            "rfc-6229-256.txt",
+        ],
+        lambda key: algorithms.ARC4(binascii.unhexlify((key))),
         only_if=lambda backend: backend.cipher_supported(
-            algorithms.CAST5("\x00" * 16), modes.ECB()
+            algorithms.ARC4("\x00" * 16), None
         ),
-        skip_message="Does not support CAST5 ECB",
+        skip_message="Does not support ARC4",
     )

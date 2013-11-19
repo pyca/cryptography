@@ -5,3 +5,5 @@ pretend
 pytest
 sphinx
 tox
+sphinx_rtd_theme
+-e .
