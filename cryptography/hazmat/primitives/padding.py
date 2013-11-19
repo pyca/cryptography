@@ -49,7 +49,8 @@ bool Cryptography_check_padding(const uint8_t *data, uint8_t block_len) {
     }
 
     /* Check to make sure the pad_size was within the valid range. */
-    mismatch |= ~(0 < pad_size <= block_len);
+    mismatch |= !(0 < pad_size);
+    mismatch |= !(pad_size <= block_len);
 
     /* Make sure any bits set are copied to the lowest bit */
     mismatch |= mismatch >> 4;
