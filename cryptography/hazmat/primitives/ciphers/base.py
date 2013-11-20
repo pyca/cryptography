@@ -28,6 +28,9 @@ class Cipher(object):
         if not isinstance(algorithm, interfaces.CipherAlgorithm):
             raise TypeError("Expected interface of interfaces.CipherAlgorithm")
 
+        if mode is not None:
+            mode.validate_for_algorithm(algorithm)
+
         self.algorithm = algorithm
         self.mode = mode
         self._backend = backend

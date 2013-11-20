@@ -25,10 +25,19 @@ class CBC(object):
     def __init__(self, initialization_vector):
         self.initialization_vector = initialization_vector
 
+    def validate_for_algorithm(self, algorithm):
+        if len(self.initialization_vector) * 8 != algorithm.block_size:
+            raise ValueError("Invalid iv size ({0}) for {1}".format(
+                len(self.initialization_vector), self.name
+            ))
+
 
 @utils.register_interface(interfaces.Mode)
 class ECB(object):
     name = "ECB"
+
+    def validate_for_algorithm(self, algorithm):
+        pass
 
 
 @utils.register_interface(interfaces.Mode)
@@ -39,6 +48,12 @@ class OFB(object):
     def __init__(self, initialization_vector):
         self.initialization_vector = initialization_vector
 
+    def validate_for_algorithm(self, algorithm):
+        if len(self.initialization_vector) * 8 != algorithm.block_size:
+            raise ValueError("Invalid iv size ({0}) for {1}".format(
+                len(self.initialization_vector), self.name
+            ))
+
 
 @utils.register_interface(interfaces.Mode)
 @utils.register_interface(interfaces.ModeWithInitializationVector)
@@ -47,6 +62,12 @@ class CFB(object):
 
     def __init__(self, initialization_vector):
         self.initialization_vector = initialization_vector
+
+    def validate_for_algorithm(self, algorithm):
+        if len(self.initialization_vector) * 8 != algorithm.block_size:
+            raise ValueError("Invalid iv size ({0}) for {1}".format(
+                len(self.initialization_vector), self.name
+            ))
 
 
 @utils.register_interface(interfaces.Mode)

@@ -30,6 +30,11 @@ class DummyCipher(object):
     pass
 
 
+class DummyMode(object):
+    def validate_for_algorithm(self, algorithm):
+        pass
+
+
 class TestCipher(object):
     def test_instantiate_without_backend(self):
         Cipher(
@@ -101,10 +106,20 @@ class TestCipherContext(object):
 
     def test_nonexistent_cipher(self, backend):
         cipher = Cipher(
-            DummyCipher(), object(), backend
+            DummyCipher(), DummyMode(), backend
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
 
         with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()
+
+
+class TestModeValidation(object):
+    def test_cbc(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CBC(b"abc"),
+                backend,
+            )

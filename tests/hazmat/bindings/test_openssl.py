@@ -23,7 +23,8 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
 class DummyMode(object):
-    pass
+    def validate_for_algorithm(self, algorithm):
+        pass
 
 
 @utils.register_interface(interfaces.CipherAlgorithm)

@@ -39,6 +39,13 @@ class Mode(six.with_metaclass(abc.ABCMeta)):
         A string naming this mode.  (e.g. ECB, CBC)
         """
 
+    @abc.abstractmethod
+    def validate_for_algorithm(self, algorithm):
+        """
+        Checks that all the necessary invariants of this (mode, algorithm)
+        combination are met.
+        """
+
 
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
