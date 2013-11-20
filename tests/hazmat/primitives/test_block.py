@@ -144,6 +144,6 @@ class TestModeValidation(object):
         with pytest.raises(ValueError):
             Cipher(
                 algorithms.AES(b"\x00" * 16),
-                modes.CFB(b"abc"),
+                modes.CTR(b"abc"),
                 backend,
             )
