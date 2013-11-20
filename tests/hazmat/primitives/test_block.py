@@ -139,3 +139,11 @@ class TestModeValidation(object):
                 modes.CFB(b"abc"),
                 backend,
             )
+
+    def test_ctr(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB(b"abc"),
+                backend,
+            )
