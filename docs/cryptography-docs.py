@@ -31,8 +31,12 @@ class Hazmat(nodes.Admonition, nodes.Element):
     pass
 
 
-def visit_hazmat_node(self, node):
+def html_visit_hazmat_node(self, node):
     return self.visit_admonition(node, "danger")
+
+
+def latex_visit_hazmat_node(self, node):
+    return self.visit_admonition(node)
 
 
 def depart_hazmat_node(self, node):
@@ -42,6 +46,7 @@ def depart_hazmat_node(self, node):
 def setup(app):
     app.add_node(
         Hazmat,
-        html=(visit_hazmat_node, depart_hazmat_node)
+        html=(html_visit_hazmat_node, depart_hazmat_node),
+        latex=(latex_visit_hazmat_node, depart_hazmat_node),
     )
     app.add_directive("hazmat", HazmatDirective)
