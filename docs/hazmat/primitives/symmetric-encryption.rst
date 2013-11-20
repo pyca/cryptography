@@ -37,7 +37,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
@@ -179,7 +179,7 @@ Weak Ciphers
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> algorithm = algorithms.ARC4(key)
-        >>> cipher = Cipher(algorithm, mode=None)
+        >>> cipher = Cipher(algorithm, mode=None, backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
