@@ -78,7 +78,6 @@ class CTR(object):
     def __init__(self, nonce):
         self.nonce = nonce
 
-
     def validate_for_algorithm(self, algorithm):
         if len(self.nonce) * 8 != algorithm.block_size:
             raise ValueError("Invalid nonce size ({0}) for {1}".format(
