@@ -11,20 +11,28 @@ env:
     - TOX_ENV=py32 CC=clang
     - TOX_ENV=py33 CC=clang
     - TOX_ENV=pypy CC=clang
+    - TOX_ENV=py26 OPENSSL=0.9.8
+    - TOX_ENV=py27 OPENSSL=0.9.8
+    - TOX_ENV=py32 OPENSSL=0.9.8
+    - TOX_ENV=py33 OPENSSL=0.9.8
+    - TOX_ENV=pypy OPENSSL=0.9.8
+    - TOX_ENV=py26 CC=clang OPENSSL=0.9.8
+    - TOX_ENV=py27 CC=clang OPENSSL=0.9.8
+    - TOX_ENV=py32 CC=clang OPENSSL=0.9.8
+    - TOX_ENV=py33 CC=clang OPENSSL=0.9.8
+    - TOX_ENV=pypy CC=clang OPENSSL=0.9.8
     - TOX_ENV=docs
     - TOX_ENV=pep8
     - TOX_ENV=py3pep8
 
 install:
-    - "[[ ${TOX_ENV} == pypy ]] && sudo add-apt-repository -y ppa:pypy/ppa || true"
-    - "[[ ${TOX_ENV} == pypy ]] && sudo apt-get -y update && sudo apt-get -y install pypy || true"
-    # This is required because we need to get rid of the Travis installed PyPy
-    # or it'll take precedence over the PPA installed one.
-    - "[[ ${TOX_ENV} == pypy ]] && sudo rm -rf /usr/local/pypy/bin || true"
-    - pip install tox
+    - ./.travis/install.sh
 
 script:
     - tox -e $TOX_ENV
+
+after_success:
+    - coveralls
 
 notifications:
     irc:

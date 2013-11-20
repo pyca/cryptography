@@ -13,47 +13,51 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
-
 import six
 
+from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized
+from cryptography.hazmat.primitives import interfaces
 
+
+@utils.register_interface(interfaces.HashContext)
 class HMAC(object):
-    def __init__(self, key, msg=None, digestmod=None, ctx=None, backend=None):
-        super(HMAC, self).__init__()
+    def __init__(self, key, algorithm, ctx=None, backend=None):
+        if not isinstance(algorithm, interfaces.HashAlgorithm):
+            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+        self.algorithm = algorithm
+
         if backend is None:
             from cryptography.hazmat.bindings import _default_backend
             backend = _default_backend
 
-        if digestmod is None:
-            raise TypeError("digestmod is a required argument")
-
         self._backend = backend
-        self.digestmod = digestmod
-        self.key = key
+        self._key = key
         if ctx is None:
-            self._ctx = self._backend.hmacs.create_ctx(key, self.digestmod)
+            self._ctx = self._backend.create_hmac_ctx(key, self.algorithm)
         else:
             self._ctx = ctx
 
-        if msg is not None:
-            self.update(msg)
-
     def update(self, msg):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         if isinstance(msg, six.text_type):
             raise TypeError("Unicode-objects must be encoded before hashing")
-        self._backend.hmacs.update_ctx(self._ctx, msg)
+        self._ctx.update(msg)
 
     def copy(self):
-        return self.__class__(self.key, digestmod=self.digestmod,
-                              backend=self._backend, ctx=self._copy_ctx())
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        return HMAC(
+            self._key,
+            self.algorithm,
+            backend=self._backend,
+            ctx=self._ctx.copy()
+        )
 
-    def digest(self):
-        return self._backend.hmacs.finalize_ctx(self._copy_ctx(),
-                                                self.digestmod.digest_size)
-
-    def hexdigest(self):
-        return str(binascii.hexlify(self.digest()).decode("ascii"))
-
-    def _copy_ctx(self):
-        return self._backend.hmacs.copy_ctx(self._ctx)
+    def finalize(self):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        digest = self._ctx.finalize()
+        self._ctx = None
+        return digest

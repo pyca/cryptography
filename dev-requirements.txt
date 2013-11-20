@@ -4,3 +4,5 @@ pytest
 coverage
 sphinx
 tox
+sphinx_rtd_theme
+-e .

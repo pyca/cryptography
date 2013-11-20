@@ -4,7 +4,7 @@
 Symmetric Encryption
 ====================
 
-.. currentmodule:: cryptography.hazmat.primitives.block
+.. currentmodule:: cryptography.hazmat.primitives.ciphers
 
 .. testsetup::
 
@@ -14,26 +14,34 @@ Symmetric Encryption
 
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
-where the encrypter and decrypter both use the same key.
+where the sender and receiver both use the same key. Note that symmetric
+encryption is **not** sufficient for most applications, because it only
+provides secrecy (an attacker can't see the message) but not authenticity (an
+attacker can create bogus messages and force the application to decrypt them).
+For this reason it is *strongly* recommended to combine encryption with a
+message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
+an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
-.. class:: BlockCipher(cipher, mode)
+.. class:: Cipher(algorithm, mode)
 
-    Block ciphers work by encrypting content in chunks, often 64- or 128-bits.
-    They combine an underlying algorithm (such as AES), with a mode (such as
-    CBC, CTR, or GCM). A simple example of encrypting (and then decrypting)
-    content with AES is:
+    Cipher objects combine an algorithm (such as
+    :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`) with a
+    mode (such as
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` or
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`). A simple
+    example of encrypting (and then decrypting) content with AES is:
 
     .. doctest::
 
-        >>> from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
-        >>> cipher = BlockCipher(ciphers.AES(key), modes.CBC(iv))
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 
-    :param cipher: One of the ciphers described below.
+    :param algorithms: One of the algorithms described below.
     :param mode: One of the modes described below.
 
     .. method:: encryptor()
@@ -42,17 +50,26 @@ where the encrypter and decrypter both use the same key.
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
+        If the backend doesn't support the requested combination of ``cipher``
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
+
     .. method:: decryptor()
 
         :return: A decrypting
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
             provider.
 
+        If the backend doesn't support the requested combination of ``cipher``
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        will be raised.
+
+
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
 
 .. class:: CipherContext
 
-    When calling ``encryptor()`` or ``decryptor()`` on a ``BlockCipher`` object
+    When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     you will receive a return object conforming to the ``CipherContext``
     interface. You can then call ``update(data)`` with data until you have fed
     everything into the context. Once that is done call ``finalize()`` to
@@ -62,15 +79,26 @@ where the encrypter and decrypter both use the same key.
 
         :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was encrypted or decrypted.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+
+        When the ``Cipher`` was constructed in a mode that turns it into a
+        stream cipher (e.g.
+        :class:`cryptography.hazmat.primitives.ciphers.modes.CTR`), this will
+        return bytes immediately, however in other modes it will return chunks,
+        whose size is determined by the cipher's block size.
 
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
 
-Ciphers
-~~~~~~~
+        Once ``finalize`` is called this object can no longer be used and
+        :meth:`update` and :meth:`finalize` will raise
+        :class:`~cryptography.exceptions.AlreadyFinalized`.
 
-.. currentmodule:: cryptography.hazmat.primitives.block.ciphers
+Algorithms
+~~~~~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.ciphers.algorithms
 
 .. class:: AES(key)
 
@@ -93,10 +121,10 @@ Ciphers
 
 .. class:: TripleDES(key)
 
-    Triple DES (Data Encryption Standard), sometimes refered to as 3DES, is a
-    block cipher standardized by NIST. Triple DES has known cryptoanalytic
+    Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
+    block cipher standardized by NIST. Triple DES has known crypto-analytic
     flaws, however none of them currently enable a practical attack.
-    Nonetheless, Triples DES is not reccomended for new applications because it
+    Nonetheless, Triples DES is not recommended for new applications because it
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key, either ``64``, ``128``, or ``192`` bits
@@ -106,6 +134,15 @@ Ciphers
                       referred to as being up to three separate keys (each
                       ``56`` bits long), they can simply be concatenated to
                       produce the full key. This must be kept secret.
+
+.. class:: CAST5(key)
+
+    CAST5 (also known as CAST-128) is a block cipher approved for use in the
+    Canadian government by their Communications Security Establishment. It is a
+    variable key length cipher and supports keys from 40-128 bits in length.
+
+    :param bytes key: The secret key, 40-128 bits in length (in increments of
+                      8).  This must be kept secret.
 
 Weak Ciphers
 ------------
@@ -120,17 +157,39 @@ Weak Ciphers
 
     Blowfish is a block cipher developed by Bruce Schneier. It is known to be
     susceptible to attacks when using weak keys. The author has recommended
-    that users of Blowfish move to newer algorithms like
-    :class:`AES`.
+    that users of Blowfish move to newer algorithms, such as :class:`AES`.
 
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
 
+.. class:: ARC4(key)
+
+    ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
+    initial stream output. Its use is strongly discouraged. ARC4 does not use
+    mode constructions.
+
+    :param bytes key: The secret key, ``40``, ``56``, ``64``, ``80``, ``128``,
+                      ``192``, or ``256`` bits in length.  This must be kept
+                      secret.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> algorithm = algorithms.ARC4(key)
+        >>> cipher = Cipher(algorithm, mode=None)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        'a secret message'
+
+
+.. _symmetric-encryption-modes:
 
 Modes
 ~~~~~
 
-.. currentmodule:: cryptography.hazmat.primitives.block.modes
+.. currentmodule:: cryptography.hazmat.primitives.ciphers.modes
 
 .. class:: CBC(initialization_vector)
 
@@ -141,9 +200,29 @@ Modes
                                         to be kept secret (they can be included
                                         in a transmitted message). Must be the
                                         same number of bytes as the
-                                        ``block_size`` of the cipher. Do not
-                                        reuse an ``initialization_vector`` with
-                                        a given ``key``.
+                                        ``block_size`` of the cipher. Each time
+                                        something is encrypted a new
+                                        ``initialization_vector`` should be
+                                        generated. Do not reuse an
+                                        ``initialization_vector`` with
+                                        a given ``key``, and particularly do
+                                        not use a constant
+                                        ``initialization_vector``.
+
+    A good construction looks like:
+
+    .. code-block:: pycon
+
+        >>> import os
+        >>> iv = os.urandom(16)
+        >>> mode = CBC(iv)
+
+    While the following is bad and will leak information:
+
+    .. code-block:: pycon
+
+        >>> iv = "a" * 16
+        >>> mode = CBC(iv)
 
 
 .. class:: CTR(nonce)
@@ -154,7 +233,8 @@ Modes
         block size of less than 128-bits.
 
     CTR (Counter) is a mode of operation for block ciphers. It is considered
-    cryptographically strong.
+    cryptographically strong. It transforms a block cipher into a stream
+    cipher.
 
     :param bytes nonce: Should be random bytes. It is critical to never reuse a
                         ``nonce`` with a given key.  Any reuse of a nonce
@@ -206,3 +286,6 @@ Insecure Modes
     ciphers. Each block of data is encrypted in the same way. This means
     identical plaintext blocks will always result in identical ciphertext
     blocks, and thus result in information leakage
+
+
+.. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html

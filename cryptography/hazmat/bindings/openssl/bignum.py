@@ -32,3 +32,6 @@ int BN_hex2bn(BIGNUM **, const char *);
 
 MACROS = """
 """
+
+CUSTOMIZATIONS = """
+"""

@@ -31,6 +31,8 @@ Contents
     :maxdepth: 2
 
     architecture
+    exceptions
+    glossary
     contributing
     security
     community

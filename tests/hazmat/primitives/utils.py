@@ -4,8 +4,11 @@ import os
 import pytest
 
 from cryptography.hazmat.bindings import _ALL_BACKENDS
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import hmac
-from cryptography.hazmat.primitives.block import BlockCipher
+from cryptography.hazmat.primitives.ciphers import Cipher
+
+from ...utils import load_vectors_from_file
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
@@ -14,7 +17,10 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
     def test_encryption(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         encrypt_test,
                         backend,
@@ -33,7 +39,7 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
         pytest.skip(skip_message)
     plaintext = params.pop("plaintext")
     ciphertext = params.pop("ciphertext")
-    cipher = BlockCipher(
+    cipher = Cipher(
         cipher_factory(**params),
         mode_factory(**params),
         backend
@@ -48,12 +54,57 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
     assert actual_plaintext == binascii.unhexlify(plaintext)
 
 
+def generate_stream_encryption_test(param_loader, path, file_names,
+                                    cipher_factory, only_if=None,
+                                    skip_message=None):
+    def test_stream_encryption(self):
+        for backend in _ALL_BACKENDS:
+            for file_name in file_names:
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
+                    yield (
+                        stream_encryption_test,
+                        backend,
+                        cipher_factory,
+                        params,
+                        only_if,
+                        skip_message
+                    )
+    return test_stream_encryption
+
+
+def stream_encryption_test(backend, cipher_factory, params, only_if,
+                           skip_message):
+    if not only_if(backend):
+        pytest.skip(skip_message)
+    plaintext = params.pop("plaintext")
+    ciphertext = params.pop("ciphertext")
+    offset = params.pop("offset")
+    cipher = Cipher(cipher_factory(**params), None, backend)
+    encryptor = cipher.encryptor()
+    # throw away offset bytes
+    encryptor.update(b"\x00" * int(offset))
+    actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
+    actual_ciphertext += encryptor.finalize()
+    assert actual_ciphertext == binascii.unhexlify(ciphertext)
+    decryptor = cipher.decryptor()
+    decryptor.update(b"\x00" * int(offset))
+    actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
+    actual_plaintext += decryptor.finalize()
+    assert actual_plaintext == binascii.unhexlify(plaintext)
+
+
 def generate_hash_test(param_loader, path, file_names, hash_cls,
                        only_if=None, skip_message=None):
     def test_hash(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         hash_test,
                         backend,
@@ -65,26 +116,25 @@ def generate_hash_test(param_loader, path, file_names, hash_cls,
     return test_hash
 
 
-def hash_test(backend, hash_cls, params, only_if, skip_message):
+def hash_test(backend, algorithm, params, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
-    m = hash_cls(backend=backend)
+    m = hashes.Hash(algorithm, backend=backend)
     m.update(binascii.unhexlify(msg))
-    assert m.hexdigest() == md.replace(" ", "").lower()
-    digst = hash_cls(backend=backend, data=binascii.unhexlify(msg)).hexdigest()
-    assert digst == md.replace(" ", "").lower()
+    expected_md = md.replace(" ", "").lower().encode("ascii")
+    assert m.finalize() == binascii.unhexlify(expected_md)
 
 
-def generate_base_hash_test(hash_cls, digest_size, block_size,
+def generate_base_hash_test(algorithm, digest_size, block_size,
                             only_if=None, skip_message=None):
     def test_base_hash(self):
         for backend in _ALL_BACKENDS:
             yield (
                 base_hash_test,
                 backend,
-                hash_cls,
+                algorithm,
                 digest_size,
                 block_size,
                 only_if,
@@ -93,16 +143,23 @@ def generate_base_hash_test(hash_cls, digest_size, block_size,
     return test_base_hash
 
 
-def base_hash_test(backend, digestmod, digest_size, block_size, only_if,
+def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
                    skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
-    m = digestmod(backend=backend)
-    assert m.digest_size == digest_size
-    assert m.block_size == block_size
+
+    m = hashes.Hash(algorithm, backend=backend)
+    assert m.algorithm.digest_size == digest_size
+    assert m.algorithm.block_size == block_size
     m_copy = m.copy()
     assert m != m_copy
     assert m._ctx != m_copy._ctx
+
+    m.update(b"abc")
+    copy = m.copy()
+    copy.update(b"123")
+    m.update(b"123")
+    assert copy.finalize() == m.finalize()
 
 
 def generate_long_string_hash_test(hash_factory, md, only_if=None,
@@ -120,24 +177,27 @@ def generate_long_string_hash_test(hash_factory, md, only_if=None,
     return test_long_string_hash
 
 
-def long_string_hash_test(backend, hash_factory, md, only_if, skip_message):
+def long_string_hash_test(backend, algorithm, md, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
-    m = hash_factory(backend=backend)
+    m = hashes.Hash(algorithm, backend=backend)
     m.update(b"a" * 1000000)
-    assert m.hexdigest() == md.lower()
+    assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
 
 
-def generate_hmac_test(param_loader, path, file_names, digestmod,
+def generate_hmac_test(param_loader, path, file_names, algorithm,
                        only_if=None, skip_message=None):
     def test_hmac(self):
         for backend in _ALL_BACKENDS:
             for file_name in file_names:
-                for params in param_loader(os.path.join(path, file_name)):
+                for params in load_vectors_from_file(
+                    os.path.join(path, file_name),
+                    param_loader
+                ):
                     yield (
                         hmac_test,
                         backend,
-                        digestmod,
+                        algorithm,
                         params,
                         only_if,
                         skip_message
@@ -145,18 +205,15 @@ def generate_hmac_test(param_loader, path, file_names, digestmod,
     return test_hmac
 
 
-def hmac_test(backend, digestmod, params, only_if, skip_message):
+def hmac_test(backend, algorithm, params, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     msg = params[0]
     md = params[1]
     key = params[2]
-    h = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h.update(binascii.unhexlify(msg))
-    assert h.hexdigest() == md
-    digest = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod,
-                       msg=binascii.unhexlify(msg)).hexdigest()
-    assert digest == md
+    assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
 
 
 def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
@@ -172,11 +229,11 @@ def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
     return test_base_hmac
 
 
-def base_hmac_test(backend, digestmod, only_if, skip_message):
+def base_hmac_test(backend, algorithm, only_if, skip_message):
     if only_if is not None and not only_if(backend):
         pytest.skip(skip_message)
     key = b"ab"
-    h = hmac.HMAC(binascii.unhexlify(key), digestmod=digestmod)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h_copy = h.copy()
     assert h != h_copy
     assert h._ctx != h_copy._ctx

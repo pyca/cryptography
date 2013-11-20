@@ -35,3 +35,6 @@ void CRYPTO_malloc_debug_init();
 #define CRYPTO_MEM_CHECK_ENABLE ...
 #define CRYPTO_MEM_CHECK_DISABLE ...
 """
+
+CUSTOMIZATIONS = """
+"""

@@ -13,12 +13,12 @@
 
 import six
 
+from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
 
 class PKCS7(object):
     def __init__(self, block_size):
-        super(PKCS7, self).__init__()
         if not (0 <= block_size < 256):
             raise ValueError("block_size must be in range(0, 256)")
 
@@ -34,10 +34,9 @@ class PKCS7(object):
         return _PKCS7UnpaddingContext(self.block_size)
 
 
-@interfaces.register(interfaces.PaddingContext)
+@utils.register_interface(interfaces.PaddingContext)
 class _PKCS7PaddingContext(object):
     def __init__(self, block_size):
-        super(_PKCS7PaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
         # zero-buffer (#193)
@@ -69,10 +68,9 @@ class _PKCS7PaddingContext(object):
         return result
 
 
-@interfaces.register(interfaces.PaddingContext)
+@utils.register_interface(interfaces.PaddingContext)
 class _PKCS7UnpaddingContext(object):
     def __init__(self, block_size):
-        super(_PKCS7UnpaddingContext, self).__init__()
         self.block_size = block_size
         # TODO: O(n ** 2) complexity for repeated concatentation, we should use
         # zero-buffer (#193)
@@ -101,12 +99,12 @@ class _PKCS7UnpaddingContext(object):
         if self._buffer is None:
             raise ValueError("Context was already finalized")
 
-        if not self._buffer:
+        if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes")
 
         pad_size = six.indexbytes(self._buffer, -1)
 
-        if pad_size > self.block_size // 8:
+        if not (0 < pad_size <= self.block_size // 8):
             raise ValueError("Invalid padding bytes")
 
         mismatch = 0

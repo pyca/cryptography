@@ -18,19 +18,42 @@ import abc
 import six
 
 
-def register(iface):
-    def register_decorator(klass):
-        iface.register(klass)
-        return klass
-    return register_decorator
+class CipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode.  (e.g. AES, Camellia)
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The size of the key being used as an integer in bits.  (e.g. 128, 256)
+        """
+
+
+class Mode(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode.  (e.g. ECB, CBC)
+        """
 
 
 class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def initialization_vector(self):
+        """
+        The value of the initialization vector for this mode as bytes.
+        """
 
 
 class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def nonce(self):
+        """
+        The value of the nonce for this mode as bytes.
+        """
 
 
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
@@ -58,4 +81,50 @@ class PaddingContext(six.with_metaclass(abc.ABCMeta)):
     def finalize(self):
         """
         finalize return bytes
+        """
+
+
+class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this algorithm. (e.g. sha256, md5)
+        """
+
+    @abc.abstractproperty
+    def digest_size(self):
+        """
+        The size of the resulting digest in bytes.
+        """
+
+    @abc.abstractproperty
+    def block_size(self):
+        """
+        The internal block size of the hash algorithm in bytes.
+        """
+
+
+class HashContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def algorithm(self):
+        """
+        A HashAlgorithm that will be used by this context.
+        """
+
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        hash data as bytes
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        finalize this copy of the hash and return the digest as bytes.
+        """
+
+    @abc.abstractmethod
+    def copy(self):
+        """
+        return a HashContext that is a copy of the current context.
         """

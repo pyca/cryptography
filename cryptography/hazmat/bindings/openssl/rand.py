@@ -35,3 +35,6 @@ int RAND_pseudo_bytes(unsigned char *, int);
 
 MACROS = """
 """
+
+CUSTOMIZATIONS = """
+"""
