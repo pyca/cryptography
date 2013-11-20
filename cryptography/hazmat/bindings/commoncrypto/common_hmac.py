@@ -11,14 +11,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.hazmat.bindings import openssl, commoncrypto
+INCLUDES = """
+#include <CommonCrypto/CommonHMAC.h>
+"""
 
+TYPES = """
+typedef struct {
+    ...;
+} CCHmacContext;
+enum CCHmacAlgorithm {
+    kCCHmacAlgSHA1,
+    kCCHmacAlgMD5,
+    kCCHmacAlgSHA256,
+    kCCHmacAlgSHA384,
+    kCCHmacAlgSHA512,
+    kCCHmacAlgSHA224
+};
+typedef uint32_t CCHmacAlgorithm;
+"""
 
-_ALL_BACKENDS = [
-    openssl.backend,
-    commoncrypto.backend
-]
+FUNCTIONS = """
+void CCHmacInit(CCHmacContext *, CCHmacAlgorithm, const void *, size_t);
+void CCHmacUpdate( CCHmacContext *, const void *, size_t);
+void CCHmacFinal( CCHmacContext *, void *);
 
+"""
 
-def default_backend():
-    return openssl.backend
+MACROS = """
+"""
+
+CUSTOMIZATIONS = """
+"""
