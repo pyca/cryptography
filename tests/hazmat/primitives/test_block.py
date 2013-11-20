@@ -123,3 +123,19 @@ class TestModeValidation(object):
                 modes.CBC(b"abc"),
                 backend,
             )
+
+    def test_ofb(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.OFB(b"abc"),
+                backend,
+            )
+
+    def test_cfb(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB(b"abc"),
+                backend,
+            )
