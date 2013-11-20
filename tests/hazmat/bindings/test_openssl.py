@@ -15,6 +15,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.bindings import default_backend
 from cryptography.hazmat.bindings.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -34,6 +35,9 @@ class DummyCipher(object):
 class TestOpenSSL(object):
     def test_backend_exists(self):
         assert backend
+
+    def test_is_default(self):
+        assert backend == default_backend()
 
     def test_openssl_version_text(self):
         """
