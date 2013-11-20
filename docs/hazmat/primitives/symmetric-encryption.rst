@@ -44,8 +44,16 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 
-    :param algorithms: One of the algorithms described below.
-    :param mode: One of the modes described below.
+    :param algorithms: A
+        :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+        provider such as those described
+        :ref:`below <symmetric-encryption-algorithms>`.
+    :param mode: A :class:`~cryptography.hazmat.primitives.interfaces.Mode`
+        provider such as those described
+        :ref:`below <symmetric-encryption-modes>`.
+    :param backend: A
+        :class:`~cryptography.hazmat.bindings.interfaces.CipherBackend`
+        provider.
 
     .. method:: encryptor()
 
@@ -97,6 +105,8 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
+
+.. _symmetric-encryption-algorithms:
 
 Algorithms
 ~~~~~~~~~~

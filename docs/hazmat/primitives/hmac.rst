@@ -34,6 +34,16 @@ message.
         >>> h.finalize()
         '#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'
 
+
+    :param key: Secret key as ``bytes``.
+    :param algorithm: A
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider such as those described in
+        :ref:`Cryptographic Hashes <cryptographic-hash-algorithms>`.
+    :param backend: A
+        :class:`~cryptography.hazmat.bindings.interfaces.HMACBackend`
+        provider.
+
     .. method:: update(msg)
 
         :param bytes msg: The bytes to hash and authenticate.

@@ -34,6 +34,14 @@ Message Digests
     upgrading the hash algorithm you use over time. For more information, see
     `Lifetimes of cryptographic hash functions`_.
 
+    :param algorithm: A
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider such as those described in
+        :ref:`below <cryptographic-hash-algorithms>`.
+    :param backend: A
+        :class:`~cryptography.hazmat.bindings.interfaces.HashBackend`
+        provider.
+
     .. method:: update(data)
 
         :param bytes data: The bytes you wish to hash.
@@ -59,6 +67,8 @@ Message Digests
 
         :return bytes: The message digest as bytes.
 
+
+.. _cryptographic-hash-algorithms:
 
 SHA-1
 ~~~~~
