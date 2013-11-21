@@ -28,7 +28,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES, ARC4,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CTR, ECB, OFB, CFB
+    CBC, CTR, ECB, OFB, CFB, GCM,
 )
 
 
@@ -186,6 +186,11 @@ class Backend(object):
             type(None),
             GetCipherByName("rc4")
         )
+        self.register_cipher_adapter(
+            AES,
+            GCM,
+            GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
+        )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
@@ -238,6 +243,9 @@ class _CipherContext(object):
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
         self._cipher = cipher
+        self._mode = mode
+        self._operation = operation
+        self._tag = None
 
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
@@ -270,6 +278,20 @@ class _CipherContext(object):
             ctx, len(cipher.key)
         )
         assert res != 0
+        if isinstance(mode, GCM):
+            res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
+                ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_IVLEN,
+                len(iv_nonce), self._backend.ffi.NULL
+            )
+            assert res != 0
+            if operation == self._DECRYPT:
+                assert mode.tag is not None
+                res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
+                    ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
+                    len(mode.tag), mode.tag
+                )
+                assert res != 0
+
         # pass key/iv
         res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
                                                   self._backend.ffi.NULL,
@@ -298,9 +320,28 @@ class _CipherContext(object):
         if res == 0:
             self._backend._handle_error()
 
+        if (isinstance(self._mode, GCM) and
+           self._operation == self._ENCRYPT):
+            block_byte_size = self._cipher.block_size // 8
+            tag_buf = self._backend.ffi.new("unsigned char[]", block_byte_size)
+            res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
+                self._ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_GET_TAG,
+                block_byte_size, tag_buf
+            )
+            assert res != 0
+            size = self._cipher.block_size
+            self._tag = self._backend.ffi.buffer(tag_buf)[:size]
+
         res = self._backend.lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend.ffi.buffer(buf)[:outlen[0]]
+
+    def add_data(self, data):
+        outlen = self._backend.ffi.new("int *")
+        res = self._backend.lib.EVP_CipherUpdate(
+            self._ctx, self._backend.ffi.NULL, outlen, data, len(data)
+        )
+        assert res != 0
 
 
 @utils.register_interface(interfaces.HashContext)

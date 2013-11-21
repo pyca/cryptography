@@ -56,6 +56,10 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class ModeWithAAD(six.with_metaclass(abc.ABCMeta)):
+    pass
+
+
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
@@ -67,6 +71,20 @@ class CipherContext(six.with_metaclass(abc.ABCMeta)):
     def finalize(self):
         """
         finalize return bytes
+        """
+
+
+class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def tag(self):
+        """
+        Returns tag bytes after finalizing encryption.
+        """
+
+    @abc.abstractmethod
+    def add_data(self, data):
+        """
+        add_data takes bytes and returns nothing.
         """
 
 

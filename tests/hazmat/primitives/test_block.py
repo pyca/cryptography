@@ -18,11 +18,15 @@ import binascii
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, AlreadyFinalized
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, AlreadyFinalized,
+)
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
+
+from .utils import generate_aead_use_after_finalize_test
 
 
 @utils.register_interface(interfaces.CipherAlgorithm)
@@ -120,3 +124,14 @@ class TestCipherContext(object):
         decryptor.update(b"1")
         with pytest.raises(ValueError):
             decryptor.finalize()
+
+
+class TestAEADCipherContext(object):
+    test_use_after_finalize = generate_aead_use_after_finalize_test(
+        algorithms.AES,
+        modes.GCM,
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )

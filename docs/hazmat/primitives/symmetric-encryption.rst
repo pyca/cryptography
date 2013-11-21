@@ -118,6 +118,27 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :meth:`update` and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
 
+.. class:: AEADCipherContext
+
+    When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
+    with an AEAD mode you will receive a return object conforming to the
+    ``AEADCipherContext`` interface in addition to the ``CipherContext``
+    interface. ``AEADCipherContext`` contains an additional method ``add_data``
+    for adding additional authenticated by non-encrypted data. You should call
+    this before calls to ``update``. When you are done call ``finalize()`` to
+    finish the operation. Once this is complete you can obtain the tag value
+    from the ``tag`` property.
+
+    .. method:: add_data(data)
+
+        :param bytes data: The data you wish to authenticate but not encrypt.
+        :raises: :class:`~cryptography.exceptions.AlreadyFinalized`
+
+    .. method:: tag
+
+        :return bytes: Returns the tag value as bytes.
+        :raises: :class:`~cryptography.exceptions.NotFinalized`
+
 .. _symmetric-encryption-algorithms:
 
 Algorithms
@@ -294,6 +315,33 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+
+.. class:: GCM(initialization_vector, tag=None)
+
+    GCM (Galois Counter Mode) is a mode of operation for block ciphers. It
+    is an AEAD (authenticated encryption with additional data) mode.
+
+    :param bytes initialization_vector: Must be random bytes. They do not need
+                                        to be kept secret (they can be included
+                                        in a transmitted message). Recommended
+                                        to be 96-bit by NIST, but can be up to
+                                        2\ :sup:`64` - 1 bits. Do not reuse an
+                                        ``initialization_vector`` with a given
+                                        ``key``.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv))
+        >>> encryptor = cipher.encryptor()
+        >>> encryptor.add_data(b"authenticated but encrypted payload")
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> tag = encryptor.tag
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag))
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.add_data(b"authenticated but encrypted payload")
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
 
 
 Insecure Modes
