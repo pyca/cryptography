@@ -329,8 +329,7 @@ class _CipherContext(object):
                 block_byte_size, tag_buf
             )
             assert res != 0
-            size = self._cipher.block_size
-            self._tag = self._backend.ffi.buffer(tag_buf)[:size]
+            self._tag = self._backend.ffi.buffer(tag_buf)[:]
 
         res = self._backend.lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         assert res == 1
