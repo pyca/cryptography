@@ -122,7 +122,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     with an AEAD mode you will receive a return object conforming to the
-    ``AEADCipherContext`` interface in addition to the ``CipherContext``
+    ``AEADCipherContext`` interface, in addition to the ``CipherContext``
     interface. ``AEADCipherContext`` contains an additional method ``add_data``
     for adding additional authenticated by non-encrypted data. You should call
     this before calls to ``update``. When you are done call ``finalize()`` to
@@ -134,7 +134,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :param bytes data: The data you wish to authenticate but not encrypt.
         :raises: :class:`~cryptography.exceptions.AlreadyFinalized`
 
-    .. method:: tag
+    .. attribute:: tag
 
         :return bytes: Returns the tag value as bytes.
         :raises: :class:`~cryptography.exceptions.NotFinalized`
