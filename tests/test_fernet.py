@@ -40,7 +40,7 @@ class TestFernet(object):
         ("secret", "now", "iv", "src", "token"), "generate.json",
     )
     def test_generate(self, secret, now, iv, src, token):
-        f = Fernet(base64.urlsafe_b64decode(secret.encode("ascii")))
+        f = Fernet(secret.encode("ascii"))
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
@@ -52,7 +52,7 @@ class TestFernet(object):
         ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
     )
     def test_verify(self, secret, now, src, ttl_sec, token):
-        f = Fernet(base64.urlsafe_b64decode(secret.encode("ascii")))
+        f = Fernet(secret.encode("ascii"))
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         payload = f.decrypt(
             token.encode("ascii"), ttl=ttl_sec, current_time=current_time
@@ -61,7 +61,7 @@ class TestFernet(object):
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
     def test_invalid(self, secret, token, now, ttl_sec):
-        f = Fernet(base64.urlsafe_b64decode(secret.encode("ascii")))
+        f = Fernet(secret.encode("ascii"))
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         with pytest.raises(InvalidToken):
             f.decrypt(
@@ -69,7 +69,7 @@ class TestFernet(object):
             )
 
     def test_unicode(self):
-        f = Fernet(b"\x00" * 32)
+        f = Fernet(base64.b64encode(b"\x00" * 32))
         with pytest.raises(TypeError):
             f.encrypt(six.u(""))
         with pytest.raises(TypeError):
@@ -77,5 +77,5 @@ class TestFernet(object):
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message):
-        f = Fernet(b"\x00" * 32)
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         assert f.decrypt(f.encrypt(message)) == message
