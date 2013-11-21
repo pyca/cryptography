@@ -57,7 +57,11 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
 
 
 class ModeWithAAD(six.with_metaclass(abc.ABCMeta)):
-    pass
+    @abc.abstractproperty
+    def tag(self):
+        """
+        The value of the tag supplied to the constructor of this mode.
+        """
 
 
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
