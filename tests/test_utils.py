@@ -18,7 +18,7 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors
+    load_openssl_vectors, load_hash_vectors, load_xts_vectors,
 )
 
 
@@ -417,4 +417,48 @@ def test_load_nist_gcm_vectors():
          'key': b'58fab7632bcf10d2bcee58520bf37414',
          'ct': b'15c4db4cbb451211179d57017f',
          'fail': True},
+    ]
+
+
+def test_load_xts_vectors():
+    vector_data = textwrap.dedent("""
+    [ENCRYPT]
+
+    COUNT = 1
+    DataUnitLen = 128
+    Key = a1b90cba3f06ac353b2c343876081762090923026e91771815f29dab01932f2f
+    i = 4faef7117cda59c66e4b92013e768ad5
+    PT = ebabce95b14d3c8d6fb350390790311c
+    CT = 778ae8b43cb98d5a825081d5be471c63
+
+
+    COUNT = 2
+    DataUnitLen = 128
+    Key = 8f59462c1327fd6411cb6b02c04bf0a129f145c276a38693c745de3118c90a2f
+    i = f2b86793b29e730e4a627b6ee161706c
+    PT = f7049f8aa312aeb1ab99ad11a1d7a720
+    CT = e59fca86c3c906f3df67418636a28767
+
+
+    COUNT = 237
+    DataUnitLen = 130
+    Key = 0826f63b6e8a1ac8c637f582ddceae1204c1147bb2aefb7865e7869d29d98ca9
+    i = 6950b24324e82cd65eee0a812f380bfd
+    PT = 999adaa2ed8169719fc47b606dbd781980
+    CT = 61f6a56babeba5363374567287a4295f80
+    """).splitlines()
+    test_list = load_xts_vectors(vector_data)
+    assert test_list == [
+        {'i': b'4faef7117cda59c66e4b92013e768ad5',
+         'dataunitlen': b'128',
+         'pt': b'ebabce95b14d3c8d6fb350390790311c',
+         'key': b'a1b90cba3f06ac353b2c343876081762',
+         'additional_key_data': b'090923026e91771815f29dab01932f2f',
+         'ct': b'778ae8b43cb98d5a825081d5be471c63'},
+        {'i': b'f2b86793b29e730e4a627b6ee161706c',
+         'dataunitlen': b'128',
+         'pt': b'f7049f8aa312aeb1ab99ad11a1d7a720',
+         'key': b'8f59462c1327fd6411cb6b02c04bf0a1',
+         'additional_key_data': b'29f145c276a38693c745de3118c90a2f',
+         'ct': b'e59fca86c3c906f3df67418636a28767'},
     ]
