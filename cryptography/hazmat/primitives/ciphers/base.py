@@ -14,7 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized, NotFinalized
+from cryptography.exceptions import AlreadyFinalized, NotYetFinalized
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -87,6 +87,6 @@ class _AEADCipherContext(_CipherContext):
     @property
     def tag(self):
         if self._ctx is not None:
-            raise NotFinalized("You must finalize encryption before "
-                               "getting the tag")
+            raise NotYetFinalized("You must finalize encryption before "
+                                  "getting the tag")
         return self._tag

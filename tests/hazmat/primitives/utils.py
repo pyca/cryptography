@@ -7,7 +7,7 @@ from cryptography.hazmat.bindings import _ALL_BACKENDS
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
-    AlreadyFinalized, NotFinalized,
+    AlreadyFinalized, NotYetFinalized,
 )
 
 from ...utils import load_vectors_from_file
@@ -333,7 +333,7 @@ def aead_use_after_finalize_test(backend, cipher_factory, mode_factory,
     )
     encryptor = cipher.encryptor()
     encryptor.update(b"a" * 16)
-    with pytest.raises(NotFinalized):
+    with pytest.raises(NotYetFinalized):
         encryptor.tag
     encryptor.finalize()
     with pytest.raises(AlreadyFinalized):

@@ -20,5 +20,5 @@ class AlreadyFinalized(Exception):
     pass
 
 
-class NotFinalized(Exception):
+class NotYetFinalized(Exception):
     pass
