@@ -338,3 +338,7 @@ def aead_use_after_finalize_test(backend, cipher_factory, mode_factory,
     encryptor.finalize()
     with pytest.raises(AlreadyFinalized):
         encryptor.add_data(b"b" * 16)
+    with pytest.raises(AlreadyFinalized):
+        encryptor.update(b"b" * 16)
+    with pytest.raises(AlreadyFinalized):
+        encryptor.finalize()

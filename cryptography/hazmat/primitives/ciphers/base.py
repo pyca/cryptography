@@ -60,6 +60,25 @@ class Cipher(object):
 class _CipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
+
+    def update(self, data):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        return self._ctx.update(data)
+
+    def finalize(self):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        data = self._ctx.finalize()
+        self._ctx = None
+        return data
+
+
+@utils.register_interface(interfaces.AEADCipherContext)
+@utils.register_interface(interfaces.CipherContext)
+class _AEADCipherContext(object):
+    def __init__(self, ctx):
+        self._ctx = ctx
         self._tag = None
 
     def update(self, data):
@@ -75,10 +94,6 @@ class _CipherContext(object):
         self._ctx = None
         return data
 
-
-@utils.register_interface(interfaces.AEADCipherContext)
-@utils.register_interface(interfaces.CipherContext)
-class _AEADCipherContext(_CipherContext):
     def add_data(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
