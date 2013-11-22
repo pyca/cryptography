@@ -28,16 +28,16 @@ using it cannot be manipulated or read without the key.
         >>> f.decrypt(ciphertext)
         'my deep dark secret'
 
-    :param bytes key: A base64 encoded 32-byte key. This **must** be kept
-                      secret. Anyone with this key is able to create and read
-                      messages.
+    :param bytes key: A URL-safe base64-encoded 32-byte key. This **must** be
+                      kept secret. Anyone with this key is able to create and
+                      read messages.
 
 
     .. method:: encrypt(plaintext)
 
         :param bytes plaintext: The message you would like to encrypt.
         :returns bytes: A secure message which cannot be read or altered
-                        without the key. It is URL safe base64-encoded.
+                        without the key. It is URL-safe base64-encoded.
 
     .. method:: decrypt(ciphertext, ttl=None)
 
@@ -49,6 +49,16 @@ using it cannot be manipulated or read without the key.
                         provided (or is ``None``), the age of the message is
                         not considered.
         :returns bytes: The original plaintext.
+        :raises InvalidToken: If the ``ciphertext`` is in any way invalid, this
+                              exception is raised. A ciphertext may be invalid
+                              for a number of reasons: it is older than the
+                              ``ttl``, it is malformed, or it does not have a
+                              valid signature.
+
+
+.. class:: InvalidToken
+
+    See :meth:`Fernet.decrypt` for more information.
 
 
 .. _`Fernet`: https://github.com/fernet/spec/
