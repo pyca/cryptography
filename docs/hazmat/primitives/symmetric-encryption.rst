@@ -137,7 +137,8 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. attribute:: tag
 
         :return bytes: Returns the tag value as bytes.
-        :raises: :class:`~cryptography.exceptions.NotFinalized`
+        :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
+                 before the context is finalized.
 
 .. _symmetric-encryption-algorithms:
 
@@ -319,7 +320,10 @@ Modes
 .. class:: GCM(initialization_vector, tag=None)
 
     GCM (Galois Counter Mode) is a mode of operation for block ciphers. It
-    is an AEAD (authenticated encryption with additional data) mode.
+    is an AEAD (authenticated encryption with additional data) mode. AEAD
+    is a type of block cipher mode that encrypts the message as well as
+    authenticating it (and optionally additional data that is not encrypted)
+    simultaneously.
 
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
