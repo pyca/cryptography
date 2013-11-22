@@ -306,9 +306,9 @@ Modes
 
     .. doctest::
 
-        >>> from cryptography.hazmat.primitives.block import BlockCipher, ciphers, modes
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> key1, key2 = modes.XTS.split_key(key)
-        >>> cipher = BlockCipher(ciphers.AES(key1), modes.XTS(tweak, key2))
+        >>> cipher = Cipher(algorithms.AES(key1), modes.XTS(tweak, key2))
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
