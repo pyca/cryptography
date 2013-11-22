@@ -68,7 +68,7 @@ class TestFernet(object):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_unicode(self):
-        f = Fernet(base64.b64encode(b"\x00" * 32))
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         with pytest.raises(TypeError):
             f.encrypt(six.u(""))
         with pytest.raises(TypeError):
