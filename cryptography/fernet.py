@@ -85,24 +85,22 @@ class Fernet(object):
         ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
-        h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
-        h.update(b"\x80")
-        h.update(struct.pack(">Q", current_time))
-        h.update(iv)
-        h.update(ciphertext)
-        hmac = h.finalize()
-        return base64.urlsafe_b64encode(
-            b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext + hmac
+        basic_parts = (
+            b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext
         )
 
-    def decrypt(self, data, ttl=None, current_time=None):
+        h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
+        h.update(basic_parts)
+        hmac = h.finalize()
+        return base64.urlsafe_b64encode(basic_parts + hmac)
+
+    def decrypt(self, data, ttl=None):
         if isinstance(data, six.text_type):
             raise TypeError(
                 "Unicode-objects must be encoded before decryption"
             )
 
-        if current_time is None:
-            current_time = int(time.time())
+        current_time = int(time.time())
 
         try:
             data = base64.urlsafe_b64decode(data)

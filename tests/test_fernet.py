@@ -15,6 +15,7 @@ import base64
 import calendar
 import json
 import os
+import time
 
 import iso8601
 
@@ -51,22 +52,20 @@ class TestFernet(object):
     @json_parametrize(
         ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
     )
-    def test_verify(self, secret, now, src, ttl_sec, token):
+    def test_verify(self, secret, now, src, ttl_sec, token, monkeypatch):
         f = Fernet(secret.encode("ascii"))
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
-        payload = f.decrypt(
-            token.encode("ascii"), ttl=ttl_sec, current_time=current_time
-        )
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
-    def test_invalid(self, secret, token, now, ttl_sec):
+    def test_invalid(self, secret, token, now, ttl_sec, monkeypatch):
         f = Fernet(secret.encode("ascii"))
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):
-            f.decrypt(
-                token.encode("ascii"), ttl=ttl_sec, current_time=current_time
-            )
+            f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_unicode(self):
         f = Fernet(base64.b64encode(b"\x00" * 32))
