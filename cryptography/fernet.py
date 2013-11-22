@@ -60,7 +60,6 @@ bool Cryptography_constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
 
 class Fernet(object):
     def __init__(self, key, backend=None):
-        super(Fernet, self).__init__()
         key = base64.urlsafe_b64decode(key)
         assert len(key) == 32
         self.signing_key = key[:16]
