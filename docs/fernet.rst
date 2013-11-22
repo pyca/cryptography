@@ -3,13 +3,6 @@ Fernet
 
 .. currentmodule:: cryptography.fernet
 
-.. testsetup::
-
-    import base64
-    import binascii
-    key = base64.urlsafe_b64encode(binascii.unhexlify(b"0" * 64))
-
-
 `Fernet`_ is an implementation of symmetric (also known as "secret key")
 authenticated cryptography. Fernet provides guarantees that a message encrypted
 using it cannot be manipulated or read without the key.
@@ -21,6 +14,7 @@ using it cannot be manipulated or read without the key.
     .. doctest::
 
         >>> from cryptography.fernet import Fernet
+        >>> key = Fernet.generate_key()
         >>> f = Fernet(key)
         >>> ciphertext = f.encrypt(b"my deep dark secret")
         >>> ciphertext
@@ -32,6 +26,11 @@ using it cannot be manipulated or read without the key.
                       kept secret. Anyone with this key is able to create and
                       read messages.
 
+    .. classmethod:: generate_key()
+
+        Generates a fresh fernet key. Keep this some place safe! If you lose it
+        you'll no longer be able to decrypt messages; if anyone else gains
+        access to it, they'll be able to decrypt all of your messages.
 
     .. method:: encrypt(plaintext)
 

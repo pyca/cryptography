@@ -67,6 +67,10 @@ class Fernet(object):
         self.encryption_key = key[16:]
         self.backend = backend
 
+    @classmethod
+    def generate_key(cls):
+        return base64.urlsafe_b64encode(os.urandom(32))
+
     def encrypt(self, data):
         current_time = int(time.time())
         iv = os.urandom(16)

@@ -76,5 +76,5 @@ class TestFernet(object):
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f = Fernet(Fernet.generate_key())
         assert f.decrypt(f.encrypt(message)) == message
