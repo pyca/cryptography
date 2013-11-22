@@ -207,8 +207,11 @@ class Backend(object):
             elif func == self.lib.EVP_F_EVP_DECRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
                     raise IncorrectPadding
+
+        message = self.ffi.string(self.lib.ERR_reason_error_string(code))
         raise SystemError(
-            "Unknown error code from OpenSSL, you should probably file a bug"
+            "Unknown error code from OpenSSL, you should probably file a bug. "
+            "Cause: %s" % message
         )
 
 
