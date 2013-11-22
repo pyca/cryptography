@@ -26,7 +26,7 @@ from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
 
-from .utils import generate_aead_use_after_finalize_test
+from .utils import generate_aead_exception_test
 
 
 @utils.register_interface(interfaces.CipherAlgorithm)
@@ -127,7 +127,7 @@ class TestCipherContext(object):
 
 
 class TestAEADCipherContext(object):
-    test_use_after_finalize = generate_aead_use_after_finalize_test(
+    test_aead_exceptions = generate_aead_exception_test(
         algorithms.AES,
         modes.GCM,
         only_if=lambda backend: backend.cipher_supported(

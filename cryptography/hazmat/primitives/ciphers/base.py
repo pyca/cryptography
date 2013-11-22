@@ -14,7 +14,9 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized, NotYetFinalized
+from cryptography.exceptions import (
+    AlreadyFinalized, NotYetFinalized, AlreadyUpdated,
+)
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -80,10 +82,12 @@ class _AEADCipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
         self._tag = None
+        self._updated = False
 
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
+        self._updated = True
         return self._ctx.update(data)
 
     def finalize(self):
@@ -97,6 +101,8 @@ class _AEADCipherContext(object):
     def add_data(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
+        if self._updated:
+            raise AlreadyUpdated("Update has been called on this context")
         self._ctx.add_data(data)
 
     @property

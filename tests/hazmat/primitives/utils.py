@@ -7,7 +7,7 @@ from cryptography.hazmat.bindings import _ALL_BACKENDS
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
-    AlreadyFinalized, NotYetFinalized,
+    AlreadyFinalized, NotYetFinalized, AlreadyUpdated,
 )
 
 from ...utils import load_vectors_from_file
@@ -307,23 +307,23 @@ def base_hmac_test(backend, algorithm, only_if, skip_message):
     assert h._ctx != h_copy._ctx
 
 
-def generate_aead_use_after_finalize_test(cipher_factory, mode_factory,
-                                          only_if, skip_message):
-    def test_aead_use_after_finalize(self):
+def generate_aead_exception_test(cipher_factory, mode_factory,
+                                 only_if, skip_message):
+    def test_aead_exception(self):
         for backend in _ALL_BACKENDS:
             yield (
-                aead_use_after_finalize_test,
+                aead_exception_test,
                 backend,
                 cipher_factory,
                 mode_factory,
                 only_if,
                 skip_message
             )
-    return test_aead_use_after_finalize
+    return test_aead_exception
 
 
-def aead_use_after_finalize_test(backend, cipher_factory, mode_factory,
-                                 only_if, skip_message):
+def aead_exception_test(backend, cipher_factory, mode_factory,
+                        only_if, skip_message):
     if not only_if(backend):
         pytest.skip(skip_message)
     cipher = Cipher(
@@ -335,6 +335,8 @@ def aead_use_after_finalize_test(backend, cipher_factory, mode_factory,
     encryptor.update(b"a" * 16)
     with pytest.raises(NotYetFinalized):
         encryptor.tag
+    with pytest.raises(AlreadyUpdated):
+        encryptor.add_data(b"b" * 16)
     encryptor.finalize()
     with pytest.raises(AlreadyFinalized):
         encryptor.add_data(b"b" * 16)
