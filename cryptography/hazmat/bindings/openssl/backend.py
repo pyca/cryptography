@@ -207,7 +207,9 @@ class Backend(object):
             elif func == self.lib.EVP_F_EVP_DECRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
                     raise IncorrectPadding
-        assert False
+        raise SystemError(
+            "Unknown error code from OpenSSL, you should probably file a bug"
+        )
 
 
 class GetCipherByName(object):
