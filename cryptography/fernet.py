@@ -129,7 +129,11 @@ class Fernet(object):
         decryptor = Cipher(
             algorithms.AES(self.encryption_key), modes.CBC(iv), self.backend
         ).decryptor()
-        plaintext_padded = decryptor.update(ciphertext) + decryptor.finalize()
+        plaintext_padded = decryptor.update(ciphertext)
+        try:
+            plaintext_padded += decryptor.finalize()
+        except ValueError:
+            raise InvalidToken
         unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
 
         unpadded = unpadder.update(plaintext_padded)
