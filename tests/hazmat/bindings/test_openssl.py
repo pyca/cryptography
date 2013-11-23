@@ -70,3 +70,7 @@ class TestOpenSSL(object):
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
+
+    def test_handle_unknown_error(self):
+        with pytest.raises(SystemError):
+            backend._handle_error_code(0, 0, 0)

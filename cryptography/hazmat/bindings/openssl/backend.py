@@ -199,7 +199,9 @@ class Backend(object):
         lib = self.lib.ERR_GET_LIB(code)
         func = self.lib.ERR_GET_FUNC(code)
         reason = self.lib.ERR_GET_REASON(code)
+        return self._handle_error_code(lib, func, reason)
 
+    def _handle_error_code(self, lib, func, reason):
         if lib == self.lib.ERR_LIB_EVP:
             if func == self.lib.EVP_F_EVP_ENCRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
@@ -208,10 +210,8 @@ class Backend(object):
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
                     raise IncorrectPadding
 
-        message = self.ffi.string(self.lib.ERR_reason_error_string(code))
         raise SystemError(
-            "Unknown error code from OpenSSL, you should probably file a bug. "
-            "Cause: %s" % message
+            "Unknown error code from OpenSSL, you should probably file a bug."
         )
 
 
