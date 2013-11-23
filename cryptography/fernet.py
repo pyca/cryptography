@@ -57,6 +57,8 @@ bool Cryptography_constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
 }
 """)
 
+_MAX_CLOCK_SKEW = 60
+
 
 class Fernet(object):
     def __init__(self, key, backend=None):
@@ -117,6 +119,8 @@ class Fernet(object):
         if ttl is not None:
             if struct.unpack(">Q", timestamp)[0] + ttl < current_time:
                 raise InvalidToken
+        if current_time + _MAX_CLOCK_SKEW < struct.unpack(">Q", timestamp)[0]:
+            raise InvalidToken
         h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
         h.update(data[:-32])
         hmac = h.finalize()
