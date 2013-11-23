@@ -12,8 +12,3 @@ Exceptions
 
     This is raised when a backend doesn't support the requested algorithm (or
     combination of algorithms).
-
-
-.. class:: IncorrectPadding
-
-    This is raised when a block cipher's content isn't correctly padded.

@@ -18,7 +18,3 @@ class UnsupportedAlgorithm(Exception):
 
 class AlreadyFinalized(Exception):
     pass
-
-
-class IncorrectPadding(Exception):
-    pass

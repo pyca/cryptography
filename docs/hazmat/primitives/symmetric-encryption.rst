@@ -99,13 +99,9 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
-        :raises cryptography.exceptions.IncorrectPadding: This is raised when
-                                                          the data provided
-                                                          isn't correctly
-                                                          padded to be a
-                                                          multiple of the
-                                                          algorithm's block
-                                                          size.
+        :raises ValueError: This is raised when the data provided isn't
+                            correctly padded to be a multiple of the
+                            algorithm's block size.
 
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise

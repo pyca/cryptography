@@ -19,7 +19,7 @@ import sys
 import cffi
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, IncorrectPadding
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
@@ -205,10 +205,10 @@ class Backend(object):
         if lib == self.lib.ERR_LIB_EVP:
             if func == self.lib.EVP_F_EVP_ENCRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise IncorrectPadding
+                    raise ValueError
             elif func == self.lib.EVP_F_EVP_DECRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise IncorrectPadding
+                    raise ValueError
 
         raise SystemError(
             "Unknown error code from OpenSSL, you should probably file a bug."
