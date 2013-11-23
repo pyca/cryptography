@@ -21,6 +21,13 @@ struct ERR_string_data_st {
     const char *string;
 };
 typedef struct ERR_string_data_st ERR_STRING_DATA;
+
+static const int ERR_LIB_EVP;
+
+static const int EVP_F_EVP_ENCRYPTFINAL_EX;
+static const int EVP_F_EVP_DECRYPTFINAL_EX;
+
+static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
 """
 
 FUNCTIONS = """
