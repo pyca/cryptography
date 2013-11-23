@@ -75,6 +75,15 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     everything into the context. Once that is done call ``finalize()`` to
     finish the operation and obtain the remainder of the data.
 
+    Block ciphers require that plaintext or ciphertext always be a multiple of
+    their block size, because of that **padding** is often required to make a
+    message the correct size. ``CipherContext`` will not automatically apply
+    any padding; you'll need to add your own. For block ciphers the reccomended
+    padding is :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you
+    are using a stream cipher mode (such as
+    :class:`cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
+    about this.
+
     .. method:: update(data)
 
         :param bytes data: The data you wish to pass into the context.
@@ -90,6 +99,9 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
+        :raises ValueError: This is raised when the data provided isn't
+                            correctly padded to be a multiple of the
+                            algorithm's block size.
 
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise

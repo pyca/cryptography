@@ -108,3 +108,19 @@ class TestCipherContext(object):
 
         with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()
+
+    def test_incorrectly_padded(self, backend):
+        cipher = Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.CBC(b"\x00" * 16),
+            backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.update(b"1")
+        with pytest.raises(ValueError):
+            encryptor.finalize()
+
+        decryptor = cipher.decryptor()
+        decryptor.update(b"1")
+        with pytest.raises(ValueError):
+            decryptor.finalize()

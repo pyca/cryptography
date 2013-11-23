@@ -25,8 +25,14 @@ multiple of the block size.
         >>> padder = padding.PKCS7(128).padder()
         >>> padder.update(b"1111111111")
         ''
-        >>> padder.finalize()
+        >>> padded_data = padder.finalize()
+        >>> padded_data
         '1111111111\x06\x06\x06\x06\x06\x06'
+        >>> unpadder = padding.PKCS7(128).unpadder()
+        >>> unpadder.update(padded_data)
+        ''
+        >>> unpadder.finalize()
+        '1111111111'
 
     :param block_size: The size of the block in bits that the data is being
                        padded to.

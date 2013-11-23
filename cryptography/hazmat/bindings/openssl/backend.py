@@ -193,6 +193,33 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
+    def _handle_error(self):
+        code = self.lib.ERR_get_error()
+        assert code != 0
+        lib = self.lib.ERR_GET_LIB(code)
+        func = self.lib.ERR_GET_FUNC(code)
+        reason = self.lib.ERR_GET_REASON(code)
+        return self._handle_error_code(lib, func, reason)
+
+    def _handle_error_code(self, lib, func, reason):
+        if lib == self.lib.ERR_LIB_EVP:
+            if func == self.lib.EVP_F_EVP_ENCRYPTFINAL_EX:
+                if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
+                    raise ValueError(
+                        "The length of the provided data is not a multiple of "
+                        "the block length"
+                    )
+            elif func == self.lib.EVP_F_EVP_DECRYPTFINAL_EX:
+                if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
+                    raise ValueError(
+                        "The length of the provided data is not a multiple of "
+                        "the block length"
+                    )
+
+        raise SystemError(
+            "Unknown error code from OpenSSL, you should probably file a bug."
+        )
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
@@ -268,7 +295,9 @@ class _CipherContext(object):
         buf = self._backend.ffi.new("unsigned char[]", self._cipher.block_size)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
-        assert res != 0
+        if res == 0:
+            self._backend._handle_error()
+
         res = self._backend.lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend.ffi.buffer(buf)[:outlen[0]]
