@@ -19,7 +19,7 @@ import sys
 import cffi
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
 from cryptography.hazmat.bindings.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
@@ -200,7 +200,8 @@ class Backend(object):
 
     def _handle_error(self):
         code = self.lib.ERR_get_error()
-        assert code != 0
+        if not code:
+            raise InvalidTag
         lib = self.lib.ERR_GET_LIB(code)
         func = self.lib.ERR_GET_FUNC(code)
         reason = self.lib.ERR_GET_REASON(code)

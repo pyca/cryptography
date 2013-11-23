@@ -26,3 +26,7 @@ class AlreadyUpdated(Exception):
 
 class NotYetFinalized(Exception):
     pass
+
+
+class InvalidTag(Exception):
+    pass

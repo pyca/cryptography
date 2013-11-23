@@ -7,7 +7,7 @@ from cryptography.hazmat.bindings import _ALL_BACKENDS
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
-    AlreadyFinalized, NotYetFinalized, AlreadyUpdated,
+    AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
 )
 
 from ...utils import load_vectors_from_file
@@ -95,7 +95,7 @@ def aead_test(backend, cipher_factory, mode_factory, params, only_if,
         decryptor = cipher.decryptor()
         decryptor.add_data(binascii.unhexlify(aad))
         actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
-        with pytest.raises(AssertionError):
+        with pytest.raises(InvalidTag):
             decryptor.finalize()
     else:
         cipher = Cipher(
