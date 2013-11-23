@@ -205,10 +205,16 @@ class Backend(object):
         if lib == self.lib.ERR_LIB_EVP:
             if func == self.lib.EVP_F_EVP_ENCRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise ValueError
+                    raise ValueError(
+                        "The length of the provided data is not a multiple of "
+                        "the block length"
+                    )
             elif func == self.lib.EVP_F_EVP_DECRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise ValueError
+                    raise ValueError(
+                        "The length of the provided data is not a multiple of "
+                        "the block length"
+                    )
 
         raise SystemError(
             "Unknown error code from OpenSSL, you should probably file a bug."
