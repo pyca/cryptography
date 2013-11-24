@@ -344,3 +344,12 @@ def aead_exception_test(backend, cipher_factory, mode_factory,
         encryptor.update(b"b" * 16)
     with pytest.raises(AlreadyFinalized):
         encryptor.finalize()
+    cipher = Cipher(
+        cipher_factory(binascii.unhexlify(b"0" * 32)),
+        mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
+        backend
+    )
+    decryptor = cipher.decryptor()
+    decryptor.update(b"a" * 16)
+    with pytest.raises(TypeError):
+        decryptor.tag

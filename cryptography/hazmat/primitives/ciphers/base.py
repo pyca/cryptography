@@ -33,17 +33,17 @@ class Cipher(object):
         ctx = self._backend.create_symmetric_encryption_ctx(
             self.algorithm, self.mode
         )
-        return self._wrap_ctx(ctx)
+        return self._wrap_ctx(ctx, True)
 
     def decryptor(self):
         ctx = self._backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
         )
-        return self._wrap_ctx(ctx)
+        return self._wrap_ctx(ctx, False)
 
-    def _wrap_ctx(self, ctx):
+    def _wrap_ctx(self, ctx, encrypt):
         if isinstance(self.mode, interfaces.ModeWithAAD):
-            return _AEADCipherContext(ctx)
+            return _AEADCipherContext(ctx, encrypt)
         else:
             return _CipherContext(ctx)
 
@@ -69,10 +69,11 @@ class _CipherContext(object):
 @utils.register_interface(interfaces.AEADCipherContext)
 @utils.register_interface(interfaces.CipherContext)
 class _AEADCipherContext(object):
-    def __init__(self, ctx):
+    def __init__(self, ctx, encrypt):
         self._ctx = ctx
         self._tag = None
         self._updated = False
+        self._encrypt = encrypt
 
     def update(self, data):
         if self._ctx is None:
@@ -97,6 +98,9 @@ class _AEADCipherContext(object):
 
     @property
     def tag(self):
+        if not self._encrypt:
+            raise TypeError("The tag attribute is unavailable on a "
+                            "decryption context")
         if self._ctx is not None:
             raise NotYetFinalized("You must finalize encryption before "
                                   "getting the tag")

@@ -139,6 +139,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :return bytes: Returns the tag value as bytes.
         :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
                  before the context is finalized.
+        :raises TypeError: If called on a decryption context.
 
 .. _symmetric-encryption-algorithms:
 
