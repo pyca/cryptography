@@ -198,10 +198,11 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def _handle_error(self):
+    def _handle_error(self, mode):
         code = self.lib.ERR_get_error()
-        if not code:
+        if not code and isinstance(mode, GCM):
             raise InvalidTag
+        assert code != 0
         lib = self.lib.ERR_GET_LIB(code)
         func = self.lib.ERR_GET_FUNC(code)
         reason = self.lib.ERR_GET_REASON(code)
@@ -320,7 +321,7 @@ class _CipherContext(object):
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
-            self._backend._handle_error()
+            self._backend._handle_error(self._mode)
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):
