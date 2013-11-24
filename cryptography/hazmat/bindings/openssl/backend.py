@@ -237,6 +237,7 @@ class GetCipherByName(object):
 
 
 @utils.register_interface(interfaces.CipherContext)
+@utils.register_interface(interfaces.AEADCipherContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
@@ -342,6 +343,10 @@ class _CipherContext(object):
             self._ctx, self._backend.ffi.NULL, outlen, data, len(data)
         )
         assert res != 0
+
+    @property
+    def tag(self):
+        return self._tag
 
 
 @utils.register_interface(interfaces.HashContext)

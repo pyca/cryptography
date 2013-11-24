@@ -85,7 +85,7 @@ class _AEADCipherContext(object):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
         data = self._ctx.finalize()
-        self._tag = self._ctx._tag
+        self._tag = self._ctx.tag
         self._ctx = None
         return data
 
