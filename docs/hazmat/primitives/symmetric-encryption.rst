@@ -323,7 +323,8 @@ Modes
     is an AEAD (authenticated encryption with additional data) mode. AEAD
     is a type of block cipher mode that encrypts the message as well as
     authenticating it (and optionally additional data that is not encrypted)
-    simultaneously.
+    simultaneously. Additional means of verifying integrity (like
+    :doc:`HMAC </hazmat/primitives/hmac>`) are not necessary.
 
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
@@ -338,12 +339,12 @@ Modes
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv))
         >>> encryptor = cipher.encryptor()
-        >>> encryptor.add_data(b"authenticated but encrypted payload")
+        >>> encryptor.add_data(b"authenticated but not encrypted payload")
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> tag = encryptor.tag
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag))
         >>> decryptor = cipher.decryptor()
-        >>> decryptor.add_data(b"authenticated but encrypted payload")
+        >>> decryptor.add_data(b"authenticated but not encrypted payload")
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 
