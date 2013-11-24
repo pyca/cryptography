@@ -123,13 +123,13 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     with an AEAD mode you will receive a return object conforming to the
     ``AEADCipherContext`` interface, in addition to the ``CipherContext``
-    interface. ``AEADCipherContext`` contains an additional method ``add_data``
-    for adding additional authenticated by non-encrypted data. You should call
-    this before calls to ``update``. When you are done call ``finalize()`` to
-    finish the operation. Once this is complete you can obtain the tag value
-    from the ``tag`` property.
+    interface. ``AEADCipherContext`` contains an additional method
+    ``authenticate_additional_data`` for adding additional authenticated but
+    unencrypted data. You should call this before calls to ``update``. When you
+    are done call ``finalize()`` to finish the operation. Once this is complete
+    you can obtain the tag value from the ``tag`` property.
 
-    .. method:: add_data(data)
+    .. method:: authenticate_additional_data(data)
 
         :param bytes data: The data you wish to authenticate but not encrypt.
         :raises: :class:`~cryptography.exceptions.AlreadyFinalized`
@@ -339,12 +339,12 @@ Modes
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv))
         >>> encryptor = cipher.encryptor()
-        >>> encryptor.add_data(b"authenticated but not encrypted payload")
+        >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> tag = encryptor.tag
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag))
         >>> decryptor = cipher.decryptor()
-        >>> decryptor.add_data(b"authenticated but not encrypted payload")
+        >>> decryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 

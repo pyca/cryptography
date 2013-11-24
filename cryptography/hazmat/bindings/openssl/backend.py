@@ -336,7 +336,7 @@ class _CipherContext(object):
         assert res == 1
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
-    def add_data(self, data):
+    def authenticate_additional_data(self, data):
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherUpdate(
             self._ctx, self._backend.ffi.NULL, outlen, data, len(data)

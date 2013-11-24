@@ -93,7 +93,7 @@ def aead_test(backend, cipher_factory, mode_factory, params, only_if,
             backend
         )
         decryptor = cipher.decryptor()
-        decryptor.add_data(binascii.unhexlify(aad))
+        decryptor.authenticate_additional_data(binascii.unhexlify(aad))
         actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
         with pytest.raises(InvalidTag):
             decryptor.finalize()
@@ -104,7 +104,7 @@ def aead_test(backend, cipher_factory, mode_factory, params, only_if,
             backend
         )
         encryptor = cipher.encryptor()
-        encryptor.add_data(binascii.unhexlify(aad))
+        encryptor.authenticate_additional_data(binascii.unhexlify(aad))
         actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
         actual_ciphertext += encryptor.finalize()
         tag_len = len(params["tag"])
@@ -116,7 +116,7 @@ def aead_test(backend, cipher_factory, mode_factory, params, only_if,
             backend
         )
         decryptor = cipher.decryptor()
-        decryptor.add_data(binascii.unhexlify(aad))
+        decryptor.authenticate_additional_data(binascii.unhexlify(aad))
         actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
         actual_plaintext += decryptor.finalize()
         assert actual_plaintext == binascii.unhexlify(plaintext)
@@ -336,10 +336,10 @@ def aead_exception_test(backend, cipher_factory, mode_factory,
     with pytest.raises(NotYetFinalized):
         encryptor.tag
     with pytest.raises(AlreadyUpdated):
-        encryptor.add_data(b"b" * 16)
+        encryptor.authenticate_additional_data(b"b" * 16)
     encryptor.finalize()
     with pytest.raises(AlreadyFinalized):
-        encryptor.add_data(b"b" * 16)
+        encryptor.authenticate_additional_data(b"b" * 16)
     with pytest.raises(AlreadyFinalized):
         encryptor.update(b"b" * 16)
     with pytest.raises(AlreadyFinalized):

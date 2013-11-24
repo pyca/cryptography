@@ -98,12 +98,12 @@ class _AEADCipherContext(object):
         self._ctx = None
         return data
 
-    def add_data(self, data):
+    def authenticate_additional_data(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
         if self._updated:
             raise AlreadyUpdated("Update has been called on this context")
-        self._ctx.add_data(data)
+        self._ctx.authenticate_additional_data(data)
 
     @property
     def tag(self):

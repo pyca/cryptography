@@ -86,9 +86,9 @@ class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
-    def add_data(self, data):
+    def authenticate_additional_data(self, data):
         """
-        add_data takes bytes and returns nothing.
+        authenticate_additional_data takes bytes and returns nothing.
         """
 
 
