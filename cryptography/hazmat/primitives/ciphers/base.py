@@ -30,32 +30,22 @@ class Cipher(object):
         self._backend = backend
 
     def encryptor(self):
-        if isinstance(self.mode, interfaces.ModeWithAAD):
-            return _AEADCipherContext(
-                self._backend.create_symmetric_encryption_ctx(
-                    self.algorithm, self.mode
-                )
-            )
-        else:
-            return _CipherContext(
-                self._backend.create_symmetric_encryption_ctx(
-                    self.algorithm, self.mode
-                )
-            )
+        ctx = self._backend.create_symmetric_encryption_ctx(
+            self.algorithm, self.mode
+        )
+        return self._wrap_ctx(ctx)
 
     def decryptor(self):
+        ctx = self._backend.create_symmetric_decryption_ctx(
+            self.algorithm, self.mode
+        )
+        return self._wrap_ctx(ctx)
+
+    def _wrap_ctx(self, ctx):
         if isinstance(self.mode, interfaces.ModeWithAAD):
-            return _AEADCipherContext(
-                self._backend.create_symmetric_decryption_ctx(
-                    self.algorithm, self.mode
-                )
-            )
+            return _AEADCipherContext(ctx)
         else:
-            return _CipherContext(
-                self._backend.create_symmetric_decryption_ctx(
-                    self.algorithm, self.mode
-                )
-            )
+            return _CipherContext(ctx)
 
 
 @utils.register_interface(interfaces.CipherContext)
