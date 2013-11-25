@@ -47,7 +47,7 @@ class HMAC(object):
         return HMAC(
             self._key,
             self.algorithm,
-            self._backend,
+            backend=self._backend,
             ctx=self._ctx.copy()
         )
 
