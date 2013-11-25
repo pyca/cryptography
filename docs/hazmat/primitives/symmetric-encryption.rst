@@ -335,6 +335,9 @@ Modes
                                         ``initialization_vector`` with a given
                                         ``key``.
 
+    :param bytes tag: The tag bytes to verify during decryption. Must be provided
+                      for decryption, but is ignored when encrypting.
+
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
