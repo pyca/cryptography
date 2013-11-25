@@ -35,7 +35,8 @@ class TestHashContext(object):
         pretend_backend = pretend.stub()
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hashes.Hash(hashes.SHA1(), backend=pretend_backend, ctx=pretend_ctx)
+        h = hashes.Hash(hashes.SHA1(), backend=pretend_backend,
+                        ctx=pretend_ctx)
         assert h._backend is pretend_backend
         assert h.copy()._backend is h._backend
 
