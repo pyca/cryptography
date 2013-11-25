@@ -27,7 +27,7 @@ from .utils import generate_base_hash_test
 
 class TestHashContext(object):
     def test_hash_reject_unicode(self, backend):
-        m = hashes.Hash(hashes.SHA1(), backend)
+        m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             m.update(six.u("\u00FC"))
 
@@ -35,16 +35,16 @@ class TestHashContext(object):
         pretend_backend = pretend.stub()
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hashes.Hash(hashes.SHA1(), pretend_backend, ctx=pretend_ctx)
+        h = hashes.Hash(hashes.SHA1(), backend=pretend_backend, ctx=pretend_ctx)
         assert h._backend is pretend_backend
         assert h.copy()._backend is h._backend
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
-            hashes.Hash(hashes.SHA1, backend)
+            hashes.Hash(hashes.SHA1, backend=backend)
 
     def test_raises_after_finalize(self, backend):
-        h = hashes.Hash(hashes.SHA1(), backend)
+        h = hashes.Hash(hashes.SHA1(), backend=backend)
         h.finalize()
 
         with pytest.raises(AlreadyFinalized):
