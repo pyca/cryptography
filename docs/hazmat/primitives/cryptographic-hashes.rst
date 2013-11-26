@@ -5,7 +5,7 @@ Message Digests
 
 .. currentmodule:: cryptography.hazmat.primitives.hashes
 
-.. class:: Hash(algorithm)
+.. class:: Hash(algorithm, backend)
 
     A cryptographic hash function takes an arbitrary block of data and
     calculates a fixed-size bit string (a digest), such that different data
@@ -20,8 +20,9 @@ Message Digests
 
     .. doctest::
 
+        >>> from cryptography.hazmat.bindings import default_backend
         >>> from cryptography.hazmat.primitives import hashes
-        >>> digest = hashes.Hash(hashes.SHA256())
+        >>> digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
         >>> digest.update(b"abc")
         >>> digest.update(b"123")
         >>> digest.finalize()
@@ -32,6 +33,14 @@ Message Digests
     become broken. Because of this it's important to include a plan for
     upgrading the hash algorithm you use over time. For more information, see
     `Lifetimes of cryptographic hash functions`_.
+
+    :param algorithm: A
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider such as those described in
+        :ref:`below <cryptographic-hash-algorithms>`.
+    :param backend: A
+        :class:`~cryptography.hazmat.bindings.interfaces.HashBackend`
+        provider.
 
     .. method:: update(data)
 
@@ -58,6 +67,8 @@ Message Digests
 
         :return bytes: The message digest as bytes.
 
+
+.. _cryptographic-hash-algorithms:
 
 SHA-1
 ~~~~~
