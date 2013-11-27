@@ -47,10 +47,10 @@ class TestCipher(object):
         )
         assert isinstance(cipher.decryptor(), interfaces.CipherContext)
 
-    def test_instantiate_with_non_algorithm(self):
+    def test_instantiate_with_non_algorithm(self, backend):
         algorithm = object()
         with pytest.raises(TypeError):
-            Cipher(algorithm, mode=None)
+            Cipher(algorithm, mode=None, backend=backend)
 
 
 class TestCipherContext(object):
