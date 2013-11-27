@@ -12,6 +12,9 @@ Symmetric Encryption
     key = binascii.unhexlify(b"0" * 32)
     iv = binascii.unhexlify(b"0" * 32)
 
+    from cryptography.hazmat.bindings import default_backend
+    backend = default_backend()
+
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the sender and receiver both use the same key. Note that symmetric
@@ -22,7 +25,7 @@ For this reason it is *strongly* recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
 an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
-.. class:: Cipher(algorithm, mode)
+.. class:: Cipher(algorithm, mode, backend)
 
     Cipher objects combine an algorithm (such as
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`) with a
@@ -34,15 +37,23 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 
-    :param algorithms: One of the algorithms described below.
-    :param mode: One of the modes described below.
+    :param algorithms: A
+        :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+        provider such as those described
+        :ref:`below <symmetric-encryption-algorithms>`.
+    :param mode: A :class:`~cryptography.hazmat.primitives.interfaces.Mode`
+        provider such as those described
+        :ref:`below <symmetric-encryption-modes>`.
+    :param backend: A
+        :class:`~cryptography.hazmat.bindings.interfaces.CipherBackend`
+        provider.
 
     .. method:: encryptor()
 
@@ -106,6 +117,8 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
+
+.. _symmetric-encryption-algorithms:
 
 Algorithms
 ~~~~~~~~~~
@@ -188,7 +201,7 @@ Weak Ciphers
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> algorithm = algorithms.ARC4(key)
-        >>> cipher = Cipher(algorithm, mode=None)
+        >>> cipher = Cipher(algorithm, mode=None, backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()

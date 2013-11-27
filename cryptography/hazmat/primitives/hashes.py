@@ -22,14 +22,10 @@ from cryptography.hazmat.primitives import interfaces
 
 @utils.register_interface(interfaces.HashContext)
 class Hash(object):
-    def __init__(self, algorithm, backend=None, ctx=None):
+    def __init__(self, algorithm, backend, ctx=None):
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
         self.algorithm = algorithm
-
-        if backend is None:
-            from cryptography.hazmat.bindings import _default_backend
-            backend = _default_backend
 
         self._backend = backend
 
