@@ -308,7 +308,7 @@ Modes
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> key1, key2 = modes.XTS.split_key(key)
-        >>> cipher = Cipher(algorithms.AES(key1), modes.XTS(tweak, key2))
+        >>> cipher = Cipher(algorithms.AES(key1), modes.XTS(tweak, key2), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
