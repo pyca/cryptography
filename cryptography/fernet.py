@@ -21,6 +21,7 @@ import cffi
 
 import six
 
+from cryptography.hazmat.bindings import default_backend
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -61,12 +62,12 @@ _MAX_CLOCK_SKEW = 60
 
 
 class Fernet(object):
-    def __init__(self, key, backend=None):
+    def __init__(self, key):
         key = base64.urlsafe_b64decode(key)
         assert len(key) == 32
         self.signing_key = key[:16]
         self.encryption_key = key[16:]
-        self.backend = backend
+        self.backend = default_backend()
 
     @classmethod
     def generate_key(cls):
