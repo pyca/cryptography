@@ -12,6 +12,9 @@ Symmetric Encryption
     key = binascii.unhexlify(b"0" * 32)
     iv = binascii.unhexlify(b"0" * 32)
 
+    from cryptography.hazmat.bindings import default_backend
+    backend = default_backend()
+
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the sender and receiver both use the same key. Note that symmetric
@@ -22,7 +25,7 @@ For this reason it is *strongly* recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
 an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
-.. class:: Cipher(algorithm, mode)
+.. class:: Cipher(algorithm, mode, backend)
 
     Cipher objects combine an algorithm (such as
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`) with a
@@ -34,15 +37,23 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct) + decryptor.finalize()
         'a secret message'
 
-    :param algorithms: One of the algorithms described below.
-    :param mode: One of the modes described below.
+    :param algorithms: A
+        :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+        provider such as those described
+        :ref:`below <symmetric-encryption-algorithms>`.
+    :param mode: A :class:`~cryptography.hazmat.primitives.interfaces.Mode`
+        provider such as those described
+        :ref:`below <symmetric-encryption-modes>`.
+    :param backend: A
+        :class:`~cryptography.hazmat.bindings.interfaces.CipherBackend`
+        provider.
 
     .. method:: encryptor()
 
@@ -75,6 +86,15 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     everything into the context. Once that is done call ``finalize()`` to
     finish the operation and obtain the remainder of the data.
 
+    Block ciphers require that plaintext or ciphertext always be a multiple of
+    their block size, because of that **padding** is often required to make a
+    message the correct size. ``CipherContext`` will not automatically apply
+    any padding; you'll need to add your own. For block ciphers the reccomended
+    padding is :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you
+    are using a stream cipher mode (such as
+    :class:`cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
+    about this.
+
     .. method:: update(data)
 
         :param bytes data: The data you wish to pass into the context.
@@ -90,10 +110,15 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: finalize()
 
         :return bytes: Returns the remainder of the data.
+        :raises ValueError: This is raised when the data provided isn't
+                            correctly padded to be a multiple of the
+                            algorithm's block size.
 
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
+
+.. _symmetric-encryption-algorithms:
 
 Algorithms
 ~~~~~~~~~~
@@ -176,7 +201,7 @@ Weak Ciphers
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> algorithm = algorithms.ARC4(key)
-        >>> cipher = Cipher(algorithm, mode=None)
+        >>> cipher = Cipher(algorithm, mode=None, backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()

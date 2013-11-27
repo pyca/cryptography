@@ -19,12 +19,7 @@ from cryptography.hazmat.primitives import interfaces
 
 
 class Cipher(object):
-    def __init__(self, algorithm, mode, backend=None):
-        if backend is None:
-            from cryptography.hazmat.bindings import (
-                _default_backend as backend,
-            )
-
+    def __init__(self, algorithm, mode, backend):
         if not isinstance(algorithm, interfaces.CipherAlgorithm):
             raise TypeError("Expected interface of interfaces.CipherAlgorithm")
 

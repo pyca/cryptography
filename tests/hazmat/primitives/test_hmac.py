@@ -47,12 +47,12 @@ class TestHMAC(object):
         assert h._backend is pretend_backend
         assert h.copy()._backend is pretend_backend
 
-    def test_hmac_algorithm_instance(self):
+    def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
-            hmac.HMAC(b"key", hashes.SHA1)
+            hmac.HMAC(b"key", hashes.SHA1, backend=backend)
 
-    def test_raises_after_finalize(self):
-        h = hmac.HMAC(b"key", hashes.SHA1())
+    def test_raises_after_finalize(self, backend):
+        h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend)
         h.finalize()
 
         with pytest.raises(AlreadyFinalized):
