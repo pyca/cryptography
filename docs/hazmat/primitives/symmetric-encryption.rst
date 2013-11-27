@@ -89,7 +89,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     Block ciphers require that plaintext or ciphertext always be a multiple of
     their block size, because of that **padding** is often required to make a
     message the correct size. ``CipherContext`` will not automatically apply
-    any padding; you'll need to add your own. For block ciphers the reccomended
+    any padding; you'll need to add your own. For block ciphers the recommended
     padding is :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you
     are using a stream cipher mode (such as
     :class:`cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
