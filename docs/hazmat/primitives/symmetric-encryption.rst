@@ -10,7 +10,9 @@ Symmetric Encryption
 
     import binascii
     key = binascii.unhexlify(b"0" * 32)
+    xts_key = binascii.unhexlify(b"0" * 128)
     iv = binascii.unhexlify(b"0" * 32)
+    tweak = binascii.unhexlify(b"0" * 32)
 
     from cryptography.hazmat.bindings import default_backend
     backend = default_backend()
@@ -294,6 +296,43 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+
+.. class:: XTS(tweak, additional_key_material)
+
+    XTS (XEX-based tweaked-codebook mode with ciphertext stealing) is a mode of
+    operation for block ciphers. It is commonly used in disk encryption.
+    This mode requires 512-bit keys for 256-bit encryption and 256-bit keys for
+    128-bit encryption. To use this mode split the key using ``split_key``,
+    then pass the first half to the cipher object and second half to the mode.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> key1, key2 = modes.XTS.split_key(xts_key)
+        >>> cipher = Cipher(algorithms.AES(key1), modes.XTS(tweak, key2), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
+    :param bytes tweak: Must be unique bytes. Typically derived via drive
+                        geometry for disk encryption.
+
+    :param bytes additional_key_material: The second half of the key used for
+                                          encryption. This can be obtained by
+                                          splitting the encryption key in half
+                                          manually or using ``split_key``
+
+    .. method:: split_key(key)
+
+    This method can be used to split a large key into equal key halves to pass
+    to the cipher and mode object. This is necessary because XTS requires
+    512-bit keys for 256-bit encryption, but the cipher object may not accept
+    that key size.
+
+        :return: A tuple containing two elements representing each half of the
+                 key.
 
 
 Insecure Modes

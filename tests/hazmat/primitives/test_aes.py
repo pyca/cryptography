@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
-    load_nist_vectors, load_openssl_vectors,
+    load_nist_vectors, load_openssl_vectors, load_xts_vectors,
 )
 
 
@@ -131,4 +131,24 @@ class TestAES(object):
             algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
         ),
         skip_message="Does not support AES CTR",
+    )
+
+    test_XTS = generate_encrypt_test(
+        load_xts_vectors,
+        os.path.join("ciphers", "AES", "XTS", "tweak-128hexstr"),
+        [
+            "XTSGenAES128.rsp",
+            "XTSGenAES256.rsp",
+        ],
+        lambda key, i, dataunitlen, additional_key_data: algorithms.AES(
+            binascii.unhexlify(key)
+        ),
+        lambda key, i, dataunitlen, additional_key_data: modes.XTS(
+            binascii.unhexlify(i),
+            binascii.unhexlify(additional_key_data)
+        ),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.XTS("\x00" * 16, "\x00" * 16)
+        ),
+        skip_message="Does not support AES XTS",
     )

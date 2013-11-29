@@ -56,3 +56,29 @@ class CTR(object):
 
     def __init__(self, nonce):
         self.nonce = nonce
+
+
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithTweak)
+class XTS(object):
+    name = "XTS"
+    _key_sizes = frozenset([256, 512])
+    _additional_key_sizes = frozenset([128, 256])
+
+    def __init__(self, tweak, additional_key_data):
+        super(XTS, self).__init__()
+        self.tweak = tweak
+        if len(additional_key_data) * 8 not in self._additional_key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                len(additional_key_data) * 8, self.name
+            ))
+        self.additional_key_data = additional_key_data
+
+    @classmethod
+    def split_key(self, key):
+        keylen = len(key)
+        if keylen * 8 not in self._key_sizes:
+            raise ValueError("Invalid key size ({0}) for {1}".format(
+                keylen * 8, self.name
+            ))
+        return (key[:keylen//2], key[keylen//2:])

@@ -28,7 +28,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES, ARC4,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CTR, ECB, OFB, CFB
+    CBC, CTR, ECB, OFB, CFB, XTS,
 )
 
 
@@ -186,6 +186,11 @@ class Backend(object):
             type(None),
             GetCipherByName("rc4")
         )
+        self.register_cipher_adapter(
+            AES,
+            XTS,
+            GetXTSCipherByName("{cipher.name}-{bit_length}-XTS")
+        )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
@@ -230,6 +235,18 @@ class GetCipherByName(object):
         return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 
+class GetXTSCipherByName(object):
+    def __init__(self, fmt):
+        self._fmt = fmt
+
+    def __call__(self, backend, cipher, mode):
+        full_key = cipher.key + mode.additional_key_data
+        bit_length = (len(full_key) * 8) // 2
+        cipher_name = self._fmt.format(cipher=cipher,
+                                       bit_length=bit_length).lower()
+        return backend.lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
+
+
 @utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
     _ENCRYPT = 1
@@ -256,6 +273,8 @@ class _CipherContext(object):
             iv_nonce = mode.initialization_vector
         elif isinstance(mode, interfaces.ModeWithNonce):
             iv_nonce = mode.nonce
+        elif isinstance(mode, interfaces.ModeWithTweak):
+            iv_nonce = mode.tweak
         else:
             iv_nonce = self._backend.ffi.NULL
         # begin init with cipher and operation type
@@ -265,15 +284,19 @@ class _CipherContext(object):
                                                   self._backend.ffi.NULL,
                                                   operation)
         assert res != 0
+        if isinstance(mode, XTS):
+            key = cipher.key + mode.additional_key_data
+        else:
+            key = cipher.key
         # set the key length to handle variable key ciphers
         res = self._backend.lib.EVP_CIPHER_CTX_set_key_length(
-            ctx, len(cipher.key)
+            ctx, len(key)
         )
         assert res != 0
         # pass key/iv
         res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
                                                   self._backend.ffi.NULL,
-                                                  cipher.key,
+                                                  key,
                                                   iv_nonce,
                                                   operation)
         assert res != 0
