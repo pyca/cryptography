@@ -347,12 +347,12 @@ Modes
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv))
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend)
         >>> encryptor = cipher.encryptor()
         >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> tag = encryptor.tag
-        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag))
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend)
         >>> decryptor = cipher.decryptor()
         >>> decryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
         >>> decryptor.update(ct) + decryptor.finalize()
