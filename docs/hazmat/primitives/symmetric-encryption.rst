@@ -320,6 +320,12 @@ Modes
 
 .. class:: GCM(initialization_vector, tag=None)
 
+    .. warning::
+
+        When using this mode you MUST not use the decrypted data until every
+        byte has been decrypted. GCM provides NO guarantees of ciphertext
+        integrity until decryption is complete.
+
     GCM (Galois Counter Mode) is a mode of operation for block ciphers. It
     is an AEAD (authenticated encryption with additional data) mode. AEAD
     is a type of block cipher mode that encrypts the message as well as
