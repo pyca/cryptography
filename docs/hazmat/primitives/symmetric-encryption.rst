@@ -122,24 +122,38 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     with an AEAD mode you will receive a return object conforming to the
-    ``AEADCipherContext`` interface, in addition to the ``CipherContext``
-    interface. ``AEADCipherContext`` contains an additional method
+    ``AEADCipherContext`` interface (in addition to the ``CipherContext``
+    interface and either the ``AEADEncryptionContext`` or ``AEADDecryptionContext``
+    interface). ``AEADCipherContext`` contains an additional method
     ``authenticate_additional_data`` for adding additional authenticated but
     unencrypted data. You should call this before calls to ``update``. When you
-    are done call ``finalize()`` to finish the operation. Once this is complete
-    you can obtain the tag value from the ``tag`` property.
+    are done call ``finalize()`` to finish the operation.
 
     .. method:: authenticate_additional_data(data)
 
         :param bytes data: The data you wish to authenticate but not encrypt.
         :raises: :class:`~cryptography.exceptions.AlreadyFinalized`
 
+.. class:: AEADEncryptionContext
+
+    When creating an encryption context using ``encryptor()`` on a ``Cipher``
+    object with an AEAD mode you will receive a return object conforming to the
+    ``AEADEncryptionContext`` interface (as well as ``AEADCipherContext``).
+    This interface provides one additional attribute ``tag``. ``tag`` can only
+    be obtained after ``finalize()``.
+
     .. attribute:: tag
 
         :return bytes: Returns the tag value as bytes.
         :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
                  before the context is finalized.
-        :raises TypeError: If called on a decryption context.
+
+.. class:: AEADDecryptionContext
+
+    When creating an encryption context using ``encryptor()`` on a ``Cipher``
+    object with an AEAD mode you will receive a return object conforming to the
+    ``AEADDecryptionContext`` interface (as well as ``AEADCipherContext``). This
+    interface does not provide any additional methods or attributes.
 
 .. _symmetric-encryption-algorithms:
 
@@ -320,7 +334,7 @@ Modes
 
 .. class:: GCM(initialization_vector, tag=None)
 
-    .. warning::
+    .. danger::
 
         When using this mode you MUST not use the decrypted data until every
         byte has been decrypted. GCM provides NO guarantees of ciphertext
