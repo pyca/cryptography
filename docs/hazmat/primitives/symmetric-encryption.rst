@@ -9,7 +9,8 @@ Symmetric Encryption
 .. testsetup::
 
     import binascii
-    key = binascii.unhexlify(b"0" * 64)
+    key = binascii.unhexlify(b"0" * 32)
+    xts_key = binascii.unhexlify(b"0" * 128)
     iv = binascii.unhexlify(b"0" * 32)
     tweak = binascii.unhexlify(b"0" * 32)
 
@@ -307,7 +308,7 @@ Modes
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> key1, key2 = modes.XTS.split_key(key)
+        >>> key1, key2 = modes.XTS.split_key(xts_key)
         >>> cipher = Cipher(algorithms.AES(key1), modes.XTS(tweak, key2), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
