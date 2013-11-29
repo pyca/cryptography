@@ -53,7 +53,7 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
     encryptor = cipher.encryptor()
     actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
     actual_ciphertext += encryptor.finalize()
-    assert binascii.hexlify(actual_ciphertext) == ciphertext.lower()
+    assert actual_ciphertext == binascii.unhexlify(ciphertext)
     decryptor = cipher.decryptor()
     actual_plaintext = decryptor.update(binascii.unhexlify(ciphertext))
     actual_plaintext += decryptor.finalize()
