@@ -351,5 +351,5 @@ def aead_exception_test(backend, cipher_factory, mode_factory,
     )
     decryptor = cipher.decryptor()
     decryptor.update(b"a" * 16)
-    with pytest.raises(TypeError):
+    with pytest.raises(AttributeError):
         decryptor.tag

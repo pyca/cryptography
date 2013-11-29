@@ -43,7 +43,10 @@ class Cipher(object):
 
     def _wrap_ctx(self, ctx, encrypt):
         if isinstance(self.mode, interfaces.ModeWithAAD):
-            return _AEADCipherContext(ctx, encrypt)
+            if encrypt:
+                return _AEADEncryptionContext(ctx)
+            else:
+                return _AEADDecryptionContext(ctx)
         else:
             return _CipherContext(ctx)
 
@@ -69,11 +72,10 @@ class _CipherContext(object):
 @utils.register_interface(interfaces.AEADCipherContext)
 @utils.register_interface(interfaces.CipherContext)
 class _AEADCipherContext(object):
-    def __init__(self, ctx, encrypt):
+    def __init__(self, ctx):
         self._ctx = ctx
         self._tag = None
         self._updated = False
-        self._encrypt = encrypt
 
     def update(self, data):
         if self._ctx is None:
@@ -96,11 +98,16 @@ class _AEADCipherContext(object):
             raise AlreadyUpdated("Update has been called on this context")
         self._ctx.authenticate_additional_data(data)
 
+
+@utils.register_interface(interfaces.AEADDecryptionContext)
+class _AEADDecryptionContext(_AEADCipherContext):
+    pass
+
+
+@utils.register_interface(interfaces.AEADEncryptionContext)
+class _AEADEncryptionContext(_AEADCipherContext):
     @property
     def tag(self):
-        if not self._encrypt:
-            raise TypeError("The tag attribute is unavailable on a "
-                            "decryption context")
         if self._ctx is not None:
             raise NotYetFinalized("You must finalize encryption before "
                                   "getting the tag")

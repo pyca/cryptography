@@ -239,6 +239,8 @@ class GetCipherByName(object):
 
 @utils.register_interface(interfaces.CipherContext)
 @utils.register_interface(interfaces.AEADCipherContext)
+@utils.register_interface(interfaces.AEADEncryptionContext)
+@utils.register_interface(interfaces.AEADDecryptionContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0

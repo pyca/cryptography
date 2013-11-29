@@ -79,17 +79,23 @@ class CipherContext(six.with_metaclass(abc.ABCMeta)):
 
 
 class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def authenticate_additional_data(self, data):
+        """
+        authenticate_additional_data takes bytes and returns nothing.
+        """
+
+
+class AEADEncryptionContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def tag(self):
         """
         Returns tag bytes after finalizing encryption.
         """
 
-    @abc.abstractmethod
-    def authenticate_additional_data(self, data):
-        """
-        authenticate_additional_data takes bytes and returns nothing.
-        """
+
+class AEADDecryptionContext(six.with_metaclass(abc.ABCMeta)):
+    pass
 
 
 class PaddingContext(six.with_metaclass(abc.ABCMeta)):
