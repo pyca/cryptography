@@ -46,7 +46,7 @@ class Cipher(object):
             if encrypt:
                 return _AEADEncryptionContext(ctx)
             else:
-                return _AEADDecryptionContext(ctx)
+                return _AEADCipherContext(ctx)
         else:
             return _CipherContext(ctx)
 
@@ -97,11 +97,6 @@ class _AEADCipherContext(object):
         if self._updated:
             raise AlreadyUpdated("Update has been called on this context")
         self._ctx.authenticate_additional_data(data)
-
-
-@utils.register_interface(interfaces.AEADDecryptionContext)
-class _AEADDecryptionContext(_AEADCipherContext):
-    pass
 
 
 @utils.register_interface(interfaces.AEADEncryptionContext)

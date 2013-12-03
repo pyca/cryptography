@@ -94,10 +94,6 @@ class AEADEncryptionContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AEADDecryptionContext(six.with_metaclass(abc.ABCMeta)):
-    pass
-
-
 class PaddingContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
