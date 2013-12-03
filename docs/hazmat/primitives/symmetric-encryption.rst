@@ -340,11 +340,11 @@ Modes
         byte has been decrypted. GCM provides NO guarantees of ciphertext
         integrity until decryption is complete.
 
-    GCM (Galois Counter Mode) is a mode of operation for block ciphers. It
-    is an AEAD (authenticated encryption with additional data) mode. AEAD
-    is a type of block cipher mode that encrypts the message as well as
-    authenticating it (and optionally additional data that is not encrypted)
-    simultaneously. Additional means of verifying integrity (like
+    GCM (Galois Counter Mode) is a mode of operation for block ciphers. An
+    AEAD (authenticated encryption with additional data) mode is a type of
+    block cipher mode that encrypts the message as well as authenticating it
+    (and optionally additional data that is not encrypted) simultaneously.
+    Additional means of verifying integrity (like
     :doc:`HMAC </hazmat/primitives/hmac>`) are not necessary.
 
     :param bytes initialization_vector: Must be random bytes. They do not need
