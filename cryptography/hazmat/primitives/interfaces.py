@@ -56,7 +56,7 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class ModeWithAAD(six.with_metaclass(abc.ABCMeta)):
+class ModeWithAuthenticationTag(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def tag(self):
         """

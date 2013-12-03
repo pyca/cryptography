@@ -42,7 +42,7 @@ class Cipher(object):
         return self._wrap_ctx(ctx, False)
 
     def _wrap_ctx(self, ctx, encrypt):
-        if isinstance(self.mode, interfaces.ModeWithAAD):
+        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
             if encrypt:
                 return _AEADEncryptionContext(ctx)
             else:

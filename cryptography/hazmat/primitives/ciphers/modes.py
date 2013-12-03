@@ -60,7 +60,7 @@ class CTR(object):
 
 @utils.register_interface(interfaces.Mode)
 @utils.register_interface(interfaces.ModeWithInitializationVector)
-@utils.register_interface(interfaces.ModeWithAAD)
+@utils.register_interface(interfaces.ModeWithAuthenticationTag)
 class GCM(object):
     name = "GCM"
 
