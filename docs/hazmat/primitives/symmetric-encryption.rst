@@ -342,11 +342,12 @@ Modes
 
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
-                                        in a transmitted message). Recommended
-                                        to be 96-bit by NIST, but can be up to
-                                        2\ :sup:`64` - 1 bits. Do not reuse an
-                                        ``initialization_vector`` with a given
-                                        ``key``.
+                                        in a transmitted message). NIST
+                                        `recommends 96-bit IV length`_ for
+                                        performance critical situations, but it
+                                        can be up to 2\ :sup:`64` - 1 bits.
+                                        Do not reuse an ``initialization_vector``
+                                        with a given ``key``.
 
     :param bytes tag: The tag bytes to verify during decryption. Must be provided
                       for decryption, but is ignored when encrypting.
@@ -384,3 +385,4 @@ Insecure Modes
 
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
+.. _`recommends 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
