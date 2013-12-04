@@ -18,11 +18,15 @@ import binascii
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, AlreadyFinalized
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, AlreadyFinalized,
+)
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
+
+from .utils import generate_aead_exception_test
 
 
 @utils.register_interface(interfaces.CipherAlgorithm)
@@ -31,30 +35,26 @@ class DummyCipher(object):
 
 
 class TestCipher(object):
-    def test_instantiate_without_backend(self):
-        Cipher(
-            algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32))
-        )
-
-    def test_creates_encryptor(self):
+    def test_creates_encryptor(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32))
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
         )
         assert isinstance(cipher.encryptor(), interfaces.CipherContext)
 
-    def test_creates_decryptor(self):
+    def test_creates_decryptor(self, backend):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
-            modes.CBC(binascii.unhexlify(b"0" * 32))
+            modes.CBC(binascii.unhexlify(b"0" * 32)),
+            backend
         )
         assert isinstance(cipher.decryptor(), interfaces.CipherContext)
 
-    def test_instantiate_with_non_algorithm(self):
+    def test_instantiate_with_non_algorithm(self, backend):
         algorithm = object()
         with pytest.raises(TypeError):
-            Cipher(algorithm, mode=None)
+            Cipher(algorithm, mode=None, backend=backend)
 
 
 class TestCipherContext(object):
@@ -108,3 +108,30 @@ class TestCipherContext(object):
 
         with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()
+
+    def test_incorrectly_padded(self, backend):
+        cipher = Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.CBC(b"\x00" * 16),
+            backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.update(b"1")
+        with pytest.raises(ValueError):
+            encryptor.finalize()
+
+        decryptor = cipher.decryptor()
+        decryptor.update(b"1")
+        with pytest.raises(ValueError):
+            decryptor.finalize()
+
+
+class TestAEADCipherContext(object):
+    test_aead_exceptions = generate_aead_exception_test(
+        algorithms.AES,
+        modes.GCM,
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )
