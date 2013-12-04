@@ -69,3 +69,10 @@ message.
 
         :return bytes: The message digest as bytes.
         :raises cryptography.exceptions.AlreadyFinalized:
+
+    .. method:: verify(data)
+
+        Finalize the current context and securely compare digest to data.
+
+        :return: True if the digest compares exactly.
+        :raises cryptography.exceptions.AlreadyFinalized:

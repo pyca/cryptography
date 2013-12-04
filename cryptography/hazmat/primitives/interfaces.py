@@ -124,6 +124,12 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
+    def verify(self, data):
+        """
+        finalize this copy of the hash and return True if the digest matches.
+        """
+
+    @abc.abstractmethod
     def copy(self):
         """
         return a HashContext that is a copy of the current context.
