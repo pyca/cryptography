@@ -77,4 +77,4 @@ class TestHMAC(object):
     def test_verify_reject_unicode(self, backend):
         h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.verify(u'')
+            h.verify(six.u(''))
