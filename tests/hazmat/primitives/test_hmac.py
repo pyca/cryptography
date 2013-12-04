@@ -63,3 +63,18 @@ class TestHMAC(object):
 
         with pytest.raises(AlreadyFinalized):
             h.finalize()
+
+    def test_verify(self, backend):
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        digest = h.finalize()
+
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        assert h.verify(digest) is True
+
+        with pytest.raises(AlreadyFinalized):
+            h.verify(b'')
+
+    def test_verify_reject_unicode(self, backend):
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        with pytest.raises(TypeError):
+            h.verify(six.u(''))

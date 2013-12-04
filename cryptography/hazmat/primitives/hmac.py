@@ -18,6 +18,7 @@ import six
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.subtle import constant_time_compare
 
 
 @utils.register_interface(interfaces.HashContext)
@@ -57,3 +58,9 @@ class HMAC(object):
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
+
+    def verify(self, data):
+        if isinstance(data, six.text_type):
+            raise TypeError("Unicode-objects must be encoded before verifying")
+        digest = self.finalize()
+        return constant_time_compare(digest, data)
