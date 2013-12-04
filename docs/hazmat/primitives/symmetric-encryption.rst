@@ -123,11 +123,11 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     with an AEAD mode you will receive a return object conforming to the
     ``AEADCipherContext`` interface (in addition to the ``CipherContext``
-    interface and either the ``AEADEncryptionContext`` or ``AEADDecryptionContext``
-    interface). ``AEADCipherContext`` contains an additional method
-    ``authenticate_additional_data`` for adding additional authenticated but
-    unencrypted data. You should call this before calls to ``update``. When you
-    are done call ``finalize()`` to finish the operation.
+    interface). If it is an encryption context it will additionally be an
+    ``AEADEncryptionContext`` interface. ``AEADCipherContext`` contains an
+    additional method ``authenticate_additional_data`` for adding additional
+    authenticated but unencrypted data. You should call this before calls to
+    ``update``. When you are done call ``finalize()`` to finish the operation.
 
     .. method:: authenticate_additional_data(data)
 
@@ -147,13 +147,6 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :return bytes: Returns the tag value as bytes.
         :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
                  before the context is finalized.
-
-.. class:: AEADDecryptionContext
-
-    When creating an encryption context using ``encryptor()`` on a ``Cipher``
-    object with an AEAD mode you will receive a return object conforming to the
-    ``AEADDecryptionContext`` interface (as well as ``AEADCipherContext``). This
-    interface does not provide any additional methods or attributes.
 
 .. _symmetric-encryption-algorithms:
 
