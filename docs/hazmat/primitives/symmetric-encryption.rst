@@ -330,7 +330,7 @@ Modes
     .. danger::
 
         When using this mode you MUST not use the decrypted data until
-        :meth:`cryptography.hazmat.primitives.interfaces.CipherContext.finalize`
+        :meth:`~cryptography.hazmat.primitives.interfaces.CipherContext.finalize`
         has been called. GCM provides NO guarantees of ciphertext integrity
         until decryption is complete.
 
