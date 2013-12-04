@@ -329,9 +329,10 @@ Modes
 
     .. danger::
 
-        When using this mode you MUST not use the decrypted data until every
-        byte has been decrypted. GCM provides NO guarantees of ciphertext
-        integrity until decryption is complete.
+        When using this mode you MUST not use the decrypted data until
+        :meth:`cryptography.hazmat.primitives.interfaces.CipherContext.finalize`
+        has been called. GCM provides NO guarantees of ciphertext integrity
+        until decryption is complete.
 
     GCM (Galois Counter Mode) is a mode of operation for block ciphers. An
     AEAD (authenticated encryption with additional data) mode is a type of
