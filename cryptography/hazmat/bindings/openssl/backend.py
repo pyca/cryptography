@@ -208,6 +208,9 @@ class Backend(object):
         reason = self.lib.ERR_GET_REASON(code)
         return self._handle_error_code(lib, func, reason)
 
+    def create_rsa_ctx(self, bit_length):
+        return _RSA.generate(self, bit_length)
+
     def _handle_error_code(self, lib, func, reason):
         if lib == self.lib.ERR_LIB_EVP:
             if func == self.lib.EVP_F_EVP_ENCRYPTFINAL_EX:
@@ -226,6 +229,108 @@ class Backend(object):
         raise SystemError(
             "Unknown error code from OpenSSL, you should probably file a bug."
         )
+
+
+class _RSA(object):
+    def __init__(self, ctx, backend):
+        self._backend = backend
+        self._ctx = ctx
+
+    @classmethod
+    def parse_pem(cls, backend, data):
+        bio = backend.lib.BIO_new_mem_buf(data, len(data))
+        key = backend.lib.PEM_read_bio_PrivateKey(
+            bio, backend.ffi.NULL, backend.ffi.NULL, backend.ffi.NULL
+        )
+        assert key != backend.ffi.NULL
+        key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
+        ctx = backend.lib.EVP_PKEY_get1_RSA(key)
+        assert ctx != backend.ffi.NULL
+        return cls(ctx, backend)
+
+    @classmethod
+    def parse_der(cls, backend, data):
+        bio = backend.lib.BIO_new_mem_buf(data, len(data))
+        # TODO: support encryption
+        # encrypted parse
+        key = backend.lib.d2i_PKCS8PrivateKey_bio(
+            bio, backend.ffi.NULL, backend.ffi.NULL, backend.ffi.NULL
+        )
+        if key == backend.ffi.NULL:
+            # try to parse it unencrypted
+            backend.lib.BIO_reset(bio)
+            key = backend.lib.d2i_PrivateKey_bio(
+                bio, backend.ffi.NULL
+            )
+        assert key != backend.ffi.NULL
+        key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
+        ctx = backend.lib.EVP_PKEY_get1_RSA(key)
+        assert ctx != backend.ffi.NULL
+        return cls(ctx, backend)
+
+    @classmethod
+    def generate(cls, backend, bit_length):
+        ctx = backend.lib.RSA_new()
+        bn = backend.lib.BN_new()
+        bn = backend.ffi.gc(bn, backend.lib.BN_free)
+        # TODO, allow this to be configurable? Can be very dangerous, but
+        # that's what hazmat's for? on the other hand, e=1 is just the worst.
+        res = backend.lib.BN_set_word(bn, 65537)
+        res = backend.lib.RSA_generate_key_ex(
+            ctx, bit_length, bn, backend.ffi.NULL
+        )
+        assert res != 0
+        return cls(ctx, backend)
+
+    def to_pem(self):
+        bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
+        bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
+        pkey = self._backend.lib.EVP_PKEY_new()
+        res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
+        assert res != 0
+        res = self._backend.lib.PEM_write_bio_PKCS8PrivateKey(
+            bio, pkey, self._backend.ffi.NULL, self._backend.ffi.NULL,
+            0, self._backend.ffi.NULL, self._backend.ffi.NULL
+        )
+        assert res != 0
+        pem = []
+        buf = self._backend.ffi.new("char[]", 65)
+        # returns number of bytes written to buffer
+        while True:
+            length = self._backend.lib.BIO_gets(bio, buf, 65)
+            if length == 0:
+                break
+            pem.append(backend.ffi.buffer(buf)[:length])
+
+        return ''.join(pem)
+
+    def to_der(self):
+        bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
+        bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
+        pkey = self._backend.lib.EVP_PKEY_new()
+        res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
+        assert res != 0
+        res = self._backend.lib.i2d_PKCS8PrivateKey_bio(
+            bio, pkey, self._backend.ffi.NULL, self._backend.ffi.NULL,
+            0, self._backend.ffi.NULL, self._backend.ffi.NULL
+        )
+        assert res != 0
+        der = []
+        # TODO: appropriate buffer size
+        buf = self._backend.ffi.new("char[]", 10000)
+        # returns number of bytes written to buffer
+        while True:
+            # TODO: appropriate buffer size
+            length = self._backend.lib.BIO_gets(bio, buf, 10000)
+            if length == 0:
+                break
+            der.append(backend.ffi.buffer(buf)[:length])
+
+        return ''.join(der)
+
+    @property
+    def keysize(self):
+        return self._backend.lib.BN_num_bits(self._ctx.n)
 
 
 class GetCipherByName(object):
