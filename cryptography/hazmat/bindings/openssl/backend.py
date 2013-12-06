@@ -231,6 +231,32 @@ class Backend(object):
         )
 
 
+class _RSAPublicKey(object):
+    _bit_length_table = [
+        0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+    ]
+
+    def __init__(self, backend, modulus, public_exponent):
+        self._backend = backend
+        self.modulus = modulus
+        self.public_exponent = public_exponent
+
+    @classmethod
+    def from_pkcs1(cls):
+        return cls()
+
+    @property
+    def keysize(self):
+        bits = 0
+        num = self.modulus
+        while num >= 32:
+            num = num >> 6
+            bits += 6
+        bits += self._bit_length_table[num]
+        return bits
+
+
 class _RSAPrivateKey(object):
     def __init__(self, ctx, backend):
         self._backend = backend
@@ -290,8 +316,11 @@ class _RSAPrivateKey(object):
         return self._backend.lib.BN_num_bits(self._ctx.n)
 
     def publickey(self):
-        #return RSAPublicKey(modulus, public_exponent)
-        pass
+        mod = self._backend.lib.BN_bn2hex(self._ctx.n)
+        modulus = int(self._backend.ffi.string(mod), 16)
+        pub_exp = self._backend.lib.BN_bn2hex(self._ctx.e)
+        public_exponent = int(self._backend.ffi.string(pub_exp), 16)
+        return _RSAPublicKey(self._backend, modulus, public_exponent)
 
     def to_pkcs8(self, form, password=None):
         bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
