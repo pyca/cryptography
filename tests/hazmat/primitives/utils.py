@@ -353,3 +353,38 @@ def aead_exception_test(backend, cipher_factory, mode_factory,
     decryptor.update(b"a" * 16)
     with pytest.raises(AttributeError):
         decryptor.tag
+
+
+def generate_aead_tag_exception_test(cipher_factory, mode_factory,
+                                     only_if, skip_message):
+    def test_aead_tag_exception(self):
+        for backend in _ALL_BACKENDS:
+            yield (
+                aead_tag_exception_test,
+                backend,
+                cipher_factory,
+                mode_factory,
+                only_if,
+                skip_message
+            )
+    return test_aead_tag_exception
+
+
+def aead_tag_exception_test(backend, cipher_factory, mode_factory,
+                            only_if, skip_message):
+    if not only_if(backend):
+        pytest.skip(skip_message)
+    cipher = Cipher(
+        cipher_factory(binascii.unhexlify(b"0" * 32)),
+        mode_factory(binascii.unhexlify(b"0" * 24)),
+        backend
+    )
+    with pytest.raises(ValueError):
+        cipher.decryptor()
+    cipher = Cipher(
+        cipher_factory(binascii.unhexlify(b"0" * 32)),
+        mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
+        backend
+    )
+    with pytest.raises(ValueError):
+        cipher.encryptor()

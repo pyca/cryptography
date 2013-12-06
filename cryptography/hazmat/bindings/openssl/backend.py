@@ -289,12 +289,18 @@ class _CipherContext(object):
             )
             assert res != 0
             if operation == self._DECRYPT:
-                assert mode.tag is not None
+                if not mode.tag:
+                    raise ValueError("Authentication tag must be supplied "
+                                     "when decrypting")
                 res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
                     ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
                 )
                 assert res != 0
+            else:
+                if mode.tag:
+                    raise ValueError("Authentication tag must be None when "
+                                     "encrypting")
 
         # pass key/iv
         res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
