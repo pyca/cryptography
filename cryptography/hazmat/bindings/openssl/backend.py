@@ -209,7 +209,7 @@ class Backend(object):
         return self._handle_error_code(lib, func, reason)
 
     def create_rsa_ctx(self, bit_length):
-        return _RSA.generate(self, bit_length)
+        return _RSAPrivateKey.generate(self, bit_length)
 
     def _handle_error_code(self, lib, func, reason):
         if lib == self.lib.ERR_LIB_EVP:
@@ -231,42 +231,10 @@ class Backend(object):
         )
 
 
-class _RSA(object):
+class _RSAPrivateKey(object):
     def __init__(self, ctx, backend):
         self._backend = backend
         self._ctx = ctx
-
-    @classmethod
-    def parse_pem(cls, backend, data):
-        bio = backend.lib.BIO_new_mem_buf(data, len(data))
-        key = backend.lib.PEM_read_bio_PrivateKey(
-            bio, backend.ffi.NULL, backend.ffi.NULL, backend.ffi.NULL
-        )
-        assert key != backend.ffi.NULL
-        key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
-        ctx = backend.lib.EVP_PKEY_get1_RSA(key)
-        assert ctx != backend.ffi.NULL
-        return cls(ctx, backend)
-
-    @classmethod
-    def parse_der(cls, backend, data):
-        bio = backend.lib.BIO_new_mem_buf(data, len(data))
-        # TODO: support encryption
-        # encrypted parse
-        key = backend.lib.d2i_PKCS8PrivateKey_bio(
-            bio, backend.ffi.NULL, backend.ffi.NULL, backend.ffi.NULL
-        )
-        if key == backend.ffi.NULL:
-            # try to parse it unencrypted
-            backend.lib.BIO_reset(bio)
-            key = backend.lib.d2i_PrivateKey_bio(
-                bio, backend.ffi.NULL
-            )
-        assert key != backend.ffi.NULL
-        key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
-        ctx = backend.lib.EVP_PKEY_get1_RSA(key)
-        assert ctx != backend.ffi.NULL
-        return cls(ctx, backend)
 
     @classmethod
     def generate(cls, backend, bit_length):
@@ -282,55 +250,83 @@ class _RSA(object):
         assert res != 0
         return cls(ctx, backend)
 
-    def to_pem(self):
-        bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
-        bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
-        pkey = self._backend.lib.EVP_PKEY_new()
-        res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
-        assert res != 0
-        res = self._backend.lib.PEM_write_bio_PKCS8PrivateKey(
-            bio, pkey, self._backend.ffi.NULL, self._backend.ffi.NULL,
-            0, self._backend.ffi.NULL, self._backend.ffi.NULL
-        )
-        assert res != 0
-        pem = []
-        buf = self._backend.ffi.new("char[]", 65)
-        # returns number of bytes written to buffer
-        while True:
-            length = self._backend.lib.BIO_gets(bio, buf, 65)
-            if length == 0:
-                break
-            pem.append(backend.ffi.buffer(buf)[:length])
+    @classmethod
+    def from_pkcs1(cls, backend, data, form, password=None):
+        return cls.from_pkcs8(backend, data, form, password)
 
-        return ''.join(pem)
+    @classmethod
+    def from_pkcs8(cls, backend, data, form, password=None):
+        bio = backend.lib.BIO_new_mem_buf(data, len(data))
+        if password is None:
+            password = backend.ffi.NULL
+        if form.lower() == 'der':
+            # TODO: support encryption
+            # encrypted parse
+            key = backend.lib.d2i_PKCS8PrivateKey_bio(
+                bio, backend.ffi.NULL, backend.ffi.NULL, password
+            )
+            if key == backend.ffi.NULL:
+                # try to parse it unencrypted
+                backend.lib.BIO_reset(bio)
+                key = backend.lib.d2i_PrivateKey_bio(
+                    bio, backend.ffi.NULL
+                )
+        else:
+            key = backend.lib.PEM_read_bio_PrivateKey(
+                bio, backend.ffi.NULL, backend.ffi.NULL, password
+            )
+        assert key != backend.ffi.NULL
+        key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
+        ctx = backend.lib.EVP_PKEY_get1_RSA(key)
+        assert ctx != backend.ffi.NULL
+        return cls(ctx, backend)
 
-    def to_der(self):
-        bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
-        bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
-        pkey = self._backend.lib.EVP_PKEY_new()
-        res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
-        assert res != 0
-        res = self._backend.lib.i2d_PKCS8PrivateKey_bio(
-            bio, pkey, self._backend.ffi.NULL, self._backend.ffi.NULL,
-            0, self._backend.ffi.NULL, self._backend.ffi.NULL
-        )
-        assert res != 0
-        der = []
-        # TODO: appropriate buffer size
-        buf = self._backend.ffi.new("char[]", 10000)
-        # returns number of bytes written to buffer
-        while True:
-            # TODO: appropriate buffer size
-            length = self._backend.lib.BIO_gets(bio, buf, 10000)
-            if length == 0:
-                break
-            der.append(backend.ffi.buffer(buf)[:length])
-
-        return ''.join(der)
+    @classmethod
+    def from_openssh(cls, text):
+        return cls()
 
     @property
     def keysize(self):
         return self._backend.lib.BN_num_bits(self._ctx.n)
+
+    def publickey(self):
+        #return RSAPublicKey(modulus, public_exponent)
+        pass
+
+    def to_pkcs8(self, form, password=None):
+        bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
+        bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
+        pkey = self._backend.lib.EVP_PKEY_new()
+        res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
+        assert res != 0
+        if password is None:
+            password = self._backend.ffi.NULL
+            evp_cipher = self._backend.ffi.NULL
+        else:
+            # TODO: configurable cipher, but not all EVP ciphers are allowed
+            # here and openssl doesn't tell us which ones?
+            evp_cipher = self._backend.lib.EVP_get_cipherbyname("aes-256-cbc")
+        if form.lower() == 'pem':
+            res = self._backend.lib.PEM_write_bio_PKCS8PrivateKey(
+                bio, pkey, evp_cipher, self._backend.ffi.NULL,
+                0, self._backend.ffi.NULL, password
+            )
+        else:
+            res = self._backend.lib.i2d_PKCS8PrivateKey_bio(
+                bio, pkey, evp_cipher, self._backend.ffi.NULL,
+                0, self._backend.ffi.NULL, password
+            )
+        assert res != 0
+        output = []
+        buf = self._backend.ffi.new("char[]", 10000)
+        # returns number of bytes written to buffer
+        while True:
+            length = self._backend.lib.BIO_gets(bio, buf, 10000)
+            if length == 0:
+                break
+            output.append(backend.ffi.buffer(buf)[:length])
+
+        return ''.join(output)
 
 
 class GetCipherByName(object):
