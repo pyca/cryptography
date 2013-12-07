@@ -16,14 +16,23 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... RSA;
+typedef struct rsa_st {
+    BIGNUM *n;
+    BIGNUM *e;
+    BIGNUM *d;
+    BIGNUM *p;
+    BIGNUM *q;
+    BIGNUM *dmp1;
+    BIGNUM *dmq1;
+    BIGNUM *iqmp;
+    ...;
+} RSA;
 typedef ... BN_GENCB;
 static const int RSA_PKCS1_PADDING;
 static const int RSA_SSLV23_PADDING;
 static const int RSA_NO_PADDING;
 static const int RSA_PKCS1_OAEP_PADDING;
 static const int RSA_X931_PADDING;
-static const int RSA_PKCS1_PSS_PADDING;
 """
 
 FUNCTIONS = """
