@@ -231,6 +231,64 @@ class Backend(object):
         )
 
 
+class _AsymmetricCryptor(object):
+    def __init__(self, algorithm, padding):
+        self.algorithm = algorithm
+        self._backend = algorithm._backend
+        self.padding = padding
+
+    def encrypt(self, data):
+        buf = self._backend.ffi.new(
+            "char[]", self._backend.lib.RSA_size(self.algorithm._ctx)
+        )
+        bytes_encrypted = self._backend.lib.RSA_public_encrypt(
+            len(data), data, buf, self.algorithm._ctx,
+            self._backend.lib.RSA_PKCS1_OAEP_PADDING
+        )
+        assert bytes_encrypted != -1
+        return self._backend.ffi.buffer(buf)[:bytes_encrypted]
+
+    def decrypt(self, data):
+        buf = self._backend.ffi.new(
+            "char[]", self._backend.lib.RSA_size(self.algorithm._ctx)
+        )
+        bytes_decrypted = self._backend.lib.RSA_private_decrypt(
+            len(data), data, buf, self.algorithm._ctx,
+            self._backend.lib.RSA_PKCS1_OAEP_PADDING
+        )
+        assert bytes_decrypted != -1
+        return self._backend.ffi.buffer(buf)[:bytes_decrypted]
+
+
+class _AsymmetricSigner(object):
+    def __init__(self, algorithm, padding):
+        self.algorithm = algorithm
+        self._backend = algorithm._backend
+        self.padding = padding
+
+    def sign(self, data):
+        buf = self._backend.ffi.new(
+            "char[]", self._backend.lib.RSA_size(self.algorithm._ctx)
+        )
+        bytes_signed = self._backend.lib.RSA_private_encrypt(
+            len(data), data, buf, self.algorithm._ctx,
+            self._backend.lib.RSA_PKCS1_PADDING
+        )
+        assert bytes_signed != -1
+        return self._backend.ffi.buffer(buf)[:bytes_signed]
+
+    def verify(self, data):
+        buf = self._backend.ffi.new(
+            "char[]", self._backend.lib.RSA_size(self.algorithm._ctx)
+        )
+        bytes_verified = self._backend.lib.RSA_public_decrypt(
+            len(data), data, buf, self.algorithm._ctx,
+            self._backend.lib.RSA_PKCS1_PADDING
+        )
+        assert bytes_verified != -1
+        return self._backend.ffi.buffer(buf)[:bytes_verified]
+
+
 class _RSAPublicKey(object):
     _bit_length_table = [
         0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -282,6 +340,8 @@ class _RSAPrivateKey(object):
 
     @classmethod
     def from_pkcs8(cls, backend, data, form, password=None):
+        passwd_cb = backend.ffi.callback("int(char *, int, int, void *)",
+                                         cls._passwd_callback)
         bio = backend.lib.BIO_new_mem_buf(data, len(data))
         if password is None:
             password = backend.ffi.NULL
@@ -289,7 +349,8 @@ class _RSAPrivateKey(object):
             # TODO: support encryption
             # encrypted parse
             key = backend.lib.d2i_PKCS8PrivateKey_bio(
-                bio, backend.ffi.NULL, backend.ffi.NULL, password
+                bio, backend.ffi.NULL,
+                passwd_cb, password
             )
             if key == backend.ffi.NULL:
                 # try to parse it unencrypted
@@ -299,7 +360,8 @@ class _RSAPrivateKey(object):
                 )
         else:
             key = backend.lib.PEM_read_bio_PrivateKey(
-                bio, backend.ffi.NULL, backend.ffi.NULL, password
+                bio, backend.ffi.NULL,
+                passwd_cb, password
             )
         assert key != backend.ffi.NULL
         key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
@@ -314,6 +376,10 @@ class _RSAPrivateKey(object):
     @property
     def keysize(self):
         return self._backend.lib.BN_num_bits(self._ctx.n)
+
+    @classmethod
+    def _passwd_callback(cls, buf, size, rwflag, userdata):
+        return 0
 
     def publickey(self):
         mod = self._backend.lib.BN_bn2hex(self._ctx.n)
