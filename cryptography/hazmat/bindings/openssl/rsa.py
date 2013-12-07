@@ -18,13 +18,28 @@ INCLUDES = """
 TYPES = """
 typedef ... RSA;
 typedef ... BN_GENCB;
+static const int RSA_PKCS1_PADDING;
+static const int RSA_SSLV23_PADDING;
+static const int RSA_NO_PADDING;
+static const int RSA_PKCS1_OAEP_PADDING;
+static const int RSA_X931_PADDING;
+static const int RSA_PKCS1_PSS_PADDING;
 """
 
 FUNCTIONS = """
 RSA *RSA_new();
 void RSA_free(RSA *);
+int RSA_size(const RSA *);
 int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
 int RSA_check_key(const RSA *);
+int RSA_public_encrypt(int, const unsigned char *, unsigned char *,
+                       RSA *, int);
+int RSA_private_encrypt(int, const unsigned char *, unsigned char *,
+                        RSA *, int);
+int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
+                       RSA *, int);
+int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
+                        RSA *, int);
 """
 
 MACROS = """
