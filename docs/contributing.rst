@@ -141,6 +141,9 @@ should begin with the "Hazardous Materials" warning:
 
     .. hazmat::
 
+When referring to a hypothetical individual (such as "a person receiving an
+encrypted message") use gender neutral pronouns (they/them/their).
+
 Development Environment
 -----------------------
 
