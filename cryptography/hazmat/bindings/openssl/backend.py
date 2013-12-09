@@ -198,7 +198,7 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def _handle_error(self, mode):
+    def _handle_error(self, mode=None):
         code = self.lib.ERR_get_error()
         if not code and isinstance(mode, GCM):
             raise InvalidTag
@@ -210,6 +210,18 @@ class Backend(object):
 
     def create_rsa_ctx(self, bit_length):
         return _RSAPrivateKey.generate(self, bit_length)
+
+    def create_rsa_ctx_from_pkcs1(self, data, form, password):
+        return _RSAPrivateKey.from_pkcs1(self, data, form, password)
+
+    def create_rsa_ctx_from_pkcs8(self, data, form, password):
+        return _RSAPrivateKey.from_pkcs8(self, data, form, password)
+
+    def create_rsa_pub_ctx_from_modulus(self, modulus, exponent):
+        return _RSAPublicKey.from_modulus(self, modulus, exponent)
+
+    def create_signer_ctx(self, algorithm, padding):
+        return _AsymmetricSigner(algorithm, padding)
 
     def _handle_error_code(self, lib, func, reason):
         if lib == self.lib.ERR_LIB_EVP:
@@ -224,6 +236,14 @@ class Backend(object):
                     raise ValueError(
                         "The length of the provided data is not a multiple of "
                         "the block length"
+                    )
+        elif lib == self.lib.ERR_LIB_PEM:
+            if (func == self.lib.PEM_F_PEM_READ_BIO_PRIVATEKEY or
+                    func == self.lib.PEM_F_D2I_PKCS8PRIVATEKEY_BIO):
+                if (reason == self.lib.PEM_R_BAD_PASSWORD_READ or
+                        reason == self.lib.ASN1_R_BAD_PASSWORD_READ):
+                    raise ValueError(
+                        "The password provided to decrypt this key is invalid"
                     )
 
         raise SystemError(
@@ -285,34 +305,50 @@ class _AsymmetricSigner(object):
             len(data), data, buf, self.algorithm._ctx,
             self._backend.lib.RSA_PKCS1_PADDING
         )
-        assert bytes_verified != -1
+        if bytes_verified == -1:
+            #TODO: become a real exception
+            raise ValueError
+
         return self._backend.ffi.buffer(buf)[:bytes_verified]
 
 
 class _RSAPublicKey(object):
-    _bit_length_table = [
-        0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
-        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
-    ]
-
-    def __init__(self, backend, modulus, public_exponent):
+    def __init__(self, backend, ctx):
         self._backend = backend
-        self.modulus = modulus
-        self.public_exponent = public_exponent
+        self._ctx = ctx
 
     @classmethod
-    def from_pkcs1(cls):
-        return cls()
+    def from_modulus(cls, backend, modulus, exponent):
+        ctx = backend.lib.RSA_new()
+        ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
+        mod_bn = backend.lib.BN_new()
+        mod_bn_ptr = backend.ffi.new("BIGNUM **")
+        mod_bn_ptr[0] = mod_bn
+        res = backend.lib.BN_dec2bn(mod_bn_ptr, str(modulus))
+        assert res != 0
+        exp_bn = backend.lib.BN_new()
+        exp_bn_ptr = backend.ffi.new("BIGNUM **")
+        exp_bn_ptr[0] = exp_bn
+        res = backend.lib.BN_dec2bn(exp_bn_ptr, str(exponent))
+        assert res != 0
+        # TODO: free these BNs before reassignment?
+        ctx.n = mod_bn
+        ctx.e = exp_bn
+        return cls(backend, ctx)
+
+    @property
+    def modulus(self):
+        mod = self._backend.lib.BN_bn2hex(self._ctx.n)
+        return int(self._backend.ffi.string(mod), 16)
+
+    @property
+    def public_exponent(self):
+        exp = self._backend.lib.BN_bn2hex(self._ctx.e)
+        return int(self._backend.ffi.string(exp), 16)
 
     @property
     def keysize(self):
-        bits = 0
-        num = self.modulus
-        while num >= 32:
-            num = num >> 6
-            bits += 6
-        bits += self._bit_length_table[num]
-        return bits
+        return self._backend.lib.BN_num_bits(self._ctx.n)
 
 
 class _RSAPrivateKey(object):
@@ -323,6 +359,7 @@ class _RSAPrivateKey(object):
     @classmethod
     def generate(cls, backend, bit_length):
         ctx = backend.lib.RSA_new()
+        ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
         bn = backend.lib.BN_new()
         bn = backend.ffi.gc(bn, backend.lib.BN_free)
         # TODO, allow this to be configurable? Can be very dangerous, but
@@ -346,13 +383,14 @@ class _RSAPrivateKey(object):
         if password is None:
             password = backend.ffi.NULL
         if form.lower() == 'der':
-            # TODO: support encryption
-            # encrypted parse
             key = backend.lib.d2i_PKCS8PrivateKey_bio(
                 bio, backend.ffi.NULL,
                 passwd_cb, password
             )
             if key == backend.ffi.NULL:
+                # TODO: this doesn't work. figure out how to detect der load
+                # errors with bad passwords
+                cls._handle_password_error(backend)
                 # try to parse it unencrypted
                 backend.lib.BIO_reset(bio)
                 key = backend.lib.d2i_PrivateKey_bio(
@@ -363,11 +401,24 @@ class _RSAPrivateKey(object):
                 bio, backend.ffi.NULL,
                 passwd_cb, password
             )
-        assert key != backend.ffi.NULL
+        if key == backend.ffi.NULL:
+            backend._handle_error()
         key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
         ctx = backend.lib.EVP_PKEY_get1_RSA(key)
+        ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
         assert ctx != backend.ffi.NULL
         return cls(ctx, backend)
+
+    @classmethod
+    def _handle_password_error(cls, backend):
+        code = backend.lib.ERR_get_error()
+        func = backend.lib.ERR_GET_FUNC(code)
+        reason = backend.lib.ERR_GET_REASON(code)
+        if (func == backend.lib.PEM_F_PEM_READ_BIO_PRIVATEKEY or
+                func == backend.lib.PEM_F_D2I_PKCS8PRIVATEKEY_BIO):
+            if (reason == backend.lib.PEM_R_BAD_PASSWORD_READ or
+                    reason == backend.lib.ASN1_R_BAD_PASSWORD_READ):
+                backend._handle_error()
 
     @classmethod
     def from_openssh(cls, text):
@@ -381,17 +432,23 @@ class _RSAPrivateKey(object):
     def _passwd_callback(cls, buf, size, rwflag, userdata):
         return 0
 
+    @property
     def publickey(self):
-        mod = self._backend.lib.BN_bn2hex(self._ctx.n)
-        modulus = int(self._backend.ffi.string(mod), 16)
-        pub_exp = self._backend.lib.BN_bn2hex(self._ctx.e)
-        public_exponent = int(self._backend.ffi.string(pub_exp), 16)
-        return _RSAPublicKey(self._backend, modulus, public_exponent)
+        # mod = self._backend.lib.BN_bn2hex(self._ctx.n)
+        # modulus = int(self._backend.ffi.string(mod), 16)
+        # pub_exp = self._backend.lib.BN_bn2hex(self._ctx.e)
+        # public_exponent = int(self._backend.ffi.string(pub_exp), 16)
+        # return (modulus, public_exponent)
+        pub_ctx = self._backend.lib.RSAPublicKey_dup(self._ctx)
+        assert pub_ctx != self._backend.ffi.NULL
+        pub_ctx = backend.ffi.gc(pub_ctx, backend.lib.RSA_free)
+        return _RSAPublicKey(self._backend, pub_ctx)
 
     def to_pkcs8(self, form, password=None):
         bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
         bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
         pkey = self._backend.lib.EVP_PKEY_new()
+        pkey = self._backend.ffi.gc(pkey, self._backend.lib.EVP_PKEY_free())
         res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
         assert res != 0
         if password is None:
@@ -413,6 +470,7 @@ class _RSAPrivateKey(object):
             )
         assert res != 0
         output = []
+        # TODO: size this buffer appropriately
         buf = self._backend.ffi.new("char[]", 10000)
         # returns number of bytes written to buffer
         while True:
