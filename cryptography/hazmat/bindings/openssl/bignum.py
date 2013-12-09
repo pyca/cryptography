@@ -28,6 +28,9 @@ int BN_set_word(BIGNUM *, BN_ULONG);
 
 char *BN_bn2hex(const BIGNUM *);
 int BN_hex2bn(BIGNUM **, const char *);
+int BN_dec2bn(BIGNUM **, const char *);
+
+int BN_num_bits(const BIGNUM *);
 """
 
 MACROS = """
