@@ -17,7 +17,7 @@ INCLUDES = """
 
 TYPES = """
 typedef ... BIGNUM;
-typedef ... BN_ULONG;
+typedef unsigned long BN_ULONG;
 """
 
 FUNCTIONS = """
