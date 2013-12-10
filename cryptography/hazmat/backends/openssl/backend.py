@@ -292,7 +292,9 @@ class _RSAPrivateKey(object):
 
     @classmethod
     def from_pkcs8(cls, data, form, password, backend):
-        bio = backend.lib.BIO_new_mem_buf(data, len(data))
+        char_data = backend.ffi.new("char[]", data)
+        bio = backend.lib.BIO_new_mem_buf(char_data, len(data))
+
         if password is None:
             password = backend.ffi.NULL
             passwd_cb = backend.ffi.callback("int(char *, int, int, void *)",
@@ -303,7 +305,8 @@ class _RSAPrivateKey(object):
             # try to parse it unencrypted
             key = backend.lib.d2i_PrivateKey_bio(bio, backend.ffi.NULL)
             if key == backend.ffi.NULL:
-                backend.lib.BIO_reset(bio)
+                res = backend.lib.BIO_reset(bio)
+                assert res == 1
                 key = backend.lib.d2i_PKCS8PrivateKey_bio(
                     bio, backend.ffi.NULL,
                     passwd_cb, password
@@ -380,15 +383,12 @@ class _RSAPrivateKey(object):
             )
         assert res != 0
         output = []
-        # TODO: size this buffer appropriately
-        buf = self._backend.ffi.new("char[]", 10000)
-        # returns number of bytes written to buffer
+        buf = self._backend.ffi.new("char[]", 5000)
         while True:
-            length = self._backend.lib.BIO_gets(bio, buf, 10000)
-            if length == 0:
+            length = self._backend.lib.BIO_read(bio, buf, 5000)
+            if length <= 0:
                 break
-            output.append(backend.ffi.buffer(buf)[:length])
-
+            output.append(self._backend.ffi.buffer(buf)[:length])
         return b''.join(output)
 
 
