@@ -235,7 +235,7 @@ class Backend(object):
     def create_rsa_pub_ctx_from_modulus(self, modulus, exponent):
         return _RSAPublicKey.from_modulus(self, modulus, exponent)
 
-    def _handle_error(self, mode=None):
+    def _handle_error(self, mode):
         code = self.lib.ERR_get_error()
         if not code and isinstance(mode, GCM):
             raise InvalidTag
@@ -258,14 +258,6 @@ class Backend(object):
                     raise ValueError(
                         "The length of the provided data is not a multiple of "
                         "the block length"
-                    )
-        elif lib == self.lib.ERR_LIB_PEM:
-            if (func == self.lib.PEM_F_PEM_READ_BIO_PRIVATEKEY or
-                    func == self.lib.PEM_F_D2I_PKCS8PRIVATEKEY_BIO):
-                if (reason == self.lib.PEM_R_BAD_PASSWORD_READ or
-                        reason == self.lib.ASN1_R_BAD_PASSWORD_READ):
-                    raise ValueError(
-                        "The password provided to decrypt this key is invalid"
                     )
         err_string = self.ffi.string(
             self.lib.ERR_error_string(code, self.ffi.NULL)
@@ -323,7 +315,8 @@ class _RSAPrivateKey(object):
     @classmethod
     def generate(cls, backend, bit_length, public_exponent):
         if public_exponent < 3:
-            raise ValueError
+            raise ValueError("Public exponent must be 3 or greater (65537 "
+                             "recommended)")
         ctx = backend.lib.RSA_new()
         ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
         bn = backend.lib.BN_new()
@@ -341,48 +334,34 @@ class _RSAPrivateKey(object):
 
     @classmethod
     def from_pkcs8(cls, backend, data, form, password=None):
-        passwd_cb = backend.ffi.callback("int(char *, int, int, void *)",
-                                         cls._passwd_callback)
         bio = backend.lib.BIO_new_mem_buf(data, len(data))
         if password is None:
             password = backend.ffi.NULL
+            passwd_cb = backend.ffi.callback("int(char *, int, int, void *)",
+                                             cls._passwd_callback)
+        else:
+            passwd_cb = backend.ffi.NULL
         if form.lower() == 'der':
-            key = backend.lib.d2i_PKCS8PrivateKey_bio(
-                bio, backend.ffi.NULL,
-                passwd_cb, password
-            )
+            # try to parse it unencrypted
+            key = backend.lib.d2i_PrivateKey_bio(bio, backend.ffi.NULL)
             if key == backend.ffi.NULL:
-                # TODO: this doesn't work. figure out how to detect der load
-                # errors with bad passwords
-                cls._handle_password_error(backend)
-                # try to parse it unencrypted
                 backend.lib.BIO_reset(bio)
-                key = backend.lib.d2i_PrivateKey_bio(
-                    bio, backend.ffi.NULL
+                key = backend.lib.d2i_PKCS8PrivateKey_bio(
+                    bio, backend.ffi.NULL,
+                    passwd_cb, password
                 )
         else:
             key = backend.lib.PEM_read_bio_PrivateKey(
-                bio, backend.ffi.NULL,
-                passwd_cb, password
+                bio, backend.ffi.NULL, passwd_cb, password
             )
         if key == backend.ffi.NULL:
-            backend._handle_error()
+            raise ValueError("Unable to load the private key. Verify the "
+                             "format and password")
         key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
         ctx = backend.lib.EVP_PKEY_get1_RSA(key)
         ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
         assert ctx != backend.ffi.NULL
         return cls(ctx, backend)
-
-    @classmethod
-    def _handle_password_error(cls, backend):
-        code = backend.lib.ERR_get_error()
-        func = backend.lib.ERR_GET_FUNC(code)
-        reason = backend.lib.ERR_GET_REASON(code)
-        if (func == backend.lib.PEM_F_PEM_READ_BIO_PRIVATEKEY or
-                func == backend.lib.PEM_F_D2I_PKCS8PRIVATEKEY_BIO):
-            if (reason == backend.lib.PEM_R_BAD_PASSWORD_READ or
-                    reason == backend.lib.ASN1_R_BAD_PASSWORD_READ):
-                backend._handle_error()
 
     @classmethod
     def from_openssh(cls, text):
@@ -432,7 +411,8 @@ class _RSAPrivateKey(object):
         bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
         bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
         pkey = self._backend.lib.EVP_PKEY_new()
-        pkey = self._backend.ffi.gc(pkey, self._backend.lib.EVP_PKEY_free())
+        #TODO: this causes a crash if you call to_pkcs8 twice on the same obj
+        #pkey = self._backend.ffi.gc(pkey, self._backend.lib.EVP_PKEY_free)
         res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
         assert res != 0
         if password is None:
