@@ -26,7 +26,7 @@ def load_file(filename):
     base = os.path.join(
         os.path.dirname(__file__), "hazmat", "primitives", "vectors",
     )
-    with open(os.path.join(base, filename), "r") as vector_file:
+    with open(os.path.join(base, filename), "rb") as vector_file:
         return vector_file.read()
 
 

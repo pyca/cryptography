@@ -47,7 +47,7 @@ class TestRSAPrivateKey(object):
 
     @pytest.mark.parametrize(("f", "form", "password"), [
         ("pkcs1.pem", "pem", None),
-        ("pkcs1-encrypted.pem", "pem", "cryptography"),
+        ("pkcs1-encrypted.pem", "pem", b"cryptography"),
         ("pkcs1.der", "der", None),
     ])
     def test_load_pkcs1(self, backend, f, form, password):
@@ -60,9 +60,9 @@ class TestRSAPrivateKey(object):
 
     @pytest.mark.parametrize(("f", "form", "password"), [
         ("pkcs8.pem", "pem", None),
-        ("pkcs8-encrypted.pem", "pem", "cryptography"),
+        ("pkcs8-encrypted.pem", "pem", b"cryptography"),
         ("pkcs8.der", "der", None),
-        ("pkcs8-encrypted.der", "der", "cryptography"),
+        ("pkcs8-encrypted.der", "der", b"cryptography"),
     ])
     def test_load_pkcs8(self, backend, f, form, password):
         data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
@@ -73,7 +73,7 @@ class TestRSAPrivateKey(object):
         assert key.q == self.q
 
     @pytest.mark.parametrize(("f", "form", "password"), [
-        ("pkcs1-encrypted.pem", "pem", "cryptograph"),
+        ("pkcs1-encrypted.pem", "pem", b"cryptograph"),
     ])
     def test_load_bad_password_pkcs1(self, backend, f, form, password):
         data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
@@ -81,8 +81,8 @@ class TestRSAPrivateKey(object):
             RSAPrivateKey.from_pkcs1(data, form, password, backend)
 
     @pytest.mark.parametrize(("f", "form", "password"), [
-        ("pkcs8-encrypted.pem", "pem", "cryptograph"),
-        ("pkcs8-encrypted.der", "der", "cryptograph"),
+        ("pkcs8-encrypted.pem", "pem", b"cryptograph"),
+        ("pkcs8-encrypted.der", "der", b"cryptograph"),
         ("pkcs8-encrypted.pem", "pem", None),
         ("pkcs8-encrypted.der", "der", None),
     ])
@@ -126,8 +126,8 @@ class TestRSAPrivateKey(object):
         assert output == data
 
     @pytest.mark.parametrize(("f", "form", "password"), [
-        ("pkcs8.pem", "pem", "cryptography"),
-        ("pkcs8.der", "der", "cryptography"),
+        ("pkcs8.pem", "pem", b"cryptography"),
+        ("pkcs8.der", "der", b"cryptography"),
     ])
     def test_create_encrypted_pkcs8(self, backend, f, form, password):
         data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))

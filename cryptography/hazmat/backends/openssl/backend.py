@@ -367,8 +367,8 @@ class _RSAPrivateKey(object):
         else:
             # TODO: configurable cipher, but not all EVP ciphers are allowed
             # here and openssl doesn't tell us which ones?
-            evp_cipher = self._backend.lib.EVP_get_cipherbyname("aes-256-cbc")
-        if form.lower() == 'pem':
+            evp_cipher = self._backend.lib.EVP_get_cipherbyname(b"aes-256-cbc")
+        if form.lower() == "pem":
             res = self._backend.lib.PEM_write_bio_PKCS8PrivateKey(
                 bio, pkey, evp_cipher, self._backend.ffi.NULL,
                 0, self._backend.ffi.NULL, password
@@ -389,7 +389,7 @@ class _RSAPrivateKey(object):
                 break
             output.append(backend.ffi.buffer(buf)[:length])
 
-        return ''.join(output)
+        return b''.join(output)
 
 
 class GetCipherByName(object):
