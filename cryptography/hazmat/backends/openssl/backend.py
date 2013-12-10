@@ -235,7 +235,7 @@ class Backend(object):
     def create_rsa_pub_ctx_from_modulus(self, modulus, exponent):
         return _RSAPublicKey.from_modulus(self, modulus, exponent)
 
-    def _handle_error(self, mode):
+    def _handle_error(self, mode=None):
         code = self.lib.ERR_get_error()
         if not code and isinstance(mode, GCM):
             raise InvalidTag
@@ -267,7 +267,9 @@ class Backend(object):
                     raise ValueError(
                         "The password provided to decrypt this key is invalid"
                     )
-        err_string = self.ffi.string(self.lib.ERR_error_string(code))
+        err_string = self.ffi.string(
+            self.lib.ERR_error_string(code, self.ffi.NULL)
+        )
         raise SystemError(
             "Unknown error code from OpenSSL, you should probably file a bug. "
             "Error was: {0}".format(err_string)
