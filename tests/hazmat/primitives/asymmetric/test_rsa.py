@@ -16,14 +16,12 @@ from __future__ import absolute_import, division, print_function
 import os
 import pytest
 
-from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPublicKey, RSAPrivateKey
-)
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 from ....utils import load_file
 
 
-class TestRSA(object):
+class TestRSAPrivateKey(object):
     q = int("0xe30a63dced4a53d3c046092014d5042153175e05e1c1502545a2c7ee76c729d"
             "eb1d5942cdb0275164003b505cd32894fcd66c43a2b4ed6ff73baf3d9bd9da80f"
             "6b7ce91c9045cfbd921f1607cbf5477dc73b2bb7a9f41ee91498a4d0cdc041d49"
@@ -53,10 +51,8 @@ class TestRSA(object):
         ("pkcs1.der", "der", None),
     ])
     def test_load_pkcs1(self, backend, f, form, password):
-        data = load_file(
-            os.path.join("asymmetric", "RSA", "parsing", f)
-        )
-        key = RSAPrivateKey.from_pkcs1(backend, data, form, password)
+        data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
+        key = RSAPrivateKey.from_pkcs1(data, form, password, backend)
         assert key.modulus == self.m
         assert key.public_exponent == self.public_exponent
         assert key.p == self.p
@@ -69,10 +65,8 @@ class TestRSA(object):
         ("pkcs8-encrypted.der", "der", "cryptography"),
     ])
     def test_load_pkcs8(self, backend, f, form, password):
-        data = load_file(
-            os.path.join("asymmetric", "RSA", "parsing", f)
-        )
-        key = RSAPrivateKey.from_pkcs8(backend, data, form, password)
+        data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
+        key = RSAPrivateKey.from_pkcs8(data, form, password, backend)
         assert key.modulus == self.m
         assert key.public_exponent == self.public_exponent
         assert key.p == self.p
@@ -82,19 +76,74 @@ class TestRSA(object):
         ("pkcs1-encrypted.pem", "pem", "cryptograph"),
     ])
     def test_load_bad_password_pkcs1(self, backend, f, form, password):
-        data = load_file(
-            os.path.join("asymmetric", "RSA", "parsing", f)
-        )
+        data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
         with pytest.raises(ValueError):
-            RSAPrivateKey.from_pkcs8(backend, data, form, password)
+            RSAPrivateKey.from_pkcs1(data, form, password, backend)
 
     @pytest.mark.parametrize(("f", "form", "password"), [
         ("pkcs8-encrypted.pem", "pem", "cryptograph"),
         ("pkcs8-encrypted.der", "der", "cryptograph"),
+        ("pkcs8-encrypted.pem", "pem", None),
+        ("pkcs8-encrypted.der", "der", None),
     ])
     def test_load_bad_password_pkcs8(self, backend, f, form, password):
-        data = load_file(
-            os.path.join("asymmetric", "RSA", "parsing", f)
-        )
+        data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
         with pytest.raises(ValueError):
-            RSAPrivateKey.from_pkcs8(backend, data, form, password)
+            RSAPrivateKey.from_pkcs8(data, form, password, backend)
+
+    @pytest.mark.parametrize("keysize", [
+        128, 1024, 1025, 2048
+    ])
+    def test_generate_key(self, backend, keysize):
+        key = RSAPrivateKey.generate(keysize, 65537, backend)
+        assert key.keysize == keysize
+        assert key.modulus is not None
+
+    @pytest.mark.parametrize("public_exponent", [
+        3, 5, 17, 257, 65537
+    ])
+    def test_generate_key_alternate_exponents(self, backend, public_exponent):
+        key = RSAPrivateKey.generate(768, public_exponent, backend)
+        assert key.keysize == 768
+        assert key.public_exponent == public_exponent
+        assert key.modulus is not None
+
+    @pytest.mark.parametrize("public_exponent", [
+        1, 2, 4, 8, 256, 1024
+    ])
+    def test_generate_key_bad_exponents(self, backend, public_exponent):
+        with pytest.raises(ValueError):
+            RSAPrivateKey.generate(1024, public_exponent, backend)
+
+    @pytest.mark.parametrize(("f", "form"), [
+        ("pkcs8.pem", "pem"),
+        ("pkcs8.der", "der"),
+    ])
+    def test_create_pkcs8(self, backend, f, form):
+        data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
+        key = RSAPrivateKey.from_pkcs8(data, form, None, backend)
+        output = key.to_pkcs8(form)
+        assert output == data
+
+    @pytest.mark.parametrize(("f", "form", "password"), [
+        ("pkcs8.pem", "pem", "cryptography"),
+        ("pkcs8.der", "der", "cryptography"),
+    ])
+    def test_create_encrypted_pkcs8(self, backend, f, form, password):
+        data = load_file(os.path.join("asymmetric", "RSA", "parsing", f))
+        key = RSAPrivateKey.from_pkcs8(data, form, None, backend)
+        output = key.to_pkcs8(form, password)
+        new_key = RSAPrivateKey.from_pkcs8(output, form, password, backend)
+        assert new_key.modulus == key.modulus
+
+    def test_from_openssh(self, backend):
+        with pytest.raises(NotImplementedError):
+            RSAPrivateKey.from_openssh('', backend)
+
+    def test_publickey(self, backend):
+        data = load_file(
+            os.path.join("asymmetric", "RSA", "parsing", "pkcs8.pem")
+        )
+        key = RSAPrivateKey.from_pkcs8(data, "pem", None, backend)
+        with pytest.raises(NotImplementedError):
+            key.publickey

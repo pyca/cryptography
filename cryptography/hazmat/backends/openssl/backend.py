@@ -224,16 +224,16 @@ class Backend(object):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def create_rsa_ctx(self, bit_length, public_exponent):
-        return _RSAPrivateKey.generate(self, bit_length, public_exponent)
+        return _RSAPrivateKey.generate(bit_length, public_exponent, self)
+
+    def create_rsa_ctx_from_openssh(self, data):
+        return _RSAPrivateKey.from_openssh(data, self)
 
     def create_rsa_ctx_from_pkcs1(self, data, form, password):
-        return _RSAPrivateKey.from_pkcs1(self, data, form, password)
+        return _RSAPrivateKey.from_pkcs1(data, form, password, self)
 
     def create_rsa_ctx_from_pkcs8(self, data, form, password):
-        return _RSAPrivateKey.from_pkcs8(self, data, form, password)
-
-    def create_rsa_pub_ctx_from_modulus(self, modulus, exponent):
-        return _RSAPublicKey.from_modulus(self, modulus, exponent)
+        return _RSAPrivateKey.from_pkcs8(data, form, password, self)
 
     def _handle_error(self, mode):
         code = self.lib.ERR_get_error()
@@ -268,55 +268,16 @@ class Backend(object):
         )
 
 
-class _RSAPublicKey(object):
-    def __init__(self, backend, ctx):
-        self._backend = backend
-        self._ctx = ctx
-
-    @classmethod
-    def from_modulus(cls, backend, modulus, exponent):
-        ctx = backend.lib.RSA_new()
-        ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
-        mod_bn = backend.lib.BN_new()
-        mod_bn_ptr = backend.ffi.new("BIGNUM **")
-        mod_bn_ptr[0] = mod_bn
-        res = backend.lib.BN_dec2bn(mod_bn_ptr, str(modulus))
-        assert res != 0
-        exp_bn = backend.lib.BN_new()
-        exp_bn_ptr = backend.ffi.new("BIGNUM **")
-        exp_bn_ptr[0] = exp_bn
-        res = backend.lib.BN_dec2bn(exp_bn_ptr, str(exponent))
-        assert res != 0
-        # TODO: free these BNs before reassignment?
-        ctx.n = mod_bn
-        ctx.e = exp_bn
-        return cls(backend, ctx)
-
-    @property
-    def modulus(self):
-        mod = self._backend.lib.BN_bn2hex(self._ctx.n)
-        return int(self._backend.ffi.string(mod), 16)
-
-    @property
-    def public_exponent(self):
-        exp = self._backend.lib.BN_bn2hex(self._ctx.e)
-        return int(self._backend.ffi.string(exp), 16)
-
-    @property
-    def keysize(self):
-        return self._backend.lib.BN_num_bits(self._ctx.n)
-
-
 class _RSAPrivateKey(object):
     def __init__(self, ctx, backend):
         self._backend = backend
         self._ctx = ctx
 
     @classmethod
-    def generate(cls, backend, bit_length, public_exponent):
-        if public_exponent < 3:
-            raise ValueError("Public exponent must be 3 or greater (65537 "
-                             "recommended)")
+    def generate(cls, bit_length, public_exponent, backend):
+        if public_exponent < 3 or public_exponent % 2 == 0:
+            raise ValueError("Public exponent must be odd and 3 or greater "
+                             "(65537 recommended)")
         ctx = backend.lib.RSA_new()
         ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
         bn = backend.lib.BN_new()
@@ -329,11 +290,11 @@ class _RSAPrivateKey(object):
         return cls(ctx, backend)
 
     @classmethod
-    def from_pkcs1(cls, backend, data, form, password=None):
-        return cls.from_pkcs8(backend, data, form, password)
+    def from_pkcs1(cls, data, form, password, backend):
+        return cls.from_pkcs8(data, form, password, backend)
 
     @classmethod
-    def from_pkcs8(cls, backend, data, form, password=None):
+    def from_pkcs8(cls, data, form, password, backend):
         bio = backend.lib.BIO_new_mem_buf(data, len(data))
         if password is None:
             password = backend.ffi.NULL
@@ -364,7 +325,7 @@ class _RSAPrivateKey(object):
         return cls(ctx, backend)
 
     @classmethod
-    def from_openssh(cls, text):
+    def from_openssh(cls, data, backend):
         raise NotImplementedError
 
     @classmethod
@@ -397,15 +358,7 @@ class _RSAPrivateKey(object):
 
     @property
     def publickey(self):
-        # mod = self._backend.lib.BN_bn2hex(self._ctx.n)
-        # modulus = int(self._backend.ffi.string(mod), 16)
-        # pub_exp = self._backend.lib.BN_bn2hex(self._ctx.e)
-        # public_exponent = int(self._backend.ffi.string(pub_exp), 16)
-        # return (modulus, public_exponent)
-        pub_ctx = self._backend.lib.RSAPublicKey_dup(self._ctx)
-        assert pub_ctx != self._backend.ffi.NULL
-        pub_ctx = backend.ffi.gc(pub_ctx, backend.lib.RSA_free)
-        return _RSAPublicKey(self._backend, pub_ctx)
+        raise NotImplementedError
 
     def to_pkcs8(self, form, password=None):
         bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())

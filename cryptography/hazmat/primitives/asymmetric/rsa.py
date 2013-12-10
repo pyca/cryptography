@@ -19,23 +19,23 @@ class RSAPrivateKey(object):
         self._ctx = ctx
 
     @classmethod
-    def generate(cls, backend, bit_length, public_exponent=65537):
+    def generate(cls, bit_length, public_exponent, backend):
         ctx = backend.create_rsa_ctx(bit_length, public_exponent)
         return cls(ctx)
 
     @classmethod
-    def from_pkcs1(cls, backend, data, form, password=None):
+    def from_pkcs1(cls, data, form, password, backend):
         ctx = backend.create_rsa_ctx_from_pkcs1(data, form, password)
         return cls(ctx)
 
     @classmethod
-    def from_pkcs8(cls, backend, data, form, password=None):
+    def from_pkcs8(cls, data, form, password, backend):
         ctx = backend.create_rsa_ctx_from_pkcs8(data, form, password)
         return cls(ctx)
 
     @classmethod
-    def from_openssh(cls, text):
-        raise NotImplementedError
+    def from_openssh(cls, data, backend):
+        return backend.create_rsa_ctx_from_openssh(data)
 
     @property
     def modulus(self):
@@ -59,29 +59,7 @@ class RSAPrivateKey(object):
 
     @property
     def publickey(self):
-        return RSAPublicKey(self._ctx.publickey)
+        return self._ctx.publickey
 
     def to_pkcs8(self, form, password=None):
         return self._ctx.to_pkcs8(form, password)
-
-
-class RSAPublicKey(object):
-    def __init__(self, ctx):
-        self._ctx = ctx
-
-    @classmethod
-    def from_modulus(cls, backend, modulus, public_exponent):
-        ctx = backend.create_rsa_pub_ctx_from_modulus(modulus, public_exponent)
-        return cls(ctx)
-
-    @property
-    def modulus(self):
-        return self._ctx.modulus
-
-    @property
-    def public_exponent(self):
-        return self._ctx.public_exponent
-
-    @property
-    def keysize(self):
-        return self._ctx.keysize
