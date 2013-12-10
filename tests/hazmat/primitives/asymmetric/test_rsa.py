@@ -25,13 +25,13 @@ class TestRSAPrivateKey(object):
     q = int("0xe30a63dced4a53d3c046092014d5042153175e05e1c1502545a2c7ee76c729d"
             "eb1d5942cdb0275164003b505cd32894fcd66c43a2b4ed6ff73baf3d9bd9da80f"
             "6b7ce91c9045cfbd921f1607cbf5477dc73b2bb7a9f41ee91498a4d0cdc041d49"
-            "ee81c34284e4b57cdee2561a4d940eb7b7dc5e13b8a089a9ca50edf3d5dc16dL",
+            "ee81c34284e4b57cdee2561a4d940eb7b7dc5e13b8a089a9ca50edf3d5dc16d",
             0)
 
     p = int("0xf1448a9ee52d4d5b359135fe3e1576ef776bc12bbcabfda68a82dee72acefd7"
             "5f035cfdfce2ee90ba00834510228683a6af4c060aa9502ef9a2180e3dab1953f"
             "8200ad16366113f369a7dc4c29db90afe3f9e671b63bfea7a0d5e92bdd0ed78b9"
-            "3f714762b6adc06dc06ccee77d946d7dc8c090e0aff62311ae742fab38f80dfL",
+            "3f714762b6adc06dc06ccee77d946d7dc8c090e0aff62311ae742fab38f80df",
             0)
 
     m = int("0xd5f991b6079133b053a6f8eed76f1860e0c407767f2d935eddc216786ce31b6"
@@ -41,7 +41,7 @@ class TestRSAPrivateKey(object):
             "c84d566d28281ea3e7c2d713a0d0d996eef0d04524eb753b978654652ecba8617"
             "4eb89782cdfa0fee665f468fd4165782e0c9e324942999a04b157cfe9f4f1552c"
             "16d8c90db46a91657dd9abc645d2caaa835f6a8c4d3a37b6ce1b3888e7cf42f1f"
-            "58018f0efae83b2b85997f4a12e7bf8a409fab26f8a169b67359844fdf3L", 0)
+            "58018f0efae83b2b85997f4a12e7bf8a409fab26f8a169b67359844fdf3", 0)
 
     public_exponent = 65537
 
