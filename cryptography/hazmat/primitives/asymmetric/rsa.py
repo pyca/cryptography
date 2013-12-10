@@ -33,10 +33,6 @@ class RSAPrivateKey(object):
         ctx = backend.create_rsa_ctx_from_pkcs8(data, form, password)
         return cls(ctx)
 
-    @classmethod
-    def from_openssh(cls, data, backend):
-        return backend.create_rsa_ctx_from_openssh(data)
-
     @property
     def modulus(self):
         return self._ctx.modulus

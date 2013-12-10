@@ -136,10 +136,6 @@ class TestRSAPrivateKey(object):
         new_key = RSAPrivateKey.from_pkcs8(output, form, password, backend)
         assert new_key.modulus == key.modulus
 
-    def test_from_openssh(self, backend):
-        with pytest.raises(NotImplementedError):
-            RSAPrivateKey.from_openssh('', backend)
-
     def test_publickey(self, backend):
         data = load_file(
             os.path.join("asymmetric", "RSA", "parsing", "pkcs8.pem")

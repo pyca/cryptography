@@ -226,9 +226,6 @@ class Backend(object):
     def create_rsa_ctx(self, bit_length, public_exponent):
         return _RSAPrivateKey.generate(bit_length, public_exponent, self)
 
-    def create_rsa_ctx_from_openssh(self, data):
-        return _RSAPrivateKey.from_openssh(data, self)
-
     def create_rsa_ctx_from_pkcs1(self, data, form, password):
         return _RSAPrivateKey.from_pkcs1(data, form, password, self)
 
@@ -323,10 +320,6 @@ class _RSAPrivateKey(object):
         ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
         assert ctx != backend.ffi.NULL
         return cls(ctx, backend)
-
-    @classmethod
-    def from_openssh(cls, data, backend):
-        raise NotImplementedError
 
     @classmethod
     def _passwd_callback(cls, buf, size, rwflag, userdata):
