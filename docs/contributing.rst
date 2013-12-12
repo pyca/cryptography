@@ -47,6 +47,40 @@ Additionally, every Python code file must contain
 
     from __future__ import absolute_import, division, print_function
 
+API Considerations
+~~~~~~~~~~~~~~~~~~
+
+Most projects' APIs are designed with a philosophy of "make easy things easy,
+and make hard things possible". One of the perils of writing cryptographic code
+is that code that is secure looks just like code that isn't, and produces
+results that are also difficult to distinguish. As a result ``cryptography``
+has, as a design philosophy: "make it hard to do insecure things". Here are a
+few strategies for API design which should be both followed, and should inspire
+other API choices:
+
+If it is incorrect to ignore the result of a method, it should raise an
+exception, and not return a boolean ``True``/``False`` flag. For example, a
+method to verify a signature should raise ``InvalidSignature``, and not return
+whether the signature was valid.
+
+.. code-block:: python
+
+    # This is bad.
+    def verify(sig):
+        # ...
+        return is_valid
+
+    # Good!
+    def verify(sig):
+        # ...
+        if not is_valid:
+            raise InvalidSignature
+
+APIs at the :doc:`/hazmat/primitives/index` layer should always take an
+explicit backend, APIs at the recipes layer should automatically use the
+:func:`~cryptography.hazmat.bindings.default_backend`, but optionally allow
+specifiying a different backend.
+
 C bindings
 ~~~~~~~~~~
 
