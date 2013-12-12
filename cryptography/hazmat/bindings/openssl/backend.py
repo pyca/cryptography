@@ -31,6 +31,24 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
 
+_OSX_PRE_INCLUDE = """
+#ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
+    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
+
+_OSX_POST_INCLUDE = """
+#ifdef __APPLE__
+#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
+    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
+
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
@@ -112,28 +130,10 @@ class Backend(object):
         #   int foo(int);
         #   int foo(short);
 
-        pre_includes = ["""
-#ifdef __APPLE__
-#include <AvailabilityMacros.h>
-#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
-"""]
-
-        post_includes = ["""
-#ifdef __APPLE__
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
-"""]
-
         lib = ffi.verify(
-            source="\n".join(pre_includes +
+            source="\n".join([_OSX_PRE_INCLUDE] +
                              includes  +
-                             post_includes +
+                             [_OSX_POST_INCLUDE] +
                              functions +
                              customizations),
             libraries=["crypto", "ssl"],
