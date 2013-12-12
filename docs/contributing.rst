@@ -48,7 +48,7 @@ Additionally, every Python code file must contain
     from __future__ import absolute_import, division, print_function
 
 C bindings
-----------
+~~~~~~~~~~
 
 When binding C code with ``cffi`` we have our own style guide, it's pretty
 simple.
@@ -161,7 +161,7 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 You are now ready to run the tests and build the documentation.
 
 Running Tests
--------------
+~~~~~~~~~~~~~
 
 ``cryptography`` unit tests are found in the ``tests/`` directory and are
 designed to be run using `pytest`_. `pytest`_ will discover the tests
@@ -195,7 +195,7 @@ You may not have all the required Python versions installed, in which case you
 will see one or more ``InterpreterNotFound`` errors.
 
 Building Documentation
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 ``cryptography`` documentation is stored in the ``docs/`` directory. It is
 written in `reStructured Text`_ and rendered using `Sphinx`_.
