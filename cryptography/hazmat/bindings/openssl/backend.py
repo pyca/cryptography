@@ -111,8 +111,19 @@ class Backend(object):
         # is legal, but the following will fail to compile:
         #   int foo(int);
         #   int foo(short);
+
+        preamble = [
+"""
+#ifdef __APPLE__
+# include <AvailabilityMacros.h>
+# undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+# define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
+        ]
+
         lib = ffi.verify(
-            source="\n".join(includes + functions + customizations),
+            source="\n".join(preamble + includes + functions + customizations),
             libraries=["crypto", "ssl"],
         )
 
