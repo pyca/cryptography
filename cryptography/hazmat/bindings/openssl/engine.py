@@ -46,8 +46,6 @@ int ENGINE_set_default_DH(ENGINE *);
 int ENGINE_set_default_RAND(ENGINE *);
 int ENGINE_set_default_ciphers(ENGINE *);
 int ENGINE_set_default_digests(ENGINE *);
-int ENGINE_set_default_pkey_meths(ENGINE *);
-int ENGINE_set_default_pkey_asn1_meths(ENGINE *);
 """
 
 MACROS = """
