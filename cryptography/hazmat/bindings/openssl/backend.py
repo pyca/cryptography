@@ -131,11 +131,13 @@ class Backend(object):
         #   int foo(short);
 
         lib = ffi.verify(
-            source="\n".join([_OSX_PRE_INCLUDE] +
-                             includes  +
-                             [_OSX_POST_INCLUDE] +
-                             functions +
-                             customizations),
+            source="\n".join(
+                [_OSX_PRE_INCLUDE] +
+                includes +
+                [_OSX_POST_INCLUDE] +
+                functions +
+                customizations
+            ),
             libraries=["crypto", "ssl"],
         )
 
