@@ -21,5 +21,5 @@ These are `CFFI`_ bindings to the `OpenSSL`_ C library.
         and access constants.
 
 
-.. _`CFFI`: http://cffi.readthedocs.org/
+.. _`CFFI`: https://cffi.readthedocs.org/
 .. _`OpenSSL`: https://www.openssl.org/
