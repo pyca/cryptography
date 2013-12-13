@@ -3,7 +3,6 @@ import os
 
 import pytest
 
-from cryptography.hazmat.bindings import _ALL_BACKENDS
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
@@ -20,6 +19,7 @@ def _load_all_params(path, file_names, param_loader):
             load_vectors_from_file(os.path.join(path, file_name), param_loader)
         )
     return all_params
+
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
                           mode_factory, only_if=lambda backend: True,
