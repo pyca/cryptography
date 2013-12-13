@@ -6,13 +6,26 @@ Welcome to ``cryptography``
     ``cryptography`` is very young, and very incomplete.
 
 ``cryptography`` is a Python library which exposes cryptographic recipes and
-primitives.
+primitives. We hope it'll be your one-stop-shop for all your cryptographic
+needs in Python.
+
+Installing
+----------
+
+We don't yet have a release on PyPI, for now you can install ``cryptography``
+directly from Github:
+
+.. code-block:: console
+
+    $ pip install git+https://github.com/pyca/cryptography
 
 Why a new crypto library for Python?
 ------------------------------------
 
-We wanted to address a few issues with existing cryptography libraries in
-Python:
+If you've done cryptographic work in Python before, you've probably seen some
+other libraries in Python, such as *M2Crypto*, *PyCrypto*, or *PyOpenSSL*. In
+building ``cryptography`` we wanted to address a few issues we observed in the
+existing libraries:
 
 * Lack of PyPy and Python 3 support.
 * Lack of maintenance.
