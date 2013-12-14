@@ -28,6 +28,7 @@ devastating, ``cryptography`` has a strict code review policy:
 * If somehow the tests get into a failing state on ``master`` (such as by a
   backwards incompatible release of a dependency) no pull requests may be
   merged until this is rectified.
+* All merged patches must have 100% test coverage.
 
 The purpose of these policies is to minimize the chances we merge a change
 which jeopardizes our users' security.
@@ -47,8 +48,42 @@ Additionally, every Python code file must contain
 
     from __future__ import absolute_import, division, print_function
 
+API Considerations
+~~~~~~~~~~~~~~~~~~
+
+Most projects' APIs are designed with a philosophy of "make easy things easy,
+and make hard things possible". One of the perils of writing cryptographic code
+is that code that is secure looks just like code that isn't, and produces
+results that are also difficult to distinguish. As a result ``cryptography``
+has, as a design philosophy: "make it hard to do insecure things". Here are a
+few strategies for API design which should be both followed, and should inspire
+other API choices:
+
+If it is incorrect to ignore the result of a method, it should raise an
+exception, and not return a boolean ``True``/``False`` flag. For example, a
+method to verify a signature should raise ``InvalidSignature``, and not return
+whether the signature was valid.
+
+.. code-block:: python
+
+    # This is bad.
+    def verify(sig):
+        # ...
+        return is_valid
+
+    # Good!
+    def verify(sig):
+        # ...
+        if not is_valid:
+            raise InvalidSignature
+
+APIs at the :doc:`/hazmat/primitives/index` layer should always take an
+explicit backend, APIs at the recipes layer should automatically use the
+:func:`~cryptography.hazmat.bindings.default_backend`, but optionally allow
+specifying a different backend.
+
 C bindings
-----------
+~~~~~~~~~~
 
 When binding C code with ``cffi`` we have our own style guide, it's pretty
 simple.
@@ -141,6 +176,9 @@ should begin with the "Hazardous Materials" warning:
 
     .. hazmat::
 
+When referring to a hypothetical individual (such as "a person receiving an
+encrypted message") use gender neutral pronouns (they/them/their).
+
 Development Environment
 -----------------------
 
@@ -158,7 +196,7 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 You are now ready to run the tests and build the documentation.
 
 Running Tests
--------------
+~~~~~~~~~~~~~
 
 ``cryptography`` unit tests are found in the ``tests/`` directory and are
 designed to be run using `pytest`_. `pytest`_ will discover the tests
@@ -192,7 +230,7 @@ You may not have all the required Python versions installed, in which case you
 will see one or more ``InterpreterNotFound`` errors.
 
 Building Documentation
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 ``cryptography`` documentation is stored in the ``docs/`` directory. It is
 written in `reStructured Text`_ and rendered using `Sphinx`_.

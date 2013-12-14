@@ -12,9 +12,6 @@ Symmetric Encryption
     key = binascii.unhexlify(b"0" * 32)
     iv = binascii.unhexlify(b"0" * 32)
 
-    from cryptography.hazmat.bindings import default_backend
-    backend = default_backend()
-
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the sender and receiver both use the same key. Note that symmetric
@@ -37,6 +34,8 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.bindings import default_backend
+        >>> backend = default_backend()
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -89,7 +88,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     Block ciphers require that plaintext or ciphertext always be a multiple of
     their block size, because of that **padding** is often required to make a
     message the correct size. ``CipherContext`` will not automatically apply
-    any padding; you'll need to add your own. For block ciphers the reccomended
+    any padding; you'll need to add your own. For block ciphers the recommended
     padding is :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you
     are using a stream cipher mode (such as
     :class:`cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
@@ -117,6 +116,36 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise
         :class:`~cryptography.exceptions.AlreadyFinalized`.
+
+.. class:: AEADCipherContext
+
+    When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
+    with an AEAD mode you will receive a return object conforming to the
+    ``AEADCipherContext`` interface (in addition to the ``CipherContext``
+    interface). If it is an encryption context it will additionally be an
+    ``AEADEncryptionContext`` interface. ``AEADCipherContext`` contains an
+    additional method ``authenticate_additional_data`` for adding additional
+    authenticated but unencrypted data. You should call this before calls to
+    ``update``. When you are done call ``finalize()`` to finish the operation.
+
+    .. method:: authenticate_additional_data(data)
+
+        :param bytes data: The data you wish to authenticate but not encrypt.
+        :raises: :class:`~cryptography.exceptions.AlreadyFinalized`
+
+.. class:: AEADEncryptionContext
+
+    When creating an encryption context using ``encryptor()`` on a ``Cipher``
+    object with an AEAD mode you will receive a return object conforming to the
+    ``AEADEncryptionContext`` interface (as well as ``AEADCipherContext``).
+    This interface provides one additional attribute ``tag``. ``tag`` can only
+    be obtained after ``finalize()``.
+
+    .. attribute:: tag
+
+        :return bytes: Returns the tag value as bytes.
+        :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
+                 before the context is finalized.
 
 .. _symmetric-encryption-algorithms:
 
@@ -200,8 +229,9 @@ Weak Ciphers
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.bindings import default_backend
         >>> algorithm = algorithms.ARC4(key)
-        >>> cipher = Cipher(algorithm, mode=None, backend=backend)
+        >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
@@ -295,6 +325,49 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
+.. class:: GCM(initialization_vector, tag=None)
+
+    .. danger::
+
+        When using this mode you MUST not use the decrypted data until
+        :meth:`~cryptography.hazmat.primitives.interfaces.CipherContext.finalize`
+        has been called. GCM provides NO guarantees of ciphertext integrity
+        until decryption is complete.
+
+    GCM (Galois Counter Mode) is a mode of operation for block ciphers. An
+    AEAD (authenticated encryption with additional data) mode is a type of
+    block cipher mode that encrypts the message as well as authenticating it
+    (and optionally additional data that is not encrypted) simultaneously.
+    Additional means of verifying integrity (like
+    :doc:`HMAC </hazmat/primitives/hmac>`) are not necessary.
+
+    :param bytes initialization_vector: Must be random bytes. They do not need
+                                        to be kept secret (they can be included
+                                        in a transmitted message). NIST
+                                        `recommends 96-bit IV length`_ for
+                                        performance critical situations, but it
+                                        can be up to 2\ :sup:`64` - 1 bits.
+                                        Do not reuse an ``initialization_vector``
+                                        with a given ``key``.
+
+    :param bytes tag: The tag bytes to verify during decryption. When encrypting
+                      this must be None.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.bindings import default_backend
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
+        >>> encryptor = cipher.encryptor()
+        >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> tag = encryptor.tag
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend)
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
 
 Insecure Modes
 --------------
@@ -314,3 +387,4 @@ Insecure Modes
 
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
+.. _`recommends 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf

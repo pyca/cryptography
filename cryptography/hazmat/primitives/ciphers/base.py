@@ -14,7 +14,9 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized
+from cryptography.exceptions import (
+    AlreadyFinalized, NotYetFinalized, AlreadyUpdated,
+)
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -28,14 +30,25 @@ class Cipher(object):
         self._backend = backend
 
     def encryptor(self):
-        return _CipherContext(self._backend.create_symmetric_encryption_ctx(
+        ctx = self._backend.create_symmetric_encryption_ctx(
             self.algorithm, self.mode
-        ))
+        )
+        return self._wrap_ctx(ctx, True)
 
     def decryptor(self):
-        return _CipherContext(self._backend.create_symmetric_decryption_ctx(
+        ctx = self._backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
-        ))
+        )
+        return self._wrap_ctx(ctx, False)
+
+    def _wrap_ctx(self, ctx, encrypt):
+        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
+            if encrypt:
+                return _AEADEncryptionContext(ctx)
+            else:
+                return _AEADCipherContext(ctx)
+        else:
+            return _CipherContext(ctx)
 
 
 @utils.register_interface(interfaces.CipherContext)
@@ -54,3 +67,43 @@ class _CipherContext(object):
         data = self._ctx.finalize()
         self._ctx = None
         return data
+
+
+@utils.register_interface(interfaces.AEADCipherContext)
+@utils.register_interface(interfaces.CipherContext)
+class _AEADCipherContext(object):
+    def __init__(self, ctx):
+        self._ctx = ctx
+        self._tag = None
+        self._updated = False
+
+    def update(self, data):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        self._updated = True
+        return self._ctx.update(data)
+
+    def finalize(self):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        data = self._ctx.finalize()
+        self._tag = self._ctx.tag
+        self._ctx = None
+        return data
+
+    def authenticate_additional_data(self, data):
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        if self._updated:
+            raise AlreadyUpdated("Update has been called on this context")
+        self._ctx.authenticate_additional_data(data)
+
+
+@utils.register_interface(interfaces.AEADEncryptionContext)
+class _AEADEncryptionContext(_AEADCipherContext):
+    @property
+    def tag(self):
+        if self._ctx is not None:
+            raise NotYetFinalized("You must finalize encryption before "
+                                  "getting the tag")
+        return self._tag

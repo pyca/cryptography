@@ -56,3 +56,14 @@ class CTR(object):
 
     def __init__(self, nonce):
         self.nonce = nonce
+
+
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithInitializationVector)
+@utils.register_interface(interfaces.ModeWithAuthenticationTag)
+class GCM(object):
+    name = "GCM"
+
+    def __init__(self, initialization_vector, tag=None):
+        self.initialization_vector = initialization_vector
+        self.tag = tag

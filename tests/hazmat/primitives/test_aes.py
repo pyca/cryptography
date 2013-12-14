@@ -18,7 +18,7 @@ import os
 
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
-from .utils import generate_encrypt_test
+from .utils import generate_encrypt_test, generate_aead_test
 from ...utils import (
     load_nist_vectors, load_openssl_vectors,
 )
@@ -131,4 +131,23 @@ class TestAES(object):
             algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
         ),
         skip_message="Does not support AES CTR",
+    )
+
+    test_GCM = generate_aead_test(
+        load_nist_vectors,
+        os.path.join("ciphers", "AES", "GCM"),
+        [
+            "gcmDecrypt128.rsp",
+            "gcmDecrypt192.rsp",
+            "gcmDecrypt256.rsp",
+            "gcmEncryptExtIV128.rsp",
+            "gcmEncryptExtIV192.rsp",
+            "gcmEncryptExtIV256.rsp",
+        ],
+        lambda key: algorithms.AES(key),
+        lambda iv, tag: modes.GCM(iv, tag),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+        ),
+        skip_message="Does not support AES GCM",
     )
