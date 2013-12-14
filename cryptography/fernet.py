@@ -89,7 +89,7 @@ class Fernet(object):
         iv = data[9:25]
         ciphertext = data[25:-32]
         if ttl is not None:
-            if  timestamp + ttl < current_time:
+            if timestamp + ttl < current_time:
                 raise InvalidToken
         if current_time + _MAX_CLOCK_SKEW < timestamp:
             raise InvalidToken
