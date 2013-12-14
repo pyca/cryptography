@@ -85,13 +85,13 @@ class Fernet(object):
             raise InvalidToken
 
         assert six.indexbytes(data, 0) == 0x80
-        timestamp = data[1:9]
+        timestamp = struct.unpack(">Q", data[1:9])[0]
         iv = data[9:25]
         ciphertext = data[25:-32]
         if ttl is not None:
-            if struct.unpack(">Q", timestamp)[0] + ttl < current_time:
+            if  timestamp + ttl < current_time:
                 raise InvalidToken
-        if current_time + _MAX_CLOCK_SKEW < struct.unpack(">Q", timestamp)[0]:
+        if current_time + _MAX_CLOCK_SKEW < timestamp:
             raise InvalidToken
         h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
         h.update(data[:-32])
