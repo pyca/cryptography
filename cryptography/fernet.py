@@ -17,12 +17,10 @@ import os
 import struct
 import time
 
-import cffi
-
 import six
 
 from cryptography.hazmat.bindings import default_backend
-from cryptography.hazmat.primitives import padding, hashes
+from cryptography.hazmat.primitives import padding, hashes, constant_time
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -30,33 +28,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 class InvalidToken(Exception):
     pass
 
-
-_ffi = cffi.FFI()
-_ffi.cdef("""
-bool Cryptography_constant_time_compare(uint8_t *, size_t, uint8_t *, size_t);
-""")
-_lib = _ffi.verify("""
-#include <stdbool.h>
-
-bool Cryptography_constant_time_compare(uint8_t *a, size_t len_a, uint8_t *b,
-                                        size_t len_b) {
-    size_t i = 0;
-    uint8_t mismatch = 0;
-    if (len_a != len_b) {
-        return false;
-    }
-    for (i = 0; i < len_a; i++) {
-        mismatch |= a[i] ^ b[i];
-    }
-
-    /* Make sure any bits set are copied to the lowest bit */
-    mismatch |= mismatch >> 4;
-    mismatch |= mismatch >> 2;
-    mismatch |= mismatch >> 1;
-    /* Now check the low bit to see if it's set */
-    return (mismatch & 1) == 0;
-}
-""")
 
 _MAX_CLOCK_SKEW = 60
 
@@ -125,10 +96,7 @@ class Fernet(object):
         h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
         h.update(data[:-32])
         hmac = h.finalize()
-        valid = _lib.Cryptography_constant_time_compare(
-            hmac, len(hmac), data[-32:], 32
-        )
-        if not valid:
+        if not constant_time.bytes_eq(hmac, data[-32:]):
             raise InvalidToken
 
         decryptor = Cipher(
