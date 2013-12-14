@@ -266,7 +266,7 @@ Modes
 
     A good construction looks like:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> import os
         >>> iv = os.urandom(16)
@@ -274,7 +274,7 @@ Modes
 
     While the following is bad and will leak information:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> iv = "a" * 16
         >>> mode = CBC(iv)
