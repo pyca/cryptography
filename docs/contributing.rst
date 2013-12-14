@@ -28,6 +28,7 @@ devastating, ``cryptography`` has a strict code review policy:
 * If somehow the tests get into a failing state on ``master`` (such as by a
   backwards incompatible release of a dependency) no pull requests may be
   merged until this is rectified.
+* All merged patches must have 100% test coverage.
 
 The purpose of these policies is to minimize the chances we merge a change
 which jeopardizes our users' security.
