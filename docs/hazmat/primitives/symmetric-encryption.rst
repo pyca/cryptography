@@ -269,6 +269,7 @@ Modes
     .. doctest::
 
         >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
         >>> iv = os.urandom(16)
         >>> mode = CBC(iv)
 
@@ -276,6 +277,7 @@ Modes
 
     .. doctest::
 
+        >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
         >>> iv = "a" * 16
         >>> mode = CBC(iv)
 
