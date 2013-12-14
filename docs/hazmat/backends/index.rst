@@ -13,7 +13,7 @@ Bindings
 Getting a Backend Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. currentmodule:: cryptography.hazmat.bindings
+.. currentmodule:: cryptography.hazmat.backends
 
 ``cryptography`` aims to support multiple backends to ensure it can provide
 the widest number of supported cryptographic algorithms as well as supporting

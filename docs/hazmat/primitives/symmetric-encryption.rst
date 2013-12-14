@@ -34,7 +34,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> from cryptography.hazmat.bindings import default_backend
+        >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
@@ -51,7 +51,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         provider such as those described
         :ref:`below <symmetric-encryption-modes>`.
     :param backend: A
-        :class:`~cryptography.hazmat.bindings.interfaces.CipherBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
         provider.
 
     .. method:: encryptor()
@@ -229,7 +229,7 @@ Weak Ciphers
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> from cryptography.hazmat.bindings import default_backend
+        >>> from cryptography.hazmat.backends import default_backend
         >>> algorithm = algorithms.ARC4(key)
         >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
         >>> encryptor = cipher.encryptor()
@@ -356,7 +356,7 @@ Modes
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> from cryptography.hazmat.bindings import default_backend
+        >>> from cryptography.hazmat.backends import default_backend
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")

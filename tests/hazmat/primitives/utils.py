@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from cryptography.hazmat.bindings import _ALL_BACKENDS
+from cryptography.hazmat.backends import _ALL_BACKENDS
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
