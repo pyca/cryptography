@@ -266,16 +266,18 @@ Modes
 
     A good construction looks like:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
         >>> iv = os.urandom(16)
         >>> mode = CBC(iv)
 
     While the following is bad and will leak information:
 
-    .. code-block:: pycon
+    .. doctest::
 
+        >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
         >>> iv = "a" * 16
         >>> mode = CBC(iv)
 
