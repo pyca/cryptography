@@ -3,7 +3,7 @@
 Backend Interfaces
 ==================
 
-.. currentmodule:: cryptography.hazmat.bindings.interfaces
+.. currentmodule:: cryptography.hazmat.backends.interfaces
 
 
 Backend implementations may provide a number of interfaces to support operations

@@ -20,7 +20,7 @@ Message Digests
 
     .. doctest::
 
-        >>> from cryptography.hazmat.bindings import default_backend
+        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
         >>> digest.update(b"abc")
@@ -39,7 +39,7 @@ Message Digests
         provider such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
     :param backend: A
-        :class:`~cryptography.hazmat.bindings.interfaces.HashBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
         provider.
 
     .. method:: update(data)
