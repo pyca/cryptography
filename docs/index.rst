@@ -42,8 +42,8 @@ and easy to use and don't require developers to make many decisions.
 The other level is low-level cryptographic primitives. These are often
 dangerous and can be used incorrectly. They require making decisions and having
 an in-depth knowledge of the cryptographic concepts at work. Because of the
-potential danger in working at this level, this is referred to as the "hazmat"
-layer.
+potential danger in working at this level, this is referred to as the
+"hazardous materials" or "hazmat" layer.
 
 We recommend using the recipes layer whenever possible, and falling back to the
 hazmat layer only when necessary.
