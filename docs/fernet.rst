@@ -30,7 +30,9 @@ using it cannot be manipulated or read without the key.
 
         Generates a fresh fernet key. Keep this some place safe! If you lose it
         you'll no longer be able to decrypt messages; if anyone else gains
-        access to it, they'll be able to decrypt all of your messages.
+        access to it, they'll be able to decrypt all of your messages, and
+        they'll also be able forge arbitrary messages which will be
+        authenticated and decrypted.
 
     .. method:: encrypt(plaintext)
 

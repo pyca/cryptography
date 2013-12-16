@@ -244,7 +244,8 @@ Use `tox`_ to build the documentation. For example:
    docs: commands succeeded
    congratulations :)
 
-The HTML documentation index can now be found at ``docs/_build/html/index.html``
+The HTML documentation index can now be found at
+``docs/_build/html/index.html``.
 
 
 .. _`GitHub`: https://github.com/pyca/cryptography
