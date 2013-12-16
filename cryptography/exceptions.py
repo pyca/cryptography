@@ -18,3 +18,15 @@ class UnsupportedAlgorithm(Exception):
 
 class AlreadyFinalized(Exception):
     pass
+
+
+class AlreadyUpdated(Exception):
+    pass
+
+
+class NotYetFinalized(Exception):
+    pass
+
+
+class InvalidTag(Exception):
+    pass

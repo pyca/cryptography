@@ -83,3 +83,14 @@ class CTR(object):
             raise ValueError("Invalid nonce size ({0}) for {1}".format(
                 len(self.nonce), self.name
             ))
+
+
+@utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithInitializationVector)
+@utils.register_interface(interfaces.ModeWithAuthenticationTag)
+class GCM(object):
+    name = "GCM"
+
+    def __init__(self, initialization_vector, tag=None):
+        self.initialization_vector = initialization_vector
+        self.tag = tag

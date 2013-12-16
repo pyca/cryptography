@@ -10,4 +10,5 @@ Primitives
     hmac
     symmetric-encryption
     padding
+    constant-time
     interfaces

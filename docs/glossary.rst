@@ -28,3 +28,14 @@ Glossary
     asymmetric cryptography
         Cryptographic operations where encryption and decryption use different
         keys. There are separate encryption and decryption keys.
+
+    authentication
+        The process of verifying that a message was created by a specific
+        individual (or program). Like encryption, authentication can be either
+        symmetric or asymmetric. Authentication is necessary for effective
+        encryption.
+
+    Ciphertext indistinguishability
+        This is a property of encryption systems whereby two encrypted messages
+        aren't distinguishable without knowing the encryption key. This is
+        considered a basic, necessary property for a working encryption system.

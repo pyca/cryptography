@@ -63,6 +63,14 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class ModeWithAuthenticationTag(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def tag(self):
+        """
+        The value of the tag supplied to the constructor of this mode.
+        """
+
+
 class CipherContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
@@ -74,6 +82,22 @@ class CipherContext(six.with_metaclass(abc.ABCMeta)):
     def finalize(self):
         """
         finalize return bytes
+        """
+
+
+class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def authenticate_additional_data(self, data):
+        """
+        authenticate_additional_data takes bytes and returns nothing.
+        """
+
+
+class AEADEncryptionContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def tag(self):
+        """
+        Returns tag bytes after finalizing encryption.
         """
 
 

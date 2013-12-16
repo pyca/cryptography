@@ -19,8 +19,8 @@ import sys
 import cffi
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.bindings.interfaces import (
+from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
+from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
 from cryptography.hazmat.primitives import interfaces
@@ -28,8 +28,26 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES, ARC4,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CTR, ECB, OFB, CFB
+    CBC, CTR, ECB, OFB, CFB, GCM,
 )
+
+_OSX_PRE_INCLUDE = """
+#ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
+    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
+
+_OSX_POST_INCLUDE = """
+#ifdef __APPLE__
+#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
+    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
 
 
 @utils.register_interface(CipherBackend)
@@ -84,7 +102,7 @@ class Backend(object):
         macros = []
         customizations = []
         for name in cls._modules:
-            module_name = "cryptography.hazmat.bindings.openssl." + name
+            module_name = "cryptography.hazmat.backends.openssl." + name
             __import__(module_name)
             module = sys.modules[module_name]
 
@@ -111,8 +129,15 @@ class Backend(object):
         # is legal, but the following will fail to compile:
         #   int foo(int);
         #   int foo(short);
+
         lib = ffi.verify(
-            source="\n".join(includes + functions + customizations),
+            source="\n".join(
+                [_OSX_PRE_INCLUDE] +
+                includes +
+                [_OSX_POST_INCLUDE] +
+                functions +
+                customizations
+            ),
             libraries=["crypto", "ssl"],
         )
 
@@ -186,6 +211,11 @@ class Backend(object):
             type(None),
             GetCipherByName("rc4")
         )
+        self.register_cipher_adapter(
+            AES,
+            GCM,
+            GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
+        )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
@@ -193,8 +223,10 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def _handle_error(self):
+    def _handle_error(self, mode):
         code = self.lib.ERR_get_error()
+        if not code and isinstance(mode, GCM):
+            raise InvalidTag
         assert code != 0
         lib = self.lib.ERR_GET_LIB(code)
         func = self.lib.ERR_GET_FUNC(code)
@@ -231,6 +263,8 @@ class GetCipherByName(object):
 
 
 @utils.register_interface(interfaces.CipherContext)
+@utils.register_interface(interfaces.AEADCipherContext)
+@utils.register_interface(interfaces.AEADEncryptionContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
@@ -238,6 +272,9 @@ class _CipherContext(object):
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
         self._cipher = cipher
+        self._mode = mode
+        self._operation = operation
+        self._tag = None
 
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
@@ -270,6 +307,26 @@ class _CipherContext(object):
             ctx, len(cipher.key)
         )
         assert res != 0
+        if isinstance(mode, GCM):
+            res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
+                ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_IVLEN,
+                len(iv_nonce), self._backend.ffi.NULL
+            )
+            assert res != 0
+            if operation == self._DECRYPT:
+                if not mode.tag:
+                    raise ValueError("Authentication tag must be supplied "
+                                     "when decrypting")
+                res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
+                    ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
+                    len(mode.tag), mode.tag
+                )
+                assert res != 0
+            else:
+                if mode.tag:
+                    raise ValueError("Authentication tag must be None when "
+                                     "encrypting")
+
         # pass key/iv
         res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
                                                   self._backend.ffi.NULL,
@@ -296,11 +353,33 @@ class _CipherContext(object):
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
-            self._backend._handle_error()
+            self._backend._handle_error(self._mode)
+
+        if (isinstance(self._mode, GCM) and
+           self._operation == self._ENCRYPT):
+            block_byte_size = self._cipher.block_size // 8
+            tag_buf = self._backend.ffi.new("unsigned char[]", block_byte_size)
+            res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
+                self._ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_GET_TAG,
+                block_byte_size, tag_buf
+            )
+            assert res != 0
+            self._tag = self._backend.ffi.buffer(tag_buf)[:]
 
         res = self._backend.lib.EVP_CIPHER_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend.ffi.buffer(buf)[:outlen[0]]
+
+    def authenticate_additional_data(self, data):
+        outlen = self._backend.ffi.new("int *")
+        res = self._backend.lib.EVP_CipherUpdate(
+            self._ctx, self._backend.ffi.NULL, outlen, data, len(data)
+        )
+        assert res != 0
+
+    @property
+    def tag(self):
+        return self._tag
 
 
 @utils.register_interface(interfaces.HashContext)

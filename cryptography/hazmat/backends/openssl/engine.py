@@ -36,6 +36,16 @@ void ENGINE_load_builtin_engines();
 int ENGINE_ctrl_cmd_string(ENGINE *, const char *, const char *, int);
 int ENGINE_set_default(ENGINE *, unsigned int);
 int ENGINE_register_complete(ENGINE *);
+
+int ENGINE_set_default_RSA(ENGINE *);
+int ENGINE_set_default_string(ENGINE *, const char *);
+int ENGINE_set_default_DSA(ENGINE *);
+int ENGINE_set_default_ECDH(ENGINE *);
+int ENGINE_set_default_ECDSA(ENGINE *);
+int ENGINE_set_default_DH(ENGINE *);
+int ENGINE_set_default_RAND(ENGINE *);
+int ENGINE_set_default_ciphers(ENGINE *);
+int ENGINE_set_default_digests(ENGINE *);
 """
 
 MACROS = """

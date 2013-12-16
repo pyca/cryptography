@@ -12,19 +12,25 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/rsa.h>
+#include <openssl/bn.h>
 """
 
 TYPES = """
-typedef ... RSA;
-typedef ... BN_GENCB;
+typedef ... BIGNUM;
+typedef ... BN_ULONG;
 """
 
 FUNCTIONS = """
-RSA *RSA_new();
-void RSA_free(RSA *);
-int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
-int RSA_check_key(const RSA *);
+BIGNUM *BN_new();
+void BN_free(BIGNUM *);
+
+int BN_set_word(BIGNUM *, BN_ULONG);
+
+char *BN_bn2hex(const BIGNUM *);
+int BN_hex2bn(BIGNUM **, const char *);
+int BN_dec2bn(BIGNUM **, const char *);
+
+int BN_num_bits(const BIGNUM *);
 """
 
 MACROS = """
