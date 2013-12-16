@@ -94,3 +94,7 @@ class GCM(object):
     def __init__(self, initialization_vector, tag=None):
         self.initialization_vector = initialization_vector
         self.tag = tag
+
+    def validate_for_algorithm(self, algorithm):
+        # TODO: figure out what this should do
+        pass
