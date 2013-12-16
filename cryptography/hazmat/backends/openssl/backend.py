@@ -20,7 +20,7 @@ import cffi
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
-from cryptography.hazmat.bindings.interfaces import (
+from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
 from cryptography.hazmat.primitives import interfaces
@@ -102,7 +102,7 @@ class Backend(object):
         macros = []
         customizations = []
         for name in cls._modules:
-            module_name = "cryptography.hazmat.bindings.openssl." + name
+            module_name = "cryptography.hazmat.backends.openssl." + name
             __import__(module_name)
             module = sys.modules[module_name]
 

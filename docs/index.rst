@@ -54,4 +54,4 @@ Hazardous Materials
     :maxdepth: 2
 
     hazmat/primitives/index
-    hazmat/bindings/index
+    hazmat/backends/index

@@ -79,7 +79,7 @@ whether the signature was valid.
 
 APIs at the :doc:`/hazmat/primitives/index` layer should always take an
 explicit backend, APIs at the recipes layer should automatically use the
-:func:`~cryptography.hazmat.bindings.default_backend`, but optionally allow
+:func:`~cryptography.hazmat.backends.default_backend`, but optionally allow
 specifying a different backend.
 
 C bindings
