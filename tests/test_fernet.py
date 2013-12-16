@@ -24,6 +24,7 @@ import pytest
 import six
 
 from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.backends import default_backend
 
 
 def json_parametrize(keys, fname):
@@ -40,8 +41,8 @@ class TestFernet(object):
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"), "generate.json",
     )
-    def test_generate(self, secret, now, iv, src, token):
-        f = Fernet(secret.encode("ascii"))
+    def test_generate(self, secret, now, iv, src, token, backend):
+        f = Fernet(secret.encode("ascii"), backend=backend)
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
@@ -52,29 +53,34 @@ class TestFernet(object):
     @json_parametrize(
         ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
     )
-    def test_verify(self, secret, now, src, ttl_sec, token, monkeypatch):
-        f = Fernet(secret.encode("ascii"))
+    def test_verify(self, secret, now, src, ttl_sec, token, backend,
+                    monkeypatch):
+        f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
-    def test_invalid(self, secret, token, now, ttl_sec, monkeypatch):
-        f = Fernet(secret.encode("ascii"))
+    def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
+        f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
-    def test_unicode(self):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+    def test_unicode(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
             f.encrypt(six.u(""))
         with pytest.raises(TypeError):
             f.decrypt(six.u(""))
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
-    def test_roundtrips(self, message):
-        f = Fernet(Fernet.generate_key())
+    def test_roundtrips(self, message, backend):
+        f = Fernet(Fernet.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message
+
+    def test_default_backend(self):
+        f = Fernet(Fernet.generate_key())
+        assert f._backend is default_backend()

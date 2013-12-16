@@ -33,12 +33,16 @@ _MAX_CLOCK_SKEW = 60
 
 
 class Fernet(object):
-    def __init__(self, key):
+    def __init__(self, key, backend=None):
+        if backend is None:
+            backend = default_backend()
+
         key = base64.urlsafe_b64decode(key)
         assert len(key) == 32
-        self.signing_key = key[:16]
-        self.encryption_key = key[16:]
-        self.backend = default_backend()
+
+        self._signing_key = key[:16]
+        self._encryption_key = key[16:]
+        self._backend = backend
 
     @classmethod
     def generate_key(cls):
@@ -58,7 +62,7 @@ class Fernet(object):
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
         encryptor = Cipher(
-            algorithms.AES(self.encryption_key), modes.CBC(iv), self.backend
+            algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
         ).encryptor()
         ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
@@ -66,7 +70,7 @@ class Fernet(object):
             b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext
         )
 
-        h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
+        h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
         h.update(basic_parts)
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
@@ -93,14 +97,14 @@ class Fernet(object):
                 raise InvalidToken
         if current_time + _MAX_CLOCK_SKEW < timestamp:
             raise InvalidToken
-        h = HMAC(self.signing_key, hashes.SHA256(), self.backend)
+        h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
         h.update(data[:-32])
         hmac = h.finalize()
         if not constant_time.bytes_eq(hmac, data[-32:]):
             raise InvalidToken
 
         decryptor = Cipher(
-            algorithms.AES(self.encryption_key), modes.CBC(iv), self.backend
+            algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
         ).decryptor()
         plaintext_padded = decryptor.update(ciphertext)
         try:
