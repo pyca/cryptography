@@ -58,8 +58,8 @@ The recipes layer
     exceptions
     glossary
 
-Hazardous Materials
-~~~~~~~~~~~~~~~~~~~
+The hazardous materials layer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 2
