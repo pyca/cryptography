@@ -69,6 +69,11 @@ class TestFernet(object):
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
+    def test_invalid_start_byte(self, backend):
+        f = Fernet(Fernet.generate_key(), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b"\x81"))
+
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
@@ -84,3 +89,7 @@ class TestFernet(object):
     def test_default_backend(self):
         f = Fernet(Fernet.generate_key())
         assert f._backend is default_backend()
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)

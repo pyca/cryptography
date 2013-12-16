@@ -38,7 +38,10 @@ class Fernet(object):
             backend = default_backend()
 
         key = base64.urlsafe_b64decode(key)
-        assert len(key) == 32
+        if len(key) != 32:
+            raise ValueError(
+                "Fernet key must be 32 url-safe base64-encoded bytes"
+            )
 
         self._signing_key = key[:16]
         self._encryption_key = key[16:]
@@ -88,7 +91,9 @@ class Fernet(object):
         except (TypeError, binascii.Error):
             raise InvalidToken
 
-        assert six.indexbytes(data, 0) == 0x80
+        if six.indexbytes(data, 0) != 0x80:
+            raise InvalidToken
+
         timestamp = struct.unpack(">Q", data[1:9])[0]
         iv = data[9:25]
         ciphertext = data[25:-32]
