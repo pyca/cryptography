@@ -1,10 +1,6 @@
 Welcome to ``cryptography``
 ===========================
 
-.. warning::
-
-    ``cryptography`` is very young, and very incomplete.
-
 ``cryptography`` is a Python library which exposes cryptographic recipes and
 primitives. We hope it'll be your one-stop-shop for all your cryptographic
 needs in Python.
@@ -36,9 +32,24 @@ existing libraries:
 * Poor introspectability, and thus poor testability.
 * Extremely error prone APIs, and bad defaults.
 
+Layout
+------
 
-Contents
---------
+``cryptography`` is broadly divided into two levels. One with safe
+cryptographic recipes, "cryptography for humans" if you will. These are safe
+and easy to use and don't require developers to make many decisions.
+
+The other level is low-level cryptographic primitives. These are often
+dangerous and can be used incorrectly. They require making decisions and having
+an in-depth knowledge of the cryptographic concepts at work. Because of the
+potential danger in working at this level, this is referred to as the
+"hazardous materials" or "hazmat" layer.
+
+We recommend using the recipes layer whenever possible, and falling back to the
+hazmat layer only when necessary.
+
+The recipes layer
+~~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 2
@@ -46,15 +57,22 @@ Contents
     architecture
     exceptions
     glossary
-    contributing
-    security
-    community
 
-Hazardous Materials
--------------------
+The hazardous materials layer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 2
 
     hazmat/primitives/index
-    hazmat/bindings/index
+    hazmat/backends/index
+
+The ``cryptography`` open source project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+    :maxdepth: 2
+
+    contributing
+    security
+    community

@@ -12,9 +12,6 @@ Symmetric Encryption
     key = binascii.unhexlify(b"0" * 32)
     iv = binascii.unhexlify(b"0" * 32)
 
-    from cryptography.hazmat.bindings import default_backend
-    backend = default_backend()
-
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
 where the sender and receiver both use the same key. Note that symmetric
@@ -37,6 +34,8 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -52,7 +51,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         provider such as those described
         :ref:`below <symmetric-encryption-modes>`.
     :param backend: A
-        :class:`~cryptography.hazmat.bindings.interfaces.CipherBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
         provider.
 
     .. method:: encryptor()
@@ -230,8 +229,9 @@ Weak Ciphers
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
         >>> algorithm = algorithms.ARC4(key)
-        >>> cipher = Cipher(algorithm, mode=None, backend=backend)
+        >>> cipher = Cipher(algorithm, mode=None, backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
         >>> decryptor = cipher.decryptor()
@@ -266,16 +266,18 @@ Modes
 
     A good construction looks like:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
         >>> iv = os.urandom(16)
         >>> mode = CBC(iv)
 
     While the following is bad and will leak information:
 
-    .. code-block:: pycon
+    .. doctest::
 
+        >>> from cryptography.hazmat.primitives.ciphers.modes import CBC
         >>> iv = "a" * 16
         >>> mode = CBC(iv)
 
@@ -356,7 +358,8 @@ Modes
     .. doctest::
 
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend)
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
