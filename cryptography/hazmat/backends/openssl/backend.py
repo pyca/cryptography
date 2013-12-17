@@ -276,6 +276,11 @@ class _CipherContext(object):
         self._operation = operation
         self._tag = None
 
+        if isinstance(self._cipher, interfaces.BlockCipherAlgorithm):
+            self._block_size = self._cipher.block_size
+        else:
+            self._block_size = 1
+
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
 
@@ -341,7 +346,7 @@ class _CipherContext(object):
 
     def update(self, data):
         buf = self._backend.ffi.new("unsigned char[]",
-                                    len(data) + self._cipher.block_size - 1)
+                                    len(data) + self._block_size - 1)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                  len(data))
@@ -349,7 +354,7 @@ class _CipherContext(object):
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
-        buf = self._backend.ffi.new("unsigned char[]", self._cipher.block_size)
+        buf = self._backend.ffi.new("unsigned char[]", self._block_size)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
@@ -357,7 +362,7 @@ class _CipherContext(object):
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):
-            block_byte_size = self._cipher.block_size // 8
+            block_byte_size = self._block_size // 8
             tag_buf = self._backend.ffi.new("unsigned char[]", block_byte_size)
             res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
                 self._ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_GET_TAG,
