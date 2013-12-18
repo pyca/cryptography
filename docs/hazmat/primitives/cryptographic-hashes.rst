@@ -67,6 +67,13 @@ Message Digests
 
         :return bytes: The message digest as bytes.
 
+    .. method:: verify(sig)
+
+        Finalize the current context and securely compare digest to sig.
+
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises cryptography.exceptions.InvalidSignature: If sig does not match digest
+
 
 .. _cryptographic-hash-algorithms:
 

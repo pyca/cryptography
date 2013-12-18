@@ -69,3 +69,10 @@ message.
 
         :return bytes: The message digest as bytes.
         :raises cryptography.exceptions.AlreadyFinalized:
+
+    .. method:: verify(sig)
+
+        Finalize the current context and securely compare digest to sig.
+
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises cryptography.exceptions.InvalidSignature: If sig does not match digest

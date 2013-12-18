@@ -19,7 +19,7 @@ import pytest
 
 import six
 
-from cryptography.exceptions import AlreadyFinalized
+from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
@@ -63,3 +63,26 @@ class TestHMAC(object):
 
         with pytest.raises(AlreadyFinalized):
             h.finalize()
+
+    def test_verify(self, backend):
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        digest = h.finalize()
+
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        h.verify(digest)
+
+        with pytest.raises(AlreadyFinalized):
+            h.verify(b'')
+
+    def test_invalid_verify(self, backend):
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        with pytest.raises(InvalidSignature):
+            h.verify(b'')
+
+        with pytest.raises(AlreadyFinalized):
+            h.verify(b'')
+
+    def test_verify_reject_unicode(self, backend):
+        h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
+        with pytest.raises(TypeError):
+            h.verify(six.u(''))

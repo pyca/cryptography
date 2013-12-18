@@ -152,3 +152,9 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
         """
         return a HashContext that is a copy of the current context.
         """
+
+    @abc.abstractmethod
+    def verify(self, sig):
+        """
+        compare digest to sig and raise exception if not equal.
+        """

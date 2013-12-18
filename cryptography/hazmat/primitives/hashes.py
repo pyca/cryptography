@@ -16,8 +16,8 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.primitives import interfaces
+from cryptography.exceptions import AlreadyFinalized, InvalidSignature
+from cryptography.hazmat.primitives import constant_time, interfaces
 
 
 @utils.register_interface(interfaces.HashContext)
@@ -54,6 +54,13 @@ class Hash(object):
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
+
+    def verify(self, sig):
+        if isinstance(sig, six.text_type):
+            raise TypeError("Unicode-objects must be encoded before verifying")
+        digest = self.finalize()
+        if not constant_time.bytes_eq(digest, sig):
+            raise InvalidSignature("Signature did not match digest.")
 
 
 @utils.register_interface(interfaces.HashAlgorithm)
