@@ -39,7 +39,10 @@ using it cannot be manipulated or read without the key.
         :param bytes plaintext: The message you would like to encrypt.
         :returns bytes: A secure message which cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
-                        refered to as a "Fernet token".
+                        refered to as a "Fernet token". Note that this *does*
+                        contain the current time when it was generated in
+                        plaintext, the time a message was created will
+                        therefore be visible to a possible attacker.
 
     .. method:: decrypt(token, ttl=None)
 
