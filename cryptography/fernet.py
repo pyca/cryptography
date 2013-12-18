@@ -78,8 +78,8 @@ class Fernet(object):
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
-    def decrypt(self, data, ttl=None):
-        if isinstance(data, six.text_type):
+    def decrypt(self, token, ttl=None):
+        if isinstance(token, six.text_type):
             raise TypeError(
                 "Unicode-objects must be encoded before decryption"
             )
@@ -87,7 +87,7 @@ class Fernet(object):
         current_time = int(time.time())
 
         try:
-            data = base64.urlsafe_b64decode(data)
+            data = base64.urlsafe_b64decode(token)
         except (TypeError, binascii.Error):
             raise InvalidToken
 

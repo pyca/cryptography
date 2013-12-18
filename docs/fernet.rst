@@ -16,10 +16,10 @@ using it cannot be manipulated or read without the key.
         >>> from cryptography.fernet import Fernet
         >>> key = Fernet.generate_key()
         >>> f = Fernet(key)
-        >>> ciphertext = f.encrypt(b"my deep dark secret")
-        >>> ciphertext
+        >>> token = f.encrypt(b"my deep dark secret")
+        >>> token
         '...'
-        >>> f.decrypt(ciphertext)
+        >>> f.decrypt(token)
         'my deep dark secret'
 
     :param bytes key: A URL-safe base64-encoded 32-byte key. This **must** be
@@ -38,11 +38,13 @@ using it cannot be manipulated or read without the key.
 
         :param bytes plaintext: The message you would like to encrypt.
         :returns bytes: A secure message which cannot be read or altered
-                        without the key. It is URL-safe base64-encoded.
+                        without the key. It is URL-safe base64-encoded. This is
+                        refered to as a "Fernet token".
 
-    .. method:: decrypt(ciphertext, ttl=None)
+    .. method:: decrypt(token, ttl=None)
 
-        :param bytes ciphertext: An encrypted message.
+        :param bytes token: The Fernet token. This is the result of calling
+                            :meth:`encrypt`.
         :param int ttl: Optionally, the number of seconds old a message may be
                         for it to be valid. If the message is older than
                         ``ttl`` seconds (from the time it was originally
@@ -50,11 +52,11 @@ using it cannot be manipulated or read without the key.
                         provided (or is ``None``), the age of the message is
                         not considered.
         :returns bytes: The original plaintext.
-        :raises InvalidToken: If the ``ciphertext`` is in any way invalid, this
-                              exception is raised. A ciphertext may be invalid
-                              for a number of reasons: it is older than the
-                              ``ttl``, it is malformed, or it does not have a
-                              valid signature.
+        :raises InvalidToken: If the ``token`` is in any way invalid, this
+                              exception is raised. A token may be invalid for a
+                              number of reasons: it is older than the ``ttl``,
+                              it is malformed, or it does not have a valid
+                              signature.
 
 
 .. class:: InvalidToken
