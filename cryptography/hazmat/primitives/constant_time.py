@@ -20,17 +20,16 @@ import six
 
 _ffi = cffi.FFI()
 _ffi.cdef("""
-bool Cryptography_constant_time_bytes_eq(uint8_t *, size_t, uint8_t *, size_t);
+uint8_t Cryptography_constant_time_bytes_eq(uint8_t *, size_t, uint8_t *,
+                                            size_t);
 """)
 _lib = _ffi.verify("""
-#include <stdbool.h>
-
-bool Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a, uint8_t *b,
-                                         size_t len_b) {
+uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
+                                            uint8_t *b, size_t len_b) {
     size_t i = 0;
     uint8_t mismatch = 0;
     if (len_a != len_b) {
-        return false;
+        return 0;
     }
     for (i = 0; i < len_a; i++) {
         mismatch |= a[i] ^ b[i];
