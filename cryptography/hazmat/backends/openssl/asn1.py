@@ -11,6 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .defines import is_defined
+
+
 INCLUDES = """
 #include <openssl/asn1.h>
 """
@@ -41,7 +44,6 @@ typedef ... ASN1_VALUE;
 typedef struct {
     ...;
 } ASN1_TIME;
-typedef const ASN1_ITEM ASN1_ITEM_EXP;
 
 typedef ... ASN1_UTCTIME;
 
@@ -49,6 +51,14 @@ static const int V_ASN1_GENERALIZEDTIME;
 
 static const int MBSTRING_UTF8;
 """
+
+# This is required because typical Windows OpenSSL binaries are compiled with
+# OPENSSL_EXPORT_VAR_AS_FUNCTION. Without the right typedef here the compiler
+# will error on ASN1_ITEM_ptr
+if is_defined("OPENSSL_EXPORT_VAR_AS_FUNCTION"):
+    TYPES += "typedef const ASN1_ITEM * ASN1_ITEM_EXP(void);"
+else:
+    TYPES += "typedef const ASN1_ITEM ASN1_ITEM_EXP;"
 
 FUNCTIONS = """
 ASN1_OBJECT *ASN1_OBJECT_new();
@@ -102,7 +112,7 @@ ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
 
 MACROS = """
 ASN1_TIME *M_ASN1_TIME_dup(void *);
-ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM *);
+ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
