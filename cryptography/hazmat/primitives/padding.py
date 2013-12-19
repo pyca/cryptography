@@ -37,7 +37,8 @@ static uint8_t Cryptography_constant_time_lt(uint8_t a, uint8_t b) {
     return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
 
-uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data, uint8_t block_len) {
+uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
+                                         uint8_t block_len) {
     uint8_t i;
     uint8_t pad_size = data[block_len - 1];
     uint8_t mismatch = 0;
