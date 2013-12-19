@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+from .defines import is_defined
 
 
 INCLUDES = """
@@ -55,7 +55,7 @@ static const int MBSTRING_UTF8;
 # This is required because typical Windows OpenSSL binaries are compiled with
 # OPENSSL_EXPORT_VAR_AS_FUNCTION. Without the right typedef here the compiler
 # will error on ASN1_ITEM_ptr
-if sys.platform == "win32":
+if is_defined("OPENSSL_EXPORT_VAR_AS_FUNCTION"):
     TYPES += "typedef const ASN1_ITEM * ASN1_ITEM_EXP(void);"
 else:
     TYPES += "typedef const ASN1_ITEM ASN1_ITEM_EXP;"
