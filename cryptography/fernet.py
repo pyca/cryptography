@@ -94,7 +94,10 @@ class Fernet(object):
         if six.indexbytes(data, 0) != 0x80:
             raise InvalidToken
 
-        timestamp = struct.unpack(">Q", data[1:9])[0]
+        try:
+            timestamp, = struct.unpack(">Q", data[1:9])
+        except struct.error:
+            raise InvalidToken
         iv = data[9:25]
         ciphertext = data[25:-32]
         if ttl is not None:

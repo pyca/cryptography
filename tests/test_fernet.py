@@ -74,6 +74,11 @@ class TestFernet(object):
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
+    def test_timestamp_too_short(self, backend):
+        f = Fernet(Fernet.generate_key(), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
+
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
