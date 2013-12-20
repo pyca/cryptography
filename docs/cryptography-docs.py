@@ -6,17 +6,30 @@ from sphinx.util.compat import Directive, make_admonition
 DANGER_MESSAGE = """
 This is a "Hazardous Materials" module. You should **ONLY** use it if you're
 100% absolutely sure that you know what you're doing because this module is
-full of land mines, dragons, and dinosaurs with laser guns. """
+full of land mines, dragons, and dinosaurs with laser guns.
+"""
+
+DANGER_ALTERNATE = """
+
+You may instead be interested in :doc:`{alternate}`.
+"""
+
 
 
 class HazmatDirective(Directive):
+    has_content = True
+
     def run(self):
+        message = DANGER_MESSAGE
+        if self.content:
+            message += DANGER_ALTERNATE.format(alternate=self.content[0])
+
         ad = make_admonition(
             Hazmat,
             self.name,
             [],
             self.options,
-            nodes.paragraph("", DANGER_MESSAGE),
+            nodes.paragraph("", message),
             self.lineno,
             self.content_offset,
             self.block_text,

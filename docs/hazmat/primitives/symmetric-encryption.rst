@@ -1,4 +1,4 @@
-.. hazmat::
+.. hazmat:: /fernet
 
 
 Symmetric Encryption
