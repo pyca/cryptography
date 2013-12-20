@@ -44,7 +44,7 @@ class Mode(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):
         """
-        A string naming this mode (e.g. ECB, CBC).
+        A string naming this mode (e.g. "ECB", "CBC").
         """
 
 
@@ -122,7 +122,7 @@ class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):
         """
-        A string naming this algorithm (e.g. sha256, md5).
+        A string naming this algorithm (e.g. "sha256", "md5").
         """
 
     @abc.abstractproperty
