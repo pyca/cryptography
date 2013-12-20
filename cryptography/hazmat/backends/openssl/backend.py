@@ -223,14 +223,20 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def create_rsa_ctx(self, bit_length, public_exponent):
-        return _RSAPrivateKey.generate(bit_length, public_exponent, self)
-
-    def create_rsa_ctx_from_pkcs1(self, data, form, password):
-        return _RSAPrivateKey.from_pkcs1(data, form, password, self)
-
-    def create_rsa_ctx_from_pkcs8(self, data, form, password):
-        return _RSAPrivateKey.from_pkcs8(data, form, password, self)
+    def generate_rsa_ctx(self, bit_length, public_exponent):
+        if public_exponent < 3 or public_exponent % 2 == 0:
+            raise ValueError("Public exponent must be odd and 3 or greater "
+                             "(65537 recommended)")
+        ctx = self.lib.RSA_new()
+        ctx = self.ffi.gc(ctx, self.lib.RSA_free)
+        bn = self.lib.BN_new()
+        bn = self.ffi.gc(bn, backend.lib.BN_free)
+        res = self.lib.BN_set_word(bn, public_exponent)
+        res = self.lib.RSA_generate_key_ex(
+            ctx, bit_length, bn, self.ffi.NULL
+        )
+        assert res != 0
+        return _RSAPrivateKey(ctx, self)
 
     def _handle_error(self, mode):
         code = self.lib.ERR_get_error()
@@ -265,131 +271,43 @@ class Backend(object):
         )
 
 
+@utils.register_interface(interfaces.RSAPrivateKey)
 class _RSAPrivateKey(object):
     def __init__(self, ctx, backend):
         self._backend = backend
         self._ctx = ctx
 
-    @classmethod
-    def generate(cls, bit_length, public_exponent, backend):
-        if public_exponent < 3 or public_exponent % 2 == 0:
-            raise ValueError("Public exponent must be odd and 3 or greater "
-                             "(65537 recommended)")
-        ctx = backend.lib.RSA_new()
-        ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
-        bn = backend.lib.BN_new()
-        bn = backend.ffi.gc(bn, backend.lib.BN_free)
-        res = backend.lib.BN_set_word(bn, public_exponent)
-        res = backend.lib.RSA_generate_key_ex(
-            ctx, bit_length, bn, backend.ffi.NULL
-        )
-        assert res != 0
-        return cls(ctx, backend)
-
-    @classmethod
-    def from_pkcs1(cls, data, form, password, backend):
-        return cls.from_pkcs8(data, form, password, backend)
-
-    @classmethod
-    def from_pkcs8(cls, data, form, password, backend):
-        char_data = backend.ffi.new("char[]", data)
-        bio = backend.lib.BIO_new_mem_buf(char_data, len(data))
-
-        if password is None:
-            password = backend.ffi.NULL
-            passwd_cb = backend.ffi.callback("int(char *, int, int, void *)",
-                                             cls._passwd_callback)
-        else:
-            passwd_cb = backend.ffi.NULL
-        if form.lower() == 'der':
-            # try to parse it unencrypted
-            key = backend.lib.d2i_PrivateKey_bio(bio, backend.ffi.NULL)
-            if key == backend.ffi.NULL:
-                res = backend.lib.BIO_reset(bio)
-                assert res == 1
-                key = backend.lib.d2i_PKCS8PrivateKey_bio(
-                    bio, backend.ffi.NULL,
-                    passwd_cb, password
-                )
-        else:
-            key = backend.lib.PEM_read_bio_PrivateKey(
-                bio, backend.ffi.NULL, passwd_cb, password
-            )
-        if key == backend.ffi.NULL:
-            raise ValueError("Unable to load the private key. Verify the "
-                             "format and password")
-        key = backend.ffi.gc(key, backend.lib.EVP_PKEY_free)
-        ctx = backend.lib.EVP_PKEY_get1_RSA(key)
-        ctx = backend.ffi.gc(ctx, backend.lib.RSA_free)
-        assert ctx != backend.ffi.NULL
-        return cls(ctx, backend)
-
-    @classmethod
-    def _passwd_callback(cls, buf, size, rwflag, userdata):
-        return 0
-
     @property
-    def modulus(self):
-        mod = self._backend.lib.BN_bn2hex(self._ctx.n)
-        return int(self._backend.ffi.string(mod), 16)
+    def n(self):
+        return self._get_value("n")
 
     @property
     def p(self):
-        mod = self._backend.lib.BN_bn2hex(self._ctx.p)
-        return int(self._backend.ffi.string(mod), 16)
+        return self._get_value("p")
 
     @property
     def q(self):
-        mod = self._backend.lib.BN_bn2hex(self._ctx.q)
-        return int(self._backend.ffi.string(mod), 16)
+        return self._get_value("q")
 
     @property
-    def public_exponent(self):
-        exp = self._backend.lib.BN_bn2hex(self._ctx.e)
-        return int(self._backend.ffi.string(exp), 16)
+    def e(self):
+        return self._get_value("e")
 
     @property
-    def keysize(self):
+    def d(self):
+        return self._get_value("d")
+
+    def _get_value(self, attr):
+        val = self._backend.lib.BN_bn2hex(getattr(self._ctx, attr))
+        return int(self._backend.ffi.string(val), 16)
+
+    @property
+    def key_length(self):
         return self._backend.lib.BN_num_bits(self._ctx.n)
 
     @property
-    def publickey(self):
+    def public_key(self):
         raise NotImplementedError
-
-    def to_pkcs8(self, form, password=None):
-        bio = self._backend.lib.BIO_new(self._backend.lib.BIO_s_mem())
-        bio = self._backend.ffi.gc(bio, self._backend.lib.BIO_free)
-        pkey = self._backend.lib.EVP_PKEY_new()
-        #TODO: this causes a crash if you call to_pkcs8 twice on the same obj
-        #pkey = self._backend.ffi.gc(pkey, self._backend.lib.EVP_PKEY_free)
-        res = self._backend.lib.EVP_PKEY_assign_RSA(pkey, self._ctx)
-        assert res != 0
-        if password is None:
-            password = self._backend.ffi.NULL
-            evp_cipher = self._backend.ffi.NULL
-        else:
-            # TODO: configurable cipher, but not all EVP ciphers are allowed
-            # here and openssl doesn't tell us which ones?
-            evp_cipher = self._backend.lib.EVP_get_cipherbyname(b"aes-256-cbc")
-        if form.lower() == "pem":
-            res = self._backend.lib.PEM_write_bio_PKCS8PrivateKey(
-                bio, pkey, evp_cipher, self._backend.ffi.NULL,
-                0, self._backend.ffi.NULL, password
-            )
-        else:
-            res = self._backend.lib.i2d_PKCS8PrivateKey_bio(
-                bio, pkey, evp_cipher, self._backend.ffi.NULL,
-                0, self._backend.ffi.NULL, password
-            )
-        assert res != 0
-        output = []
-        buf = self._backend.ffi.new("char[]", 5000)
-        while True:
-            length = self._backend.lib.BIO_read(bio, buf, 5000)
-            if length <= 0:
-                break
-            output.append(self._backend.ffi.buffer(buf)[:length])
-        return b''.join(output)
 
 
 class GetCipherByName(object):

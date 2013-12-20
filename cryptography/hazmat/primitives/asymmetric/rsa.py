@@ -13,33 +13,33 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography import utils
+from cryptography.hazmat.primitives import interfaces
 
+
+def generate_rsa_key(bit_length, public_exponent, backend):
+    ctx = backend.generate_rsa_ctx(bit_length, public_exponent)
+    return RSAPrivateKey(ctx)
+
+
+@utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, ctx):
+        if not isinstance(ctx, interfaces.RSAPrivateKey):
+            raise TypeError("Expected instance of interfaces.RSAPrivateKey.")
         self._ctx = ctx
-
-    @classmethod
-    def generate(cls, bit_length, public_exponent, backend):
-        ctx = backend.create_rsa_ctx(bit_length, public_exponent)
-        return cls(ctx)
-
-    @classmethod
-    def from_pkcs1(cls, data, form, password, backend):
-        ctx = backend.create_rsa_ctx_from_pkcs1(data, form, password)
-        return cls(ctx)
-
-    @classmethod
-    def from_pkcs8(cls, data, form, password, backend):
-        ctx = backend.create_rsa_ctx_from_pkcs8(data, form, password)
-        return cls(ctx)
 
     @property
     def modulus(self):
-        return self._ctx.modulus
+        return self._ctx.n
 
     @property
     def public_exponent(self):
-        return self._ctx.public_exponent
+        return self._ctx.e
+
+    @property
+    def n(self):
+        return self._ctx.n
 
     @property
     def p(self):
@@ -50,12 +50,17 @@ class RSAPrivateKey(object):
         return self._ctx.q
 
     @property
-    def keysize(self):
-        return self._ctx.keysize
+    def e(self):
+        return self._ctx.e
 
     @property
-    def publickey(self):
-        return self._ctx.publickey
+    def d(self):
+        return self._ctx.d
 
-    def to_pkcs8(self, form, password=None):
-        return self._ctx.to_pkcs8(form, password)
+    @property
+    def key_length(self):
+        return self._ctx.key_length
+
+    @property
+    def public_key(self):
+        return self._ctx.public_key
