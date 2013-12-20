@@ -27,7 +27,7 @@ message.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.bindings import default_backend
+        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes, hmac
         >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
         >>> h.update(b"message to hash")
@@ -41,7 +41,7 @@ message.
         provider such as those described in
         :ref:`Cryptographic Hashes <cryptographic-hash-algorithms>`.
     :param backend: A
-        :class:`~cryptography.hazmat.bindings.interfaces.HMACBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
 
     .. method:: update(msg)

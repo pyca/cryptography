@@ -17,6 +17,16 @@ from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
 
+def _verify_key_size(algorithm, key):
+    # Verify that the key size matches the expected key size
+    if len(key) * 8 not in algorithm.key_sizes:
+        raise ValueError("Invalid key size ({0}) for {1}".format(
+            len(key) * 8, algorithm.name
+        ))
+    return key
+
+
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class AES(object):
     name = "AES"
@@ -24,19 +34,14 @@ class AES(object):
     key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class Camellia(object):
     name = "camellia"
@@ -44,19 +49,14 @@ class Camellia(object):
     key_sizes = frozenset([128, 192, 256])
 
     def __init__(self, key):
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class TripleDES(object):
     name = "3DES"
@@ -68,19 +68,14 @@ class TripleDES(object):
             key += key + key
         elif len(key) == 16:
             key += key[:8]
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class Blowfish(object):
     name = "Blowfish"
@@ -88,33 +83,22 @@ class Blowfish(object):
     key_sizes = frozenset(range(32, 449, 8))
 
     def __init__(self, key):
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class CAST5(object):
     name = "CAST5"
     block_size = 64
-    key_sizes = frozenset([40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128])
+    key_sizes = frozenset(range(40, 129, 8))
 
     def __init__(self, key):
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self):
@@ -124,17 +108,10 @@ class CAST5(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class ARC4(object):
     name = "RC4"
-    block_size = 1
     key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
 
     def __init__(self, key):
-        self.key = key
-
-        # Verify that the key size matches the expected key size
-        if self.key_size not in self.key_sizes:
-            raise ValueError("Invalid key size ({0}) for {1}".format(
-                self.key_size, self.name
-            ))
+        self.key = _verify_key_size(self, key)
 
     @property
     def key_size(self):

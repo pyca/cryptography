@@ -3,7 +3,7 @@
 Backend Interfaces
 ==================
 
-.. currentmodule:: cryptography.hazmat.bindings.interfaces
+.. currentmodule:: cryptography.hazmat.backends.interfaces
 
 
 Backend implementations may provide a number of interfaces to support operations
@@ -69,6 +69,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
 
+        :raises ValueError: When tag is not None in an AEAD mode
+
 
     .. method:: create_symmetric_decryption_ctx(cipher, mode)
 
@@ -85,6 +87,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
+
+        :raises ValueError: When tag is None in an AEAD mode
 
 
 .. class:: HashBackend

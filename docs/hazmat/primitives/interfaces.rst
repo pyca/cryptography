@@ -36,6 +36,17 @@ Symmetric Ciphers
         The number of bits in the key being used.
 
 
+.. class:: BlockCipherAlgorithm
+
+    A block cipher algorithm.
+
+    .. attribute:: block_size
+
+        :type: int
+
+        The number of bits in a block.
+
+
 Cipher Modes
 ------------
 

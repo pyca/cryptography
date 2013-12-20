@@ -5,7 +5,7 @@ OpenSSL
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
 
-.. data:: cryptography.hazmat.bindings.openssl.backend
+.. data:: cryptography.hazmat.backends.openssl.backend
 
     This is the exposed API for the OpenSSL bindings. It has two public
     attributes:
@@ -21,5 +21,5 @@ These are `CFFI`_ bindings to the `OpenSSL`_ C library.
         and access constants.
 
 
-.. _`CFFI`: http://cffi.readthedocs.org/
+.. _`CFFI`: https://cffi.readthedocs.org/
 .. _`OpenSSL`: https://www.openssl.org/

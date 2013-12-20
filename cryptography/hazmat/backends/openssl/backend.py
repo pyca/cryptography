@@ -20,7 +20,7 @@ import cffi
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
-from cryptography.hazmat.bindings.interfaces import (
+from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
 from cryptography.hazmat.primitives import interfaces
@@ -30,6 +30,24 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
+
+_OSX_PRE_INCLUDE = """
+#ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
+    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
+
+_OSX_POST_INCLUDE = """
+#ifdef __APPLE__
+#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
+    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+"""
 
 
 @utils.register_interface(CipherBackend)
@@ -84,7 +102,7 @@ class Backend(object):
         macros = []
         customizations = []
         for name in cls._modules:
-            module_name = "cryptography.hazmat.bindings.openssl." + name
+            module_name = "cryptography.hazmat.backends.openssl." + name
             __import__(module_name)
             module = sys.modules[module_name]
 
@@ -111,8 +129,15 @@ class Backend(object):
         # is legal, but the following will fail to compile:
         #   int foo(int);
         #   int foo(short);
+
         lib = ffi.verify(
-            source="\n".join(includes + functions + customizations),
+            source="\n".join(
+                [_OSX_PRE_INCLUDE] +
+                includes +
+                [_OSX_POST_INCLUDE] +
+                functions +
+                customizations
+            ),
             libraries=["crypto", "ssl"],
         )
 
@@ -251,6 +276,11 @@ class _CipherContext(object):
         self._operation = operation
         self._tag = None
 
+        if isinstance(self._cipher, interfaces.BlockCipherAlgorithm):
+            self._block_size = self._cipher.block_size
+        else:
+            self._block_size = 1
+
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
 
@@ -289,12 +319,18 @@ class _CipherContext(object):
             )
             assert res != 0
             if operation == self._DECRYPT:
-                assert mode.tag is not None
+                if not mode.tag:
+                    raise ValueError("Authentication tag must be supplied "
+                                     "when decrypting")
                 res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
                     ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
                 )
                 assert res != 0
+            else:
+                if mode.tag:
+                    raise ValueError("Authentication tag must be None when "
+                                     "encrypting")
 
         # pass key/iv
         res = self._backend.lib.EVP_CipherInit_ex(ctx, self._backend.ffi.NULL,
@@ -310,7 +346,7 @@ class _CipherContext(object):
 
     def update(self, data):
         buf = self._backend.ffi.new("unsigned char[]",
-                                    len(data) + self._cipher.block_size - 1)
+                                    len(data) + self._block_size - 1)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                  len(data))
@@ -318,7 +354,7 @@ class _CipherContext(object):
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
-        buf = self._backend.ffi.new("unsigned char[]", self._cipher.block_size)
+        buf = self._backend.ffi.new("unsigned char[]", self._block_size)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
@@ -326,7 +362,7 @@ class _CipherContext(object):
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):
-            block_byte_size = self._cipher.block_size // 8
+            block_byte_size = self._block_size // 8
             tag_buf = self._backend.ffi.new("unsigned char[]", block_byte_size)
             res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
                 self._ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_GET_TAG,
