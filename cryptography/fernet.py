@@ -98,8 +98,6 @@ class Fernet(object):
             timestamp, = struct.unpack(">Q", data[1:9])
         except struct.error:
             raise InvalidToken
-        iv = data[9:25]
-        ciphertext = data[25:-32]
         if ttl is not None:
             if timestamp + ttl < current_time:
                 raise InvalidToken
@@ -111,6 +109,8 @@ class Fernet(object):
         if not constant_time.bytes_eq(hmac, data[-32:]):
             raise InvalidToken
 
+        iv = data[9:25]
+        ciphertext = data[25:-32]
         decryptor = Cipher(
             algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
         ).decryptor()
