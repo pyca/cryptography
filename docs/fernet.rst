@@ -41,7 +41,7 @@ using it cannot be manipulated or read without the key.
                         without the key. It is URL-safe base64-encoded. This is
                         refered to as a "Fernet token".
 
-        .. warning::
+        .. note::
 
             The encrypted message contains the current time when it was
             generated in *plaintext*, the time a message was created will
@@ -58,11 +58,14 @@ using it cannot be manipulated or read without the key.
                         provided (or is ``None``), the age of the message is
                         not considered.
         :returns bytes: The original plaintext.
-        :raises InvalidToken: If the ``token`` is in any way invalid, this
-                              exception is raised. A token may be invalid for a
-                              number of reasons: it is older than the ``ttl``,
-                              it is malformed, or it does not have a valid
-                              signature.
+        :raises cryptography.fernet.InvalidToken: If the ``token`` is in any
+                                                  way invalid, this exception
+                                                  is raised. A token may be
+                                                  invalid for a number of
+                                                  reasons: it is older than the
+                                                  ``ttl``, it is malformed, or
+                                                  it does not have a valid
+                                                  signature.
 
 
 .. class:: InvalidToken
