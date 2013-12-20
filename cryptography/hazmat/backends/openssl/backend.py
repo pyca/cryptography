@@ -297,6 +297,14 @@ class _RSAPrivateKey(object):
     def d(self):
         return self._get_value("d")
 
+    @property
+    def modulus(self):
+        return self._get_value("n")
+
+    @property
+    def public_exponent(self):
+        return self._get_value("e")
+
     def _get_value(self, attr):
         val = self._backend.lib.BN_bn2hex(getattr(self._ctx, attr))
         return int(self._backend.ffi.string(val), 16)

@@ -15,9 +15,22 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateKey, generate_rsa_key,
-)
+from cryptography.hazmat.primitives.asymmetric.rsa import generate_rsa_key
+
+
+def extended_euclidean(a, b):
+    original_totient = b
+    x = 0
+    prev_x = 1
+    y = 1
+    prev_y = 0
+    while (b != 0):
+        q = a // b
+        a, b = b, a % b
+        x, prev_x = prev_x - q * x, x
+        y, prev_y = prev_y - q * y, y
+
+    return prev_x if prev_x > 0 else original_totient + prev_x
 
 
 class TestRSAPrivateKey(object):
@@ -25,12 +38,16 @@ class TestRSAPrivateKey(object):
         128, 1024, 1025, 2048
     ])
     def test_generate_key(self, backend, key_length):
-        key = generate_rsa_key(key_length, 65537, backend)
+        public_exponent = 65537
+        key = generate_rsa_key(key_length, public_exponent, backend)
         assert key.key_length == key_length
         assert key.modulus > 0
         assert key.n > 0
         assert (key.p * key.q) == key.n
-        assert key.d > 0
+        totient = (key.p - 1) * (key.q - 1)
+        assert key.d == extended_euclidean(public_exponent, totient)
+        assert key.public_exponent == public_exponent
+        assert key.e == public_exponent
 
     @pytest.mark.parametrize("public_exponent", [
         3, 5, 17, 257, 65537
@@ -43,7 +60,8 @@ class TestRSAPrivateKey(object):
         assert key.modulus > 0
         assert key.n > 0
         assert (key.p * key.q) == key.n
-        assert key.d > 0
+        totient = (key.p - 1) * (key.q - 1)
+        assert key.d == extended_euclidean(public_exponent, totient)
 
     @pytest.mark.parametrize("public_exponent", [
         1, 2, 4, 8, 256, 1024
@@ -56,7 +74,3 @@ class TestRSAPrivateKey(object):
         key = generate_rsa_key(1024, 65537, backend)
         with pytest.raises(NotImplementedError):
             key.public_key
-
-    def test_init_wrong_type(self):
-        with pytest.raises(TypeError):
-            RSAPrivateKey("string")
