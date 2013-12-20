@@ -15,7 +15,6 @@ You may instead be interested in :doc:`{alternate}`.
 """
 
 
-
 class HazmatDirective(Directive):
     has_content = True
 
