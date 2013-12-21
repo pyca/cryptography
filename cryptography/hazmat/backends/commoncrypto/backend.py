@@ -214,7 +214,7 @@ class GetCipherModeEnum(object):
                 type(None): backend.lib.kCCModeRC4,
             }[type(mode)]
         except KeyError:
-            raise ValueError("Unsupported mode")
+            raise UnsupportedAlgorithm
 
         return (cipher_enum, mode_enum)
 
@@ -308,7 +308,10 @@ class _HashContext(object):
             try:
                 mapping = self._backend.hash_mappings[algorithm.name]
             except KeyError:
-                raise ValueError("Unsupported hash")
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported hash on this backend".format(
+                        algorithm.name)
+                )
 
             ctx = self._backend.ffi.new(mapping["object"])
             # init/update/final ALWAYS return 1
@@ -317,29 +320,18 @@ class _HashContext(object):
         self._ctx = ctx
 
     def copy(self):
-        try:
-            mapping = self._backend.hash_mappings[self._algorithm.name]
-        except KeyError:
-            raise ValueError("Unsupported hash")
-
+        mapping = self._backend.hash_mappings[self._algorithm.name]
         new_ctx = self._backend.ffi.new(mapping["object"])
         new_ctx[0] = self._ctx[0]  # supposed to be legit per C90?
 
         return _HashContext(self._backend, self._algorithm, ctx=new_ctx)
 
     def update(self, data):
-        try:
-            mapping = self._backend.hash_mappings[self._algorithm.name]
-        except KeyError:
-            raise ValueError("Unsupported hash")
+        mapping = self._backend.hash_mappings[self._algorithm.name]
         mapping["update"](self._ctx, data, len(data))
 
     def finalize(self):
-        try:
-            mapping = self._backend.hash_mappings[self._algorithm.name]
-        except KeyError:
-            raise ValueError("Unsupported hash")
-
+        mapping = self._backend.hash_mappings[self._algorithm.name]
         buf = self._backend.ffi.new("unsigned char[]",
                                     self._algorithm.digest_size)
         mapping["final"](buf, self._ctx)
