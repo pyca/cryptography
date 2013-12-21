@@ -44,8 +44,8 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
                  skip_message):
     if not only_if(backend):
         pytest.skip(skip_message)
-    plaintext = params.pop("plaintext")
-    ciphertext = params.pop("ciphertext")
+    plaintext = params["plaintext"]
+    ciphertext = params["ciphertext"]
     cipher = Cipher(
         cipher_factory(**params),
         mode_factory(**params),
@@ -84,9 +84,9 @@ def aead_test(backend, cipher_factory, mode_factory, params, only_if,
     if not only_if(backend):
         pytest.skip(skip_message)
     if params.get("pt") is not None:
-        plaintext = params.pop("pt")
-    ciphertext = params.pop("ct")
-    aad = params.pop("aad")
+        plaintext = params["pt"]
+    ciphertext = params["ct"]
+    aad = params["aad"]
     if params.get("fail") is True:
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
@@ -145,9 +145,9 @@ def stream_encryption_test(backend, cipher_factory, params, only_if,
                            skip_message):
     if not only_if(backend):
         pytest.skip(skip_message)
-    plaintext = params.pop("plaintext")
-    ciphertext = params.pop("ciphertext")
-    offset = params.pop("offset")
+    plaintext = params["plaintext"]
+    ciphertext = params["ciphertext"]
+    offset = params["offset"]
     cipher = Cipher(cipher_factory(**params), None, backend=backend)
     encryptor = cipher.encryptor()
     # throw away offset bytes
