@@ -243,9 +243,9 @@ class _CipherContext(object):
 
         cipher_enum, mode_enum = adapter(self._backend, cipher, mode)
         ctx = self._backend.ffi.new("CCCryptorRef *")
-        #ctx = self._backend.ffi.gc(
-        #    raw_ctx[0], self._backend.lib.CCCryptorRelease
-        #)
+        ctx[0] = self._backend.ffi.gc(
+            ctx[0], self._backend.lib.CCCryptorRelease
+        )
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
