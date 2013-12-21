@@ -352,6 +352,11 @@ Modes
                                         Do not reuse an ``initialization_vector``
                                         with a given ``key``.
 
+    .. note::
+
+        Do not truncate the GCM authentication tag unless absolutely necessary.
+        If you must truncate the minimum allowable length is 4 bytes.
+
     :param bytes tag: The tag bytes to verify during decryption. When encrypting
                       this must be None.
 
