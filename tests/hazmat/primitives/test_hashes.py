@@ -19,10 +19,16 @@ import pytest
 
 import six
 
-from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.primitives import hashes
+from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
+from cryptography.hazmat.primitives import hashes, interfaces
 
 from .utils import generate_base_hash_test
+
+
+@utils.register_interface(interfaces.HashAlgorithm)
+class UnsupportedDummyHash(object):
+    name = "unsupported-dummy-hash"
 
 
 class TestHashContext(object):
@@ -56,6 +62,10 @@ class TestHashContext(object):
 
         with pytest.raises(AlreadyFinalized):
             h.finalize()
+
+    def test_unsupported_hash(self, backend):
+        with pytest.raises(UnsupportedAlgorithm):
+            hashes.Hash(UnsupportedDummyHash(), backend)
 
 
 class TestSHA1(object):
