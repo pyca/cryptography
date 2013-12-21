@@ -61,7 +61,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
         will be raised.
 
     .. method:: decryptor()

@@ -288,11 +288,19 @@ class _CipherContext(object):
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(
+                "cipher {0} in {1} mode is not supported "
+                "by this backend".format(
+                    cipher.name, mode.name if mode else mode)
+            )
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend.ffi.NULL:
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(
+                "cipher {0} in {1} mode is not supported "
+                "by this backend".format(
+                    cipher.name, mode.name if mode else mode)
+            )
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
