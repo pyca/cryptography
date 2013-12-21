@@ -279,34 +279,34 @@ class _RSAPrivateKey(object):
 
     @property
     def n(self):
-        return self._get_value("n")
+        return self._get_value(self._ctx.n)
 
     @property
     def p(self):
-        return self._get_value("p")
+        return self._get_value(self._ctx.p)
 
     @property
     def q(self):
-        return self._get_value("q")
+        return self._get_value(self._ctx.q)
 
     @property
     def e(self):
-        return self._get_value("e")
+        return self._get_value(self._ctx.e)
 
     @property
     def d(self):
-        return self._get_value("d")
+        return self._get_value(self._ctx.d)
 
     @property
     def modulus(self):
-        return self._get_value("n")
+        return self._get_value(self._ctx.n)
 
     @property
     def public_exponent(self):
-        return self._get_value("e")
+        return self._get_value(self._ctx.e)
 
-    def _get_value(self, attr):
-        val = self._backend.lib.BN_bn2hex(getattr(self._ctx, attr))
+    def _get_value(self, bn):
+        val = self._backend.lib.BN_bn2hex(bn)
         return int(self._backend.ffi.string(val), 16)
 
     @property
