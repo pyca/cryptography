@@ -35,7 +35,7 @@ class TestARC4(object):
             "rfc-6229-192.txt",
             "rfc-6229-256.txt",
         ],
-        lambda key: algorithms.ARC4(binascii.unhexlify((key))),
+        lambda **kwargs: algorithms.ARC4(binascii.unhexlify((kwargs["key"]))),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.ARC4("\x00" * 16), None
         ),

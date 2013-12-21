@@ -27,8 +27,8 @@ class TestCAST5(object):
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ecb.txt"],
-        lambda key: algorithms.CAST5(binascii.unhexlify((key))),
-        lambda key: modes.ECB(),
+        lambda **kwargs: algorithms.CAST5(binascii.unhexlify((kwargs["key"]))),
+        lambda **kwargs: modes.ECB(),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.CAST5("\x00" * 16), modes.ECB()
         ),
