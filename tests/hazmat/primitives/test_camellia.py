@@ -33,9 +33,7 @@ class TestCamellia(object):
             "camellia-192-ecb.txt",
             "camellia-256-ecb.txt"
         ],
-        lambda **kwargs: algorithms.Camellia(
-            binascii.unhexlify((kwargs["key"]))
-        ),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.ECB()
@@ -47,10 +45,8 @@ class TestCamellia(object):
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
-        lambda **kwargs: algorithms.Camellia(
-            binascii.unhexlify((kwargs["key"]))
-        ),
-        lambda **kwargs: modes.CBC(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
         ),
@@ -61,10 +57,8 @@ class TestCamellia(object):
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
-        lambda **kwargs: algorithms.Camellia(
-            binascii.unhexlify((kwargs["key"]))
-        ),
-        lambda **kwargs: modes.OFB(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
         ),
@@ -75,10 +69,8 @@ class TestCamellia(object):
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
-        lambda **kwargs: algorithms.Camellia(
-            binascii.unhexlify((kwargs["key"]))
-        ),
-        lambda **kwargs: modes.CFB(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
         ),

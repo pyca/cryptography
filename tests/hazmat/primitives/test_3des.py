@@ -37,10 +37,8 @@ class TestTripleDES_CBC(object):
             "TCBCvarkey.rsp",
             "TCBCvartext.rsp",
         ],
-        lambda **kwargs: algorithms.TripleDES(
-            binascii.unhexlify(kwargs["keys"])
-        ),
-        lambda **kwargs: modes.CBC(binascii.unhexlify(kwargs["iv"])),
+        lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_MMT = generate_encrypt_test(
@@ -51,10 +49,10 @@ class TestTripleDES_CBC(object):
             "TCBCMMT2.rsp",
             "TCBCMMT3.rsp",
         ],
-        lambda **kwargs: algorithms.TripleDES(binascii.unhexlify(
-            kwargs["key1"] + kwargs["key2"] + kwargs["key3"]
-        )),
-        lambda **kwargs: modes.CBC(binascii.unhexlify(kwargs["iv"])),
+        lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
+            binascii.unhexlify(key1 + key2 + key3)
+        ),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
 
@@ -69,10 +67,8 @@ class TestTripleDES_OFB(object):
             "TOFBvartext.rsp",
             "TOFBinvperm.rsp",
         ],
-        lambda **kwargs: algorithms.TripleDES(
-            binascii.unhexlify(kwargs["keys"])
-        ),
-        lambda **kwargs: modes.OFB(binascii.unhexlify(kwargs["iv"])),
+        lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
     test_MMT = generate_encrypt_test(
@@ -83,10 +79,10 @@ class TestTripleDES_OFB(object):
             "TOFBMMT2.rsp",
             "TOFBMMT3.rsp",
         ],
-        lambda **kwargs: algorithms.TripleDES(binascii.unhexlify(
-            kwargs["key1"] + kwargs["key2"] + kwargs["key3"]
-        )),
-        lambda **kwargs: modes.OFB(binascii.unhexlify(kwargs["iv"])),
+        lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
+            binascii.unhexlify(key1 + key2 + key3)
+        ),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
 
@@ -101,10 +97,8 @@ class TestTripleDES_CFB(object):
             "TCFB64varkey.rsp",
             "TCFB64vartext.rsp",
         ],
-        lambda **kwargs: algorithms.TripleDES(
-            binascii.unhexlify(kwargs["keys"])
-        ),
-        lambda **kwargs: modes.CFB(binascii.unhexlify(kwargs["iv"])),
+        lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )
 
     test_MMT = generate_encrypt_test(
@@ -115,8 +109,8 @@ class TestTripleDES_CFB(object):
             "TCFB64MMT2.rsp",
             "TCFB64MMT3.rsp",
         ],
-        lambda **kwargs: algorithms.TripleDES(binascii.unhexlify(
-            kwargs["key1"] + kwargs["key2"] + kwargs["key3"]
-        )),
-        lambda **kwargs: modes.CFB(binascii.unhexlify(kwargs["iv"])),
+        lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
+            binascii.unhexlify(key1 + key2 + key3)
+        ),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

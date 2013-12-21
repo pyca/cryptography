@@ -45,8 +45,8 @@ class TestAES(object):
             "CBCMMT192.rsp",
             "CBCMMT256.rsp",
         ],
-        lambda **kwargs: algorithms.AES(binascii.unhexlify(kwargs["key"])),
-        lambda **kwargs: modes.CBC(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
     test_ECB = generate_encrypt_test(
@@ -69,7 +69,7 @@ class TestAES(object):
             "ECBMMT192.rsp",
             "ECBMMT256.rsp",
         ],
-        lambda **kwargs: algorithms.AES(binascii.unhexlify(kwargs["key"])),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
     )
 
@@ -93,8 +93,8 @@ class TestAES(object):
             "OFBMMT192.rsp",
             "OFBMMT256.rsp",
         ],
-        lambda **kwargs: algorithms.AES(binascii.unhexlify(kwargs["key"])),
-        lambda **kwargs: modes.OFB(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
     test_CFB = generate_encrypt_test(
@@ -117,16 +117,16 @@ class TestAES(object):
             "CFB128MMT192.rsp",
             "CFB128MMT256.rsp",
         ],
-        lambda **kwargs: algorithms.AES(binascii.unhexlify(kwargs["key"])),
-        lambda **kwargs: modes.CFB(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )
 
     test_CTR = generate_encrypt_test(
         load_openssl_vectors,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
-        lambda **kwargs: algorithms.AES(binascii.unhexlify(kwargs["key"])),
-        lambda **kwargs: modes.CTR(binascii.unhexlify(kwargs["iv"])),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
         ),
