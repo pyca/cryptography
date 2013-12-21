@@ -120,6 +120,17 @@ CCCryptorStatus CCCryptorFinal(
     size_t,
     size_t *);      /* number of bytes written */
 CCCryptorStatus CCCryptorRelease(CCCryptorRef);
+
+
+/* GCM functions, 10.8+ iOS 5+ */
+CCCryptorStatus CCCryptorGCMAddIV(CCCryptorRef, const void *, size_t);
+CCCryptorStatus CCCryptorGCMAddAAD(CCCryptorRef, const void *, size_t);
+CCCryptorStatus CCCryptorGCMEncrypt(CCCryptorRef, const void *, size_t,
+                                    void *);
+CCCryptorStatus CCCryptorGCMDecrypt(CCCryptorRef, const void *, size_t,
+                                    void *);
+CCCryptorStatus CCCryptorGCMFinal(CCCryptorRef, const void *, size_t *);
+CCCryptorStatus CCCryptorGCMReset(CCCryptorRef);
 """
 
 MACROS = """

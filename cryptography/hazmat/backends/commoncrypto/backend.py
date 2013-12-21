@@ -18,7 +18,7 @@ import sys
 import cffi
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
@@ -27,7 +27,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, TripleDES, ARC4, CAST5
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CTR, ECB, OFB, CFB
+    CBC, CTR, ECB, OFB, CFB, GCM
 )
 
 
@@ -155,7 +155,7 @@ class Backend(object):
         self._cipher_registry[cipher_cls, mode_cls] = adapter
 
     def _register_default_ciphers(self):
-        for mode_cls in [CBC, ECB, CFB, OFB, CTR]:
+        for mode_cls in [CBC, ECB, CFB, OFB, CTR, GCM]:
             self.register_cipher_adapter(
                 AES,
                 mode_cls,
@@ -185,10 +185,20 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        if isinstance(mode, GCM):
+            return _GCMCipherContext(
+                self, cipher, mode, _CipherContext._ENCRYPT
+            )
+        else:
+            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        if isinstance(mode, GCM):
+            return _GCMCipherContext(
+                self, cipher, mode, _CipherContext._DECRYPT
+            )
+        else:
+            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
 
 class GetCipherModeEnum(object):
@@ -211,6 +221,7 @@ class GetCipherModeEnum(object):
                 CTR: backend.lib.kCCModeCTR,
                 CFB: backend.lib.kCCModeCFB,
                 OFB: backend.lib.kCCModeOFB,
+                GCM: 11,
                 type(None): backend.lib.kCCModeRC4,
             }[type(mode)]
         except KeyError:
@@ -226,14 +237,17 @@ class _CipherContext(object):
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
+        self._cipher = cipher
+        self._mode = mode
+        self._operation = operation
         # bytes_processed is needed to work around rdar://15589470, a bug where
         # kCCAlignmentError is not raised when not supplying block-aligned data
         self._bytes_processed = 0
         if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
                 isinstance(mode, (OFB, CFB, CTR))):
-            self._block_size = cipher.block_size // 8
+            self._byte_block_size = cipher.block_size
         else:
-            self._block_size = 1
+            self._byte_block_size = 1
 
         registry = self._backend._cipher_registry
         try:
@@ -266,28 +280,29 @@ class _CipherContext(object):
             cipher.key, len(cipher.key),
             self._backend.ffi.NULL, 0, 0, mode_option, ctx)
         assert res == self._backend.lib.kCCSuccess
+
         self._ctx = ctx
 
     def update(self, data):
         # manually count bytes processed to handle block alignment
         self._bytes_processed += len(data)
         buf = self._backend.ffi.new(
-            "unsigned char[]", len(data) + self._block_size - 1)
+            "unsigned char[]", len(data) + self._byte_block_size - 1)
         outlen = self._backend.ffi.new("size_t *")
         res = self._backend.lib.CCCryptorUpdate(
             self._ctx[0], data, len(data), buf,
-            len(data) + self._block_size - 1, outlen)
+            len(data) + self._byte_block_size - 1, outlen)
         assert res == self._backend.lib.kCCSuccess
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
         # raise error if block alignment is wrong since commoncrypto won't
-        if self._bytes_processed % self._block_size:
+        if self._bytes_processed % self._byte_block_size:
             raise ValueError(
                 "The length of the provided data is not a multiple of "
                 "the block length"
             )
-        buf = self._backend.ffi.new("unsigned char[]", self._block_size)
+        buf = self._backend.ffi.new("unsigned char[]", self._byte_block_size)
         outlen = self._backend.ffi.new("size_t *")
         res = self._backend.lib.CCCryptorFinal(
             self._ctx[0], buf, len(buf), outlen)
@@ -295,6 +310,68 @@ class _CipherContext(object):
         res = self._backend.lib.CCCryptorRelease(self._ctx[0])
         assert res == self._backend.lib.kCCSuccess
         return self._backend.ffi.buffer(buf)[:outlen[0]]
+
+
+@utils.register_interface(interfaces.AEADCipherContext)
+@utils.register_interface(interfaces.AEADEncryptionContext)
+class _GCMCipherContext(_CipherContext):
+    def __init__(self, backend, cipher, mode, operation):
+        super(_GCMCipherContext, self).__init__(
+            backend, cipher, mode, operation
+        )
+        self._tag = None
+        iv_nonce = mode.initialization_vector
+        res = self._backend.lib.CCCryptorGCMAddIV(
+            self._ctx[0], iv_nonce, len(iv_nonce)
+        )
+        assert res == self._backend.lib.kCCSuccess
+        # must make at least one empty AAD call for GCM to work for
+        # some bizarre reason.
+        self.authenticate_additional_data(b"")
+        if operation == self._DECRYPT:
+            if not mode.tag:
+                raise ValueError("Authentication tag must be supplied "
+                                 "when decrypting")
+        else:
+            if mode.tag:
+                raise ValueError("Authentication tag must be None when "
+                                 "encrypting")
+
+    def update(self, data):
+        buf = self._backend.ffi.new("unsigned char[]", len(data))
+        if self._operation == self._ENCRYPT:
+            res = self._backend.lib.CCCryptorGCMEncrypt(
+                self._ctx[0], data, len(data), buf)
+        else:
+            res = self._backend.lib.CCCryptorGCMDecrypt(
+                self._ctx[0], data, len(data), buf)
+
+        assert res == self._backend.lib.kCCSuccess
+        return self._backend.ffi.buffer(buf)[:len(data)]
+
+    def finalize(self):
+        tag_size = self._cipher.block_size // 8
+        tag_buf = self._backend.ffi.new("unsigned char[]", tag_size)
+        tag_len = self._backend.ffi.new("size_t *", tag_size)
+        res = backend.lib.CCCryptorGCMFinal(self._ctx[0], tag_buf, tag_len)
+        assert res == self._backend.lib.kCCSuccess
+        res = self._backend.lib.CCCryptorRelease(self._ctx[0])
+        assert res == self._backend.lib.kCCSuccess
+        self._tag = self._backend.ffi.buffer(tag_buf)[:tag_size]
+        # TODO: constant time
+        if self._operation == self._DECRYPT and self._tag[:len(self._mode.tag)] != self._mode.tag:
+            raise InvalidTag
+        return b""
+
+    def authenticate_additional_data(self, data):
+        res = self._backend.lib.CCCryptorGCMAddAAD(
+            self._ctx[0], data, len(data)
+        )
+        assert res == self._backend.lib.kCCSuccess
+
+    @property
+    def tag(self):
+        return self._tag
 
 
 @utils.register_interface(interfaces.HashContext)
