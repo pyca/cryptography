@@ -400,7 +400,11 @@ class _HashContext(object):
                                        self._backend.lib.EVP_MD_CTX_destroy)
             evp_md = self._backend.lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
-            assert evp_md != self._backend.ffi.NULL
+            if evp_md == self._backend.ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported hash on this backend".format(
+                        algorithm.name)
+                )
             res = self._backend.lib.EVP_DigestInit_ex(ctx, evp_md,
                                                       self._backend.ffi.NULL)
             assert res != 0
