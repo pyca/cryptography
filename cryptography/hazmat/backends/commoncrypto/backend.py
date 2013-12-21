@@ -233,6 +233,15 @@ class _CipherContext(object):
 
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
+        # bytes_processed is needed to work around rdar://15589470, a bug where
+        # kCCAlignmentError is not raised when not supplying block-aligned data
+        self._bytes_processed = 0
+        if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
+                isinstance(mode, (OFB, CFB, CTR))):
+            self._block_size = cipher.block_size // 8
+        else:
+            self._block_size = 1
+
         registry = self._backend._cipher_registry
         try:
             adapter = registry[type(cipher), type(mode)]
@@ -240,10 +249,10 @@ class _CipherContext(object):
             raise UnsupportedAlgorithm
 
         cipher_enum, mode_enum = adapter(self._backend, cipher, mode)
-        raw_ctx = self._backend.ffi.new("CCCryptorRef *")
-        ctx = _BackendContext(name=cipher.name, ctx=raw_ctx)
-        # TODO
-        # ctx = self.ffi.gc(ctx[0], self.lib.CCCryptorRelease)
+        ctx = self._backend.ffi.new("CCCryptorRef *")
+        #ctx = self._backend.ffi.gc(
+        #    raw_ctx[0], self._backend.lib.CCCryptorRelease
+        #)
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
@@ -262,29 +271,35 @@ class _CipherContext(object):
             mode_enum, cipher_enum,
             self._backend.lib.ccNoPadding, iv_nonce,
             cipher.key, len(cipher.key),
-            self._backend.ffi.NULL, 0, 0, mode_option, ctx.ctx)
+            self._backend.ffi.NULL, 0, 0, mode_option, ctx)
         assert res == self._backend.lib.kCCSuccess
         self._ctx = ctx
 
     def update(self, data):
-        block_size = 16  # TODO
+        # manually count bytes processed to handle block alignment
+        self._bytes_processed += len(data)
         buf = self._backend.ffi.new(
-            "unsigned char[]", len(data) + block_size - 1)
+            "unsigned char[]", len(data) + self._block_size - 1)
         outlen = self._backend.ffi.new("size_t *")
         res = self._backend.lib.CCCryptorUpdate(
-            self._ctx.ctx[0], data, len(data), buf,
-            len(data) + block_size - 1, outlen)
+            self._ctx[0], data, len(data), buf,
+            len(data) + self._block_size - 1, outlen)
         assert res == self._backend.lib.kCCSuccess
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
-        block_size = 16
-        buf = self._backend.ffi.new("unsigned char[]", block_size)
+        # raise error if block alignment is wrong since commoncrypto won't
+        if self._bytes_processed % self._block_size:
+            raise ValueError(
+                "The length of the provided data is not a multiple of "
+                "the block length"
+            )
+        buf = self._backend.ffi.new("unsigned char[]", self._block_size)
         outlen = self._backend.ffi.new("size_t *")
         res = self._backend.lib.CCCryptorFinal(
-            self._ctx.ctx[0], buf, len(buf), outlen)
+            self._ctx[0], buf, len(buf), outlen)
         assert res == self._backend.lib.kCCSuccess
-        res = self._backend.lib.CCCryptorRelease(self._ctx.ctx[0])
+        res = self._backend.lib.CCCryptorRelease(self._ctx[0])
         assert res == self._backend.lib.kCCSuccess
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
