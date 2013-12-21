@@ -17,7 +17,9 @@ INCLUDES = """
 
 TYPES = """
 typedef ... BIGNUM;
-typedef unsigned long BN_ULONG;
+// the below is declared as uintptr_t to obtain unsigned 32-bit on
+// 32-bit systems and unsigned 64-bit on 64-bit.
+typedef uintptr_t BN_ULONG;
 """
 
 FUNCTIONS = """
