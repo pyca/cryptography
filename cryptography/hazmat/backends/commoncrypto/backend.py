@@ -31,13 +31,6 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 )
 
 
-class _BackendContext(object):
-    def __init__(self, name, ctx):
-        super(_BackendContext, self).__init__()
-        self.name = name
-        self.ctx = ctx
-
-
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
@@ -307,7 +300,7 @@ class _CipherContext(object):
 @utils.register_interface(interfaces.HashContext)
 class _HashContext(object):
     def __init__(self, backend, algorithm, ctx=None):
-        self.algorithm = algorithm
+        self._algorithm = algorithm
 
         self._backend = backend
 
@@ -317,48 +310,46 @@ class _HashContext(object):
             except KeyError:
                 raise ValueError("Unsupported hash")
 
-            raw_ctx = self._backend.ffi.new(mapping["object"])
-            ctx = _BackendContext(name=algorithm.name, ctx=raw_ctx)
+            ctx = self._backend.ffi.new(mapping["object"])
             # init/update/final ALWAYS return 1
-            mapping["init"](ctx.ctx)
+            mapping["init"](ctx)
 
         self._ctx = ctx
 
     def copy(self):
         try:
-            mapping = self._backend.hash_mappings[self._ctx.name]
+            mapping = self._backend.hash_mappings[self._algorithm.name]
         except KeyError:
             raise ValueError("Unsupported hash")
 
         new_ctx = self._backend.ffi.new(mapping["object"])
-        new_ctx[0] = self._ctx.ctx[0]  # supposed to be legit per C90?
-        copied_ctx = _BackendContext(name=self._ctx.name, ctx=new_ctx)
+        new_ctx[0] = self._ctx[0]  # supposed to be legit per C90?
 
-        return _HashContext(self._backend, self.algorithm, ctx=copied_ctx)
+        return _HashContext(self._backend, self._algorithm, ctx=new_ctx)
 
     def update(self, data):
         try:
-            mapping = self._backend.hash_mappings[self._ctx.name]
+            mapping = self._backend.hash_mappings[self._algorithm.name]
         except KeyError:
             raise ValueError("Unsupported hash")
-        mapping["update"](self._ctx.ctx, data, len(data))
+        mapping["update"](self._ctx, data, len(data))
 
     def finalize(self):
         try:
-            mapping = self._backend.hash_mappings[self._ctx.name]
+            mapping = self._backend.hash_mappings[self._algorithm.name]
         except KeyError:
             raise ValueError("Unsupported hash")
 
         buf = self._backend.ffi.new("unsigned char[]",
-                                    self.algorithm.digest_size)
-        mapping["final"](buf, self._ctx.ctx)
+                                    self._algorithm.digest_size)
+        mapping["final"](buf, self._ctx)
         return self._backend.ffi.buffer(buf)[:]
 
 
 @utils.register_interface(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
-        self.algorithm = algorithm
+        self._algorithm = algorithm
         self._backend = backend
         self.supported_algorithms = {
             "md5": backend.lib.kCCHmacAlgMD5,
@@ -386,7 +377,7 @@ class _HMACContext(object):
         copied_ctx[0] = self._ctx[0]  # supposed to be legit per C90?
 
         return _HMACContext(
-            self._backend, self._key, self.algorithm, ctx=copied_ctx
+            self._backend, self._key, self._algorithm, ctx=copied_ctx
         )
 
     def update(self, data):
@@ -394,7 +385,7 @@ class _HMACContext(object):
 
     def finalize(self):
         buf = self._backend.ffi.new("unsigned char[]",
-                                    self.algorithm.digest_size)
+                                    self._algorithm.digest_size)
         self._backend.lib.CCHmacFinal(self._ctx, buf)
         return self._backend.ffi.buffer(buf)[:]
 
