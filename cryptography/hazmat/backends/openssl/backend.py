@@ -442,7 +442,11 @@ class _HMACContext(object):
             ctx = self._backend.ffi.gc(ctx, self._backend.lib.HMAC_CTX_cleanup)
             evp_md = self._backend.lib.EVP_get_digestbyname(
                 algorithm.name.encode('ascii'))
-            assert evp_md != self._backend.ffi.NULL
+            if evp_md == self._backend.ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported hash on this backend".format(
+                        algorithm.name)
+                )
             res = self._backend.lib.Cryptography_HMAC_Init_ex(
                 ctx, key, len(key), evp_md, self._backend.ffi.NULL
             )
