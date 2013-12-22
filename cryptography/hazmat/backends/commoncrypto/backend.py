@@ -36,7 +36,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 @utils.register_interface(HMACBackend)
 class Backend(object):
     """
-    OpenSSL API wrapper.
+    CommonCrypto API wrapper.
     """
     _modules = [
         "common_cryptor",
