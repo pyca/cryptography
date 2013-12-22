@@ -321,7 +321,7 @@ class _CipherContext(object):
             if operation == self._DECRYPT:
                 if not mode.tag or len(mode.tag) < 4:
                     raise ValueError("Authentication tag must be provided "
-                                     "and >= 4 bytes when decrypting")
+                                     "and 4 bytes or longer when decrypting")
                 res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
                     ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
