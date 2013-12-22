@@ -34,6 +34,8 @@ message.
         >>> h.finalize()
         '#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'
 
+    If the backend doesn't support the requested ``algorithm`` an
+    :class:`~cryptography.exceptions.UnsupportedAlgorithm` will be raised.
 
     :param key: Secret key as ``bytes``.
     :param algorithm: A

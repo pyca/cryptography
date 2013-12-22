@@ -19,10 +19,16 @@ import pytest
 
 import six
 
-from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.primitives import hashes, hmac
+from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
+from cryptography.hazmat.primitives import hashes, hmac, interfaces
 
 from .utils import generate_base_hmac_test
+
+
+@utils.register_interface(interfaces.HashAlgorithm)
+class UnsupportedDummyHash(object):
+        name = "unsupported-dummy-hash"
 
 
 class TestHMAC(object):
@@ -63,3 +69,7 @@ class TestHMAC(object):
 
         with pytest.raises(AlreadyFinalized):
             h.finalize()
+
+    def test_unsupported_hash(self, backend):
+        with pytest.raises(UnsupportedAlgorithm):
+            hmac.HMAC(b"key", UnsupportedDummyHash(), backend)
