@@ -432,7 +432,10 @@ class _HMACContext(object):
             try:
                 alg = self.supported_algorithms[algorithm.name]
             except KeyError:
-                raise UnsupportedAlgorithm
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported hash on this backend".format(
+                        algorithm.name)
+                )
 
             self._backend.lib.CCHmacInit(ctx, alg, key, len(key))
 
