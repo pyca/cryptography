@@ -319,9 +319,9 @@ class _CipherContext(object):
             )
             assert res != 0
             if operation == self._DECRYPT:
-                if not mode.tag:
-                    raise ValueError("Authentication tag must be supplied "
-                                     "when decrypting")
+                if not mode.tag or len(mode.tag) < 4:
+                    raise ValueError("Authentication tag must be provided and "
+                                     "be 4 bytes or longer when decrypting")
                 res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
                     ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
