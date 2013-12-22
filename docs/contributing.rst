@@ -53,7 +53,7 @@ API Considerations
 
 Most projects' APIs are designed with a philosophy of "make easy things easy,
 and make hard things possible". One of the perils of writing cryptographic code
-is that secure code looks just like insecure code, and it's results are almost
+is that secure code looks just like insecure code, and its results are almost
 always indistinguishable. As a result ``cryptography`` has, as a design
 philosophy: "make it hard to do insecure things". Here are a few strategies for
 API design which should be both followed, and should inspire other API choices:
