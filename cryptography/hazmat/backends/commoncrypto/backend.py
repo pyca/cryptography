@@ -22,7 +22,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import constant_time, interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, TripleDES, ARC4, CAST5
 )
@@ -358,8 +358,9 @@ class _GCMCipherContext(_CipherContext):
         res = self._backend.lib.CCCryptorRelease(self._ctx[0])
         assert res == self._backend.lib.kCCSuccess
         self._tag = self._backend.ffi.buffer(tag_buf)[:tag_size]
-        # TODO: constant time
-        if self._operation == self._DECRYPT and self._tag[:len(self._mode.tag)] != self._mode.tag:
+        if self._operation == self._DECRYPT and not constant_time.bytes_eq(
+            self._tag[:len(self._mode.tag)], self._mode.tag
+        ):
             raise InvalidTag
         return b""
 
