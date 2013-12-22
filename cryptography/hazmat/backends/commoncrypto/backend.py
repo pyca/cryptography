@@ -379,7 +379,6 @@ class _GCMCipherContext(_CipherContext):
 class _HashContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         self._algorithm = algorithm
-
         self._backend = backend
 
         if ctx is None:
@@ -390,7 +389,6 @@ class _HashContext(object):
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
-
             ctx = self._backend.ffi.new(mapping["object"])
             # init/update/final ALWAYS return 1
             mapping["init"](ctx)
@@ -429,7 +427,6 @@ class _HMACContext(object):
             "sha384": backend.lib.kCCHmacAlgSHA384,
             "sha512": backend.lib.kCCHmacAlgSHA512,
         }
-
         if ctx is None:
             ctx = self._backend.ffi.new("CCHmacContext *")
             try:
@@ -445,7 +442,6 @@ class _HMACContext(object):
     def copy(self):
         copied_ctx = self._backend.ffi.new("CCHmacContext *")
         copied_ctx[0] = self._ctx[0]  # supposed to be legit per C90?
-
         return _HMACContext(
             self._backend, self._key, self._algorithm, ctx=copied_ctx
         )
