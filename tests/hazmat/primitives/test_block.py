@@ -31,9 +31,14 @@ from .utils import (
 )
 
 
+@utils.register_interface(interfaces.Mode)
+class DummyMode(object):
+    name = "dummy-mode"
+
+
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
-    pass
+    name = "dummy-cipher"
 
 
 class TestCipher(object):
@@ -101,9 +106,10 @@ class TestCipherContext(object):
         assert pt == b"a" * 80
         decryptor.finalize()
 
-    def test_nonexistent_cipher(self, backend):
+    @pytest.mark.parametrize("mode", [DummyMode(), None])
+    def test_nonexistent_cipher(self, backend, mode):
         cipher = Cipher(
-            DummyCipher(), object(), backend
+            DummyCipher(), mode, backend
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
