@@ -329,9 +329,9 @@ class _GCMCipherContext(_CipherContext):
         # some bizarre reason.
         self.authenticate_additional_data(b"")
         if operation == self._DECRYPT:
-            if not mode.tag:
-                raise ValueError("Authentication tag must be supplied "
-                                 "when decrypting")
+            if not mode.tag or len(mode.tag) < 4:
+                raise ValueError("Authentication tag must be provided and "
+                                 "be 4 bytes or longer when decrypting")
         else:
             if mode.tag:
                 raise ValueError("Authentication tag must be None when "
