@@ -354,10 +354,12 @@ Modes
 
     .. note::
 
-        `NIST SP-800-38D`_ recommends that GCM tags be 128, 120, 122, 104, or
-        96-bits in length. Tags are shortened by truncating bytes. Longer tags
-        provide better security margins. If you must shorten the tag the minimum
-        allowed length is 4 bytes (32 bits).
+        Cryptography will emit a 128-bit tag when finalizing encryption.
+        You can shorten a tag by truncating it to the desired length, but this
+        is **not recommended** as it lowers the security margins of the
+        authentication (`NIST SP-800-38D`_ recommends 96-bit or greater).
+        If you must shorten the tag the minimum allowed length is 4 bytes
+        (32 bit).
 
     :param bytes tag: The tag bytes to verify during decryption. When encrypting
                       this must be None.
