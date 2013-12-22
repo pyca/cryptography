@@ -245,7 +245,7 @@ class _CipherContext(object):
         self._bytes_processed = 0
         if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
                 isinstance(mode, (OFB, CFB, CTR))):
-            self._byte_block_size = cipher.block_size
+            self._byte_block_size = cipher.block_size // 8
         else:
             self._byte_block_size = 1
 
