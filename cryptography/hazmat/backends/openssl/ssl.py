@@ -22,6 +22,11 @@ static const int Cryptography_HAS_SSL2;
 /* Internally invented symbol to tell us if SNI is supported */
 static const int Cryptography_HAS_TLSEXT_HOSTNAME;
 
+/* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
+ * supported
+ */
+static const int Cryptography_HAS_RELEASE_BUFFERS;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -91,6 +96,7 @@ static const int SSL_CB_CONNECT_LOOP;
 static const int SSL_CB_CONNECT_EXIT;
 static const int SSL_CB_HANDSHAKE_START;
 static const int SSL_CB_HANDSHAKE_DONE;
+static const int SSL_MODE_RELEASE_BUFFERS;
 static const int SSL_MODE_ENABLE_PARTIAL_WRITE;
 static const int SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const int SSL_MODE_AUTO_RETRY;
