@@ -141,8 +141,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         Create a
         :class:`~cryptogrpahy.hazmat.primitives.interfaces.HashContext` that
-            uses the specified ``algorithm`` to calculate a hash-based message
-            authentication code.
+        uses the specified ``algorithm`` to calculate a hash-based message
+        authentication code.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
