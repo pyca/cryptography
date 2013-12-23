@@ -198,7 +198,6 @@ int SSL_want_write(const SSL *);
 int SSL_total_renegotiations(const SSL *);
 
 long SSL_CTX_set_options(SSL_CTX *, long);
-long SSL_CTX_clear_options(SSL_CTX *, long);
 long SSL_CTX_get_options(SSL_CTX *);
 long SSL_CTX_set_mode(SSL_CTX *, long);
 long SSL_CTX_get_mode(SSL_CTX *);
