@@ -57,6 +57,7 @@ class Backend(object):
     """
     OpenSSL API wrapper.
     """
+    _module_prefix = "cryptography.hazmat.backends.openssl."
     _modules = [
         "asn1",
         "bignum",
@@ -102,7 +103,7 @@ class Backend(object):
         macros = []
         customizations = []
         for name in cls._modules:
-            module_name = "cryptography.hazmat.backends.openssl." + name
+            module_name = cls._module_prefix + name
             __import__(module_name)
             module = sys.modules[module_name]
 
@@ -142,7 +143,7 @@ class Backend(object):
         )
 
         for name in cls._modules:
-            module_name = "cryptography.hazmat.backends.openssl." + name
+            module_name = cls._module_prefix + name
             __import__(module_name)
             module = sys.modules[module_name]
             for name, condition in module.CONDITIONAL_NAMES.items():
