@@ -13,12 +13,13 @@
 
 from cffi import VerificationError
 
-from cryptography.hazmat.backends import openssl, commoncrypto
+from cryptography.hazmat.backends import openssl
 
 
 _ALL_BACKENDS = [openssl.backend]
 
 try:
+    from cryptography.hazmat.backends import commoncrypto
     _ALL_BACKENDS.append(commoncrypto.backend)
 except VerificationError:
     pass
