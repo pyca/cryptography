@@ -345,7 +345,7 @@ class _CipherContext(object):
         assert res != 0
         if isinstance(mode, GCM):
             res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
-                ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_IVLEN,
+                ctx, self._backend.lib.EVP_CTRL_GCM_SET_IVLEN,
                 len(iv_nonce), self._backend.ffi.NULL
             )
             assert res != 0
@@ -354,7 +354,7 @@ class _CipherContext(object):
                     raise ValueError("Authentication tag must be provided and "
                                      "be 4 bytes or longer when decrypting")
                 res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
-                    ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
+                    ctx, self._backend.lib.EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
                 )
                 assert res != 0
@@ -396,7 +396,7 @@ class _CipherContext(object):
             block_byte_size = self._block_size // 8
             tag_buf = self._backend.ffi.new("unsigned char[]", block_byte_size)
             res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
-                self._ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_GET_TAG,
+                self._ctx, self._backend.lib.EVP_CTRL_GCM_GET_TAG,
                 block_byte_size, tag_buf
             )
             assert res != 0
