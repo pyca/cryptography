@@ -56,6 +56,20 @@ _OSX_POST_INCLUDE = """
 class Backend(object):
     """
     OpenSSL API wrapper.
+
+    Modules listed in the ``_modules`` listed should have the following
+    attributes:
+
+    * ``INCLUDES``: A string containg C includes.
+    * ``TYPES``: A string containing C declarations for types.
+    * ``FUNCTIONS``: A string containing C declarations for functions.
+    * ``MACROS``: A string containing C declarations for any macros.
+    * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
+        can be used to do things like test for a define and provide an
+        alternate implementation based on that.
+    * ``CONDITIONAL_NAMES``: A dict mapping strings of condition names from the
+        library to a list of names which will not be present without the
+        condition.
     """
     _module_prefix = "cryptography.hazmat.backends.openssl."
     _modules = [
