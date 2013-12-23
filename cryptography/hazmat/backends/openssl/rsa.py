@@ -33,6 +33,7 @@ static const int RSA_SSLV23_PADDING;
 static const int RSA_NO_PADDING;
 static const int RSA_PKCS1_OAEP_PADDING;
 static const int RSA_X931_PADDING;
+static const int RSA_F4;
 """
 
 FUNCTIONS = """
@@ -50,6 +51,7 @@ int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
                        RSA *, int);
 int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
                         RSA *, int);
+int RSA_print(BIO *bp, const RSA *r,int offset);
 """
 
 MACROS = """

@@ -12,32 +12,26 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/bn.h>
+#include <openssl/objects.h>
 """
 
 TYPES = """
-typedef ... BIGNUM;
-/*
- * XXX This typedef is wrong.
- * https://bitbucket.org/cffi/cffi/issue/69/support-for-using-typedef-with-primitive
- * http://paste.pound-python.org/show/iJcTUMkKeBeS6yXpZWUU/
- * < fijal> exarkun: I think you want to declare your value too large (e.g. long)
- * < fijal> exarkun: that way you'll never pass garbage
- */
-typedef unsigned long long BN_ULONG;
 """
 
 FUNCTIONS = """
-BIGNUM *BN_new();
-void BN_free(BIGNUM *);
-
-int BN_set_word(BIGNUM *, BN_ULONG);
-
-char *BN_bn2hex(const BIGNUM *);
-int BN_hex2bn(BIGNUM **, const char *);
-int BN_dec2bn(BIGNUM **, const char *);
-
-int BN_num_bits(const BIGNUM *);
+ASN1_OBJECT * OBJ_nid2obj(int n);
+const char *  OBJ_nid2ln(int n);
+const char *  OBJ_nid2sn(int n);
+int OBJ_obj2nid(const ASN1_OBJECT *o);
+int OBJ_ln2nid(const char *ln);
+int OBJ_sn2nid(const char *sn);
+int OBJ_txt2nid(const char *s);
+ASN1_OBJECT * OBJ_txt2obj(const char *s, int no_name);
+int OBJ_obj2txt(char *buf, int buf_len, const ASN1_OBJECT *a, int no_name);
+int OBJ_cmp(const ASN1_OBJECT *a,const ASN1_OBJECT *b);
+ASN1_OBJECT * OBJ_dup(const ASN1_OBJECT *o);
+int OBJ_create(const char *oid,const char *sn,const char *ln);
+void OBJ_cleanup(void);
 """
 
 MACROS = """
