@@ -143,6 +143,15 @@ class Backend(object):
 
         cls.ffi = ffi
         cls.lib = lib
+
+        # Clean up any missing symbols
+        hasPrefix = "Cryptography_HAS_"
+        for name in dir(cls.lib):
+            if name.startswith(hasPrefix):
+                if not getattr(cls.lib, name):
+                    delattr(cls.lib, name[len(hasPrefix):])
+                delattr(cls.lib, name)
+
         cls.lib.OpenSSL_add_all_algorithms()
         cls.lib.SSL_load_error_strings()
 

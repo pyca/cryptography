@@ -22,6 +22,9 @@ static const int Cryptography_HAS_SSL2;
 /* Internally invented symbol to tell us if SNI is supported */
 static const int Cryptography_HAS_TLSEXT_HOSTNAME;
 
+/* Internally invented symbol to tell us if this flag is supported */
+static const int Cryptography_HAS_SSL_MODE_RELEASE_BUFFERS;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -262,5 +265,12 @@ const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
 void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *)) = NULL;
+#endif
+
+#ifdef SSL_MODE_RELEASE_BUFFERS
+static const int Cryptography_HAS_SSL_MODE_RELEASE_BUFFERS = 1;
+#else
+static const int Cryptography_HAS_SSL_MODE_RELEASE_BUFFERS = 0;
+static const int SSL_MODE_RELEASE_BUFFERS;
 #endif
 """
