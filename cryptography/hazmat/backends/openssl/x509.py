@@ -188,3 +188,5 @@ int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

@@ -262,3 +262,17 @@ void (*SSL_CTX_set_tlsext_servername_callback)(
     int (*)(const SSL *, int *, void *)) = NULL;
 #endif
 """
+
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_SSL2": [
+        "SSLv2_method",
+        "SSLv2_client_method",
+        "SSLv2_server_method",
+    ],
+
+    "Cryptography_HAS_TLSEXT_HOSTNAME": [
+        "SSL_set_tlsext_host_name",
+        "SSL_get_servername",
+        "SSL_CTX_set_tlsext_servername_callback",
+    ]
+}

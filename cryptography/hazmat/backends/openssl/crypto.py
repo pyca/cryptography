@@ -40,3 +40,5 @@ void CRYPTO_malloc_debug_init();
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}
