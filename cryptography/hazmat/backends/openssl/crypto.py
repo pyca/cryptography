@@ -16,6 +16,11 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int SSLEAY_VERSION;
+static const int SSLEAY_CFLAGS;
+static const int SSLEAY_PLATFORM;
+static const int SSLEAY_DIR;
+static const int SSLEAY_BUILT_ON;
 """
 
 FUNCTIONS = """
@@ -32,6 +37,7 @@ MACROS = """
 void CRYPTO_add(int *, int, int);
 void CRYPTO_malloc_init();
 void CRYPTO_malloc_debug_init();
+
 #define CRYPTO_MEM_CHECK_ON ...
 #define CRYPTO_MEM_CHECK_OFF ...
 #define CRYPTO_MEM_CHECK_ENABLE ...
