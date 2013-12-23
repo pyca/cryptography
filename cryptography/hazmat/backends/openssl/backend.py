@@ -313,10 +313,6 @@ class _RSAPrivateKey(object):
     def key_length(self):
         return self._backend.lib.BN_num_bits(self._ctx.n)
 
-    @property
-    def public_key(self):
-        raise NotImplementedError
-
 
 class GetCipherByName(object):
     def __init__(self, fmt):

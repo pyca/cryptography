@@ -18,13 +18,17 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric.rsa import generate_rsa_key
 
 
+# The extended euclidean algorithm is one way to calculate the private exponent
+# (d) of an RSA key using the totient (p -1) * (q-1) (b below), and the public
+# exponent (a below).
+# See: http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Pseudocode
 def extended_euclidean(a, b):
     original_totient = b
     x = 0
     prev_x = 1
     y = 1
     prev_y = 0
-    while (b != 0):
+    while b != 0:
         q = a // b
         a, b = b, a % b
         x, prev_x = prev_x - q * x, x
@@ -69,8 +73,3 @@ class TestRSAPrivateKey(object):
     def test_generate_key_bad_exponents(self, backend, public_exponent):
         with pytest.raises(ValueError):
             generate_rsa_key(1024, public_exponent, backend)
-
-    def test_public_key(self, backend):
-        key = generate_rsa_key(1024, 65537, backend)
-        with pytest.raises(NotImplementedError):
-            key.public_key
