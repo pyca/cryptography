@@ -22,6 +22,16 @@ static const int Cryptography_HAS_SSL2;
 /* Internally invented symbol to tell us if SNI is supported */
 static const int Cryptography_HAS_TLSEXT_HOSTNAME;
 
+/* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
+ * supported
+ */
+static const int Cryptography_HAS_RELEASE_BUFFERS;
+
+/* Internally invented symbol to tell us if SSL_OP_NO_COMPRESSION is
+ * supported
+ */
+static const int Cryptography_HAS_OP_NO_COMPRESSION;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -36,6 +46,7 @@ static const int SSL_RECEIVED_SHUTDOWN;
 static const int SSL_OP_NO_SSLv2;
 static const int SSL_OP_NO_SSLv3;
 static const int SSL_OP_NO_TLSv1;
+static const int SSL_OP_NO_COMPRESSION;
 static const int SSL_OP_SINGLE_DH_USE;
 static const int SSL_OP_EPHEMERAL_RSA;
 static const int SSL_OP_MICROSOFT_SESS_ID_BUG;
@@ -90,6 +101,7 @@ static const int SSL_CB_CONNECT_LOOP;
 static const int SSL_CB_CONNECT_EXIT;
 static const int SSL_CB_HANDSHAKE_START;
 static const int SSL_CB_HANDSHAKE_DONE;
+static const int SSL_MODE_RELEASE_BUFFERS;
 static const int SSL_MODE_ENABLE_PARTIAL_WRITE;
 static const int SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const int SSL_MODE_AUTO_RETRY;
@@ -261,6 +273,20 @@ void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *)) = NULL;
 #endif
+
+#ifdef SSL_MODE_RELEASE_BUFFERS
+static const int Cryptography_HAS_RELEASE_BUFFERS = 1;
+#else
+static const int Cryptography_HAS_RELEASE_BUFFERS = 0;
+const int SSL_MODE_RELEASE_BUFFERS = 0;
+#endif
+
+#ifdef SSL_OP_NO_COMPRESSION
+static const int Cryptography_HAS_OP_NO_COMPRESSION = 1;
+#else
+static const int Cryptography_HAS_OP_NO_COMPRESSION = 0;
+const int SSL_OP_NO_COMPRESSION = 0;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -274,5 +300,14 @@ CONDITIONAL_NAMES = {
         "SSL_set_tlsext_host_name",
         "SSL_get_servername",
         "SSL_CTX_set_tlsext_servername_callback",
-    ]
+    ],
+
+    "Cryptography_HAS_RELEASE_BUFFERS": [
+        "SSL_MODE_RELEASE_BUFFERS",
+    ],
+
+    "Cryptography_HAS_OP_NO_COMPRESSION": [
+        "SSL_OP_NO_COMPRESSION",
+    ],
+
 }

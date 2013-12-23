@@ -16,6 +16,7 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int OPENSSL_VERSION_NUMBER;
 static char *const OPENSSL_VERSION_TEXT;
 """
 
