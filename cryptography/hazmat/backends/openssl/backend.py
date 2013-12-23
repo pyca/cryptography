@@ -141,6 +141,14 @@ class Backend(object):
             libraries=["crypto", "ssl"],
         )
 
+        for name in cls._modules:
+            module_name = "cryptography.hazmat.backends.openssl." + name
+            __import__(module_name)
+            module = sys.modules[module_name]
+            for name, condition in module.CONDITIONAL_NAMES.items():
+                if not getattr(lib, condition):
+                    delattr(lib, name)
+
         cls.ffi = ffi
         cls.lib = lib
         cls.lib.OpenSSL_add_all_algorithms()

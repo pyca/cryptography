@@ -35,3 +35,5 @@ PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

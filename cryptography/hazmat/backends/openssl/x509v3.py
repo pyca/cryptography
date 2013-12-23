@@ -95,3 +95,5 @@ const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}
