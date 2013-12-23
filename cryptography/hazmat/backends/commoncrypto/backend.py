@@ -38,6 +38,7 @@ class Backend(object):
     """
     CommonCrypto API wrapper.
     """
+    _module_prefix = "cryptography.hazmat.backends.commoncrypto."
     _modules = [
         "common_cryptor",
         "common_digest",
@@ -96,7 +97,7 @@ class Backend(object):
         macros = []
         customizations = []
         for name in cls._modules:
-            module_name = "cryptography.hazmat.backends.commoncrypto." + name
+            module_name = cls._module_prefix + name
             __import__(module_name)
             module = sys.modules[module_name]
 
@@ -127,6 +128,14 @@ class Backend(object):
             source="\n".join(includes + functions + customizations),
             libraries=[],
         )
+
+        for name in cls._modules:
+            module_name = cls._module_prefix + name
+            module = sys.modules[module_name]
+            for condition, names in module.CONDITIONAL_NAMES.items():
+                if not getattr(lib, condition):
+                    for name in names:
+                        delattr(lib, name)
 
         cls.ffi = ffi
         cls.lib = lib
