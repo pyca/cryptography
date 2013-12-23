@@ -27,6 +27,11 @@ static const int Cryptography_HAS_TLSEXT_HOSTNAME;
  */
 static const int Cryptography_HAS_RELEASE_BUFFERS;
 
+/* Internally invented symbol to tell us if SSL_OP_NO_COMPRESSION is
+ * supported
+ */
+static const int Cryptography_HAS_OP_NO_COMPRESSION;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -275,6 +280,13 @@ static const int Cryptography_HAS_RELEASE_BUFFERS = 1;
 static const int Cryptography_HAS_RELEASE_BUFFERS = 0;
 const int SSL_MODE_RELEASE_BUFFERS = 0;
 #endif
+
+#ifdef SSL_OP_NO_COMPRESSION
+static const int Cryptography_HAS_OP_NO_COMPRESSION = 1;
+#else
+static const int Cryptography_HAS_OP_NO_COMPRESSION = 0;
+const int SSL_OP_NO_COMPRESSION = 0;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -292,6 +304,10 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_RELEASE_BUFFERS": [
         "SSL_MODE_RELEASE_BUFFERS",
+    ],
+
+    "Cryptography_HAS_OP_NO_COMPRESSION": [
+        "SSL_OP_NO_COMPRESSION",
     ],
 
 }
