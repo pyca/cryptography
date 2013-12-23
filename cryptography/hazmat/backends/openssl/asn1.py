@@ -16,14 +16,7 @@ INCLUDES = """
 """
 
 TYPES = """
-/*
- * XXX This typedef is wrong.
- * https://bitbucket.org/cffi/cffi/issue/69/support-for-using-typedef-with-primitive
- * http://paste.pound-python.org/show/iJcTUMkKeBeS6yXpZWUU/
- * < fijal> exarkun: I think you want to declare your value too large (e.g. long)
- * < fijal> exarkun: that way you'll never pass garbage
- */
-typedef long time_t;
+typedef ... time_t;
 
 typedef int ASN1_BOOLEAN;
 typedef ... ASN1_INTEGER;
