@@ -232,6 +232,7 @@ class Backend(object):
         bn = self.lib.BN_new()
         bn = self.ffi.gc(bn, backend.lib.BN_free)
         res = self.lib.BN_set_word(bn, public_exponent)
+        assert res == 1
         res = self.lib.RSA_generate_key_ex(
             ctx, bit_length, bn, self.ffi.NULL
         )
@@ -307,7 +308,10 @@ class _RSAPrivateKey(object):
 
     def _get_value(self, bn):
         val = self._backend.lib.BN_bn2hex(bn)
-        return int(self._backend.ffi.string(val), 16)
+        assert val != self._backend.ffi.NULL
+        decoded_value = int(self._backend.ffi.string(val), 16)
+        self._backend.lib.OPENSSL_free(val)
+        return decoded_value
 
     @property
     def key_length(self):
