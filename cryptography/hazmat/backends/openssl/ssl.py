@@ -132,7 +132,7 @@ int SSL_get_verify_mode(const SSL *);
 void SSL_set_verify_depth(SSL *, int);
 int SSL_get_verify_depth(const SSL *);
 int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
-void SSL_set_info_callback(SSL *, void (*callback)());
+void SSL_set_info_callback(SSL *, void (*)());
 void (*SSL_get_info_callback(const SSL *))();
 SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
@@ -155,10 +155,10 @@ const char *SSL_get_cipher_list(const SSL *, int);
 void SSL_CTX_free(SSL_CTX *);
 long SSL_CTX_set_timeout(SSL_CTX *, long);
 int SSL_CTX_set_default_verify_paths(SSL_CTX *);
-void SSL_CTX_set_verify(SSL_CTX *, int, int (*callback)(int, X509_STORE_CTX *));
+void SSL_CTX_set_verify(SSL_CTX *, int, int (*)(int, X509_STORE_CTX *));
 void SSL_CTX_set_verify_depth(SSL_CTX *, int);
 int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
-void SSL_CTX_set_info_callback(SSL_CTX *, void (*cb)(const SSL *, int, int));
+void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
 void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 int SSL_CTX_get_verify_mode(const SSL_CTX *);
 int SSL_CTX_get_verify_depth(const SSL_CTX *);
@@ -239,7 +239,7 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
-    int (*cb)(const SSL *, int *, void *));
+    int (*)(const SSL *, int *, void *));
 """
 
 CUSTOMIZATIONS = """
@@ -260,6 +260,6 @@ void (*SSL_set_tlsext_host_name)(SSL *, char *) = NULL;
 const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
 void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
-    int (*cb)(const SSL *, int *, void *)) = NULL;
+    int (*)(const SSL *, int *, void *)) = NULL;
 #endif
 """
