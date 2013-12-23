@@ -144,7 +144,6 @@ class Backend(object):
 
         for name in cls._modules:
             module_name = cls._module_prefix + name
-            __import__(module_name)
             module = sys.modules[module_name]
             for condition, names in module.CONDITIONAL_NAMES.items():
                 if not getattr(lib, condition):
