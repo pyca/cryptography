@@ -146,9 +146,10 @@ class Backend(object):
             module_name = cls._module_prefix + name
             __import__(module_name)
             module = sys.modules[module_name]
-            for name, condition in module.CONDITIONAL_NAMES.items():
+            for condition, names in module.CONDITIONAL_NAMES.items():
                 if not getattr(lib, condition):
-                    delattr(lib, name)
+                    for name in names:
+                        delattr(lib, name)
 
         cls.ffi = ffi
         cls.lib = lib

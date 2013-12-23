@@ -116,7 +116,9 @@ const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = -1;
 """
 
 CONDITIONAL_NAMES = {
-    "Cryptography_EVP_CTRL_GCM_GET_TAG": "Cryptography_HAS_GCM",
-    "Cryptography_EVP_CTRL_GCM_SET_TAG": "Cryptography_HAS_GCM",
-    "Cryptography_EVP_CTRL_GCM_SET_IVLEN": "Cryptography_HAS_GCM",
+    "Cryptography_HAS_GCM": [
+        "Cryptography_EVP_CTRL_GCM_GET_TAG",
+        "Cryptography_EVP_CTRL_GCM_SET_TAG",
+        "Cryptography_EVP_CTRL_GCM_SET_IVLEN",
+    ]
 }
