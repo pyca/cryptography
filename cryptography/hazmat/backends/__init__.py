@@ -11,13 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from cffi import VerificationError
+
 from cryptography.hazmat.backends import openssl, commoncrypto
 
 
-_ALL_BACKENDS = [
-    openssl.backend,
-    commoncrypto.backend
-]
+_ALL_BACKENDS = [openssl.backend]
+
+try:
+    _ALL_BACKENDS.append(commoncrypto.backend)
+except VerificationError:
+    pass
 
 
 def default_backend():
