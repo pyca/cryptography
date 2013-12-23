@@ -22,6 +22,9 @@ static const int Cryptography_HAS_SSL2;
 /* Internally invented symbol to tell us if SNI is supported */
 static const int Cryptography_HAS_TLSEXT_HOSTNAME;
 
+/* Internally invented symbol to tell us if this flag is supported */
+static const int Cryptography_HAS_SSL_MODE_RELEASE_BUFFERS;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -36,6 +39,7 @@ static const int SSL_RECEIVED_SHUTDOWN;
 static const int SSL_OP_NO_SSLv2;
 static const int SSL_OP_NO_SSLv3;
 static const int SSL_OP_NO_TLSv1;
+static const int SSL_OP_NO_COMPRESSION;
 static const int SSL_OP_SINGLE_DH_USE;
 static const int SSL_OP_EPHEMERAL_RSA;
 static const int SSL_OP_MICROSOFT_SESS_ID_BUG;
@@ -93,6 +97,7 @@ static const int SSL_CB_HANDSHAKE_DONE;
 static const int SSL_MODE_ENABLE_PARTIAL_WRITE;
 static const int SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const int SSL_MODE_AUTO_RETRY;
+static const int SSL_MODE_RELEASE_BUFFERS;
 static const int SSL3_RANDOM_SIZE;
 typedef ... X509_STORE_CTX;
 static const int X509_V_OK;
@@ -260,5 +265,12 @@ const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
 void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *)) = NULL;
+#endif
+
+#ifdef SSL_MODE_RELEASE_BUFFERS
+static const int Cryptography_HAS_SSL_MODE_RELEASE_BUFFERS = 1;
+#else
+static const int Cryptography_HAS_SSL_MODE_RELEASE_BUFFERS = 0;
+static const int SSL_MODE_RELEASE_BUFFERS;
 #endif
 """

@@ -19,6 +19,7 @@ TYPES = """
 """
 
 FUNCTIONS = """
+void ERR_load_RAND_strings();
 void RAND_seed(const void *, int);
 void RAND_add(const void *, int, double);
 int RAND_status();
