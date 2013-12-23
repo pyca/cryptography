@@ -16,7 +16,14 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... time_t;
+/*
+ * XXX This typedef is wrong.
+ * https://bitbucket.org/cffi/cffi/issue/69/support-for-using-typedef-with-primitive
+ * http://paste.pound-python.org/show/iJcTUMkKeBeS6yXpZWUU/
+ * < fijal> exarkun: I think you want to declare your value too large (e.g. long)
+ * < fijal> exarkun: that way you'll never pass garbage
+ */
+typedef long time_t;
 
 typedef int ASN1_BOOLEAN;
 typedef ... ASN1_INTEGER;
@@ -118,6 +125,7 @@ int ASN1_INTEGER_cmp(ASN1_INTEGER *, ASN1_INTEGER *);
 long ASN1_INTEGER_get(ASN1_INTEGER *);
 
 BIGNUM *ASN1_INTEGER_to_BN(ASN1_INTEGER *, BIGNUM *);
+ASN1_INTEGER *BN_to_ASN1_INTEGER(const BIGNUM *bn, ASN1_INTEGER *ai);
 """
 
 CUSTOMIZATIONS = """
