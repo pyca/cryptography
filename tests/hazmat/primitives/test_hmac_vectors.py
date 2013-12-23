@@ -27,7 +27,7 @@ class TestHMAC_MD5(object):
             "rfc-2202-md5.txt",
         ],
         hashes.MD5(),
-        only_if=lambda backend: backend.hash_supported(hashes.MD5),
+        only_if=lambda backend: backend.hmac_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
 
@@ -40,7 +40,7 @@ class TestHMAC_SHA1(object):
             "rfc-2202-sha1.txt",
         ],
         hashes.SHA1(),
-        only_if=lambda backend: backend.hash_supported(hashes.SHA1),
+        only_if=lambda backend: backend.hmac_supported(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
 
@@ -53,7 +53,7 @@ class TestHMAC_SHA224(object):
             "rfc-4231-sha224.txt",
         ],
         hashes.SHA224(),
-        only_if=lambda backend: backend.hash_supported(hashes.SHA224),
+        only_if=lambda backend: backend.hmac_supported(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
 
@@ -66,7 +66,7 @@ class TestHMAC_SHA256(object):
             "rfc-4231-sha256.txt",
         ],
         hashes.SHA256(),
-        only_if=lambda backend: backend.hash_supported(hashes.SHA256),
+        only_if=lambda backend: backend.hmac_supported(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
 
@@ -79,7 +79,7 @@ class TestHMAC_SHA384(object):
             "rfc-4231-sha384.txt",
         ],
         hashes.SHA384(),
-        only_if=lambda backend: backend.hash_supported(hashes.SHA384),
+        only_if=lambda backend: backend.hmac_supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
 
@@ -92,7 +92,7 @@ class TestHMAC_SHA512(object):
             "rfc-4231-sha512.txt",
         ],
         hashes.SHA512(),
-        only_if=lambda backend: backend.hash_supported(hashes.SHA512),
+        only_if=lambda backend: backend.hmac_supported(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
 
@@ -105,6 +105,6 @@ class TestHMAC_RIPEMD160(object):
             "rfc-2286-ripemd160.txt",
         ],
         hashes.RIPEMD160(),
-        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
+        only_if=lambda backend: backend.hmac_supported(hashes.RIPEMD160),
         skip_message="Does not support RIPEMD160",
     )
