@@ -144,7 +144,7 @@ class Backend(object):
 @utils.register_interface(interfaces.HashContext)
 class _HashContext(object):
     def __init__(self, backend, algorithm, ctx=None):
-        self._algorithm = algorithm
+        self.algorithm = algorithm
         self._backend = backend
 
         if ctx is None:
@@ -162,20 +162,20 @@ class _HashContext(object):
         self._ctx = ctx
 
     def copy(self):
-        mapping = self._backend.hash_mappings[self._algorithm.name]
+        mapping = self._backend.hash_mappings[self.algorithm.name]
         new_ctx = self._backend.ffi.new(mapping["object"])
         new_ctx[0] = self._ctx[0]  # supposed to be legit per C90?
 
-        return _HashContext(self._backend, self._algorithm, ctx=new_ctx)
+        return _HashContext(self._backend, self.algorithm, ctx=new_ctx)
 
     def update(self, data):
-        mapping = self._backend.hash_mappings[self._algorithm.name]
+        mapping = self._backend.hash_mappings[self.algorithm.name]
         mapping["update"](self._ctx, data, len(data))
 
     def finalize(self):
-        mapping = self._backend.hash_mappings[self._algorithm.name]
+        mapping = self._backend.hash_mappings[self.algorithm.name]
         buf = self._backend.ffi.new("unsigned char[]",
-                                    self._algorithm.digest_size)
+                                    self.algorithm.digest_size)
         mapping["final"](buf, self._ctx)
         return self._backend.ffi.buffer(buf)[:]
 
