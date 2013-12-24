@@ -1,0 +1,48 @@
+API Stability
+=============
+
+From its first release, ``cryptography`` will have a strong API stability
+policy.
+
+What does this policy cover?
+----------------------------
+
+This policy includes any API or behavior which is documented in this
+documentation.
+
+What does "stable" mean?
+------------------------
+
+* Public APIs will not be removed or renamed without providing a compatibility
+  alias.
+* The behavior of existing APIs will not change.
+
+What doesn't this policy cover?
+-------------------------------
+
+* We may add new features, things like the result of ``dir(obj))`` or the
+  contents of ``obj.__dict__`` may change.
+* Objects are not guarnteed to be pickleable, and pickled objects from one
+  version of ``cryptography`` may not be loadable in future versions.
+
+Security
+~~~~~~~~
+
+In the event a security vulnerability, or hardening necessitates it, we will
+break backwards compatibility in order to address an issue.
+
+Deprecation
+-----------
+
+From time to time we will want to change the behavior of an API or remove it
+entirely. In that case, here's how the process will work:
+
+* In ``cryptography X.Y`` the feature exists.
+* In ``cryptography X.Y+1`` using that feature will emit a
+  ``PendingDeprecationWarning``.
+* In ``cryptography X.Y+2`` using that feature will emit a
+  ``DeprecationWarning``.
+* In ``cryptography X.Y+3`` the feature will be removed or changed.
+
+In short, code which runs without warnings will always continue to work for a
+period of two releases.
