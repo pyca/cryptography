@@ -11,9 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import platform
+
+import pytest
+
 from cryptography.hazmat.backends.commoncrypto.backend import backend, Backend
 
 
+@pytest.mark.skipif(not platform.system() == "Darwin",
+                    reason="CommonCrypto is only available on OS X")
 class TestCommonCrypto(object):
     def test_backend_exists(self):
         assert backend

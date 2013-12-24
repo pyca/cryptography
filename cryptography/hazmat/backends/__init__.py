@@ -11,13 +11,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.hazmat.backends import commoncrypto, openssl
+import platform
+
+from cryptography.hazmat.backends import openssl
 
 
 _ALL_BACKENDS = [
     openssl.backend,
-    commoncrypto.backend
 ]
+
+if platform.system() == "Darwin":
+    from cryptography.hazmat.backends import commoncrypto
+    _ALL_BACKENDS.append(commoncrypto.backend)
 
 
 def default_backend():
