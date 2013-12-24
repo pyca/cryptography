@@ -1,7 +1,7 @@
 .. hazmat::
 
-OpenSSL
-=======
+OpenSSL Backend
+===============
 
 These are `CFFI`_ bindings to the `OpenSSL`_ C library.
 
