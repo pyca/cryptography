@@ -24,6 +24,8 @@ What doesn't this policy cover?
   contents of ``obj.__dict__`` may change.
 * Objects are not guarnteed to be pickleable, and pickled objects from one
   version of ``cryptography`` may not be loadable in future versions.
+* Development versions of ``cryptography``. Before a feature is in a release,
+  it is not covered by this policy and may change.
 
 Security
 ~~~~~~~~
