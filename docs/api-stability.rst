@@ -30,8 +30,9 @@ What doesn't this policy cover?
 Security
 ~~~~~~~~
 
-In the event a security vulnerability, or hardening necessitates it, we will
-break backwards compatibility in order to address an issue.
+One exception to our API stability policy is for security. We will violate this
+policy as necessary in order to resolve a security issue or harden
+``cryptography`` against a possible attack.
 
 Deprecation
 -----------
