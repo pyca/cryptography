@@ -47,6 +47,10 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.CBC("\x00" * 16)
+        ),
+        skip_message="Does not support AES CBC",
     )
 
     test_ECB = generate_encrypt_test(
@@ -71,6 +75,10 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.ECB()
+        ),
+        skip_message="Does not support AES ECB",
     )
 
     test_OFB = generate_encrypt_test(
@@ -95,6 +103,10 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.OFB("\x00" * 16)
+        ),
+        skip_message="Does not support AES OFB",
     )
 
     test_CFB = generate_encrypt_test(
@@ -119,6 +131,10 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.CFB("\x00" * 16)
+        ),
+        skip_message="Does not support AES CFB",
     )
 
     test_CTR = generate_encrypt_test(
