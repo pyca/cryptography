@@ -19,24 +19,16 @@ TYPES = """
 typedef uint32_t CC_LONG;
 typedef uint64_t CC_LONG64;
 typedef struct CC_MD5state_st {
-    CC_LONG A,B,C,D;
-    CC_LONG Nl,Nh;
     ...;
 } CC_MD5_CTX;
 typedef struct CC_SHA1state_st {
-    CC_LONG h0,h1,h2,h3,h4;
-    CC_LONG Nl,Nh;
     ...;
 } CC_SHA1_CTX;
 typedef struct CC_SHA256state_st {
-    CC_LONG count[2];
-    CC_LONG hash[8];
-    CC_LONG wbuf[16];
+    ...;
 } CC_SHA256_CTX;
 typedef struct CC_SHA512state_st {
-    CC_LONG64 count[2];
-    CC_LONG64 hash[8];
-    CC_LONG64 wbuf[16];
+    ...;
 } CC_SHA512_CTX;
 """
 
