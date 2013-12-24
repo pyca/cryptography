@@ -20,14 +20,12 @@ import cffi
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend
+    HashBackend,
 )
 from cryptography.hazmat.primitives import interfaces
 
 
-@utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
-@utils.register_interface(HMACBackend)
 class Backend(object):
     """
     CommonCrypto API wrapper.
