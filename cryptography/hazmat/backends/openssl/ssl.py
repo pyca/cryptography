@@ -207,7 +207,7 @@ long SSL_get_options(SSL *);
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
-int SSL_total_renegotiations(const SSL *);
+int SSL_total_renegotiations(SSL *);
 
 long SSL_CTX_set_options(SSL_CTX *, long);
 long SSL_CTX_get_options(SSL_CTX *);
@@ -255,18 +255,18 @@ void SSL_CTX_set_tlsext_servername_callback(
 
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_SSL2
-static const int Cryptography_HAS_SSL2 = 0;
+static const long Cryptography_HAS_SSL2 = 0;
 SSL_METHOD* (*SSLv2_method)() = NULL;
 SSL_METHOD* (*SSLv2_client_method)() = NULL;
 SSL_METHOD* (*SSLv2_server_method)() = NULL;
 #else
-static const int Cryptography_HAS_SSL2 = 1;
+static const long Cryptography_HAS_SSL2 = 1;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
-static const int Cryptography_HAS_TLSEXT_HOSTNAME = 1;
+static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
 #else
-static const int Cryptography_HAS_TLSEXT_HOSTNAME = 0;
+static const long Cryptography_HAS_TLSEXT_HOSTNAME = 0;
 void (*SSL_set_tlsext_host_name)(SSL *, char *) = NULL;
 const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
 void (*SSL_CTX_set_tlsext_servername_callback)(
@@ -275,17 +275,17 @@ void (*SSL_CTX_set_tlsext_servername_callback)(
 #endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
-static const int Cryptography_HAS_RELEASE_BUFFERS = 1;
+static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
 #else
-static const int Cryptography_HAS_RELEASE_BUFFERS = 0;
-const int SSL_MODE_RELEASE_BUFFERS = 0;
+static const long Cryptography_HAS_RELEASE_BUFFERS = 0;
+const long SSL_MODE_RELEASE_BUFFERS = 0;
 #endif
 
 #ifdef SSL_OP_NO_COMPRESSION
-static const int Cryptography_HAS_OP_NO_COMPRESSION = 1;
+static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 #else
-static const int Cryptography_HAS_OP_NO_COMPRESSION = 0;
-const int SSL_OP_NO_COMPRESSION = 0;
+static const long Cryptography_HAS_OP_NO_COMPRESSION = 0;
+const long SSL_OP_NO_COMPRESSION = 0;
 #endif
 """
 

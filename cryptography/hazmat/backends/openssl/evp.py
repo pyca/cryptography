@@ -103,12 +103,12 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
 CUSTOMIZATIONS = """
 #ifdef EVP_CTRL_GCM_SET_TAG
-const int Cryptography_HAS_GCM = 1;
+const long Cryptography_HAS_GCM = 1;
 #else
-const int Cryptography_HAS_GCM = 0;
-const int EVP_CTRL_GCM_GET_TAG = -1;
-const int EVP_CTRL_GCM_SET_TAG = -1;
-const int EVP_CTRL_GCM_SET_IVLEN = -1;
+const long Cryptography_HAS_GCM = 0;
+const long EVP_CTRL_GCM_GET_TAG = -1;
+const long EVP_CTRL_GCM_SET_TAG = -1;
+const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
 """
 
