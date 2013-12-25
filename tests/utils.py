@@ -24,6 +24,13 @@ def check_for_iface(name, iface, item):
             ))
 
 
+def supported_skipif(item):
+    supported = item.keywords.get("supported")
+    if supported and "backend" in item.funcargs:
+        if not supported.kwargs["only_if"](item.funcargs["backend"]):
+            pytest.skip(supported.kwargs["skip_message"])
+
+
 def load_vectors_from_file(filename, loader):
     base = os.path.join(
         os.path.dirname(__file__), "hazmat", "primitives", "vectors",
