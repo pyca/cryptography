@@ -55,12 +55,12 @@ class Hash(object):
         self._ctx = None
         return digest
 
-    def verify(self, sig):
-        if isinstance(sig, six.text_type):
+    def verify(self, digest):
+        if isinstance(digest, six.text_type):
             raise TypeError("Unicode-objects must be encoded before verifying")
-        digest = self.finalize()
-        if not constant_time.bytes_eq(digest, sig):
-            raise InvalidSignature("Signature did not match digest.")
+        hash_digest = self.finalize()
+        if not constant_time.bytes_eq(digest, hash_digest):
+            raise InvalidSignature("Digest did not match hash digest.")
 
 
 @utils.register_interface(interfaces.HashAlgorithm)

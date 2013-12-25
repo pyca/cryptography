@@ -58,9 +58,9 @@ class HMAC(object):
         self._ctx = None
         return digest
 
-    def verify(self, sig):
-        if isinstance(sig, six.text_type):
+    def verify(self, signature):
+        if isinstance(signature, six.text_type):
             raise TypeError("Unicode-objects must be encoded before verifying")
         digest = self.finalize()
-        if not constant_time.bytes_eq(digest, sig):
+        if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")
