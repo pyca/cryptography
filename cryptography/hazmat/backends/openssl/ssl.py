@@ -145,7 +145,7 @@ void SSL_set_verify_depth(SSL *, int);
 int SSL_get_verify_depth(const SSL *);
 int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
 void SSL_set_info_callback(SSL *ssl, void (*)(const SSL *, int, int));
-void (*SSL_get_info_callback(const SSL *))(const SSL *,int, int);
+void (*SSL_get_info_callback(const SSL *))(const SSL *, int, int);
 SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
 int SSL_set_fd(SSL *, int);
