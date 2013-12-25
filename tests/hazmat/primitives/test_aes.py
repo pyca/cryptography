@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test, generate_aead_test
@@ -24,6 +26,7 @@ from ...utils import (
 )
 
 
+@pytest.mark.cipher
 class TestAES(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
@@ -45,8 +48,12 @@ class TestAES(object):
             "CBCMMT192.rsp",
             "CBCMMT256.rsp",
         ],
-        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.CBC("\x00" * 16)
+        ),
+        skip_message="Does not support AES CBC",
     )
 
     test_ECB = generate_encrypt_test(
@@ -69,8 +76,12 @@ class TestAES(object):
             "ECBMMT192.rsp",
             "ECBMMT256.rsp",
         ],
-        lambda key: algorithms.AES(binascii.unhexlify(key)),
-        lambda key: modes.ECB(),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda **kwargs: modes.ECB(),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.ECB()
+        ),
+        skip_message="Does not support AES ECB",
     )
 
     test_OFB = generate_encrypt_test(
@@ -93,8 +104,12 @@ class TestAES(object):
             "OFBMMT192.rsp",
             "OFBMMT256.rsp",
         ],
-        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.OFB("\x00" * 16)
+        ),
+        skip_message="Does not support AES OFB",
     )
 
     test_CFB = generate_encrypt_test(
@@ -117,16 +132,20 @@ class TestAES(object):
             "CFB128MMT192.rsp",
             "CFB128MMT256.rsp",
         ],
-        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES("\x00" * 16), modes.CFB("\x00" * 16)
+        ),
+        skip_message="Does not support AES CFB",
     )
 
     test_CTR = generate_encrypt_test(
         load_openssl_vectors,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
-        lambda key, iv: algorithms.AES(binascii.unhexlify(key)),
-        lambda key, iv: modes.CTR(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
         ),

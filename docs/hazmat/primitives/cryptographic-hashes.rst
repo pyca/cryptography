@@ -28,6 +28,9 @@ Message Digests
         >>> digest.finalize()
         'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
+    If the backend doesn't support the requested ``algorithm`` an
+    :class:`~cryptography.exceptions.UnsupportedAlgorithm` will be raised.
+
     Keep in mind that attacks against cryptographic hashes only get stronger
     with time, and that often algorithms that were once thought to be strong,
     become broken. Because of this it's important to include a plan for

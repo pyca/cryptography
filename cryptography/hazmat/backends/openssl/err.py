@@ -74,3 +74,5 @@ int ERR_FATAL_ERROR(unsigned long);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

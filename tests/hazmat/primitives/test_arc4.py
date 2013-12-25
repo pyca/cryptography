@@ -16,12 +16,15 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms
 
 from .utils import generate_stream_encryption_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.cipher
 class TestARC4(object):
     test_rfc = generate_stream_encryption_test(
         load_nist_vectors,
@@ -35,7 +38,7 @@ class TestARC4(object):
             "rfc-6229-192.txt",
             "rfc-6229-256.txt",
         ],
-        lambda key: algorithms.ARC4(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.ARC4(binascii.unhexlify(key)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.ARC4("\x00" * 16), None
         ),

@@ -171,3 +171,5 @@ long BIO_set_buffer_read_data(BIO *, void *, long);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

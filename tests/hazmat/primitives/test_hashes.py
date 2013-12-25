@@ -19,12 +19,21 @@ import pytest
 
 import six
 
-from cryptography.exceptions import AlreadyFinalized, InvalidSignature
-from cryptography.hazmat.primitives import hashes
+from cryptography import utils
+from cryptography.exceptions import (
+    AlreadyFinalized, UnsupportedAlgorithm, InvalidSignature
+)
+from cryptography.hazmat.primitives import hashes, interfaces
 
 from .utils import generate_base_hash_test
 
 
+@utils.register_interface(interfaces.HashAlgorithm)
+class UnsupportedDummyHash(object):
+    name = "unsupported-dummy-hash"
+
+
+@pytest.mark.hash
 class TestHashContext(object):
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
@@ -80,7 +89,12 @@ class TestHashContext(object):
         with pytest.raises(TypeError):
             h.verify(six.u(''))
 
+    def test_unsupported_hash(self, backend):
+        with pytest.raises(UnsupportedAlgorithm):
+            hashes.Hash(UnsupportedDummyHash(), backend)
 
+
+@pytest.mark.hash
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(
         hashes.SHA1(),
@@ -91,6 +105,7 @@ class TestSHA1(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA224(object):
     test_SHA224 = generate_base_hash_test(
         hashes.SHA224(),
@@ -101,6 +116,7 @@ class TestSHA224(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA256(object):
     test_SHA256 = generate_base_hash_test(
         hashes.SHA256(),
@@ -111,6 +127,7 @@ class TestSHA256(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA384(object):
     test_SHA384 = generate_base_hash_test(
         hashes.SHA384(),
@@ -121,6 +138,7 @@ class TestSHA384(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA512(object):
     test_SHA512 = generate_base_hash_test(
         hashes.SHA512(),
@@ -131,6 +149,7 @@ class TestSHA512(object):
     )
 
 
+@pytest.mark.hash
 class TestRIPEMD160(object):
     test_RIPEMD160 = generate_base_hash_test(
         hashes.RIPEMD160(),
@@ -141,6 +160,7 @@ class TestRIPEMD160(object):
     )
 
 
+@pytest.mark.hash
 class TestWhirlpool(object):
     test_Whirlpool = generate_base_hash_test(
         hashes.Whirlpool(),
@@ -151,6 +171,7 @@ class TestWhirlpool(object):
     )
 
 
+@pytest.mark.hash
 class TestMD5(object):
     test_MD5 = generate_base_hash_test(
         hashes.MD5(),

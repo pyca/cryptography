@@ -19,16 +19,25 @@ import pytest
 
 import six
 
-from cryptography.exceptions import AlreadyFinalized, InvalidSignature
-from cryptography.hazmat.primitives import hashes, hmac
+from cryptography import utils
+from cryptography.exceptions import (
+    AlreadyFinalized, UnsupportedAlgorithm, InvalidSignature
+)
+from cryptography.hazmat.primitives import hashes, hmac, interfaces
 
 from .utils import generate_base_hmac_test
 
 
+@utils.register_interface(interfaces.HashAlgorithm)
+class UnsupportedDummyHash(object):
+        name = "unsupported-dummy-hash"
+
+
+@pytest.mark.hmac
 class TestHMAC(object):
     test_copy = generate_base_hmac_test(
         hashes.MD5(),
-        only_if=lambda backend: backend.hash_supported(hashes.MD5),
+        only_if=lambda backend: backend.hmac_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
 
@@ -86,3 +95,7 @@ class TestHMAC(object):
         h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             h.verify(six.u(''))
+
+    def test_unsupported_hash(self, backend):
+        with pytest.raises(UnsupportedAlgorithm):
+            hmac.HMAC(b"key", UnsupportedDummyHash(), backend)

@@ -22,13 +22,21 @@ class CipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):
         """
-        A string naming this mode.  (e.g. AES, Camellia)
+        A string naming this mode (e.g. "AES", "Camellia").
         """
 
     @abc.abstractproperty
     def key_size(self):
         """
-        The size of the key being used as an integer in bits.  (e.g. 128, 256)
+        The size of the key being used as an integer in bits (e.g. 128, 256).
+        """
+
+
+class BlockCipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def block_size(self):
+        """
+        The size of a block as an integer in bits (e.g. 64, 128).
         """
 
 
@@ -36,7 +44,7 @@ class Mode(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):
         """
-        A string naming this mode.  (e.g. ECB, CBC)
+        A string naming this mode (e.g. "ECB", "CBC").
         """
 
 
@@ -68,13 +76,14 @@ class CipherContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
         """
-        update takes bytes and return bytes
+        Processes the provided bytes through the cipher and returns the results
+        as bytes.
         """
 
     @abc.abstractmethod
     def finalize(self):
         """
-        finalize return bytes
+        Returns the results of processing the final block as bytes.
         """
 
 
@@ -82,7 +91,7 @@ class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def authenticate_additional_data(self, data):
         """
-        authenticate_additional_data takes bytes and returns nothing.
+        Authenticates the provided bytes.
         """
 
 
@@ -90,7 +99,8 @@ class AEADEncryptionContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def tag(self):
         """
-        Returns tag bytes after finalizing encryption.
+        Returns tag bytes. This is only available after encryption is
+        finalized.
         """
 
 
@@ -98,13 +108,13 @@ class PaddingContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
         """
-        update takes bytes and return bytes
+        Pads the provided bytes and returns any available data as bytes.
         """
 
     @abc.abstractmethod
     def finalize(self):
         """
-        finalize return bytes
+        Finalize the padding, returns bytes.
         """
 
 
@@ -112,7 +122,7 @@ class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def name(self):
         """
-        A string naming this algorithm. (e.g. sha256, md5)
+        A string naming this algorithm (e.g. "sha256", "md5").
         """
 
     @abc.abstractproperty
@@ -138,19 +148,19 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
         """
-        hash data as bytes
+        Processes the provided bytes through the hash.
         """
 
     @abc.abstractmethod
     def finalize(self):
         """
-        finalize this copy of the hash and return the digest as bytes.
+        Finalizes the hash context and returns the hash digest as bytes.
         """
 
     @abc.abstractmethod
     def copy(self):
         """
-        return a HashContext that is a copy of the current context.
+        Return a HashContext that is a copy of the current context.
         """
 
     @abc.abstractmethod

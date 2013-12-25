@@ -26,6 +26,7 @@ def _verify_key_size(algorithm, key):
     return key
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class AES(object):
     name = "AES"
@@ -40,6 +41,7 @@ class AES(object):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class Camellia(object):
     name = "camellia"
@@ -54,6 +56,7 @@ class Camellia(object):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class TripleDES(object):
     name = "3DES"
@@ -72,6 +75,7 @@ class TripleDES(object):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class Blowfish(object):
     name = "Blowfish"
@@ -86,6 +90,7 @@ class Blowfish(object):
         return len(self.key) * 8
 
 
+@utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class CAST5(object):
     name = "CAST5"
@@ -103,7 +108,6 @@ class CAST5(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class ARC4(object):
     name = "RC4"
-    block_size = 1
     key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
 
     def __init__(self, key):

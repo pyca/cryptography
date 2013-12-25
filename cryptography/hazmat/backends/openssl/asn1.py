@@ -41,7 +41,7 @@ typedef ... ASN1_VALUE;
 typedef struct {
     ...;
 } ASN1_TIME;
-typedef const ASN1_ITEM ASN1_ITEM_EXP;
+typedef ... ASN1_ITEM_EXP;
 
 typedef ... ASN1_UTCTIME;
 
@@ -102,7 +102,7 @@ ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
 
 MACROS = """
 ASN1_TIME *M_ASN1_TIME_dup(void *);
-ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM *);
+ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
@@ -122,3 +122,5 @@ BIGNUM *ASN1_INTEGER_to_BN(ASN1_INTEGER *, BIGNUM *);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}
