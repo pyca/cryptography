@@ -19,4 +19,4 @@ import pytest
 def skip_check(name, iface, item):
     if name in item.keywords and item.funcargs.get('backend') is not None:
         if not isinstance(item.funcargs['backend'], iface):
-            pytest.skip("Backend does not support {}".format(name))
+            pytest.skip("Backend does not support {0}".format(name))
