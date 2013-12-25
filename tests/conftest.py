@@ -21,7 +21,5 @@ def pytest_runtest_setup(item):
     check_for_iface("hmac", HMACBackend, item)
     check_for_iface("cipher", CipherBackend, item)
     check_for_iface("hash", HashBackend, item)
-    if ('commoncrypto' in item.keywords and
-            item.funcargs.get('backend') is not None and
-            not sys.platform == 'darwin'):
+    if ('commoncrypto' in item.keywords and not sys.platform == 'darwin'):
         pytest.skip('CommonCrypto is only available on OS X')
