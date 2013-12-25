@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
+
 import pytest
 
 from cryptography.hazmat.primitives.ciphers import algorithms

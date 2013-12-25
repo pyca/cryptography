@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+
 import pytest
 
 from cryptography.hazmat.primitives import hashes
