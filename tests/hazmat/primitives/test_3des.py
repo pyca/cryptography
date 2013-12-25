@@ -19,6 +19,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import os
+import pytest
 
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
@@ -26,6 +27,7 @@ from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.cipher
 class TestTripleDES_CBC(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -64,6 +66,7 @@ class TestTripleDES_CBC(object):
     )
 
 
+@pytest.mark.cipher
 class TestTripleDES_OFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -102,6 +105,7 @@ class TestTripleDES_OFB(object):
     )
 
 
+@pytest.mark.cipher
 class TestTripleDES_CFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
