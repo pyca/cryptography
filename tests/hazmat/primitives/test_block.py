@@ -21,7 +21,6 @@ from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, AlreadyFinalized,
 )
-from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
@@ -45,8 +44,6 @@ class DummyCipher(object):
 @pytest.mark.cipher
 class TestCipher(object):
     def test_creates_encryptor(self, backend):
-        if not isinstance(backend, CipherBackend):
-            pytest.skip()
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
@@ -55,8 +52,6 @@ class TestCipher(object):
         assert isinstance(cipher.encryptor(), interfaces.CipherContext)
 
     def test_creates_decryptor(self, backend):
-        if not isinstance(backend, CipherBackend):
-            pytest.skip()
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
@@ -73,8 +68,6 @@ class TestCipher(object):
 @pytest.mark.cipher
 class TestCipherContext(object):
     def test_use_after_finalize(self, backend):
-        if not isinstance(backend, CipherBackend):
-            pytest.skip()
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
@@ -96,8 +89,6 @@ class TestCipherContext(object):
             decryptor.finalize()
 
     def test_unaligned_block_encryption(self, backend):
-        if not isinstance(backend, CipherBackend):
-            pytest.skip()
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.ECB(),
@@ -119,8 +110,6 @@ class TestCipherContext(object):
 
     @pytest.mark.parametrize("mode", [DummyMode(), None])
     def test_nonexistent_cipher(self, backend, mode):
-        if not isinstance(backend, CipherBackend):
-            pytest.skip()
         cipher = Cipher(
             DummyCipher(), mode, backend
         )
@@ -131,8 +120,6 @@ class TestCipherContext(object):
             cipher.decryptor()
 
     def test_incorrectly_padded(self, backend):
-        if not isinstance(backend, CipherBackend):
-            pytest.skip()
         cipher = Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.CBC(b"\x00" * 16),

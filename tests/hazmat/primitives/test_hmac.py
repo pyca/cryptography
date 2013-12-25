@@ -20,7 +20,6 @@ import pytest
 import six
 
 from cryptography import utils
-from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, hmac, interfaces
 
@@ -41,8 +40,6 @@ class TestHMAC(object):
     )
 
     def test_hmac_reject_unicode(self, backend):
-        if not isinstance(backend, HMACBackend):
-            pytest.skip("Backend doesn't support HMAC")
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
             h.update(six.u("\u00FC"))
@@ -58,14 +55,10 @@ class TestHMAC(object):
         assert h.copy()._backend is pretend_backend
 
     def test_hmac_algorithm_instance(self, backend):
-        if not isinstance(backend, HMACBackend):
-            pytest.skip("Backend doesn't support HMAC")
         with pytest.raises(TypeError):
             hmac.HMAC(b"key", hashes.SHA1, backend=backend)
 
     def test_raises_after_finalize(self, backend):
-        if not isinstance(backend, HMACBackend):
-            pytest.skip("Backend doesn't support HMAC")
         h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend)
         h.finalize()
 
@@ -79,7 +72,5 @@ class TestHMAC(object):
             h.finalize()
 
     def test_unsupported_hash(self, backend):
-        if not isinstance(backend, HMACBackend):
-            pytest.skip("Backend doesn't support HMAC")
         with pytest.raises(UnsupportedAlgorithm):
             hmac.HMAC(b"key", UnsupportedDummyHash(), backend)
