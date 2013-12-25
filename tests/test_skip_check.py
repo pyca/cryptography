@@ -28,4 +28,4 @@ def test_skip_check():
     item = pretend.stub(keywords=["fake_name"], funcargs={"backend": True})
     with pytest.raises(pytest.skip.Exception) as exc_info:
         skip_check("fake_name", FakeInterface, item)
-    assert exc_info.value.args[0] == "Backend does not support fake_name"
+    assert exc_info.value.args[0] == "True backend does not support fake_name"
