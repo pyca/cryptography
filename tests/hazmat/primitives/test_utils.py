@@ -1,9 +1,8 @@
 import pytest
 
 from .utils import (
-    base_hash_test, encrypt_test, hash_test, long_string_hash_test,
-    base_hmac_test, hmac_test, stream_encryption_test, aead_test,
-    aead_exception_test, aead_tag_exception_test,
+    encrypt_test, hash_test, long_string_hash_test, hmac_test,
+    stream_encryption_test, aead_test,
 )
 
 
@@ -29,44 +28,11 @@ class TestAEADTest(object):
         assert exc_info.value.args[0] == "message!"
 
 
-class TestAEADExceptionTest(object):
-    def test_skips_if_only_if_returns_false(self):
-        with pytest.raises(pytest.skip.Exception) as exc_info:
-            aead_exception_test(
-                None, None, None,
-                only_if=lambda backend: False,
-                skip_message="message!"
-            )
-        assert exc_info.value.args[0] == "message!"
-
-
-class TestAEADTagExceptionTest(object):
-    def test_skips_if_only_if_returns_false(self):
-        with pytest.raises(pytest.skip.Exception) as exc_info:
-            aead_tag_exception_test(
-                None, None, None,
-                only_if=lambda backend: False,
-                skip_message="message!"
-            )
-        assert exc_info.value.args[0] == "message!"
-
-
 class TestHashTest(object):
     def test_skips_if_only_if_returns_false(self):
         with pytest.raises(pytest.skip.Exception) as exc_info:
             hash_test(
                 None, None, None,
-                only_if=lambda backend: False,
-                skip_message="message!"
-            )
-        assert exc_info.value.args[0] == "message!"
-
-
-class TestBaseHashTest(object):
-    def test_skips_if_only_if_returns_false(self):
-        with pytest.raises(pytest.skip.Exception) as exc_info:
-            base_hash_test(
-                None, None, None, None,
                 only_if=lambda backend: False,
                 skip_message="message!"
             )
@@ -89,17 +55,6 @@ class TestHMACTest(object):
         with pytest.raises(pytest.skip.Exception) as exc_info:
             hmac_test(
                 None, None, None,
-                only_if=lambda backend: False,
-                skip_message="message!"
-            )
-        assert exc_info.value.args[0] == "message!"
-
-
-class TestBaseHMACTest(object):
-    def test_skips_if_only_if_returns_false(self):
-        with pytest.raises(pytest.skip.Exception) as exc_info:
-            base_hmac_test(
-                None, None,
                 only_if=lambda backend: False,
                 skip_message="message!"
             )

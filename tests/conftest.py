@@ -19,3 +19,7 @@ def pytest_runtest_setup(item):
     check_for_iface("hmac", HMACBackend, item)
     check_for_iface("cipher", CipherBackend, item)
     check_for_iface("hash", HashBackend, item)
+    supported = item.keywords.get("supported")
+    if supported and "backend" in item.funcargs:
+        if not supported.kwargs["only_if"](item.funcargs["backend"]):
+            pytest.skip(supported.kwargs["skip_message"])

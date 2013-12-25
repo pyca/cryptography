@@ -19,15 +19,11 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, AlreadyFinalized,
+    UnsupportedAlgorithm, AlreadyFinalized, NotYetFinalized, AlreadyUpdated
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
-)
-
-from .utils import (
-    generate_aead_exception_test, generate_aead_tag_exception_test
 )
 
 
@@ -136,21 +132,62 @@ class TestCipherContext(object):
             decryptor.finalize()
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+    ),
+    skip_message="Does not support AES GCM",
+)
 @pytest.mark.cipher
 class TestAEADCipherContext(object):
-    test_aead_exceptions = generate_aead_exception_test(
-        algorithms.AES,
-        modes.GCM,
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
-    )
-    test_aead_tag_exceptions = generate_aead_tag_exception_test(
-        algorithms.AES,
-        modes.GCM,
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
-    )
+    def test_aead_exception(self, backend):
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.GCM(binascii.unhexlify(b"0" * 24)),
+            backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.update(b"a" * 16)
+        with pytest.raises(NotYetFinalized):
+            encryptor.tag
+        with pytest.raises(AlreadyUpdated):
+            encryptor.authenticate_additional_data(b"b" * 16)
+        encryptor.finalize()
+        with pytest.raises(AlreadyFinalized):
+            encryptor.authenticate_additional_data(b"b" * 16)
+        with pytest.raises(AlreadyFinalized):
+            encryptor.update(b"b" * 16)
+        with pytest.raises(AlreadyFinalized):
+            encryptor.finalize()
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.GCM(binascii.unhexlify(b"0" * 24), b"0" * 16),
+            backend
+        )
+        decryptor = cipher.decryptor()
+        decryptor.update(b"a" * 16)
+        with pytest.raises(AttributeError):
+            decryptor.tag
+
+    def test_aead_tag_exception(self, backend):
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.GCM(binascii.unhexlify(b"0" * 24)),
+            backend
+        )
+        with pytest.raises(ValueError):
+            cipher.decryptor()
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.GCM(binascii.unhexlify(b"0" * 24), b"000"),
+            backend
+        )
+        with pytest.raises(ValueError):
+            cipher.decryptor()
+        cipher = Cipher(
+            algorithms.AES(binascii.unhexlify(b"0" * 32)),
+            modes.GCM(binascii.unhexlify(b"0" * 24), b"0" * 16),
+            backend
+        )
+        with pytest.raises(ValueError):
+            cipher.encryptor()
