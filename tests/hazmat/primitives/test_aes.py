@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test, generate_aead_test
@@ -24,6 +26,7 @@ from ...utils import (
 )
 
 
+@pytest.mark.cipher
 class TestAES(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
