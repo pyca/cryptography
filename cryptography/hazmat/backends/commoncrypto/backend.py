@@ -128,14 +128,8 @@ class Backend(object):
     def hash_supported(self, algorithm):
         return algorithm.name in self.hash_mappings._fields
 
-    def hmac_supported(self, algorithm):
-        return False
-
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
-
-    def cipher_supported(self, cipher, mode):
-        return False
 
 
 @utils.register_interface(interfaces.HashContext)
