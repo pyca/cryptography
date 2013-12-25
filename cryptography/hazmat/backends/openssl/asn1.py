@@ -102,7 +102,7 @@ ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
 
 MACROS = """
 ASN1_TIME *M_ASN1_TIME_dup(void *);
-ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
+ASN1_ITEM_EXP *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
