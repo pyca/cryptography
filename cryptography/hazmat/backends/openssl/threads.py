@@ -32,7 +32,8 @@ typedef enum CryptographyLockStatus {
     CRYPTOGRAPHY_LOCK_INTR = 2
 } CryptographyLockStatus;
 
-#ifdef _WIN32
+#if defined(_WIN32)
+
 #include <windows.h>
 
 typedef struct CryptographyOpaque_ThreadLock NRMUTEX, *PNRMUTEX;
@@ -101,6 +102,80 @@ void CryptographyThreadReleaseLock(struct CryptographyOpaque_ThreadLock *lock)
 {
     if (!LeaveNonRecursiveMutex(lock))
         /* XXX complain? */;
+}
+
+#elif defined(__APPLE__)
+
+#include <unistd.h>
+#include <semaphore.h>
+
+#define CHECK_STATUS(name)  if (status != 0) { perror(name); error = 1; }
+
+#if !defined(pthread_mutexattr_default)
+#  define pthread_mutexattr_default ((pthread_mutexattr_t *)NULL)
+#endif
+
+struct CryptographyOpaque_ThreadLock {
+    char             locked; /* 0=unlocked, 1=locked */
+    char             initialized;
+    pthread_mutex_t  mut;
+};
+
+typedef struct CryptographyOpaque_ThreadLock CryptographyOpaque_ThreadLock;
+
+int CryptographyThreadLockInit
+    (struct CryptographyOpaque_ThreadLock *lock)
+{
+    int status, error = 0;
+
+    lock->initialized = 0;
+    lock->locked = 0;
+
+    status = pthread_mutex_init(&lock->mut,
+    pthread_mutexattr_default);
+    CHECK_STATUS("pthread_mutex_init");
+
+    if (error)
+        return 0;
+    lock->initialized = 1;
+    return 1;
+}
+
+void CryptographyOpaqueDealloc_ThreadLock
+    (struct CryptographyOpaque_ThreadLock *lock)
+{
+    int status, error = 0;
+    if (lock->initialized) {
+        status = pthread_mutex_destroy(&lock->mut);
+        CHECK_STATUS("pthread_mutex_destroy");
+
+        /* 'error' is ignored;
+           CHECK_STATUS already printed an error message */
+    }
+}
+
+CryptographyLockStatus CryptographyThreadAcquireLock
+    (struct CryptographyOpaque_ThreadLock *lock, int intr_flag)
+{
+    CryptographyLockStatus success;
+    int status, error = 0;
+
+    status = pthread_mutex_lock(&lock->mut);
+    CHECK_STATUS("pthread_mutex_lock[1]");
+
+    if (error) success = CRYPTOGRAPHY_LOCK_FAILURE;
+    else success = CRYPTOGRAPHY_LOCK_ACQUIRED;
+
+    return success;
+}
+
+void CryptographyThreadReleaseLock
+    (struct CryptographyOpaque_ThreadLock *lock)
+{
+    int status, error = 0;
+
+    status = pthread_mutex_unlock( &lock->mut );
+    CHECK_STATUS("pthread_mutex_unlock[3]");
 }
 
 #else
