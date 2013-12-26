@@ -32,7 +32,7 @@ typedef enum CryptographyLockStatus {
     CRYPTOGRAPHY_LOCK_INTR = 2
 } CryptographyLockStatus;
 
-#if defined(WINDOWS)
+#ifdef _WIN32
 #include <windows.h>
 
 typedef struct CryptographyOpaque_ThreadLock NRMUTEX, *PNRMUTEX;
@@ -103,7 +103,7 @@ void CryptographyThreadReleaseLock(struct CryptographyOpaque_ThreadLock *lock)
         /* XXX complain? */;
 }
 
-#elif defined(_POSIX_C_SOURCE)
+#else
 
 #include <unistd.h>
 #include <semaphore.h>
@@ -193,10 +193,6 @@ void CryptographyThreadReleaseLock
     status = sem_post(thelock);
     CHECK_STATUS("sem_post");
 }
-
-#else
-
-#error Unsupported platform.
 
 #endif
 
