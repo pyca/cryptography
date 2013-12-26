@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import threading
+
 import pytest
 
 from cryptography import utils
@@ -113,3 +115,28 @@ class TestOpenSSL(object):
             b"error:0607F08A:digital envelope routines:EVP_EncryptFinal_ex:"
             b"data not multiple of block length"
         )
+
+    def test_threads(self):
+        b = Backend()
+
+        def randloop():
+            s = b.ffi.new("char[]", 16)
+            sb = b.ffi.buffer(s)
+            sb[:] = b"\0" * 16
+
+            for i in range(300000):
+                b.lib.RAND_seed(s, 16)
+
+        threads = []
+        for x in range(3):
+            t = threading.Thread(target=randloop)
+            t.daemon = True
+            t.start()
+
+            threads.append(t)
+
+        while threads:
+            for t in threads:
+                t.join(0.1)
+                if not t.isAlive():
+                    threads.remove(t)
