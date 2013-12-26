@@ -5,9 +5,7 @@ import pytest
 
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.exceptions import (
-    AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
-)
+from cryptography.exceptions import InvalidTag
 
 from ...utils import load_vectors_from_file
 
@@ -188,25 +186,7 @@ def hash_test(backend, algorithm, params, only_if, skip_message):
     assert m.finalize() == binascii.unhexlify(expected_md)
 
 
-def generate_base_hash_test(algorithm, digest_size, block_size,
-                            only_if=None, skip_message=None):
-    def test_base_hash(self, backend):
-        base_hash_test(
-            backend,
-            algorithm,
-            digest_size,
-            block_size,
-            only_if,
-            skip_message,
-        )
-    return test_base_hash
-
-
-def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
-                   skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
-
+def base_hash_test(backend, algorithm, digest_size, block_size):
     m = hashes.Hash(algorithm, backend=backend)
     assert m.algorithm.digest_size == digest_size
     assert m.algorithm.block_size == block_size
@@ -218,7 +198,9 @@ def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
     copy = m.copy()
     copy.update(b"123")
     m.update(b"123")
-    assert copy.finalize() == m.finalize()
+    final_copy = binascii.hexlify(copy.finalize())
+    final_m = binascii.hexlify(m.finalize())
+    assert final_copy == final_m
 
 
 def generate_long_string_hash_test(hash_factory, md, only_if=None,
@@ -267,110 +249,3 @@ def hmac_test(backend, algorithm, params, only_if, skip_message):
     h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
     h.update(binascii.unhexlify(msg))
     assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
-
-
-def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
-    def test_base_hmac(self, backend):
-        base_hmac_test(
-            backend,
-            hash_cls,
-            only_if,
-            skip_message,
-        )
-    return test_base_hmac
-
-
-def base_hmac_test(backend, algorithm, only_if, skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
-    key = b"ab"
-    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
-    h_copy = h.copy()
-    assert h != h_copy
-    assert h._ctx != h_copy._ctx
-
-
-def generate_aead_exception_test(cipher_factory, mode_factory,
-                                 only_if, skip_message):
-    def test_aead_exception(self, backend):
-        aead_exception_test(
-            backend,
-            cipher_factory,
-            mode_factory,
-            only_if,
-            skip_message
-        )
-    return test_aead_exception
-
-
-def aead_exception_test(backend, cipher_factory, mode_factory,
-                        only_if, skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24)),
-        backend
-    )
-    encryptor = cipher.encryptor()
-    encryptor.update(b"a" * 16)
-    with pytest.raises(NotYetFinalized):
-        encryptor.tag
-    with pytest.raises(AlreadyUpdated):
-        encryptor.authenticate_additional_data(b"b" * 16)
-    encryptor.finalize()
-    with pytest.raises(AlreadyFinalized):
-        encryptor.authenticate_additional_data(b"b" * 16)
-    with pytest.raises(AlreadyFinalized):
-        encryptor.update(b"b" * 16)
-    with pytest.raises(AlreadyFinalized):
-        encryptor.finalize()
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
-        backend
-    )
-    decryptor = cipher.decryptor()
-    decryptor.update(b"a" * 16)
-    with pytest.raises(AttributeError):
-        decryptor.tag
-
-
-def generate_aead_tag_exception_test(cipher_factory, mode_factory,
-                                     only_if, skip_message):
-    def test_aead_tag_exception(self, backend):
-        aead_tag_exception_test(
-            backend,
-            cipher_factory,
-            mode_factory,
-            only_if,
-            skip_message
-        )
-    return test_aead_tag_exception
-
-
-def aead_tag_exception_test(backend, cipher_factory, mode_factory,
-                            only_if, skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24)),
-        backend
-    )
-    with pytest.raises(ValueError):
-        cipher.decryptor()
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24), b"000"),
-        backend
-    )
-    with pytest.raises(ValueError):
-        cipher.decryptor()
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
-        backend
-    )
-    with pytest.raises(ValueError):
-        cipher.encryptor()

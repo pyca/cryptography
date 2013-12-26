@@ -23,7 +23,7 @@ from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, interfaces
 
-from .utils import generate_base_hash_test
+from .utils import base_hash_test
 
 
 @utils.register_interface(interfaces.HashAlgorithm)
@@ -70,88 +70,73 @@ class TestHashContext(object):
 
 
 @pytest.mark.hash
-class TestSHA1(object):
-    test_SHA1 = generate_base_hash_test(
-        hashes.SHA1(),
-        digest_size=20,
-        block_size=64,
+class TestHashes(object):
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.SHA1),
         skip_message="Does not support SHA1",
     )
+    def test_SHA1(self, backend):
+        base_hash_test(backend, hashes.SHA1(), digest_size=20, block_size=64)
 
-
-@pytest.mark.hash
-class TestSHA224(object):
-    test_SHA224 = generate_base_hash_test(
-        hashes.SHA224(),
-        digest_size=28,
-        block_size=64,
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.SHA224),
         skip_message="Does not support SHA224",
     )
+    def test_SHA224(self, backend):
+        base_hash_test(backend, hashes.SHA224(), digest_size=28, block_size=64)
 
-
-@pytest.mark.hash
-class TestSHA256(object):
-    test_SHA256 = generate_base_hash_test(
-        hashes.SHA256(),
-        digest_size=32,
-        block_size=64,
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.SHA256),
         skip_message="Does not support SHA256",
     )
+    def test_SHA256(self, backend):
+        base_hash_test(backend, hashes.SHA256(), digest_size=32, block_size=64)
 
-
-@pytest.mark.hash
-class TestSHA384(object):
-    test_SHA384 = generate_base_hash_test(
-        hashes.SHA384(),
-        digest_size=48,
-        block_size=128,
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.SHA384),
         skip_message="Does not support SHA384",
     )
+    def test_SHA384(self, backend):
+        base_hash_test(backend, hashes.SHA384(),
+                       digest_size=48, block_size=128)
 
-
-@pytest.mark.hash
-class TestSHA512(object):
-    test_SHA512 = generate_base_hash_test(
-        hashes.SHA512(),
-        digest_size=64,
-        block_size=128,
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.SHA512),
         skip_message="Does not support SHA512",
     )
+    def test_SHA512(self, backend):
+        base_hash_test(backend, hashes.SHA512(),
+                       digest_size=64, block_size=128)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
+    skip_message="Does not support RIPEMD160",
+)
 @pytest.mark.hash
 class TestRIPEMD160(object):
-    test_RIPEMD160 = generate_base_hash_test(
-        hashes.RIPEMD160(),
-        digest_size=20,
-        block_size=64,
-        only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
-        skip_message="Does not support RIPEMD160",
-    )
+    def test_RIPEMD160(self, backend):
+        base_hash_test(backend, hashes.RIPEMD160(),
+                       digest_size=20, block_size=64)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
+    skip_message="Does not support Whirlpool",
+)
 @pytest.mark.hash
 class TestWhirlpool(object):
-    test_Whirlpool = generate_base_hash_test(
-        hashes.Whirlpool(),
-        digest_size=64,
-        block_size=64,
-        only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
-        skip_message="Does not support Whirlpool",
-    )
+    def test_Whirlpool(self, backend):
+        base_hash_test(backend, hashes.Whirlpool(),
+                       digest_size=64, block_size=64)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.MD5),
+    skip_message="Does not support MD5",
+)
 @pytest.mark.hash
 class TestMD5(object):
-    test_MD5 = generate_base_hash_test(
-        hashes.MD5(),
-        digest_size=16,
-        block_size=64,
-        only_if=lambda backend: backend.hash_supported(hashes.MD5),
-        skip_message="Does not support MD5",
-    )
+    def test_MD5(self, backend):
+        base_hash_test(backend, hashes.MD5(),
+                       digest_size=16, block_size=64)
