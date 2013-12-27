@@ -24,7 +24,7 @@ typedef ... BIGNUM;
  * <fijal> I think you want to declare your value too large (e.g. long)
  * <fijal> that way you'll never pass garbage
  */
-typedef unsigned long long BN_ULONG;
+typedef uintptr_t BN_ULONG;
 """
 
 FUNCTIONS = """
