@@ -132,8 +132,8 @@ static const int TLSEXT_NAMETYPE_host_name;
 """
 
 FUNCTIONS = """
-void SSL_load_error_strings();
-int SSL_library_init();
+void SSL_load_error_strings(void);
+int SSL_library_init(void);
 
 /*  SSL */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
@@ -224,20 +224,20 @@ long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
  * available they will be wrapped, but if they are not they won't cause
  * problems (like link errors).
  */
-const SSL_METHOD *SSLv2_method();
-const SSL_METHOD *SSLv2_server_method();
-const SSL_METHOD *SSLv2_client_method();
+const SSL_METHOD *SSLv2_method(void);
+const SSL_METHOD *SSLv2_server_method(void);
+const SSL_METHOD *SSLv2_client_method(void);
 
 /*  methods */
-const SSL_METHOD *SSLv3_method();
-const SSL_METHOD *SSLv3_server_method();
-const SSL_METHOD *SSLv3_client_method();
-const SSL_METHOD *TLSv1_method();
-const SSL_METHOD *TLSv1_server_method();
-const SSL_METHOD *TLSv1_client_method();
-const SSL_METHOD *SSLv23_method();
-const SSL_METHOD *SSLv23_server_method();
-const SSL_METHOD *SSLv23_client_method();
+const SSL_METHOD *SSLv3_method(void);
+const SSL_METHOD *SSLv3_server_method(void);
+const SSL_METHOD *SSLv3_client_method(void);
+const SSL_METHOD *TLSv1_method(void);
+const SSL_METHOD *TLSv1_server_method(void);
+const SSL_METHOD *TLSv1_client_method(void);
+const SSL_METHOD *SSLv23_method(void);
+const SSL_METHOD *SSLv23_server_method(void);
+const SSL_METHOD *SSLv23_client_method(void);
 
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(const SSL_METHOD *);
