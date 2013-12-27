@@ -16,19 +16,22 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.cipher
 class TestBlowfish(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ecb.txt"],
-        lambda key: algorithms.Blowfish(binascii.unhexlify(key)),
-        lambda key: modes.ECB(),
+        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda **kwargs: modes.ECB(),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.ECB()
         ),
@@ -39,8 +42,8 @@ class TestBlowfish(object):
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cbc.txt"],
-        lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.CBC("\x00" * 8)
         ),
@@ -51,8 +54,8 @@ class TestBlowfish(object):
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-ofb.txt"],
-        lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
-        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.OFB("\x00" * 8)
         ),
@@ -63,8 +66,8 @@ class TestBlowfish(object):
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
         ["bf-cfb.txt"],
-        lambda key, iv: algorithms.Blowfish(binascii.unhexlify(key)),
-        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.Blowfish(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Blowfish("\x00" * 56), modes.CFB("\x00" * 8)
         ),

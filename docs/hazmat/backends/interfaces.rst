@@ -126,6 +126,17 @@ A specific ``backend`` may provide one or more of these interfaces.
     A backend with methods for using cryptographic hash functions as message
     authentication codes.
 
+    .. method:: hmac_supported(algorithm)
+
+        Check if the specified ``algorithm`` is supported by this backend.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns: ``True`` if the specified ``algorithm`` is supported for HMAC
+            by this backend, otherwise ``False``.
+
     .. method:: create_hmac_ctx(algorithm)
 
         Create a

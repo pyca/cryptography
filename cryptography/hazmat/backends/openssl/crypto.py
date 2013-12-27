@@ -16,6 +16,11 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int SSLEAY_VERSION;
+static const int SSLEAY_CFLAGS;
+static const int SSLEAY_PLATFORM;
+static const int SSLEAY_DIR;
+static const int SSLEAY_BUILT_ON;
 """
 
 FUNCTIONS = """
@@ -24,12 +29,15 @@ int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on();
 void CRYPTO_mem_leaks(struct bio_st *);
 void CRYPTO_cleanup_all_ex_data();
+
+void OPENSSL_free(void *);
 """
 
 MACROS = """
 void CRYPTO_add(int *, int, int);
 void CRYPTO_malloc_init();
 void CRYPTO_malloc_debug_init();
+
 #define CRYPTO_MEM_CHECK_ON ...
 #define CRYPTO_MEM_CHECK_OFF ...
 #define CRYPTO_MEM_CHECK_ENABLE ...
@@ -38,3 +46,5 @@ void CRYPTO_malloc_debug_init();
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

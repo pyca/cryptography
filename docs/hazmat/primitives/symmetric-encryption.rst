@@ -61,7 +61,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
+        and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
         will be raised.
 
     .. method:: decryptor()
@@ -352,6 +352,16 @@ Modes
                                         Do not reuse an ``initialization_vector``
                                         with a given ``key``.
 
+    .. note::
+
+        Cryptography will emit a 128-bit tag when finalizing encryption.
+        You can shorten a tag by truncating it to the desired length, but this
+        is **not recommended** as it lowers the security margins of the
+        authentication (`NIST SP-800-38D`_ recommends 96-bits or greater).
+        If you must shorten the tag the minimum allowed length is 4 bytes
+        (32-bits). Applications **must** verify the tag is the expected length
+        to guarantee the expected security margin.
+
     :param bytes tag: The tag bytes to verify during decryption. When encrypting
                       this must be None.
 
@@ -390,3 +400,4 @@ Insecure Modes
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`recommends 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
+.. _`NIST SP-800-38D`: http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf

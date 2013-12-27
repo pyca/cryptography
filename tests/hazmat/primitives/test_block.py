@@ -31,11 +31,17 @@ from .utils import (
 )
 
 
+@utils.register_interface(interfaces.Mode)
+class DummyMode(object):
+    name = "dummy-mode"
+
+
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
-    pass
+    name = "dummy-cipher"
 
 
+@pytest.mark.cipher
 class TestCipher(object):
     def test_creates_encryptor(self, backend):
         cipher = Cipher(
@@ -59,6 +65,7 @@ class TestCipher(object):
             Cipher(algorithm, mode=None, backend=backend)
 
 
+@pytest.mark.cipher
 class TestCipherContext(object):
     def test_use_after_finalize(self, backend):
         cipher = Cipher(
@@ -101,9 +108,10 @@ class TestCipherContext(object):
         assert pt == b"a" * 80
         decryptor.finalize()
 
-    def test_nonexistent_cipher(self, backend):
+    @pytest.mark.parametrize("mode", [DummyMode(), None])
+    def test_nonexistent_cipher(self, backend, mode):
         cipher = Cipher(
-            DummyCipher(), object(), backend
+            DummyCipher(), mode, backend
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
@@ -128,6 +136,7 @@ class TestCipherContext(object):
             decryptor.finalize()
 
 
+@pytest.mark.cipher
 class TestAEADCipherContext(object):
     test_aead_exceptions = generate_aead_exception_test(
         algorithms.AES,

@@ -35,3 +35,5 @@ int PKCS7_type_is_data(PKCS7 *);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

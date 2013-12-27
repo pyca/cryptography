@@ -20,12 +20,15 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.cipher
 class TestTripleDES_CBC(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -37,8 +40,12 @@ class TestTripleDES_CBC(object):
             "TCBCvarkey.rsp",
             "TCBCvartext.rsp",
         ],
-        lambda keys, iv: algorithms.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CBC("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CBC",
     )
 
     test_MMT = generate_encrypt_test(
@@ -49,13 +56,18 @@ class TestTripleDES_CBC(object):
             "TCBCMMT2.rsp",
             "TCBCMMT3.rsp",
         ],
-        lambda key1, key2, key3, iv: (
-            algorithms.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
+            binascii.unhexlify(key1 + key2 + key3)
         ),
-        lambda key1, key2, key3, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CBC("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CBC",
     )
 
 
+@pytest.mark.cipher
 class TestTripleDES_OFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -67,8 +79,12 @@ class TestTripleDES_OFB(object):
             "TOFBvartext.rsp",
             "TOFBinvperm.rsp",
         ],
-        lambda keys, iv: algorithms.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.OFB(binascii.unhexlify(iv)),
+        lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.OFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES OFB",
     )
 
     test_MMT = generate_encrypt_test(
@@ -79,13 +95,18 @@ class TestTripleDES_OFB(object):
             "TOFBMMT2.rsp",
             "TOFBMMT3.rsp",
         ],
-        lambda key1, key2, key3, iv: (
-            algorithms.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
+            binascii.unhexlify(key1 + key2 + key3)
         ),
-        lambda key1, key2, key3, iv: modes.OFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.OFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES OFB",
     )
 
 
+@pytest.mark.cipher
 class TestTripleDES_CFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -97,8 +118,12 @@ class TestTripleDES_CFB(object):
             "TCFB64varkey.rsp",
             "TCFB64vartext.rsp",
         ],
-        lambda keys, iv: algorithms.TripleDES(binascii.unhexlify(keys)),
-        lambda keys, iv: modes.CFB(binascii.unhexlify(iv)),
+        lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CFB",
     )
 
     test_MMT = generate_encrypt_test(
@@ -109,8 +134,12 @@ class TestTripleDES_CFB(object):
             "TCFB64MMT2.rsp",
             "TCFB64MMT3.rsp",
         ],
-        lambda key1, key2, key3, iv: (
-            algorithms.TripleDES(binascii.unhexlify(key1 + key2 + key3))
+        lambda key1, key2, key3, **kwargs: algorithms.TripleDES(
+            binascii.unhexlify(key1 + key2 + key3)
         ),
-        lambda key1, key2, key3, iv: modes.CFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CFB",
     )

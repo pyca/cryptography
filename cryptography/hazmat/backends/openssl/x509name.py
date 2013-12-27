@@ -49,3 +49,5 @@ void sk_X509_NAME_free(struct stack_st_X509_NAME *);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -24,6 +26,7 @@ from ...utils import (
 )
 
 
+@pytest.mark.cipher
 class TestCamellia(object):
     test_ECB = generate_encrypt_test(
         load_cryptrec_vectors,
@@ -33,8 +36,8 @@ class TestCamellia(object):
             "camellia-192-ecb.txt",
             "camellia-256-ecb.txt"
         ],
-        lambda key: algorithms.Camellia(binascii.unhexlify((key))),
-        lambda key: modes.ECB(),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda **kwargs: modes.ECB(),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.ECB()
         ),
@@ -45,8 +48,8 @@ class TestCamellia(object):
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
-        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
         ),
@@ -57,8 +60,8 @@ class TestCamellia(object):
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
-        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
         ),
@@ -69,8 +72,8 @@ class TestCamellia(object):
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
-        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
         only_if=lambda backend: backend.cipher_supported(
             algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
         ),
