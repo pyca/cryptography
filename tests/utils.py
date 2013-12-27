@@ -24,7 +24,7 @@ def check_for_iface(name, iface, item):
             ))
 
 
-def supported_by_backend_skip(item):
+def check_backend_support(item):
     supported = item.keywords.get("supported")
     if supported and "backend" in item.funcargs:
         if not supported.kwargs["only_if"](item.funcargs["backend"]):
