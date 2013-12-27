@@ -43,8 +43,6 @@ static const int Cryptography_HAS_GCM;
 """
 
 FUNCTIONS = """
-void OpenSSL_add_all_algorithms(void);
-
 const EVP_CIPHER *EVP_get_cipherbyname(const char *);
 int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
                        const unsigned char *, const unsigned char *);
@@ -100,6 +98,7 @@ const EVP_MD *EVP_md5(void);
 """
 
 MACROS = """
+void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
