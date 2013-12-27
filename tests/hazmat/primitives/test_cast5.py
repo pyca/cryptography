@@ -24,6 +24,12 @@ from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.CAST5("\x00" * 16), modes.ECB()
+    ),
+    skip_message="Does not support CAST5 ECB",
+)
 @pytest.mark.cipher
 class TestCAST5(object):
     test_ECB = generate_encrypt_test(
@@ -32,8 +38,4 @@ class TestCAST5(object):
         ["cast5-ecb.txt"],
         lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
         lambda **kwargs: modes.ECB(),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.CAST5("\x00" * 16), modes.ECB()
-        ),
-        skip_message="Does not support CAST5 ECB",
     )

@@ -26,8 +26,14 @@ from ...utils import (
 )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.CBC("\x00" * 16)
+    ),
+    skip_message="Does not support AES CBC",
+)
 @pytest.mark.cipher
-class TestAES(object):
+class TestAES_CBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CBC"),
@@ -50,12 +56,17 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.ECB()
+    ),
+    skip_message="Does not support AES ECB",
+)
+@pytest.mark.cipher
+class TestAES_ECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "ECB"),
@@ -78,12 +89,17 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.ECB()
-        ),
-        skip_message="Does not support AES ECB",
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.OFB("\x00" * 16)
+    ),
+    skip_message="Does not support AES OFB",
+)
+@pytest.mark.cipher
+class TestAES_OFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "OFB"),
@@ -106,12 +122,17 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.OFB("\x00" * 16)
-        ),
-        skip_message="Does not support AES OFB",
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.CFB("\x00" * 16)
+    ),
+    skip_message="Does not support AES CFB",
+)
+@pytest.mark.cipher
+class TestAES_CFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
@@ -134,24 +155,34 @@ class TestAES(object):
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.CFB("\x00" * 16)
-        ),
-        skip_message="Does not support AES CFB",
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
+    ),
+    skip_message="Does not support AES CTR",
+)
+@pytest.mark.cipher
+class TestAES_CTR(object):
     test_CTR = generate_encrypt_test(
         load_openssl_vectors,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
-        ),
-        skip_message="Does not support AES CTR",
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+    ),
+    skip_message="Does not support AES GCM",
+)
+@pytest.mark.cipher
+class TestAES_GCM(object):
     test_GCM = generate_aead_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "GCM"),
@@ -165,8 +196,4 @@ class TestAES(object):
         ],
         lambda key: algorithms.AES(key),
         lambda iv, tag: modes.GCM(iv, tag),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
     )

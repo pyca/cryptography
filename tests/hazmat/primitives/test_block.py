@@ -136,21 +136,19 @@ class TestCipherContext(object):
             decryptor.finalize()
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+    ),
+    skip_message="Does not support AES GCM",
+)
 @pytest.mark.cipher
 class TestAEADCipherContext(object):
     test_aead_exceptions = generate_aead_exception_test(
         algorithms.AES,
         modes.GCM,
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
     )
     test_aead_tag_exceptions = generate_aead_tag_exception_test(
         algorithms.AES,
         modes.GCM,
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
     )

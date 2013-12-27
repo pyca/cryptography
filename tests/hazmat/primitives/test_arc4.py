@@ -24,6 +24,12 @@ from .utils import generate_stream_encryption_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.ARC4("\x00" * 16), None
+    ),
+    skip_message="Does not support ARC4",
+)
 @pytest.mark.cipher
 class TestARC4(object):
     test_rfc = generate_stream_encryption_test(
@@ -39,8 +45,4 @@ class TestARC4(object):
             "rfc-6229-256.txt",
         ],
         lambda key, **kwargs: algorithms.ARC4(binascii.unhexlify(key)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.ARC4("\x00" * 16), None
-        ),
-        skip_message="Does not support ARC4",
     )
