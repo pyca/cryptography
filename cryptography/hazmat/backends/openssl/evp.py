@@ -96,7 +96,7 @@ int EVP_VerifyUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
                     EVP_PKEY *);
 
-const EVP_MD *EVP_md5(void);
+const EVP_MD *EVP_md5();
 """
 
 MACROS = """
