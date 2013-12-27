@@ -19,8 +19,9 @@ import time
 
 import six
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding, hashes, constant_time
+from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -105,8 +106,9 @@ class Fernet(object):
             raise InvalidToken
         h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
         h.update(data[:-32])
-        hmac = h.finalize()
-        if not constant_time.bytes_eq(hmac, data[-32:]):
+        try:
+            h.verify(data[-32:])
+        except InvalidSignature:
             raise InvalidToken
 
         iv = data[9:25]
