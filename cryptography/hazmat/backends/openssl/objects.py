@@ -19,19 +19,19 @@ TYPES = """
 """
 
 FUNCTIONS = """
-ASN1_OBJECT * OBJ_nid2obj(int n);
-const char *  OBJ_nid2ln(int n);
-const char *  OBJ_nid2sn(int n);
-int OBJ_obj2nid(const ASN1_OBJECT *o);
-int OBJ_ln2nid(const char *ln);
-int OBJ_sn2nid(const char *sn);
-int OBJ_txt2nid(const char *s);
-ASN1_OBJECT * OBJ_txt2obj(const char *s, int no_name);
-int OBJ_obj2txt(char *buf, int buf_len, const ASN1_OBJECT *a, int no_name);
-int OBJ_cmp(const ASN1_OBJECT *a,const ASN1_OBJECT *b);
-ASN1_OBJECT * OBJ_dup(const ASN1_OBJECT *o);
-int OBJ_create(const char *oid,const char *sn,const char *ln);
-void OBJ_cleanup(void);
+ASN1_OBJECT * OBJ_nid2obj(int);
+const char * OBJ_nid2ln(int);
+const char * OBJ_nid2sn(int);
+int OBJ_obj2nid(const ASN1_OBJECT *);
+int OBJ_ln2nid(const char *);
+int OBJ_sn2nid(const char *);
+int OBJ_txt2nid(const char *);
+ASN1_OBJECT * OBJ_txt2obj(const char *, int);
+int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
+int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
+ASN1_OBJECT * OBJ_dup(const ASN1_OBJECT *);
+int OBJ_create(const char *, const char *, const char *);
+void OBJ_cleanup();
 """
 
 MACROS = """

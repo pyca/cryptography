@@ -51,7 +51,7 @@ int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
                        RSA *, int);
 int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
                         RSA *, int);
-int RSA_print(BIO *bp, const RSA *r,int offset);
+int RSA_print(BIO *, const RSA *, int);
 """
 
 MACROS = """
