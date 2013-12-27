@@ -250,6 +250,22 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
+    def generate_rsa_ctx(self, bit_length, public_exponent):
+        if public_exponent < 3 or public_exponent % 2 == 0:
+            raise ValueError("Public exponent must be odd and 3 or greater "
+                             "(65537 recommended)")
+        ctx = self.lib.RSA_new()
+        ctx = self.ffi.gc(ctx, self.lib.RSA_free)
+        bn = self.lib.BN_new()
+        bn = self.ffi.gc(bn, backend.lib.BN_free)
+        res = self.lib.BN_set_word(bn, public_exponent)
+        assert res == 1
+        res = self.lib.RSA_generate_key_ex(
+            ctx, bit_length, bn, self.ffi.NULL
+        )
+        assert res != 0
+        return _RSAPrivateKey(ctx, self)
+
     def _handle_error(self, mode):
         code = self.lib.ERR_get_error()
         if not code and isinstance(mode, GCM):
@@ -258,9 +274,9 @@ class Backend(object):
         lib = self.lib.ERR_GET_LIB(code)
         func = self.lib.ERR_GET_FUNC(code)
         reason = self.lib.ERR_GET_REASON(code)
-        return self._handle_error_code(lib, func, reason)
+        return self._handle_error_code(code, lib, func, reason)
 
-    def _handle_error_code(self, lib, func, reason):
+    def _handle_error_code(self, code, lib, func, reason):
         if lib == self.lib.ERR_LIB_EVP:
             if func == self.lib.EVP_F_EVP_ENCRYPTFINAL_EX:
                 if reason == self.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
@@ -274,10 +290,59 @@ class Backend(object):
                         "The length of the provided data is not a multiple of "
                         "the block length"
                     )
-
-        raise SystemError(
-            "Unknown error code from OpenSSL, you should probably file a bug."
+        err_string = self.ffi.string(
+            self.lib.ERR_error_string(code, self.ffi.NULL)
         )
+        raise SystemError(
+            "Unknown error code from OpenSSL, you should probably file a bug. "
+            "Error was: {0}".format(err_string)
+        )
+
+
+@utils.register_interface(interfaces.RSAPrivateKey)
+class _RSAPrivateKey(object):
+    def __init__(self, ctx, backend):
+        self._backend = backend
+        self._ctx = ctx
+
+    @property
+    def n(self):
+        return self._get_value(self._ctx.n)
+
+    @property
+    def p(self):
+        return self._get_value(self._ctx.p)
+
+    @property
+    def q(self):
+        return self._get_value(self._ctx.q)
+
+    @property
+    def e(self):
+        return self._get_value(self._ctx.e)
+
+    @property
+    def d(self):
+        return self._get_value(self._ctx.d)
+
+    @property
+    def modulus(self):
+        return self._get_value(self._ctx.n)
+
+    @property
+    def public_exponent(self):
+        return self._get_value(self._ctx.e)
+
+    def _get_value(self, bn):
+        val = self._backend.lib.BN_bn2hex(bn)
+        assert val != self._backend.ffi.NULL
+        decoded_value = int(self._backend.ffi.string(val), 16)
+        self._backend.lib.OPENSSL_free(val)
+        return decoded_value
+
+    @property
+    def key_length(self):
+        return self._backend.lib.BN_num_bits(self._ctx.n)
 
 
 class GetCipherByName(object):

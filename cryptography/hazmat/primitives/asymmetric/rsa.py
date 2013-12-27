@@ -11,34 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-INCLUDES = """
-#include <openssl/bn.h>
-"""
+from __future__ import absolute_import, division, print_function
 
-TYPES = """
-typedef ... BIGNUM;
-// the below is declared as uintptr_t to obtain unsigned 32-bit on
-// 32-bit systems and unsigned 64-bit on 64-bit.
-typedef uintptr_t BN_ULONG;
-"""
 
-FUNCTIONS = """
-BIGNUM *BN_new();
-void BN_free(BIGNUM *);
-
-int BN_set_word(BIGNUM *, BN_ULONG);
-
-char *BN_bn2hex(const BIGNUM *);
-int BN_hex2bn(BIGNUM **, const char *);
-int BN_dec2bn(BIGNUM **, const char *);
-
-int BN_num_bits(const BIGNUM *);
-"""
-
-MACROS = """
-"""
-
-CUSTOMIZATIONS = """
-"""
-
-CONDITIONAL_NAMES = {}
+def generate_rsa_key(bit_length, public_exponent, backend):
+    return backend.generate_rsa_ctx(bit_length, public_exponent)
