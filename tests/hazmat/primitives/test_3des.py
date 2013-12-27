@@ -20,12 +20,15 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.cipher
 class TestTripleDES_CBC(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -39,6 +42,10 @@ class TestTripleDES_CBC(object):
         ],
         lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CBC("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CBC",
     )
 
     test_MMT = generate_encrypt_test(
@@ -53,9 +60,14 @@ class TestTripleDES_CBC(object):
             binascii.unhexlify(key1 + key2 + key3)
         ),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CBC("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CBC",
     )
 
 
+@pytest.mark.cipher
 class TestTripleDES_OFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -69,6 +81,10 @@ class TestTripleDES_OFB(object):
         ],
         lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.OFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES OFB",
     )
 
     test_MMT = generate_encrypt_test(
@@ -83,9 +99,14 @@ class TestTripleDES_OFB(object):
             binascii.unhexlify(key1 + key2 + key3)
         ),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.OFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES OFB",
     )
 
 
+@pytest.mark.cipher
 class TestTripleDES_CFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
@@ -99,6 +120,10 @@ class TestTripleDES_CFB(object):
         ],
         lambda keys, **kwargs: algorithms.TripleDES(binascii.unhexlify(keys)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CFB",
     )
 
     test_MMT = generate_encrypt_test(
@@ -113,4 +138,8 @@ class TestTripleDES_CFB(object):
             binascii.unhexlify(key1 + key2 + key3)
         ),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.TripleDES("\x00" * 8), modes.CFB("\x00" * 8)
+        ),
+        skip_message="Does not support TripleDES CFB",
     )

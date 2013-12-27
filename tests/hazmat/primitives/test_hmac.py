@@ -31,10 +31,11 @@ class UnsupportedDummyHash(object):
         name = "unsupported-dummy-hash"
 
 
+@pytest.mark.hmac
 class TestHMAC(object):
     test_copy = generate_base_hmac_test(
         hashes.MD5(),
-        only_if=lambda backend: backend.hash_supported(hashes.MD5),
+        only_if=lambda backend: backend.hmac_supported(hashes.MD5),
         skip_message="Does not support MD5",
     )
 

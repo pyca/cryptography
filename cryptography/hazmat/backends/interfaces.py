@@ -60,6 +60,13 @@ class HashBackend(six.with_metaclass(abc.ABCMeta)):
 
 class HMACBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
+    def hmac_supported(self, algorithm):
+        """
+        Return True if the hash algorithm is supported for HMAC by this
+        backend.
+        """
+
+    @abc.abstractmethod
     def create_hmac_ctx(self, key, algorithm):
         """
         Create a HashContext for calculating a message authentication code.

@@ -185,6 +185,9 @@ class Backend(object):
         digest = self.lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
         return digest != self.ffi.NULL
 
+    def hmac_supported(self, algorithm):
+        return self.hash_supported(algorithm)
+
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
 
