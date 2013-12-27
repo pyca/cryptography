@@ -68,7 +68,7 @@ def test_check_backend_support_no_backend():
     )
     item = pretend.stub(keywords={"supported": supported},
                         funcargs={})
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         check_backend_support(item)
 
 

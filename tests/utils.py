@@ -30,8 +30,8 @@ def check_backend_support(item):
         if not supported.kwargs["only_if"](item.funcargs["backend"]):
             pytest.skip(supported.kwargs["skip_message"])
     elif supported:
-        raise TypeError("This mark is only available on methods that take a "
-                        "backend")
+        raise ValueError("This mark is only available on methods that take a "
+                         "backend")
 
 
 def load_vectors_from_file(filename, loader):
