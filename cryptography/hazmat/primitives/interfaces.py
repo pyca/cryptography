@@ -167,5 +167,5 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
     def verify(self, signature):
         """
         Compare hash digest to signature and raises InvalidSignature
-        they are not equal.
+        if they are not equal.
         """

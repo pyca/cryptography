@@ -10,7 +10,7 @@ Exceptions
 
 .. class:: InvalidSignature
 
-    This is raised when the verify function of a hash function does not
+    This is raised when the verify method of a hash context does not
     compare equal.
 
 
