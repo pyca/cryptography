@@ -74,6 +74,7 @@ static const int ASN1_F_PKCS5_PBE_SET;
 static const int ASN1_F_SMIME_READ_ASN1;
 static const int ASN1_F_SMIME_TEXT;
 static const int ASN1_F_X509_CINF_NEW;
+
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
 static const int ASN1_R_CIPHER_HAS_NO_OBJECT_IDENTIFIER;
@@ -139,6 +140,7 @@ static const int EVP_F_PKCS8_SET_BROKEN;
 static const int EVP_F_RC2_MAGIC_TO_METH;
 static const int EVP_F_RC5_CTRL;
 static const int EVP_R_AES_KEY_SETUP_FAILED;
+
 static const int EVP_R_ASN1_LIB;
 static const int EVP_R_BAD_BLOCK_LENGTH;
 static const int EVP_R_BAD_KEY_LENGTH;
