@@ -20,7 +20,8 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors, check_for_iface
+    load_openssl_vectors, load_hash_vectors, check_for_iface,
+    supported_by_backend_skip
 )
 
 
@@ -39,6 +40,36 @@ def test_check_for_iface():
         funcargs={"backend": FakeInterface()}
     )
     check_for_iface("fake_name", FakeInterface, item)
+
+
+def test_supported_by_backend_skip():
+    supported = pretend.stub(
+        kwargs={"only_if": lambda backend: False, "skip_message": "Nope"}
+    )
+    item = pretend.stub(keywords={"supported": supported},
+                        funcargs={"backend": True})
+    with pytest.raises(pytest.skip.Exception) as exc_info:
+        supported_by_backend_skip(item)
+    assert exc_info.value.args[0] == "Nope"
+
+
+def test_supported_by_backend_no_skip():
+    supported = pretend.stub(
+        kwargs={"only_if": lambda backend: True, "skip_message": "Nope"}
+    )
+    item = pretend.stub(keywords={"supported": supported},
+                        funcargs={"backend": True})
+    assert supported_by_backend_skip(item) is None
+
+
+def test_supported_by_backend_skip_no_backend():
+    supported = pretend.stub(
+        kwargs={"only_if": "notalambda", "skip_message": "Nope"}
+    )
+    item = pretend.stub(keywords={"supported": supported},
+                        funcargs={})
+    with pytest.raises(TypeError):
+        supported_by_backend_skip(item)
 
 
 def test_load_nist_vectors():
