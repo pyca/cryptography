@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
-
 import pretend
 
 import pytest
@@ -25,25 +23,27 @@ from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, hmac, interfaces
 
+from .utils import generate_base_hmac_test
+
 
 @utils.register_interface(interfaces.HashAlgorithm)
 class UnsupportedDummyHash(object):
         name = "unsupported-dummy-hash"
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hmac_supported(hashes.MD5),
+    skip_message="Does not support MD5",
+)
+@pytest.mark.hmac
+class TestHMACCopy(object):
+    test_copy = generate_base_hmac_test(
+        hashes.MD5(),
+    )
+
+
 @pytest.mark.hmac
 class TestHMAC(object):
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.MD5),
-        skip_message="Does not support MD5",
-    )
-    def test_hmac_copy(self, backend):
-        key = b"ab"
-        h = hmac.HMAC(binascii.unhexlify(key), hashes.MD5(), backend=backend)
-        h_copy = h.copy()
-        assert h != h_copy
-        assert h._ctx != h_copy._ctx
-
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):

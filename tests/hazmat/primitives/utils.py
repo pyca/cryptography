@@ -149,6 +149,12 @@ def hash_test(backend, algorithm, params):
     assert m.finalize() == binascii.unhexlify(expected_md)
 
 
+def generate_base_hash_test(algorithm, digest_size, block_size):
+    def test_base_hash(self, backend):
+        base_hash_test(backend, algorithm, digest_size, block_size)
+    return test_base_hash
+
+
 def base_hash_test(backend, algorithm, digest_size, block_size):
     m = hashes.Hash(algorithm, backend=backend)
     assert m.algorithm.digest_size == digest_size
@@ -174,6 +180,20 @@ def long_string_hash_test(backend, algorithm, md):
     m = hashes.Hash(algorithm, backend=backend)
     m.update(b"a" * 1000000)
     assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
+
+
+def generate_base_hmac_test(hash_cls):
+    def test_base_hmac(self, backend):
+        base_hmac_test(backend, hash_cls)
+    return test_base_hmac
+
+
+def base_hmac_test(backend, algorithm):
+    key = b"ab"
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
+    h_copy = h.copy()
+    assert h != h_copy
+    assert h._ctx != h_copy._ctx
 
 
 def generate_hmac_test(param_loader, path, file_names, algorithm):
