@@ -162,10 +162,3 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
         """
         Return a HashContext that is a copy of the current context.
         """
-
-    @abc.abstractmethod
-    def verify(self, signature):
-        """
-        Compare hash digest to signature and raises InvalidSignature
-        if they are not equal.
-        """
