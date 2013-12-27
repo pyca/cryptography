@@ -71,3 +71,11 @@ message.
 
         :return bytes: The message digest as bytes.
         :raises cryptography.exceptions.AlreadyFinalized:
+
+    .. method:: verify(signature)
+
+        Finalize the current context and securely compare digest to ``signature``.
+
+        :param bytes signature: The bytes of the HMAC signature recieved.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises cryptography.exceptions.InvalidSignature: If signature does not match digest
