@@ -24,7 +24,9 @@ typedef struct {
     ...;
 } EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct env_md_ctx_st EVP_MD_CTX;
+typedef struct env_md_ctx_st {
+    ...;
+} EVP_MD_CTX;
 
 typedef struct evp_pkey_st {
     int type;
@@ -32,9 +34,12 @@ typedef struct evp_pkey_st {
 } EVP_PKEY;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
-static const int Cryptography_EVP_CTRL_GCM_SET_IVLEN;
-static const int Cryptography_EVP_CTRL_GCM_GET_TAG;
-static const int Cryptography_EVP_CTRL_GCM_SET_TAG;
+static const int EVP_MAX_MD_SIZE;
+static const int EVP_CTRL_GCM_SET_IVLEN;
+static const int EVP_CTRL_GCM_GET_TAG;
+static const int EVP_CTRL_GCM_SET_TAG;
+
+static const int Cryptography_HAS_GCM;
 """
 
 FUNCTIONS = """
@@ -90,6 +95,8 @@ int EVP_VerifyInit(EVP_MD_CTX *, const EVP_MD *);
 int EVP_VerifyUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
                     EVP_PKEY *);
+
+const EVP_MD *EVP_md5();
 """
 
 MACROS = """
@@ -101,12 +108,19 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
 CUSTOMIZATIONS = """
 #ifdef EVP_CTRL_GCM_SET_TAG
-const int Cryptography_EVP_CTRL_GCM_GET_TAG = EVP_CTRL_GCM_GET_TAG;
-const int Cryptography_EVP_CTRL_GCM_SET_TAG = EVP_CTRL_GCM_SET_TAG;
-const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = EVP_CTRL_GCM_SET_IVLEN;
+const long Cryptography_HAS_GCM = 1;
 #else
-const int Cryptography_EVP_CTRL_GCM_GET_TAG = -1;
-const int Cryptography_EVP_CTRL_GCM_SET_TAG = -1;
-const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = -1;
+const long Cryptography_HAS_GCM = 0;
+const long EVP_CTRL_GCM_GET_TAG = -1;
+const long EVP_CTRL_GCM_SET_TAG = -1;
+const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
 """
+
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_GCM": [
+        "EVP_CTRL_GCM_GET_TAG",
+        "EVP_CTRL_GCM_SET_TAG",
+        "EVP_CTRL_GCM_SET_IVLEN",
+    ]
+}

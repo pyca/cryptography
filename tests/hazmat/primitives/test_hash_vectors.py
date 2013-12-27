@@ -15,12 +15,15 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_hash_test, generate_long_string_hash_test
 from ...utils import load_hash_vectors
 
 
+@pytest.mark.hash
 class TestSHA1(object):
     test_SHA1 = generate_hash_test(
         load_hash_vectors,
@@ -35,6 +38,7 @@ class TestSHA1(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA224(object):
     test_SHA224 = generate_hash_test(
         load_hash_vectors,
@@ -49,6 +53,7 @@ class TestSHA224(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA256(object):
     test_SHA256 = generate_hash_test(
         load_hash_vectors,
@@ -63,6 +68,7 @@ class TestSHA256(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA384(object):
     test_SHA384 = generate_hash_test(
         load_hash_vectors,
@@ -77,6 +83,7 @@ class TestSHA384(object):
     )
 
 
+@pytest.mark.hash
 class TestSHA512(object):
     test_SHA512 = generate_hash_test(
         load_hash_vectors,
@@ -91,6 +98,7 @@ class TestSHA512(object):
     )
 
 
+@pytest.mark.hash
 class TestRIPEMD160(object):
     test_RIPEMD160 = generate_hash_test(
         load_hash_vectors,
@@ -111,6 +119,7 @@ class TestRIPEMD160(object):
     )
 
 
+@pytest.mark.hash
 class TestWhirlpool(object):
     test_whirlpool = generate_hash_test(
         load_hash_vectors,
@@ -133,6 +142,7 @@ class TestWhirlpool(object):
     )
 
 
+@pytest.mark.hash
 class TestMD5(object):
     test_md5 = generate_hash_test(
         load_hash_vectors,

@@ -47,7 +47,7 @@ typedef struct {
 } X509_REVOKED;
 
 typedef struct {
-    struct x509_revoked_st *revoked;
+    struct stack_st_X509_REVOKED *revoked;
     ...;
 } X509_CRL_INFO;
 
@@ -178,8 +178,8 @@ int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
 void sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 
-int sk_X509_REVOKED_num(struct x509_revoked_st *);
-X509_REVOKED *sk_X509_REVOKED_value(struct x509_revoked_st *, int);
+int sk_X509_REVOKED_num(struct stack_st_X509_REVOKED *);
+X509_REVOKED *sk_X509_REVOKED_value(struct stack_st_X509_REVOKED *, int);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
@@ -188,3 +188,5 @@ int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

@@ -88,3 +88,5 @@ int Cryptography_HMAC_CTX_copy(HMAC_CTX *dst_ctx, HMAC_CTX *src_ctx) {
 #endif
 }
 """
+
+CONDITIONAL_NAMES = {}

@@ -14,12 +14,31 @@
 import os
 import textwrap
 
+import pretend
+
 import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors,
+    load_openssl_vectors, load_hash_vectors, check_for_iface
 )
+
+
+class FakeInterface(object):
+    pass
+
+
+def test_check_for_iface():
+    item = pretend.stub(keywords=["fake_name"], funcargs={"backend": True})
+    with pytest.raises(pytest.skip.Exception) as exc_info:
+        check_for_iface("fake_name", FakeInterface, item)
+    assert exc_info.value.args[0] == "True backend does not support fake_name"
+
+    item = pretend.stub(
+        keywords=["fake_name"],
+        funcargs={"backend": FakeInterface()}
+    )
+    check_for_iface("fake_name", FakeInterface, item)
 
 
 def test_load_nist_vectors():

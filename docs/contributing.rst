@@ -136,7 +136,6 @@ Include a space after commas between parameters:
     // Bad
     long f(int,char *)
 
-
 Documentation
 -------------
 
