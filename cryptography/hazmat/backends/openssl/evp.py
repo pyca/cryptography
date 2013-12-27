@@ -24,7 +24,9 @@ typedef struct {
     ...;
 } EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct env_md_ctx_st EVP_MD_CTX;
+typedef struct env_md_ctx_st {
+    ...;
+} EVP_MD_CTX;
 
 typedef struct evp_pkey_st {
     int type;
@@ -32,6 +34,7 @@ typedef struct evp_pkey_st {
 } EVP_PKEY;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
+static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_GCM_SET_IVLEN;
 static const int EVP_CTRL_GCM_GET_TAG;
 static const int EVP_CTRL_GCM_SET_TAG;
@@ -92,6 +95,8 @@ int EVP_VerifyInit(EVP_MD_CTX *, const EVP_MD *);
 int EVP_VerifyUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
                     EVP_PKEY *);
+
+const EVP_MD *EVP_md5();
 """
 
 MACROS = """

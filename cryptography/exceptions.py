@@ -30,3 +30,7 @@ class NotYetFinalized(Exception):
 
 class InvalidTag(Exception):
     pass
+
+
+class InvalidSignature(Exception):
+    pass
