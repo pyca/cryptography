@@ -11,7 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path
+import os
+
+import pytest
+
+
+def check_for_iface(name, iface, item):
+    if name in item.keywords and "backend" in item.funcargs:
+        if not isinstance(item.funcargs["backend"], iface):
+            pytest.skip("{0} backend does not support {1}".format(
+                item.funcargs["backend"], name
+            ))
 
 
 def load_vectors_from_file(filename, loader):

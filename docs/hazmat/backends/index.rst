@@ -1,17 +1,10 @@
 .. hazmat::
 
-Bindings
+Backends
 ========
 
-.. toctree::
-    :maxdepth: 1
-
-    openssl
-    interfaces
-
-
-Getting a Backend Provider
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Getting a Backend
+-----------------
 
 .. currentmodule:: cryptography.hazmat.backends
 
@@ -19,8 +12,7 @@ Getting a Backend Provider
 the widest number of supported cryptographic algorithms as well as supporting
 platform specific implementations.
 
-You can get the default backend by calling
-:func:`~default_backend`.
+You can get the default backend by calling :func:`~default_backend`.
 
 The default backend will change over time as we implement new backends and
 the libraries we use in those backends changes.
@@ -32,3 +24,11 @@ the libraries we use in those backends changes.
         :class:`~interfaces.CipherBackend`, :class:`~interfaces.HashBackend`, and
         :class:`~interfaces.HMACBackend`.
 
+Individual Backends
+-------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    openssl
+    interfaces

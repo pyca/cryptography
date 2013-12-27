@@ -22,8 +22,7 @@ def _load_all_params(path, file_names, param_loader):
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
-                          mode_factory, only_if=lambda backend: True,
-                          skip_message=None):
+                          mode_factory, only_if, skip_message=None):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
