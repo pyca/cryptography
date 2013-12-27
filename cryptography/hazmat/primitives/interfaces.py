@@ -164,7 +164,8 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
-    def verify(self, sig):
+    def verify(self, signature):
         """
-        compare digest to sig and raise exception if not equal.
+        Compare hash digest to signature and raises InvalidSignature
+        they are not equal.
         """
