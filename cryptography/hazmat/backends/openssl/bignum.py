@@ -38,7 +38,7 @@ typedef uintptr_t BN_ULONG;
 """
 
 FUNCTIONS = """
-BIGNUM *BN_new();
+BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 
 int BN_set_word(BIGNUM *, BN_ULONG);

@@ -38,8 +38,8 @@ static const int ASN1_R_BAD_PASSWORD_READ;
 """
 
 FUNCTIONS = """
-void ERR_load_crypto_strings();
-void ERR_free_strings();
+void ERR_load_crypto_strings(void);
+void ERR_free_strings(void);
 char* ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
 const char* ERR_lib_error_string(unsigned long);
@@ -47,9 +47,9 @@ const char* ERR_func_error_string(unsigned long);
 const char* ERR_reason_error_string(unsigned long);
 void ERR_print_errors(BIO *);
 void ERR_print_errors_fp(FILE *);
-unsigned long ERR_get_error();
-unsigned long ERR_peek_error();
-unsigned long ERR_peek_last_error();
+unsigned long ERR_get_error(void);
+unsigned long ERR_peek_error(void);
+unsigned long ERR_peek_last_error(void);
 unsigned long ERR_get_error_line(const char **, int *);
 unsigned long ERR_peek_error_line(const char **, int *);
 unsigned long ERR_peek_last_error_line(const char **, int *);
@@ -61,7 +61,7 @@ unsigned long ERR_peek_last_error_line_data(const char **,
                                             int *, const char **, int *);
 void ERR_put_error(int, int, int, const char *, int);
 void ERR_add_error_data(int, ...);
-int ERR_get_next_error_library();
+int ERR_get_next_error_library(void);
 """
 
 MACROS = """

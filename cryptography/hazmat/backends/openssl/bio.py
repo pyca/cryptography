@@ -63,16 +63,16 @@ BIO *BIO_pop(BIO *);
 BIO *BIO_next(BIO *);
 BIO *BIO_find_type(BIO *, int);
 int BIO_method_type(const BIO *);
-BIO_METHOD *BIO_s_mem();
+BIO_METHOD *BIO_s_mem(void);
 BIO *BIO_new_mem_buf(void *, int);
-BIO_METHOD *BIO_s_file();
+BIO_METHOD *BIO_s_file(void);
 BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_fp(FILE *, int);
-BIO_METHOD *BIO_s_fd();
+BIO_METHOD *BIO_s_fd(void);
 BIO *BIO_new_fd(int, int);
-BIO_METHOD *BIO_s_socket();
+BIO_METHOD *BIO_s_socket(void);
 BIO *BIO_new_socket(int, int);
-BIO_METHOD *BIO_s_null();
+BIO_METHOD *BIO_s_null(void);
 long BIO_ctrl(BIO *, int, long, void *);
 long BIO_callback_ctrl(
     BIO *,
@@ -87,8 +87,8 @@ int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
-BIO_METHOD *BIO_f_null();
-BIO_METHOD *BIO_f_buffer();
+BIO_METHOD *BIO_f_null(void);
+BIO_METHOD *BIO_f_buffer(void);
 """
 
 MACROS = """

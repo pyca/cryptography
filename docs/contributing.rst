@@ -110,14 +110,14 @@ Don't name parameters:
         ...;
     };
 
-Don't include stray ``void`` parameters:
+Include ``void`` if the function takes no arguments:
 
 .. code-block:: c
 
     // Good
-    long f();
-    // Bad
     long f(void);
+    // Bad
+    long f();
 
 Wrap lines at 80 characters like so:
 

@@ -37,7 +37,7 @@ static const int RSA_F4;
 """
 
 FUNCTIONS = """
-RSA *RSA_new();
+RSA *RSA_new(void);
 void RSA_free(RSA *);
 int RSA_size(const RSA *);
 int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
