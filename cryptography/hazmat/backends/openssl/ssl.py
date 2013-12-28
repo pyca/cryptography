@@ -117,6 +117,7 @@ typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
 typedef ... Cryptography_STACK_OF_X509;
+typedef ... Cryptography_STACK_OF_X509_NAME;
 
 typedef struct {
     int master_key_length;
