@@ -136,6 +136,23 @@ Include a space after commas between parameters:
     // Bad
     long f(int,char *)
 
+Values set by #define should be assigned the appropriate type. If you see
+this:
+
+.. code-block:: c
+
+    #define SOME_INTEGER 0x0;
+    #define SOME_UINTEGER (unsigned int)0x0001;
+    #define SOME_STRING "hello";
+
+...it should be added to the bindings like so:
+
+.. code-block:: c
+
+    static const int SOME_INTEGER;
+    static const unsigned int SOME_UINTEGER;
+    static char *const SOME_STRING;
+
 Documentation
 -------------
 
