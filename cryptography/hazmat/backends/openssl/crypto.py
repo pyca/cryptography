@@ -24,6 +24,9 @@ static const int SSLEAY_BUILT_ON;
 """
 
 FUNCTIONS = """
+unsigned long SSLeay(void);
+const char *SSLeay_version(int);
+
 void CRYPTO_free(void *);
 int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on(void);
