@@ -13,6 +13,11 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+/*
+ * Get some simpler definitions for some types used by later prototypes.
+ */
+typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 """
 
 TYPES = """
@@ -303,11 +308,6 @@ static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 0;
 const long SSL_OP_NO_COMPRESSION = 0;
 #endif
-
-/*
- * Get some simpler definitions for some types used by later prototypes.
- */
-typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 """
 
 CONDITIONAL_NAMES = {
