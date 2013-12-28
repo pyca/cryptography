@@ -255,9 +255,9 @@ void SSL_CTX_set_tlsext_servername_callback(
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_SSL2
 static const long Cryptography_HAS_SSL2 = 0;
-SSL_METHOD* (*SSLv2_method)() = NULL;
-SSL_METHOD* (*SSLv2_client_method)() = NULL;
-SSL_METHOD* (*SSLv2_server_method)() = NULL;
+SSL_METHOD* (*SSLv2_method)(void) = NULL;
+SSL_METHOD* (*SSLv2_client_method)(void) = NULL;
+SSL_METHOD* (*SSLv2_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_SSL2 = 1;
 #endif
