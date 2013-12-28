@@ -17,6 +17,17 @@ INCLUDES = """
 
 TYPES = """
 typedef ... ENGINE;
+
+static const unsigned int ENGINE_METHOD_RSA;
+static const unsigned int ENGINE_METHOD_DSA;
+static const unsigned int ENGINE_METHOD_RAND;
+static const unsigned int ENGINE_METHOD_ECDH;
+static const unsigned int ENGINE_METHOD_ECDSA;
+static const unsigned int ENGINE_METHOD_CIPHERS;
+static const unsigned int ENGINE_METHOD_DIGESTS;
+static const unsigned int ENGINE_METHOD_STORE;
+static const unsigned int ENGINE_METHOD_ALL;
+static const unsigned int ENGINE_METHOD_NONE;
 """
 
 FUNCTIONS = """
@@ -46,19 +57,10 @@ int ENGINE_set_default_DH(ENGINE *);
 int ENGINE_set_default_RAND(ENGINE *);
 int ENGINE_set_default_ciphers(ENGINE *);
 int ENGINE_set_default_digests(ENGINE *);
+
 """
 
 MACROS = """
-#define ENGINE_METHOD_RSA ...
-#define ENGINE_METHOD_DSA ...
-#define ENGINE_METHOD_RAND ...
-#define ENGINE_METHOD_ECDH ...
-#define ENGINE_METHOD_ECDSA ...
-#define ENGINE_METHOD_CIPHERS ...
-#define ENGINE_METHOD_DIGESTS ...
-#define ENGINE_METHOD_STORE ...
-#define ENGINE_METHOD_ALL ...
-#define ENGINE_METHOD_NONE ...
 """
 
 CUSTOMIZATIONS = """
