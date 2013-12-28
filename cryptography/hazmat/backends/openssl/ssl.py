@@ -246,6 +246,7 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
 /* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
  * earlier versions some special handling of these is necessary.
  */
+const char *SSL_get_servername(const SSL *, const int);
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
