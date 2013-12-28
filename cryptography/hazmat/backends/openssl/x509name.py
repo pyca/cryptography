@@ -43,11 +43,11 @@ void X509_NAME_free(X509_NAME *);
 """
 
 MACROS = """
-struct stack_st_X509_NAME *sk_X509_NAME_new_null(void);
-int sk_X509_NAME_num(struct stack_st_X509_NAME *);
-int sk_X509_NAME_push(struct stack_st_X509_NAME *, X509_NAME *);
-X509_NAME *sk_X509_NAME_value(struct stack_st_X509_NAME *, int);
-void sk_X509_NAME_free(struct stack_st_X509_NAME *);
+Cryptography_STACK_OF_X509_NAME *sk_X509_NAME_new_null(void);
+int sk_X509_NAME_num(Cryptography_STACK_OF_X509_NAME *);
+int sk_X509_NAME_push(Cryptography_STACK_OF_X509_NAME *, X509_NAME *);
+X509_NAME *sk_X509_NAME_value(Cryptography_STACK_OF_X509_NAME *, int);
+void sk_X509_NAME_free(Cryptography_STACK_OF_X509_NAME *);
 """
 
 CUSTOMIZATIONS = """
