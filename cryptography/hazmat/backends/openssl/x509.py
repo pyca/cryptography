@@ -22,9 +22,13 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
+typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
 """
 
 TYPES = """
+typedef ... Cryptography_STACK_OF_X509;
+typedef ... Cryptography_STACK_OF_X509_REVOKED;
+
 typedef struct {
     ASN1_OBJECT *algorithm;
     ...;
@@ -45,8 +49,6 @@ typedef ... X509_EXTENSIONS;
 
 typedef ... X509_REQ;
 
-typedef ... x509_revoked_st;
-
 typedef struct {
     ASN1_INTEGER *serialNumber;
     ASN1_TIME *revocationDate;
@@ -56,7 +58,7 @@ typedef struct {
 } X509_REVOKED;
 
 typedef struct {
-    struct stack_st_X509_REVOKED *revoked;
+    Cryptography_STACK_OF_X509_REVOKED *revoked;
     ...;
 } X509_CRL_INFO;
 
@@ -72,7 +74,6 @@ typedef struct {
 
 typedef ... X509_STORE;
 typedef ... NETSCAPE_SPKI;
-typedef ... Cryptography_STACK_OF_X509;
 """
 
 FUNCTIONS = """
@@ -188,8 +189,8 @@ int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
 X509_EXTENSION *sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 
-int sk_X509_REVOKED_num(struct stack_st_X509_REVOKED *);
-X509_REVOKED *sk_X509_REVOKED_value(struct stack_st_X509_REVOKED *, int);
+int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
+X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
