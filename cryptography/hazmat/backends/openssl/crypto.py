@@ -26,17 +26,17 @@ static const int SSLEAY_BUILT_ON;
 FUNCTIONS = """
 void CRYPTO_free(void *);
 int CRYPTO_mem_ctrl(int);
-int CRYPTO_is_mem_check_on();
+int CRYPTO_is_mem_check_on(void);
 void CRYPTO_mem_leaks(struct bio_st *);
-void CRYPTO_cleanup_all_ex_data();
+void CRYPTO_cleanup_all_ex_data(void);
 
 void OPENSSL_free(void *);
 """
 
 MACROS = """
 void CRYPTO_add(int *, int, int);
-void CRYPTO_malloc_init();
-void CRYPTO_malloc_debug_init();
+void CRYPTO_malloc_init(void);
+void CRYPTO_malloc_debug_init(void);
 
 #define CRYPTO_MEM_CHECK_ON ...
 #define CRYPTO_MEM_CHECK_OFF ...

@@ -10,3 +10,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Christian Heimes <christian@python.org>
 * Paul Kehrer <paul.l.kehrer@gmail.com>
 * Jarret Raim <jarito@gmail.com>
+* Alex Stapleton <alexs@prol.etari.at> (A1C7 E50B 66DE 39ED C847 9665 8E3C 20D1 9BD9 5C4C)

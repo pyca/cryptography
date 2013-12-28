@@ -85,6 +85,7 @@ class Backend(object):
         "evp",
         "hmac",
         "nid",
+        "objects",
         "opensslv",
         "pem",
         "pkcs7",

@@ -20,7 +20,7 @@ typedef ... DH;
 """
 
 FUNCTIONS = """
-DH *DH_new();
+DH *DH_new(void);
 void DH_free(DH *);
 """
 

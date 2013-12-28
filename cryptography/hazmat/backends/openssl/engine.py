@@ -20,8 +20,8 @@ typedef ... ENGINE;
 """
 
 FUNCTIONS = """
-ENGINE *ENGINE_get_first();
-ENGINE *ENGINE_get_last();
+ENGINE *ENGINE_get_first(void);
+ENGINE *ENGINE_get_last(void);
 ENGINE *ENGINE_get_next(ENGINE *);
 ENGINE *ENGINE_get_prev(ENGINE *);
 int ENGINE_add(ENGINE *);
@@ -30,9 +30,9 @@ ENGINE *ENGINE_by_id(const char *);
 int ENGINE_init(ENGINE *);
 int ENGINE_finish(ENGINE *);
 int ENGINE_free(ENGINE *);
-void ENGINE_cleanup();
-void ENGINE_load_dynamic();
-void ENGINE_load_builtin_engines();
+void ENGINE_cleanup(void);
+void ENGINE_load_dynamic(void);
+void ENGINE_load_builtin_engines(void);
 int ENGINE_ctrl_cmd_string(ENGINE *, const char *, const char *, int);
 int ENGINE_set_default(ENGINE *, unsigned int);
 int ENGINE_register_complete(ENGINE *);
