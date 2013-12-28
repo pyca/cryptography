@@ -157,6 +157,13 @@ int SSL_pending(const SSL *);
 int SSL_write(SSL *, const void *, int);
 int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
+
+/* OpenSSL defines these with STACK_OF(...) instead stack_st_... of but the
+ * STACK_OF macro does not play well with cffi.
+ */
+struct stack_st_X509 *SSL_get_peer_cert_chain(const SSL *);
+struct stack_st_X509_NAME *SSL_get_client_CA_list(const SSL *s);
+
 int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
@@ -185,6 +192,11 @@ int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
+
+/* See comment above about STACK_OF(...) vs stack_st_...
+ */
+void SSL_CTX_set_client_CA_list(SSL_CTX *, struct stack_st_X509_NAME *);
+
 
 /*  X509_STORE_CTX */
 int X509_STORE_CTX_get_error(X509_STORE_CTX *);
