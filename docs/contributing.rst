@@ -136,7 +136,7 @@ Include a space after commas between parameters:
     // Bad
     long f(int,char *)
 
-Values set by #define should be assigned the appropriate type. If you see
+Values set by ``#define`` should be assigned the appropriate type. If you see
 this:
 
 .. code-block:: c
