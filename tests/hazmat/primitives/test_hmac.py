@@ -33,14 +33,19 @@ class UnsupportedDummyHash(object):
         name = "unsupported-dummy-hash"
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hmac_supported(hashes.MD5),
+    skip_message="Does not support MD5",
+)
 @pytest.mark.hmac
-class TestHMAC(object):
+class TestHMACCopy(object):
     test_copy = generate_base_hmac_test(
         hashes.MD5(),
-        only_if=lambda backend: backend.hmac_supported(hashes.MD5),
-        skip_message="Does not support MD5",
     )
 
+
+@pytest.mark.hmac
+class TestHMAC(object):
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
