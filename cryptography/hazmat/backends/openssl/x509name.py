@@ -13,11 +13,14 @@
 
 INCLUDES = """
 #include <openssl/x509.h>
+
+typedef STACK_OF(X509_NAME) Cryptography_STACK_OF_X509_NAME;
 """
 
 TYPES = """
 typedef ... X509_NAME;
 typedef ... X509_NAME_ENTRY;
+typedef ... Cryptography_STACK_OF_X509_NAME;
 """
 
 FUNCTIONS = """

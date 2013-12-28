@@ -13,12 +13,6 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
-
-/*
- * Get some simpler definitions for some types used by later prototypes.
- */
-typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
-typedef STACK_OF(X509_NAME) Cryptography_STACK_OF_X509_NAME;
 """
 
 TYPES = """
@@ -115,9 +109,6 @@ typedef ... X509_STORE_CTX;
 static const int X509_V_OK;
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
-
-typedef ... Cryptography_STACK_OF_X509;
-typedef ... Cryptography_STACK_OF_X509_NAME;
 
 typedef struct {
     int master_key_length;

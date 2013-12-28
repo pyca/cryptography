@@ -13,6 +13,8 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 """
 
 TYPES = """
@@ -63,6 +65,7 @@ typedef struct {
 
 typedef ... X509_STORE;
 typedef ... NETSCAPE_SPKI;
+typedef ... Cryptography_STACK_OF_X509;
 """
 
 FUNCTIONS = """
