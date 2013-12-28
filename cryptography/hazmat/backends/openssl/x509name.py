@@ -14,6 +14,9 @@
 INCLUDES = """
 #include <openssl/x509.h>
 
+/*
+ * See the comment above Cryptography_STACK_OF_X509 in x509.py
+ */
 typedef STACK_OF(X509_NAME) Cryptography_STACK_OF_X509_NAME;
 """
 

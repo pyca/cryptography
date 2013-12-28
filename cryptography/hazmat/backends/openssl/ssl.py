@@ -158,11 +158,6 @@ int SSL_write(SSL *, const void *, int);
 int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
 
-/*
- * OpenSSL defines these with STACK_OF(...) but the STACK_OF macro does not
- * play well with cffi.
- */
-
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
@@ -195,9 +190,6 @@ void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
-/*
- * See comment above about STACK_OF(...)
- */
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 

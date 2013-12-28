@@ -14,6 +14,13 @@
 INCLUDES = """
 #include <openssl/ssl.h>
 
+/*
+ * This is part of a work-around for the difficulty cffi has in dealing with
+ * `STACK_OF(foo)` as the name of a type.  We invent a new, simpler name that
+ * will be an alias for this type and use the alias throughout.  This works
+ * together with another opaque typedef for the same name in the TYPES section.
+ * Note that the result is an opaque type.
+ */
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 """
 
