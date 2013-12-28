@@ -13,6 +13,15 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+/*
+ * This is part of a work-around for the difficulty cffi has in dealing with
+ * `STACK_OF(foo)` as the name of a type.  We invent a new, simpler name that
+ * will be an alias for this type and use the alias throughout.  This works
+ * together with another opaque typedef for the same name in the TYPES section.
+ * Note that the result is an opaque type.
+ */
+typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 """
 
 TYPES = """
@@ -63,6 +72,7 @@ typedef struct {
 
 typedef ... X509_STORE;
 typedef ... NETSCAPE_SPKI;
+typedef ... Cryptography_STACK_OF_X509;
 """
 
 FUNCTIONS = """
@@ -165,11 +175,11 @@ ASN1_TIME *X509_get_notAfter(X509 *);
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
 
-struct stack_st_X509 *sk_X509_new_null(void);
-void sk_X509_free(struct stack_st_X509 *);
-int sk_X509_num(struct stack_st_X509 *);
-int sk_X509_push(struct stack_st_X509 *, X509 *);
-X509 *sk_X509_value(struct stack_st_X509 *, int);
+Cryptography_STACK_OF_X509 *sk_X509_new_null(void);
+void sk_X509_free(Cryptography_STACK_OF_X509 *);
+int sk_X509_num(Cryptography_STACK_OF_X509 *);
+int sk_X509_push(Cryptography_STACK_OF_X509 *, X509 *);
+X509 *sk_X509_value(Cryptography_STACK_OF_X509 *, int);
 
 X509_EXTENSIONS *sk_X509_EXTENSION_new_null(void);
 int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
