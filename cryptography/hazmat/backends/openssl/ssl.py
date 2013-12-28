@@ -18,6 +18,7 @@ INCLUDES = """
  * Get some simpler definitions for some types used by later prototypes.
  */
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
+typedef STACK_OF(X509_NAME) Cryptography_STACK_OF_X509_NAME;
 """
 
 TYPES = """
@@ -171,7 +172,7 @@ X509 *SSL_get_peer_certificate(const SSL *);
  */
 
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
-// Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
+Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
 int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
@@ -203,9 +204,9 @@ X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 /*
- * See comment above about STACK_OF(...) vs stack_st_...
+ * See comment above about STACK_OF(...)
  */
-// void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
+void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 
 /*  X509_STORE_CTX */
