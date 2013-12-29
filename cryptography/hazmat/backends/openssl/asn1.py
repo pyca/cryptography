@@ -33,7 +33,7 @@ TYPES = """
  * <fijal> I think you want to declare your value too large (e.g. long)
  * <fijal> that way you'll never pass garbage
  */
-typedef uintptr_t time_t;
+typedef intptr_t time_t;
 
 typedef int ASN1_BOOLEAN;
 typedef ... ASN1_INTEGER;
