@@ -59,7 +59,7 @@ uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
     /* Now check the low bit to see if it's set */
     return (mismatch & 1) == 0;
 }
-""")
+""", extra_compile_args=["-Wall", "-Werror"])
 
 
 class PKCS7(object):
