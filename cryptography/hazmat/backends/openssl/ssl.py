@@ -36,6 +36,8 @@ static const int Cryptography_HAS_RELEASE_BUFFERS;
  */
 static const int Cryptography_HAS_OP_NO_COMPRESSION;
 
+static const int Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
+
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
 static const int SSL_ERROR_NONE;
@@ -60,6 +62,7 @@ static const int SSL_OP_NETSCAPE_CHALLENGE_BUG;
 static const int SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG;
 static const int SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG;
 static const int SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER;
+static const int SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const int SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
 static const int SSL_OP_TLS_D5_BUG;
 static const int SSL_OP_TLS_BLOCK_PADDING_BUG;
@@ -334,6 +337,12 @@ static const int SSL_OP_NO_TLSv1_2 = 0;
 SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
+
+#ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
+static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
+#else
+static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
+const long SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
 #endif
 """
 
@@ -372,4 +381,7 @@ CONDITIONAL_NAMES = {
         "SSL_OP_NO_COMPRESSION",
     ],
 
+    "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
+        "SSL_OP_MSIE_SSLV2_RSA_PADDING",
+    ],
 }
