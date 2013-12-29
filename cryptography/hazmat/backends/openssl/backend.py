@@ -155,6 +155,7 @@ class Backend(object):
                 customizations
             ),
             libraries=["crypto", "ssl"],
+            extra_compile_args=["-Wall", "-Werror"],
         )
 
         for name in cls._modules:
