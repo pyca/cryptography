@@ -193,8 +193,8 @@ int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
-int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
-int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
+int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
+int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 """
 
 CUSTOMIZATIONS = """

@@ -247,7 +247,7 @@ const SSL_METHOD *SSLv23_server_method(void);
 const SSL_METHOD *SSLv23_client_method(void);
 
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
-SSL_CTX *SSL_CTX_new(const SSL_METHOD *);
+SSL_CTX *SSL_CTX_new(SSL_METHOD *);
 long SSL_CTX_get_timeout(const SSL_CTX *);
 
 /* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
