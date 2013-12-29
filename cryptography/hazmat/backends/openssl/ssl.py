@@ -213,7 +213,7 @@ long SSL_get_options(SSL *);
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
-int SSL_total_renegotiations(SSL *);
+long SSL_total_renegotiations(SSL *);
 
 long SSL_CTX_set_options(SSL_CTX *, long);
 long SSL_CTX_get_options(SSL_CTX *);
