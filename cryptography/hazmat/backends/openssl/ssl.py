@@ -337,6 +337,7 @@ static const long SSL_OP_NO_TLSv1_2 = 0;
 SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
+#endif
 
 #ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
