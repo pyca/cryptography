@@ -16,8 +16,12 @@ INCLUDES = """
 """
 
 TYPES = """
-/* Internally invented symbol to tell us if SSLv2 is supported */
+/*
+ * Internally invented symbols to tell which versions of SSL/TLS are supported.
+*/
 static const int Cryptography_HAS_SSL2;
+static const int Cryptography_HAS_TLSv1_1;
+static const int Cryptography_HAS_TLSv1_2;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const int Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -48,6 +52,8 @@ static const int SSL_RECEIVED_SHUTDOWN;
 static const int SSL_OP_NO_SSLv2;
 static const int SSL_OP_NO_SSLv3;
 static const int SSL_OP_NO_TLSv1;
+static const int SSL_OP_NO_TLSv1_1;
+static const int SSL_OP_NO_TLSv1_2;
 static const int SSL_OP_NO_COMPRESSION;
 static const int SSL_OP_SINGLE_DH_USE;
 static const int SSL_OP_EPHEMERAL_RSA;
@@ -229,6 +235,8 @@ long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
 
+/*  methods */
+
 /* SSLv2 support is compiled out of some versions of OpenSSL.  These will
  * get special support when we generate the bindings so that if they are
  * available they will be wrapped, but if they are not they won't cause
@@ -238,13 +246,26 @@ const SSL_METHOD *SSLv2_method(void);
 const SSL_METHOD *SSLv2_server_method(void);
 const SSL_METHOD *SSLv2_client_method(void);
 
-/*  methods */
+/*
+ * TLSv1_1 and TLSv1_2 are recent additions.  Only sufficiently new versions of
+ * OpenSSL support them.
+ */
+const SSL_METHOD *TLSv1_1_method(void);
+const SSL_METHOD *TLSv1_1_server_method(void);
+const SSL_METHOD *TLSv1_1_client_method(void);
+
+const SSL_METHOD *TLSv1_2_method(void);
+const SSL_METHOD *TLSv1_2_server_method(void);
+const SSL_METHOD *TLSv1_2_client_method(void);
+
 const SSL_METHOD *SSLv3_method(void);
 const SSL_METHOD *SSLv3_server_method(void);
 const SSL_METHOD *SSLv3_client_method(void);
+
 const SSL_METHOD *TLSv1_method(void);
 const SSL_METHOD *TLSv1_server_method(void);
 const SSL_METHOD *TLSv1_client_method(void);
+
 const SSL_METHOD *SSLv23_method(void);
 const SSL_METHOD *SSLv23_server_method(void);
 const SSL_METHOD *SSLv23_client_method(void);
@@ -298,6 +319,26 @@ static const long Cryptography_HAS_OP_NO_COMPRESSION = 0;
 const long SSL_OP_NO_COMPRESSION = 0;
 #endif
 
+#ifdef SSL_OP_NO_TLSv1_1
+static const long Cryptography_HAS_TLSv1_1 = 1;
+#else
+static const long Cryptography_HAS_TLSv1_1 = 0;
+static const long SSL_OP_NO_TLSv1_1 = 0;
+SSL_METHOD* (*TLSv1_1_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_1_client_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_1_server_method)(void) = NULL;
+#endif
+
+#ifdef SSL_OP_NO_TLSv1_2
+static const long Cryptography_HAS_TLSv1_2 = 1;
+#else
+static const long Cryptography_HAS_TLSv1_2 = 0;
+static const long SSL_OP_NO_TLSv1_2 = 0;
+SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
+SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
+#endif
+
 #ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 #else
@@ -307,6 +348,20 @@ const long SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
 """
 
 CONDITIONAL_NAMES = {
+    "Cryptography_HAS_TLSv1_1": [
+        "SSL_OP_NO_TLSv1_1",
+        "TLSv1_1_method",
+        "TLSv1_1_server_method",
+        "TLSv1_1_client_method",
+    ],
+
+    "Cryptography_HAS_TLSv1_2": [
+        "SSL_OP_NO_TLSv1_2",
+        "TLSv1_2_method",
+        "TLSv1_2_server_method",
+        "TLSv1_2_client_method",
+    ],
+
     "Cryptography_HAS_SSL2": [
         "SSLv2_method",
         "SSLv2_client_method",
