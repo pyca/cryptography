@@ -323,7 +323,7 @@ const long SSL_OP_NO_COMPRESSION = 0;
 static const long Cryptography_HAS_TLSv1_1 = 1;
 #else
 static const long Cryptography_HAS_TLSv1_1 = 0;
-static const int SSL_OP_NO_TLSv1_1 = 0;
+static const long SSL_OP_NO_TLSv1_1 = 0;
 SSL_METHOD* (*TLSv1_1_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_1_client_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_1_server_method)(void) = NULL;
@@ -333,7 +333,7 @@ SSL_METHOD* (*TLSv1_1_server_method)(void) = NULL;
 static const long Cryptography_HAS_TLSv1_2 = 1;
 #else
 static const long Cryptography_HAS_TLSv1_2 = 0;
-static const int SSL_OP_NO_TLSv1_2 = 0;
+static const long SSL_OP_NO_TLSv1_2 = 0;
 SSL_METHOD* (*TLSv1_2_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_2_client_method)(void) = NULL;
 SSL_METHOD* (*TLSv1_2_server_method)(void) = NULL;
