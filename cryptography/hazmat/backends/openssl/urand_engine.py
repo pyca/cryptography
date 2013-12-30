@@ -133,6 +133,9 @@ static RAND_METHOD urandom_rand = {
 
 int Cryptography_add_urandom_engine(void) {
     ENGINE *e = ENGINE_new();
+    if (e == NULL) {
+        return 0;
+    }
     if(!ENGINE_set_id(e, Cryptography_urandom_engine_id) ||
             !ENGINE_set_name(e, Cryptography_urandom_engine_name) ||
             !ENGINE_set_RAND(e, &urandom_rand) ||
