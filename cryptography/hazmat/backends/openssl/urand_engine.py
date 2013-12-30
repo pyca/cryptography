@@ -37,7 +37,7 @@ static const char *Cryptography_urandom_engine_id= "urandom";
 static const char *Cryptography_urandom_engine_name = "urandom_engine";
 
 #ifndef _WIN32
-static int urandom_fd;
+static int urandom_fd = -1;
 
 static int urandom_rand_bytes(unsigned char *buffer, int size) {
     ssize_t n;
@@ -61,10 +61,9 @@ static int urandom_rand_status(void) {
 
 static int urandom_init(ENGINE *e) {
     urandom_fd = open("/dev/urandom", O_RDONLY);
-    if (urandom_fd > 0) {
+    if (urandom_fd > -1) {
         return 1;
     } else {
-        printf("crap");
         return 0;
     }
 }
