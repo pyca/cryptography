@@ -93,6 +93,7 @@ class Backend(object):
         "rand",
         "rsa",
         "ssl",
+        "urand_engine",
         "x509",
         "x509name",
         "x509v3",
@@ -169,6 +170,15 @@ class Backend(object):
         cls.lib = lib
         cls.lib.OpenSSL_add_all_algorithms()
         cls.lib.SSL_load_error_strings()
+
+        res = cls.lib.Cryptography_add_urandom_engine()
+        assert res == 1
+        e = cls.lib.ENGINE_by_id("urandom")
+        assert e != cls.ffi.NULL
+        res = cls.lib.ENGINE_init(e)
+        assert res == 1
+        res = cls.lib.ENGINE_set_default_RAND(e)
+        assert res == 1
 
     def openssl_version_text(self):
         """
