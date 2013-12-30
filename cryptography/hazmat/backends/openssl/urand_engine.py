@@ -21,6 +21,8 @@ INCLUDES = """
 """
 
 TYPES = """
+static const char *const Cryptography_urandom_engine_name;
+static const char *const Cryptography_urandom_engine_id;
 """
 
 FUNCTIONS = """
@@ -31,8 +33,8 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
-static const char *urandom_engine_id= "urandom";
-static const char *urandom_engine_name = "urandom_engine";
+static const char *Cryptography_urandom_engine_id= "urandom";
+static const char *Cryptography_urandom_engine_name = "urandom_engine";
 
 #ifndef _WIN32
 static int urandom_fd;
@@ -86,7 +88,6 @@ static int urandom_finish(ENGINE *e) {
 static HCRYPTPROV hCryptProv = 0;
 
 static int urandom_init(ENGINE *e) {
-    /* Acquire context */
     if (CryptAcquireContext(&hCryptProv, NULL, NULL,
                             PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
         return 1;
@@ -133,8 +134,8 @@ static RAND_METHOD urandom_rand = {
 
 int Cryptography_add_urandom_engine(void) {
     ENGINE *e = ENGINE_new();
-    if(!ENGINE_set_id(e, urandom_engine_id) ||
-            !ENGINE_set_name(e, urandom_engine_name) ||
+    if(!ENGINE_set_id(e, Cryptography_urandom_engine_id) ||
+            !ENGINE_set_name(e, Cryptography_urandom_engine_name) ||
             !ENGINE_set_RAND(e, &urandom_rand) ||
             !ENGINE_set_init_function(e, urandom_init) ||
             !ENGINE_set_finish_function(e, urandom_finish)) {

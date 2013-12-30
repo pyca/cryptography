@@ -97,3 +97,61 @@ class TestOpenSSL(object):
                 backend.lib.EVP_F_EVP_DECRYPTFINAL_EX,
                 0
             )
+
+    # This test is not in the next class because to check if it's really
+    # default we don't want to run the setup_method before it
+    def test_urandom_engine_is_default(self):
+        e = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(e)
+        assert name == backend.lib.Cryptography_urandom_engine_name
+        res = backend.lib.ENGINE_free(e)
+        assert res == 1
+
+
+class TestOpenSSLRandomEngine(object):
+    def setup_method(self, method):
+        # we need to reset state to being default. backend is a shared global
+        # for all these tests.
+        backend.register_urandom_engine()
+        pass
+
+    def test_register_urandom_already_default(self):
+        e = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(e)
+        assert name == backend.lib.Cryptography_urandom_engine_name
+        res = backend.lib.ENGINE_free(e)
+        assert res == 1
+        backend.register_urandom_engine()
+        e = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(e)
+        assert name == backend.lib.Cryptography_urandom_engine_name
+        res = backend.lib.ENGINE_free(e)
+        assert res == 1
+
+    def test_unregister_urandom_engine_already_unregistered(self):
+        backend.unregister_urandom_engine()
+        e = backend.lib.ENGINE_get_default_RAND()
+        assert e == backend.ffi.NULL
+        backend.unregister_urandom_engine()
+        e = backend.lib.ENGINE_get_default_RAND()
+        assert e == backend.ffi.NULL
+
+    def test_unregister_urandom_engine(self):
+        e = backend.lib.ENGINE_get_default_RAND()
+        assert e != backend.ffi.NULL
+        name = backend.lib.ENGINE_get_name(e)
+        assert name == backend.lib.Cryptography_urandom_engine_name
+        backend.unregister_urandom_engine()
+        e = backend.lib.ENGINE_get_default_RAND()
+        assert e == backend.ffi.NULL
+
+    def test_register_urandom_not_default(self):
+        backend.unregister_urandom_engine()
+        e = backend.lib.ENGINE_get_default_RAND()
+        assert e == backend.ffi.NULL
+        backend.register_urandom_engine()
+        e = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(e)
+        assert name == backend.lib.Cryptography_urandom_engine_name
+        res = backend.lib.ENGINE_free(e)
+        assert res == 1

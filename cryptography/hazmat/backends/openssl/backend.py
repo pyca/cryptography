@@ -181,10 +181,11 @@ class Backend(object):
         if e != self.ffi.NULL:
             name = self.lib.ENGINE_get_name(e)
             assert name != self.ffi.NULL
-            if self.ffi.string(name) == "urandom_engine":
+            if name == self.lib.Cryptography_urandom_engine_name:
                 self.lib.ENGINE_unregister_RAND(e)
                 res = self.lib.ENGINE_free(e)
                 assert res == 1
+                # this resets the RNG to use the new engine
                 self.lib.RAND_cleanup()
 
     def register_urandom_engine(self):
@@ -192,22 +193,23 @@ class Backend(object):
         if current_rand != self.ffi.NULL:
             name = self.lib.ENGINE_get_name(current_rand)
             assert name != self.ffi.NULL
-            if self.ffi.string(name) == "urandom_engine":
+            if name == self.lib.Cryptography_urandom_engine_name:
+                # urand is already the current default RAND
                 res = self.lib.ENGINE_finish(current_rand)
                 assert res == 1
-                return
-
-        e = self.lib.ENGINE_by_id("urandom")
-        assert e != self.ffi.NULL
-        res = self.lib.ENGINE_init(e)
-        assert res == 1
-        res = self.lib.ENGINE_set_default_RAND(e)
-        assert res == 1
-        res = self.lib.ENGINE_finish(e)
-        assert res == 1
-        res = self.lib.ENGINE_free(e)
-        assert res == 1
-        self.lib.RAND_cleanup()
+        else:
+            e = self.lib.ENGINE_by_id(self.lib.Cryptography_urandom_engine_id)
+            assert e != self.ffi.NULL
+            res = self.lib.ENGINE_init(e)
+            assert res == 1
+            res = self.lib.ENGINE_set_default_RAND(e)
+            assert res == 1
+            res = self.lib.ENGINE_finish(e)
+            assert res == 1
+            res = self.lib.ENGINE_free(e)
+            assert res == 1
+            # this resets the RNG to use the new engine
+            self.lib.RAND_cleanup()
 
     def openssl_version_text(self):
         """
