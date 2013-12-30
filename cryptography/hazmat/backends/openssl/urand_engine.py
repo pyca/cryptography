@@ -103,7 +103,7 @@ static int urandom_rand_bytes(unsigned char *buffer, int size) {
     }
 
     while (size > 0) {
-        chunk = size > INT_MAX ? INT_MAX : size;
+        chunk = size;
         if (!CryptGenRandom(hCryptProv, (DWORD)chunk, buffer)) {
             return 0;
         }
