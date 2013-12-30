@@ -43,6 +43,18 @@ class Backend(object):
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
+        # use Pythons locking if available
+        try:
+            __import__("_ssl")
+            raise ImportError
+        except ImportError:
+            pass
+
+        # otherwise setup our own
+        if self._lib.CRYPTO_get_locking_callback() == self._ffi.NULL:
+            res = self._lib.Cryptography_setup_locking()
+            assert res == 0
+
         # adds all ciphers/digests for EVP
         self._lib.OpenSSL_add_all_algorithms()
         # registers available SSL/TLS ciphers and digests

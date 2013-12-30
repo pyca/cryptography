@@ -116,6 +116,26 @@ class TestOpenSSL(object):
             b"data not multiple of block length"
         )
 
+    def test_locking_callback_set(self):
+        b = Backend()
+
+        locking_cb = b.lib.CRYPTO_get_locking_callback()
+        assert locking_cb != b.ffi.NULL
+
+        # emulate import _ssl not setting this for some reason
+        b.lib.CRYPTO_set_locking_callback(b.ffi.NULL)
+
+        # force cffi to reinit
+        Backend.ffi = None
+        Backend.lib = None
+
+        # now it should get set to our one
+        b = Backend()
+        locking_cb = b.lib.CRYPTO_get_locking_callback()
+
+        assert locking_cb != b.ffi.NULL
+        assert locking_cb == b.lib.Cryptography_locking_function_ptr
+
     def test_threads(self):
         b = Backend()
 

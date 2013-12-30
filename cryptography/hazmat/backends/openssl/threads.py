@@ -19,7 +19,10 @@ TYPES = """
 """
 
 FUNCTIONS = """
+void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+void CRYPTO_set_locking_callback(void (*func)(int, int, const char *, int));
 static int Cryptography_setup_locking();
+static void (*Cryptography_locking_function_ptr)(int, int, const char *, int);
 """
 
 MACROS = """
@@ -200,6 +203,8 @@ static void Cryptography_locking_function
     }
 }
 
+static void (*Cryptography_locking_function_ptr)
+    (int, int, const char *, int) = Cryptography_locking_function;
 
 static int Cryptography_setup_locking() {
     unsigned int i;
