@@ -32,7 +32,7 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 static const char *urandom_engine_id= "urandom";
-static const char *urandom_engine_name = "urandom engine";
+static const char *urandom_engine_name = "urandom_engine";
 
 #ifndef _WIN32
 static int urandom_fd;
