@@ -3,9 +3,9 @@ Fernet (Symmetric encryption)
 
 .. currentmodule:: cryptography.fernet
 
-`Fernet`_ is an implementation of symmetric (also known as "secret key")
-authenticated cryptography. Fernet provides guarantees that a message encrypted
-using it cannot be manipulated or read without the key.
+Fernet provides guarantees that a message encrypted using it cannot be
+manipulated or read without the key. `Fernet`_ is an implementation of
+symmetric (also known as "secret key") authenticated cryptography.
 
 .. class:: Fernet(key)
 
