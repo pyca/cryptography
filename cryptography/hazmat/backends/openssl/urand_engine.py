@@ -56,7 +56,11 @@ static int urandom_rand_bytes(unsigned char *buffer, int size) {
 }
 
 static int urandom_rand_status(void) {
-    return 1;
+    if (urandom_fd == -1) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 static int urandom_init(ENGINE *e) {
@@ -130,7 +134,11 @@ static int urandom_finish(ENGINE *e) {
 }
 
 static int urandom_rand_status(void) {
-    return 1;
+    if (hCryptProv == 0) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 #endif /* MS_WINDOWS */
 
