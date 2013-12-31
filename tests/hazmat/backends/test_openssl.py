@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cffi
+
 import pytest
 
 from cryptography import utils
@@ -21,6 +23,114 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
+
+
+ffi = cffi.FFI()
+
+ffi.cdef("""
+static const char *const Cryptography_faux_engine_name;
+static const char *const Cryptography_faux_engine_id;
+int Cryptography_add_faux_engine(void);
+int Cryptography_remove_faux_engine(void);
+""")
+dummy_engine = ffi.verify(
+    source="""
+        #include <openssl/engine.h>
+        #include <string.h>
+        static const char *const Cryptography_faux_engine_name="faux_engine";
+        static const char *const Cryptography_faux_engine_id="faux";
+        static int faux_bytes(unsigned char *buffer, int size) {
+            memset(buffer, 1, size);
+            return 1;
+        }
+        static int faux_status(void) { return 1; }
+        static int faux_init(ENGINE *e) { return 1; }
+        static int faux_finish(ENGINE *e) { return 1; }
+        static RAND_METHOD faux_rand = {
+            NULL,
+            faux_bytes,
+            NULL,
+            NULL,
+            faux_bytes,
+            faux_status,
+        };
+
+        int Cryptography_add_faux_engine(void) {
+            ENGINE *e = ENGINE_new();
+            if (e == NULL) {
+                return 0;
+            }
+            if(!ENGINE_set_id(e, Cryptography_faux_engine_id) ||
+                    !ENGINE_set_name(e, Cryptography_faux_engine_name) ||
+                    !ENGINE_set_RAND(e, &faux_rand) ||
+                    !ENGINE_set_init_function(e, faux_init) ||
+                    !ENGINE_set_finish_function(e, faux_finish)) {
+                return 0;
+            }
+            if (!ENGINE_add(e)) {
+                ENGINE_free(e);
+                return 0;
+            }
+            if (!ENGINE_free(e)) {
+                return 0;
+            }
+
+            return 1;
+        }
+
+        int Cryptography_remove_faux_engine(void) {
+            ENGINE *e = ENGINE_by_id(Cryptography_faux_engine_id);
+            if (e == NULL) {
+                return 0;
+            }
+            if (!ENGINE_remove(e)) {
+                ENGINE_free(e);
+                return 0;
+            }
+            if (!ENGINE_free(e)) {
+                return 0;
+            }
+            return 1;
+        }
+    """,
+    libraries=["crypto", "ssl"],
+)
+
+
+def register_dummy_engine():
+    current_rand = backend.lib.ENGINE_get_default_RAND()
+    assert current_rand != backend.ffi.NULL
+    name = backend.lib.ENGINE_get_name(current_rand)
+    assert name != backend.ffi.NULL
+    assert name != dummy_engine.Cryptography_faux_engine_id
+    e = backend.lib.ENGINE_by_id(dummy_engine.Cryptography_faux_engine_id)
+    assert e != backend.ffi.NULL
+    res = backend.lib.ENGINE_init(e)
+    assert res == 1
+    res = backend.lib.ENGINE_set_default_RAND(e)
+    assert res == 1
+    res = backend.lib.ENGINE_finish(e)
+    assert res == 1
+    res = backend.lib.ENGINE_free(e)
+    assert res == 1
+    # this resets the RNG to use the new engine
+    backend.lib.RAND_cleanup()
+    res = backend.lib.ENGINE_finish(current_rand)
+    assert res == 1
+
+
+def unregister_dummy_engine():
+    e = backend.lib.ENGINE_get_default_RAND()
+    if e != backend.ffi.NULL:
+        name = backend.lib.ENGINE_get_name(e)
+        assert name != backend.ffi.NULL
+        if name == dummy_engine.Cryptography_faux_engine_name:
+            backend.lib.ENGINE_unregister_RAND(e)
+            res = backend.lib.ENGINE_finish(e)
+            assert res == 1
+            backend.lib.RAND_cleanup()
+        res = backend.lib.ENGINE_free(e)
+        assert res == 1
 
 
 @utils.register_interface(interfaces.Mode)
@@ -109,11 +219,20 @@ class TestOpenSSL(object):
 
 
 class TestOpenSSLRandomEngine(object):
-    def setup_method(self, method):
+    @classmethod
+    def setup_class(cls):
+        # add the faux engine to the list of available engines
+        res = dummy_engine.Cryptography_add_faux_engine()
+        assert res == 1
+
+    def teardown_method(self, method):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
+        unregister_dummy_engine()
         backend.register_urandom_engine()
-        pass
+        current_default = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(current_default)
+        assert name == backend.lib.Cryptography_urandom_engine_name
 
     def test_register_urandom_already_default(self):
         e = backend.lib.ENGINE_get_default_RAND()
@@ -128,7 +247,7 @@ class TestOpenSSLRandomEngine(object):
         res = backend.lib.ENGINE_free(e)
         assert res == 1
 
-    def test_unregister_urandom_engine_already_unregistered(self):
+    def test_unregister_urandom_engine_nothing_registered(self):
         backend.unregister_urandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
@@ -141,11 +260,13 @@ class TestOpenSSLRandomEngine(object):
         assert e != backend.ffi.NULL
         name = backend.lib.ENGINE_get_name(e)
         assert name == backend.lib.Cryptography_urandom_engine_name
+        res = backend.lib.ENGINE_free(e)
+        assert res == 1
         backend.unregister_urandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
 
-    def test_register_urandom_not_default(self):
+    def test_register_urandom_no_default(self):
         backend.unregister_urandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
@@ -154,4 +275,32 @@ class TestOpenSSLRandomEngine(object):
         name = backend.lib.ENGINE_get_name(e)
         assert name == backend.lib.Cryptography_urandom_engine_name
         res = backend.lib.ENGINE_free(e)
+        assert res == 1
+
+    def test_unregister_urandom_other_engine_default(self):
+        register_dummy_engine()
+        default = backend.lib.ENGINE_get_default_RAND()
+        default_name = backend.lib.ENGINE_get_name(default)
+        assert default_name == dummy_engine.Cryptography_faux_engine_name
+        res = backend.lib.ENGINE_finish(default)
+        assert res == 1
+        backend.unregister_urandom_engine()
+        current_default = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(current_default)
+        assert name == dummy_engine.Cryptography_faux_engine_name
+        res = backend.lib.ENGINE_finish(current_default)
+        assert res == 1
+
+    def test_register_urandom_other_engine_default(self):
+        register_dummy_engine()
+        default = backend.lib.ENGINE_get_default_RAND()
+        default_name = backend.lib.ENGINE_get_name(default)
+        assert default_name == dummy_engine.Cryptography_faux_engine_name
+        res = backend.lib.ENGINE_finish(default)
+        assert res == 1
+        backend.register_urandom_engine()
+        current_default = backend.lib.ENGINE_get_default_RAND()
+        name = backend.lib.ENGINE_get_name(current_default)
+        assert name == backend.lib.Cryptography_urandom_engine_name
+        res = backend.lib.ENGINE_finish(current_default)
         assert res == 1
