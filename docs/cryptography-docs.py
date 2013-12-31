@@ -23,9 +23,6 @@ class HazmatDirective(Directive):
         if self.content:
             message += DANGER_ALTERNATE.format(alternate=self.content[0])
 
-        import pdb
-        pdb.set_trace()
-
         ad = make_admonition(
             Hazmat,
             self.name,
