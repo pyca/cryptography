@@ -21,25 +21,25 @@ INCLUDES = """
 """
 
 TYPES = """
-static const char *const Cryptography_urandom_engine_name;
-static const char *const Cryptography_urandom_engine_id;
+static const char *const Cryptography_osrandom_engine_name;
+static const char *const Cryptography_osrandom_engine_id;
 """
 
 FUNCTIONS = """
-int Cryptography_add_urandom_engine(void);
+int Cryptography_add_osrandom_engine(void);
 """
 
 MACROS = """
 """
 
 CUSTOMIZATIONS = """
-static const char *Cryptography_urandom_engine_id= "urandom";
-static const char *Cryptography_urandom_engine_name = "urandom_engine";
+static const char *Cryptography_osrandom_engine_id= "osrandom";
+static const char *Cryptography_osrandom_engine_name = "osrandom_engine";
 
 #ifndef _WIN32
 static int urandom_fd = -1;
 
-static int urandom_rand_bytes(unsigned char *buffer, int size) {
+static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     ssize_t n;
     while (0 < size) {
         do {
@@ -55,7 +55,7 @@ static int urandom_rand_bytes(unsigned char *buffer, int size) {
     return 1;
 }
 
-static int urandom_rand_status(void) {
+static int osrandom_rand_status(void) {
     if (urandom_fd == -1) {
         return 0;
     } else {
@@ -63,7 +63,7 @@ static int urandom_rand_status(void) {
     }
 }
 
-static int urandom_init(ENGINE *e) {
+static int osrandom_init(ENGINE *e) {
     if (urandom_fd > -1) {
         return 1;
     }
@@ -75,7 +75,7 @@ static int urandom_init(ENGINE *e) {
     }
 }
 
-static int urandom_finish(ENGINE *e) {
+static int osrandom_finish(ENGINE *e) {
     int n;
     do {
         n = close(urandom_fd);
@@ -92,7 +92,7 @@ static int urandom_finish(ENGINE *e) {
 #ifdef _WIN32
 static HCRYPTPROV hCryptProv = 0;
 
-static int urandom_init(ENGINE *e) {
+static int osrandom_init(ENGINE *e) {
     if (hCryptProv > 0) {
         return 1;
     }
@@ -104,7 +104,7 @@ static int urandom_init(ENGINE *e) {
     }
 }
 
-static int urandom_rand_bytes(unsigned char *buffer, int size) {
+static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     size_t chunk;
 
     if (hCryptProv == 0) {
@@ -122,7 +122,7 @@ static int urandom_rand_bytes(unsigned char *buffer, int size) {
     return 1;
 }
 
-static int urandom_finish(ENGINE *e) {
+static int osrandom_finish(ENGINE *e) {
     if (CryptReleaseContext(hCryptProv, 0)) {
         hCryptProv = 0;
         return 1;
@@ -131,7 +131,7 @@ static int urandom_finish(ENGINE *e) {
     }
 }
 
-static int urandom_rand_status(void) {
+static int osrandom_rand_status(void) {
     if (hCryptProv == 0) {
         return 0;
     } else {
@@ -140,25 +140,25 @@ static int urandom_rand_status(void) {
 }
 #endif /* MS_WINDOWS */
 
-static RAND_METHOD urandom_rand = {
+static RAND_METHOD osrandom_rand = {
     NULL,
-    urandom_rand_bytes,
+    osrandom_rand_bytes,
     NULL,
     NULL,
-    urandom_rand_bytes,
-    urandom_rand_status,
+    osrandom_rand_bytes,
+    osrandom_rand_status,
 };
 
-int Cryptography_add_urandom_engine(void) {
+int Cryptography_add_osrandom_engine(void) {
     ENGINE *e = ENGINE_new();
     if (e == NULL) {
         return 0;
     }
-    if(!ENGINE_set_id(e, Cryptography_urandom_engine_id) ||
-            !ENGINE_set_name(e, Cryptography_urandom_engine_name) ||
-            !ENGINE_set_RAND(e, &urandom_rand) ||
-            !ENGINE_set_init_function(e, urandom_init) ||
-            !ENGINE_set_finish_function(e, urandom_finish)) {
+    if(!ENGINE_set_id(e, Cryptography_osrandom_engine_id) ||
+            !ENGINE_set_name(e, Cryptography_osrandom_engine_name) ||
+            !ENGINE_set_RAND(e, &osrandom_rand) ||
+            !ENGINE_set_init_function(e, osrandom_init) ||
+            !ENGINE_set_finish_function(e, osrandom_finish)) {
         return 0;
     }
     if (!ENGINE_add(e)) {

@@ -192,10 +192,10 @@ class TestOpenSSL(object):
 
     # This test is not in the next class because to check if it's really
     # default we don't want to run the setup_method before it
-    def test_urandom_engine_is_default(self):
+    def test_osrandom_engine_is_default(self):
         e = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(e)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
         res = backend.lib.ENGINE_free(e)
         assert res == 1
 
@@ -211,78 +211,78 @@ class TestOpenSSLRandomEngine(object):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
         unregister_dummy_engine()
-        backend.register_urandom_engine()
+        backend.register_osrandom_engine()
         current_default = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(current_default)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
 
-    def test_register_urandom_already_default(self):
+    def test_register_osrandom_already_default(self):
         e = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(e)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
         res = backend.lib.ENGINE_free(e)
         assert res == 1
-        backend.register_urandom_engine()
+        backend.register_osrandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(e)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
         res = backend.lib.ENGINE_free(e)
         assert res == 1
 
-    def test_unregister_urandom_engine_nothing_registered(self):
-        backend.unregister_urandom_engine()
+    def test_unregister_osrandom_engine_nothing_registered(self):
+        backend.unregister_osrandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
-        backend.unregister_urandom_engine()
+        backend.unregister_osrandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
 
-    def test_unregister_urandom_engine(self):
+    def test_unregister_osrandom_engine(self):
         e = backend.lib.ENGINE_get_default_RAND()
         assert e != backend.ffi.NULL
         name = backend.lib.ENGINE_get_name(e)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
         res = backend.lib.ENGINE_free(e)
         assert res == 1
-        backend.unregister_urandom_engine()
+        backend.unregister_osrandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
 
-    def test_register_urandom_no_default(self):
-        backend.unregister_urandom_engine()
+    def test_register_osrandom_no_default(self):
+        backend.unregister_osrandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         assert e == backend.ffi.NULL
-        backend.register_urandom_engine()
+        backend.register_osrandom_engine()
         e = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(e)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
         res = backend.lib.ENGINE_free(e)
         assert res == 1
 
-    def test_unregister_urandom_other_engine_default(self):
+    def test_unregister_osrandom_other_engine_default(self):
         register_dummy_engine()
         default = backend.lib.ENGINE_get_default_RAND()
         default_name = backend.lib.ENGINE_get_name(default)
         assert default_name == dummy_engine.Cryptography_faux_engine_name
         res = backend.lib.ENGINE_finish(default)
         assert res == 1
-        backend.unregister_urandom_engine()
+        backend.unregister_osrandom_engine()
         current_default = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(current_default)
         assert name == dummy_engine.Cryptography_faux_engine_name
         res = backend.lib.ENGINE_finish(current_default)
         assert res == 1
 
-    def test_register_urandom_other_engine_default(self):
+    def test_register_osrandom_other_engine_default(self):
         register_dummy_engine()
         default = backend.lib.ENGINE_get_default_RAND()
         default_name = backend.lib.ENGINE_get_name(default)
         assert default_name == dummy_engine.Cryptography_faux_engine_name
         res = backend.lib.ENGINE_finish(default)
         assert res == 1
-        backend.register_urandom_engine()
+        backend.register_osrandom_engine()
         current_default = backend.lib.ENGINE_get_default_RAND()
         name = backend.lib.ENGINE_get_name(current_default)
-        assert name == backend.lib.Cryptography_urandom_engine_name
+        assert name == backend.lib.Cryptography_osrandom_engine_name
         res = backend.lib.ENGINE_finish(current_default)
         assert res == 1

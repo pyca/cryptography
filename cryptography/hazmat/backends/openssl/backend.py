@@ -93,7 +93,7 @@ class Backend(object):
         "rand",
         "rsa",
         "ssl",
-        "urand_engine",
+        "osrand_engine",
         "x509",
         "x509name",
         "x509v3",
@@ -107,7 +107,7 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self.register_urandom_engine()
+        self.register_osrandom_engine()
 
     @classmethod
     def _ensure_ffi_initialized(cls):
@@ -172,36 +172,36 @@ class Backend(object):
         cls.lib.OpenSSL_add_all_algorithms()
         cls.lib.SSL_load_error_strings()
 
-        # Add the urandom engine to the engine list
-        res = cls.lib.Cryptography_add_urandom_engine()
+        # Add the osrandom engine to the engine list
+        res = cls.lib.Cryptography_add_osrandom_engine()
         assert res == 1
 
-    def unregister_urandom_engine(self):
+    def unregister_osrandom_engine(self):
         e = self.lib.ENGINE_get_default_RAND()
         if e != self.ffi.NULL:
             name = self.lib.ENGINE_get_name(e)
             assert name != self.ffi.NULL
-            if name == self.lib.Cryptography_urandom_engine_name:
+            if name == self.lib.Cryptography_osrandom_engine_name:
                 self.lib.ENGINE_unregister_RAND(e)
                 # this resets the RNG to use the new engine
                 self.lib.RAND_cleanup()
             res = self.lib.ENGINE_finish(e)
             assert res == 1
 
-    def register_urandom_engine(self):
+    def register_osrandom_engine(self):
         current_rand = self.lib.ENGINE_get_default_RAND()
         if current_rand != self.ffi.NULL:
             name = self.lib.ENGINE_get_name(current_rand)
             assert name != self.ffi.NULL
-            if name != self.lib.Cryptography_urandom_engine_name:
-                self._register_urandom_engine()
+            if name != self.lib.Cryptography_osrandom_engine_name:
+                self._register_osrandom_engine()
             res = self.lib.ENGINE_finish(current_rand)
             assert res == 1
         else:
-            self._register_urandom_engine()
+            self._register_osrandom_engine()
 
-    def _register_urandom_engine(self):
-        e = self.lib.ENGINE_by_id(self.lib.Cryptography_urandom_engine_id)
+    def _register_osrandom_engine(self):
+        e = self.lib.ENGINE_by_id(self.lib.Cryptography_osrandom_engine_id)
         assert e != self.ffi.NULL
         res = self.lib.ENGINE_init(e)
         assert res == 1
