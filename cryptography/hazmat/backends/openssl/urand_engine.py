@@ -90,8 +90,6 @@ static int urandom_finish(ENGINE *e) {
 #endif
 
 #ifdef _WIN32
-/* This handle is never explicitly released. Instead, the operating
-   system will release it when the process terminates. */
 static HCRYPTPROV hCryptProv = 0;
 
 static int urandom_init(ENGINE *e) {
