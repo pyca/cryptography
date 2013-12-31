@@ -110,14 +110,14 @@ Don't name parameters:
         ...;
     };
 
-Don't include stray ``void`` parameters:
+Include ``void`` if the function takes no arguments:
 
 .. code-block:: c
 
     // Good
-    long f();
-    // Bad
     long f(void);
+    // Bad
+    long f();
 
 Wrap lines at 80 characters like so:
 
@@ -135,6 +135,23 @@ Include a space after commas between parameters:
     long f(int, char *)
     // Bad
     long f(int,char *)
+
+Values set by ``#define`` should be assigned the appropriate type. If you see
+this:
+
+.. code-block:: c
+
+    #define SOME_INTEGER_LITERAL 0x0;
+    #define SOME_UNSIGNED_INTEGER_LITERAL 0x0001U;
+    #define SOME_STRING_LITERAL "hello";
+
+...it should be added to the bindings like so:
+
+.. code-block:: c
+
+    static const int SOME_INTEGER_LITERAL;
+    static const unsigned int SOME_UNSIGNED_INTEGER_LITERAL;
+    static const char *const SOME_STRING_LITERAL;
 
 Documentation
 -------------

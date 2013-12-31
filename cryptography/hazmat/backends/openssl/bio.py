@@ -50,6 +50,49 @@ struct bio_st {
     ...;
 };
 typedef ... BUF_MEM;
+
+static const int BIO_TYPE_MEM;
+static const int BIO_TYPE_FILE;
+static const int BIO_TYPE_FD;
+static const int BIO_TYPE_SOCKET;
+static const int BIO_TYPE_CONNECT;
+static const int BIO_TYPE_ACCEPT;
+static const int BIO_TYPE_NULL;
+static const int BIO_CLOSE;
+static const int BIO_NOCLOSE;
+static const int BIO_TYPE_SOURCE_SINK;
+static const int BIO_CTRL_RESET;
+static const int BIO_CTRL_EOF;
+static const int BIO_CTRL_SET;
+static const int BIO_CTRL_SET_CLOSE;
+static const int BIO_CTRL_FLUSH;
+static const int BIO_CTRL_DUP;
+static const int BIO_CTRL_GET_CLOSE;
+static const int BIO_CTRL_INFO;
+static const int BIO_CTRL_GET;
+static const int BIO_CTRL_PENDING;
+static const int BIO_CTRL_WPENDING;
+static const int BIO_C_FILE_SEEK;
+static const int BIO_C_FILE_TELL;
+static const int BIO_TYPE_NONE;
+static const int BIO_TYPE_PROXY_CLIENT;
+static const int BIO_TYPE_PROXY_SERVER;
+static const int BIO_TYPE_NBIO_TEST;
+static const int BIO_TYPE_BER;
+static const int BIO_TYPE_BIO;
+static const int BIO_TYPE_DESCRIPTOR;
+static const int BIO_FLAGS_READ;
+static const int BIO_FLAGS_WRITE;
+static const int BIO_FLAGS_IO_SPECIAL;
+static const int BIO_FLAGS_RWS;
+static const int BIO_FLAGS_SHOULD_RETRY;
+static const int BIO_TYPE_NULL_FILTER;
+static const int BIO_TYPE_SSL;
+static const int BIO_TYPE_MD;
+static const int BIO_TYPE_BUFFER;
+static const int BIO_TYPE_CIPHER;
+static const int BIO_TYPE_BASE64;
+static const int BIO_TYPE_FILTER;
 """
 
 FUNCTIONS = """
@@ -63,16 +106,16 @@ BIO *BIO_pop(BIO *);
 BIO *BIO_next(BIO *);
 BIO *BIO_find_type(BIO *, int);
 int BIO_method_type(const BIO *);
-BIO_METHOD *BIO_s_mem();
+BIO_METHOD *BIO_s_mem(void);
 BIO *BIO_new_mem_buf(void *, int);
-BIO_METHOD *BIO_s_file();
+BIO_METHOD *BIO_s_file(void);
 BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_fp(FILE *, int);
-BIO_METHOD *BIO_s_fd();
+BIO_METHOD *BIO_s_fd(void);
 BIO *BIO_new_fd(int, int);
-BIO_METHOD *BIO_s_socket();
+BIO_METHOD *BIO_s_socket(void);
 BIO *BIO_new_socket(int, int);
-BIO_METHOD *BIO_s_null();
+BIO_METHOD *BIO_s_null(void);
 long BIO_ctrl(BIO *, int, long, void *);
 long BIO_callback_ctrl(
     BIO *,
@@ -87,8 +130,8 @@ int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
-BIO_METHOD *BIO_f_null();
-BIO_METHOD *BIO_f_buffer();
+BIO_METHOD *BIO_f_null(void);
+BIO_METHOD *BIO_f_buffer(void);
 """
 
 MACROS = """
@@ -100,10 +143,10 @@ long BIO_set_mem_buf(BIO *, BUF_MEM *, int);
 long BIO_get_mem_ptr(BIO *, BUF_MEM **);
 long BIO_set_fp(BIO *, FILE *, int);
 long BIO_get_fp(BIO *, FILE **);
-int BIO_read_filename(BIO *, char *);
-int BIO_write_filename(BIO *, char *);
-int BIO_append_filename(BIO *, char *);
-int BIO_rw_filename(BIO *, char *);
+long BIO_read_filename(BIO *, char *);
+long BIO_write_filename(BIO *, char *);
+long BIO_append_filename(BIO *, char *);
+long BIO_rw_filename(BIO *, char *);
 int BIO_should_read(BIO *);
 int BIO_should_write(BIO *);
 int BIO_should_io_special(BIO *);
@@ -125,48 +168,6 @@ long BIO_set_read_buffer_size(BIO *, long);
 long BIO_set_write_buffer_size(BIO *, long);
 long BIO_set_buffer_size(BIO *, long);
 long BIO_set_buffer_read_data(BIO *, void *, long);
-#define BIO_TYPE_MEM ...
-#define BIO_TYPE_FILE ...
-#define BIO_TYPE_FD ...
-#define BIO_TYPE_SOCKET ...
-#define BIO_TYPE_CONNECT ...
-#define BIO_TYPE_ACCEPT ...
-#define BIO_TYPE_NULL ...
-#define BIO_CLOSE ...
-#define BIO_NOCLOSE ...
-#define BIO_TYPE_SOURCE_SINK ...
-#define BIO_CTRL_RESET ...
-#define BIO_CTRL_EOF ...
-#define BIO_CTRL_SET ...
-#define BIO_CTRL_SET_CLOSE ...
-#define BIO_CTRL_FLUSH ...
-#define BIO_CTRL_DUP ...
-#define BIO_CTRL_GET_CLOSE ...
-#define BIO_CTRL_INFO ...
-#define BIO_CTRL_GET ...
-#define BIO_CTRL_PENDING ...
-#define BIO_CTRL_WPENDING ...
-#define BIO_C_FILE_SEEK ...
-#define BIO_C_FILE_TELL ...
-#define BIO_TYPE_NONE ...
-#define BIO_TYPE_PROXY_CLIENT ...
-#define BIO_TYPE_PROXY_SERVER ...
-#define BIO_TYPE_NBIO_TEST ...
-#define BIO_TYPE_BER ...
-#define BIO_TYPE_BIO ...
-#define BIO_TYPE_DESCRIPTOR ...
-#define BIO_FLAGS_READ ...
-#define BIO_FLAGS_WRITE ...
-#define BIO_FLAGS_IO_SPECIAL ...
-#define BIO_FLAGS_RWS ...
-#define BIO_FLAGS_SHOULD_RETRY ...
-#define BIO_TYPE_NULL_FILTER ...
-#define BIO_TYPE_SSL ...
-#define BIO_TYPE_MD ...
-#define BIO_TYPE_BUFFER ...
-#define BIO_TYPE_CIPHER ...
-#define BIO_TYPE_BASE64 ...
-#define BIO_TYPE_FILTER ...
 """
 
 CUSTOMIZATIONS = """

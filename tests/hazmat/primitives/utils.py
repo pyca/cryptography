@@ -22,27 +22,17 @@ def _load_all_params(path, file_names, param_loader):
 
 
 def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
-                          mode_factory, only_if, skip_message=None):
+                          mode_factory):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
     def test_encryption(self, backend, params):
-        encrypt_test(
-            backend,
-            cipher_factory,
-            mode_factory,
-            params,
-            only_if,
-            skip_message
-        )
+        encrypt_test(backend, cipher_factory, mode_factory, params)
 
     return test_encryption
 
 
-def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
-                 skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
+def encrypt_test(backend, cipher_factory, mode_factory, params):
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]
     cipher = Cipher(
@@ -61,27 +51,17 @@ def encrypt_test(backend, cipher_factory, mode_factory, params, only_if,
 
 
 def generate_aead_test(param_loader, path, file_names, cipher_factory,
-                       mode_factory, only_if, skip_message):
+                       mode_factory):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
     def test_aead(self, backend, params):
-        aead_test(
-            backend,
-            cipher_factory,
-            mode_factory,
-            params,
-            only_if,
-            skip_message
-        )
+        aead_test(backend, cipher_factory, mode_factory, params)
 
     return test_aead
 
 
-def aead_test(backend, cipher_factory, mode_factory, params, only_if,
-              skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
+def aead_test(backend, cipher_factory, mode_factory, params):
     if params.get("pt") is not None:
         plaintext = params["pt"]
     ciphertext = params["ct"]
@@ -124,26 +104,16 @@ def aead_test(backend, cipher_factory, mode_factory, params, only_if,
 
 
 def generate_stream_encryption_test(param_loader, path, file_names,
-                                    cipher_factory, only_if=None,
-                                    skip_message=None):
+                                    cipher_factory):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
     def test_stream_encryption(self, backend, params):
-        stream_encryption_test(
-            backend,
-            cipher_factory,
-            params,
-            only_if,
-            skip_message
-        )
+        stream_encryption_test(backend, cipher_factory, params)
     return test_stream_encryption
 
 
-def stream_encryption_test(backend, cipher_factory, params, only_if,
-                           skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
+def stream_encryption_test(backend, cipher_factory, params):
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]
     offset = params["offset"]
@@ -161,25 +131,16 @@ def stream_encryption_test(backend, cipher_factory, params, only_if,
     assert actual_plaintext == binascii.unhexlify(plaintext)
 
 
-def generate_hash_test(param_loader, path, file_names, hash_cls,
-                       only_if=None, skip_message=None):
+def generate_hash_test(param_loader, path, file_names, hash_cls):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
     def test_hash(self, backend, params):
-        hash_test(
-            backend,
-            hash_cls,
-            params,
-            only_if,
-            skip_message
-        )
+        hash_test(backend, hash_cls, params)
     return test_hash
 
 
-def hash_test(backend, algorithm, params, only_if, skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
+def hash_test(backend, algorithm, params):
     msg = params[0]
     md = params[1]
     m = hashes.Hash(algorithm, backend=backend)
@@ -188,25 +149,13 @@ def hash_test(backend, algorithm, params, only_if, skip_message):
     assert m.finalize() == binascii.unhexlify(expected_md)
 
 
-def generate_base_hash_test(algorithm, digest_size, block_size,
-                            only_if=None, skip_message=None):
+def generate_base_hash_test(algorithm, digest_size, block_size):
     def test_base_hash(self, backend):
-        base_hash_test(
-            backend,
-            algorithm,
-            digest_size,
-            block_size,
-            only_if,
-            skip_message,
-        )
+        base_hash_test(backend, algorithm, digest_size, block_size)
     return test_base_hash
 
 
-def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
-                   skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
-
+def base_hash_test(backend, algorithm, digest_size, block_size):
     m = hashes.Hash(algorithm, backend=backend)
     assert m.algorithm.digest_size == digest_size
     assert m.algorithm.block_size == block_size
@@ -221,46 +170,42 @@ def base_hash_test(backend, algorithm, digest_size, block_size, only_if,
     assert copy.finalize() == m.finalize()
 
 
-def generate_long_string_hash_test(hash_factory, md, only_if=None,
-                                   skip_message=None):
+def generate_long_string_hash_test(hash_factory, md):
     def test_long_string_hash(self, backend):
-        long_string_hash_test(
-            backend,
-            hash_factory,
-            md,
-            only_if,
-            skip_message
-        )
+        long_string_hash_test(backend, hash_factory, md)
     return test_long_string_hash
 
 
-def long_string_hash_test(backend, algorithm, md, only_if, skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
+def long_string_hash_test(backend, algorithm, md):
     m = hashes.Hash(algorithm, backend=backend)
     m.update(b"a" * 1000000)
     assert m.finalize() == binascii.unhexlify(md.lower().encode("ascii"))
 
 
-def generate_hmac_test(param_loader, path, file_names, algorithm,
-                       only_if=None, skip_message=None):
+def generate_base_hmac_test(hash_cls):
+    def test_base_hmac(self, backend):
+        base_hmac_test(backend, hash_cls)
+    return test_base_hmac
+
+
+def base_hmac_test(backend, algorithm):
+    key = b"ab"
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
+    h_copy = h.copy()
+    assert h != h_copy
+    assert h._ctx != h_copy._ctx
+
+
+def generate_hmac_test(param_loader, path, file_names, algorithm):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
     def test_hmac(self, backend, params):
-        hmac_test(
-            backend,
-            algorithm,
-            params,
-            only_if,
-            skip_message
-        )
+        hmac_test(backend, algorithm, params)
     return test_hmac
 
 
-def hmac_test(backend, algorithm, params, only_if, skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
+def hmac_test(backend, algorithm, params):
     msg = params[0]
     md = params[1]
     key = params[2]
@@ -269,44 +214,13 @@ def hmac_test(backend, algorithm, params, only_if, skip_message):
     assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
 
 
-def generate_base_hmac_test(hash_cls, only_if=None, skip_message=None):
-    def test_base_hmac(self, backend):
-        base_hmac_test(
-            backend,
-            hash_cls,
-            only_if,
-            skip_message,
-        )
-    return test_base_hmac
-
-
-def base_hmac_test(backend, algorithm, only_if, skip_message):
-    if only_if is not None and not only_if(backend):
-        pytest.skip(skip_message)
-    key = b"ab"
-    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
-    h_copy = h.copy()
-    assert h != h_copy
-    assert h._ctx != h_copy._ctx
-
-
-def generate_aead_exception_test(cipher_factory, mode_factory,
-                                 only_if, skip_message):
+def generate_aead_exception_test(cipher_factory, mode_factory):
     def test_aead_exception(self, backend):
-        aead_exception_test(
-            backend,
-            cipher_factory,
-            mode_factory,
-            only_if,
-            skip_message
-        )
+        aead_exception_test(backend, cipher_factory, mode_factory)
     return test_aead_exception
 
 
-def aead_exception_test(backend, cipher_factory, mode_factory,
-                        only_if, skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
+def aead_exception_test(backend, cipher_factory, mode_factory):
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
         mode_factory(binascii.unhexlify(b"0" * 24)),
@@ -336,23 +250,13 @@ def aead_exception_test(backend, cipher_factory, mode_factory,
         decryptor.tag
 
 
-def generate_aead_tag_exception_test(cipher_factory, mode_factory,
-                                     only_if, skip_message):
+def generate_aead_tag_exception_test(cipher_factory, mode_factory):
     def test_aead_tag_exception(self, backend):
-        aead_tag_exception_test(
-            backend,
-            cipher_factory,
-            mode_factory,
-            only_if,
-            skip_message
-        )
+        aead_tag_exception_test(backend, cipher_factory, mode_factory)
     return test_aead_tag_exception
 
 
-def aead_tag_exception_test(backend, cipher_factory, mode_factory,
-                            only_if, skip_message):
-    if not only_if(backend):
-        pytest.skip(skip_message)
+def aead_tag_exception_test(backend, cipher_factory, mode_factory):
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
         mode_factory(binascii.unhexlify(b"0" * 24)),

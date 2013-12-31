@@ -28,9 +28,9 @@ int i2d_PKCS12_bio(BIO *, PKCS12 *);
 
 MACROS = """
 int PKCS12_parse(PKCS12 *, const char *, EVP_PKEY **, X509 **,
-                 struct stack_st_X509 **);
+                 Cryptography_STACK_OF_X509 **);
 PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
-                      struct stack_st_X509 *, int, int, int, int, int);
+                      Cryptography_STACK_OF_X509 *, int, int, int, int, int);
 """
 
 CUSTOMIZATIONS = """
