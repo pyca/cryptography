@@ -183,10 +183,10 @@ class Backend(object):
             assert name != self.ffi.NULL
             if name == self.lib.Cryptography_urandom_engine_name:
                 self.lib.ENGINE_unregister_RAND(e)
-                res = self.lib.ENGINE_free(e)
-                assert res == 1
                 # this resets the RNG to use the new engine
                 self.lib.RAND_cleanup()
+            res = self.lib.ENGINE_finish(e)
+            assert res == 1
 
     def register_urandom_engine(self):
         current_rand = self.lib.ENGINE_get_default_RAND()
@@ -207,9 +207,11 @@ class Backend(object):
         assert res == 1
         res = self.lib.ENGINE_set_default_RAND(e)
         assert res == 1
-        res = self.lib.ENGINE_finish(e)
-        assert res == 1
+        # decrement the structural ref incremented by ENGINE_by_id
         res = self.lib.ENGINE_free(e)
+        assert res == 1
+        # decrement the functional ref incremented by ENGINE_init
+        res = self.lib.ENGINE_finish(e)
         assert res == 1
         # this resets the RNG to use the new engine
         self.lib.RAND_cleanup()

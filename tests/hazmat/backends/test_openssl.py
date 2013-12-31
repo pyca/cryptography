@@ -31,7 +31,6 @@ ffi.cdef("""
 static const char *const Cryptography_faux_engine_name;
 static const char *const Cryptography_faux_engine_id;
 int Cryptography_add_faux_engine(void);
-int Cryptography_remove_faux_engine(void);
 """)
 dummy_engine = ffi.verify(
     source="""
@@ -77,21 +76,6 @@ dummy_engine = ffi.verify(
 
             return 1;
         }
-
-        int Cryptography_remove_faux_engine(void) {
-            ENGINE *e = ENGINE_by_id(Cryptography_faux_engine_id);
-            if (e == NULL) {
-                return 0;
-            }
-            if (!ENGINE_remove(e)) {
-                ENGINE_free(e);
-                return 0;
-            }
-            if (!ENGINE_free(e)) {
-                return 0;
-            }
-            return 1;
-        }
     """,
     libraries=["crypto", "ssl"],
 )
@@ -103,6 +87,8 @@ def register_dummy_engine():
     name = backend.lib.ENGINE_get_name(current_rand)
     assert name != backend.ffi.NULL
     assert name != dummy_engine.Cryptography_faux_engine_id
+    res = backend.lib.ENGINE_finish(current_rand)
+    assert res == 1
     e = backend.lib.ENGINE_by_id(dummy_engine.Cryptography_faux_engine_id)
     assert e != backend.ffi.NULL
     res = backend.lib.ENGINE_init(e)
@@ -115,8 +101,6 @@ def register_dummy_engine():
     assert res == 1
     # this resets the RNG to use the new engine
     backend.lib.RAND_cleanup()
-    res = backend.lib.ENGINE_finish(current_rand)
-    assert res == 1
 
 
 def unregister_dummy_engine():
@@ -126,10 +110,8 @@ def unregister_dummy_engine():
         assert name != backend.ffi.NULL
         if name == dummy_engine.Cryptography_faux_engine_name:
             backend.lib.ENGINE_unregister_RAND(e)
-            res = backend.lib.ENGINE_finish(e)
-            assert res == 1
             backend.lib.RAND_cleanup()
-        res = backend.lib.ENGINE_free(e)
+        res = backend.lib.ENGINE_finish(e)
         assert res == 1
 
 

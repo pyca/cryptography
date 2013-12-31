@@ -60,6 +60,9 @@ static int urandom_rand_status(void) {
 }
 
 static int urandom_init(ENGINE *e) {
+    if (urandom_fd > -1) {
+        return 1;
+    }
     urandom_fd = open("/dev/urandom", O_RDONLY);
     if (urandom_fd > -1) {
         return 1;
@@ -76,6 +79,7 @@ static int urandom_finish(ENGINE *e) {
     if (n < 0) {
         return 0;
     } else {
+        urandom_fd = -1;
         return 1;
     }
 }
@@ -87,6 +91,9 @@ static int urandom_finish(ENGINE *e) {
 static HCRYPTPROV hCryptProv = 0;
 
 static int urandom_init(ENGINE *e) {
+    if (hCryptProv > 0) {
+        return 1;
+    }
     if (CryptAcquireContext(&hCryptProv, NULL, NULL,
                             PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
         return 1;
@@ -114,7 +121,12 @@ static int urandom_rand_bytes(unsigned char *buffer, int size) {
 }
 
 static int urandom_finish(ENGINE *e) {
-    return 1;
+    if (CryptReleaseContext(hCryptProv, 0)) {
+        hCryptProv = 0;
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 static int urandom_rand_status(void) {
