@@ -92,9 +92,11 @@ class GCM(object):
     name = "GCM"
 
     def __init__(self, initialization_vector, tag=None):
+        # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
+        # to actually construct a bytes object that large, so we don't check
+        # for it
         self.initialization_vector = initialization_vector
         self.tag = tag
 
     def validate_for_algorithm(self, algorithm):
-        # TODO: figure out what this should do
         pass
