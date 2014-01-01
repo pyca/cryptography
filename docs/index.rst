@@ -44,7 +44,7 @@ dangerous and can be used incorrectly. They require making decisions and having
 an in-depth knowledge of the cryptographic concepts at work. Because of the
 potential danger in working at this level, this is referred to as the
 "hazardous materials" or "hazmat" layer. These live in the
-``cryptography.hazmat`` package, and their documentation will always contain a
+``cryptography.hazmat`` package, and their documentation will always contain an
 admonition at the top.
 
 We recommend using the recipes layer whenever possible, and falling back to the
