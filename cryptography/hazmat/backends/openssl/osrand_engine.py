@@ -47,7 +47,6 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
         } while (n < 0 && errno == EINTR);
         if (n <= 0) {
             return 0;
-            break;
         }
         buffer += n;
         size -= n;
@@ -69,6 +68,9 @@ static int osrandom_init(ENGINE *e) {
     }
     urandom_fd = open("/dev/urandom", O_RDONLY);
     if (urandom_fd > -1) {
+        if (fcntl(urandom_fd, F_SETFD, FD_CLOEXEC) == -1) {
+            return 0;
+        }
         return 1;
     } else {
         return 0;
@@ -81,6 +83,7 @@ static int osrandom_finish(ENGINE *e) {
         n = close(urandom_fd);
     } while (n < 0 && errno == EINTR);
     if (n < 0) {
+        urandom_fd = -1;
         return 0;
     } else {
         urandom_fd = -1;
