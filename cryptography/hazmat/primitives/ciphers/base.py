@@ -44,8 +44,16 @@ class Cipher(object):
     def _wrap_ctx(self, ctx, encrypt):
         if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
             if encrypt:
+                if self.mode.tag is not None:
+                    raise ValueError(
+                        "Authentication tag must be None when encrypting"
+                    )
                 return _AEADEncryptionContext(ctx)
             else:
+                if self.mode.tag is None:
+                    raise ValueError(
+                        "Authentication tag must be provided when decrypting"
+                    )
                 return _AEADCipherContext(ctx)
         else:
             return _CipherContext(ctx)
