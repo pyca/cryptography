@@ -23,14 +23,17 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
+@utils.register_interface(interfaces.Mode)
 class DummyMode(object):
+    name = "dummy-mode"
+
     def validate_for_algorithm(self, algorithm):
         pass
 
 
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
-    pass
+    name = "dummy-cipher"
 
 
 class TestOpenSSL(object):
@@ -63,15 +66,16 @@ class TestOpenSSL(object):
         assert b.ffi is backend.ffi
         assert b.lib is backend.lib
 
-    def test_nonexistent_cipher(self):
+    @pytest.mark.parametrize("mode", [DummyMode(), None])
+    def test_nonexistent_cipher(self, mode):
         b = Backend()
         b.register_cipher_adapter(
             DummyCipher,
-            DummyMode,
+            type(mode),
             lambda backend, cipher, mode: backend.ffi.NULL
         )
         cipher = Cipher(
-            DummyCipher(), DummyMode(), backend=b,
+            DummyCipher(), mode, backend=b,
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()

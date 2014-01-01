@@ -12,26 +12,26 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/rand.h>
+#include <openssl/objects.h>
 """
 
 TYPES = """
 """
 
 FUNCTIONS = """
-void ERR_load_RAND_strings(void);
-void RAND_seed(const void *, int);
-void RAND_add(const void *, int, double);
-int RAND_status(void);
-int RAND_egd(const char *);
-int RAND_egd_bytes(const char *, int);
-int RAND_query_egd_bytes(const char *, unsigned char *, int);
-const char *RAND_file_name(char *, size_t);
-int RAND_load_file(const char *, long);
-int RAND_write_file(const char *);
-void RAND_cleanup(void);
-int RAND_bytes(unsigned char *, int);
-int RAND_pseudo_bytes(unsigned char *, int);
+ASN1_OBJECT *OBJ_nid2obj(int);
+const char *OBJ_nid2ln(int);
+const char *OBJ_nid2sn(int);
+int OBJ_obj2nid(const ASN1_OBJECT *);
+int OBJ_ln2nid(const char *);
+int OBJ_sn2nid(const char *);
+int OBJ_txt2nid(const char *);
+ASN1_OBJECT *OBJ_txt2obj(const char *, int);
+int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
+int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
+ASN1_OBJECT *OBJ_dup(const ASN1_OBJECT *);
+int OBJ_create(const char *, const char *, const char *);
+void OBJ_cleanup(void);
 """
 
 MACROS = """

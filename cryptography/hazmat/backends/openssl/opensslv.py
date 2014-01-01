@@ -16,7 +16,8 @@ INCLUDES = """
 """
 
 TYPES = """
-static char *const OPENSSL_VERSION_TEXT;
+static const int OPENSSL_VERSION_NUMBER;
+static const char *const OPENSSL_VERSION_TEXT;
 """
 
 FUNCTIONS = """
@@ -27,3 +28,5 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

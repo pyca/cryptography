@@ -8,6 +8,12 @@ Exceptions
     This is raised when a context is used after being finalized.
 
 
+.. class:: InvalidSignature
+
+    This is raised when the verify method of a hash context does not
+    compare equal.
+
+
 .. class:: NotYetFinalized
 
     This is raised when the AEAD tag property is accessed on a context

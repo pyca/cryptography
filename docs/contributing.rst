@@ -53,11 +53,10 @@ API Considerations
 
 Most projects' APIs are designed with a philosophy of "make easy things easy,
 and make hard things possible". One of the perils of writing cryptographic code
-is that code that is secure looks just like code that isn't, and produces
-results that are also difficult to distinguish. As a result ``cryptography``
-has, as a design philosophy: "make it hard to do insecure things". Here are a
-few strategies for API design which should be both followed, and should inspire
-other API choices:
+is that secure code looks just like insecure code, and its results are almost
+always indistinguishable. As a result ``cryptography`` has, as a design
+philosophy: "make it hard to do insecure things". Here are a few strategies for
+API design which should be both followed, and should inspire other API choices:
 
 If it is incorrect to ignore the result of a method, it should raise an
 exception, and not return a boolean ``True``/``False`` flag. For example, a
@@ -76,6 +75,10 @@ whether the signature was valid.
         # ...
         if not is_valid:
             raise InvalidSignature
+
+Every recipe should include a version or algorithmic marker of some sort in its
+output in order to allow transparent upgrading of the algorithms in use, as
+the algorithms or parameters needed to achieve a given security margin evolve.
 
 APIs at the :doc:`/hazmat/primitives/index` layer should always take an
 explicit backend, APIs at the recipes layer should automatically use the
@@ -107,14 +110,14 @@ Don't name parameters:
         ...;
     };
 
-Don't include stray ``void`` parameters:
+Include ``void`` if the function takes no arguments:
 
 .. code-block:: c
 
     // Good
-    long f();
-    // Bad
     long f(void);
+    // Bad
+    long f();
 
 Wrap lines at 80 characters like so:
 
@@ -133,6 +136,22 @@ Include a space after commas between parameters:
     // Bad
     long f(int,char *)
 
+Values set by ``#define`` should be assigned the appropriate type. If you see
+this:
+
+.. code-block:: c
+
+    #define SOME_INTEGER_LITERAL 0x0;
+    #define SOME_UNSIGNED_INTEGER_LITERAL 0x0001U;
+    #define SOME_STRING_LITERAL "hello";
+
+...it should be added to the bindings like so:
+
+.. code-block:: c
+
+    static const int SOME_INTEGER_LITERAL;
+    static const unsigned int SOME_UNSIGNED_INTEGER_LITERAL;
+    static const char *const SOME_STRING_LITERAL;
 
 Documentation
 -------------
@@ -163,7 +182,7 @@ as much as possible. To that end:
 
 * When documenting a generic interface, use a strong algorithm in examples.
   (e.g. when showing a hashing example, don't use
-  :class:`cryptography.hazmat.primitives.hashes.MD5`)
+  :class:`~cryptography.hazmat.primitives.hashes.MD5`)
 * When giving prescriptive advice, always provide references and supporting
   material.
 * When there is real disagreement between cryptographic experts, represent both
@@ -206,7 +225,7 @@ automatically, so all you have to do is:
 
    $ py.test
    ...
-   4294 passed in 15.24 seconds
+   62746 passed in 220.43 seconds
 
 This runs the tests with the default Python interpreter.
 
@@ -244,7 +263,8 @@ Use `tox`_ to build the documentation. For example:
    docs: commands succeeded
    congratulations :)
 
-The HTML documentation index can now be found at ``docs/_build/html/index.html``
+The HTML documentation index can now be found at
+``docs/_build/html/index.html``.
 
 
 .. _`GitHub`: https://github.com/pyca/cryptography

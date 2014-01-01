@@ -56,7 +56,22 @@ _OSX_POST_INCLUDE = """
 class Backend(object):
     """
     OpenSSL API wrapper.
+
+    Modules listed in the ``_modules`` listed should have the following
+    attributes:
+
+    * ``INCLUDES``: A string containg C includes.
+    * ``TYPES``: A string containing C declarations for types.
+    * ``FUNCTIONS``: A string containing C declarations for functions.
+    * ``MACROS``: A string containing C declarations for any macros.
+    * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
+        can be used to do things like test for a define and provide an
+        alternate implementation based on that.
+    * ``CONDITIONAL_NAMES``: A dict mapping strings of condition names from the
+        library to a list of names which will not be present without the
+        condition.
     """
+    _module_prefix = "cryptography.hazmat.backends.openssl."
     _modules = [
         "asn1",
         "bignum",
@@ -70,6 +85,7 @@ class Backend(object):
         "evp",
         "hmac",
         "nid",
+        "objects",
         "opensslv",
         "pem",
         "pkcs7",
@@ -102,7 +118,7 @@ class Backend(object):
         macros = []
         customizations = []
         for name in cls._modules:
-            module_name = "cryptography.hazmat.backends.openssl." + name
+            module_name = cls._module_prefix + name
             __import__(module_name)
             module = sys.modules[module_name]
 
@@ -141,6 +157,14 @@ class Backend(object):
             libraries=["crypto", "ssl"],
         )
 
+        for name in cls._modules:
+            module_name = cls._module_prefix + name
+            module = sys.modules[module_name]
+            for condition, names in module.CONDITIONAL_NAMES.items():
+                if not getattr(lib, condition):
+                    for name in names:
+                        delattr(lib, name)
+
         cls.ffi = ffi
         cls.lib = lib
         cls.lib.OpenSSL_add_all_algorithms()
@@ -160,6 +184,9 @@ class Backend(object):
     def hash_supported(self, algorithm):
         digest = self.lib.EVP_get_digestbyname(algorithm.name.encode("ascii"))
         return digest != self.ffi.NULL
+
+    def hmac_supported(self, algorithm):
+        return self.hash_supported(algorithm)
 
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
@@ -276,6 +303,11 @@ class _CipherContext(object):
         self._operation = operation
         self._tag = None
 
+        if isinstance(self._cipher, interfaces.BlockCipherAlgorithm):
+            self._block_size = self._cipher.block_size
+        else:
+            self._block_size = 1
+
         ctx = self._backend.lib.EVP_CIPHER_CTX_new()
         ctx = self._backend.ffi.gc(ctx, self._backend.lib.EVP_CIPHER_CTX_free)
 
@@ -283,11 +315,19 @@ class _CipherContext(object):
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(
+                "cipher {0} in {1} mode is not supported "
+                "by this backend".format(
+                    cipher.name, mode.name if mode else mode)
+            )
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend.ffi.NULL:
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(
+                "cipher {0} in {1} mode is not supported "
+                "by this backend".format(
+                    cipher.name, mode.name if mode else mode)
+            )
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
@@ -309,16 +349,16 @@ class _CipherContext(object):
         assert res != 0
         if isinstance(mode, GCM):
             res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
-                ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_IVLEN,
+                ctx, self._backend.lib.EVP_CTRL_GCM_SET_IVLEN,
                 len(iv_nonce), self._backend.ffi.NULL
             )
             assert res != 0
             if operation == self._DECRYPT:
-                if not mode.tag:
-                    raise ValueError("Authentication tag must be supplied "
-                                     "when decrypting")
+                if not mode.tag or len(mode.tag) < 4:
+                    raise ValueError("Authentication tag must be provided and "
+                                     "be 4 bytes or longer when decrypting")
                 res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
-                    ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_SET_TAG,
+                    ctx, self._backend.lib.EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
                 )
                 assert res != 0
@@ -341,7 +381,7 @@ class _CipherContext(object):
 
     def update(self, data):
         buf = self._backend.ffi.new("unsigned char[]",
-                                    len(data) + self._cipher.block_size - 1)
+                                    len(data) + self._block_size - 1)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                  len(data))
@@ -349,7 +389,7 @@ class _CipherContext(object):
         return self._backend.ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
-        buf = self._backend.ffi.new("unsigned char[]", self._cipher.block_size)
+        buf = self._backend.ffi.new("unsigned char[]", self._block_size)
         outlen = self._backend.ffi.new("int *")
         res = self._backend.lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
@@ -357,10 +397,10 @@ class _CipherContext(object):
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):
-            block_byte_size = self._cipher.block_size // 8
+            block_byte_size = self._block_size // 8
             tag_buf = self._backend.ffi.new("unsigned char[]", block_byte_size)
             res = self._backend.lib.EVP_CIPHER_CTX_ctrl(
-                self._ctx, self._backend.lib.Cryptography_EVP_CTRL_GCM_GET_TAG,
+                self._ctx, self._backend.lib.EVP_CTRL_GCM_GET_TAG,
                 block_byte_size, tag_buf
             )
             assert res != 0
@@ -395,7 +435,11 @@ class _HashContext(object):
                                        self._backend.lib.EVP_MD_CTX_destroy)
             evp_md = self._backend.lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
-            assert evp_md != self._backend.ffi.NULL
+            if evp_md == self._backend.ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported hash on this backend".format(
+                        algorithm.name)
+                )
             res = self._backend.lib.EVP_DigestInit_ex(ctx, evp_md,
                                                       self._backend.ffi.NULL)
             assert res != 0
@@ -437,7 +481,11 @@ class _HMACContext(object):
             ctx = self._backend.ffi.gc(ctx, self._backend.lib.HMAC_CTX_cleanup)
             evp_md = self._backend.lib.EVP_get_digestbyname(
                 algorithm.name.encode('ascii'))
-            assert evp_md != self._backend.ffi.NULL
+            if evp_md == self._backend.ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported hash on this backend".format(
+                        algorithm.name)
+                )
             res = self._backend.lib.Cryptography_HMAC_Init_ex(
                 ctx, key, len(key), evp_md, self._backend.ffi.NULL
             )

@@ -11,7 +11,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path
+import os
+
+import pytest
+
+
+def check_for_iface(name, iface, item):
+    if name in item.keywords and "backend" in item.funcargs:
+        if not isinstance(item.funcargs["backend"], iface):
+            pytest.skip("{0} backend does not support {1}".format(
+                item.funcargs["backend"], name
+            ))
+
+
+def check_backend_support(item):
+    supported = item.keywords.get("supported")
+    if supported and "backend" in item.funcargs:
+        if not supported.kwargs["only_if"](item.funcargs["backend"]):
+            pytest.skip(supported.kwargs["skip_message"])
+    elif supported:
+        raise ValueError("This mark is only available on methods that take a "
+                         "backend")
 
 
 def load_vectors_from_file(filename, loader):
