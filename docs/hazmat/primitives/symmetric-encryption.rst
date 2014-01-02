@@ -10,7 +10,6 @@ Symmetric Encryption
 
     import binascii
     key = binascii.unhexlify(b"0" * 32)
-    iv = binascii.unhexlify(b"0" * 32)
 
 
 Symmetric encryption is a way to encrypt (hide the plaintext value) material
@@ -33,9 +32,11 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     .. doctest::
 
+        >>> import os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.AES.block_size//8)
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -91,6 +92,23 @@ Algorithms
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
+    Example encryption & decryption using
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
 .. class:: Camellia(key)
 
     Camellia is a block cipher approved for use by CRYPTREC and ISO/IEC.
@@ -99,6 +117,23 @@ Algorithms
 
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
+
+    Example encryption & decryption using
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.Camellia.block_size//8)
+        >>> cipher = Cipher(algorithms.Camellia(key), modes.CBC(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
 
 
 .. class:: TripleDES(key)
@@ -117,6 +152,23 @@ Algorithms
                       ``56`` bits long), they can simply be concatenated to
                       produce the full key. This must be kept secret.
 
+    Example encryption & decryption using
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.TripleDES.block_size//8)
+        >>> cipher = Cipher(algorithms.TripleDES(key), modes.CBC(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
 .. class:: CAST5(key)
 
     CAST5 (also known as CAST-128) is a block cipher approved for use in the
@@ -125,6 +177,22 @@ Algorithms
 
     :param bytes key: The secret key, 40-128 bits in length (in increments of
                       8).  This must be kept secret.
+
+    Example encryption & decryption using
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` mode:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> cipher = Cipher(algorithms.CAST5(key), modes.ECB(), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
 
 Weak Ciphers
 ------------
@@ -143,6 +211,23 @@ Weak Ciphers
 
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
+
+    Example encryption & decryption using
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.Blowfish.block_size//8)
+        >>> cipher = Cipher(algorithms.Blowfish(key), modes.CBC(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
 
 .. class:: ARC4(key)
 
@@ -209,6 +294,22 @@ Modes
         >>> iv = "a" * 16
         >>> mode = CBC(iv)
 
+    Example encryption & decryption:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
 
 .. class:: CTR(nonce)
 
@@ -229,6 +330,22 @@ Modes
                         with a given key. The nonce does not need to be kept
                         secret and may be included alongside the ciphertext.
 
+    Example encryption & decryption:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> nonce = os.urandom(algorithms.AES.block_size//8)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CTR(nonce), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
 .. class:: OFB(initialization_vector)
 
     OFB (Output Feedback) is a mode of operation for block ciphers. It
@@ -242,6 +359,22 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
+    Example encryption & decryption:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> cipher = Cipher(algorithms.AES(key), modes.OFB(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
+
 .. class:: CFB(initialization_vector)
 
     CFB (Cipher Feedback) is a mode of operation for block ciphers. It
@@ -254,6 +387,22 @@ Modes
                                         ``block_size`` of the cipher. Do not
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
+
+    Example encryption & decryption:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
 
 .. class:: GCM(initialization_vector, tag=None)
 
@@ -293,10 +442,14 @@ Modes
     :param bytes tag: The tag bytes to verify during decryption. When encrypting
                       this must be None.
 
+    Example encryption & decryption:
+
     .. doctest::
 
+        >>> import os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
+        >>> iv = os.urandom(algorithms.AES.block_size//8)
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
@@ -323,7 +476,22 @@ Insecure Modes
     ECB (Electronic Code Book) is the simplest mode of operation for block
     ciphers. Each block of data is encrypted in the same way. This means
     identical plaintext blocks will always result in identical ciphertext
-    blocks, and thus result in information leakage
+    blocks, and thus result in information leakage.
+
+    Example encryption & decryption:
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=backend)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct) + decryptor.finalize()
+        'a secret message'
 
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
