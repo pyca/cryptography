@@ -2,6 +2,7 @@ Glossary
 ========
 
 .. glossary::
+    :sorted:
 
     plaintext
         User-readable data you care about.
@@ -35,7 +36,7 @@ Glossary
         symmetric or asymmetric. Authentication is necessary for effective
         encryption.
 
-    Ciphertext indistinguishability
+    ciphertext indistinguishability
         This is a property of encryption systems whereby two encrypted messages
         aren't distinguishable without knowing the encryption key. This is
         considered a basic, necessary property for a working encryption system.
