@@ -36,7 +36,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> iv = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -92,7 +92,7 @@ Algorithms
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
-    Example encryption & decryption using
+    Example encryption and decryption using
     :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
 
     .. doctest::
@@ -101,7 +101,7 @@ Algorithms
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> iv = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -118,7 +118,7 @@ Algorithms
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
-    Example encryption & decryption using
+    Example encryption and decryption using
     :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
 
     .. doctest::
@@ -127,7 +127,7 @@ Algorithms
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.Camellia.block_size//8)
+        >>> iv = os.urandom(algorithms.Camellia.block_size // 8)
         >>> cipher = Cipher(algorithms.Camellia(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -152,7 +152,7 @@ Algorithms
                       ``56`` bits long), they can simply be concatenated to
                       produce the full key. This must be kept secret.
 
-    Example encryption & decryption using
+    Example encryption and decryption using
     :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
 
     .. doctest::
@@ -161,7 +161,7 @@ Algorithms
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.TripleDES.block_size//8)
+        >>> iv = os.urandom(algorithms.TripleDES.block_size // 8)
         >>> cipher = Cipher(algorithms.TripleDES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -178,7 +178,7 @@ Algorithms
     :param bytes key: The secret key, 40-128 bits in length (in increments of
                       8).  This must be kept secret.
 
-    Example encryption & decryption using
+    Example encryption and decryption using
     :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` mode:
 
     .. doctest::
@@ -212,7 +212,7 @@ Weak Ciphers
     :param bytes key: The secret key, 32-448 bits in length (in increments of
                       8).  This must be kept secret.
 
-    Example encryption & decryption using
+    Example encryption and decryption using
     :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode:
 
     .. doctest::
@@ -221,7 +221,7 @@ Weak Ciphers
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.Blowfish.block_size//8)
+        >>> iv = os.urandom(algorithms.Blowfish.block_size // 8)
         >>> cipher = Cipher(algorithms.Blowfish(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -294,7 +294,7 @@ Modes
         >>> iv = "a" * 16
         >>> mode = CBC(iv)
 
-    Example encryption & decryption:
+    Example encryption and decryption:
 
     .. doctest::
 
@@ -302,7 +302,7 @@ Modes
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> iv = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -330,7 +330,7 @@ Modes
                         with a given key. The nonce does not need to be kept
                         secret and may be included alongside the ciphertext.
 
-    Example encryption & decryption:
+    Example encryption and decryption:
 
     .. doctest::
 
@@ -338,7 +338,7 @@ Modes
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> nonce = os.urandom(algorithms.AES.block_size//8)
+        >>> nonce = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.CTR(nonce), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -359,7 +359,7 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
-    Example encryption & decryption:
+    Example encryption and decryption:
 
     .. doctest::
 
@@ -367,7 +367,7 @@ Modes
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> iv = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.OFB(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -388,7 +388,7 @@ Modes
                                         reuse an ``initialization_vector`` with
                                         a given ``key``.
 
-    Example encryption & decryption:
+    Example encryption and decryption:
 
     .. doctest::
 
@@ -396,7 +396,7 @@ Modes
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> iv = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
@@ -442,14 +442,14 @@ Modes
     :param bytes tag: The tag bytes to verify during decryption. When encrypting
                       this must be None.
 
-    Example encryption & decryption:
+    Example encryption and decryption:
 
     .. doctest::
 
         >>> import os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
-        >>> iv = os.urandom(algorithms.AES.block_size//8)
+        >>> iv = os.urandom(algorithms.AES.block_size // 8)
         >>> cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
         >>> encryptor = cipher.encryptor()
         >>> encryptor.authenticate_additional_data(b"authenticated but not encrypted payload")
@@ -478,7 +478,7 @@ Insecure Modes
     identical plaintext blocks will always result in identical ciphertext
     blocks, and thus result in information leakage.
 
-    Example encryption & decryption:
+    Example encryption and decryption:
 
     .. doctest::
 
