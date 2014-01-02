@@ -30,4 +30,4 @@ __author__ = ("Alex Gaynor, Hynek Schlawack, Donald Stufft, "
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "Apache License, Version 2.0"
-__copyright__ = "Copyright 2013 %s" % __author__
+__copyright__ = "Copyright 2013-2014 %s" % __author__
