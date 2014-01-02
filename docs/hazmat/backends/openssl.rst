@@ -3,23 +3,11 @@
 OpenSSL Backend
 ===============
 
-These are `CFFI`_ bindings to the `OpenSSL`_ C library.
+The `OpenSSL`_ C library.
 
 .. data:: cryptography.hazmat.backends.openssl.backend
 
-    This is the exposed API for the OpenSSL bindings. It has two public
-    attributes:
-
-    .. attribute:: ffi
-
-        This is a :class:`cffi.FFI` instance. It can be used to allocate and
-        otherwise manipulate OpenSSL structures.
-
-    .. attribute:: lib
-
-        This is a ``cffi`` library. It can be used to call OpenSSL functions,
-        and access constants.
-
+    This is the exposed API for the OpenSSL backend. It has no public attributes.    
 
 Using your own OpenSSL on Linux
 -------------------------------
@@ -48,5 +36,4 @@ You'll also need to generate your own ``openssl.ld`` file. For example::
 You should replace the version string on the first line as appropriate for your
 build.
 
-.. _`CFFI`: https://cffi.readthedocs.org/
 .. _`OpenSSL`: https://www.openssl.org/

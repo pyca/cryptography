@@ -61,18 +61,13 @@ class TestOpenSSL(object):
         with pytest.raises(ValueError):
             backend.register_cipher_adapter(AES, CBC, None)
 
-    def test_instances_share_ffi(self):
-        b = Backend()
-        assert b.ffi is backend.ffi
-        assert b.lib is backend.lib
-
     @pytest.mark.parametrize("mode", [DummyMode(), None])
     def test_nonexistent_cipher(self, mode):
         b = Backend()
         b.register_cipher_adapter(
             DummyCipher,
             type(mode),
-            lambda backend, cipher, mode: backend.ffi.NULL
+            lambda backend, cipher, mode: backend._ffi.NULL
         )
         cipher = Cipher(
             DummyCipher(), mode, backend=b,
@@ -85,18 +80,18 @@ class TestOpenSSL(object):
             backend._handle_error_code(0, 0, 0)
 
         with pytest.raises(SystemError):
-            backend._handle_error_code(backend.lib.ERR_LIB_EVP, 0, 0)
+            backend._handle_error_code(backend._lib.ERR_LIB_EVP, 0, 0)
 
         with pytest.raises(SystemError):
             backend._handle_error_code(
-                backend.lib.ERR_LIB_EVP,
-                backend.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+                backend._lib.ERR_LIB_EVP,
+                backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
                 0
             )
 
         with pytest.raises(SystemError):
             backend._handle_error_code(
-                backend.lib.ERR_LIB_EVP,
-                backend.lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                backend._lib.ERR_LIB_EVP,
+                backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
                 0
             )
