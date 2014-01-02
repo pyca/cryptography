@@ -23,7 +23,8 @@ _ffi.cdef("""
 uint8_t Cryptography_constant_time_bytes_eq(uint8_t *, size_t, uint8_t *,
                                             size_t);
 """)
-_lib = _ffi.verify("""
+_lib = _ffi.verify(
+    """
 uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
                                             uint8_t *b, size_t len_b) {
     size_t i = 0;

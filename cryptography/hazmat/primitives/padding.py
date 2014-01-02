@@ -23,7 +23,8 @@ _ffi = cffi.FFI()
 _ffi.cdef("""
 uint8_t Cryptography_check_pkcs7_padding(const uint8_t *, uint8_t);
 """)
-_lib = _ffi.verify("""
+_lib = _ffi.verify(
+    """
 /* Returns the value of the input with the most-significant-bit copied to all
    of the bits. */
 static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
