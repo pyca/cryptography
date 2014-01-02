@@ -10,6 +10,8 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from distutils.command.build import build
+
 from setuptools import setup, find_packages
 
 
@@ -29,6 +31,20 @@ install_requires = [
 setup_requires = [
     CFFI_DEPENDENCY,
 ]
+
+
+class cffi_build(build):
+    def finalize_options(self):
+        from cryptography.hazmat.bindings.openssl.binding import Binding
+        from cryptography.hazmat.primitives import constant_time, padding
+
+        self.distribution.ext_modules = [
+            Binding().ffi.verifier.get_extension(),
+            constant_time._ffi.verifier.get_extension(),
+            padding._ffi.verifier.get_extension()
+        ]
+        build.finalize_options(self)
+
 
 setup(
     name=about["__title__"],
@@ -70,4 +86,8 @@ setup(
 
     # for cffi
     zip_safe=False,
+    ext_package="cryptography",
+    cmdclass={
+        "build": cffi_build,
+    }
 )

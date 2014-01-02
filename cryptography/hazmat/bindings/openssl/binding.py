@@ -135,6 +135,7 @@ class Binding(object):
                 customizations
             ),
             libraries=["crypto", "ssl"],
+            ext_package="cryptography",
         )
 
         for name in cls._modules:

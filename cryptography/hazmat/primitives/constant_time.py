@@ -42,7 +42,9 @@ uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
     /* Now check the low bit to see if it's set */
     return (mismatch & 1) == 0;
 }
-""")
+""",
+    ext_package="cryptography",
+)
 
 
 def bytes_eq(a, b):
