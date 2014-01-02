@@ -23,13 +23,9 @@ with open("cryptography/__about__.py") as fp:
 CFFI_DEPENDENCY = "cffi>=0.6"
 SIX_DEPENDENCY = "six>=1.4.1"
 
-install_requires = [
+requirements = [
     CFFI_DEPENDENCY,
     SIX_DEPENDENCY
-]
-
-setup_requires = [
-    CFFI_DEPENDENCY,
 ]
 
 
@@ -81,8 +77,8 @@ setup(
 
     packages=find_packages(exclude=["tests", "tests.*"]),
 
-    install_requires=install_requires,
-    setup_requires=setup_requires,
+    install_requires=requirements,
+    setup_requires=requirements,
 
     # for cffi
     zip_safe=False,
