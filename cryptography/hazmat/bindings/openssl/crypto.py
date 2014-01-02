@@ -36,6 +36,11 @@ int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on(void);
 void CRYPTO_mem_leaks(struct bio_st *);
 void CRYPTO_cleanup_all_ex_data(void);
+int CRYPTO_num_locks(void);
+void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
+void CRYPTO_set_id_callback(unsigned long (*)(void));
+unsigned long (*CRYPTO_get_id_callback(void))(void);
+void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
 
 void OPENSSL_free(void *);
 """

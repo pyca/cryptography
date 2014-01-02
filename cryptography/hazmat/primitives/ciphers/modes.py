@@ -65,5 +65,10 @@ class GCM(object):
     name = "GCM"
 
     def __init__(self, initialization_vector, tag=None):
+        if tag is not None and len(tag) < 4:
+            raise ValueError(
+                "Authentication tag must be 4 bytes or longer"
+            )
+
         self.initialization_vector = initialization_vector
         self.tag = tag
