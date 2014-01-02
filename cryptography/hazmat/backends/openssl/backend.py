@@ -51,44 +51,44 @@ class Backend(object):
         self.register_osrandom_engine()
 
     def unregister_osrandom_engine(self):
-        e = self.lib.ENGINE_get_default_RAND()
-        if e != self.ffi.NULL:
-            name = self.lib.ENGINE_get_name(e)
-            assert name != self.ffi.NULL
-            if name == self.lib.Cryptography_osrandom_engine_name:
-                self.lib.ENGINE_unregister_RAND(e)
+        e = self._lib.ENGINE_get_default_RAND()
+        if e != self._ffi.NULL:
+            name = self._lib.ENGINE_get_name(e)
+            assert name != self._ffi.NULL
+            if name == self._lib.Cryptography_osrandom_engine_name:
+                self._lib.ENGINE_unregister_RAND(e)
                 # this resets the RNG to use the new engine
-                self.lib.RAND_cleanup()
-            res = self.lib.ENGINE_finish(e)
+                self._lib.RAND_cleanup()
+            res = self._lib.ENGINE_finish(e)
             assert res == 1
 
     def register_osrandom_engine(self):
-        current_rand = self.lib.ENGINE_get_default_RAND()
-        if current_rand != self.ffi.NULL:
-            name = self.lib.ENGINE_get_name(current_rand)
-            assert name != self.ffi.NULL
-            if name != self.lib.Cryptography_osrandom_engine_name:
+        current_rand = self._lib.ENGINE_get_default_RAND()
+        if current_rand != self._ffi.NULL:
+            name = self._lib.ENGINE_get_name(current_rand)
+            assert name != self._ffi.NULL
+            if name != self._lib.Cryptography_osrandom_engine_name:
                 self._register_osrandom_engine()
-            res = self.lib.ENGINE_finish(current_rand)
+            res = self._lib.ENGINE_finish(current_rand)
             assert res == 1
         else:
             self._register_osrandom_engine()
 
     def _register_osrandom_engine(self):
-        e = self.lib.ENGINE_by_id(self.lib.Cryptography_osrandom_engine_id)
-        assert e != self.ffi.NULL
-        res = self.lib.ENGINE_init(e)
+        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
+        assert e != self._ffi.NULL
+        res = self._lib.ENGINE_init(e)
         assert res == 1
-        res = self.lib.ENGINE_set_default_RAND(e)
+        res = self._lib.ENGINE_set_default_RAND(e)
         assert res == 1
         # decrement the structural ref incremented by ENGINE_by_id
-        res = self.lib.ENGINE_free(e)
+        res = self._lib.ENGINE_free(e)
         assert res == 1
         # decrement the functional ref incremented by ENGINE_init
-        res = self.lib.ENGINE_finish(e)
+        res = self._lib.ENGINE_finish(e)
         assert res == 1
         # this resets the RNG to use the new engine
-        self.lib.RAND_cleanup()
+        self._lib.RAND_cleanup()
 
     def openssl_version_text(self):
         """
