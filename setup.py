@@ -33,6 +33,15 @@ requirements = [
 
 
 class cffi_build(build):
+    """
+    This class exists, instead of just providing ``ext_modules=[...]`` directly
+    in ``setup()`` because importing cryptography requires we have several
+    packages installed first.
+
+    By doing the imports here we ensure that packages listed in
+    ``setup_requires`` are already installed.
+    """
+
     def finalize_options(self):
         from cryptography.hazmat.bindings.openssl.binding import Binding
         from cryptography.hazmat.primitives import constant_time, padding
