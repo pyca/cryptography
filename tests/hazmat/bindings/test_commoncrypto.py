@@ -13,16 +13,13 @@
 
 import pytest
 
+from cryptography.hazmat.bindings.commoncrypto.binding import Binding
+
 
 @pytest.mark.commoncrypto
 class TestCommonCrypto(object):
-    def test_backend_exists(self):
-        from cryptography.hazmat.backends.commoncrypto.backend import backend
-        assert backend
-
-    def test_instances_share_ffi(self):
-        from cryptography.hazmat.backends.commoncrypto.backend import backend
-        from cryptography.hazmat.backends.commoncrypto.backend import Backend
-        b = Backend()
-        assert b.ffi is backend.ffi
-        assert b.lib is backend.lib
+    def test_binding_loads(self):
+        binding = Binding()
+        assert binding
+        assert binding.lib
+        assert binding.ffi
