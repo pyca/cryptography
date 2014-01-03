@@ -10,14 +10,17 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from distutils.command.build import build
 
 from setuptools import setup, find_packages
 
 
+base_dir = os.path.dirname(__file__)
+
 about = {}
-with open("cryptography/__about__.py") as fp:
-    exec(fp.read(), about)
+with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
+    exec(f.read(), about)
 
 
 CFFI_DEPENDENCY = "cffi>=0.6"
@@ -42,11 +45,16 @@ class cffi_build(build):
         build.finalize_options(self)
 
 
+with open(os.path.join(base_dir, "README.rst")) as f:
+    long_description = f.read()
+
+
 setup(
     name=about["__title__"],
     version=about["__version__"],
 
     description=about["__summary__"],
+    long_description=long_description,
     license=about["__license__"],
     url=about["__uri__"],
 
