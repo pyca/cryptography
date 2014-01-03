@@ -26,7 +26,7 @@ __version__ = "0.1.dev1"
 
 __author__ = ("Alex Gaynor, Hynek Schlawack, Donald Stufft, "
               "Laurens Van Houtven, Jean-Paul Calderone, Christian Heimes, "
-              "and individual contributors.")
+              "Paul Kehrer, and individual contributors.")
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "Apache License, Version 2.0"
