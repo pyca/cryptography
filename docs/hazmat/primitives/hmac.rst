@@ -74,8 +74,11 @@ message.
 
     .. method:: verify(signature)
 
-        Finalize the current context and securely compare digest to ``signature``.
+        Finalize the current context and securely compare digest to
+        ``signature``.
 
-        :param bytes signature: The bytes of the HMAC signature recieved.
+        :param bytes signature: The bytes to compare the current digest
+                                against.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
-        :raises cryptography.exceptions.InvalidSignature: If signature does not match digest
+        :raises cryptography.exceptions.InvalidSignature: If signature does not
+                                                          match digest

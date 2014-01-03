@@ -30,16 +30,26 @@ class Cipher(object):
         self._backend = backend
 
     def encryptor(self):
+        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
+            if self.mode.tag is not None:
+                raise ValueError(
+                    "Authentication tag must be None when encrypting"
+                )
         ctx = self._backend.create_symmetric_encryption_ctx(
             self.algorithm, self.mode
         )
-        return self._wrap_ctx(ctx, True)
+        return self._wrap_ctx(ctx, encrypt=True)
 
     def decryptor(self):
+        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
+            if self.mode.tag is None:
+                raise ValueError(
+                    "Authentication tag must be provided when decrypting"
+                )
         ctx = self._backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
         )
-        return self._wrap_ctx(ctx, False)
+        return self._wrap_ctx(ctx, encrypt=False)
 
     def _wrap_ctx(self, ctx, encrypt):
         if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):

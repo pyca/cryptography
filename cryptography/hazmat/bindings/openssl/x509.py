@@ -13,9 +13,22 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+/*
+ * This is part of a work-around for the difficulty cffi has in dealing with
+ * `STACK_OF(foo)` as the name of a type.  We invent a new, simpler name that
+ * will be an alias for this type and use the alias throughout.  This works
+ * together with another opaque typedef for the same name in the TYPES section.
+ * Note that the result is an opaque type.
+ */
+typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
+typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
 """
 
 TYPES = """
+typedef ... Cryptography_STACK_OF_X509;
+typedef ... Cryptography_STACK_OF_X509_REVOKED;
+
 typedef struct {
     ASN1_OBJECT *algorithm;
     ...;
@@ -36,8 +49,6 @@ typedef ... X509_EXTENSIONS;
 
 typedef ... X509_REQ;
 
-typedef ... x509_revoked_st;
-
 typedef struct {
     ASN1_INTEGER *serialNumber;
     ASN1_TIME *revocationDate;
@@ -47,7 +58,7 @@ typedef struct {
 } X509_REVOKED;
 
 typedef struct {
-    struct stack_st_X509_REVOKED *revoked;
+    Cryptography_STACK_OF_X509_REVOKED *revoked;
     ...;
 } X509_CRL_INFO;
 
@@ -165,25 +176,25 @@ ASN1_TIME *X509_get_notAfter(X509 *);
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
 
-struct stack_st_X509 *sk_X509_new_null(void);
-void sk_X509_free(struct stack_st_X509 *);
-int sk_X509_num(struct stack_st_X509 *);
-int sk_X509_push(struct stack_st_X509 *, X509 *);
-X509 *sk_X509_value(struct stack_st_X509 *, int);
+Cryptography_STACK_OF_X509 *sk_X509_new_null(void);
+void sk_X509_free(Cryptography_STACK_OF_X509 *);
+int sk_X509_num(Cryptography_STACK_OF_X509 *);
+int sk_X509_push(Cryptography_STACK_OF_X509 *, X509 *);
+X509 *sk_X509_value(Cryptography_STACK_OF_X509 *, int);
 
 X509_EXTENSIONS *sk_X509_EXTENSION_new_null(void);
 int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
 X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
 int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
-void sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
+X509_EXTENSION *sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 
-int sk_X509_REVOKED_num(struct stack_st_X509_REVOKED *);
-X509_REVOKED *sk_X509_REVOKED_value(struct stack_st_X509_REVOKED *, int);
+int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
+X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
-int X509_CRL_set_lastUpdate(X509_CRL *, const ASN1_TIME *);
-int X509_CRL_set_nextUpdate(X509_CRL *, const ASN1_TIME *);
+int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
+int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 """
 
 CUSTOMIZATIONS = """

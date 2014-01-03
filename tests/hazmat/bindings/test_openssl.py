@@ -11,29 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-INCLUDES = """
-#include <openssl/pkcs12.h>
-"""
+from cryptography.hazmat.bindings.openssl.binding import Binding
 
-TYPES = """
-typedef ... PKCS12;
-"""
 
-FUNCTIONS = """
-void PKCS12_free(PKCS12 *);
-
-PKCS12 *d2i_PKCS12_bio(BIO *, PKCS12 **);
-int i2d_PKCS12_bio(BIO *, PKCS12 *);
-"""
-
-MACROS = """
-int PKCS12_parse(PKCS12 *, const char *, EVP_PKEY **, X509 **,
-                 struct stack_st_X509 **);
-PKCS12 *PKCS12_create(char *, char *, EVP_PKEY *, X509 *,
-                      struct stack_st_X509 *, int, int, int, int, int);
-"""
-
-CUSTOMIZATIONS = """
-"""
-
-CONDITIONAL_NAMES = {}
+class TestOpenSSL(object):
+    def test_binding_loads(self):
+        binding = Binding()
+        assert binding
+        assert binding.lib
+        assert binding.ffi

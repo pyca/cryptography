@@ -33,7 +33,7 @@ TYPES = """
  * <fijal> I think you want to declare your value too large (e.g. long)
  * <fijal> that way you'll never pass garbage
  */
-typedef uintptr_t time_t;
+typedef intptr_t time_t;
 
 typedef int ASN1_BOOLEAN;
 typedef ... ASN1_INTEGER;
@@ -119,7 +119,7 @@ ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
 
 MACROS = """
 ASN1_TIME *M_ASN1_TIME_dup(void *);
-ASN1_ITEM_EXP *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
+const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
@@ -135,7 +135,7 @@ int ASN1_INTEGER_cmp(ASN1_INTEGER *, ASN1_INTEGER *);
 long ASN1_INTEGER_get(ASN1_INTEGER *);
 
 BIGNUM *ASN1_INTEGER_to_BN(ASN1_INTEGER *, BIGNUM *);
-ASN1_INTEGER *BN_to_ASN1_INTEGER(const BIGNUM *, ASN1_INTEGER *);
+ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
 """
 
 CUSTOMIZATIONS = """
