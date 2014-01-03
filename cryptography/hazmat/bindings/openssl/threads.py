@@ -19,7 +19,7 @@ TYPES = """
 """
 
 FUNCTIONS = """
-static int Cryptography_setup_locking();
+static int Cryptography_setup_locking(void);
 static void (*Cryptography_locking_function_ptr)(int, int, const char *, int);
 """
 
@@ -67,13 +67,6 @@ int CryptographyThreadLockInit (struct CryptographyOpaque_ThreadLock *lock)
   return InitializeNonRecursiveMutex(lock);
 }
 
-void CryptographyOpaqueDealloc_ThreadLock
-    (struct CryptographyOpaque_ThreadLock *lock)
-{
-    if (lock->sem != NULL)
-    DeleteNonRecursiveMutex(lock);
-}
-
 /*
  * Return 1 on success if the lock was acquired
  *
@@ -110,7 +103,13 @@ void CryptographyThreadReleaseLock(struct CryptographyOpaque_ThreadLock *lock)
 #include <unistd.h>
 #include <pthread.h>
 
-#define CHECK_STATUS(name)  if (status != 0) { perror(name); error = 1; }
+#define CHECK_STATUS(name) \
+    if (status != 0) { \
+        error = 1; \
+        if (error != 0) { \
+            perror(name); \
+        } \
+    }
 
 #if !defined(pthread_mutexattr_default)
 #  define pthread_mutexattr_default ((pthread_mutexattr_t *)NULL)
@@ -140,19 +139,6 @@ int CryptographyThreadLockInit
         return 0;
     lock->initialized = 1;
     return 1;
-}
-
-void CryptographyOpaqueDealloc_ThreadLock
-    (struct CryptographyOpaque_ThreadLock *lock)
-{
-    int status, error = 0;
-    if (lock->initialized) {
-        status = pthread_mutex_destroy(&lock->mut);
-        CHECK_STATUS("pthread_mutex_destroy");
-
-        /* 'error' is ignored;
-           CHECK_STATUS already printed an error message */
-    }
 }
 
 CryptographyLockStatus CryptographyThreadAcquireLock
@@ -204,7 +190,7 @@ static void Cryptography_locking_function
 static void (*Cryptography_locking_function_ptr)
     (int, int, const char *, int) = Cryptography_locking_function;
 
-static int Cryptography_setup_locking() {
+static int Cryptography_setup_locking(void) {
     unsigned int i;
 
     Cryptography_lock_count = CRYPTO_num_locks();
