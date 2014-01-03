@@ -33,29 +33,29 @@ typedef struct CC_SHA512state_st {
 """
 
 FUNCTIONS = """
-extern int CC_MD5_Init(CC_MD5_CTX *);
-extern int CC_MD5_Update(CC_MD5_CTX *, const void *, CC_LONG);
-extern int CC_MD5_Final(unsigned char *, CC_MD5_CTX *);
+int CC_MD5_Init(CC_MD5_CTX *);
+int CC_MD5_Update(CC_MD5_CTX *, const void *, CC_LONG);
+int CC_MD5_Final(unsigned char *, CC_MD5_CTX *);
 
-extern int CC_SHA1_Init(CC_SHA1_CTX *);
-extern int CC_SHA1_Update(CC_SHA1_CTX *, const void *, CC_LONG);
-extern int CC_SHA1_Final(unsigned char *, CC_SHA1_CTX *);
+int CC_SHA1_Init(CC_SHA1_CTX *);
+int CC_SHA1_Update(CC_SHA1_CTX *, const void *, CC_LONG);
+int CC_SHA1_Final(unsigned char *, CC_SHA1_CTX *);
 
-extern int CC_SHA224_Init(CC_SHA256_CTX *);
-extern int CC_SHA224_Update(CC_SHA256_CTX *, const void *, CC_LONG);
-extern int CC_SHA224_Final(unsigned char *, CC_SHA256_CTX *);
+int CC_SHA224_Init(CC_SHA256_CTX *);
+int CC_SHA224_Update(CC_SHA256_CTX *, const void *, CC_LONG);
+int CC_SHA224_Final(unsigned char *, CC_SHA256_CTX *);
 
-extern int CC_SHA256_Init(CC_SHA256_CTX *);
-extern int CC_SHA256_Update(CC_SHA256_CTX *, const void *, CC_LONG);
-extern int CC_SHA256_Final(unsigned char *, CC_SHA256_CTX *);
+int CC_SHA256_Init(CC_SHA256_CTX *);
+int CC_SHA256_Update(CC_SHA256_CTX *, const void *, CC_LONG);
+int CC_SHA256_Final(unsigned char *, CC_SHA256_CTX *);
 
-extern int CC_SHA384_Init(CC_SHA512_CTX *);
-extern int CC_SHA384_Update(CC_SHA512_CTX *, const void *, CC_LONG);
-extern int CC_SHA384_Final(unsigned char *, CC_SHA512_CTX *);
+int CC_SHA384_Init(CC_SHA512_CTX *);
+int CC_SHA384_Update(CC_SHA512_CTX *, const void *, CC_LONG);
+int CC_SHA384_Final(unsigned char *, CC_SHA512_CTX *);
 
-extern int CC_SHA512_Init(CC_SHA512_CTX *);
-extern int CC_SHA512_Update(CC_SHA512_CTX *, const void *, CC_LONG);
-extern int CC_SHA512_Final(unsigned char *, CC_SHA512_CTX *);
+int CC_SHA512_Init(CC_SHA512_CTX *);
+int CC_SHA512_Update(CC_SHA512_CTX *, const void *, CC_LONG);
+int CC_SHA512_Final(unsigned char *, CC_SHA512_CTX *);
 """
 
 MACROS = """
