@@ -10,6 +10,8 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+
 from setuptools import setup, find_packages
 
 
@@ -30,11 +32,16 @@ setup_requires = [
     CFFI_DEPENDENCY,
 ]
 
+with open(os.path.join(os.path.dirname(__file__), "README.rst")) as f:
+    long_description = f.read()
+
+
 setup(
     name=about["__title__"],
     version=about["__version__"],
 
     description=about["__summary__"],
+    long_description=long_description,
     license=about["__license__"],
     url=about["__uri__"],
 
