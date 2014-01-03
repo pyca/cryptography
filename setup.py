@@ -15,9 +15,11 @@ import os
 from setuptools import setup, find_packages
 
 
+base_dir = os.path.dirname(__file__)
+
 about = {}
-with open("cryptography/__about__.py") as fp:
-    exec(fp.read(), about)
+with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
+    exec(f.read(), about)
 
 
 CFFI_DEPENDENCY = "cffi>=0.6"
@@ -32,7 +34,7 @@ setup_requires = [
     CFFI_DEPENDENCY,
 ]
 
-with open(os.path.join(os.path.dirname(__file__), "README.rst")) as f:
+with open(os.path.join(base_dir, "README.rst")) as f:
     long_description = f.read()
 
 
