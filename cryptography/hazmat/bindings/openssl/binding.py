@@ -62,6 +62,7 @@ class Binding(object):
         "rand",
         "rsa",
         "ssl",
+        "threads",
         "x509",
         "x509name",
         "x509v3",

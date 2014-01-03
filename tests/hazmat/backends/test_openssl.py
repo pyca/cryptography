@@ -119,33 +119,35 @@ class TestOpenSSL(object):
     def test_locking_callback_set(self):
         b = Backend()
 
-        locking_cb = b.lib.CRYPTO_get_locking_callback()
-        assert locking_cb != b.ffi.NULL
+        locking_cb = b._lib.CRYPTO_get_locking_callback()
+        assert locking_cb != b._ffi.NULL
 
         # emulate import _ssl not setting this for some reason
-        b.lib.CRYPTO_set_locking_callback(b.ffi.NULL)
+        # because _ssl will have already been inited by the first Backend
+        # instance this will cause the next one to end up setting ours
+        b._lib.CRYPTO_set_locking_callback(b._ffi.NULL)
 
         # force cffi to reinit
-        Backend.ffi = None
-        Backend.lib = None
+        b._binding.ffi = None
+        b._binding.lib = None
 
         # now it should get set to our one
         b = Backend()
-        locking_cb = b.lib.CRYPTO_get_locking_callback()
+        locking_cb = b._lib.CRYPTO_get_locking_callback()
 
-        assert locking_cb != b.ffi.NULL
-        assert locking_cb == b.lib.Cryptography_locking_function_ptr
+        assert locking_cb != b._ffi.NULL
+        assert locking_cb == b._lib.Cryptography_locking_function_ptr
 
     def test_threads(self):
         b = Backend()
 
         def randloop():
-            s = b.ffi.new("char[]", 16)
-            sb = b.ffi.buffer(s)
+            s = b._ffi.new("char[]", 16)
+            sb = b._ffi.buffer(s)
             sb[:] = b"\0" * 16
 
             for i in range(300000):
-                b.lib.RAND_seed(s, 16)
+                b._lib.RAND_seed(s, 16)
 
         threads = []
         for x in range(3):
