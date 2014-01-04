@@ -18,7 +18,22 @@ import sys
 import cffi
 
 
-def build_ffi(modules, module_prefix, verify_kwargs):
+def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
+    """
+    Modules listed in the ``modules`` listed should have the following
+    attributes:
+
+    * ``INCLUDES``: A string containing C includes.
+    * ``TYPES``: A string containing C declarations for types.
+    * ``FUNCTIONS``: A string containing C declarations for functions.
+    * ``MACROS``: A string containing C declarations for any macros.
+    * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
+        can be used to do things like test for a define and provide an
+        alternate implementation based on that.
+    * ``CONDITIONAL_NAMES``: A dict mapping strings of condition names from the
+        library to a list of names which will not be present without the
+        condition.
+    """
     ffi = cffi.FFI()
     includes = []
     functions = []
@@ -52,7 +67,16 @@ def build_ffi(modules, module_prefix, verify_kwargs):
     # is legal, but the following will fail to compile:
     #   int foo(int);
     #   int foo(short);
-    lib = ffi.verify(**verify_kwargs(includes, functions, customizations))
+    lib = ffi.verify(
+        source="\n".join(
+            [pre_include] +
+            includes +
+            [post_include] +
+            functions +
+            customizations
+        ),
+        libraries=libraries
+    )
 
     for name in modules:
         module_name = module_prefix + name

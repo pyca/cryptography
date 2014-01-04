@@ -34,36 +34,9 @@ _OSX_POST_INCLUDE = """
 """
 
 
-def verify_kwargs(includes, functions, customizations):
-    return {
-        "source": "\n".join(
-            [_OSX_PRE_INCLUDE] +
-            includes +
-            [_OSX_POST_INCLUDE] +
-            functions +
-            customizations
-        ),
-        "libraries": ["crypto", "ssl"],
-    }
-
-
 class Binding(object):
     """
     OpenSSL API wrapper.
-
-    Modules listed in the ``_modules`` listed should have the following
-    attributes:
-
-    * ``INCLUDES``: A string containg C includes.
-    * ``TYPES``: A string containing C declarations for types.
-    * ``FUNCTIONS``: A string containing C declarations for functions.
-    * ``MACROS``: A string containing C declarations for any macros.
-    * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
-        can be used to do things like test for a define and provide an
-        alternate implementation based on that.
-    * ``CONDITIONAL_NAMES``: A dict mapping strings of condition names from the
-        library to a list of names which will not be present without the
-        condition.
     """
     _module_prefix = "cryptography.hazmat.bindings.openssl."
     _modules = [
@@ -103,5 +76,6 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
-        cls.ffi, cls.lib = utils.build_ffi(cls._modules, cls._module_prefix,
-                                           verify_kwargs)
+        cls.ffi, cls.lib = utils.build_ffi(cls._module_prefix, cls._modules,
+                                           _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
+                                           ["crypto", "ssl"])
