@@ -22,7 +22,7 @@ from ...utils import load_hash_vectors
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.MD5),
+    only_if=lambda backend: backend.hmac_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
 @pytest.mark.hmac
@@ -38,7 +38,7 @@ class TestHMAC_MD5(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA1),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1",
 )
 @pytest.mark.hmac
@@ -54,7 +54,7 @@ class TestHMAC_SHA1(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA224),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA224()),
     skip_message="Does not support SHA224",
 )
 @pytest.mark.hmac
@@ -70,7 +70,7 @@ class TestHMAC_SHA224(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA256),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
     skip_message="Does not support SHA256",
 )
 @pytest.mark.hmac
@@ -86,7 +86,7 @@ class TestHMAC_SHA256(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA384),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA384()),
     skip_message="Does not support SHA384",
 )
 @pytest.mark.hmac
@@ -102,7 +102,7 @@ class TestHMAC_SHA384(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA512),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
     skip_message="Does not support SHA512",
 )
 @pytest.mark.hmac
@@ -118,7 +118,7 @@ class TestHMAC_SHA512(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.RIPEMD160),
+    only_if=lambda backend: backend.hmac_supported(hashes.RIPEMD160()),
     skip_message="Does not support RIPEMD160",
 )
 @pytest.mark.hmac
