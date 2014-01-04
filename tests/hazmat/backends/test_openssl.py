@@ -27,6 +27,9 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 class DummyMode(object):
     name = "dummy-mode"
 
+    def validate_for_algorithm(self, algorithm):
+        pass
+
 
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):

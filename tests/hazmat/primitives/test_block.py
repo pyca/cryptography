@@ -35,6 +35,9 @@ from .utils import (
 class DummyMode(object):
     name = "dummy-mode"
 
+    def validate_for_algorithm(self, algorithm):
+        pass
+
 
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
@@ -152,3 +155,37 @@ class TestAEADCipherContext(object):
         algorithms.AES,
         modes.GCM,
     )
+
+
+class TestModeValidation(object):
+    def test_cbc(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CBC(b"abc"),
+                backend,
+            )
+
+    def test_ofb(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.OFB(b"abc"),
+                backend,
+            )
+
+    def test_cfb(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB(b"abc"),
+                backend,
+            )
+
+    def test_ctr(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CTR(b"abc"),
+                backend,
+            )
