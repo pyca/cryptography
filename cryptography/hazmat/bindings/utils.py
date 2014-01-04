@@ -20,8 +20,7 @@ import cffi
 
 def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
     """
-    Modules listed in the ``modules`` listed should have the following
-    attributes:
+    Modules listed in ``modules`` should have the following attributes:
 
     * ``INCLUDES``: A string containing C includes.
     * ``TYPES``: A string containing C declarations for types.
