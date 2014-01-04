@@ -65,7 +65,7 @@ class Backend(object):
 
     def hash_supported(self, algorithm):
         try:
-            self.hash_methods[algorithm]
+            self.hash_methods[algorithm.__class__]
             return True
         except KeyError:
             return False
