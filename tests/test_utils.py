@@ -33,6 +33,16 @@ class FakeInterface(object):
     pass
 
 
+class FakeBinding(object):
+    @classmethod
+    def _ensure_ffi_initialized(cls):
+        raise cffi.VerificationError
+
+    @classmethod
+    def is_available(cls):
+        return binding_available(cls._ensure_ffi_initialized)
+
+
 def test_check_for_iface():
     item = pretend.stub(keywords=["fake_name"], funcargs={"backend": True})
     with pytest.raises(pytest.skip.Exception) as exc_info:
@@ -84,15 +94,6 @@ def test_check_binding_available():
 
 
 def test_check_binding_unavailable():
-    class FakeBinding(object):
-        @classmethod
-        def _ensure_ffi_initialized(cls):
-            raise cffi.VerificationError
-
-        @classmethod
-        def is_available(cls):
-            return binding_available(cls._ensure_ffi_initialized)
-
     kwargs = pretend.stub(kwargs={"binding": FakeBinding})
     item = pretend.stub(keywords={"binding_available": kwargs})
     with pytest.raises(pytest.skip.Exception) as exc_info:
