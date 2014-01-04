@@ -50,7 +50,7 @@ def test_check_backend_support_skip():
                         funcargs={"backend": True})
     with pytest.raises(pytest.skip.Exception) as exc_info:
         check_backend_support(item)
-    assert exc_info.value.args[0] == "Nope"
+    assert exc_info.value.args[0] == "Nope (True)"
 
 
 def test_check_backend_support_no_skip():
