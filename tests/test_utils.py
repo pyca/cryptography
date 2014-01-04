@@ -14,14 +14,18 @@
 import os
 import textwrap
 
+import cffi
+
 import pretend
 
 import pytest
 
+from cryptography.hazmat.bindings.utils import binding_available
+
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
     load_openssl_vectors, load_hash_vectors, check_for_iface,
-    check_backend_support
+    check_backend_support, check_binding_available
 )
 
 
@@ -70,6 +74,31 @@ def test_check_backend_support_no_backend():
                         funcargs={})
     with pytest.raises(ValueError):
         check_backend_support(item)
+
+
+def test_check_binding_available():
+    from cryptography.hazmat.bindings.openssl.binding import Binding
+    kwargs = pretend.stub(kwargs={"binding": Binding})
+    item = pretend.stub(keywords={"binding_available": kwargs})
+    assert check_binding_available(item) is None
+
+
+def test_check_binding_unavailable():
+    class FakeBinding(object):
+        @classmethod
+        def _ensure_ffi_initialized(cls):
+            raise cffi.VerificationError
+
+        @classmethod
+        def is_available(cls):
+            return binding_available(cls._ensure_ffi_initialized)
+
+    kwargs = pretend.stub(kwargs={"binding": FakeBinding})
+    item = pretend.stub(keywords={"binding_available": kwargs})
+    with pytest.raises(pytest.skip.Exception) as exc_info:
+        check_binding_available(item)
+    assert exc_info.value.args[0] == ("<class 'tests.test_utils.FakeBinding'>"
+                                      " is not available")
 
 
 def test_load_nist_vectors():

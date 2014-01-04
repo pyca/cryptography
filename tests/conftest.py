@@ -4,7 +4,9 @@ from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend
 )
 
-from .utils import check_for_iface, check_backend_support
+from .utils import (
+    check_for_iface, check_backend_support, check_binding_available
+)
 
 
 def pytest_generate_tests(metafunc):
@@ -20,3 +22,4 @@ def pytest_runtest_setup(item):
     check_for_iface("cipher", CipherBackend, item)
     check_for_iface("hash", HashBackend, item)
     check_backend_support(item)
+    check_binding_available(item)
