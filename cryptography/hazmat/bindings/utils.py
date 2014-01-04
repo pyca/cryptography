@@ -74,7 +74,8 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
             functions +
             customizations
         ),
-        libraries=libraries
+        libraries=libraries,
+        ext_package="cryptography",
     )
 
     for name in modules:
