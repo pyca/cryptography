@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings import utils
+from cryptography.hazmat.bindings.utils import build_ffi
 
 _OSX_PRE_INCLUDE = """
 #ifdef __APPLE__
@@ -76,6 +76,6 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
-        cls.ffi, cls.lib = utils.build_ffi(cls._module_prefix, cls._modules,
-                                           _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
-                                           ["crypto", "ssl"])
+        cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
+                                     _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
+                                    ["crypto", "ssl"])
