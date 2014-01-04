@@ -78,4 +78,4 @@ class Binding(object):
 
         cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
                                      _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
-                                    ["crypto", "ssl"])
+                                     ["crypto", "ssl"])
