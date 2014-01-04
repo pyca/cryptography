@@ -24,7 +24,7 @@ from ...utils import load_hash_vectors
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA1),
+    only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
     skip_message="Does not support SHA1",
 )
 @pytest.mark.hash
@@ -41,7 +41,7 @@ class TestSHA1(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA224),
+    only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
     skip_message="Does not support SHA224",
 )
 @pytest.mark.hash
@@ -58,7 +58,7 @@ class TestSHA224(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA256),
+    only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
     skip_message="Does not support SHA256",
 )
 @pytest.mark.hash
@@ -75,7 +75,7 @@ class TestSHA256(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA384),
+    only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
     skip_message="Does not support SHA384",
 )
 @pytest.mark.hash
@@ -92,7 +92,7 @@ class TestSHA384(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA512),
+    only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
     skip_message="Does not support SHA512",
 )
 @pytest.mark.hash
@@ -109,7 +109,7 @@ class TestSHA512(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160),
+    only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160()),
     skip_message="Does not support RIPEMD160",
 )
 @pytest.mark.hash
@@ -130,7 +130,7 @@ class TestRIPEMD160(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.Whirlpool),
+    only_if=lambda backend: backend.hash_supported(hashes.Whirlpool()),
     skip_message="Does not support Whirlpool",
 )
 @pytest.mark.hash
@@ -153,7 +153,7 @@ class TestWhirlpool(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.MD5),
+    only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
 @pytest.mark.hash
