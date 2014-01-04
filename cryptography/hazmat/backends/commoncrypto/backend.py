@@ -21,7 +21,7 @@ from cryptography.hazmat.backends.interfaces import (
     HashBackend,
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes, interfaces
 
 
 @utils.register_interface(HashBackend)
@@ -29,42 +29,46 @@ class Backend(object):
     """
     CommonCrypto API wrapper.
     """
+    hashtuple = namedtuple("HashClass", ["struct", "init", "update", "final"])
 
     def __init__(self):
         self._binding = Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
-        hashtuple = namedtuple('hash', 'object init update final')
-        self.hash_mappings = namedtuple('HashMapping',
-                                        'md5 sha1 sha224 sha256 sha384 sha512')
-        self.hash_mappings.md5 = hashtuple(
-            "CC_MD5_CTX *", self._lib.CC_MD5_Init,
-            self._lib.CC_MD5_Update, self._lib.CC_MD5_Final
-        )
-        self.hash_mappings.sha1 = hashtuple(
-            "CC_SHA1_CTX *", self._lib.CC_SHA1_Init,
-            self._lib.CC_SHA1_Update, self._lib.CC_SHA1_Final
-        )
-        self.hash_mappings.sha224 = hashtuple(
-            "CC_SHA256_CTX *", self._lib.CC_SHA224_Init,
-            self._lib.CC_SHA224_Update, self._lib.CC_SHA224_Final
-        )
-        self.hash_mappings.sha256 = hashtuple(
-            "CC_SHA256_CTX *", self._lib.CC_SHA256_Init,
-            self._lib.CC_SHA256_Update, self._lib.CC_SHA256_Final
-        )
-        self.hash_mappings.sha384 = hashtuple(
-            "CC_SHA512_CTX *", self._lib.CC_SHA384_Init,
-            self._lib.CC_SHA384_Update, self._lib.CC_SHA384_Final
-        )
-        self.hash_mappings.sha512 = hashtuple(
-            "CC_SHA512_CTX *", self._lib.CC_SHA512_Init,
-            self._lib.CC_SHA512_Update, self._lib.CC_SHA512_Final
-        )
+        self.hash_methods = {
+            hashes.MD5: self.hashtuple(
+                "CC_MD5_CTX *", self._lib.CC_MD5_Init,
+                self._lib.CC_MD5_Update, self._lib.CC_MD5_Final
+            ),
+            hashes.SHA1: self.hashtuple(
+                "CC_SHA1_CTX *", self._lib.CC_SHA1_Init,
+                self._lib.CC_SHA1_Update, self._lib.CC_SHA1_Final
+            ),
+            hashes.SHA224: self.hashtuple(
+                "CC_SHA256_CTX *", self._lib.CC_SHA224_Init,
+                self._lib.CC_SHA224_Update, self._lib.CC_SHA224_Final
+            ),
+            hashes.SHA256: self.hashtuple(
+                "CC_SHA256_CTX *", self._lib.CC_SHA256_Init,
+                self._lib.CC_SHA256_Update, self._lib.CC_SHA256_Final
+            ),
+            hashes.SHA384: self.hashtuple(
+                "CC_SHA512_CTX *", self._lib.CC_SHA384_Init,
+                self._lib.CC_SHA384_Update, self._lib.CC_SHA384_Final
+            ),
+            hashes.SHA512: self.hashtuple(
+                "CC_SHA512_CTX *", self._lib.CC_SHA512_Init,
+                self._lib.CC_SHA512_Update, self._lib.CC_SHA512_Final
+            ),
+        }
 
     def hash_supported(self, algorithm):
-        return algorithm.name in self.hash_mappings._fields
+        try:
+            self.hash_methods[algorithm]
+            return True
+        except KeyError:
+            return False
 
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
@@ -78,35 +82,37 @@ class _HashContext(object):
 
         if ctx is None:
             try:
-                mapping = getattr(self._backend.hash_mappings, algorithm.name)
-            except AttributeError:
+                methods = self._backend.hash_methods[self.algorithm.__class__]
+            except KeyError:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
-            ctx = self._backend._ffi.new(mapping.object)
-            res = mapping.init(ctx)
+            ctx = self._backend._ffi.new(methods.struct)
+            res = methods.init(ctx)
             assert res == 1
 
         self._ctx = ctx
 
     def copy(self):
-        mapping = getattr(self._backend.hash_mappings, self.algorithm.name)
-        new_ctx = self._backend._ffi.new(mapping.object)
-        new_ctx[0] = self._ctx[0]  # supposed to be legit per C90?
+        methods = self._backend.hash_methods[self.algorithm.__class__]
+        new_ctx = self._backend._ffi.new(methods.struct)
+        # CommonCrypto has no APIs for copying hashes, so we have to copy the
+        # underlying struct.
+        new_ctx[0] = self._ctx[0]
 
         return _HashContext(self._backend, self.algorithm, ctx=new_ctx)
 
     def update(self, data):
-        mapping = getattr(self._backend.hash_mappings, self.algorithm.name)
-        res = mapping.update(self._ctx, data, len(data))
+        methods = self._backend.hash_methods[self.algorithm.__class__]
+        res = methods.update(self._ctx, data, len(data))
         assert res == 1
 
     def finalize(self):
-        mapping = getattr(self._backend.hash_mappings, self.algorithm.name)
+        methods = self._backend.hash_methods[self.algorithm.__class__]
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
-        res = mapping.final(buf, self._ctx)
+        res = methods.final(buf, self._ctx)
         assert res == 1
         return self._backend._ffi.buffer(buf)[:]
 
