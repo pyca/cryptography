@@ -243,19 +243,20 @@ class TestHashlib(object):
         assert expected_hash == hasher.hexdigest()
 
     def test_update_after_finalize(self, backend):
-        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
 
-        md = sha1()
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            md = sha1()
 
-        md.update("A")
-        digest_1 = md.digest()
-        assert digest_1
+            md.update(b"A")
+            digest_1 = md.digest()
+            assert digest_1
 
-        md.update("B")
-        digest_2 = md.digest()
-        assert digest_2
+            md.update(b"B")
+            digest_2 = md.digest()
+            assert digest_2
 
-        assert digest_1 != digest_2
+            assert digest_1 != digest_2
 
     def test_unsupported_algorithm(self, backend, monkeypatch):
         monkeypatch.setattr(hashes, "UnsupportedDummyHash",
@@ -267,12 +268,14 @@ class TestHashlib(object):
             hashlib.new("unsupported-dummy-hash")
 
     def test_hmac(self, backend):
-        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
-        mac = hmac.new(b"test", b"message", sha1)
-        mac.update(b"data")
-        expected = hmac.new(b"test", b"messagedata",
-                            python_hashlib.sha1).digest()
-        assert mac.digest() == expected
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            mac = hmac.new(b"test", b"message", sha1)
+            mac.update(b"data")
+            expected = hmac.new(b"test", b"messagedata",
+                                python_hashlib.sha1).digest()
+            assert mac.digest() == expected
 
     def test_all_algorithms(self, hashlib):
         for algo in hashlib._algorithm_map:
@@ -285,38 +288,85 @@ class TestHashlib(object):
             assert md_1 and md_2
             assert md_1 != md_2
 
+    @pytest.mark.skipif(six.PY3, reason="Not Python 2")
+    def test_py2_hashable_types(self, backend):
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            sha1()
+            sha1(b"")
+            sha1(six.u(""))
+            sha1(six.u("a"))
+            sha1(_buffer(b""))
+            sha1(array.array("b", []))
+
             with pytest.raises(TypeError):
-                hashlib.new(algo, None)
+                sha1(None)
+
+            with pytest.raises(UnicodeEncodeError):
+                sha1(six.u("£"))
+
+    @pytest.mark.skipif(six.PY2, reason="Not Python 3")
+    def test_py3_hashable_types(self, backend):
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            sha1()
+            sha1(b"")
+            sha1(_buffer(b""))
+            sha1(array.array("b", []))
+
+            with pytest.raises(TypeError):
+                sha1(six.u(""))
+
+            with pytest.raises(TypeError):
+                sha1(six.u("a"))
+
+            with pytest.raises(TypeError):
+                sha1(None)
+
+            with pytest.raises(TypeError):
+                sha1(six.u("£"))
 
     @pytest.mark.skipif(six.PY3, reason="Not Python 2")
     def test_py2_interface(self, hashlib):
-        assert hasattr(hashlib, "algorithms")
-        assert not hasattr(hashlib, "algorithms_guaranteed")
-        assert not hasattr(hashlib, "algorithms_available")
+        our_hashlib = hashlib
+
+        for hashlib in [python_hashlib, our_hashlib]:
+            assert hasattr(hashlib, "algorithms")
+            assert not hasattr(hashlib, "algorithms_guaranteed")
+            assert not hasattr(hashlib, "algorithms_available")
 
     @pytest.mark.skipif(six.PY2, reason="Not Python 3")
     def test_py3_interface(self, hashlib):
-        assert not hasattr(hashlib, "algorithms")
-        assert hasattr(hashlib, "algorithms_guaranteed")
-        assert hasattr(hashlib, "algorithms_available")
+        our_hashlib = hashlib
+
+        for hashlib in [python_hashlib, our_hashlib]:
+            assert not hasattr(hashlib, "algorithms")
+            assert hasattr(hashlib, "algorithms_guaranteed")
+            assert hasattr(hashlib, "algorithms_available")
 
     def test_buffer(self, backend):
-        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
 
-        msg = _buffer(b"test")
-        md = sha1(msg)
-        expected = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3'
-        assert md.hexdigest() == expected
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            msg = _buffer(b"test")
+            md = sha1(msg)
+            expected = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3'
+            assert md.hexdigest() == expected
 
     def test_digest_type(self, backend):
-        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
-        md = sha1().digest()
-        assert isinstance(md, six.binary_type)
-        assert isinstance(python_hashlib.sha1().digest(), six.binary_type)
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            md = sha1().digest()
+            assert isinstance(md, six.binary_type)
+            assert isinstance(python_hashlib.sha1().digest(), six.binary_type)
 
     def test_hexdigest_type(self, backend):
-        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
-        md = sha1().hexdigest()
-        print(type(md))
-        assert isinstance(md, str)
-        assert isinstance(python_hashlib.sha1().hexdigest(), str)
+        our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+
+        for sha1 in [python_hashlib.sha1, our_sha1]:
+            md = sha1().hexdigest()
+            assert isinstance(md, str)
+            assert isinstance(python_hashlib.sha1().hexdigest(), str)
