@@ -300,3 +300,15 @@ class TestHashlib(object):
 
             assert md_1 and md_2
             assert md_1 != md_2
+
+    @pytest.mark.skipif(six.PY3, reason="Not Python 2")
+    def test_py2_interface(self, hashlib):
+        assert hasattr(hashlib, "algorithms")
+        assert not hasattr(hashlib, "algorithms_guaranteed")
+        assert not hasattr(hashlib, "algorithms_available")
+
+    @pytest.mark.skipif(six.PY2, reason="Not Python 3")
+    def test_py3_interface(self, hashlib):
+        assert not hasattr(hashlib, "algorithms")
+        assert hasattr(hashlib, "algorithms_guaranteed")
+        assert hasattr(hashlib, "algorithms_available")
