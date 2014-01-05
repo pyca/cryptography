@@ -16,7 +16,7 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import interfaces, hashes
-from cryptography.py.hashlib import Hashlib
+from cryptography.py.hashlib import Hashlib, _new_hashlib_adapter, _buffer
 
 
 @pytest.fixture()
@@ -260,9 +260,10 @@ class TestHashlib(object):
 
         assert expected_hash == hasher.hexdigest()
 
-    @pytest.mark.parametrize("hash", supported_hash_names)
-    def test_update_after_finalize(self, hashlib, hash):
-        md = hashlib.new(hash)
+    def test_update_after_finalize(self, backend):
+        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+
+        md = sha1()
 
         md.update("A")
         digest_1 = md.digest()
@@ -283,8 +284,9 @@ class TestHashlib(object):
         with pytest.raises(ValueError):
             hashlib.new("unsupported-dummy-hash")
 
-    def test_hmac(self, hashlib):
-        mac = hmac.new(b"test", b"message", hashlib.sha1)
+    def test_hmac(self, backend):
+        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+        mac = hmac.new(b"test", b"message", sha1)
         mac.update(b"data")
         expected = hmac.new(b"test", b"messagedata",
                             default_hashlib.sha1).digest()
@@ -301,6 +303,9 @@ class TestHashlib(object):
             assert md_1 and md_2
             assert md_1 != md_2
 
+            with pytest.raises(TypeError):
+                hashlib.new(algo, None)
+
     @pytest.mark.skipif(six.PY3, reason="Not Python 2")
     def test_py2_interface(self, hashlib):
         assert hasattr(hashlib, "algorithms")
@@ -312,3 +317,9 @@ class TestHashlib(object):
         assert not hasattr(hashlib, "algorithms")
         assert hasattr(hashlib, "algorithms_guaranteed")
         assert hasattr(hashlib, "algorithms_available")
+
+    def test_buffer(self, backend):
+        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+        md = sha1(_buffer(b"test"))
+        expected = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3'.encode()
+        assert md.hexdigest() == expected

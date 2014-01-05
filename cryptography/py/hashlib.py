@@ -23,6 +23,8 @@ import six
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, interfaces
 
+# Python will always provide these for us
+
 _algorithms_guaranteed = {
     "md5": python_hashlib.md5,
     "sha1": python_hashlib.sha1,
@@ -32,15 +34,12 @@ _algorithms_guaranteed = {
     "sha512": python_hashlib.sha512,
 }
 
+_notset = object()
+
 
 class _Hashlib(object):
     def __init__(self, backend, python_algorithms):
-        # Python will always provide these for us
-        algorithms = _algorithms_guaranteed.copy()
-
-        # Add all the algorithms our current Python hashlib supports.
-        for name in python_algorithms:
-            algorithms[name] = _python_hash_constructor(name)
+        algorithms = {}
 
         # Add the implementations in our backend, we'll fall back to the
         # Python implementations if the backend doesn't provide the guaranteed
@@ -58,11 +57,14 @@ class _Hashlib(object):
 
         self._algorithm_map = algorithms
 
-    def new(self, name, string=None):
+    def new(self, name, string=_notset):
         try:
             return self._algorithm_map[name](string)
         except KeyError:
-            raise ValueError("unsupported hash type {0}".format(name))
+            if string is _notset:
+                return python_hashlib.new(name)
+            else:
+                return python_hashlib.new(name, string)
 
 
 class _Hashlib2(_Hashlib):
@@ -87,21 +89,14 @@ class _Hashlib3(_Hashlib):
 
 if six.PY2:
     Hashlib = _Hashlib2
+    _buffer = buffer
 else:
     Hashlib = _Hashlib3
-
-
-def _python_hash_constructor(name):
-    def constructor(data=None):
-        if data is None:
-            return python_hashlib.new(name)
-        else:
-            return python_hashlib.new(name, data)
-    return constructor
+    _buffer = memoryview
 
 
 class HashlibHashAdapter(object):
-    def __init__(self, arg=None, _context=None):
+    def __init__(self, arg=_notset, _context=None):
         self._lock = threading.Lock()
 
         self.digest_size = self._algorithm_class.digest_size
@@ -112,14 +107,22 @@ class HashlibHashAdapter(object):
         else:
             self._context = _context
 
-        if arg is not None:
+        if arg is not _notset:
             self.update(arg)
 
     def update(self, arg):
         if isinstance(arg, six.text_type):
             arg = arg.encode()
         elif isinstance(arg, array.array):
-            arg = arg.tostring()
+            if six.PY2:
+                arg = arg.tostring()
+            else:
+                arg = arg.tobytes()
+        elif isinstance(arg, _buffer):
+            arg = six.binary_type(arg)
+
+        if not isinstance(arg, six.binary_type):
+            raise TypeError("must be string or buffer, not {0}".format(arg))
 
         with self._lock:
             self._context.update(arg)
