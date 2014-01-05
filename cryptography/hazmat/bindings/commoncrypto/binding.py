@@ -13,7 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.utils import build_ffi
+from cryptography.hazmat.bindings.utils import (
+    build_ffi, binding_available
+)
 
 
 class Binding(object):
@@ -38,3 +40,7 @@ class Binding(object):
 
         cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
                                      "", "", [])
+
+    @classmethod
+    def is_available(cls):
+        return binding_available(cls._ensure_ffi_initialized)

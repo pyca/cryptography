@@ -13,18 +13,19 @@
 
 import pytest
 
+from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 
-@pytest.mark.commoncrypto
+
+@pytest.mark.skipif(not Binding.is_available(),
+                    reason="CommonCrypto not available")
 class TestCommonCrypto(object):
     def test_binding_loads(self):
-        from cryptography.hazmat.bindings.commoncrypto.binding import Binding
         binding = Binding()
         assert binding
         assert binding.lib
         assert binding.ffi
 
     def test_binding_returns_same_lib(self):
-        from cryptography.hazmat.bindings.commoncrypto.binding import Binding
         binding = Binding()
         binding2 = Binding()
         assert binding.lib == binding2.lib
