@@ -332,8 +332,9 @@ class TestHashlib(object):
     def test_py2_interface(self, hashlib):
         our_hashlib = hashlib
 
+        assert hasattr(our_hashlib, "algorithms")
+
         for hashlib in [python_hashlib, our_hashlib]:
-            assert hasattr(hashlib, "algorithms")
             assert not hasattr(hashlib, "algorithms_guaranteed")
             assert not hasattr(hashlib, "algorithms_available")
 
