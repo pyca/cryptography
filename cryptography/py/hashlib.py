@@ -84,7 +84,7 @@ class _Hashlib3(_Hashlib):
                                         python_hashlib.algorithms_available)
 
         self.algorithms_guaranteed = python_hashlib.algorithms_guaranteed
-        self.algorithms_available = tuple(self._algorithm_map.keys())
+        self.algorithms_available = set(self._algorithm_map.keys())
 
 
 if six.PY2:

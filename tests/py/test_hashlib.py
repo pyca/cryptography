@@ -341,7 +341,7 @@ class TestHashlib(object):
     def test_py2_interface(self, hashlib):
         our_hashlib = hashlib
 
-        assert hasattr(our_hashlib, "algorithms")
+        assert isinstance(hashlib.algorithms, tuple)
 
         for hashlib in [python_hashlib, our_hashlib]:
             assert not hasattr(hashlib, "algorithms_guaranteed")
@@ -353,8 +353,8 @@ class TestHashlib(object):
 
         for hashlib in [python_hashlib, our_hashlib]:
             assert not hasattr(hashlib, "algorithms")
-            assert hasattr(hashlib, "algorithms_guaranteed")
-            assert hasattr(hashlib, "algorithms_available")
+            assert isinstance(hashlib.algorithms_guaranteed, set)
+            assert isinstance(hashlib.algorithms_available, set)
 
     def test_buffer(self, backend):
         our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
