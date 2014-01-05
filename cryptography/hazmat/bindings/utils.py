@@ -86,3 +86,11 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
                     delattr(lib, name)
 
     return ffi, lib
+
+
+def binding_available(initializer):
+    try:
+        initializer()
+        return True
+    except cffi.VerificationError:
+        return False

@@ -11,15 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import, division, print_function
+
+import cffi
+
+from cryptography.hazmat.bindings.utils import binding_available
 from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
-class TestOpenSSL(object):
-    def test_binding_loads(self):
-        binding = Binding()
-        assert binding
-        assert binding.lib
-        assert binding.ffi
+def dummy_initializer():
+    ffi = cffi.FFI()
+    ffi.verify(source="#include <fake_header.h>")
 
-    def test_is_available(self):
-        assert Binding.is_available() is True
+
+def test_binding_available():
+    assert binding_available(Binding._ensure_ffi_initialized) is True
+
+
+def test_binding_unavailable():
+    assert binding_available(dummy_initializer) is False
