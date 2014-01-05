@@ -8,7 +8,7 @@
 
 import array
 import threading
-import hashlib as default_hashlib
+import hashlib as python_hashlib
 import hmac
 
 import pytest
@@ -71,11 +71,11 @@ class TestHashlib(object):
 
     def check(self, hashlib, name, data, digest):
         computed = hashlib.new(name, data).hexdigest()
-        assert computed == digest.encode()
+        assert computed == digest
 
     def check_unicode(self, hashlib, algorithm_name):
         # Unicode objects are not allowed as input.
-        expected = hashlib.new(algorithm_name, b'spam').hexdigest().decode()
+        expected = hashlib.new(algorithm_name, b'spam').hexdigest()
         self.check(hashlib, algorithm_name, six.u('spam'), expected)
 
     @pytest.mark.parametrize("hash", ["md5", "sha1", "sha224",
@@ -289,7 +289,7 @@ class TestHashlib(object):
         mac = hmac.new(b"test", b"message", sha1)
         mac.update(b"data")
         expected = hmac.new(b"test", b"messagedata",
-                            default_hashlib.sha1).digest()
+                            python_hashlib.sha1).digest()
         assert mac.digest() == expected
 
     def test_all_algorithms(self, hashlib):
@@ -320,6 +320,21 @@ class TestHashlib(object):
 
     def test_buffer(self, backend):
         sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
-        md = sha1(_buffer(b"test"))
-        expected = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3'.encode()
+
+        msg = _buffer(b"test")
+        md = sha1(msg)
+        expected = 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3'
         assert md.hexdigest() == expected
+
+    def test_digest_type(self, backend):
+        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+        md = sha1().digest()
+        assert isinstance(md, six.binary_type)
+        assert isinstance(python_hashlib.sha1().digest(), six.binary_type)
+
+    def test_hexdigest_type(self, backend):
+        sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
+        md = sha1().hexdigest()
+        print(type(md))
+        assert isinstance(md, str)
+        assert isinstance(python_hashlib.sha1().hexdigest(), str)

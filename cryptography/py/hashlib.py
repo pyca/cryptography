@@ -132,7 +132,7 @@ class HashlibHashAdapter(object):
             return self._context.copy().finalize()
 
     def hexdigest(self):
-        return binascii.hexlify(self.digest())
+        return str(binascii.hexlify(self.digest()).decode())
 
     def copy(self):
         with self._lock:
