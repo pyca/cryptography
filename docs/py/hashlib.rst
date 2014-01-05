@@ -8,8 +8,9 @@ Getting a Hashlib
 
 .. class:: Hashlib(backend)
 
-    A Python 2.7 `hashlib`_ module and `PEP247`_ compatible interface to the hashes supported by
-    ``backend``. 
+    A Python ``hashlib`` and `PEP247`_ compatible interface to the hashes
+    supported by ``backend``. This module supports both the
+    `Python 2.7 hashlib`_ and `Python 3 hashlib API`_.
     
     .. doctest::
 
@@ -24,5 +25,6 @@ Getting a Hashlib
 
     Unlike the ``hazmat`` interface to hash functions this API is thread-safe.
 
-.. _`hashlib`: http://docs.python.org/2/library/hashlib.html
+.. _`Python 2.7 hashlib`: http://docs.python.org/2.7/library/hashlib.html
+.. _`Python 3 hashlib`: http://docs.python.org/3.3/library/hashlib.html
 .. _`PEP247`: http://www.python.org/dev/peps/pep-0247/
