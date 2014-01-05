@@ -19,6 +19,11 @@ from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.py.hashlib import Hashlib
 
 
+@pytest.fixture()
+def hashlib(backend):
+    return Hashlib(backend)
+
+
 @utils.register_interface(interfaces.HashAlgorithm)
 class UnsupportedDummyHash(object):
     name = "unsupported-dummy-hash"
