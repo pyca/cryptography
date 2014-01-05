@@ -16,31 +16,85 @@ import array
 import binascii
 import inspect
 import threading
+import hashlib as python_hashlib
 
 import six
 
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, interfaces
 
+_algorithms_guaranteed = {
+    "md5": python_hashlib.md5,
+    "sha1": python_hashlib.sha1,
+    "sha224": python_hashlib.sha224,
+    "sha256": python_hashlib.sha256,
+    "sha384": python_hashlib.sha384,
+    "sha512": python_hashlib.sha512,
+}
 
-class Hashlib(object):
-    def __init__(self, backend):
-        algorithms = {}
+
+class _Hashlib(object):
+    def __init__(self, backend, python_algorithms):
+        # Python will always provide these for us
+        algorithms = _algorithms_guaranteed.copy()
+
+        # Add all the algorithms our current Python hashlib supports.
+        for name in python_algorithms:
+            algorithms[name] = _python_hash_constructor(name)
+
+        # Add the implementations in our backend, we'll fall back to the
+        # Python implementations if the backend doesn't provide the guaranteed
+        # ones.
 
         for hash_class in _find_supported_hash_algorithms(backend):
             hashlib_class = _new_hashlib_adapter(hash_class, backend)
-            setattr(self, hash_class.name, hashlib_class)
+            algorithms[hash_class.name.lower()] = hashlib_class
+            algorithms[hash_class.name.upper()] = hashlib_class
 
-            algorithms[hash_class.name] = hashlib_class
+        # Make sure the ones with attributes point at the right implementations
+
+        for name in _algorithms_guaranteed:
+            setattr(self, name, algorithms[name])
 
         self._algorithm_map = algorithms
-        self.algorithms = tuple(algorithms.keys())
 
     def new(self, name, string=None):
         try:
-            return self._algorithm_map[name.lower()](string)
+            return self._algorithm_map[name](string)
         except KeyError:
             raise ValueError("unsupported hash type {0}".format(name))
+
+
+class _Hashlib2(_Hashlib):
+    def __init__(self, backend):
+        super(_Hashlib2, self).__init__(backend,
+                                        python_hashlib.algorithms)
+        self.algorithms = tuple(self._algorithm_map.keys())
+
+
+class _Hashlib3(_Hashlib):
+    def __init__(self, backend):
+        # Python 3 provides some weird ones, such as "dsaEncryption"
+        super(_Hashlib3, self).__init__(backend,
+                                        python_hashlib.algorithms_available)
+
+        self.algorithms_guaranteed = python_hashlib.algorithms_guaranteed
+        self.algorithms_available = tuple(self._algorithm_map.keys())
+
+
+if six.PY2:
+    Hashlib = _Hashlib2
+else:
+    Hashlib = _Hashlib3
+
+
+def _python_hash_constructor(name):
+    def constructor(data=None):
+        if data is None:
+            return python_hashlib.new(name)
+        else:
+            return python_hashlib.new(name, data)
+    return constructor
 
 
 class HashlibHashAdapter(object):

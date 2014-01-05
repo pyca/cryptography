@@ -291,11 +291,11 @@ class TestHashlib(object):
         assert mac.digest() == expected
 
     def test_all_algorithms(self, hashlib):
-        for algo in hashlib.algorithms:
-            h = hashlib.new(algo, "a")
+        for algo in hashlib._algorithm_map:
+            h = hashlib.new(algo, b"a")
             md_1 = h.digest()
 
-            h.update("b")
+            h.update(b"b")
             md_2 = h.digest()
 
             assert md_1 and md_2
