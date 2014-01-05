@@ -10,7 +10,7 @@ Getting a Hashlib
 
     A Python ``hashlib`` and `PEP247`_ compatible interface to the hashes
     supported by ``backend``. This module supports both the
-    `Python 2.7 hashlib`_ and `Python 3 hashlib API`_.
+    `Python 2.7 hashlib`_ and `Python 3 hashlib`_ API.
     
     .. doctest::
 
