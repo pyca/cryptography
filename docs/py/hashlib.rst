@@ -17,11 +17,11 @@ Getting a Hashlib
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.py.hashlib import Hashlib
         >>> hashlib = Hashlib(default_backend())
-        >>> hashlib.new("sha1", "cryptography").digest()
-        b'H\xc9\x10\xb6aLJ\n\xa5\x85\x1a\xa7\x85q\xdd\x1e<:f\xba'
+        >>> hashlib.new("sha1", b"cryptography").hexdigest()
+        '48c910b6614c4a0aa5851aa78571dd1e3c3a66ba'
         >>> import hmac
-        >>> hmac.new("key", "message", hashlib.sha1).digest()
-        b' \x88\xdft\xd5\xf2\x14kH\x14l\xafIe7~\x9d\x0b\xe3\xa4'
+        >>> hmac.new(b"key", b"message", hashlib.sha1).hexdigest()
+        '2088df74d5f2146b48146caf4965377e9d0be3a4'
 
     Unlike the ``hazmat`` interface to hash functions this API is thread-safe.
 
