@@ -21,7 +21,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 
 def dummy_initializer():
     ffi = cffi.FFI()
-    ffi.verify(source="#include <fake_header.h>")
+    ffi.verify(source="random text that won't compile")
 
 
 def test_binding_available():
