@@ -36,12 +36,6 @@ def check_backend_support(item):
                          "backend")
 
 
-def check_binding_available(item):
-    ba = item.keywords.get("binding_available")
-    if ba and not ba.kwargs["binding"].is_available():
-        pytest.skip("{0} is not available".format(ba.kwargs["binding"]))
-
-
 def load_vectors_from_file(filename, loader):
     base = os.path.join(
         os.path.dirname(__file__), "hazmat", "primitives", "vectors",
