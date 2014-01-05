@@ -20,7 +20,8 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
 def dummy_initializer():
-    raise cffi.VerificationError
+    ffi = cffi.FFI()
+    ffi.verify(source="include <fake_header.h>")
 
 
 def test_binding_available():
