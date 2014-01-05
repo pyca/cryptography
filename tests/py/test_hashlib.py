@@ -30,6 +30,11 @@ class UnsupportedDummyHash(object):
 
 
 class TestHashlib(object):
+    """
+    Hashlib tests, mostly based on the tests PyPy ported from CPython, plus
+    some extras.
+    """
+
     supported_hash_names = ('md5', 'MD5', 'sha1', 'SHA1',
                             'sha224', 'SHA224', 'sha256', 'SHA256',
                             'sha384', 'SHA384', 'sha512', 'SHA512')
@@ -284,3 +289,14 @@ class TestHashlib(object):
         expected = hmac.new(b"test", b"messagedata",
                             default_hashlib.sha1).digest()
         assert mac.digest() == expected
+
+    def test_all_algorithms(self, hashlib):
+        for algo in hashlib.algorithms:
+            h = hashlib.new(algo, "a")
+            md_1 = h.digest()
+
+            h.update("b")
+            md_2 = h.digest()
+
+            assert md_1 and md_2
+            assert md_1 != md_2
