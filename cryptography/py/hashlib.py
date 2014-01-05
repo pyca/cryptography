@@ -113,7 +113,7 @@ class HashlibHashAdapter(object):
             self.update(arg)
 
     def update(self, arg):
-        if isinstance(arg, six.text_type):
+        if six.PY2 and isinstance(arg, six.text_type):
             arg = arg.encode()
         elif isinstance(arg, array.array):
             if six.PY2:
