@@ -60,6 +60,7 @@ The recipes layer
 
     fernet
     random-numbers
+    py/hashlib
     exceptions
     glossary
 
