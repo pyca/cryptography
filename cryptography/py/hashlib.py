@@ -88,11 +88,13 @@ class _Hashlib3(_Hashlib):
 
 
 if six.PY2:
+    # Python 2 hashlib API
     Hashlib = _Hashlib2
-    _buffer = buffer
+    _buffer = getattr(six.moves.builtins, "buffer")
 else:
+    # Python 3 hashlib API
     Hashlib = _Hashlib3
-    _buffer = memoryview
+    _buffer = getattr(six.moves.builtins, "memoryview")
 
 
 class HashlibHashAdapter(object):
