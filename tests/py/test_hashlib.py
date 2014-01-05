@@ -288,6 +288,15 @@ class TestHashlib(object):
             assert md_1 and md_2
             assert md_1 != md_2
 
+    def test_hashlib_new_fallback(self, hashlib):
+        hashlib._algorithm_map = {}
+
+        assert hashlib.new("sha1")
+        assert hashlib.new("sha1", b"")
+
+        with pytest.raises(TypeError):
+            hashlib.new("sha1", None)
+
     @pytest.mark.skipif(six.PY3, reason="Not Python 2")
     def test_py2_hashable_types(self, backend):
         our_sha1 = _new_hashlib_adapter(hashes.SHA1, backend)
