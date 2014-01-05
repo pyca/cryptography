@@ -67,8 +67,11 @@ class _Hashlib(object):
 
 class _Hashlib2(_Hashlib):
     def __init__(self, backend):
-        super(_Hashlib2, self).__init__(backend,
-                                        python_hashlib.algorithms)
+        super(_Hashlib2, self).__init__(
+            backend,
+            getattr(python_hashlib, "algorithms",
+                    _algorithms_guaranteed.keys())
+        )
         self.algorithms = tuple(self._algorithm_map.keys())
 
 
