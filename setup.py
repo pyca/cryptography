@@ -51,7 +51,9 @@ class cffi_build(build):
             padding._ffi.verifier.get_extension()
         ]
         if Binding.is_available():
-            self.distribution.ext_modules.append(Binding().ffi.verifier.get_extension())
+            self.distribution.ext_modules.append(
+                Binding().ffi.verifier.get_extension()
+            )
 
         build.finalize_options(self)
 
