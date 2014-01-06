@@ -39,7 +39,7 @@ symmetric (also known as "secret key") authenticated cryptography.
         :param bytes plaintext: The message you would like to encrypt.
         :returns bytes: A secure message which cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
-                        refered to as a "Fernet token".
+                        referred to as a "Fernet token".
 
         .. note::
 
