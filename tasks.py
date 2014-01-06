@@ -39,9 +39,9 @@ def release(version):
     # This checks for changes in the repo.
     invoke.run("git diff-index --quiet HEAD")
 
-    update_version("cryptography/__about__.py", "__version__")
-    update_version("docs/conf.py", "version")
-    update_version("docs/conf.py", "release")
+    update_version("cryptography/__about__.py", "__version__", version)
+    update_version("docs/conf.py", "version", version)
+    update_version("docs/conf.py", "release", version)
 
     invoke.run("git commit -am 'Bump version numbers for release.'")
     invoke.run("git push")
