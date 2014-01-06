@@ -47,10 +47,12 @@ class cffi_build(build):
         from cryptography.hazmat.primitives import constant_time, padding
 
         self.distribution.ext_modules = [
-            Binding().ffi.verifier.get_extension(),
             constant_time._ffi.verifier.get_extension(),
             padding._ffi.verifier.get_extension()
         ]
+        if Binding.is_available():
+            self.distribution.ext_modules.append(Binding().ffi.verifier.get_extension())
+
         build.finalize_options(self)
 
 
