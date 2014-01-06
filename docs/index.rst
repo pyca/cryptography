@@ -56,6 +56,7 @@ The recipes layer
 .. toctree::
     :maxdepth: 2
 
+    fernet
     exceptions
     glossary
 

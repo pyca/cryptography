@@ -1,8 +1,9 @@
+coverage
 flake8
+iso8601
 pretend
 pytest
-coverage
 sphinx
-tox
 sphinx_rtd_theme
+tox
 -e .
