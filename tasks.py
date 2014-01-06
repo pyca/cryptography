@@ -44,9 +44,8 @@ def release(version):
     update_version("docs/conf.py", "release", version)
 
     invoke.run("git commit -am 'Bump version numbers for release.'")
-    invoke.run("git push")
     invoke.run("git tag -s {}".format(version))
-    invoke.run("git push --tags")
+    invoke.run("git push --all --tags")
 
     invoke.run("python setup.py sdist bdist_wheel")
     invoke.run("twine upload -s dist/cryptography-{}*".format(version))
