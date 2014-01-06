@@ -33,7 +33,7 @@ install:
     - ./.travis/install.sh
 
 script:
-    - tox -e $TOX_ENV
+    - ~/ve/cryptography/bin/tox -e $TOX_ENV
 
 after_success:
     - coveralls
