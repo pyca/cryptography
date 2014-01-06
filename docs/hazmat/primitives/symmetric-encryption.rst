@@ -565,10 +565,11 @@ Interfaces
 .. class:: AEADEncryptionContext
 
     When creating an encryption context using ``encryptor()`` on a ``Cipher``
-    object with an AEAD mode you will receive a return object conforming to the
-    ``AEADEncryptionContext`` interface (as well as ``AEADCipherContext``).
-    This interface provides one additional attribute ``tag``. ``tag`` can only
-    be obtained after ``finalize()``.
+    object with an AEAD mode (e.g.
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`) you will receive
+    a return object conforming to the ``AEADEncryptionContext`` interface (as
+    well as ``AEADCipherContext``).  This interface provides one additional
+    attribute ``tag``. ``tag`` can only be obtained after ``finalize()``.
 
     .. attribute:: tag
 
