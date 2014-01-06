@@ -11,26 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import, division, print_function
 
-class UnsupportedAlgorithm(Exception):
-    pass
+import cffi
 
-
-class AlreadyFinalized(Exception):
-    pass
-
-
-class AlreadyUpdated(Exception):
-    pass
+from cryptography.hazmat.bindings.utils import binding_available
+from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
-class NotYetFinalized(Exception):
-    pass
+def dummy_initializer():
+    ffi = cffi.FFI()
+    ffi.verify(source="#include <fake_header.h>")
 
 
-class InvalidTag(Exception):
-    pass
+def test_binding_available():
+    assert binding_available(Binding._ensure_ffi_initialized) is True
 
 
-class InvalidSignature(Exception):
-    pass
+def test_binding_unavailable():
+    assert binding_available(dummy_initializer) is False

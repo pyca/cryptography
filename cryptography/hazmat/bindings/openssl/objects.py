@@ -12,25 +12,26 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/bn.h>
+#include <openssl/objects.h>
 """
 
 TYPES = """
-typedef ... BIGNUM;
-typedef ... BN_ULONG;
 """
 
 FUNCTIONS = """
-BIGNUM *BN_new();
-void BN_free(BIGNUM *);
-
-int BN_set_word(BIGNUM *, BN_ULONG);
-
-char *BN_bn2hex(const BIGNUM *);
-int BN_hex2bn(BIGNUM **, const char *);
-int BN_dec2bn(BIGNUM **, const char *);
-
-int BN_num_bits(const BIGNUM *);
+ASN1_OBJECT *OBJ_nid2obj(int);
+const char *OBJ_nid2ln(int);
+const char *OBJ_nid2sn(int);
+int OBJ_obj2nid(const ASN1_OBJECT *);
+int OBJ_ln2nid(const char *);
+int OBJ_sn2nid(const char *);
+int OBJ_txt2nid(const char *);
+ASN1_OBJECT *OBJ_txt2obj(const char *, int);
+int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
+int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
+ASN1_OBJECT *OBJ_dup(const ASN1_OBJECT *);
+int OBJ_create(const char *, const char *, const char *);
+void OBJ_cleanup(void);
 """
 
 MACROS = """
@@ -38,3 +39,5 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

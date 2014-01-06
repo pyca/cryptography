@@ -31,11 +31,20 @@ from .utils import (
 )
 
 
+@utils.register_interface(interfaces.Mode)
+class DummyMode(object):
+    name = "dummy-mode"
+
+    def validate_for_algorithm(self, algorithm):
+        pass
+
+
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
-    pass
+    name = "dummy-cipher"
 
 
+@pytest.mark.cipher
 class TestCipher(object):
     def test_creates_encryptor(self, backend):
         cipher = Cipher(
@@ -59,6 +68,7 @@ class TestCipher(object):
             Cipher(algorithm, mode=None, backend=backend)
 
 
+@pytest.mark.cipher
 class TestCipherContext(object):
     def test_use_after_finalize(self, backend):
         cipher = Cipher(
@@ -101,9 +111,10 @@ class TestCipherContext(object):
         assert pt == b"a" * 80
         decryptor.finalize()
 
-    def test_nonexistent_cipher(self, backend):
+    @pytest.mark.parametrize("mode", [DummyMode(), None])
+    def test_nonexistent_cipher(self, backend, mode):
         cipher = Cipher(
-            DummyCipher(), object(), backend
+            DummyCipher(), mode, backend
         )
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
@@ -128,20 +139,53 @@ class TestCipherContext(object):
             decryptor.finalize()
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+    ),
+    skip_message="Does not support AES GCM",
+)
+@pytest.mark.cipher
 class TestAEADCipherContext(object):
     test_aead_exceptions = generate_aead_exception_test(
         algorithms.AES,
         modes.GCM,
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
     )
     test_aead_tag_exceptions = generate_aead_tag_exception_test(
         algorithms.AES,
         modes.GCM,
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
     )
+
+
+class TestModeValidation(object):
+    def test_cbc(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CBC(b"abc"),
+                backend,
+            )
+
+    def test_ofb(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.OFB(b"abc"),
+                backend,
+            )
+
+    def test_cfb(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB(b"abc"),
+                backend,
+            )
+
+    def test_ctr(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CTR(b"abc"),
+                backend,
+            )

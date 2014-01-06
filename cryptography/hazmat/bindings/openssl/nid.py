@@ -37,6 +37,7 @@ static const int NID_ecdsa_with_SHA384;
 static const int NID_ecdsa_with_SHA512;
 static const int NID_crl_reason;
 static const int NID_pbe_WithSHA1And3_Key_TripleDES_CBC;
+static const int NID_subject_alt_name;
 """
 
 FUNCTIONS = """
@@ -47,3 +48,5 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

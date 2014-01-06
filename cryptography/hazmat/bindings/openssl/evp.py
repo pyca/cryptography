@@ -24,7 +24,9 @@ typedef struct {
     ...;
 } EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct env_md_ctx_st EVP_MD_CTX;
+typedef struct env_md_ctx_st {
+    ...;
+} EVP_MD_CTX;
 
 typedef struct evp_pkey_st {
     int type;
@@ -32,14 +34,15 @@ typedef struct evp_pkey_st {
 } EVP_PKEY;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
-static const int Cryptography_EVP_CTRL_GCM_SET_IVLEN;
-static const int Cryptography_EVP_CTRL_GCM_GET_TAG;
-static const int Cryptography_EVP_CTRL_GCM_SET_TAG;
+static const int EVP_MAX_MD_SIZE;
+static const int EVP_CTRL_GCM_SET_IVLEN;
+static const int EVP_CTRL_GCM_GET_TAG;
+static const int EVP_CTRL_GCM_SET_TAG;
+
+static const int Cryptography_HAS_GCM;
 """
 
 FUNCTIONS = """
-void OpenSSL_add_all_algorithms();
-
 const EVP_CIPHER *EVP_get_cipherbyname(const char *);
 int EVP_EncryptInit_ex(EVP_CIPHER_CTX *, const EVP_CIPHER *, ENGINE *,
                        const unsigned char *, const unsigned char *);
@@ -61,11 +64,11 @@ int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
 const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_block_size(const EVP_CIPHER *);
 void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
-EVP_CIPHER_CTX *EVP_CIPHER_CTX_new();
+EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
 
-EVP_MD_CTX *EVP_MD_CTX_create();
+EVP_MD_CTX *EVP_MD_CTX_create(void);
 int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
@@ -76,7 +79,7 @@ const EVP_MD *EVP_get_digestbyname(const char *);
 const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
 int EVP_MD_size(const EVP_MD *);
 
-EVP_PKEY *EVP_PKEY_new();
+EVP_PKEY *EVP_PKEY_new(void);
 void EVP_PKEY_free(EVP_PKEY *);
 int EVP_PKEY_type(int);
 int EVP_PKEY_bits(EVP_PKEY *);
@@ -90,9 +93,12 @@ int EVP_VerifyInit(EVP_MD_CTX *, const EVP_MD *);
 int EVP_VerifyUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
                     EVP_PKEY *);
+
+const EVP_MD *EVP_md5(void);
 """
 
 MACROS = """
+void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
@@ -101,12 +107,19 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
 CUSTOMIZATIONS = """
 #ifdef EVP_CTRL_GCM_SET_TAG
-const int Cryptography_EVP_CTRL_GCM_GET_TAG = EVP_CTRL_GCM_GET_TAG;
-const int Cryptography_EVP_CTRL_GCM_SET_TAG = EVP_CTRL_GCM_SET_TAG;
-const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = EVP_CTRL_GCM_SET_IVLEN;
+const long Cryptography_HAS_GCM = 1;
 #else
-const int Cryptography_EVP_CTRL_GCM_GET_TAG = -1;
-const int Cryptography_EVP_CTRL_GCM_SET_TAG = -1;
-const int Cryptography_EVP_CTRL_GCM_SET_IVLEN = -1;
+const long Cryptography_HAS_GCM = 0;
+const long EVP_CTRL_GCM_GET_TAG = -1;
+const long EVP_CTRL_GCM_SET_TAG = -1;
+const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
 """
+
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_GCM": [
+        "EVP_CTRL_GCM_GET_TAG",
+        "EVP_CTRL_GCM_SET_TAG",
+        "EVP_CTRL_GCM_SET_IVLEN",
+    ]
+}

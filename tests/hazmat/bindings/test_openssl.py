@@ -11,26 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-class UnsupportedAlgorithm(Exception):
-    pass
+from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
-class AlreadyFinalized(Exception):
-    pass
+class TestOpenSSL(object):
+    def test_binding_loads(self):
+        binding = Binding()
+        assert binding
+        assert binding.lib
+        assert binding.ffi
 
-
-class AlreadyUpdated(Exception):
-    pass
-
-
-class NotYetFinalized(Exception):
-    pass
-
-
-class InvalidTag(Exception):
-    pass
-
-
-class InvalidSignature(Exception):
-    pass
+    def test_is_available(self):
+        assert Binding.is_available() is True

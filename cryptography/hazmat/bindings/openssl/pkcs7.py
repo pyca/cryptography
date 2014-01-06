@@ -12,20 +12,28 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/dh.h>
+#include <openssl/pkcs7.h>
 """
 
 TYPES = """
-typedef ... DH;
+typedef struct {
+    ASN1_OBJECT *type;
+    ...;
+} PKCS7;
 """
 
 FUNCTIONS = """
-DH *DH_new();
-void DH_free(DH *);
+void PKCS7_free(PKCS7 *);
 """
 
 MACROS = """
+int PKCS7_type_is_signed(PKCS7 *);
+int PKCS7_type_is_enveloped(PKCS7 *);
+int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
+int PKCS7_type_is_data(PKCS7 *);
 """
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

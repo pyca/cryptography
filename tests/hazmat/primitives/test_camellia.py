@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import os
 
+import pytest
+
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -24,7 +26,14 @@ from ...utils import (
 )
 
 
-class TestCamellia(object):
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.Camellia("\x00" * 16), modes.ECB()
+    ),
+    skip_message="Does not support Camellia ECB",
+)
+@pytest.mark.cipher
+class TestCamellia_ECB(object):
     test_ECB = generate_encrypt_test(
         load_cryptrec_vectors,
         os.path.join("ciphers", "Camellia"),
@@ -33,46 +42,57 @@ class TestCamellia(object):
             "camellia-192-ecb.txt",
             "camellia-256-ecb.txt"
         ],
-        lambda key: algorithms.Camellia(binascii.unhexlify((key))),
-        lambda key: modes.ECB(),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.Camellia("\x00" * 16), modes.ECB()
-        ),
-        skip_message="Does not support Camellia ECB",
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda **kwargs: modes.ECB(),
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
+    ),
+    skip_message="Does not support Camellia CBC",
+)
+@pytest.mark.cipher
+class TestCamellia_CBC(object):
     test_CBC = generate_encrypt_test(
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
-        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda key, iv: modes.CBC(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support Camellia CBC",
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
+    ),
+    skip_message="Does not support Camellia OFB",
+)
+@pytest.mark.cipher
+class TestCamellia_OFB(object):
     test_OFB = generate_encrypt_test(
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
-        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda key, iv: modes.OFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
-        ),
-        skip_message="Does not support Camellia OFB",
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
+    ),
+    skip_message="Does not support Camellia CFB",
+)
+@pytest.mark.cipher
+class TestCamellia_CFB(object):
     test_CFB = generate_encrypt_test(
         load_openssl_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
-        lambda key, iv: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda key, iv: modes.CFB(binascii.unhexlify(iv)),
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
-        ),
-        skip_message="Does not support Camellia CFB",
+        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

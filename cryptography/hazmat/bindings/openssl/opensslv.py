@@ -12,26 +12,21 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/pkcs7.h>
+#include <openssl/opensslv.h>
 """
 
 TYPES = """
-typedef struct {
-    ASN1_OBJECT *type;
-    ...;
-} PKCS7;
+static const int OPENSSL_VERSION_NUMBER;
+static const char *const OPENSSL_VERSION_TEXT;
 """
 
 FUNCTIONS = """
-void PKCS7_free(PKCS7 *);
 """
 
 MACROS = """
-int PKCS7_type_is_signed(PKCS7 *);
-int PKCS7_type_is_enveloped(PKCS7 *);
-int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
-int PKCS7_type_is_data(PKCS7 *);
 """
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}

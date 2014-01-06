@@ -12,18 +12,14 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/dsa.h>
+#include <openssl/conf.h>
 """
 
 TYPES = """
-typedef ... DSA;
+typedef ... CONF;
 """
 
 FUNCTIONS = """
-DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
-                             void (*)(int, int, void *), void *);
-int DSA_generate_key(DSA *);
-void DSA_free(DSA *);
 """
 
 MACROS = """
@@ -31,3 +27,5 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 """
+
+CONDITIONAL_NAMES = {}
