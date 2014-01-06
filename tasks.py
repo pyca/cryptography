@@ -25,7 +25,8 @@ def update_version(filename, identifier, version):
     contents = re.sub(
         r"^{} = .*?$".format(identifier),
         '{} = "{}"'.format(identifier, version),
-        contents
+        contents,
+        flags=re.MULTILINE
     )
     with open(path, "w") as f:
         f.write(contents)
