@@ -20,8 +20,8 @@ def release(version):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
-    invoke.run("git tag -s {}".format(version))
+    invoke.run("git tag -s {0}".format(version))
     invoke.run("git push --tags")
 
     invoke.run("python setup.py sdist")
-    invoke.run("twine upload -s dist/cryptography-{}*".format(version))
+    invoke.run("twine upload -s dist/cryptography-{0}*".format(version))
