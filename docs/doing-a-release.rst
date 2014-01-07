@@ -25,4 +25,12 @@ key in order to do a release. Once this has happened:
 
 The release should now be available on PyPI and a tag should be available in
 the repository. You should verify that ``pip install cryptography`` works
-correctly.
+correctly:
+
+.. code-block:: pycon
+
+    >>> import cryptography
+    >>> cryptography.__version__
+    '...'
+
+Verify that this is the version you just released.
