@@ -23,5 +23,6 @@ key in order to do a release. Once this has happened:
 
 * Run ``invoke release {version}``.
 
-That's all, the release should now be available on PyPI and a tag should be
-available in the repository.
+The release should now be available on PyPI and a tag should be available in
+the repository. You should verify that ``pip install cryptography`` works
+correctly.

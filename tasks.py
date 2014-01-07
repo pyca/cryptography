@@ -23,5 +23,5 @@ def release(version):
     invoke.run("git tag -s {}".format(version))
     invoke.run("git push --tags")
 
-    invoke.run("python setup.py sdist bdist_wheel")
+    invoke.run("python setup.py sdist")
     invoke.run("twine upload -s dist/cryptography-{}*".format(version))
