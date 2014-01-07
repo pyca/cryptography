@@ -79,4 +79,5 @@ The ``cryptography`` open source project
     contributing
     security
     api-stability
+    doing-a-release
     community

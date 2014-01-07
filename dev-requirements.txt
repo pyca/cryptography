@@ -1,9 +1,11 @@
 coverage
 flake8
+invoke
 iso8601
 pretend
 pytest
 sphinx
 sphinx_rtd_theme
 tox
+twine
 -e .
