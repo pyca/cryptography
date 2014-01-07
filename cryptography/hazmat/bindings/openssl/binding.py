@@ -83,4 +83,5 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
+        # OpenSSL is the only binding so for now it must always be available
         return True
