@@ -10,16 +10,18 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.openssl.binding import Binding
+import invoke
 
 
-class TestOpenSSL(object):
-    def test_binding_loads(self):
-        binding = Binding()
-        assert binding
-        assert binding.lib
-        assert binding.ffi
+@invoke.task
+def release(version):
+    """
+    ``version`` should be a string like '0.4' or '1.0'.
+    """
+    invoke.run("git tag -s {0}".format(version))
+    invoke.run("git push --tags")
 
-    def test_is_available(self):
-        assert Binding.is_available() is True
+    invoke.run("python setup.py sdist")
+    invoke.run("twine upload -s dist/cryptography-{0}*".format(version))

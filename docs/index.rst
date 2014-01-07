@@ -56,6 +56,7 @@ The recipes layer
 .. toctree::
     :maxdepth: 2
 
+    fernet
     exceptions
     glossary
 
@@ -78,4 +79,5 @@ The ``cryptography`` open source project
     contributing
     security
     api-stability
+    doing-a-release
     community
