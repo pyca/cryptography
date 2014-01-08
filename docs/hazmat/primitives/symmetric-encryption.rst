@@ -365,45 +365,80 @@ Modes
     :param bytes tag: The tag bytes to verify during decryption. When encrypting
                       this must be None.
 
-    .. code-block:: python
+    .. testcode::
+
+        import os
+
+        from cryptography.hazmat.primitives.ciphers import (
+            Cipher, algorithms, modes
+        )
+
+        from cryptography.hazmat.primitives.padding import PKCS7
 
         def encrypt(key, plaintext, associated_data):
+            # Generate a random 96-bit IV.
             iv = os.urandom(12)
-            cipher = Cipher(
+
+            # Construct a AES-GCM Cipher object with the given and our randomly
+            # generated IV.
+            encryptor = Cipher(
                 algorithms.AES(key),
                 modes.GCM(iv),
                 backend=default_backend()
-            )
+            ).encryptor()
 
-            encryptor = cipher.encryptor()
+            # We have to pad our plaintext because it may not be a
+            # multiple of the block size.
+            padder = PKCS7(algorithms.AES.block_size).padder()
+            padded_plaintext = padder.update(plaintext) + padder.finalize()
+
+            # associated_data will be authenticated but not encrypted,
+            # it must also be passed in on decryption.
             encryptor.authenticate_additional_data(associated_data)
-            ciphertext = encryptor.update(plaintext) + encryptor.finalize()
 
-            return (associated_data, iv, ciphertext, encryptor.tag)
+            # Encrypt the plaintext and get the associated ciphertext.
+            ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
+
+            return (iv, ciphertext, encryptor.tag)
 
         def decrypt(key, associated_data, iv, ciphertext, tag):
-            cipher = Cipher(
+            # Construct a Cipher object, with the key, iv, and additionally the
+            # GCM tag used for authenticating the message.
+            decryptor = Cipher(
                 algorithms.AES(key),
                 modes.GCM(iv, tag),
                 backend=default_backend()
-            )
+            ).decryptor()
 
-            decryptor = cipher.decryptor()
+            # We will need to unpad the plaintext.
+            unpadder = PKCS7(algorithms.AES.block_size).unpadder()
+
+            # We put associated_data back in or the tag will fail to verify
+            # when we finalize the decryptor.
             decryptor.authenticate_additional_data(associated_data)
 
-            return decryptor.update(ciphertext) + decryptor.finalize()
+            # Decryption gets us the authenticated padded plaintext.
+            padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
 
-        associated_data, iv, ciphertext, tag = encrypt(
+            return unpadder.update(padded_plaintext) + unpadder.finalize()
+
+        iv, ciphertext, tag = encrypt(
             key,
-            b"a secret message",
+            b"a secret message!",
             b"authenticated but not encrypted payload"
         )
 
-        print(decrypt(key, associated_data, iv, ciphertext, tag))
+        print(decrypt(
+            key,
+            b"authenticated but not encrypted payload",
+            iv,
+            ciphertext,
+            tag
+        ))
 
     .. testoutput::
 
-        a secret message
+        a secret message!
 
 
 Insecure Modes
