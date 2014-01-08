@@ -80,4 +80,5 @@ The ``cryptography`` open source project
     security
     api-stability
     doing-a-release
+    changelog
     community
