@@ -47,6 +47,6 @@ else
     esac
 fi
 
-virtualenv "VIRTUALENV"
-source "./VIRTUALENV/bin/activate"
+virtualenv "~/VIRTUALENV"
+source "~/VIRTUALENV/bin/activate"
 pip install tox coveralls
