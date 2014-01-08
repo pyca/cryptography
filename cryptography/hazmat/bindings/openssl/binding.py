@@ -13,9 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.utils import (
-    build_ffi, binding_available
-)
+from cryptography.hazmat.bindings.utils import build_ffi
+
 
 _OSX_PRE_INCLUDE = """
 #ifdef __APPLE__
@@ -84,4 +83,5 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        return binding_available(cls._ensure_ffi_initialized)
+        # OpenSSL is the only binding so for now it must always be available
+        return True
