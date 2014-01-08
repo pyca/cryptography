@@ -8,12 +8,11 @@ needs in Python.
 Installing
 ----------
 
-We don't yet have a release on PyPI, for now you can install ``cryptography``
-directly from Github:
+You can install ``cryptography`` with ``pip``:
 
 .. code-block:: console
 
-    $ pip install git+https://github.com/pyca/cryptography
+    $ pip install cryptography
 
 Why a new crypto library for Python?
 ------------------------------------
