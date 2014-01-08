@@ -9,4 +9,6 @@ if [[ "${OPENSSL}" == "0.9.8" ]]; then
     sudo apt-get install -y --force-yes libssl-dev/lucid
 fi
 
-pip install tox coveralls
+virtualenv "VIRTUALENV";
+source "./VIRTUALENV/bin/activate";
+pip install tox coveralls;
