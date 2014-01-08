@@ -22,7 +22,7 @@ __summary__ = ("cryptography is a package designed to expose cryptographic "
                "recipes and primitives to Python developers.")
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "0.1"
+__version__ = "0.2.dev1"
 
 __author__ = ("Alex Gaynor, Hynek Schlawack, Donald Stufft, "
               "Laurens Van Houtven, Jean-Paul Calderone, Christian Heimes, "
