@@ -1,9 +1,7 @@
 Changelog
 =========
 
-0.1
-~~~
-
-**Released on XXX**
+0.1 - YYYY-MM-DD
+~~~~~~~~~~~~~~~~
 
 * Initial release.
