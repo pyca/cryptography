@@ -8,5 +8,6 @@ _build/
 cffi-*.egg
 pycparser-*.egg
 pytest-*.egg
+six-*.egg
 dist/
 htmlcov/
