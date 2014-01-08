@@ -6,4 +6,4 @@ Changelog
 
 **Released on XXX**
 
-* Initial released.
+* Initial release.
