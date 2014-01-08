@@ -32,7 +32,7 @@ install:
     - ./.travis/install.sh
 
 script:
-    - tox -e $TOX_ENV
+    - ./VIRTUALENV/bin/tox -e $TOX_ENV
 
 after_success:
     - coveralls
