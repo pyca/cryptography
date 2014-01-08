@@ -15,17 +15,36 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
     sudo python get-pip.py
     sudo pip install virtualenv
-    if [[ "${TOX_ENV}" == "pypy" ]]; then
-        sudo brew install pypy
-    fi
+    case "${TOX_ENV}" in
+        pypy)
+            sudo brew install pypy
+            ;;
+        py32)
+            sudo brew install python32
+            ;;
+        py33)
+            sudo brew install python3
+            ;;
+    esac
 else
     sudo apt-get install python-virtualenv
 
-    if [[ "${TOX_ENV}" == "pypy" ]]; then
-        sudo add-apt-repository -y ppa:pypy/ppa
-        sudo apt-get -y update
-        sudo apt-get install -y --force-yes pypy pypy-dev
-    fi
+    case "${TOX_ENV}" in
+        py26)
+            sudo apt-get install python2.6
+            ;;
+        py32)
+            sudo apt-get install python3.2
+            ;;
+        py33)
+            sudo apt-get install python3.3
+            ;;
+        pypy)
+            sudo add-apt-repository -y ppa:pypy/ppa
+            sudo apt-get -y update
+            sudo apt-get install -y --force-yes pypy pypy-dev
+            ;;
+    esac
 fi
 
 virtualenv "VIRTUALENV"
