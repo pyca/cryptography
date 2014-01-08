@@ -5,8 +5,8 @@ _build/
 .cache/
 *.egg-info/
 .coverage
-cffi-*.egg/
-pycparser-*.egg/
-pytest-*.egg/
+cffi-*.egg
+pycparser-*.egg
+pytest-*.egg
 dist/
 htmlcov/
