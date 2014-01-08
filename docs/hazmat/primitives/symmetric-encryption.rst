@@ -169,6 +169,8 @@ Modes
     CBC (Cipher block chaining) is a mode of operation for block ciphers. It is
     considered cryptographically strong.
 
+    **Padding is required when using this mode.**
+
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
                                         in a transmitted message). Must be the
@@ -211,6 +213,8 @@ Modes
     cryptographically strong. It transforms a block cipher into a stream
     cipher.
 
+    **This mode does not require padding.**
+
     :param bytes nonce: Should be random bytes. It is critical to never reuse a
                         ``nonce`` with a given key.  Any reuse of a nonce
                         with the same key compromises the security of every
@@ -224,6 +228,8 @@ Modes
     OFB (Output Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
 
+    **This mode does not require padding.**
+
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
                                         in a transmitted message). Must be the
@@ -236,6 +242,8 @@ Modes
 
     CFB (Cipher Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
+
+    **This mode does not require padding.**
 
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
@@ -260,6 +268,8 @@ Modes
     (and optionally additional data that is not encrypted) simultaneously.
     Additional means of verifying integrity (like
     :doc:`HMAC </hazmat/primitives/hmac>`) are not necessary.
+
+    **This mode does not require padding.**
 
     :param bytes initialization_vector: Must be random bytes. They do not need
                                         to be kept secret (they can be included
@@ -365,6 +375,8 @@ Insecure Modes
     identical plaintext blocks will always result in identical ciphertext
     blocks, and thus result in information leakage
 
+    **Padding is required when using this mode.**
+
 Interfaces
 ----------
 
@@ -377,8 +389,8 @@ Interfaces
     finish the operation and obtain the remainder of the data.
 
     Block ciphers require that plaintext or ciphertext always be a multiple of
-    their block size, because of that **padding** is often required to make a
-    message the correct size. ``CipherContext`` will not automatically apply
+    their block size, because of that **padding** is sometimes required to make
+    a message the correct size. ``CipherContext`` will not automatically apply
     any padding; you'll need to add your own. For block ciphers the recommended
     padding is :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you
     are using a stream cipher mode (such as
