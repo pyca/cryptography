@@ -24,9 +24,7 @@ __uri__ = "https://github.com/pyca/cryptography"
 
 __version__ = "0.2.dev1"
 
-__author__ = ("Alex Gaynor, Hynek Schlawack, Donald Stufft, "
-              "Laurens Van Houtven, Jean-Paul Calderone, Christian Heimes, "
-              "Paul Kehrer, Alex Stapleton, and individual contributors.")
+__author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "Apache License, Version 2.0"
