@@ -15,12 +15,14 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     case "${TOX_ENV}" in
         py26)
-            sudo easy_install pip
+            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            sudo python get-pip.py
             sudo pip install setuptools --no-use-wheel --upgrade
             sudo pip install virtualenv
             ;;
         py27)
-            sudo easy_install pip
+            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            sudo python get-pip.py
             sudo pip install setuptools --no-use-wheel --upgrade
             sudo pip install virtualenv
             ;;
