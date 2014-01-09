@@ -13,9 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.utils import (
-    build_ffi, binding_available
-)
+import sys
+
+from cryptography.hazmat.bindings.utils import build_ffi
 
 
 class Binding(object):
@@ -43,4 +43,4 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        return binding_available(cls._ensure_ffi_initialized)
+        return sys.platform == "darwin"
