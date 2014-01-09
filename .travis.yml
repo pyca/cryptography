@@ -24,7 +24,7 @@ install:
     - ./.travis/install.sh
 
 script:
-    - if [[ "$(uname -s)" == "Darwin" ]]; then eval "$(pyenv init -)";fi && source ~/.venv/bin/activate && tox -e $TOX_ENV
+    - if [[ "$(uname -s)" == "Darwin" ]]; then eval "$(pyenv init -)"; fi && source ~/.venv/bin/activate && tox -e $TOX_ENV
 
 after_success:
     - coveralls
