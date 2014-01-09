@@ -37,9 +37,8 @@ message.
     If the backend doesn't support the requested ``algorithm`` an
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` will be raised.
 
-    If you've been given a signature and need to check that it's correct, this
-    can be done with the :meth:`verify` method, you'll get an exception if the
-    signature is wrong:
+    To check that a given signature is correct use the :meth:`verify` method.
+    You will receive an exception if the signature is wrong:
 
     .. code-block:: pycon
 
