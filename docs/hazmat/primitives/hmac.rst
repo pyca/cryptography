@@ -37,6 +37,17 @@ message.
     If the backend doesn't support the requested ``algorithm`` an
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` will be raised.
 
+    If you've been given a signature and need to check that it's correct, this
+    can be done with the :meth:`verify` method, you'll get an exception if the
+    signature is wrong:
+
+    .. code-block:: pycon
+
+        >>> h.verify(b"an incorrect signature")
+        Traceback (most recent call last):
+        ...
+        cryptography.exceptions.InvalidSignature: Signature did not match digest.
+
     :param key: Secret key as ``bytes``.
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -61,17 +72,6 @@ message.
             and finalized independently of the original instance.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
-    .. method:: finalize()
-
-        Finalize the current context and return the message digest as bytes.
-
-        Once ``finalize`` is called this object can no longer be used and
-        :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise
-        :class:`~cryptography.exceptions.AlreadyFinalized`.
-
-        :return bytes: The message digest as bytes.
-        :raises cryptography.exceptions.AlreadyFinalized:
-
     .. method:: verify(signature)
 
         Finalize the current context and securely compare digest to
@@ -82,3 +82,14 @@ message.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
         :raises cryptography.exceptions.InvalidSignature: If signature does not
                                                           match digest
+
+    .. method:: finalize()
+
+        Finalize the current context and return the message digest as bytes.
+
+        Once ``finalize`` is called this object can no longer be used and
+        :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise
+        :class:`~cryptography.exceptions.AlreadyFinalized`.
+
+        :return bytes: The message digest as bytes.
+        :raises cryptography.exceptions.AlreadyFinalized:
