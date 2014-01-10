@@ -30,7 +30,7 @@ install:
     - ./.travis/install.sh
 
 script:
-    - if [[ "$(uname -s)" == "Darwin" ]]; then export ARCHFLAGS="-arch x86_64" && export LDFLAGS="-L/usr/local/opt/openssl/lib" && export CFLAGS="-I/usr/local/opt/openssl/include" && eval "$(pyenv init -)"; fi && source ~/.venv/bin/activate && tox -e $TOX_ENV
+    - ./.travis/run.sh
 
 after_success:
     - coveralls
