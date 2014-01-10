@@ -39,6 +39,7 @@ static const int ASN1_R_BAD_PASSWORD_READ;
 
 FUNCTIONS = """
 void ERR_load_crypto_strings(void);
+void ERR_load_SSL_strings(void);
 void ERR_free_strings(void);
 char* ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
