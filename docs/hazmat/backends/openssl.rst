@@ -40,4 +40,15 @@ You'll also need to generate your own ``openssl.ld`` file. For example::
 You should replace the version string on the first line as appropriate for your
 build.
 
+Using your own OpenSSL on OS X
+------------------------------
+
+To link cryptography against a custom version of OpenSSL you'll need to set
+``ARCHFLAGS``, ``LDFLAGS``, and ``CFLAGS``.
+
+An example using a `Homebrew`_ OpenSSL installation::
+
+    ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip install cryptography
+
 .. _`OpenSSL`: https://www.openssl.org/
+.. _`Homebrew`: http://brew.sh
