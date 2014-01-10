@@ -6,25 +6,31 @@ compiler:
     - clang
     - gcc
 env:
-    - TOX_ENV=py26
-    - TOX_ENV=py27
-    - TOX_ENV=py32
-    - TOX_ENV=py33
-    - TOX_ENV=pypy
-    - TOX_ENV=py26 OPENSSL=0.9.8
-    - TOX_ENV=py27 OPENSSL=0.9.8
-    - TOX_ENV=py32 OPENSSL=0.9.8
-    - TOX_ENV=py33 OPENSSL=0.9.8
-    - TOX_ENV=pypy OPENSSL=0.9.8
-    - TOX_ENV=docs
-    - TOX_ENV=pep8
-    - TOX_ENV=py3pep8
+    # this global section can be removed when
+    # https://github.com/travis-ci/travis-ci/issues/1844 is fixed
+    global:
+        - CI=true
+        - TRAVIS=true
+    matrix:
+        - TOX_ENV=py26
+        - TOX_ENV=py27
+        - TOX_ENV=py32
+        - TOX_ENV=py33
+        - TOX_ENV=pypy
+        - TOX_ENV=py26 OPENSSL=0.9.8
+        - TOX_ENV=py27 OPENSSL=0.9.8
+        - TOX_ENV=py32 OPENSSL=0.9.8
+        - TOX_ENV=py33 OPENSSL=0.9.8
+        - TOX_ENV=pypy OPENSSL=0.9.8
+        - TOX_ENV=docs
+        - TOX_ENV=pep8
+        - TOX_ENV=py3pep8
 
 install:
     - ./.travis/install.sh
 
 script:
-    - if [[ "$(uname -s)" == "Darwin" ]]; then eval "$(pyenv init -)";fi && source ~/.venv/bin/activate && tox -e $TOX_ENV
+    - if [[ "$(uname -s)" == "Darwin" ]]; then eval "$(pyenv init -)"; fi && source ~/.venv/bin/activate && tox -e $TOX_ENV
 
 after_success:
     - coveralls
