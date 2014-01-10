@@ -10,8 +10,3 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from cryptography.hazmat.backends.commoncrypto.backend import backend
-
-
-__all__ = ["backend"]

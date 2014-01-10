@@ -11,7 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.hazmat.backends.commoncrypto.backend import backend
+import pytest
+
+from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 
 
-__all__ = ["backend"]
+@pytest.mark.commoncrypto
+class TestCommonCrypto(object):
+    def test_binding_loads(self):
+        binding = Binding()
+        assert binding
+        assert binding.lib
+        assert binding.ffi
