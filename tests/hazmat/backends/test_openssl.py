@@ -95,3 +95,11 @@ class TestOpenSSL(object):
                 backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
                 0
             )
+
+    def test_ssl_ciphers_registered(self):
+        meth = backend._lib.TLSv1_method()
+        assert backend._lib.SSL_CTX_new(meth) != backend._ffi.NULL
+
+    def test_evp_ciphers_registered(self):
+        cipher = backend._lib.EVP_get_cipherbyname("aes-256-cbc")
+        assert cipher != backend._ffi.NULL
