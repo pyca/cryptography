@@ -43,12 +43,6 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             ;;
     esac
     pyenv rehash
-    if [[ "${OPENSSL}" != "0.9.8" ]]; then
-        /usr/local/opt/openssl/bin/openssl version
-        curl -O https://langui.sh/travis/openssl-1.0.1f.mavericks.bottle.tar.gz
-        brew install openssl-1.0.1f.mavericks.bottle.tar.gz
-        /usr/local/opt/openssl/bin/openssl version
-    fi
 else
     # add mega-python ppa
     sudo add-apt-repository -y ppa:fkrull/deadsnakes

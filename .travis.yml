@@ -33,7 +33,7 @@ script:
     - ./.travis/run.sh
 
 after_success:
-    - coveralls
+    - source ~/.venv/bin/activate && coveralls
 
 notifications:
     irc:
