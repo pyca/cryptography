@@ -1,0 +1,75 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+from __future__ import absolute_import, division, print_function
+
+import abc
+
+import six
+
+
+class PKCS1PublicKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def load_pem(self, buffer, password=None):
+        """
+        Load PublicKey from PEM formatted PKCS#1 data.
+        """
+
+    @abc.abstractmethod
+    def dump_pem(self, public_key):
+        """
+        Encode public_key to PEM formatted PKCS#1.
+        """
+
+
+class PKCS1PrivateKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def load_pem(self, buffer, password):
+        """
+        Load PrivateKey from PEM formatted PKCS#1 data.
+        """
+
+    @abc.abstractmethod
+    def dump_pem(self, private_key, cipher, mode, password):
+        """
+        Encode private_key to PEM formatted PKCS#1.
+        """
+
+
+class PKCS8PublicKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def load_pem(self, buffer, password=None):
+        """
+        Load PublicKey from PEM formatted PKCS#8 data.
+        """
+
+    @abc.abstractmethod
+    def dump_pem(self, public_key):
+        """
+        Encode public_key to PEM formatted PKCS#8.
+        """
+
+
+class PKCS8PrivateKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def load_pem(self, buffer, password):
+        """
+        Load PrivateKey from PEM formatted PKCS#8 data.
+        """
+
+    @abc.abstractmethod
+    def dump_pem(self, private_key, cipher, mode, password):
+        """
+        Encode private_key to PEM formatted PKCS#8.
+        """

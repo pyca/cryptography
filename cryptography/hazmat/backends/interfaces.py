@@ -71,3 +71,43 @@ class HMACBackend(six.with_metaclass(abc.ABCMeta)):
         """
         Create a HashContext for calculating a message authentication code.
         """
+
+
+class PKCS1DecoderBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def create_pkcs1_decoder(self, key, algorithm):
+        """
+        Create a PKCS1Decoder for decoding PKCS#1 data.
+        """
+
+
+class PKCS1EncoderBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def create_pkcs1_encoder(self, key, algorithm):
+        """
+        Create a PKCS1Encoder for encoding objects to PKCS#1.
+        """
+
+
+class PKCS1Backend(PKCS1DecoderBackend, PKCS1EncoderBackend):
+    pass
+
+
+class PKCS8DecoderBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def create_pkcs8_decoder(self, key, algorithm):
+        """
+        Create a PKCS8Decoder for decoding PKCS#8 data.
+        """
+
+
+class PKCS8EncoderBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def create_pkcs8_encoder(self, key, algorithm):
+        """
+        Create a PKCS8Encoder for encoding objects to PKCS#8.
+        """
+
+
+class PKCS8Backend(PKCS8DecoderBackend, PKCS8EncoderBackend):
+    pass
