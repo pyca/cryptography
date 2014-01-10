@@ -16,12 +16,12 @@ Mac OS X.
     .. attribute:: ffi
 
         This is a :class:`cffi.FFI` instance. It can be used to allocate and
-        otherwise manipulate OpenSSL structures.
+        otherwise manipulate CommonCrypto structures.
 
     .. attribute:: lib
 
-        This is a ``cffi`` library. It can be used to call OpenSSL functions,
-        and access constants.
+        This is a ``cffi`` library. It can be used to call CommonCrypto
+        functions, and access constants.
 
 
 .. _`CFFI`: https://cffi.readthedocs.org/
