@@ -9,6 +9,11 @@ if [[ "${OPENSSL}" == "0.9.8" && "$(uname -s)" != "Darwin" ]]; then
     sudo apt-get install -y --force-yes libssl-dev/lucid
 fi
 
+if [[ "${TOX_ENV}" == "docs" && "$(name -s)" != "Darwin" ]]; then
+    sudo apt-get -y update
+    sudo apt-get install libenchant-dev
+fi
+
 if [[ "$(uname -s)" == "Darwin" ]]; then
     brew update
     brew install pyenv
