@@ -103,5 +103,5 @@ class TestOpenSSL(object):
         backend._lib.SSL_CTX_free(ctx)
 
     def test_evp_ciphers_registered(self):
-        cipher = backend._lib.EVP_get_cipherbyname("aes-256-cbc")
+        cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
         assert cipher != backend._ffi.NULL
