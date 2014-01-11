@@ -32,8 +32,8 @@ typedef uint32_t CCHmacAlgorithm;
 
 FUNCTIONS = """
 void CCHmacInit(CCHmacContext *, CCHmacAlgorithm, const void *, size_t);
-void CCHmacUpdate( CCHmacContext *, const void *, size_t);
-void CCHmacFinal( CCHmacContext *, void *);
+void CCHmacUpdate(CCHmacContext *, const void *, size_t);
+void CCHmacFinal(CCHmacContext *, void *);
 
 """
 
