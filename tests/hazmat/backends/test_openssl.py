@@ -107,8 +107,9 @@ class TestOpenSSL(object):
         assert cipher != backend._ffi.NULL
 
     def test_error_strings_loaded(self):
+        # returns a value in a static buffer
         err = backend._lib.ERR_error_string(101183626, backend._ffi.NULL)
         assert backend._ffi.string(err) == (
-            "error:0607F08A:digital envelope routines:EVP_EncryptFinal_ex:"
-            "data not multiple of block length"
+            b"error:0607F08A:digital envelope routines:EVP_EncryptFinal_ex:"
+            b"data not multiple of block length"
         )
