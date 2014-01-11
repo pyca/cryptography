@@ -19,7 +19,7 @@ TYPES = """
 typedef struct {
     ...;
 } CCHmacContext;
-enum CCHmacAlgorithm {
+enum {
     kCCHmacAlgSHA1,
     kCCHmacAlgMD5,
     kCCHmacAlgSHA256,
