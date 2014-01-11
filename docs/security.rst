@@ -9,4 +9,4 @@ key is available from most commonly-used key servers).
 
 Once you've submitted an issue via email, you should receive an acknowledgment
 within 48 hours, and depending on the action to be taken, you may receive
-further followup emails.
+further follow-up emails.
