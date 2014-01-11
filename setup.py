@@ -23,7 +23,7 @@ with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
-CFFI_DEPENDENCY = "cffi>=0.6"
+CFFI_DEPENDENCY = "cffi>=0.8.1"
 SIX_DEPENDENCY = "six>=1.4.1"
 
 requirements = [
