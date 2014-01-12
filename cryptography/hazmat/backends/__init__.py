@@ -12,18 +12,15 @@
 # limitations under the License.
 
 from cryptography.hazmat.backends import openssl
+from cryptography.hazmat.bindings.commoncrypto.binding import (
+    Binding as CCBinding
+)
 
-_POTENTIAL_BACKENDS = ["openssl", "commoncrypto"]
+_ALL_BACKENDS = [openssl.backend]
 
-_ALL_BACKENDS = []
-
-for b in _POTENTIAL_BACKENDS:
-    binding = __import__("cryptography.hazmat.bindings.{0}.binding".format(b),
-                         fromlist=["binding"])
-    if binding.Binding.is_available():
-        backend = __import__("cryptography.hazmat.backends.{0}".format(b),
-                             fromlist=["backend"])
-        _ALL_BACKENDS.append(backend.backend)
+if CCBinding.is_available():
+    from cryptography.hazmat.backends import commoncrypto
+    _ALL_BACKENDS.append(commoncrypto.backend)
 
 
 def default_backend():
