@@ -324,6 +324,11 @@ Modes
             return (iv, ciphertext, encryptor.tag)
 
         def decrypt(key, associated_data, iv, ciphertext, tag):
+            if len(tag) != 16:
+                raise ValueError(
+                    "tag must be 16 bytes -- truncation not supported"
+                )
+
             # Construct a Cipher object, with the key, iv, and additionally the
             # GCM tag used for authenticating the message.
             decryptor = Cipher(
