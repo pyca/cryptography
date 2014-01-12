@@ -119,6 +119,9 @@ def unregister_dummy_engine():
 class DummyMode(object):
     name = "dummy-mode"
 
+    def validate_for_algorithm(self, algorithm):
+        pass
+
 
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
@@ -184,6 +187,24 @@ class TestOpenSSL(object):
                 backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
                 0
             )
+
+    def test_ssl_ciphers_registered(self):
+        meth = backend._lib.TLSv1_method()
+        ctx = backend._lib.SSL_CTX_new(meth)
+        assert ctx != backend._ffi.NULL
+        backend._lib.SSL_CTX_free(ctx)
+
+    def test_evp_ciphers_registered(self):
+        cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
+        assert cipher != backend._ffi.NULL
+
+    def test_error_strings_loaded(self):
+        # returns a value in a static buffer
+        err = backend._lib.ERR_error_string(101183626, backend._ffi.NULL)
+        assert backend._ffi.string(err) == (
+            b"error:0607F08A:digital envelope routines:EVP_EncryptFinal_ex:"
+            b"data not multiple of block length"
+        )
 
     # This test is not in the next class because to check if it's really
     # default we don't want to run the setup_method before it

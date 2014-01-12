@@ -11,15 +11,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.hazmat.bindings.openssl.binding import Binding
+INCLUDES = """
+#include <CommonCrypto/CommonHMAC.h>
+"""
 
+TYPES = """
+typedef struct {
+    ...;
+} CCHmacContext;
+enum {
+    kCCHmacAlgSHA1,
+    kCCHmacAlgMD5,
+    kCCHmacAlgSHA256,
+    kCCHmacAlgSHA384,
+    kCCHmacAlgSHA512,
+    kCCHmacAlgSHA224
+};
+typedef uint32_t CCHmacAlgorithm;
+"""
 
-class TestOpenSSL(object):
-    def test_binding_loads(self):
-        binding = Binding()
-        assert binding
-        assert binding.lib
-        assert binding.ffi
+FUNCTIONS = """
+void CCHmacInit(CCHmacContext *, CCHmacAlgorithm, const void *, size_t);
+void CCHmacUpdate(CCHmacContext *, const void *, size_t);
+void CCHmacFinal(CCHmacContext *, void *);
 
-    def test_is_available(self):
-        assert Binding.is_available() is True
+"""
+
+MACROS = """
+"""
+
+CUSTOMIZATIONS = """
+"""
+
+CONDITIONAL_NAMES = {}

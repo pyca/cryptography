@@ -29,6 +29,8 @@ devastating, ``cryptography`` has a strict code review policy:
   backwards incompatible release of a dependency) no pull requests may be
   merged until this is rectified.
 * All merged patches must have 100% test coverage.
+* New features and significant bug fixes should be documented in the
+  :doc:`/changelog`.
 
 The purpose of these policies is to minimize the chances we merge a change
 which jeopardizes our users' security.

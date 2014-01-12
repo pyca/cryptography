@@ -34,7 +34,7 @@ class UnsupportedDummyHash(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.MD5),
+    only_if=lambda backend: backend.hmac_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
 @pytest.mark.hmac

@@ -1,5 +1,6 @@
 import pytest
 
+from cryptography.hazmat.backends import _ALL_BACKENDS
 from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend
 )
@@ -7,11 +8,9 @@ from cryptography.hazmat.backends.interfaces import (
 from .utils import check_for_iface, check_backend_support
 
 
-def pytest_generate_tests(metafunc):
-    from cryptography.hazmat.backends import _ALL_BACKENDS
-
-    if "backend" in metafunc.fixturenames:
-        metafunc.parametrize("backend", _ALL_BACKENDS)
+@pytest.fixture(params=_ALL_BACKENDS)
+def backend(request):
+    return request.param
 
 
 @pytest.mark.trylast

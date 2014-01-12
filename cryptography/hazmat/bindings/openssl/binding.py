@@ -13,9 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import sys
+from cryptography.hazmat.bindings.utils import build_ffi
 
-import cffi
 
 _OSX_PRE_INCLUDE = """
 #ifdef __APPLE__
@@ -39,20 +38,6 @@ _OSX_POST_INCLUDE = """
 class Binding(object):
     """
     OpenSSL API wrapper.
-
-    Modules listed in the ``_modules`` listed should have the following
-    attributes:
-
-    * ``INCLUDES``: A string containg C includes.
-    * ``TYPES``: A string containing C declarations for types.
-    * ``FUNCTIONS``: A string containing C declarations for functions.
-    * ``MACROS``: A string containing C declarations for any macros.
-    * ``CUSTOMIZATIONS``: A string containing arbitrary top-level C code, this
-        can be used to do things like test for a define and provide an
-        alternate implementation based on that.
-    * ``CONDITIONAL_NAMES``: A dict mapping strings of condition names from the
-        library to a list of names which will not be present without the
-        condition.
     """
     _module_prefix = "cryptography.hazmat.bindings.openssl."
     _modules = [
@@ -93,61 +78,13 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
-        ffi = cffi.FFI()
-        includes = []
-        functions = []
-        macros = []
-        customizations = []
-        for name in cls._modules:
-            module_name = cls._module_prefix + name
-            __import__(module_name)
-            module = sys.modules[module_name]
-
-            ffi.cdef(module.TYPES)
-
-            macros.append(module.MACROS)
-            functions.append(module.FUNCTIONS)
-            includes.append(module.INCLUDES)
-            customizations.append(module.CUSTOMIZATIONS)
-
-        # loop over the functions & macros after declaring all the types
-        # so we can set interdependent types in different files and still
-        # have them all defined before we parse the funcs & macros
-        for func in functions:
-            ffi.cdef(func)
-        for macro in macros:
-            ffi.cdef(macro)
-
-        # We include functions here so that if we got any of their definitions
-        # wrong, the underlying C compiler will explode. In C you are allowed
-        # to re-declare a function if it has the same signature. That is:
-        #   int foo(int);
-        #   int foo(int);
-        # is legal, but the following will fail to compile:
-        #   int foo(int);
-        #   int foo(short);
-
-        lib = ffi.verify(
-            source="\n".join(
-                [_OSX_PRE_INCLUDE] +
-                includes +
-                [_OSX_POST_INCLUDE] +
-                functions +
-                customizations
-            ),
-            libraries=["crypto", "ssl"],
-        )
-
-        for name in cls._modules:
-            module_name = cls._module_prefix + name
-            module = sys.modules[module_name]
-            for condition, names in module.CONDITIONAL_NAMES.items():
-                if not getattr(lib, condition):
-                    for name in names:
-                        delattr(lib, name)
-
-        res = lib.Cryptography_add_osrandom_engine()
+        cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
+                                     _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
+                                     ["crypto", "ssl"])
+        res = cls.lib.Cryptography_add_osrandom_engine()
         assert res == 1
 
-        cls.ffi = ffi
-        cls.lib = lib
+    @classmethod
+    def is_available(cls):
+        # OpenSSL is the only binding so for now it must always be available
+        return True

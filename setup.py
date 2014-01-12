@@ -10,31 +10,61 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+from distutils.command.build import build
+
 from setuptools import setup, find_packages
 
 
+base_dir = os.path.dirname(__file__)
+
 about = {}
-with open("cryptography/__about__.py") as fp:
-    exec(fp.read(), about)
+with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
+    exec(f.read(), about)
 
 
-CFFI_DEPENDENCY = "cffi>=0.6"
+CFFI_DEPENDENCY = "cffi>=0.8"
 SIX_DEPENDENCY = "six>=1.4.1"
 
-install_requires = [
+requirements = [
     CFFI_DEPENDENCY,
     SIX_DEPENDENCY
 ]
 
-setup_requires = [
-    CFFI_DEPENDENCY,
-]
+
+class cffi_build(build):
+    """
+    This class exists, instead of just providing ``ext_modules=[...]`` directly
+    in ``setup()`` because importing cryptography requires we have several
+    packages installed first.
+
+    By doing the imports here we ensure that packages listed in
+    ``setup_requires`` are already installed.
+    """
+
+    def finalize_options(self):
+        from cryptography.hazmat.bindings.openssl.binding import Binding
+        from cryptography.hazmat.primitives import constant_time, padding
+
+        self.distribution.ext_modules = [
+            Binding().ffi.verifier.get_extension(),
+            constant_time._ffi.verifier.get_extension(),
+            padding._ffi.verifier.get_extension()
+        ]
+
+        build.finalize_options(self)
+
+
+with open(os.path.join(base_dir, "README.rst")) as f:
+    long_description = f.read()
+
 
 setup(
     name=about["__title__"],
     version=about["__version__"],
 
     description=about["__summary__"],
+    long_description=long_description,
     license=about["__license__"],
     url=about["__uri__"],
 
@@ -65,9 +95,13 @@ setup(
 
     packages=find_packages(exclude=["tests", "tests.*"]),
 
-    install_requires=install_requires,
-    setup_requires=setup_requires,
+    install_requires=requirements,
+    setup_requires=requirements,
 
     # for cffi
     zip_safe=False,
+    ext_package="cryptography",
+    cmdclass={
+        "build": cffi_build,
+    }
 )

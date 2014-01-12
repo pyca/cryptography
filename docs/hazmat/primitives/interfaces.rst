@@ -67,6 +67,18 @@ Interfaces used by the symmetric cipher modes described in
         The name may be used by a backend to influence the operation of a
         cipher in conjunction with the algorithm's name.
 
+    .. method:: validate_for_algorithm(algorithm)
+
+        :param CipherAlgorithm algorithm:
+
+        Checks that the combination of this mode with the provided algorithm
+        meets any necessary invariants. This should raise an exception if they
+        are not met.
+
+        For example, the :class:`~cryptography.hazmat.primitives.modes.CBC`
+        mode uses this method to check that the provided initialization
+        vector's length matches the block size of the algorithm.
+
 
 .. class:: ModeWithInitializationVector
 

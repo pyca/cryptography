@@ -11,15 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cryptography.hazmat.bindings.openssl.binding import Binding
+import pytest
+
+from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 
 
-class TestOpenSSL(object):
+@pytest.mark.skipif(not Binding.is_available(),
+                    reason="CommonCrypto not available")
+class TestCommonCrypto(object):
     def test_binding_loads(self):
         binding = Binding()
         assert binding
         assert binding.lib
         assert binding.ffi
 
-    def test_is_available(self):
-        assert Binding.is_available() is True
+    def test_binding_returns_same_lib(self):
+        binding = Binding()
+        binding2 = Binding()
+        assert binding.lib == binding2.lib
+        assert binding.ffi == binding2.ffi

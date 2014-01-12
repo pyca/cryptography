@@ -22,7 +22,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Blowfish, Camellia, CAST5, TripleDES, ARC4,
+    AES, Blowfish, Camellia, TripleDES, ARC4,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
@@ -43,7 +43,11 @@ class Backend(object):
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
+        # adds all ciphers/digests for EVP
         self._lib.OpenSSL_add_all_algorithms()
+        # registers available SSL/TLS ciphers and digests
+        self._lib.SSL_library_init()
+        # loads error strings for libcrypto and libssl functions
         self._lib.SSL_load_error_strings()
 
         self._cipher_registry = {}
@@ -148,11 +152,6 @@ class Backend(object):
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
             )
-        self.register_cipher_adapter(
-            CAST5,
-            ECB,
-            GetCipherByName("cast5-ecb")
-        )
         self.register_cipher_adapter(
             ARC4,
             type(None),

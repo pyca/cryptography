@@ -10,16 +10,3 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from cryptography.hazmat.bindings.openssl.binding import Binding
-
-
-class TestOpenSSL(object):
-    def test_binding_loads(self):
-        binding = Binding()
-        assert binding
-        assert binding.lib
-        assert binding.ffi
-
-    def test_is_available(self):
-        assert Binding.is_available() is True

@@ -37,6 +37,16 @@ message.
     If the backend doesn't support the requested ``algorithm`` an
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` will be raised.
 
+    To check that a given signature is correct use the :meth:`verify` method.
+    You will receive an exception if the signature is wrong:
+
+    .. code-block:: pycon
+
+        >>> h.verify(b"an incorrect signature")
+        Traceback (most recent call last):
+        ...
+        cryptography.exceptions.InvalidSignature: Signature did not match digest.
+
     :param key: Secret key as ``bytes``.
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -61,6 +71,17 @@ message.
             and finalized independently of the original instance.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 
+    .. method:: verify(signature)
+
+        Finalize the current context and securely compare digest to
+        ``signature``.
+
+        :param bytes signature: The bytes to compare the current digest
+                                against.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises cryptography.exceptions.InvalidSignature: If signature does not
+                                                          match digest
+
     .. method:: finalize()
 
         Finalize the current context and return the message digest as bytes.
@@ -71,11 +92,3 @@ message.
 
         :return bytes: The message digest as bytes.
         :raises cryptography.exceptions.AlreadyFinalized:
-
-    .. method:: verify(signature)
-
-        Finalize the current context and securely compare digest to ``signature``.
-
-        :param bytes signature: The bytes of the HMAC signature recieved.
-        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
-        :raises cryptography.exceptions.InvalidSignature: If signature does not match digest
