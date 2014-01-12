@@ -50,9 +50,6 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
 
-    # loop over the functions & macros after declaring all the types
-    # so we can set interdependent types in different files and still
-    # have them all defined before we parse the funcs & macros
     ffi.cdef("\n".join(types + functions + macros))
 
     # We include functions here so that if we got any of their definitions
