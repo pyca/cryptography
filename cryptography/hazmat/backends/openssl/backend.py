@@ -209,23 +209,35 @@ class Backend(object):
             "AES key setup failed"
         )
 
+    def _err_string(self, code):
+        err_buf = self._ffi.new("char[]", 1024)
+        self._lib.ERR_error_string_n(code, err_buf, 1024)
+        return self._ffi.string(err_buf, 1024)[:]
+
     def _handle_error(self):
         code = self._lib.ERR_get_error()
         if code == 0:
             raise SystemError("Unknown error, you should probably file a bug.")
 
+        exc = self._get_exc_for_error_code(code)
+        raise exc[0](*exc[1:])
+
+    def _get_exc_for_error_code(self, code):
         lib = self._lib.ERR_GET_LIB(code)
         func = self._lib.ERR_GET_FUNC(code)
         reason = self._lib.ERR_GET_REASON(code)
 
-        return self._handle_error_code(lib, func, reason)
+        exc = self._error_registry.get((lib, func, reason))
+        if not exc:
+            exc = (
+                SystemError,
+                "Unknown error, you should "
+                "probably file a bug. {0}".format(
+                    self._err_string(code)
+                )
+            )
 
-    def _handle_error_code(self, lib, func, reason):
-        exc = self._error_registry.get(
-            (lib, func, reason),
-            (SystemError, "Unknown error, you should probably file a bug.")
-        )
-        raise exc[0](*exc[1:])
+        return exc
 
 
 class GetCipherByName(object):
