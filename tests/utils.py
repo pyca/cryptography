@@ -16,6 +16,16 @@ import os
 import pytest
 
 
+def modify_backend_list(name, all_backends):
+    if name is not None:
+        backends = list(all_backends)
+        for backend in backends:
+            if backend.name != name:
+                all_backends.remove(backend)
+        if len(all_backends) == 0:
+            raise ValueError("No backends selected for testing")
+
+
 def check_for_iface(name, iface, item):
     if name in item.keywords and "backend" in item.funcargs:
         if not isinstance(item.funcargs["backend"], iface):
