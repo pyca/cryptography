@@ -215,29 +215,45 @@ class Backend(object):
         return self._ffi.string(err_buf, 1024)[:]
 
     def _handle_error(self):
+        """
+        Raise the first error on the stack we can identify as an exception and
+        make sure we also consume all the other ones.
+        """
         code = self._lib.ERR_get_error()
+
         if code == 0:
             raise SystemError("Unknown error, you should probably file a bug.")
 
         exc = self._get_exc_for_error_code(code)
+
+        while 1:
+            code = self._lib.ERR_get_error()
+
+            if code == 0:
+                break
+
+            if not exc:
+                exc = self._get_exc_for_error_code(code)
+
+        if not exc:
+            exc = self._get_exc_for_unknown_error_code(code)
+
         raise exc[0](*exc[1:])
 
     def _get_exc_for_error_code(self, code):
         lib = self._lib.ERR_GET_LIB(code)
         func = self._lib.ERR_GET_FUNC(code)
         reason = self._lib.ERR_GET_REASON(code)
+        return self._error_registry.get((lib, func, reason))
 
-        exc = self._error_registry.get((lib, func, reason))
-        if not exc:
-            exc = (
-                SystemError,
-                "Unknown error, you should "
-                "probably file a bug. {0}".format(
-                    self._err_string(code)
-                )
+    def _get_exc_for_unknown_error_code(self, code):
+        return (
+            SystemError,
+            "Unknown error, you should "
+            "probably file a bug. {0}".format(
+                self._err_string(code)
             )
-
-        return exc
+        )
 
 
 class GetCipherByName(object):
