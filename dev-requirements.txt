@@ -5,6 +5,7 @@ iso8601
 pretend
 pytest
 sphinx
+sphinxcontrib-spelling
 sphinx_rtd_theme
 tox
 twine
