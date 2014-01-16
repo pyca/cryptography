@@ -16,6 +16,8 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int Cryptography_HAS_NEW_THREAD_METHOD;
+
 struct ERR_string_data_st {
     unsigned long error;
     const char *string;
@@ -114,9 +116,24 @@ int ERR_GET_LIB(unsigned long);
 int ERR_GET_FUNC(unsigned long);
 int ERR_GET_REASON(unsigned long);
 int ERR_FATAL_ERROR(unsigned long);
+/* introduced in 1.0.0 so we have to handle this specially to continue
+ * supporting 0.9.8
+ */
+void ERR_remove_thread_state(const CRYPTO_THREADID *);
 """
 
 CUSTOMIZATIONS = """
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+static const long Cryptography_HAS_NEW_THREAD_METHOD = 1;
+#else
+static const long Cryptography_HAS_NEW_THREAD_METHOD = 0;
+typedef uint32_t CRYPTO_THREADID;
+void (*ERR_remove_thread_state)(const CRYPTO_THREADID *);
+#endif
 """
 
-CONDITIONAL_NAMES = {}
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_NEW_THREAD_METHOD": [
+        "ERR_remove_thread_state"
+    ],
+}
