@@ -77,6 +77,7 @@ static const int SSL_OP_NO_QUERY_MTU;
 static const int SSL_OP_COOKIE_EXCHANGE;
 static const int SSL_OP_NO_TICKET;
 static const int SSL_OP_ALL;
+static const int SSL_OP_SINGLE_ECDH_USE;
 static const int SSL_VERIFY_PEER;
 static const int SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const int SSL_VERIFY_CLIENT_ONCE;
@@ -231,6 +232,7 @@ long SSL_CTX_get_mode(SSL_CTX *);
 long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
 long SSL_CTX_get_session_cache_mode(SSL_CTX *);
 long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
+long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
 long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
