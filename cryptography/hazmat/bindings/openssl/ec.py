@@ -26,6 +26,16 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
+#ifdef OPENSSL_NO_EC
+static const long Cryptography_HAS_EC = 0;
+#else
+static const long Cryptography_HAS_EC = 1;
+EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
+#endif
 """
 
-CONDITIONAL_NAMES = {}
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_EC": [
+        "EC_KEY_new_by_curve_name",
+    ]
+}

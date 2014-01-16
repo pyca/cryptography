@@ -347,6 +347,10 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
 const long SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
 #endif
+
+#ifdef OPENSSL_NO_EC
+long (*SSL_CTX_set_tmp_ecdh)(SSL_CTX *, EC_KEY *) = NULL;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -387,4 +391,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
         "SSL_OP_MSIE_SSLV2_RSA_PADDING",
     ],
+
+    "Cryptography_HAS_EC": [
+        "EC_KEY_new_by_curve_name",
+    ]
 }
