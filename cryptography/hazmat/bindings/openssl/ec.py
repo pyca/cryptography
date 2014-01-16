@@ -15,6 +15,8 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int Cryptography_HAS_EC;
+
 typedef ... EC_KEY;
 """
 
