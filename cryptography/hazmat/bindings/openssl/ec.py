@@ -28,9 +28,9 @@ MACROS = """
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC = 0;
+EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 #else
 static const long Cryptography_HAS_EC = 1;
-EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 #endif
 """
 
