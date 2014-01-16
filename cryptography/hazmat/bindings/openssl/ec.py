@@ -15,7 +15,7 @@ INCLUDES = """
 """
 
 TYPES = """
-typdef ... EC_KEY;
+typedef ... EC_KEY;
 """
 
 FUNCTIONS = """
