@@ -70,6 +70,7 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         ),
         libraries=libraries,
         ext_package="cryptography",
+        compiler_args=["-Werror", "-Qunused-arguments"],
     )
 
     for name in modules:
