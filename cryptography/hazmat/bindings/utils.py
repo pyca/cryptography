@@ -52,6 +52,9 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
 
     ffi.cdef("\n".join(types + functions + macros))
 
+    compiler_args = ["-Werror"]
+    if sys.platform == "darwin":
+        compiler_args.append("-Qunused-arguments")
     # We include functions here so that if we got any of their definitions
     # wrong, the underlying C compiler will explode. In C you are allowed
     # to re-declare a function if it has the same signature. That is:
@@ -70,7 +73,7 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         ),
         libraries=libraries,
         ext_package="cryptography",
-        compiler_args=["-Werror", "-Qunused-arguments"],
+        compiler_args=compiler_args,
     )
 
     for name in modules:
