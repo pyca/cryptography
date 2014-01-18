@@ -153,7 +153,7 @@ class Backend(object):
                         "the block length"
                     )
 
-        raise SystemError(
+        raise ValueError(
             "Unknown error code from OpenSSL, you should probably file a bug."
         )
 
