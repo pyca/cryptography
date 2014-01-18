@@ -16,14 +16,23 @@ import os
 import pytest
 
 
-def modify_backend_list(name, all_backends):
-    if name is not None:
-        backends = list(all_backends)
-        for backend in backends:
-            if backend.name != name:
-                all_backends.remove(backend)
-        if len(all_backends) == 0:
-            raise ValueError("No backends selected for testing")
+def select_backends(names, backend_list):
+    if names is None:
+        return backend_list
+    split_names = [x.strip() for x in names.split(',')]
+    # this must be duplicated and then removed to preserve the metadata
+    # pytest associates. Appending backends to a new list doesn't seem to work
+    backends = list(backend_list)
+    for backend in backends:
+        if backend.name not in split_names:
+            backend_list.remove(backend)
+
+    if len(backend_list) > 0:
+        return backend_list
+    else:
+        raise ValueError(
+            "No backend selected. Tried to select: {0}".format(split_names)
+        )
 
 
 def check_for_iface(name, iface, item):

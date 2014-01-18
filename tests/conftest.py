@@ -5,21 +5,21 @@ from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend
 )
 
-from .utils import check_for_iface, check_backend_support, modify_backend_list
+from .utils import check_for_iface, check_backend_support, select_backends
 
 
 # copy all backends so we can mutate it.This variable is used in generate
 # tests to allow us to target a single backend without changing _ALL_BACKENDS
-_DESIRED_BACKENDS = list(_ALL_BACKENDS)
+_SELECTED_BACKENDS = list(_ALL_BACKENDS)
 
 
 def pytest_generate_tests(metafunc):
-    global _DESIRED_BACKENDS
-    name = metafunc.config.getoption("--backend")
-    modify_backend_list(name, _DESIRED_BACKENDS)
+    global _SELECTED_BACKENDS
+    names = metafunc.config.getoption("--backend")
+    _SELECTED_BACKENDS = select_backends(names, _SELECTED_BACKENDS)
 
 
-@pytest.fixture(params=_DESIRED_BACKENDS)
+@pytest.fixture(params=_SELECTED_BACKENDS)
 def backend(request):
     return request.param
 
