@@ -38,27 +38,27 @@ class Backend(object):
         self._lib = self._binding.lib
 
         self.hash_methods = {
-            b"md5": self.hashtuple(
+            "md5": self.hashtuple(
                 "CC_MD5_CTX *", self._lib.CC_MD5_Init,
                 self._lib.CC_MD5_Update, self._lib.CC_MD5_Final
             ),
-            b"sha1": self.hashtuple(
+            "sha1": self.hashtuple(
                 "CC_SHA1_CTX *", self._lib.CC_SHA1_Init,
                 self._lib.CC_SHA1_Update, self._lib.CC_SHA1_Final
             ),
-            b"sha224": self.hashtuple(
+            "sha224": self.hashtuple(
                 "CC_SHA256_CTX *", self._lib.CC_SHA224_Init,
                 self._lib.CC_SHA224_Update, self._lib.CC_SHA224_Final
             ),
-            b"sha256": self.hashtuple(
+            "sha256": self.hashtuple(
                 "CC_SHA256_CTX *", self._lib.CC_SHA256_Init,
                 self._lib.CC_SHA256_Update, self._lib.CC_SHA256_Final
             ),
-            b"sha384": self.hashtuple(
+            "sha384": self.hashtuple(
                 "CC_SHA512_CTX *", self._lib.CC_SHA384_Init,
                 self._lib.CC_SHA384_Update, self._lib.CC_SHA384_Final
             ),
-            b"sha512": self.hashtuple(
+            "sha512": self.hashtuple(
                 "CC_SHA512_CTX *", self._lib.CC_SHA512_Init,
                 self._lib.CC_SHA512_Update, self._lib.CC_SHA512_Final
             ),
@@ -66,7 +66,7 @@ class Backend(object):
 
     def hash_supported(self, algorithm):
         try:
-            self.hash_methods[algorithm.name.encode("ascii")]
+            self.hash_methods[algorithm.name]
             return True
         except KeyError:
             return False
@@ -83,9 +83,7 @@ class _HashContext(object):
 
         if ctx is None:
             try:
-                methods = self._backend.hash_methods[
-                    self.algorithm.name.encode("ascii")
-                ]
+                methods = self._backend.hash_methods[self.algorithm.name]
             except KeyError:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
@@ -98,9 +96,7 @@ class _HashContext(object):
         self._ctx = ctx
 
     def copy(self):
-        methods = self._backend.hash_methods[
-            self.algorithm.name.encode("ascii")
-        ]
+        methods = self._backend.hash_methods[self.algorithm.name]
         new_ctx = self._backend._ffi.new(methods.struct)
         # CommonCrypto has no APIs for copying hashes, so we have to copy the
         # underlying struct.
@@ -109,16 +105,12 @@ class _HashContext(object):
         return _HashContext(self._backend, self.algorithm, ctx=new_ctx)
 
     def update(self, data):
-        methods = self._backend.hash_methods[
-            self.algorithm.name.encode("ascii")
-        ]
+        methods = self._backend.hash_methods[self.algorithm.name]
         res = methods.update(self._ctx, data, len(data))
         assert res == 1
 
     def finalize(self):
-        methods = self._backend.hash_methods[
-            self.algorithm.name.encode("ascii")
-        ]
+        methods = self._backend.hash_methods[self.algorithm.name]
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
         res = methods.final(buf, self._ctx)
