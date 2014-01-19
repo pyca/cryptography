@@ -26,6 +26,7 @@ class Binding(object):
     _modules = [
         "common_digest",
         "common_hmac",
+        "common_cryptor",
     ]
 
     ffi = None
