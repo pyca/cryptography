@@ -29,6 +29,7 @@ class Backend(object):
     """
     CommonCrypto API wrapper.
     """
+    name = "commoncrypto"
     hashtuple = namedtuple("HashClass", ["struct", "init", "update", "final"])
 
     def __init__(self):
