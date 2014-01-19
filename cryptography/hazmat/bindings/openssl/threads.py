@@ -26,15 +26,7 @@ static void (*Cryptography_locking_function_ptr)(int, int, const char *, int);
 MACROS = """
 """
 
-CUSTOMIZATIONS = """
-typedef enum CryptographyLockStatus {
-    CRYPTOGRAPHY_LOCK_FAILURE = 0,
-    CRYPTOGRAPHY_LOCK_ACQUIRED = 1,
-    CRYPTOGRAPHY_LOCK_INTR = 2
-} CryptographyLockStatus;
-
-#if defined(_WIN32)
-
+WIN32_CUSTOMIZATIONS = """
 #include <windows.h>
 
 typedef struct CryptographyOpaque_ThreadLock NRMUTEX, *PNRMUTEX;
@@ -97,9 +89,9 @@ void CryptographyThreadReleaseLock(struct CryptographyOpaque_ThreadLock *lock)
     if (!LeaveNonRecursiveMutex(lock))
         /* XXX complain? */;
 }
+"""
 
-#else
-
+POSIX_CUSTOMIZATIONS = """
 #include <unistd.h>
 #include <pthread.h>
 
@@ -165,6 +157,20 @@ void CryptographyThreadReleaseLock
     CHECK_STATUS("pthread_mutex_unlock[3]");
 }
 
+
+"""
+
+CUSTOMIZATIONS = """
+typedef enum CryptographyLockStatus {
+    CRYPTOGRAPHY_LOCK_FAILURE = 0,
+    CRYPTOGRAPHY_LOCK_ACQUIRED = 1,
+    CRYPTOGRAPHY_LOCK_INTR = 2
+} CryptographyLockStatus;
+
+#if defined(_WIN32)
+""" + WIN32_CUSTOMIZATIONS + """
+#else
+""" + POSIX_CUSTOMIZATIONS + """
 #endif
 
 static int Cryptography_lock_count = -1;
