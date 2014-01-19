@@ -9,9 +9,9 @@ The `OpenSSL`_ C library.
 
     This is the exposed API for the OpenSSL backend. It has one public attribute.
 
-    .. attribute:: name
+        .. attribute:: name
 
-    The string name of the backend.
+        Returns ``openssl``, the string name of this backend.
 
 Using your own OpenSSL on Linux
 -------------------------------
