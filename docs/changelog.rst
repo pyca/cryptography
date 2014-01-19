@@ -6,6 +6,7 @@ Changelog
 
 **In development**
 
+* Added CommonCrypto backend with hash support.
 * Added initial CommonCrypto bindings.
 
 0.1 - 2014-01-08
