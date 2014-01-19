@@ -6,10 +6,11 @@ Changelog
 
 **In development**
 
-* Added CommonCrypto backend with hash support.
-* Added initial CommonCrypto bindings.
+* Added :doc:`/hazmat/backends/commoncrypto` with hash and HMAC support.
+* Added initial :doc:`/hazmat/bindings/commoncrypto`.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~
 
 * Initial release.
+
