@@ -18,7 +18,7 @@ from collections import namedtuple
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
-    HashBackend,
+    HashBackend, HMACBackend,
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces
@@ -30,6 +30,7 @@ HashMethods = namedtuple(
 
 
 @utils.register_interface(HashBackend)
+@utils.register_interface(HMACBackend)
 class Backend(object):
     """
     CommonCrypto API wrapper.
@@ -68,6 +69,15 @@ class Backend(object):
             ),
         }
 
+        self._supported_hmac_algorithms = {
+            "md5": self._lib.kCCHmacAlgMD5,
+            "sha1": self._lib.kCCHmacAlgSHA1,
+            "sha224": self._lib.kCCHmacAlgSHA224,
+            "sha256": self._lib.kCCHmacAlgSHA256,
+            "sha384": self._lib.kCCHmacAlgSHA384,
+            "sha512": self._lib.kCCHmacAlgSHA512,
+        }
+
     def hash_supported(self, algorithm):
         try:
             self._hash_mapping[algorithm.name]
@@ -75,8 +85,18 @@ class Backend(object):
         except KeyError:
             return False
 
+    def hmac_supported(self, algorithm):
+        try:
+            self._supported_hmac_algorithms[algorithm.name]
+            return True
+        except KeyError:
+            return False
+
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
+
+    def create_hmac_ctx(self, key, algorithm):
+        return _HMACContext(self, key, algorithm)
 
 
 @utils.register_interface(interfaces.HashContext)
@@ -119,6 +139,45 @@ class _HashContext(object):
                                      self.algorithm.digest_size)
         res = methods.hash_final(buf, self._ctx)
         assert res == 1
+        return self._backend._ffi.buffer(buf)[:]
+
+
+@utils.register_interface(interfaces.HashContext)
+class _HMACContext(object):
+    def __init__(self, backend, key, algorithm, ctx=None):
+        self.algorithm = algorithm
+        self._backend = backend
+        if ctx is None:
+            ctx = self._backend._ffi.new("CCHmacContext *")
+            try:
+                alg = self._backend._supported_hmac_algorithms[algorithm.name]
+            except KeyError:
+                raise UnsupportedAlgorithm(
+                    "{0} is not a supported HMAC hash on this backend".format(
+                        algorithm.name)
+                )
+
+            self._backend._lib.CCHmacInit(ctx, alg, key, len(key))
+
+        self._ctx = ctx
+        self._key = key
+
+    def copy(self):
+        copied_ctx = self._backend._ffi.new("CCHmacContext *")
+        # CommonCrypto has no APIs for copying hashes, so we have to copy the
+        # underlying struct.
+        copied_ctx[0] = self._ctx[0]
+        return _HMACContext(
+            self._backend, self._key, self.algorithm, ctx=copied_ctx
+        )
+
+    def update(self, data):
+        self._backend._lib.CCHmacUpdate(self._ctx, data, len(data))
+
+    def finalize(self):
+        buf = self._backend._ffi.new("unsigned char[]",
+                                     self.algorithm.digest_size)
+        self._backend._lib.CCHmacFinal(self._ctx, buf)
         return self._backend._ffi.buffer(buf)[:]
 
 
