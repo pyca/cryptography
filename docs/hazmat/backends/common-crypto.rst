@@ -11,8 +11,8 @@ The `CommonCrypto`_ C library provided by Apple on OS X and iOS.
 
     This is the exposed API for the OpenSSL backend. It has one public attribute.
 
-    .. attribute:: name
+        .. attribute:: name
 
-    The string name of the backend.
+        Returns ``commoncrypto``, the string name of this backend.
 
 .. _`CommonCrypto`: https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/Common%20Crypto.3cc.html
