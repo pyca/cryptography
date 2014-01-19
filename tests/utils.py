@@ -22,13 +22,13 @@ def select_backends(names, backend_list):
     split_names = [x.strip() for x in names.split(',')]
     # this must be duplicated and then removed to preserve the metadata
     # pytest associates. Appending backends to a new list doesn't seem to work
-    backends = list(backend_list)
-    for backend in backends:
-        if backend.name not in split_names:
-            backend_list.remove(backend)
+    selected_backends = []
+    for backend in backend_list:
+        if backend.name in split_names:
+            selected_backends.append(backend)
 
-    if len(backend_list) > 0:
-        return backend_list
+    if len(selected_backends) > 0:
+        return selected_backends
     else:
         raise ValueError(
             "No backend selected. Tried to select: {0}".format(split_names)

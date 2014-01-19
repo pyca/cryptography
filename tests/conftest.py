@@ -8,20 +8,12 @@ from cryptography.hazmat.backends.interfaces import (
 from .utils import check_for_iface, check_backend_support, select_backends
 
 
-# copy all backends so we can mutate it.This variable is used in generate
-# tests to allow us to target a single backend without changing _ALL_BACKENDS
-_SELECTED_BACKENDS = list(_ALL_BACKENDS)
-
-
 def pytest_generate_tests(metafunc):
-    global _SELECTED_BACKENDS
     names = metafunc.config.getoption("--backend")
-    _SELECTED_BACKENDS = select_backends(names, _SELECTED_BACKENDS)
+    selected_backends = select_backends(names, _ALL_BACKENDS)
 
-
-@pytest.fixture(params=_SELECTED_BACKENDS)
-def backend(request):
-    return request.param
+    if "backend" in metafunc.fixturenames:
+        metafunc.parametrize("backend", selected_backends)
 
 
 @pytest.mark.trylast

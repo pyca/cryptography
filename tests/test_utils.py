@@ -35,9 +35,9 @@ def test_select_one_backend():
     b3 = pretend.stub(name="b3")
     backends = [b1, b2, b3]
     name = "b2"
-    select_backends(name, backends)
-    assert len(backends) == 1
-    assert backends[0] == b2
+    selected_backends = select_backends(name, backends)
+    assert len(selected_backends) == 1
+    assert selected_backends[0] == b2
 
 
 def test_select_no_backend():
@@ -56,8 +56,8 @@ def test_select_backends_none():
     b3 = pretend.stub(name="b3")
     backends = [b1, b2, b3]
     name = None
-    select_backends(name, backends)
-    assert len(backends) == 3
+    selected_backends = select_backends(name, backends)
+    assert len(selected_backends) == 3
 
 
 def test_select_two_backends():
@@ -66,9 +66,9 @@ def test_select_two_backends():
     b3 = pretend.stub(name="b3")
     backends = [b1, b2, b3]
     name = "b2 ,b1 "
-    select_backends(name, backends)
-    assert len(backends) == 2
-    assert backends == [b1, b2]
+    selected_backends = select_backends(name, backends)
+    assert len(selected_backends) == 2
+    assert selected_backends == [b1, b2]
 
 
 def test_check_for_iface():
