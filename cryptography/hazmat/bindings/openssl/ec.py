@@ -11,46 +11,76 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from cryptography.hazmat.bindings.utils import OptionalDeclarations
+
 INCLUDES = """
 #include <openssl/ec.h>
 #include <openssl/obj_mac.h>
 """
 
+optional = OptionalDeclarations("#ifdef OPENSSL_NO_EC", "HAS_EC")
+
 TYPES = """
-static const int Cryptography_HAS_EC;
-
+{optional.guard_type} {optional.guard_name};
 typedef ... EC_KEY;
+""".format(optional=optional)
 
-static const int NID_X9_62_prime192v1;
-static const int NID_X9_62_prime192v2;
-static const int NID_X9_62_prime192v3;
-static const int NID_X9_62_prime239v1;
-static const int NID_X9_62_prime239v2;
-static const int NID_X9_62_prime239v3;
-static const int NID_X9_62_prime256v1;
-"""
+optional.value("static const int", "NID_X9_62_prime192v1")
+optional.value("static const int", "NID_X9_62_prime192v2")
+optional.value("static const int", "NID_X9_62_prime192v3")
+optional.value("static const int", "NID_X9_62_prime239v1")
+optional.value("static const int", "NID_X9_62_prime239v2")
+optional.value("static const int", "NID_X9_62_prime239v3")
+optional.value("static const int", "NID_X9_62_prime256v1")
 
-FUNCTIONS = """
-EC_KEY *EC_KEY_new_by_curve_name(int);
-void EC_KEY_free(EC_KEY *);
-"""
+FUNCTIONS = ""
 
-MACROS = """
-"""
+optional.function("EC_KEY *", "EC_KEY_new", "void")
+optional.function("int", "EC_KEY_get_flags", "const EC_KEY *")
+optional.function("void", "EC_KEY_set_flags", "EC_KEY *, int")
+optional.function("void", "EC_KEY_clear_flags", "EC_KEY *, int")
+optional.function("EC_KEY *", "EC_KEY_new_by_curve_name", "int")
+optional.function("void", "EC_KEY_free", "EC_KEY *")
+optional.function("EC_KEY *", "EC_KEY_copy", "EC_KEY *, const EC_KEY *")
+optional.function("EC_KEY *", "EC_KEY_dup", "const EC_KEY *")
+optional.function("int", "EC_KEY_up_ref", "EC_KEY *")
+optional.function("const", "EC_GROUP *EC_KEY_get0_group", "const EC_KEY *")
+optional.function("int", "EC_KEY_set_group", "EC_KEY *, const EC_GROUP *")
+optional.function("const BIGNUM *", "EC_KEY_get0_private_key",
+                  "const EC_KEY *")
+optional.function("int", "EC_KEY_set_private_key", "EC_KEY *, const BIGNUM *")
+optional.function("const", "EC_POINT *EC_KEY_get0_public_key",
+                  "const EC_KEY *")
+optional.function("int", "EC_KEY_set_public_key", "EC_KEY *, const EC_POINT *")
+optional.function("unsigned int", "EC_KEY_get_enc_flags", "const EC_KEY *")
+optional.function("void", "EC_KEY_set_enc_flags",
+                  "EC_KEY *, unsigned int")
+optional.function("point_conversion_form_t", "EC_KEY_get_conv_form",
+                  "const EC_KEY *")
+optional.function("void", "EC_KEY_set_conv_form",
+                  "EC_KEY *, point_conversion_form_t")
+optional.function(
+    "void *", "EC_KEY_get_key_method_data",
+    "EC_KEY *, void *(*)(void *), void (*)(void *), void (*)(void *)"
+)
+optional.function(
+    "void *", "EC_KEY_insert_key_method_data",
+    "EC_KEY *, void *, void *(*)(void *), void (*)(void *), void (*)(void *)"
+)
+optional.function("void", "EC_KEY_set_asn1_flag", "EC_KEY *, int")
+optional.function("int", "EC_KEY_precompute_mult", "EC_KEY *, BN_CTX *")
+optional.function("int", "EC_KEY_generate_key", "EC_KEY *")
+optional.function("int", "EC_KEY_check_key", "const EC_KEY *")
+optional.function("int", "EC_KEY_set_public_key_affine_coordinates",
+                  "EC_KEY *, BIGNUM *, BIGNUM *")
+optional.function("EC_KEY *", "EVP_PKEY_get1_EC_KEY", "EVP_PKEY *")
+optional.function("int", "EVP_PKEY_set1_EC_KEY", "EVP_PKEY *, EC_KEY *")
+optional.function("int", "EVP_PKEY_assign_EC_KEY", "EVP_PKEY *, EC_KEY *")
 
-CUSTOMIZATIONS = """
-#ifdef OPENSSL_NO_EC
-static const long Cryptography_HAS_EC = 0;
-EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
-void (*EC_KEY_free)(EC_KEY *) = NULL;
-#else
-static const long Cryptography_HAS_EC = 1;
-#endif
-"""
+MACROS = ""
+
+CUSTOMIZATIONS = optional.customisation_source()
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_EC": [
-        "EC_KEY_new_by_curve_name",
-        "EC_KEY_free",
-    ],
+    optional.guard_name: optional.name_list()
 }
