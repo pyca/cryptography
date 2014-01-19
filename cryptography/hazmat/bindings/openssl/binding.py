@@ -48,6 +48,7 @@ class Binding(object):
         "crypto",
         "dh",
         "dsa",
+        "ec",
         "engine",
         "err",
         "evp",

@@ -34,6 +34,7 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         condition.
     """
     ffi = cffi.FFI()
+    types = []
     includes = []
     functions = []
     macros = []
@@ -43,20 +44,13 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         __import__(module_name)
         module = sys.modules[module_name]
 
-        ffi.cdef(module.TYPES)
-
+        types.append(module.TYPES)
         macros.append(module.MACROS)
         functions.append(module.FUNCTIONS)
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
 
-    # loop over the functions & macros after declaring all the types
-    # so we can set interdependent types in different files and still
-    # have them all defined before we parse the funcs & macros
-    for func in functions:
-        ffi.cdef(func)
-    for macro in macros:
-        ffi.cdef(macro)
+    ffi.cdef("\n".join(types + functions + macros))
 
     # We include functions here so that if we got any of their definitions
     # wrong, the underlying C compiler will explode. In C you are allowed

@@ -3,10 +3,17 @@
 set -e
 set -x
 
-if [[ "${OPENSSL}" == "0.9.8" && "$(uname -s)" != "Darwin" ]]; then
-    sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
-    sudo apt-get -y update
-    sudo apt-get install -y --force-yes libssl-dev/lucid
+if [[ "${OPENSSL}" == "0.9.8" ]]; then
+    if [[ "$(uname -s)" != "Darwin" ]]; then
+        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
+        sudo apt-get -y update
+        sudo apt-get install -y --force-yes libssl-dev/lucid
+    else
+        # travis has openssl installed via brew already, but let's be sure
+        if [[ "$(brew list | grep openssl)" != "openssl" ]]; then
+            brew install openssl
+        fi
+    fi
 fi
 
 if [[ "${TOX_ENV}" == "docs" && "$(name -s)" != "Darwin" ]]; then

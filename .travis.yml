@@ -30,10 +30,10 @@ install:
     - ./.travis/install.sh
 
 script:
-    - if [[ "$(uname -s)" == "Darwin" ]]; then eval "$(pyenv init -)"; fi && source ~/.venv/bin/activate && tox -e $TOX_ENV
+    - ./.travis/run.sh
 
 after_success:
-    - coveralls
+    - source ~/.venv/bin/activate && coveralls
 
 notifications:
     irc:
@@ -63,21 +63,6 @@ matrix:
         - os: osx
           env: TOX_ENV=pypy
           compiler: gcc
-        - os: osx
-          env: TOX_ENV=py26
-          compiler: clang
-        - os: osx
-          env: TOX_ENV=py27
-          compiler: clang
-        - os: osx
-          env: TOX_ENV=py32
-          compiler: clang
-        - os: osx
-          env: TOX_ENV=py33
-          compiler: clang
-        - os: osx
-          env: TOX_ENV=pypy
-          compiler: clang
         - os: osx
           env: TOX_ENV=py26 OPENSSL=0.9.8
           compiler: gcc
