@@ -39,7 +39,7 @@ class Backend(object):
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
-        self.hash_mapping = {
+        self._hash_mapping = {
             "md5": self.HashMethods(
                 "CC_MD5_CTX *", self._lib.CC_MD5_Init,
                 self._lib.CC_MD5_Update, self._lib.CC_MD5_Final
@@ -68,7 +68,7 @@ class Backend(object):
 
     def hash_supported(self, algorithm):
         try:
-            self.hash_mapping[algorithm.name]
+            self._hash_mapping[algorithm.name]
             return True
         except KeyError:
             return False
@@ -85,7 +85,7 @@ class _HashContext(object):
 
         if ctx is None:
             try:
-                methods = self._backend.hash_mapping[self.algorithm.name]
+                methods = self._backend._hash_mapping[self.algorithm.name]
             except KeyError:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
@@ -98,7 +98,7 @@ class _HashContext(object):
         self._ctx = ctx
 
     def copy(self):
-        methods = self._backend.hash_mapping[self.algorithm.name]
+        methods = self._backend._hash_mapping[self.algorithm.name]
         new_ctx = self._backend._ffi.new(methods.ctx)
         # CommonCrypto has no APIs for copying hashes, so we have to copy the
         # underlying struct.
@@ -107,12 +107,12 @@ class _HashContext(object):
         return _HashContext(self._backend, self.algorithm, ctx=new_ctx)
 
     def update(self, data):
-        methods = self._backend.hash_mapping[self.algorithm.name]
+        methods = self._backend._hash_mapping[self.algorithm.name]
         res = methods.hash_update(self._ctx, data, len(data))
         assert res == 1
 
     def finalize(self):
-        methods = self._backend.hash_mapping[self.algorithm.name]
+        methods = self._backend._hash_mapping[self.algorithm.name]
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
         res = methods.hash_final(buf, self._ctx)
