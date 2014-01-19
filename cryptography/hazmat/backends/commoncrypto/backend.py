@@ -24,15 +24,17 @@ from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces
 
 
+HashMethods = namedtuple(
+    "HashMethods", ["ctx", "hash_init", "hash_update", "hash_final"]
+)
+
+
 @utils.register_interface(HashBackend)
 class Backend(object):
     """
     CommonCrypto API wrapper.
     """
     name = "commoncrypto"
-    HashMethods = namedtuple(
-        "HashMethods", ["ctx", "hash_init", "hash_update", "hash_final"]
-    )
 
     def __init__(self):
         self._binding = Binding()
@@ -40,27 +42,27 @@ class Backend(object):
         self._lib = self._binding.lib
 
         self._hash_mapping = {
-            "md5": self.HashMethods(
+            "md5": HashMethods(
                 "CC_MD5_CTX *", self._lib.CC_MD5_Init,
                 self._lib.CC_MD5_Update, self._lib.CC_MD5_Final
             ),
-            "sha1": self.HashMethods(
+            "sha1": HashMethods(
                 "CC_SHA1_CTX *", self._lib.CC_SHA1_Init,
                 self._lib.CC_SHA1_Update, self._lib.CC_SHA1_Final
             ),
-            "sha224": self.HashMethods(
+            "sha224": HashMethods(
                 "CC_SHA256_CTX *", self._lib.CC_SHA224_Init,
                 self._lib.CC_SHA224_Update, self._lib.CC_SHA224_Final
             ),
-            "sha256": self.HashMethods(
+            "sha256": HashMethods(
                 "CC_SHA256_CTX *", self._lib.CC_SHA256_Init,
                 self._lib.CC_SHA256_Update, self._lib.CC_SHA256_Final
             ),
-            "sha384": self.HashMethods(
+            "sha384": HashMethods(
                 "CC_SHA512_CTX *", self._lib.CC_SHA384_Init,
                 self._lib.CC_SHA384_Update, self._lib.CC_SHA384_Final
             ),
-            "sha512": self.HashMethods(
+            "sha512": HashMethods(
                 "CC_SHA512_CTX *", self._lib.CC_SHA512_Init,
                 self._lib.CC_SHA512_Update, self._lib.CC_SHA512_Final
             ),
