@@ -164,7 +164,7 @@ class _HMACContext(object):
 
     def copy(self):
         copied_ctx = self._backend._ffi.new("CCHmacContext *")
-        # CommonCrypto has no APIs for copying hashes, so we have to copy the
+        # CommonCrypto has no APIs for copying HMACs, so we have to copy the
         # underlying struct.
         copied_ctx[0] = self._ctx[0]
         return _HMACContext(
