@@ -28,3 +28,4 @@ Changelog
 Docstrings
 Fernet
 Schneier
+Hashlib
