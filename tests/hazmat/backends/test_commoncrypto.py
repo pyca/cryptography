@@ -28,7 +28,10 @@ class TestCommonCrypto(object):
     def test_register_duplicate_cipher_adapter(self):
         from cryptography.hazmat.backends.commoncrypto.backend import backend
         with pytest.raises(ValueError):
-            backend.register_cipher_adapter(AES, CBC, None)
+            backend.register_cipher_adapter(
+                AES, backend._lib.kCCAlgorithmAES128,
+                CBC, backend._lib.kCCModeCBC
+            )
 
     def test_handle_response(self):
         from cryptography.hazmat.backends.commoncrypto.backend import backend

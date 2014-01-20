@@ -120,36 +120,52 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
+    def register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
+                                mode_const):
         if (cipher_cls, mode_cls) in self._cipher_registry:
             raise ValueError("Duplicate registration for: {0} {1}".format(
                 cipher_cls, mode_cls)
             )
-        self._cipher_registry[cipher_cls, mode_cls] = adapter
+        self._cipher_registry[cipher_cls, mode_cls] = (cipher_const,
+                                                       mode_const)
 
     def _register_default_ciphers(self):
-        for mode_cls in [CBC, ECB, CFB, OFB, CTR]:
+        for mode_cls, mode_const in [
+            (CBC, self._lib.kCCModeCBC), (ECB, self._lib.kCCModeECB),
+            (CFB, self._lib.kCCModeCFB), (OFB, self._lib.kCCModeOFB),
+            (CTR, self._lib.kCCModeCTR)
+        ]:
             self.register_cipher_adapter(
                 AES,
+                self._lib.kCCAlgorithmAES128,
                 mode_cls,
-                _GetCipherModeEnum()
+                mode_const
             )
-        for mode_cls in [CBC, CFB, OFB]:
+        for mode_cls, mode_const in [
+            (CBC, self._lib.kCCModeCBC), (CFB, self._lib.kCCModeCFB),
+            (OFB, self._lib.kCCModeOFB),
+        ]:
             self.register_cipher_adapter(
                 TripleDES,
+                self._lib.kCCAlgorithm3DES,
                 mode_cls,
-                _GetCipherModeEnum()
+                mode_const
             )
-        for mode_cls in [CBC, CFB, OFB, ECB]:
+        for mode_cls, mode_const in [
+            (CBC, self._lib.kCCModeCBC), (ECB, self._lib.kCCModeECB),
+            (CFB, self._lib.kCCModeCFB), (OFB, self._lib.kCCModeOFB),
+        ]:
             self.register_cipher_adapter(
                 Blowfish,
+                self._lib.kCCAlgorithmBlowfish,
                 mode_cls,
-                _GetCipherModeEnum()
+                mode_const
             )
         self.register_cipher_adapter(
             ARC4,
+            self._lib.kCCAlgorithmRC4,
             type(None),
-            _GetCipherModeEnum()
+            self._lib.kCCModeRC4
         )
 
     def _check_response(self, response):
@@ -166,27 +182,6 @@ class Backend(object):
             raise SystemError(
                 "The backend returned an error. Code: {0}".format(response)
             )
-
-
-class _GetCipherModeEnum(object):
-    def __call__(self, backend, cipher, mode):
-        cipher_enum = {
-            AES: backend._lib.kCCAlgorithmAES128,
-            TripleDES: backend._lib.kCCAlgorithm3DES,
-            Blowfish: backend._lib.kCCAlgorithmBlowfish,
-            ARC4: backend._lib.kCCAlgorithmRC4,
-        }[type(cipher)]
-
-        mode_enum = {
-            ECB: backend._lib.kCCModeECB,
-            CBC: backend._lib.kCCModeCBC,
-            CTR: backend._lib.kCCModeCTR,
-            CFB: backend._lib.kCCModeCFB,
-            OFB: backend._lib.kCCModeOFB,
-            type(None): backend._lib.kCCModeRC4,
-        }[type(mode)]
-
-        return (cipher_enum, mode_enum)
 
 
 def _release_cipher_ctx(ctx):
@@ -226,7 +221,7 @@ class _CipherContext(object):
 
         registry = self._backend._cipher_registry
         try:
-            adapter = registry[type(cipher), type(mode)]
+            cipher_enum, mode_enum = registry[type(cipher), type(mode)]
         except KeyError:
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
@@ -234,9 +229,8 @@ class _CipherContext(object):
                     cipher.name, mode.name if mode else mode)
             )
 
-        cipher_enum, mode_enum = adapter(self._backend, cipher, mode)
         ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx = self._backend._ffi.gc(ctx, self._release_cipher_ctx)
+        ctx = self._backend._ffi.gc(ctx, _release_cipher_ctx)
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
@@ -284,8 +278,8 @@ class _CipherContext(object):
         res = self._backend._lib.CCCryptorFinal(
             self._ctx[0], buf, len(buf), outlen)
         self._backend._check_response(res)
-        res = self._backend._lib.CCCryptorRelease(self._ctx[0])
-        self._backend._check_response(res)
+        # TODO: how do we release this here without causing a crash when
+        # the GC also releases it?
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
