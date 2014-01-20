@@ -19,6 +19,11 @@ try:
 except ImportError:
     sphinx_rtd_theme = None
 
+try:
+    from sphinxcontrib import spelling
+except ImportError:
+    spelling = None
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -38,8 +43,10 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'cryptography-docs',
-    'sphinxcontrib.spelling',
 ]
+
+if spelling is not None:
+    extensions.append('sphinxcontrib.spelling')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -263,3 +270,5 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+epub_theme = 'epub'

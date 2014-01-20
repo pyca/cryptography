@@ -21,12 +21,54 @@ import pytest
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
     load_openssl_vectors, load_hash_vectors, check_for_iface,
-    check_backend_support
+    check_backend_support, select_backends
 )
 
 
 class FakeInterface(object):
     pass
+
+
+def test_select_one_backend():
+    b1 = pretend.stub(name="b1")
+    b2 = pretend.stub(name="b2")
+    b3 = pretend.stub(name="b3")
+    backends = [b1, b2, b3]
+    name = "b2"
+    selected_backends = select_backends(name, backends)
+    assert len(selected_backends) == 1
+    assert selected_backends[0] == b2
+
+
+def test_select_no_backend():
+    b1 = pretend.stub(name="b1")
+    b2 = pretend.stub(name="b2")
+    b3 = pretend.stub(name="b3")
+    backends = [b1, b2, b3]
+    name = "back!"
+    with pytest.raises(ValueError):
+        select_backends(name, backends)
+
+
+def test_select_backends_none():
+    b1 = pretend.stub(name="b1")
+    b2 = pretend.stub(name="b2")
+    b3 = pretend.stub(name="b3")
+    backends = [b1, b2, b3]
+    name = None
+    selected_backends = select_backends(name, backends)
+    assert len(selected_backends) == 3
+
+
+def test_select_two_backends():
+    b1 = pretend.stub(name="b1")
+    b2 = pretend.stub(name="b2")
+    b3 = pretend.stub(name="b3")
+    backends = [b1, b2, b3]
+    name = "b2 ,b1 "
+    selected_backends = select_backends(name, backends)
+    assert len(selected_backends) == 2
+    assert selected_backends == [b1, b2]
 
 
 def test_check_for_iface():

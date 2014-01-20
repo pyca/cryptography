@@ -37,6 +37,7 @@ class Backend(object):
     """
     OpenSSL API binding interfaces.
     """
+    name = "openssl"
 
     def __init__(self):
         self._binding = Binding()

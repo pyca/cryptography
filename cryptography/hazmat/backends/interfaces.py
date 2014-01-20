@@ -26,12 +26,6 @@ class CipherBackend(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
-    def register_cipher_adapter(self, cipher, mode, adapter):
-        """
-        Register an adapter for a cipher and mode to a backend specific object.
-        """
-
-    @abc.abstractmethod
     def create_symmetric_encryption_ctx(self, cipher, mode):
         """
         Get a CipherContext that can be used for encryption.

@@ -16,7 +16,17 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... DH;
+typedef struct dh_st {
+    // prime number (shared)
+    BIGNUM *p;
+    // generator of Z_p (shared)
+    BIGNUM *g;
+    // private DH value x
+    BIGNUM *priv_key;
+    // public DH value g^x
+    BIGNUM *pub_key;
+    ...;
+} DH;
 """
 
 FUNCTIONS = """
