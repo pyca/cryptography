@@ -133,8 +133,10 @@ class Backend(object):
 
     def _register_default_ciphers(self):
         for mode_cls, mode_const in [
-            (CBC, self._lib.kCCModeCBC), (ECB, self._lib.kCCModeECB),
-            (CFB, self._lib.kCCModeCFB), (OFB, self._lib.kCCModeOFB),
+            (CBC, self._lib.kCCModeCBC),
+            (ECB, self._lib.kCCModeECB),
+            (CFB, self._lib.kCCModeCFB),
+            (OFB, self._lib.kCCModeOFB),
             (CTR, self._lib.kCCModeCTR)
         ]:
             self._register_cipher_adapter(
@@ -154,8 +156,10 @@ class Backend(object):
                 mode_const
             )
         for mode_cls, mode_const in [
-            (CBC, self._lib.kCCModeCBC), (ECB, self._lib.kCCModeECB),
-            (CFB, self._lib.kCCModeCFB), (OFB, self._lib.kCCModeOFB),
+            (CBC, self._lib.kCCModeCBC),
+            (ECB, self._lib.kCCModeECB),
+            (CFB, self._lib.kCCModeCFB),
+            (OFB, self._lib.kCCModeOFB)
         ]:
             self._register_cipher_adapter(
                 Blowfish,
