@@ -120,8 +120,8 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
-                                mode_const):
+    def _register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
+                                 mode_const):
         if (cipher_cls, mode_cls) in self._cipher_registry:
             raise ValueError("Duplicate registration for: {0} {1}".format(
                 cipher_cls, mode_cls)
@@ -135,7 +135,7 @@ class Backend(object):
             (CFB, self._lib.kCCModeCFB), (OFB, self._lib.kCCModeOFB),
             (CTR, self._lib.kCCModeCTR)
         ]:
-            self.register_cipher_adapter(
+            self._register_cipher_adapter(
                 AES,
                 self._lib.kCCAlgorithmAES128,
                 mode_cls,
@@ -145,7 +145,7 @@ class Backend(object):
             (CBC, self._lib.kCCModeCBC), (CFB, self._lib.kCCModeCFB),
             (OFB, self._lib.kCCModeOFB),
         ]:
-            self.register_cipher_adapter(
+            self._register_cipher_adapter(
                 TripleDES,
                 self._lib.kCCAlgorithm3DES,
                 mode_cls,
@@ -155,13 +155,13 @@ class Backend(object):
             (CBC, self._lib.kCCModeCBC), (ECB, self._lib.kCCModeECB),
             (CFB, self._lib.kCCModeCFB), (OFB, self._lib.kCCModeOFB),
         ]:
-            self.register_cipher_adapter(
+            self._register_cipher_adapter(
                 Blowfish,
                 self._lib.kCCAlgorithmBlowfish,
                 mode_cls,
                 mode_const
             )
-        self.register_cipher_adapter(
+        self._register_cipher_adapter(
             ARC4,
             self._lib.kCCAlgorithmRC4,
             type(None),
@@ -189,8 +189,10 @@ def _release_cipher_ctx(ctx):
     Called by the garbage collector and used to safely dereference and
     release the context.
     """
-    res = backend._lib.CCCryptorRelease(ctx[0])
-    backend._check_response(res)
+    if ctx[0] != backend._ffi.NULL:
+        res = backend._lib.CCCryptorRelease(ctx[0])
+        backend._check_response(res)
+        ctx[0] = backend._ffi.NULL
 
 
 @utils.register_interface(interfaces.CipherContext)
@@ -278,8 +280,7 @@ class _CipherContext(object):
         res = self._backend._lib.CCCryptorFinal(
             self._ctx[0], buf, len(buf), outlen)
         self._backend._check_response(res)
-        # TODO: how do we release this here without causing a crash when
-        # the GC also releases it?
+        _release_cipher_ctx(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
