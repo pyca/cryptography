@@ -27,3 +27,4 @@ Changelog
 Docstrings
 Fernet
 Schneier
+Unregisters
