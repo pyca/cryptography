@@ -76,7 +76,6 @@ CCCryptorStatus CCCryptorCreateWithMode(CCOperation, CCMode, CCAlgorithm,
                                         CCPadding, const void *, const void *,
                                         size_t, const void *, size_t, int,
                                         CCModeOptions, CCCryptorRef *);
-
 CCCryptorStatus CCCryptorCreate(CCOperation, CCAlgorithm, CCOptions,
                                 const void *, size_t, const void *,
                                 CCCryptorRef *);
