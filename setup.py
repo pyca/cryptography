@@ -43,14 +43,23 @@ class cffi_build(build):
     """
 
     def finalize_options(self):
-        from cryptography.hazmat.bindings.openssl.binding import Binding
+        from cryptography.hazmat.bindings.commoncrypto.binding import (
+            Binding as CommonCryptoBinding
+        )
+        from cryptography.hazmat.bindings.openssl.binding import (
+            Binding as OpenSSLBinding
+        )
         from cryptography.hazmat.primitives import constant_time, padding
 
         self.distribution.ext_modules = [
-            Binding().ffi.verifier.get_extension(),
+            OpenSSLBinding().ffi.verifier.get_extension(),
             constant_time._ffi.verifier.get_extension(),
             padding._ffi.verifier.get_extension()
         ]
+        if CommonCryptoBinding.is_available():
+            self.distribution.ext_modules.append(
+                CommonCryptoBinding().ffi.verifier.get_extension()
+            )
 
         build.finalize_options(self)
 

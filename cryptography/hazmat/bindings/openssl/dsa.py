@@ -17,11 +17,16 @@ INCLUDES = """
 
 TYPES = """
 typedef struct dsa_st {
-    BIGNUM *p;              // prime number (public)
-    BIGNUM *q;              // 160-bit subprime, q | p-1 (public)
-    BIGNUM *g;              // generator of subgroup (public)
-    BIGNUM *priv_key;       // private key x
-    BIGNUM *pub_key;        // public key y = g^x
+    // prime number (public)
+    BIGNUM *p;
+    // 160-bit subprime, q | p-1 (public)
+    BIGNUM *q;
+    // generator of subgroup (public)
+    BIGNUM *g;
+    // private key x
+    BIGNUM *priv_key;
+    // public key y = g^x
+    BIGNUM *pub_key;
     ...;
 } DSA;
 """
