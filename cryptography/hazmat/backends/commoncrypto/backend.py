@@ -90,16 +90,18 @@ class Backend(object):
     def hash_supported(self, algorithm):
         try:
             self._hash_mapping[algorithm.name]
-            return True
         except KeyError:
             return False
+        else:
+            return True
 
     def hmac_supported(self, algorithm):
         try:
             self._supported_hmac_algorithms[algorithm.name]
-            return True
         except KeyError:
             return False
+        else:
+            return True
 
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
