@@ -189,6 +189,15 @@ class _GetCipherModeEnum(object):
         return (cipher_enum, mode_enum)
 
 
+def _release_cipher_ctx(ctx):
+    """
+    Called by the garbage collector and used to safely dereference and
+    release the context.
+    """
+    res = backend._lib.CCCryptorRelease(ctx[0])
+    backend._check_response(res)
+
+
 @utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
     _ENCRYPT = 0  # kCCEncrypt
@@ -199,9 +208,15 @@ class _CipherContext(object):
         self._cipher = cipher
         self._mode = mode
         self._operation = operation
-        # bytes_processed is needed to work around rdar://15589470, a bug where
-        # kCCAlignmentError fails to raise when supplying non-block-aligned
-        # data.
+        # There is a bug in CommonCrypto where block ciphers do not raise
+        # kCCAlignmentError when finalizing if you supply non-block aligned
+        # data. To work around this we need to keep track of the block
+        # alignment ourselves, but only for alg+mode combos that require
+        # block alignment. OFB, CFB, and CTR make a block cipher algorithm
+        # into a stream cipher so we don't need to track them (and thus their
+        # block size is effectively 1 byte just like OpenSSL/CommonCrypto
+        # treat RC4 and other stream cipher block sizes).
+        # This bug has been filed as rdar://15589470
         self._bytes_processed = 0
         if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
                 isinstance(mode, (OFB, CFB, CTR))):
@@ -221,9 +236,7 @@ class _CipherContext(object):
 
         cipher_enum, mode_enum = adapter(self._backend, cipher, mode)
         ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx[0] = self._backend._ffi.gc(
-            ctx[0], self._backend._lib.CCCryptorRelease
-        )
+        ctx = self._backend._ffi.gc(ctx, self._release_cipher_ctx)
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
