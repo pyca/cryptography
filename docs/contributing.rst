@@ -258,7 +258,7 @@ While testing you may want to run tests against a subset of the backends that
 cryptography supports. Explicit backend selection can be done via the
 ``--backend`` flag. This flag should be passed to ``py.test`` with a comma
 delimited list of backend names. To use it with ``tox`` you must pass it as
-``-- --backend``.
+``tox -- --backend=openssl``.
 
 Building Documentation
 ~~~~~~~~~~~~~~~~~~~~~~
