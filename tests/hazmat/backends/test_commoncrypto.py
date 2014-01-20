@@ -29,3 +29,15 @@ class TestCommonCrypto(object):
         from cryptography.hazmat.backends.commoncrypto.backend import backend
         with pytest.raises(ValueError):
             backend.register_cipher_adapter(AES, CBC, None)
+
+    def test_handle_response(self):
+        from cryptography.hazmat.backends.commoncrypto.backend import backend
+
+        with pytest.raises(ValueError):
+            backend._check_response(backend._lib.kCCAlignmentError)
+
+        with pytest.raises(SystemError):
+            backend._check_response(backend._lib.kCCMemoryFailure)
+
+        with pytest.raises(SystemError):
+            backend._check_response(backend._lib.kCCDecodeError)

@@ -152,6 +152,21 @@ class Backend(object):
             _GetCipherModeEnum()
         )
 
+    def _check_response(self, response):
+        if response == self._lib.kCCSuccess:
+            return
+        elif response == self._lib.kCCAlignmentError:
+            # This error is not currently triggered due to a bug filed as
+            # rdar://15589470
+            raise ValueError(
+                "The length of the provided data is not a multiple of "
+                "the block length"
+            )
+        else:
+            raise SystemError(
+                "The backend returned an error. Code: {0}".format(response)
+            )
+
 
 class _GetCipherModeEnum(object):
     def __call__(self, backend, cipher, mode):
@@ -228,7 +243,7 @@ class _CipherContext(object):
             self._backend._lib.ccNoPadding, iv_nonce,
             cipher.key, len(cipher.key),
             self._backend._ffi.NULL, 0, 0, mode_option, ctx)
-        assert res == self._backend._lib.kCCSuccess
+        self._backend._check_response(res)
 
         self._ctx = ctx
 
@@ -241,7 +256,7 @@ class _CipherContext(object):
         res = self._backend._lib.CCCryptorUpdate(
             self._ctx[0], data, len(data), buf,
             len(data) + self._byte_block_size - 1, outlen)
-        assert res == self._backend._lib.kCCSuccess
+        self._backend._check_response(res)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
@@ -255,9 +270,9 @@ class _CipherContext(object):
         outlen = self._backend._ffi.new("size_t *")
         res = self._backend._lib.CCCryptorFinal(
             self._ctx[0], buf, len(buf), outlen)
-        assert res == self._backend._lib.kCCSuccess
+        self._backend._check_response(res)
         res = self._backend._lib.CCCryptorRelease(self._ctx[0])
-        assert res == self._backend._lib.kCCSuccess
+        self._backend._check_response(res)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
