@@ -29,13 +29,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         py26)
             curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
             sudo python get-pip.py
-            sudo pip install setuptools --no-use-wheel --upgrade
             sudo pip install virtualenv
             ;;
         py27)
             curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
             sudo python get-pip.py
-            sudo pip install setuptools --no-use-wheel --upgrade
             sudo pip install virtualenv
             ;;
         pypy)
