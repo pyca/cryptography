@@ -6,7 +6,7 @@ Changelog
 
 **In development**
 
-* Added :doc:`/hazmat/backends/commoncrypto` with hash and HMAC support.
+* Added :doc:`/hazmat/backends/commoncrypto`.
 * Added initial :doc:`/hazmat/bindings/commoncrypto`.
 * Removed ``register_cipher_adapter`` method from
   :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`.
