@@ -146,7 +146,8 @@ class Backend(object):
                 mode_const
             )
         for mode_cls, mode_const in [
-            (CBC, self._lib.kCCModeCBC), (CFB, self._lib.kCCModeCFB),
+            (CBC, self._lib.kCCModeCBC),
+            (CFB, self._lib.kCCModeCFB),
             (OFB, self._lib.kCCModeOFB),
         ]:
             self._register_cipher_adapter(
