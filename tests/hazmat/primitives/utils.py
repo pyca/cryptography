@@ -6,6 +6,8 @@ import pytest
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.kdf.hkdf import hkdf_derive
+
 from cryptography.exceptions import (
     AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
 )
@@ -297,3 +299,32 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
     )
     with pytest.raises(ValueError):
         cipher.encryptor()
+
+
+def hkdf_test(backend, algorithm, params):
+    ikm = params[0]
+    salt = params[1]
+    info = params[2]
+    length = params[3]
+    expected_okm = params[4]
+
+    okm = hkdf_derive(
+        binascii.unhexlify(ikm),
+        length,
+        binascii.unhexlify(salt),
+        binascii.unhexlify(info),
+        algorithm,
+        backend=backend
+    )
+
+    assert binascii.hexlify(okm) == expected_okm
+
+
+def generate_hkdf_test(param_loader, path, file_names, algorithm):
+    all_params = _load_all_params(path, file_names, param_loader)
+
+    @pytest.mark.parametrize("params", all_params)
+    def test_hkdf(self, backend, params):
+        hkdf_test(backend, algorithm, params)
+
+    return test_hkdf

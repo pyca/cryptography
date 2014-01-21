@@ -20,8 +20,8 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors, check_for_iface,
-    check_backend_support, select_backends
+    load_openssl_vectors, load_hash_vectors, load_hkdf_vectors,
+    check_for_iface, check_backend_support, select_backends
 )
 
 
@@ -528,4 +528,57 @@ def test_load_nist_gcm_vectors():
          'key': b'58fab7632bcf10d2bcee58520bf37414',
          'ct': b'15c4db4cbb451211179d57017f',
          'fail': True},
+    ]
+
+
+def test_load_hkdf_vectors():
+    vector_data = textwrap.dedent("""
+        # A.1.  Test Case 1
+        # Basic test case with SHA-256
+
+        Hash = SHA-256
+        IKM  = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
+        salt = 000102030405060708090a0b0c
+        info = f0f1f2f3f4f5f6f7f8f9
+        L    = 42
+        """
+        "PRK  = 077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2"
+        "b3e5\n"
+        "OKM  = 3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4"
+        "c5bf34007208d5b887185865\n"
+        """
+        # A.2.  Test Case 2
+        # Test with SHA-256 and longer inputs/outputs
+
+        Hash = SHA-256
+        """
+        "IKM  = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d"
+        "1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3"
+        "f404142434445464748494a4b4c4d4e4f\n"
+        "salt = \n"
+        "info = \n"
+        "L    = 82\n"
+        "PRK  = 06a6b88c5853361a06104c9ceb35b45cef760014904671014a193f40c15f"
+        "c244\n"
+        "OKM  = b11e398dc80327a1c8e7f78c596a49344f012eda2d4efad8a050cc4c19af"
+        "a97c59045a99cac7827271cb41c65e590e09da3275600c2f09b8367793a9aca3db7"
+        "1cc30c58179ec3e87c14c01d5c1f3434f1d87\n"
+    ).splitlines()
+
+    assert load_hkdf_vectors(vector_data) == [
+        (b"0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+         b"000102030405060708090a0b0c",
+         b"f0f1f2f3f4f5f6f7f8f9",
+         42,
+         b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34"
+         b"007208d5b887185865"),
+        (b"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+         b"2122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f4041"
+         b"42434445464748494a4b4c4d4e4f",
+         b"",
+         b"",
+         82,
+         b"b11e398dc80327a1c8e7f78c596a49344f012eda2d4efad8a050cc4c19afa97c59"
+         b"045a99cac7827271cb41c65e590e09da3275600c2f09b8367793a9aca3db71cc30"
+         b"c58179ec3e87c14c01d5c1f3434f1d87")
     ]
