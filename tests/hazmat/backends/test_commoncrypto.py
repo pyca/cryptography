@@ -13,9 +13,19 @@
 
 import pytest
 
+from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
+from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC
+from cryptography.hazmat.primitives.ciphers.base import Cipher
+from cryptography.hazmat.primitives.ciphers.modes import CBC, GCM
+
+
+@utils.register_interface(interfaces.CipherAlgorithm)
+class DummyCipher(object):
+    name = "dummy-cipher"
+    block_size = 128
 
 
 @pytest.mark.skipif(not Binding.is_available(),
@@ -44,3 +54,12 @@ class TestCommonCrypto(object):
 
         with pytest.raises(SystemError):
             backend._check_response(backend._lib.kCCDecodeError)
+
+    def test_nonexistent_aead_cipher(self):
+        from cryptography.hazmat.backends.commoncrypto.backend import Backend
+        b = Backend()
+        cipher = Cipher(
+            DummyCipher(), GCM(b"fake_iv_here"), backend=b,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cipher.encryptor()
