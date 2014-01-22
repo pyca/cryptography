@@ -119,18 +119,18 @@ class Backend(object):
     def create_symmetric_encryption_ctx(self, cipher, mode):
         if isinstance(mode, GCM):
             return _GCMCipherContext(
-                self, cipher, mode, _GCMCipherContext._ENCRYPT
+                self, cipher, mode, self._lib.kCCEncrypt
             )
         else:
-            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+            return _CipherContext(self, cipher, mode, self._lib.kCCEncrypt)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
         if isinstance(mode, GCM):
             return _GCMCipherContext(
-                self, cipher, mode, _GCMCipherContext._DECRYPT
+                self, cipher, mode, self._lib.kCCDecrypt
             )
         else:
-            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+            return _CipherContext(self, cipher, mode, self._lib.kCCDecrypt)
 
     def _register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
                                  mode_const):
@@ -215,9 +215,6 @@ def _release_cipher_ctx(ctx):
 
 @utils.register_interface(interfaces.CipherContext)
 class _CipherContext(object):
-    _ENCRYPT = 0  # kCCEncrypt
-    _DECRYPT = 1  # kCCDecrypt
-
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
         self._cipher = cipher
@@ -305,9 +302,6 @@ class _CipherContext(object):
 @utils.register_interface(interfaces.AEADCipherContext)
 @utils.register_interface(interfaces.AEADEncryptionContext)
 class _GCMCipherContext(object):
-    _ENCRYPT = 0  # kCCEncrypt
-    _DECRYPT = 1  # kCCDecrypt
-
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
         self._cipher = cipher
@@ -349,13 +343,13 @@ class _GCMCipherContext(object):
     def update(self, data):
         buf = self._backend._ffi.new("unsigned char[]", len(data))
         args = (self._ctx[0], data, len(data), buf)
-        if self._operation == self._ENCRYPT:
+        if self._operation == self._backend._lib.kCCEncrypt:
             res = self._backend._lib.CCCryptorGCMEncrypt(*args)
         else:
             res = self._backend._lib.CCCryptorGCMDecrypt(*args)
 
         self._backend._check_response(res)
-        return self._backend._ffi.buffer(buf)[:len(data)]
+        return self._backend._ffi.buffer(buf)[:]
 
     def finalize(self):
         tag_size = self._cipher.block_size // 8
@@ -364,10 +358,11 @@ class _GCMCipherContext(object):
         res = backend._lib.CCCryptorGCMFinal(self._ctx[0], tag_buf, tag_len)
         self._backend._check_response(res)
         _release_cipher_ctx(self._ctx)
-        self._tag = self._backend._ffi.buffer(tag_buf)[:tag_size]
-        if self._operation == self._DECRYPT and not constant_time.bytes_eq(
-            self._tag[:len(self._mode.tag)], self._mode.tag
-        ):
+        self._tag = self._backend._ffi.buffer(tag_buf)[:]
+        if (self._operation == self._backend._lib.kCCDecrypt and
+                not constant_time.bytes_eq(
+                    self._tag[:len(self._mode.tag)], self._mode.tag
+                )):
             raise InvalidTag
         return b""
 
