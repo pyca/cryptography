@@ -47,43 +47,46 @@ class TestOpenSSL(object):
         # check that the lock state changes appropriately
         lock = b._locks[b.lib.CRYPTO_LOCK_SSL]
 
+        # starts out unlocked
         assert lock.acquire(False)
-
         lock.release()
 
         b.lib.CRYPTO_lock(
             b.lib.CRYPTO_LOCK | b.lib.CRYPTO_READ,
-            b.lib.CRYPTO_LOCK_SSL,
-            b.ffi.NULL,
-            0
+            b.lib.CRYPTO_LOCK_SSL, b.ffi.NULL, 0
         )
 
+        # becomes locked
         assert not lock.acquire(False)
 
         b.lib.CRYPTO_lock(
             b.lib.CRYPTO_UNLOCK | b.lib.CRYPTO_READ,
-            b.lib.CRYPTO_LOCK_SSL,
-            b.ffi.NULL,
-            0
+            b.lib.CRYPTO_LOCK_SSL, b.ffi.NULL, 0
         )
 
+        # then unlocked
         assert lock.acquire(False)
         lock.release()
 
-        # force the error path to run.
+        # then test directly
 
-        b.lib.CRYPTO_lock(
-            0,
-            b.lib.CRYPTO_LOCK_SSL,
-            b.ffi.NULL,
-            0
-        )
+        with pytest.raises(RuntimeError):
+            b._lock_cb(0, b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
 
-        lock.acquire(False)
+        # errors shouldnt cause locking
+        assert lock.acquire(False)
         lock.release()
 
-        out, err = capfd.readouterr()
-        assert "RuntimeError: Unknown lock mode" in err
+        b._lock_cb(b.lib.CRYPTO_LOCK | b.lib.CRYPTO_READ,
+                   b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
+        # locked
+        assert not lock.acquire(False)
+
+        b._lock_cb(b.lib.CRYPTO_UNLOCK | b.lib.CRYPTO_READ,
+                   b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
+        # unlocked
+        assert lock.acquire(False)
+        lock.release()
 
     def test_crypto_lock_mutex(self):
         b = Binding()
@@ -119,9 +122,7 @@ class TestOpenSSL(object):
         threads = []
         for x in range(10):
             t = threading.Thread(target=critical_loop)
-            t.daemon = True
             t.start()
-
             threads.append(t)
 
         while threads:
