@@ -537,48 +537,36 @@ def test_load_hkdf_vectors():
         # Basic test case with SHA-256
 
         Hash = SHA-256
-        IKM  = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
-        salt = 000102030405060708090a0b0c
-        info = f0f1f2f3f4f5f6f7f8f9
+        IKM  = 000000
+        salt = 111111
+        info = 222222
         L    = 42
-        """
-        "PRK  = 077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2"
-        "b3e5\n"
-        "OKM  = 3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4"
-        "c5bf34007208d5b887185865\n"
-        """
+        PRK  = 333333
+        OKM  = 444444
+
         # A.2.  Test Case 2
         # Test with SHA-256 and longer inputs/outputs
 
         Hash = SHA-256
-        """
-        "IKM  = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d"
-        "1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3"
-        "f404142434445464748494a4b4c4d4e4f\n"
-        "salt = \n"
-        "info = \n"
-        "L    = 82\n"
-        "PRK  = 06a6b88c5853361a06104c9ceb35b45cef760014904671014a193f40c15f"
-        "c244\n"
-        "OKM  = b11e398dc80327a1c8e7f78c596a49344f012eda2d4efad8a050cc4c19af"
-        "a97c59045a99cac7827271cb41c65e590e09da3275600c2f09b8367793a9aca3db7"
-        "1cc30c58179ec3e87c14c01d5c1f3434f1d87\n"
-    ).splitlines()
+        IKM  = 000000
+        salt =
+        info =
+        L    = 82
+        PRK  = 333333
+        OKM  = 444444
+    """).splitlines()
 
     assert load_hkdf_vectors(vector_data) == [
-        (b"0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
-         b"000102030405060708090a0b0c",
-         b"f0f1f2f3f4f5f6f7f8f9",
+        (b"000000",
+         b"111111",
+         b"222222",
          42,
-         b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34"
-         b"007208d5b887185865"),
-        (b"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-         b"2122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f4041"
-         b"42434445464748494a4b4c4d4e4f",
+         b"333333",
+         b"444444"),
+        (b"000000",
          b"",
          b"",
          82,
-         b"b11e398dc80327a1c8e7f78c596a49344f012eda2d4efad8a050cc4c19afa97c59"
-         b"045a99cac7827271cb41c65e590e09da3275600c2f09b8367793a9aca3db71cc30"
-         b"c58179ec3e87c14c01d5c1f3434f1d87")
+         b"333333",
+         b"444444")
     ]

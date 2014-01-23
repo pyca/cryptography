@@ -22,6 +22,7 @@ from cryptography.hazmat.primitives import hashes
 from .utils import generate_hkdf_test
 from ...utils import load_hkdf_vectors
 
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
     skip_message="Does not support SHA1."
