@@ -72,5 +72,22 @@ symmetric (also known as "secret key") authenticated cryptography.
 
     See :meth:`Fernet.decrypt` for more information.
 
+Implementation
+--------------
+
+Fernet is built on top of a number of standard cryptographic primitives.
+Specifically it uses:
+
+* :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` in
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode with a
+  128-bit key for encryption; using
+  :class:`~cryptography.hazmat.primitives.ciphers.PKCS7` padding.
+* :class:`~cryptography.hazmat.primitives.hmac.HMAC` using
+  :class:`~cryptography.hazmat.primitives.hashes.SHA256` for authentication.
+* Initialization vectors are generated using ``os.urandom()``.
+
+For complete details consult the `specification`_.
+
 
 .. _`Fernet`: https://github.com/fernet/spec/
+.. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
