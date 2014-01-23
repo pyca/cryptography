@@ -89,4 +89,4 @@ The ``cryptography`` open source project
     community
 
 
-.. _`pre-compiled binaries`: http://slproweb.com/products/Win32OpenSSL.html
+.. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
