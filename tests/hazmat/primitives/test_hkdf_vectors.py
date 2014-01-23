@@ -31,7 +31,7 @@ from ...utils import load_hkdf_vectors
 class TestHKDFSHA1(object):
     test_HKDFSHA1 = generate_hkdf_test(
         load_hkdf_vectors,
-        os.path.join("kdf"),
+        os.path.join("KDF"),
         ["rfc-5869-HKDF-SHA1.txt"],
         hashes.SHA1()
     )
@@ -45,7 +45,7 @@ class TestHKDFSHA1(object):
 class TestHKDFSHA256(object):
     test_HKDFSHA1 = generate_hkdf_test(
         load_hkdf_vectors,
-        os.path.join("kdf"),
+        os.path.join("KDF"),
         ["rfc-5869-HKDF-SHA256.txt"],
         hashes.SHA256()
     )
