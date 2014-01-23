@@ -148,7 +148,7 @@ class Backend(object):
             (CFB, self._lib.kCCModeCFB),
             (OFB, self._lib.kCCModeOFB),
             (CTR, self._lib.kCCModeCTR),
-            (GCM, self._lib.kCCModeGCM)
+            (GCM, self._lib.kCCModeGCM),
         ]:
             self._register_cipher_adapter(
                 AES,
