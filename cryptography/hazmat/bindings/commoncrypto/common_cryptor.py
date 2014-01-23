@@ -62,6 +62,7 @@ enum {
     kCCModeXTS = 8,
     kCCModeRC4 = 9,
     kCCModeCFB8 = 10,
+    kCCModeGCM = 11
 };
 typedef uint32_t CCMode;
 enum {
@@ -98,6 +99,10 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
+// Not defined in the public header
+enum {
+    kCCModeGCM = 11
+};
 """
 
 CONDITIONAL_NAMES = {}
