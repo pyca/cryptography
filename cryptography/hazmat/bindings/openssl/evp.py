@@ -40,6 +40,7 @@ static const int EVP_CTRL_GCM_GET_TAG;
 static const int EVP_CTRL_GCM_SET_TAG;
 
 static const int Cryptography_HAS_GCM;
+static const int Cryptography_HAS_PBKDF2_HMAC;
 """
 
 FUNCTIONS = """
@@ -95,6 +96,9 @@ int EVP_VerifyFinal(EVP_MD_CTX *, const unsigned char *, unsigned int,
                     EVP_PKEY *);
 
 const EVP_MD *EVP_md5(void);
+
+int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
+                           int, unsigned char *);
 """
 
 MACROS = """
@@ -103,6 +107,9 @@ int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
+
+int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
+                      const EVP_MD *, int, unsigned char *);
 """
 
 CUSTOMIZATIONS = """
@@ -114,6 +121,13 @@ const long EVP_CTRL_GCM_GET_TAG = -1;
 const long EVP_CTRL_GCM_SET_TAG = -1;
 const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x10000000
+const long Cryptography_HAS_PBKDF2_HMAC = 1;
+#else
+const long Cryptography_HAS_PBKDF2_HMAC = 0;
+int (*PKCS5_PBKDF2_HMAC)(const char *, int, const unsigned char *, int, int,
+                         const EVP_MD *, int, unsigned char *) = NULL;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -121,5 +135,8 @@ CONDITIONAL_NAMES = {
         "EVP_CTRL_GCM_GET_TAG",
         "EVP_CTRL_GCM_SET_TAG",
         "EVP_CTRL_GCM_SET_IVLEN",
+    ],
+    "Cryptography_HAS_PBKDF2_HMAC": [
+        "PKCS5_PBKDF2_HMAC"
     ]
 }

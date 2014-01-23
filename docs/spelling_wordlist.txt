@@ -14,6 +14,7 @@ hazmat
 indistinguishability
 introspectability
 invariants
+iOS
 pickleable
 plaintext
 testability

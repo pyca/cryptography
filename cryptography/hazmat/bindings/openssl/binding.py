@@ -41,6 +41,7 @@ class Binding(object):
     """
     _module_prefix = "cryptography.hazmat.bindings.openssl."
     _modules = [
+        "aes",
         "asn1",
         "bignum",
         "bio",

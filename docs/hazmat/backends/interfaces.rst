@@ -33,25 +33,6 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``cipher`` and ``mode`` combination
             is supported by this backend, otherwise ``False``
 
-    .. method:: register_cipher_adapter(cipher_cls, mode_cls, adapter)
-
-        Register an adapter which can be used to create a backend specific
-        object from instances of the
-        :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm` and
-        the :class:`~cryptography.hazmat.primitives.interfaces.Mode` primitives.
-
-        :param cipher_cls: A class whose instances provide
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
-        :param mode_cls: A class whose instances provide:
-            :class:`~cryptography.hazmat.primitives.interfaces.Mode`
-        :param adapter: A ``function`` that takes 3 arguments, ``backend`` (a
-            :class:`CipherBackend` provider), ``cipher`` (a
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
-            provider ), and ``mode`` (a
-            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider).
-            It returns a backend specific object which may be used to construct
-            a :class:`~cryptogrpahy.hazmat.primitives.interfaces.CipherContext`.
-
 
     .. method:: create_symmetric_encryption_ctx(cipher, mode)
 

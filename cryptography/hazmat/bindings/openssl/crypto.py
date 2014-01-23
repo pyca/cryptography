@@ -16,6 +16,8 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef ... CRYPTO_THREADID;
+
 static const int SSLEAY_VERSION;
 static const int SSLEAY_CFLAGS;
 static const int SSLEAY_PLATFORM;

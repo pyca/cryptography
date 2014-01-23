@@ -12,30 +12,23 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/dsa.h>
+#include <openssl/aes.h>
 """
 
 TYPES = """
-typedef struct dsa_st {
-    // prime number (public)
-    BIGNUM *p;
-    // 160-bit subprime, q | p-1 (public)
-    BIGNUM *q;
-    // generator of subgroup (public)
-    BIGNUM *g;
-    // private key x
-    BIGNUM *priv_key;
-    // public key y = g^x
-    BIGNUM *pub_key;
+struct aes_key_st {
     ...;
-} DSA;
+};
+typedef struct aes_key_st AES_KEY;
 """
 
 FUNCTIONS = """
-DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
-                             void (*)(int, int, void *), void *);
-int DSA_generate_key(DSA *);
-void DSA_free(DSA *);
+int AES_set_encrypt_key(const unsigned char *, const int, AES_KEY *);
+int AES_set_decrypt_key(const unsigned char *, const int, AES_KEY *);
+int AES_wrap_key(AES_KEY *, const unsigned char *, unsigned char *,
+                 const unsigned char *, unsigned int);
+int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
+                   const unsigned char *, unsigned int);
 """
 
 MACROS = """

@@ -12,30 +12,31 @@
 # limitations under the License.
 
 INCLUDES = """
-#include <openssl/dsa.h>
+#include <CommonCrypto/CommonKeyDerivation.h>
 """
 
 TYPES = """
-typedef struct dsa_st {
-    // prime number (public)
-    BIGNUM *p;
-    // 160-bit subprime, q | p-1 (public)
-    BIGNUM *q;
-    // generator of subgroup (public)
-    BIGNUM *g;
-    // private key x
-    BIGNUM *priv_key;
-    // public key y = g^x
-    BIGNUM *pub_key;
-    ...;
-} DSA;
+enum {
+    kCCPBKDF2 = 2,
+};
+typedef uint32_t CCPBKDFAlgorithm;
+enum {
+    kCCPRFHmacAlgSHA1 = 1,
+    kCCPRFHmacAlgSHA224 = 2,
+    kCCPRFHmacAlgSHA256 = 3,
+    kCCPRFHmacAlgSHA384 = 4,
+    kCCPRFHmacAlgSHA512 = 5,
+};
+typedef uint32_t CCPseudoRandomAlgorithm;
+typedef unsigned int uint;
 """
 
 FUNCTIONS = """
-DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
-                             void (*)(int, int, void *), void *);
-int DSA_generate_key(DSA *);
-void DSA_free(DSA *);
+int CCKeyDerivationPBKDF(CCPBKDFAlgorithm, const char *, size_t,
+                         const uint8_t *, size_t, CCPseudoRandomAlgorithm,
+                         uint, uint8_t *, size_t);
+uint CCCalibratePBKDF(CCPBKDFAlgorithm, size_t, size_t,
+                      CCPseudoRandomAlgorithm, size_t, uint32_t);
 """
 
 MACROS = """

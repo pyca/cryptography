@@ -24,11 +24,11 @@ typedef ... ECDSA_METHOD;
 typedef ... DH_METHOD;
 typedef ... RAND_METHOD;
 typedef ... STORE_METHOD;
-typedef ... ENGINE_GEN_INT_FUNC_PTR;
-typedef ... ENGINE_CTRL_FUNC_PTR;
-typedef ... ENGINE_LOAD_KEY_PTR;
-typedef ... ENGINE_CIPHERS_PTR;
-typedef ... ENGINE_DIGESTS_PTR;
+typedef ... *ENGINE_GEN_INT_FUNC_PTR;
+typedef ... *ENGINE_CTRL_FUNC_PTR;
+typedef ... *ENGINE_LOAD_KEY_PTR;
+typedef ... *ENGINE_CIPHERS_PTR;
+typedef ... *ENGINE_DIGESTS_PTR;
 typedef ... ENGINE_CMD_DEFN;
 typedef ... UI_METHOD;
 
