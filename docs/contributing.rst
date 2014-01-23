@@ -287,5 +287,5 @@ The HTML documentation index can now be found at
 .. _`tox`: https://pypi.python.org/pypi/tox
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
 .. _`pip`: https://pypi.python.org/pypi/pip
-.. _`sphinx`: https://pypi.python.org/pypi/sphinx
+.. _`sphinx`: https://pypi.python.org/pypi/Sphinx
 .. _`reStructured Text`: http://sphinx-doc.org/rest.html
