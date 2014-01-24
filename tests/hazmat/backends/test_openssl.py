@@ -75,27 +75,6 @@ class TestOpenSSL(object):
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
 
-    def test_handle_unknown_error(self):
-        with pytest.raises(SystemError):
-            backend._handle_error_code(0, 0, 0)
-
-        with pytest.raises(SystemError):
-            backend._handle_error_code(backend._lib.ERR_LIB_EVP, 0, 0)
-
-        with pytest.raises(SystemError):
-            backend._handle_error_code(
-                backend._lib.ERR_LIB_EVP,
-                backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-                0
-            )
-
-        with pytest.raises(SystemError):
-            backend._handle_error_code(
-                backend._lib.ERR_LIB_EVP,
-                backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                0
-            )
-
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLSv1_method()
         ctx = backend._lib.SSL_CTX_new(meth)
@@ -105,6 +84,68 @@ class TestOpenSSL(object):
     def test_evp_ciphers_registered(self):
         cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
         assert cipher != backend._ffi.NULL
+
+    def _put_known_error(self):
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+            backend._ffi.NULL,
+            1
+        )
+
+    def _put_unknown_error(self):
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            0,
+            backend._ffi.NULL,
+            1
+        )
+
+    def test_handle_no_error(self):
+        assert backend._lib.ERR_peek_error() == 0
+
+        with pytest.raises(SystemError):
+            backend._handle_error()
+
+        assert backend._lib.ERR_peek_error() == 0
+
+    def test_handle_known_error(self):
+        assert backend._lib.ERR_peek_error() == 0
+
+        self._put_known_error()
+
+        with pytest.raises(ValueError):
+            backend._handle_error()
+
+        assert backend._lib.ERR_peek_error() == 0
+
+    def test_handle_unknown_error(self):
+        assert backend._lib.ERR_peek_error() == 0
+
+        self._put_unknown_error()
+
+        with pytest.raises(SystemError):
+            backend._handle_error()
+
+        assert backend._lib.ERR_peek_error() == 0
+
+    def test_handle_multiple_errors(self):
+        assert backend._lib.ERR_peek_error() == 0
+
+        self._put_unknown_error()
+        self._put_unknown_error()
+        self._put_unknown_error()
+
+        self._put_known_error()
+        self._put_known_error()
+        self._put_known_error()
+
+        with pytest.raises(ValueError):
+            backend._handle_error()
+
+        assert backend._lib.ERR_peek_error() == 0
 
     def test_error_strings_loaded(self):
         # returns a value in a static buffer
