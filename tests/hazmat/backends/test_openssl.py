@@ -76,20 +76,20 @@ class TestOpenSSL(object):
             cipher.encryptor()
 
     def test_handle_unknown_error(self):
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError):
             backend._handle_error_code(0, 0, 0)
 
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError):
             backend._handle_error_code(backend._lib.ERR_LIB_EVP, 0, 0)
 
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError):
             backend._handle_error_code(
                 backend._lib.ERR_LIB_EVP,
                 backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
                 0
             )
 
-        with pytest.raises(SystemError):
+        with pytest.raises(ValueError):
             backend._handle_error_code(
                 backend._lib.ERR_LIB_EVP,
                 backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
