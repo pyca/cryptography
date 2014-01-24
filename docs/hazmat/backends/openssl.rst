@@ -26,9 +26,11 @@ The options you need to add allow the linker to identify every symbol correctly
 even when multiple versions of the library are linked into the same program. If
 you are using your distribution's source packages these will probably be
 patched in for you already, otherwise you'll need to use options something like
-this when configuring OpenSSL::
+this when configuring OpenSSL:
 
-    ./config -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared
+.. code-block:: console
+
+    $ ./config -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared
 
 You'll also need to generate your own ``openssl.ld`` file. For example::
 
@@ -45,13 +47,17 @@ Using your own OpenSSL on OS X
 
 To link cryptography against a custom version of OpenSSL you'll need to set
 ``ARCHFLAGS``, ``LDFLAGS``, and ``CFLAGS``. OpenSSL can be installed via
-`Homebrew`_::
+`Homebrew`_:
 
-    brew install openssl
+.. code-block:: console
 
-Then install cryptography linking against the brewed version::
+    $ brew install openssl
 
-    env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip install cryptography
+Then install cryptography linking against the brewed version:
+
+.. code-block:: console
+
+    $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip install cryptography
 
 
 .. _`OpenSSL`: https://www.openssl.org/
