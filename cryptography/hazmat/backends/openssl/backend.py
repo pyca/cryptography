@@ -46,6 +46,8 @@ class Backend(object):
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
+        self._binding.init_static_locks()
+
         # adds all ciphers/digests for EVP
         self._lib.OpenSSL_add_all_algorithms()
         # registers available SSL/TLS ciphers and digests
