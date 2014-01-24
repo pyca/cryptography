@@ -14,6 +14,8 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+from textwrap import dedent
+from itertools import chain
 
 import cffi
 
@@ -81,3 +83,60 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
                     delattr(lib, name)
 
     return ffi, lib
+
+
+class OptionalDeclarations(object):
+    _guard_name = "Cryptography_{0}"
+    _value_placeholder = "{0} {1} = {2};"
+    _func_placeholder = "{0} (*{1})({2}) = NULL;"
+    _customisation_source = dedent("""\
+    {missing_condition}
+    {guard_type} {guard_name} = 0;
+
+    {placeholders}
+
+    #else
+
+    {guard_type} {guard_name} = 1;
+
+    #endif
+    """)
+
+    guard_type = "static const long"
+
+    def __init__(self, missing_condition, guard_name):
+        self.values = []
+        self.functions = []
+
+        self.missing_condition = missing_condition
+        self.guard_name = self._guard_name.format(guard_name)
+
+    def value(self, c_type, name, default=-1):
+        self.values.append((c_type, name, default))
+
+    def function(self, c_ret, name, c_args):
+        self.functions.append((c_ret, name, c_args))
+
+    def customisation_source(self):
+        placeholders = chain(
+            (self._value_placeholder.format(*value) for value in self.values),
+            (self._func_placeholder.format(*func) for func in self.functions)
+        )
+
+        return self._customisation_source.format(
+            missing_condition=self.missing_condition,
+            guard_type=self.guard_type,
+            guard_name=self.guard_name,
+            placeholders="\n".join(placeholders),
+        )
+
+    def name_list(self):
+        names = []
+
+        for value in self.values:
+            names.append(value[1])
+
+        for func in self.functions:
+            names.append(func[1])
+
+        return names
