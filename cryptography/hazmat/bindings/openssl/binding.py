@@ -91,7 +91,7 @@ class Binding(object):
         # systems.
         if sys.platform != "win32":
             libraries = ["crypto", "ssl"]
-        else:  # pragma: no cover
+        else:
             libraries = ["libeay32", "ssleay32", "advapi32"]
 
         cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
