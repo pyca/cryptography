@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import threading
+
 import pytest
 
 from cryptography import utils
@@ -113,3 +115,50 @@ class TestOpenSSL(object):
             b"error:0607F08A:digital envelope routines:EVP_EncryptFinal_ex:"
             b"data not multiple of block length"
         )
+
+    def test_locking_callback_set(self):
+        b = Backend()
+
+        locking_cb = b._lib.CRYPTO_get_locking_callback()
+        assert locking_cb != b._ffi.NULL
+
+        # emulate import _ssl not setting this for some reason
+        # because _ssl will have already been inited by the first Backend
+        # instance this will cause the next one to end up setting ours
+        b._lib.CRYPTO_set_locking_callback(b._ffi.NULL)
+
+        # force cffi to reinit
+        b._binding.ffi = None
+        b._binding.lib = None
+
+        # now it should get set to our one
+        b = Backend()
+        locking_cb = b._lib.CRYPTO_get_locking_callback()
+
+        assert locking_cb != b._ffi.NULL
+        assert locking_cb == b._lib.Cryptography_locking_function_ptr
+
+    def test_threads(self):
+        b = Backend()
+
+        def randloop():
+            s = b._ffi.new("char[]", 16)
+            sb = b._ffi.buffer(s)
+            sb[:] = b"\0" * 16
+
+            for i in range(300000):
+                b._lib.RAND_seed(s, 16)
+
+        threads = []
+        for x in range(3):
+            t = threading.Thread(target=randloop)
+            t.daemon = True
+            t.start()
+
+            threads.append(t)
+
+        while threads:
+            for t in threads:
+                t.join(0.1)
+                if not t.isAlive():
+                    threads.remove(t)
