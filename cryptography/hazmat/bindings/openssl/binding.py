@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 from cryptography.hazmat.bindings.utils import build_ffi
 
 
@@ -79,9 +81,15 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
+        # platform check to set the right library names
+        if sys.platform != "win32":
+            libraries = ["crypto", "ssl"]
+        else:  # pragma: no cover
+            libraries = ["libeay32", "ssleay32"]
+
         cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
                                      _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
-                                     ["crypto", "ssl"])
+                                     libraries)
 
     @classmethod
     def is_available(cls):
