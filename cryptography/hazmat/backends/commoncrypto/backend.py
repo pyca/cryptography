@@ -200,8 +200,8 @@ class Backend(object):
             )
         else:
             raise InternalError(
-                "The backend returned an unkown error, consider filing a bug. "
-                "Code: {0}.".format(response)
+                "The backend returned an unknown error, consider filing a bug."
+                " Code: {0}.".format(response)
             )
 
 
