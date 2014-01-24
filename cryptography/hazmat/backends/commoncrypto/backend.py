@@ -16,7 +16,9 @@ from __future__ import absolute_import, division, print_function
 from collections import namedtuple
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, InvalidTag, InternalError
+)
 from cryptography.hazmat.backends.interfaces import (
     HashBackend, HMACBackend, CipherBackend
 )
@@ -197,8 +199,9 @@ class Backend(object):
                 "the block length"
             )
         else:
-            raise SystemError(
-                "The backend returned an error. Code: {0}".format(response)
+            raise InternalError(
+                "The backend returned an unkown error, consider filing a bug. "
+                "Code: {0}.".format(response)
             )
 
 

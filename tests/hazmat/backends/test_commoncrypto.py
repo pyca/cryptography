@@ -14,7 +14,7 @@
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, InternalError
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
@@ -49,10 +49,10 @@ class TestCommonCrypto(object):
         with pytest.raises(ValueError):
             backend._check_response(backend._lib.kCCAlignmentError)
 
-        with pytest.raises(SystemError):
+        with pytest.raises(InternalError):
             backend._check_response(backend._lib.kCCMemoryFailure)
 
-        with pytest.raises(SystemError):
+        with pytest.raises(InternalError):
             backend._check_response(backend._lib.kCCDecodeError)
 
     def test_nonexistent_aead_cipher(self):

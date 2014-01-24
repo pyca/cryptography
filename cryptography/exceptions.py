@@ -34,3 +34,7 @@ class InvalidTag(Exception):
 
 class InvalidSignature(Exception):
     pass
+
+
+class InternalError(Exception):
+    pass

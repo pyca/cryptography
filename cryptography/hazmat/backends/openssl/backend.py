@@ -16,7 +16,9 @@ from __future__ import absolute_import, division, print_function
 import itertools
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, InvalidTag, InternalError
+)
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend
 )
@@ -154,7 +156,7 @@ class Backend(object):
                         "the block length"
                     )
 
-        raise SystemError(
+        raise InternalError(
             "Unknown error code from OpenSSL, you should probably file a bug."
         )
 
