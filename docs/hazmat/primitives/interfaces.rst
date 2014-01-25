@@ -102,3 +102,103 @@ Interfaces used by the symmetric cipher modes described in
 
         Exact requirements of the nonce are described by the documentation of
         individual modes.
+
+Asymmetric Interfaces
+~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: RSAPrivateKey
+
+    An `RSA`_ private key.
+
+    .. attribute:: public_key
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+
+        An RSA public key object corresponding to the values of the private key.
+
+    .. attribute:: modulus
+
+        :type: str
+
+        Hexadecimal representation of the public modulus. Alias for ``n``.
+
+    .. attribute:: public_exponent
+
+        :type: int
+
+        The public exponent. Alias for ``e``.
+
+    .. attribute:: key_length
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. attribute:: p
+
+        :type: str
+
+        Hexadecimal representation of ``p``, one of the two primes composing
+        ``n``.
+
+    .. attribute:: q
+
+        :type: str
+
+        Hexadecimal representation of ``q``, one of the two primes composing
+        ``n``.
+
+    .. attribute:: d
+
+        :type: str
+
+        Hexadecimal representation of ``d``, the private exponent.
+
+    .. attribute:: n
+
+        :type: str
+
+        Hexadecimal representation of the public modulus.
+
+    .. attribute:: e
+
+        :type: int
+
+        The public exponent.
+
+
+.. class:: RSAPublicKey
+
+    An `RSA`_ public key.
+
+    .. attribute:: modulus
+
+        :type: str
+
+        Hexadecimal representation of the public modulus. Alias for ``n``.
+
+    .. attribute:: key_length
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. attribute:: public_exponent
+
+        :type: int
+
+        The public exponent. Alias for ``e``.
+
+    .. attribute:: n
+
+        :type: str
+
+        Hexadecimal representation of the public modulus.
+
+    .. attribute:: e
+
+        :type: int
+
+        The public exponent.
+
+.. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)

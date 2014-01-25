@@ -169,3 +169,91 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
         """
         Return a HashContext that is a copy of the current context.
         """
+
+
+class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def modulus(self):
+        """
+        The public modulus of the RSA key. Alias for n.
+        """
+
+    @abc.abstractproperty
+    def public_exponent(self):
+        """
+        The public exponent of the RSA key. Alias for e.
+        """
+
+    @abc.abstractproperty
+    def key_length(self):
+        """
+        The bit length of the public modulus.
+        """
+
+    @abc.abstractproperty
+    def public_key(self):
+        """
+        The RSAPublicKey associated with this private key.
+        """
+
+    @abc.abstractproperty
+    def n(self):
+        """
+        The public modulus of the RSA key.
+        """
+
+    @abc.abstractproperty
+    def p(self):
+        """
+        One of the two primes used to generate d.
+        """
+
+    @abc.abstractproperty
+    def q(self):
+        """
+        One of the two primes used to generate d.
+        """
+
+    @abc.abstractproperty
+    def d(self):
+        """
+        The private exponent. This can be calculated using p and q.
+        """
+
+    @abc.abstractproperty
+    def e(self):
+        """
+        The public exponent of the RSA key.
+        """
+
+
+class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def modulus(self):
+        """
+        The public modulus of the RSA key. Alias for n.
+        """
+
+    @abc.abstractproperty
+    def public_exponent(self):
+        """
+        The public exponent of the RSA key. Alias for e.
+        """
+
+    @abc.abstractproperty
+    def key_length(self):
+        """
+        The bit length of the public modulus.
+        """
+
+    @abc.abstractproperty
+    def n(self):
+        """
+        The public modulus of the RSA key.
+        """
+
+    @abc.abstractproperty
+    def e(self):
+        """
+        The public exponent of the RSA key.
+        """
