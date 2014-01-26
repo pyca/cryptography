@@ -108,7 +108,7 @@ Asymmetric Interfaces
 
 .. class:: RSAPrivateKey
 
-.. versionadded:: 0.2
+    .. versionadded:: 0.2
 
     An `RSA`_ private key.
 
@@ -169,7 +169,7 @@ Asymmetric Interfaces
 
 .. class:: RSAPublicKey
 
-.. versionadded:: 0.2
+    .. versionadded:: 0.2
 
     An `RSA`_ public key.
 
