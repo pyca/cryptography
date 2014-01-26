@@ -140,13 +140,13 @@ Asymmetric Interfaces
 
         :type: int
 
-        ``p``, one of the two primes composing ``n``.
+        ``p``, one of the two primes composing the :attr:`modulus`.
 
     .. attribute:: q
 
         :type: int
 
-        ``q``, one of the two primes composing ``n``.
+        ``q``, one of the two primes composing the :attr:`modulus`.
 
     .. attribute:: d
 
@@ -158,13 +158,13 @@ Asymmetric Interfaces
 
         :type: int
 
-        The public modulus. Alias for ``modulus``.
+        The public modulus. Alias for :attr:`modulus`.
 
     .. attribute:: e
 
         :type: int
 
-        The public exponent. Alias for ``public_exponent``.
+        The public exponent. Alias for :attr:`public_exponent`.
 
 
 .. class:: RSAPublicKey
@@ -195,12 +195,13 @@ Asymmetric Interfaces
 
         :type: int
 
-        The public modulus. Alias for ``modulus``.
+        The public modulus. Alias for :attr:`modulus`.
 
     .. attribute:: e
 
         :type: int
 
-        The public exponent. Alias for ``public_exponent``.
+        The public exponent. Alias for :attr:`public_exponent`.
+
 
 .. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)
