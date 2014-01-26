@@ -102,3 +102,105 @@ Interfaces used by the symmetric cipher modes described in
 
         Exact requirements of the nonce are described by the documentation of
         individual modes.
+
+Asymmetric Interfaces
+~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: RSAPrivateKey
+
+    .. versionadded:: 0.2
+
+    An `RSA`_ private key.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+
+        An RSA public key object corresponding to the values of the private key.
+
+    .. attribute:: modulus
+
+        :type: int
+
+        The public modulus.
+
+    .. attribute:: public_exponent
+
+        :type: int
+
+        The public exponent.
+
+    .. attribute:: key_length
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. attribute:: p
+
+        :type: int
+
+        ``p``, one of the two primes composing ``n``.
+
+    .. attribute:: q
+
+        :type: int
+
+        ``q``, one of the two primes composing ``n``.
+
+    .. attribute:: d
+
+        :type: int
+
+        The private exponent.
+
+    .. attribute:: n
+
+        :type: int
+
+        The public modulus. Alias for ``modulus``.
+
+    .. attribute:: e
+
+        :type: int
+
+        The public exponent. Alias for ``public_exponent``.
+
+
+.. class:: RSAPublicKey
+
+    .. versionadded:: 0.2
+
+    An `RSA`_ public key.
+
+    .. attribute:: modulus
+
+        :type: int
+
+        The public modulus.
+
+    .. attribute:: key_length
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. attribute:: public_exponent
+
+        :type: int
+
+        The public exponent.
+
+    .. attribute:: n
+
+        :type: int
+
+        The public modulus. Alias for ``modulus``.
+
+    .. attribute:: e
+
+        :type: int
+
+        The public exponent. Alias for ``public_exponent``.
+
+.. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)
