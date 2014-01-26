@@ -112,7 +112,7 @@ Asymmetric Interfaces
 
     .. method:: public_key()
 
-        :type: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
 
         An RSA public key object corresponding to the values of the private key.
 
