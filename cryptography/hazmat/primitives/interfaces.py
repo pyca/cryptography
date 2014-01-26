@@ -190,7 +190,7 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         The bit length of the public modulus.
         """
 
-    @abc.abstractproperty
+    @abc.abstractmethod
     def public_key(self):
         """
         The RSAPublicKey associated with this private key.

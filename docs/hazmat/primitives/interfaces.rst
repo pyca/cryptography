@@ -110,7 +110,7 @@ Asymmetric Interfaces
 
     An `RSA`_ private key.
 
-    .. attribute:: public_key
+    .. method:: public_key()
 
         :type: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
 
@@ -120,13 +120,13 @@ Asymmetric Interfaces
 
         :type: int
 
-        The public modulus. Alias for ``n``.
+        The public modulus.
 
     .. attribute:: public_exponent
 
         :type: int
 
-        The public exponent. Alias for ``e``.
+        The public exponent.
 
     .. attribute:: key_length
 
@@ -156,13 +156,13 @@ Asymmetric Interfaces
 
         :type: int
 
-        The public modulus.
+        The public modulus. Alias for ``modulus``.
 
     .. attribute:: e
 
         :type: int
 
-        The public exponent.
+        The public exponent. Alias for ``public_exponent``.
 
 
 .. class:: RSAPublicKey
@@ -173,7 +173,7 @@ Asymmetric Interfaces
 
         :type: int
 
-        The public modulus. Alias for ``n``.
+        The public modulus.
 
     .. attribute:: key_length
 
@@ -185,18 +185,18 @@ Asymmetric Interfaces
 
         :type: int
 
-        The public exponent. Alias for ``e``.
+        The public exponent.
 
     .. attribute:: n
 
         :type: int
 
-        The public modulus.
+        The public modulus. Alias for ``modulus``.
 
     .. attribute:: e
 
         :type: int
 
-        The public exponent.
+        The public exponent. Alias for ``public_exponent``.
 
 .. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)
