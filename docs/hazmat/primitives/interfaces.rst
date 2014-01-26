@@ -118,9 +118,9 @@ Asymmetric Interfaces
 
     .. attribute:: modulus
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of the public modulus. Alias for ``n``.
+        The public modulus. Alias for ``n``.
 
     .. attribute:: public_exponent
 
@@ -136,29 +136,27 @@ Asymmetric Interfaces
 
     .. attribute:: p
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of ``p``, one of the two primes composing
-        ``n``.
+        ``p``, one of the two primes composing ``n``.
 
     .. attribute:: q
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of ``q``, one of the two primes composing
-        ``n``.
+        ``q``, one of the two primes composing ``n``.
 
     .. attribute:: d
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of ``d``, the private exponent.
+        The private exponent.
 
     .. attribute:: n
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of the public modulus.
+        The public modulus.
 
     .. attribute:: e
 
@@ -173,9 +171,9 @@ Asymmetric Interfaces
 
     .. attribute:: modulus
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of the public modulus. Alias for ``n``.
+        The public modulus. Alias for ``n``.
 
     .. attribute:: key_length
 
@@ -191,9 +189,9 @@ Asymmetric Interfaces
 
     .. attribute:: n
 
-        :type: str
+        :type: int
 
-        Hexadecimal representation of the public modulus.
+        The public modulus.
 
     .. attribute:: e
 
