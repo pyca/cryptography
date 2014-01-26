@@ -175,13 +175,13 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def modulus(self):
         """
-        The public modulus of the RSA key. Alias for n.
+        The public modulus of the RSA key.
         """
 
     @abc.abstractproperty
     def public_exponent(self):
         """
-        The public exponent of the RSA key. Alias for e.
+        The public exponent of the RSA key.
         """
 
     @abc.abstractproperty
@@ -199,7 +199,7 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def n(self):
         """
-        The public modulus of the RSA key.
+        The public modulus of the RSA key. Alias for modulus.
         """
 
     @abc.abstractproperty
@@ -223,7 +223,7 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def e(self):
         """
-        The public exponent of the RSA key.
+        The public exponent of the RSA key. Alias for public_exponent.
         """
 
 
@@ -231,13 +231,13 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def modulus(self):
         """
-        The public modulus of the RSA key. Alias for n.
+        The public modulus of the RSA key.
         """
 
     @abc.abstractproperty
     def public_exponent(self):
         """
-        The public exponent of the RSA key. Alias for e.
+        The public exponent of the RSA key.
         """
 
     @abc.abstractproperty
@@ -249,11 +249,11 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def n(self):
         """
-        The public modulus of the RSA key.
+        The public modulus of the RSA key. Alias for modulus.
         """
 
     @abc.abstractproperty
     def e(self):
         """
-        The public exponent of the RSA key.
+        The public exponent of the RSA key. Alias for public_exponent.
         """
