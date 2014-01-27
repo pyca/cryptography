@@ -10,8 +10,8 @@ Exceptions
 
 .. class:: InvalidSignature
 
-    This is raised when the verify method of a hash context does not
-    compare equal.
+    This is raised when the verify method of a hash context's computed digest
+    does not match the expected digest.
 
 
 .. class:: NotYetFinalized
@@ -34,5 +34,5 @@ Exceptions
 
 .. class:: InvalidKey
 
-    This is raised when the verify method of a key derivation function does not
-    compare equal.
+    This is raised when the verify method of a key derivation function's
+    computed key does not match the expected key.
