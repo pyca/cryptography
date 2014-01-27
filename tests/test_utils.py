@@ -516,7 +516,7 @@ def test_load_hkdf_vectors():
     vector_data = textwrap.dedent("""
         # A.1.  Test Case 1
         # Basic test case with SHA-256
-
+        COUNT = 1
         Hash = SHA-256
         IKM  = 000000
         salt = 111111
@@ -527,7 +527,7 @@ def test_load_hkdf_vectors():
 
         # A.2.  Test Case 2
         # Test with SHA-256 and longer inputs/outputs
-
+        COUNT = 2
         Hash = SHA-256
         IKM  = 000000
         salt =
@@ -537,17 +537,19 @@ def test_load_hkdf_vectors():
         OKM  = 444444
     """).splitlines()
 
-    assert load_hkdf_vectors(vector_data) == [
-        (b"000000",
-         b"111111",
-         b"222222",
-         42,
-         b"333333",
-         b"444444"),
-        (b"000000",
-         b"",
-         b"",
-         82,
-         b"333333",
-         b"444444")
+    assert load_nist_vectors(vector_data) == [
+        {"hash": b"SHA-256",
+         "ikm": b"000000",
+         "salt": b"111111",
+         "info": b"222222",
+         "l": b"42",
+         "prk": b"333333",
+         "okm": b"444444"},
+        {"hash": b"SHA-256",
+         "ikm": b"000000",
+         "salt": b"",
+         "info": b"",
+         "l": b"82",
+         "prk": b"333333",
+         "okm": b"444444"}
     ]

@@ -1,6 +1,8 @@
 # A.4.  Test Case 4
 # Basic test case with SHA-1
 
+COUNT = 4
+
 Hash = SHA-1
 IKM  = 0b0b0b0b0b0b0b0b0b0b0b
 salt = 000102030405060708090a0b0c
@@ -12,6 +14,8 @@ OKM  = 085a01ea1b10f36933068b56efa5ad81a4f14b822f5b091568a9cdd4f155fda2c22e42247
 
 # A.5.  Test Case 5
 # Test with SHA-1 and longer inputs/outputs
+
+COUNT = 5
 
 Hash = SHA-1
 IKM  = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f
@@ -25,6 +29,8 @@ OKM  = 0bd770a74d1160f7c9f12cd5912a06ebff6adcae899d92191fe4305673ba2ffe8fa3f1a4e
 # A.6.  Test Case 6
 # Test with SHA-1 and zero-length salt/info
 
+COUNT = 6
+
 Hash = SHA-1
 IKM  = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
 salt =
@@ -37,6 +43,8 @@ OKM  = 0ac1af7002b3d761d1e55298da9d0506b9ae52057220a306e07b6b87e8df21d0ea00033de
 # A.7.  Test Case 7
 # Test with SHA-1, salt not provided (defaults to HashLen zero octets),
 # zero-length info
+
+COUNT = 7
 
 Hash = SHA-1
 IKM  = 0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c

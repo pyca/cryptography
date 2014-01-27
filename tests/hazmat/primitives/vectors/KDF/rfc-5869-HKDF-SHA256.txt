@@ -1,6 +1,8 @@
 # A.1.  Test Case 1
 # Basic test case with SHA-256
 
+COUNT = 1
+
 Hash = SHA-256
 IKM  = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
 salt = 000102030405060708090a0b0c
@@ -11,6 +13,8 @@ OKM  = 3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d
 
 # A.2.  Test Case 2
 # Test with SHA-256 and longer inputs/outputs
+
+COUNT = 2
 
 Hash = SHA-256
 IKM  = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f
@@ -23,6 +27,8 @@ OKM  = b11e398dc80327a1c8e7f78c596a49344f012eda2d4efad8a050cc4c19afa97c59045a99c
 
 # A.3.  Test Case 3
 # Test with SHA-256 and zero-length salt/info
+
+COUNT = 3
 
 Hash = SHA-256
 IKM  = 0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b
