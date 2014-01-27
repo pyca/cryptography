@@ -38,3 +38,7 @@ class InvalidSignature(Exception):
 
 class InternalError(Exception):
     pass
+
+
+class InvalidKey(Exception):
+    pass

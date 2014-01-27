@@ -204,4 +204,34 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
+Key Derivation Functions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: KeyDerivationFunction
+
+    .. method:: derive(key_material)
+
+        :param key_material bytes: The raw key material. Depending on what key
+                                   derivation function you are using this could
+                                   be either random material, or a user
+                                   supplied password.
+        :return: The resulting key.
+
+        The generates and returns a new key from the supplied key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param key_material bytes: The raw key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param expected_key bytes: What the expected result of deriving a new
+                                   key is.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+
+        This checks whether deriving a key from the supplied ``key_material``
+        generates the same key as the ``expected_key``, and raises an exception
+        if they do not match. This can be used for something like checking
+        whether a user's password attempt matches the stored derived key.
+
 .. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)

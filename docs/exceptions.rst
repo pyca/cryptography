@@ -30,3 +30,9 @@ Exceptions
 
     This is raised when a backend doesn't support the requested algorithm (or
     combination of algorithms).
+
+
+.. class:: InvalidKey
+
+    This is raised when the verify method of a key derivation function does not
+    compare equal.
