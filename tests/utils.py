@@ -165,25 +165,59 @@ def load_hash_vectors(vector_data):
         if line.startswith("Len"):
             length = int(line.split(" = ")[1])
         elif line.startswith("Key"):
-            # HMAC vectors contain a key attribute. Hash vectors do not.
+            """
+            HMAC vectors contain a key attribute. Hash vectors do not.
+            """
             key = line.split(" = ")[1].encode("ascii")
         elif line.startswith("Msg"):
-            # In the NIST vectors they have chosen to represent an empty
-            # string as hex 00, which is of course not actually an empty
-            # string. So we parse the provided length and catch this edge case.
+            """
+            In the NIST vectors they have chosen to represent an empty
+            string as hex 00, which is of course not actually an empty
+            string. So we parse the provided length and catch this edge case.
+            """
             msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
         elif line.startswith("MD"):
             md = line.split(" = ")[1]
             # after MD is found the Msg+MD (+ potential key) tuple is complete
             if key is not None:
-                vectors.append(KeyedHashVector(msg, md, key))
+                vectors.append((msg, md, key))
                 key = None
                 msg = None
                 md = None
             else:
-                vectors.append(HashVector(msg, md))
+                vectors.append((msg, md))
                 msg = None
                 md = None
         else:
             raise ValueError("Unknown line in hash vector")
+    return vectors
+
+
+def load_hkdf_vectors(vector_data):
+    vectors = []
+
+    ikm = salt = info = length = prk = okm = None
+
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        elif line.startswith("IKM"):
+            ikm = line.split(" = ")[1].encode("ascii")
+        elif line.startswith("salt"):
+            salt = line.split(" =")[1].strip().encode("ascii")
+        elif line.startswith("info"):
+            info = line.split(" =")[1].strip().encode("ascii")
+        elif line.startswith("L"):
+            length = int(line.split(" = ")[1])
+        elif line.startswith("PRK"):
+            prk = line.split(" = ")[1].encode("ascii")
+        elif line.startswith("OKM"):
+            okm = line.split(" = ")[1].encode("ascii")
+
+            vectors.append((ikm, salt, info, length, prk, okm))
+            ikm = salt = info = length = prk = okm = None
+
     return vectors
