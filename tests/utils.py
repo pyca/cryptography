@@ -11,9 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import os
 
 import pytest
+
+
+HashVector = collections.namedtuple("HashVector", ["message", "digest"])
+KeyedHashVector = collections.namedtuple(
+    "KeyedHashVector", ["message", "digest", "key"]
+)
 
 
 def select_backends(names, backend_list):
@@ -158,27 +165,23 @@ def load_hash_vectors(vector_data):
         if line.startswith("Len"):
             length = int(line.split(" = ")[1])
         elif line.startswith("Key"):
-            """
-            HMAC vectors contain a key attribute. Hash vectors do not.
-            """
+            # HMAC vectors contain a key attribute. Hash vectors do not.
             key = line.split(" = ")[1].encode("ascii")
         elif line.startswith("Msg"):
-            """
-            In the NIST vectors they have chosen to represent an empty
-            string as hex 00, which is of course not actually an empty
-            string. So we parse the provided length and catch this edge case.
-            """
+            # In the NIST vectors they have chosen to represent an empty
+            # string as hex 00, which is of course not actually an empty
+            # string. So we parse the provided length and catch this edge case.
             msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
         elif line.startswith("MD"):
             md = line.split(" = ")[1]
             # after MD is found the Msg+MD (+ potential key) tuple is complete
             if key is not None:
-                vectors.append((msg, md, key))
+                vectors.append(KeyedHashVector(msg, md, key))
                 key = None
                 msg = None
                 md = None
             else:
-                vectors.append((msg, md))
+                vectors.append(HashVector(msg, md))
                 msg = None
                 md = None
         else:
