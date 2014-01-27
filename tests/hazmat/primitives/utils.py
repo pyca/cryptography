@@ -141,8 +141,7 @@ def generate_hash_test(param_loader, path, file_names, hash_cls):
 
 
 def hash_test(backend, algorithm, params):
-    msg = params[0]
-    md = params[1]
+    msg, md = params
     m = hashes.Hash(algorithm, backend=backend)
     m.update(binascii.unhexlify(msg))
     expected_md = md.replace(" ", "").lower().encode("ascii")
@@ -206,9 +205,7 @@ def generate_hmac_test(param_loader, path, file_names, algorithm):
 
 
 def hmac_test(backend, algorithm, params):
-    msg = params[0]
-    md = params[1]
-    key = params[2]
+    msg, md, key = params
     h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
     h.update(binascii.unhexlify(msg))
     assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
