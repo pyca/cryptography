@@ -12,7 +12,10 @@
 # limitations under the License.
 
 INCLUDES = """
+#ifdef OPENSSL_NO_EC
 #include <openssl/ec.h>
+#endif
+
 #include <openssl/obj_mac.h>
 """
 
