@@ -393,6 +393,6 @@ CONDITIONAL_NAMES = {
     ],
 
     "Cryptography_HAS_EC": [
-        "EC_KEY_new_by_curve_name",
+        "SSL_CTX_set_tmp_ecdh",
     ]
 }
