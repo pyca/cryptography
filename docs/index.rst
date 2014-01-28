@@ -19,7 +19,14 @@ You can install ``cryptography`` with ``pip``:
     If you're on Windows you'll need to make sure you have OpenSSL installed.
     There are `pre-compiled binaries`_ available. If your installation is in
     an unusual location set the ``LIB`` and ``INCLUDE`` environment variables
-    to include the corresponding locations.
+    to include the corresponding locations. For example:
+    
+    .. code-block:: console
+    
+        C:\> \path\to\vcvarsall.bat x86_amd64
+        C:\> set LIB=C:\OpenSSL-1.0.1f-64bit\lib;%LIB%
+        C:\> set INCLUDE=C:\OpenSSL-1.0.1f-64bit\include;%INCLUDE%
+        C:\> pip install cryptography
 
 
 Why a new crypto library for Python?
