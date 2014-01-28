@@ -20,7 +20,7 @@ import pytest
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_hkdf_test
-from ...utils import load_hkdf_vectors
+from ...utils import load_nist_vectors
 
 
 @pytest.mark.supported(
@@ -30,7 +30,7 @@ from ...utils import load_hkdf_vectors
 @pytest.mark.hash
 class TestHKDFSHA1(object):
     test_HKDFSHA1 = generate_hkdf_test(
-        load_hkdf_vectors,
+        load_nist_vectors,
         os.path.join("KDF"),
         ["rfc-5869-HKDF-SHA1.txt"],
         hashes.SHA1()
@@ -44,7 +44,7 @@ class TestHKDFSHA1(object):
 @pytest.mark.hash
 class TestHKDFSHA256(object):
     test_HKDFSHA1 = generate_hkdf_test(
-        load_hkdf_vectors,
+        load_nist_vectors,
         os.path.join("KDF"),
         ["rfc-5869-HKDF-SHA256.txt"],
         hashes.SHA256()

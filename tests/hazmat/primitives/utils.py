@@ -306,45 +306,39 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
 
 
 def hkdf_derive_test(backend, algorithm, params):
-    ikm, salt, info, length, prk, expected_okm = params
-
     okm = hkdf_derive(
-        binascii.unhexlify(ikm),
-        length,
-        binascii.unhexlify(salt),
-        binascii.unhexlify(info),
+        binascii.unhexlify(params["ikm"]),
+        int(params["l"]),
+        binascii.unhexlify(params["salt"]),
+        binascii.unhexlify(params["info"]),
         algorithm,
         backend=backend
     )
 
-    assert binascii.hexlify(okm) == expected_okm
+    assert okm == binascii.unhexlify(params["okm"])
 
 
 def hkdf_extract_test(backend, algorithm, params):
-    ikm, salt, info, length, expected_prk, okm = params
-
     prk = hkdf_extract(
         algorithm,
-        binascii.unhexlify(ikm),
-        binascii.unhexlify(salt),
+        binascii.unhexlify(params["ikm"]),
+        binascii.unhexlify(params["salt"]),
         backend=backend
     )
 
-    assert prk == binascii.unhexlify(expected_prk)
+    assert prk == binascii.unhexlify(params["prk"])
 
 
 def hkdf_expand_test(backend, algorithm, params):
-    ikm, salt, info, length, prk, expected_okm = params
-
     okm = hkdf_expand(
         algorithm,
-        binascii.unhexlify(prk),
-        binascii.unhexlify(info),
-        length,
+        binascii.unhexlify(params["prk"]),
+        binascii.unhexlify(params["info"]),
+        int(params["l"]),
         backend=backend
     )
 
-    assert okm == binascii.unhexlify(expected_okm)
+    assert okm == binascii.unhexlify(params["okm"])
 
 
 def generate_hkdf_test(param_loader, path, file_names, algorithm):
