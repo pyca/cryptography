@@ -43,10 +43,10 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.derive('\x01' * 16)
+        hkdf.derive(b'\x01' * 16)
 
         with pytest.raises(exceptions.AlreadyFinalized):
-            hkdf.derive('\x02' * 16)
+            hkdf.derive(b'\x02' * 16)
 
         hkdf = HKDF(
             hashes.SHA256(),
@@ -56,10 +56,10 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.verify('\x01' * 16, 'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+        hkdf.verify(b'\x01' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
 
         with pytest.raises(exceptions.AlreadyFinalized):
-            hkdf.verify('\x02' * 16, 'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+            hkdf.verify(b'\x02' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
 
     def test_verify(self, backend):
         hkdf = HKDF(
@@ -70,7 +70,7 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.verify('\x01' * 16, 'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+        hkdf.verify(b'\x01' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
 
     def test_verify_invalid(self, backend):
         hkdf = HKDF(
@@ -82,4 +82,4 @@ class TestHKDF(object):
         )
 
         with pytest.raises(exceptions.InvalidKey):
-            hkdf.verify('\x02' * 16, 'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+            hkdf.verify(b'\x02' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
