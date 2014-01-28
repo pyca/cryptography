@@ -20,9 +20,9 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend
+    CipherBackend, HashBackend, HMACBackend, PBKDF2Backend
 )
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4,
 )
@@ -35,6 +35,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
+@utils.register_interface(PBKDF2Backend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -132,6 +133,47 @@ class Backend(object):
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+
+    def pbkdf2_hash_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
+            digest = self._lib.EVP_get_digestbyname(
+                algorithm.name.encode("ascii"))
+            return digest != self._ffi.NULL
+        else:
+            return isinstance(algorithm, hashes.SHA1)
+
+    def derive_pbkdf2(self, algorithm, length, salt, iterations, key_material):
+        buf = self._ffi.new("char[]", length)
+        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
+            evp_md = self._lib.EVP_get_digestbyname(
+                algorithm.name.encode("ascii"))
+            assert evp_md != self._ffi.NULL
+            res = self._lib.PKCS5_PBKDF2_HMAC(
+                key_material,
+                len(key_material),
+                salt,
+                len(salt),
+                iterations,
+                evp_md,
+                length,
+                buf
+            )
+            assert res == 1
+        else:
+            # OpenSSL < 1.0.0
+            assert isinstance(algorithm, hashes.SHA1)
+            res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
+                key_material,
+                len(key_material),
+                salt,
+                len(salt),
+                iterations,
+                length,
+                buf
+            )
+            assert res == 1
+
+        return self._ffi.buffer(buf)[:]
 
     def _handle_error(self, mode):
         code = self._lib.ERR_get_error()

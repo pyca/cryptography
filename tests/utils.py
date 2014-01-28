@@ -89,6 +89,10 @@ def load_nist_vectors(vector_data):
         # Build our data using a simple Key = Value format
         name, value = [c.strip() for c in line.split("=")]
 
+        # Some tests (PBKDF2) contain \0, which should be interpreted as a
+        # null character rather than literal.
+        value = value.replace("\\0", "\0")
+
         # COUNT is a special token that indicates a new block of data
         if name.upper() == "COUNT":
             test_data = {}
