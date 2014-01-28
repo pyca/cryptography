@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 @utils.register_interface(interfaces.KeyDerivationFunction)
 class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
-        if not backend.pbkdf2_hash_supported(algorithm):
+        if not backend.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "{0} is not supported for PBKDF2 by this backend".format(
                     algorithm.name)
@@ -40,7 +40,7 @@ class PBKDF2HMAC(object):
             raise AlreadyFinalized("PBKDF2 instances can only be called once")
         else:
             self._called = True
-        return self._backend.derive_pbkdf2(
+        return self._backend.derive_pbkdf2_hmac(
             self.algorithm,
             self._length,
             self._salt,
