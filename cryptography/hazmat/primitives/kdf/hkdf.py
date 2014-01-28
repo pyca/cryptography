@@ -13,12 +13,22 @@
 
 import six
 
+from cryptography import exceptions
 from cryptography.hazmat.primitives import hmac
 
 
 class HKDF(object):
     def __init__(self, algorithm, length, salt, info, backend):
         self._algorithm = algorithm
+
+        max_length = 255 * (algorithm.digest_size // 8)
+
+        if length > max_length:
+            raise ValueError(
+                "Can not derive keys larger than {0} octets.".format(
+                    max_length
+                ))
+
         self._length = length
 
         if salt is None:
@@ -32,12 +42,14 @@ class HKDF(object):
         self._info = info
         self._backend = backend
 
-    def extract(self, key_material):
+        self._used = False
+
+    def _extract(self, key_material):
         h = hmac.HMAC(self._salt, self._algorithm, backend=self._backend)
         h.update(key_material)
         return h.finalize()
 
-    def expand(self, key_material):
+    def _expand(self, key_material):
         output = [b'']
         counter = 1
 
@@ -52,4 +64,14 @@ class HKDF(object):
         return b"".join(output)[:self._length]
 
     def derive(self, key_material):
-        return self.expand(self.extract(key_material))
+        if self._used:
+            raise exceptions.AlreadyFinalized
+
+        self._used = True
+        return self._expand(self._extract(key_material))
+
+    def verify(self, key_material, expected_key):
+        if self._used:
+            raise exceptions.AlreadyFinalized
+
+        self._used = True
