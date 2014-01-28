@@ -83,3 +83,43 @@ class TestHKDF(object):
 
         with pytest.raises(exceptions.InvalidKey):
             hkdf.verify(b'\x02' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+
+    def test_unicode_typeerror(self, backend):
+        with pytest.raises(TypeError):
+            HKDF(hashes.SHA256(), 16, salt=u'foo', info=None, backend=backend)
+
+        with pytest.raises(TypeError):
+            HKDF(hashes.SHA256(), 16, salt=None, info=u'foo', backend=backend)
+
+        with pytest.raises(TypeError):
+            hkdf = HKDF(
+                hashes.SHA256(),
+                16,
+                salt=None,
+                info=None,
+                backend=backend
+            )
+
+            hkdf.derive(u'foo')
+
+        with pytest.raises(TypeError):
+            hkdf = HKDF(
+                hashes.SHA256(),
+                16,
+                salt=None,
+                info=None,
+                backend=backend
+            )
+
+            hkdf.verify(u'foo', b'bar')
+
+        with pytest.raises(TypeError):
+            hkdf = HKDF(
+                hashes.SHA256(),
+                16,
+                salt=None,
+                info=None,
+                backend=backend
+            )
+
+            hkdf.verify(b'foo', u'bar')
