@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import six
+
 import pytest
 
 from cryptography import exceptions
@@ -86,10 +88,22 @@ class TestHKDF(object):
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=u"foo", info=None, backend=backend)
+            HKDF(
+                hashes.SHA256(),
+                16,
+                salt=six.u("foo"),
+                info=None,
+                backend=backend
+            )
 
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=None, info=u"foo", backend=backend)
+            HKDF(
+                hashes.SHA256(),
+                16,
+                salt=None,
+                info=six.u("foo"),
+                backend=backend
+            )
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -100,7 +114,7 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.derive(u"foo")
+            hkdf.derive(six.u("foo"))
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -111,7 +125,7 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.verify(u"foo", b"bar")
+            hkdf.verify(six.u("foo"), b"bar")
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -122,4 +136,4 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.verify(b"foo", u"bar")
+            hkdf.verify(b"foo", six.u("bar"))
