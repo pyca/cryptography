@@ -20,8 +20,8 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors, load_hkdf_vectors,
-    check_for_iface, check_backend_support, select_backends
+    load_openssl_vectors, load_hash_vectors, check_for_iface,
+    check_backend_support, select_backends
 )
 
 
@@ -528,45 +528,4 @@ def test_load_nist_gcm_vectors():
          'key': b'58fab7632bcf10d2bcee58520bf37414',
          'ct': b'15c4db4cbb451211179d57017f',
          'fail': True},
-    ]
-
-
-def test_load_hkdf_vectors():
-    vector_data = textwrap.dedent("""
-        # A.1.  Test Case 1
-        # Basic test case with SHA-256
-
-        Hash = SHA-256
-        IKM  = 000000
-        salt = 111111
-        info = 222222
-        L    = 42
-        PRK  = 333333
-        OKM  = 444444
-
-        # A.2.  Test Case 2
-        # Test with SHA-256 and longer inputs/outputs
-
-        Hash = SHA-256
-        IKM  = 000000
-        salt =
-        info =
-        L    = 82
-        PRK  = 333333
-        OKM  = 444444
-    """).splitlines()
-
-    assert load_hkdf_vectors(vector_data) == [
-        (b"000000",
-         b"111111",
-         b"222222",
-         42,
-         b"333333",
-         b"444444"),
-        (b"000000",
-         b"",
-         b"",
-         82,
-         b"333333",
-         b"444444")
     ]
