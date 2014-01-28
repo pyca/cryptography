@@ -20,40 +20,40 @@ from cryptography.exceptions import (
     InvalidKey, UnsupportedAlgorithm, AlreadyFinalized
 )
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
 
 @utils.register_interface(interfaces.HashAlgorithm)
-class UnsupportedDummyHash(object):
-    name = "unsupported-dummy-hash"
+class DummyHash(object):
+    name = "dummy-hash"
 
 
-class TestPBKDF2(object):
+class TestPBKDF2HMAC(object):
     def test_already_finalized(self):
-        kdf = PBKDF2(hashes.SHA1(), 20, b"salt", 10, default_backend())
+        kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         kdf.derive(b"password")
         with pytest.raises(AlreadyFinalized):
             kdf.derive(b"password2")
 
-        kdf = PBKDF2(hashes.SHA1(), 20, b"salt", 10, default_backend())
+        kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         key = kdf.derive(b"password")
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b"password", key)
 
-        kdf = PBKDF2(hashes.SHA1(), 20, b"salt", 10, default_backend())
+        kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         kdf.verify(b"password", key)
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b"password", key)
 
     def test_unsupported_algorithm(self):
         with pytest.raises(UnsupportedAlgorithm):
-            PBKDF2(UnsupportedDummyHash(), 20, b"salt", 10, default_backend())
+            PBKDF2HMAC(DummyHash(), 20, b"salt", 10, default_backend())
 
     def test_invalid_key(self):
-        kdf = PBKDF2(hashes.SHA1(), 20, b"salt", 10, default_backend())
+        kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         key = kdf.derive(b"password")
 
-        kdf = PBKDF2(hashes.SHA1(), 20, b"salt", 10, default_backend())
+        kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         with pytest.raises(InvalidKey):
             kdf.verify(b"password2", key)

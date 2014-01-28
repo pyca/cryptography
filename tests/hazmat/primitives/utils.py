@@ -4,7 +4,7 @@ import os
 import pytest
 
 from cryptography.hazmat.primitives import hashes, hmac
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
     AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
@@ -225,7 +225,7 @@ def pbkdf2_test(backend, algorithm, params):
     # Password and salt can contain \0, which should be loaded as a null char.
     # The NIST loader loads them as literal strings so we replace with the
     # proper value.
-    kdf = PBKDF2(
+    kdf = PBKDF2HMAC(
         algorithm,
         int(params["length"]),
         params["salt"],

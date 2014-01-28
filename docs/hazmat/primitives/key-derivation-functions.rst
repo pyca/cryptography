@@ -29,7 +29,7 @@ using a pseudo-random function (PRF).
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     salt=salt,
-        ...     iterations=50000,
+        ...     iterations=100000,
         ...     backend=backend
         ... )
         >>> key = kdf.derive(b"my great password")
@@ -38,7 +38,7 @@ using a pseudo-random function (PRF).
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     salt=salt,
-        ...     iterations=50000,
+        ...     iterations=100000,
         ...     backend=backend
         ... )
         >>> kdf.verify(b"my great password", key)

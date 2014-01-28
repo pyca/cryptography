@@ -22,11 +22,11 @@ from ...utils import load_nist_vectors
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.pbkdf2_hash_supported(hashes.SHA1()),
-    skip_message="Does not support SHA1 for PBKDF2",
+    only_if=lambda backend: backend.pbkdf2_hmac_supported(hashes.SHA1()),
+    skip_message="Does not support SHA1 for PBKDF2HMAC",
 )
-@pytest.mark.pbkdf2
-class TestPBKDF2_SHA1(object):
+@pytest.mark.pbkdf2hmac
+class TestPBKDF2HMAC_SHA1(object):
     test_pbkdf2_sha1 = generate_pbkdf2_test(
         load_nist_vectors,
         "KDF",
