@@ -216,6 +216,11 @@ Key Derivation Functions
                                    could be either random material, or a user
                                    supplied password.
         :return: The new key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
 
         This generates and returns a new key from the supplied key material.
 
@@ -229,6 +234,11 @@ Key Derivation Functions
         :raises cryptography.exceptions.InvalidKey: This is raised when the
                                                     derived key does not match
                                                     the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
 
         This checks whether deriving a new key from the supplied
         ``key_material`` generates the same key as the ``expected_key``, and
