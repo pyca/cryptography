@@ -57,7 +57,3 @@ class TestPBKDF2(object):
         kdf = PBKDF2(hashes.SHA1(), 20, b"salt", 10, default_backend())
         with pytest.raises(InvalidKey):
             kdf.verify(b"password2", key)
-
-    def test_salt_too_long(self):
-        with pytest.raises(ValueError):
-            PBKDF2(hashes.SHA1(), 2**31, b"salt", 10, default_backend())

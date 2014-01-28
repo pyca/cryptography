@@ -29,8 +29,6 @@ class PBKDF2(object):
             )
         self._called = False
         self.algorithm = algorithm
-        if length > 2**31 - 1:
-            raise ValueError("Requested length too large.")
         self._length = length
         self._salt = salt
         self.iterations = iterations
