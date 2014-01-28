@@ -12,6 +12,7 @@ Changelog
   :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`.
 * Added support for the OpenSSL backend under Windows.
 * Improved thread-safety for the OpenSSL backend.
+* Added PBKDF2HMAC support to OpenSSL backend.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~
