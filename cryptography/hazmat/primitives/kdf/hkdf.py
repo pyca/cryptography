@@ -15,6 +15,7 @@ import six
 
 from cryptography import exceptions
 from cryptography.hazmat.primitives import hmac
+from cryptography.hazmat.primitives import constant_time
 
 
 class HKDF(object):
@@ -44,10 +45,26 @@ class HKDF(object):
 
         self._used = False
 
+    def extract(self, key_material):
+        if self._used:
+            raise exceptions.AlreadyFinalized
+
+        self._used = True
+
+        return self._extract(key_material)
+
     def _extract(self, key_material):
         h = hmac.HMAC(self._salt, self._algorithm, backend=self._backend)
         h.update(key_material)
         return h.finalize()
+
+    def expand(self, key_material):
+        if self._used:
+            raise exceptions.AlreadyFinalized
+
+        self._used = True
+
+        return self._expand(key_material)
 
     def _expand(self, key_material):
         output = [b'']
@@ -71,7 +88,5 @@ class HKDF(object):
         return self._expand(self._extract(key_material))
 
     def verify(self, key_material, expected_key):
-        if self._used:
-            raise exceptions.AlreadyFinalized
-
-        self._used = True
+        if not constant_time.bytes_eq(self.derive(key_material), expected_key):
+            raise exceptions.InvalidKey
