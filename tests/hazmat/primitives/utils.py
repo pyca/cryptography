@@ -8,9 +8,7 @@ import pytest
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.kdf.hkdf import (
-    hkdf_derive, hkdf_extract, hkdf_expand
-)
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 from cryptography.exceptions import (
     AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
@@ -306,37 +304,43 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
 
 
 def hkdf_derive_test(backend, algorithm, params):
-    okm = hkdf_derive(
-        binascii.unhexlify(params["ikm"]),
-        int(params["l"]),
-        binascii.unhexlify(params["salt"]),
-        binascii.unhexlify(params["info"]),
+    hkdf = HKDF(
         algorithm,
+        int(params["l"]),
+        salt=binascii.unhexlify(params["salt"]) or None,
+        info=binascii.unhexlify(params["info"]) or None,
         backend=backend
     )
+
+    okm = hkdf.derive(binascii.unhexlify(params["ikm"]))
 
     assert okm == binascii.unhexlify(params["okm"])
 
 
 def hkdf_extract_test(backend, algorithm, params):
-    prk = hkdf_extract(
+    hkdf = HKDF(
         algorithm,
-        binascii.unhexlify(params["ikm"]),
-        binascii.unhexlify(params["salt"]),
+        int(params["l"]),
+        salt=binascii.unhexlify(params["salt"]) or None,
+        info=binascii.unhexlify(params["info"]) or None,
         backend=backend
     )
+
+    prk = hkdf.extract(binascii.unhexlify(params["ikm"]))
 
     assert prk == binascii.unhexlify(params["prk"])
 
 
 def hkdf_expand_test(backend, algorithm, params):
-    okm = hkdf_expand(
+    hkdf = HKDF(
         algorithm,
-        binascii.unhexlify(params["prk"]),
-        binascii.unhexlify(params["info"]),
         int(params["l"]),
+        salt=binascii.unhexlify(params["salt"]) or None,
+        info=binascii.unhexlify(params["info"]) or None,
         backend=backend
     )
+
+    okm = hkdf.expand(binascii.unhexlify(params["prk"]))
 
     assert okm == binascii.unhexlify(params["okm"])
 

@@ -16,38 +16,40 @@ import six
 from cryptography.hazmat.primitives import hmac
 
 
-def hkdf_extract(algorithm, ikm, salt, backend):
-    h = hmac.HMAC(salt, algorithm, backend=backend)
-    h.update(ikm)
-    return h.finalize()
+class HKDF(object):
+    def __init__(self, algorithm, length, salt, info, backend):
+        self._algorithm = algorithm
+        self._length = length
 
+        if salt is None:
+            salt = b"\x00" * (self._algorithm.digest_size // 8)
 
-def hkdf_expand(algorithm, prk, info, length, backend):
-    output = [b'']
-    counter = 1
+        self._salt = salt
 
-    while (algorithm.digest_size // 8) * len(output) < length:
-        h = hmac.HMAC(prk, algorithm, backend=backend)
-        h.update(output[-1])
-        h.update(info)
-        h.update(six.int2byte(counter))
-        output.append(h.finalize())
-        counter += 1
+        if info is None:
+            info = b""
 
-    return b"".join(output)[:length]
+        self._info = info
+        self._backend = backend
 
+    def extract(self, key_material):
+        h = hmac.HMAC(self._salt, self._algorithm, backend=self._backend)
+        h.update(key_material)
+        return h.finalize()
 
-def hkdf_derive(key, length, salt, info, algorithm, backend):
-    if info is None:
-        info = b""
+    def expand(self, key_material):
+        output = [b'']
+        counter = 1
 
-    if salt is None:
-        salt = b"\x00" * (algorithm.digest_size // 8)
+        while (self._algorithm.digest_size // 8) * len(output) < self._length:
+            h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
+            h.update(output[-1])
+            h.update(self._info)
+            h.update(six.int2byte(counter))
+            output.append(h.finalize())
+            counter += 1
 
-    return hkdf_expand(
-        algorithm,
-        hkdf_extract(algorithm, key, salt, backend=backend),
-        info,
-        length,
-        backend=backend
-    )
+        return b"".join(output)[:self._length]
+
+    def derive(self, key_material):
+        return self.expand(self.extract(key_material))
