@@ -60,6 +60,12 @@ always indistinguishable. As a result ``cryptography`` has, as a design
 philosophy: "make it hard to do insecure things". Here are a few strategies for
 API design which should be both followed, and should inspire other API choices:
 
+If a user will need to compare a user provided value with a computed value (for
+example, checking a signature on something), there should be an API provided
+which performs the check for the user in a secure way (for example, using a
+constant time comparison), rather than requiring the user to perform the
+comparison themselves.
+
 If it is incorrect to ignore the result of a method, it should raise an
 exception, and not return a boolean ``True``/``False`` flag. For example, a
 method to verify a signature should raise ``InvalidSignature``, and not return
