@@ -13,26 +13,34 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.exceptions import InvalidKey, UnsupportedAlgorithm
-from cryptography.hazmat.primitives import constant_time
+from cryptography import utils
+from cryptography.exceptions import (
+    InvalidKey, UnsupportedAlgorithm, AlreadyFinalized
+)
+from cryptography.hazmat.primitives import constant_time, interfaces
 
 
+@utils.register_interface(interfaces.KeyDerivationFunction)
 class PBKDF2(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
         if not backend.pbkdf2_hash_supported(algorithm):
             raise UnsupportedAlgorithm(
                 "{0} is not supported by this backend".format(algorithm.name)
             )
+        self._called = False
         self.algorithm = algorithm
         if length > 2**31 - 1:
             raise ValueError("Requested length too large.")
         self._length = length
-        # TODO: handle salt
         self._salt = salt
         self.iterations = iterations
         self._backend = backend
 
     def derive(self, key_material):
+        if self._called:
+            raise AlreadyFinalized("PBKDF2 instances can only be called once")
+        else:
+            self._called = True
         return self._backend.derive_pbkdf2(
             self.algorithm,
             self._length,
@@ -42,5 +50,6 @@ class PBKDF2(object):
         )
 
     def verify(self, key_material, expected_key):
-        if not constant_time.bytes_eq(key_material, expected_key):
+        derived_key = self.derive(key_material)
+        if not constant_time.bytes_eq(derived_key, expected_key):
             raise InvalidKey("Keys do not match.")
