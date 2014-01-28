@@ -14,6 +14,8 @@
 INCLUDES = """
 #ifndef OPENSSL_NO_EC
 #include <openssl/ec.h>
+#else
+typedef void EC_KEY;
 #endif
 
 #include <openssl/obj_mac.h>
@@ -44,7 +46,6 @@ MACROS = """
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC = 0;
-typedef void EC_KEY;
 EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 void (*EC_KEY_free)(EC_KEY *) = NULL;
 #else
