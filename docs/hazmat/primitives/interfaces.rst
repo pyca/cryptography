@@ -209,6 +209,8 @@ Key Derivation Functions
 
 .. class:: KeyDerivationFunction
 
+    .. versionadded:: 0.2
+
     .. method:: derive(key_material)
 
         :param key_material bytes: The input key material. Depending on what
