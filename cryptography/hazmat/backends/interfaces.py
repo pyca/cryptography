@@ -67,16 +67,17 @@ class HMACBackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class PBKDF2Backend(six.with_metaclass(abc.ABCMeta)):
+class PBKDF2HMACBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
-    def pbkdf2_hash_supported(self, algorithm):
+    def pbkdf2_hmac_supported(self, algorithm):
         """
         Return True if the hash algorithm is supported for PBKDF2 by this
         backend.
         """
 
     @abc.abstractmethod
-    def derive_pbkdf2(self, algorithm, length, salt, iterations, key_material):
+    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                           key_material):
         """
         Return length bytes derived from provided PBKDF2 parameters.
         """

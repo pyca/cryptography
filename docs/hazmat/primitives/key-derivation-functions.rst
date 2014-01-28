@@ -35,7 +35,7 @@ using a pseudo-random function (PRF).
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
         provider.
     :param int length: The desired length of the derived key. Maximum is
-        2\ :sup:`31` - 1.
+        (2\ :sup:`32` - 1) * ``algorithm.digest_size``
     :param bytes salt: A salt. `NIST SP 800-132`_ recommends 128-bits or
         longer.
     :param int iterations: The number of iterations to perform of the hash

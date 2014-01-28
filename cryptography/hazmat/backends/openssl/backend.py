@@ -20,7 +20,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2Backend
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
 )
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -35,7 +35,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
-@utils.register_interface(PBKDF2Backend)
+@utils.register_interface(PBKDF2HMACBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -134,15 +134,19 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
-    def pbkdf2_hash_supported(self, algorithm):
+    def pbkdf2_hmac_supported(self, algorithm):
         if self._lib.Cryptography_HAS_PBKDF2_HMAC:
             digest = self._lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
             return digest != self._ffi.NULL
         else:
+            # OpenSSL < 1.0.0 has an explicit PBKDF2-HMAC-SHA1 function,
+            # so if the PBKDF2_HMAC function is missing we only support
+            # SHA1 via PBKDF2_HMAC_SHA1.
             return isinstance(algorithm, hashes.SHA1)
 
-    def derive_pbkdf2(self, algorithm, length, salt, iterations, key_material):
+    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                           key_material):
         buf = self._ffi.new("char[]", length)
         if self._lib.Cryptography_HAS_PBKDF2_HMAC:
             evp_md = self._lib.EVP_get_digestbyname(

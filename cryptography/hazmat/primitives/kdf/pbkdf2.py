@@ -21,11 +21,12 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 
 
 @utils.register_interface(interfaces.KeyDerivationFunction)
-class PBKDF2(object):
+class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
         if not backend.pbkdf2_hash_supported(algorithm):
             raise UnsupportedAlgorithm(
-                "{0} is not supported by this backend".format(algorithm.name)
+                "{0} is not supported for PBKDF2 by this backend".format(
+                    algorithm.name)
             )
         self._called = False
         self.algorithm = algorithm

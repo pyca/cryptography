@@ -134,32 +134,32 @@ A specific ``backend`` may provide one or more of these interfaces.
 
 
 
-.. class:: PBKDF2Backend
+.. class:: PBKDF2HMACBackend
 
     .. versionadded:: 0.2
 
-    A backend with methods for using PBKDF2.
+    A backend with methods for using PBKDF2 using HMAC as a PRF.
 
-    .. method:: pbkdf2_hash_supported(algorithm)
+    .. method:: pbkdf2_hmac_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
 
-        :param algorithm: An instance of a
+        :param prf: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
         :returns: ``True`` if the specified ``algorithm`` is supported for
-            PBKDF2 by this backend, otherwise ``False``.
+            PBKDF2 HMAC by this backend, otherwise ``False``.
 
-    .. method:: derive_pbkdf2(self, algorithm, length, salt, iterations,
-                              key_material)
+    .. method:: derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                                   key_material)
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
         :param int length: The desired length of the derived key. Maximum is
-            2\ :sup:`31` - 1.
+            (2\ :sup:`32` - 1) * ``algorithm.digest_size``
 
         :param bytes salt: A salt.
 
