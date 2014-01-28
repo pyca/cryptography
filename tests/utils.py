@@ -191,33 +191,3 @@ def load_hash_vectors(vector_data):
         else:
             raise ValueError("Unknown line in hash vector")
     return vectors
-
-
-def load_hkdf_vectors(vector_data):
-    vectors = []
-
-    ikm = salt = info = length = prk = okm = None
-
-    for line in vector_data:
-        line = line.strip()
-
-        if not line or line.startswith("#"):
-            continue
-
-        elif line.startswith("IKM"):
-            ikm = line.split(" = ")[1].encode("ascii")
-        elif line.startswith("salt"):
-            salt = line.split(" =")[1].strip().encode("ascii")
-        elif line.startswith("info"):
-            info = line.split(" =")[1].strip().encode("ascii")
-        elif line.startswith("L"):
-            length = int(line.split(" = ")[1])
-        elif line.startswith("PRK"):
-            prk = line.split(" = ")[1].encode("ascii")
-        elif line.startswith("OKM"):
-            okm = line.split(" = ")[1].encode("ascii")
-
-            vectors.append((ikm, salt, info, length, prk, okm))
-            ikm = salt = info = length = prk = okm = None
-
-    return vectors
