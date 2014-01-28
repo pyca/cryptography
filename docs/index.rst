@@ -17,7 +17,8 @@ You can install ``cryptography`` with ``pip``:
 .. note::
 
     If you're on Windows you'll need to make sure you have OpenSSL installed.
-    There are `pre-compiled binaries`_ available.
+    There are `pre-compiled binaries`_ available. If your installation is in
+    an unusual location ``set LIB=C:\OpenSSL-x.y.z\lib;%LIB%`` before installing.
 
 
 Why a new crypto library for Python?
