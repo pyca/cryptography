@@ -14,10 +14,14 @@
 import six
 
 from cryptography import exceptions
-from cryptography.hazmat.primitives import hmac
+from cryptography import utils
+
 from cryptography.hazmat.primitives import constant_time
+from cryptography.hazmat.primitives import hmac
+from cryptography.hazmat.primitives import interfaces
 
 
+@utils.register_interface(interfaces.KeyDerivationFunction)
 class HKDF(object):
     def __init__(self, algorithm, length, salt, info, backend):
         self._algorithm = algorithm
