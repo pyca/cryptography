@@ -204,4 +204,48 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
+Key Derivation Functions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: KeyDerivationFunction
+
+    .. versionadded:: 0.2
+
+    .. method:: derive(key_material)
+
+        :param key_material bytes: The input key material. Depending on what
+                                   key derivation function you are using this
+                                   could be either random material, or a user
+                                   supplied password.
+        :return: The new key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This generates and returns a new key from the supplied key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param key_material bytes: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param expected_key bytes: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match. This can be used for
+        something like checking whether a user's password attempt matches the
+        stored derived key.
+
 .. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)
