@@ -136,6 +136,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
 .. class:: PBKDF2Backend
 
+    .. versionadded:: 0.2
+
     A backend with methods for using PBKDF2.
 
     .. method:: pbkdf2_hash_supported(algorithm)
@@ -157,7 +159,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             provider.
 
         :param int length: The desired length of the derived key. Maximum is
-        2\ :sup:`31` - 1.
+            2\ :sup:`31` - 1.
 
         :param bytes salt: A salt.
 

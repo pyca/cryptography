@@ -9,7 +9,7 @@ Primitives
     cryptographic-hashes
     hmac
     symmetric-encryption
-    key-derivation-functions
     padding
+    key-derivation-functions
     constant-time
     interfaces
