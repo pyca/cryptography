@@ -43,4 +43,4 @@ class PBKDF2(object):
 
     def verify(self, key_material, expected_key):
         if not constant_time.bytes_eq(key_material, expected_key):
-            raise InvalidKey("Signature did not match digest.")
+            raise InvalidKey("Keys do not match.")

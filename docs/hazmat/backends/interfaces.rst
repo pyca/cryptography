@@ -159,7 +159,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param int length: The desired length of the derived key. Maximum is
         2\ :sup:`31` - 1.
 
-        :param bytes salt: A salt. `RFC 2898`_ recommends 64-bits or longer.
+        :param bytes salt: A salt.
 
         :param int iterations: The number of iterations to perform of the hash
             function.
@@ -169,4 +169,3 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :return bytes: Derived key.
 
-.. _`RFC 2898`: https://www.ietf.org/rfc/rfc2898.txt
