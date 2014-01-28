@@ -43,10 +43,10 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.derive(b'\x01' * 16)
+        hkdf.derive(b"\x01" * 16)
 
         with pytest.raises(exceptions.AlreadyFinalized):
-            hkdf.derive(b'\x02' * 16)
+            hkdf.derive(b"\x02" * 16)
 
         hkdf = HKDF(
             hashes.SHA256(),
@@ -56,10 +56,10 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.verify(b'\x01' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+        hkdf.verify(b"\x01" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
         with pytest.raises(exceptions.AlreadyFinalized):
-            hkdf.verify(b'\x02' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+            hkdf.verify(b"\x02" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
     def test_verify(self, backend):
         hkdf = HKDF(
@@ -70,7 +70,7 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.verify(b'\x01' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+        hkdf.verify(b"\x01" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
     def test_verify_invalid(self, backend):
         hkdf = HKDF(
@@ -82,25 +82,14 @@ class TestHKDF(object):
         )
 
         with pytest.raises(exceptions.InvalidKey):
-            hkdf.verify(b'\x02' * 16, b'gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u')
+            hkdf.verify(b"\x02" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
     def test_unicode_typeerror(self, backend):
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=u'foo', info=None, backend=backend)
+            HKDF(hashes.SHA256(), 16, salt=u"foo", info=None, backend=backend)
 
         with pytest.raises(TypeError):
-            HKDF(hashes.SHA256(), 16, salt=None, info=u'foo', backend=backend)
-
-        with pytest.raises(TypeError):
-            hkdf = HKDF(
-                hashes.SHA256(),
-                16,
-                salt=None,
-                info=None,
-                backend=backend
-            )
-
-            hkdf.derive(u'foo')
+            HKDF(hashes.SHA256(), 16, salt=None, info=u"foo", backend=backend)
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -111,7 +100,7 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.verify(u'foo', b'bar')
+            hkdf.derive(u"foo")
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -122,4 +111,15 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.verify(b'foo', u'bar')
+            hkdf.verify(u"foo", b"bar")
+
+        with pytest.raises(TypeError):
+            hkdf = HKDF(
+                hashes.SHA256(),
+                16,
+                salt=None,
+                info=None,
+                backend=backend
+            )
+
+            hkdf.verify(b"foo", u"bar")

@@ -79,7 +79,7 @@ class HKDF(object):
         return self._expand(key_material)
 
     def _expand(self, key_material):
-        output = [b'']
+        output = [b""]
         counter = 1
 
         while (self._algorithm.digest_size // 8) * len(output) < self._length:
