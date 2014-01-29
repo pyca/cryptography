@@ -131,3 +131,44 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
+
+
+.. class:: PBKDF2HMACBackend
+
+    .. versionadded:: 0.2
+
+    A backend with methods for using PBKDF2 using HMAC as a PRF.
+
+    .. method:: pbkdf2_hmac_supported(algorithm)
+
+        Check if the specified ``algorithm`` is supported by this backend.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns: ``True`` if the specified ``algorithm`` is supported for
+            PBKDF2 HMAC by this backend, otherwise ``False``.
+
+    .. method:: derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                                   key_material)
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param int length: The desired length of the derived key. Maximum is
+            (2\ :sup:`32` - 1) * ``algorithm.digest_size``
+
+        :param bytes salt: A salt.
+
+        :param int iterations: The number of iterations to perform of the hash
+            function. This can be used to control the length of time the
+            operation takes. Higher numbers help mitigate brute force attacks
+            against derived keys.
+
+        :param bytes key_material: The key material to use as a basis for
+            the derived key. This is typically a password.
+
+        :return bytes: Derived key.
+

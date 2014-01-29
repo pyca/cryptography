@@ -4,6 +4,7 @@ import os
 import pytest
 
 from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.exceptions import (
     AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
@@ -209,6 +210,30 @@ def hmac_test(backend, algorithm, params):
     h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
     h.update(binascii.unhexlify(msg))
     assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
+
+
+def generate_pbkdf2_test(param_loader, path, file_names, algorithm):
+    all_params = _load_all_params(path, file_names, param_loader)
+
+    @pytest.mark.parametrize("params", all_params)
+    def test_pbkdf2(self, backend, params):
+        pbkdf2_test(backend, algorithm, params)
+    return test_pbkdf2
+
+
+def pbkdf2_test(backend, algorithm, params):
+    # Password and salt can contain \0, which should be loaded as a null char.
+    # The NIST loader loads them as literal strings so we replace with the
+    # proper value.
+    kdf = PBKDF2HMAC(
+        algorithm,
+        int(params["length"]),
+        params["salt"],
+        int(params["iterations"]),
+        backend
+    )
+    derived_key = kdf.derive(params["password"])
+    assert binascii.hexlify(derived_key) == params["derived_key"]
 
 
 def generate_aead_exception_test(cipher_factory, mode_factory):
