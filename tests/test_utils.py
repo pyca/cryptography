@@ -180,6 +180,25 @@ def test_load_nist_vectors():
     ]
 
 
+def test_load_nist_vectors_with_null_chars():
+    vector_data = textwrap.dedent("""
+    COUNT = 0
+    KEY = thing\\0withnulls
+
+    COUNT = 1
+    KEY = 00000000000000000000000000000000
+    """).splitlines()
+
+    assert load_nist_vectors(vector_data) == [
+        {
+            "key": b"thing\x00withnulls",
+        },
+        {
+            "key": b"00000000000000000000000000000000",
+        },
+    ]
+
+
 def test_load_cryptrec_vectors():
     vector_data = textwrap.dedent("""
     # Vectors taken from http://info.isl.ntt.co.jp/crypt/eng/camellia/
