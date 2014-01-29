@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import six
+
 from cryptography import utils
 from cryptography.exceptions import (
     InvalidKey, UnsupportedAlgorithm, AlreadyFinalized
@@ -31,6 +33,11 @@ class PBKDF2HMAC(object):
         self._called = False
         self.algorithm = algorithm
         self._length = length
+        if isinstance(salt, six.text_type):
+            raise TypeError(
+                "Unicode-objects must be encoded before using them as key "
+                "material."
+            )
         self._salt = salt
         self.iterations = iterations
         self._backend = backend
@@ -40,6 +47,12 @@ class PBKDF2HMAC(object):
             raise AlreadyFinalized("PBKDF2 instances can only be called once")
         else:
             self._called = True
+
+        if isinstance(key_material, six.text_type):
+            raise TypeError(
+                "Unicode-objects must be encoded before using them as key "
+                "material."
+            )
         return self._backend.derive_pbkdf2_hmac(
             self.algorithm,
             self._length,
