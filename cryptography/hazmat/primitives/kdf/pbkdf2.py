@@ -44,7 +44,7 @@ class PBKDF2HMAC(object):
 
     def derive(self, key_material):
         if self._used:
-            raise AlreadyFinalized("PBKDF2 instances can only be called once")
+            raise AlreadyFinalized("PBKDF2 instances can only be used once")
         self._used = True
 
         if isinstance(key_material, six.text_type):
