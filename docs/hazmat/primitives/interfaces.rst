@@ -213,8 +213,8 @@ Hash Algorithms
 
         :type: str
 
-        The standard name for the hash algorithm, for example: ``sha1`` or
-        ``sha256``.
+        The standard name for the hash algorithm, for example: ``"sha256"`` or
+        ``"whirlpool"``.
 
     .. attribute:: digest_size
 
