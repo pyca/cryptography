@@ -5,6 +5,16 @@ Welcome to ``cryptography``
 primitives. We hope it'll be your one-stop-shop for all your cryptographic
 needs in Python.
 
+Installation
+------------
+You can install ``cryptography`` with ``pip``:
+
+.. code-block:: console
+
+    $ pip install cryptography
+
+see :doc:`Installation<installation>`  for more information
+
 Why a new crypto library for Python?
 ------------------------------------
 
@@ -40,13 +50,6 @@ admonition at the top.
 We recommend using the recipes layer whenever possible, and falling back to the
 hazmat layer only when necessary.
 
-Installation
-~~~~~~~~~~~~
-.. toctree::
-    :maxdepth: 2
-
-    installation
-
 The recipes layer
 ~~~~~~~~~~~~~~~~~
 
@@ -73,6 +76,7 @@ The ``cryptography`` open source project
 .. toctree::
     :maxdepth: 2
 
+    installation
     contributing
     security
     api-stability
