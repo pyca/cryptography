@@ -13,7 +13,7 @@ You can install ``cryptography`` with ``pip``:
 
     $ pip install cryptography
 
-See :doc:`Installation<installation>` for more information.
+See :doc:`Installation <installation>` for more information.
 
 Why a new crypto library for Python?
 ------------------------------------
