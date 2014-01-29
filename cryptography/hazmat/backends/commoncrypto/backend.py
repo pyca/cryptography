@@ -144,12 +144,7 @@ class Backend(object):
             return _CipherContext(self, cipher, mode, self._lib.kCCDecrypt)
 
     def pbkdf2_hmac_supported(self, algorithm):
-        try:
-            self._supported_pbkdf2_hmac_algorithms[algorithm.name]
-        except KeyError:
-            return False
-        else:
-            return True
+        return algorithm.name in self._supported_pbkdf2_hmac_algorithms
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
