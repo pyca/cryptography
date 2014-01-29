@@ -63,6 +63,32 @@ class TestHKDF(object):
         with pytest.raises(exceptions.AlreadyFinalized):
             hkdf.verify(b"\x02" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
+        hkdf = HKDF(
+            hashes.SHA256(),
+            16,
+            salt=None,
+            info=None,
+            backend=backend
+        )
+
+        hkdf.extract(b"\x01" * 16)
+
+        with pytest.raises(exceptions.AlreadyFinalized):
+            hkdf.extract(b"\x02" * 16)
+
+        hkdf = HKDF(
+            hashes.SHA256(),
+            16,
+            salt=None,
+            info=None,
+            backend=backend
+        )
+
+        hkdf.expand(b"\x01" * 16)
+
+        with pytest.raises(exceptions.AlreadyFinalized):
+            hkdf.expand(b"\x02" * 16)
+
     def test_verify(self, backend):
         hkdf = HKDF(
             hashes.SHA256(),
