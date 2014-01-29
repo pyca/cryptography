@@ -106,17 +106,5 @@ class HKDF(object):
         return self._expand(self._extract(key_material))
 
     def verify(self, key_material, expected_key):
-        if isinstance(key_material, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as key "
-                "material."
-            )
-
-        if isinstance(expected_key, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as "
-                "expected key material."
-            )
-
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise exceptions.InvalidKey
