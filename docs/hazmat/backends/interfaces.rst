@@ -133,7 +133,6 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
 
 
-
 .. class:: PBKDF2HMACBackend
 
     .. versionadded:: 0.2
@@ -144,7 +143,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         Check if the specified ``algorithm`` is supported by this backend.
 
-        :param prf: An instance of a
+        :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
