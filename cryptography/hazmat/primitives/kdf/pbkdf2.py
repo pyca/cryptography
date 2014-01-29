@@ -31,7 +31,7 @@ class PBKDF2HMAC(object):
                     algorithm.name)
             )
         self._used = False
-        self.algorithm = algorithm
+        self._algorithm = algorithm
         self._length = length
         if isinstance(salt, six.text_type):
             raise TypeError(
@@ -39,7 +39,7 @@ class PBKDF2HMAC(object):
                 "material."
             )
         self._salt = salt
-        self.iterations = iterations
+        self._iterations = iterations
         self._backend = backend
 
     def derive(self, key_material):
@@ -53,10 +53,10 @@ class PBKDF2HMAC(object):
                 "material."
             )
         return self._backend.derive_pbkdf2_hmac(
-            self.algorithm,
+            self._algorithm,
             self._length,
             self._salt,
-            self.iterations,
+            self._iterations,
             key_material
         )
 
