@@ -136,9 +136,7 @@ class Backend(object):
 
     def pbkdf2_hmac_supported(self, algorithm):
         if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            digest = self._lib.EVP_get_digestbyname(
-                algorithm.name.encode("ascii"))
-            return digest != self._ffi.NULL
+            return self.hmac_supported(algorithm)
         else:
             # OpenSSL < 1.0.0 has an explicit PBKDF2-HMAC-SHA1 function,
             # so if the PBKDF2_HMAC function is missing we only support
