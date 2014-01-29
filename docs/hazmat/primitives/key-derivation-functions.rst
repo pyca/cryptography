@@ -14,11 +14,10 @@ key stretching) so match your needs to their capabilities.
 
     .. versionadded:: 0.2
 
-    PBKDF2 (Password Based Key Derivation Function 2) is typically used for
+    `PBKDF2`_ (Password Based Key Derivation Function 2) is typically used for
     deriving a cryptographic key from a password. It may also be used for
-    key storage, but other key storage KDFs such as `scrypt`_ or `bcrypt`_
-    are generally considered better solutions since they are designed to be
-    slow.
+    key storage, but an alternate key storage KDF such as `scrypt` is generally
+    considered a better solution since it is designed to be slow.
 
     This class conforms to the
     :class:`~cryptography.hazmat.primitives.interfaces.KeyDerivationFunction`
@@ -102,5 +101,5 @@ key stretching) so match your needs to their capabilities.
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
-.. _`bcrypt`: http://en.wikipedia.org/wiki/Bcrypt
+.. _`PBKDF2`: http://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: http://en.wikipedia.org/wiki/Scrypt
