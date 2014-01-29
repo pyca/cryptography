@@ -37,7 +37,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_symmetric_encryption_ctx(cipher, mode)
 
         Create a
-        :class:`~cryptogrpahy.hazmat.primitives.interfaces.CipherContext` that
+        :class:`~cryptography.hazmat.primitives.interfaces.CipherContext` that
         can be used for encrypting data with the symmetric ``cipher`` using
         the given ``mode``.
 
@@ -56,7 +56,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_symmetric_decryption_ctx(cipher, mode)
 
         Create a
-        :class:`~cryptogrpahy.hazmat.primitives.interfaces.CipherContext` that
+        :class:`~cryptography.hazmat.primitives.interfaces.CipherContext` that
         can be used for decrypting data with the symmetric ``cipher`` using
         the given ``mode``.
 
@@ -91,7 +91,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_hash_ctx(algorithm)
 
         Create a
-        :class:`~cryptogrpahy.hazmat.primitives.interfaces.HashContext` that
+        :class:`~cryptography.hazmat.primitives.interfaces.HashContext` that
         uses the specified ``algorithm`` to calculate a message digest.
 
         :param algorithm: An instance of a
@@ -121,7 +121,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_hmac_ctx(algorithm)
 
         Create a
-        :class:`~cryptogrpahy.hazmat.primitives.interfaces.HashContext` that
+        :class:`~cryptography.hazmat.primitives.interfaces.HashContext` that
         uses the specified ``algorithm`` to calculate a hash-based message
         authentication code.
 
