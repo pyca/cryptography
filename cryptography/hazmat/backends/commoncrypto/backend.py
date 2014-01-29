@@ -102,11 +102,7 @@ class Backend(object):
         return _HMACContext(self, key, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        try:
-            self._cipher_registry[type(cipher), type(mode)]
-        except KeyError:
-            return False
-        return True
+        return (type(cipher), type(mode)) in self._cipher_registry
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         if isinstance(mode, GCM):
