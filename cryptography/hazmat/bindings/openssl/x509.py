@@ -119,6 +119,7 @@ int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
+X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
