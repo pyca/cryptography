@@ -20,7 +20,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError
 )
 from cryptography.hazmat.backends.interfaces import (
-    HashBackend, HMACBackend, CipherBackend, PBKDF2Backend
+    HashBackend, HMACBackend, CipherBackend, PBKDF2HMACBackend
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces, constant_time
@@ -40,7 +40,7 @@ HashMethods = namedtuple(
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
-@utils.register_interface(PBKDF2Backend)
+@utils.register_interface(PBKDF2HMACBackend)
 class Backend(object):
     """
     CommonCrypto API wrapper.
@@ -90,7 +90,7 @@ class Backend(object):
             "sha512": self._lib.kCCHmacAlgSHA512,
         }
 
-        self._supported_pbkdf2_algorithms = {
+        self._supported_pbkdf2_hmac_algorithms = {
             "sha1": self._lib.kCCPRFHmacAlgSHA1,
             "sha224": self._lib.kCCPRFHmacAlgSHA224,
             "sha256": self._lib.kCCPRFHmacAlgSHA256,
@@ -143,16 +143,17 @@ class Backend(object):
         else:
             return _CipherContext(self, cipher, mode, self._lib.kCCDecrypt)
 
-    def pbkdf2_hash_supported(self, algorithm):
+    def pbkdf2_hmac_supported(self, algorithm):
         try:
-            self._supported_pbkdf2_algorithms[algorithm.name]
+            self._supported_pbkdf2_hmac_algorithms[algorithm.name]
         except KeyError:
             return False
         else:
             return True
 
-    def derive_pbkdf2(self, algorithm, length, salt, iterations, key_material):
-        alg_enum = self._supported_pbkdf2_algorithms[algorithm.name]
+    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                           key_material):
+        alg_enum = self._supported_pbkdf2_hmac_algorithms[algorithm.name]
         buf = self._ffi.new("char[]", length)
         res = self._lib.CCKeyDerivationPBKDF(
             self._lib.kCCPBKDF2,
