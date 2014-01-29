@@ -163,7 +163,9 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param bytes salt: A salt.
 
         :param int iterations: The number of iterations to perform of the hash
-            function.
+            function. This can be used to control the length of time the
+            operation takes. Higher numbers help mitigate brute force attacks
+            against derived keys.
 
         :param bytes key_material: The key material to use as a basis for
             the derived key. This is typically a password.

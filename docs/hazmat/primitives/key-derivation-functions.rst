@@ -58,7 +58,9 @@ key stretching) so match your needs to their capabilities.
     :param bytes salt: A salt. `NIST SP 800-132`_ recommends 128-bits or
         longer.
     :param int iterations: The number of iterations to perform of the hash
-        function. See OWASP's `Password Storage Cheat Sheet`_ for more
+        function. This can be used to control the length of time the operation
+        takes. Higher numbers help mitigate brute force attacks against derived
+        keys. See OWASP's `Password Storage Cheat Sheet`_ for more
         detailed recommendations if you intend to use this for password storage.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
