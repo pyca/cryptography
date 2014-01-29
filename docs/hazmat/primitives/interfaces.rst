@@ -204,6 +204,31 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
+Hash Algorithms
+~~~~~~~~~~~~~~~
+
+.. class:: HashAlgorithm
+
+    .. attribute:: name
+
+        :type: str
+
+        The standard name for the hash algorithm, for example: ``"sha256"`` or
+        ``"whirlpool"``.
+
+    .. attribute:: digest_size
+
+        :type: int
+
+        The size of the resulting digest in bytes.
+
+    .. attribute:: block_size
+
+        :type: int
+
+        The internal block size of the hash algorithm in bytes.
+
+
 Key Derivation Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

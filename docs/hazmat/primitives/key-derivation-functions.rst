@@ -5,20 +5,36 @@ Key Derivation Functions
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf
 
-Key derivation functions derive key material from passwords or other data
-sources using a pseudo-random function (PRF). Each KDF is suitable for
-different tasks (cryptographic key derivation, password storage,
-key stretching) so match your needs to their capabilities.
+Key derivation functions derive bytes suitable for cryptographic operations
+from passwords or other data sources using a pseudo-random function (PRF).
+Different KDFs are suitable for different tasks such as:
 
-.. class:: PBKDF2HMAC(algorithm, length, salt, iterations, backend):
+* Cryptographic key derivation
+
+    Deriving a key suitable for use as input to an encryption algorithm.
+    Typically this means taking a password and running it through an algorithm
+    such as :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC` or HKDF.
+    This process is typically known as `key stretching`_.
+
+* Password storage
+
+    When storing passwords you want to use an algorithm that is computationally
+    intensive. Legitimate users will only need to compute it once (for example,
+    taking the user's password, running it through the KDF, then comparing it
+    to the stored value), while attackers will need to do it billions of times.
+    Ideal password storage KDFs will be demanding on both computational and
+    memory resources.
+
+.. currentmodule:: cryptography.hazmat.primitives.kdf.pbkdf2
+
+.. class:: PBKDF2HMAC(algorithm, length, salt, iterations, backend)
 
     .. versionadded:: 0.2
 
-    PBKDF2 (Password Based Key Derivation Function 2) is typically used for
+    `PBKDF2`_ (Password Based Key Derivation Function 2) is typically used for
     deriving a cryptographic key from a password. It may also be used for
-    key storage, but other key storage KDFs such as `scrypt`_ or `bcrypt`_
-    are generally considered better solutions since they are designed to be
-    slow.
+    key storage, but an alternate key storage KDF such as `scrypt`_ is generally
+    considered a better solution.
 
     This class conforms to the
     :class:`~cryptography.hazmat.primitives.interfaces.KeyDerivationFunction`
@@ -59,7 +75,9 @@ key stretching) so match your needs to their capabilities.
     :param bytes salt: A salt. `NIST SP 800-132`_ recommends 128-bits or
         longer.
     :param int iterations: The number of iterations to perform of the hash
-        function. See OWASP's `Password Storage Cheat Sheet`_ for more
+        function. This can be used to control the length of time the operation
+        takes. Higher numbers help mitigate brute force attacks against derived
+        keys. See OWASP's `Password Storage Cheat Sheet`_ for more
         detailed recommendations if you intend to use this for password storage.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
@@ -69,7 +87,7 @@ key stretching) so match your needs to their capabilities.
 
         :param key_material bytes: The input key material. For PBKDF2 this
             should be a password.
-        :return: The new key.
+        :return bytes: the derived key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive` or
                                                           :meth:`verify` is
@@ -102,5 +120,6 @@ key stretching) so match your needs to their capabilities.
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
-.. _`bcrypt`: http://en.wikipedia.org/wiki/Bcrypt
+.. _`PBKDF2`: http://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: http://en.wikipedia.org/wiki/Scrypt
+.. _`key stretching`: http://en.wikipedia.org/wiki/Key_stretching

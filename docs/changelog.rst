@@ -14,7 +14,7 @@ Changelog
 * Improved thread-safety for the OpenSSL backend.
 * Fixed compilation on systems where OpenSSL's ``ec.h`` header is not
   available, such as CentOS.
-* Added PBKDF2HMAC support to OpenSSL and CommonCrypto backends.
+* Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~

@@ -119,6 +119,7 @@ int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
+X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
@@ -165,6 +166,7 @@ int X509_set_serialNumber(X509 *, ASN1_INTEGER *);
 X509_STORE *X509_STORE_new(void);
 void X509_STORE_free(X509_STORE *);
 int X509_STORE_add_cert(X509_STORE *, X509 *);
+int X509_verify_cert(X509_STORE_CTX *);
 """
 
 MACROS = """

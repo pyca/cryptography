@@ -30,8 +30,8 @@ class PBKDF2HMAC(object):
                 "{0} is not supported for PBKDF2 by this backend".format(
                     algorithm.name)
             )
-        self._called = False
-        self.algorithm = algorithm
+        self._used = False
+        self._algorithm = algorithm
         self._length = length
         if isinstance(salt, six.text_type):
             raise TypeError(
@@ -39,14 +39,13 @@ class PBKDF2HMAC(object):
                 "material."
             )
         self._salt = salt
-        self.iterations = iterations
+        self._iterations = iterations
         self._backend = backend
 
     def derive(self, key_material):
-        if self._called:
-            raise AlreadyFinalized("PBKDF2 instances can only be called once")
-        else:
-            self._called = True
+        if self._used:
+            raise AlreadyFinalized("PBKDF2 instances can only be used once")
+        self._used = True
 
         if isinstance(key_material, six.text_type):
             raise TypeError(
@@ -54,10 +53,10 @@ class PBKDF2HMAC(object):
                 "material."
             )
         return self._backend.derive_pbkdf2_hmac(
-            self.algorithm,
+            self._algorithm,
             self._length,
             self._salt,
-            self.iterations,
+            self._iterations,
             key_material
         )
 
