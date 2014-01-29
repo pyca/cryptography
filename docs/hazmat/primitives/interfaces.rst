@@ -209,8 +209,6 @@ Hash Algorithms
 
 .. class:: HashAlgorithm
 
-    .. versionadded:: 0.2
-
     .. attribute:: name
 
         :type: str
@@ -229,7 +227,6 @@ Hash Algorithms
         :type: int
 
         The internal block size of the hash algorithm in bytes.
-
 
 
 Key Derivation Functions
