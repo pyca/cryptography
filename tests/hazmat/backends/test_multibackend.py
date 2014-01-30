@@ -15,6 +15,7 @@ import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.multibackend import PrioritizedMultiBackend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
@@ -32,6 +33,19 @@ class DummyCipherBackend(object):
     def create_symmetric_decryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
             raise UnsupportedAlgorithm
+
+
+class DummyHashBackend(object):
+    def __init__(self, supported_algorithms):
+        self._algorithms = supported_algorithms
+
+    def hash_supported(self, algorithm):
+        return type(algorithm) in self._algorithms
+
+    def create_hash_ctx(self, algorithm):
+        if not self.hash_supported(algorithm):
+            raise UnsupportedAlgorithm
+
 
 
 class TestPrioritizedMultiBackend(object):
@@ -62,3 +76,14 @@ class TestPrioritizedMultiBackend(object):
             cipher.encryptor()
         with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()
+
+    def test_hashes(self):
+        backend = PrioritizedMultiBackend([
+            DummyHashBackend([hashes.MD5])
+        ])
+        assert backend.hash_supported(hashes.MD5())
+
+        hashes.Hash(hashes.MD5(), backend=backend)
+
+        with pytest.raises(UnsupportedAlgorithm):
+            hashes.Hash(hashes.SHA1(), backend=backend)
