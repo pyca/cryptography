@@ -90,20 +90,10 @@ class Backend(object):
         }
 
     def hash_supported(self, algorithm):
-        try:
-            self._hash_mapping[algorithm.name]
-        except KeyError:
-            return False
-        else:
-            return True
+        return algorithm.name in self._hash_mapping
 
     def hmac_supported(self, algorithm):
-        try:
-            self._supported_hmac_algorithms[algorithm.name]
-        except KeyError:
-            return False
-        else:
-            return True
+        return algorithm.name in self._supported_hmac_algorithms
 
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
@@ -112,11 +102,7 @@ class Backend(object):
         return _HMACContext(self, key, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        try:
-            self._cipher_registry[type(cipher), type(mode)]
-        except KeyError:
-            return False
-        return True
+        return (type(cipher), type(mode)) in self._cipher_registry
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         if isinstance(mode, GCM):
