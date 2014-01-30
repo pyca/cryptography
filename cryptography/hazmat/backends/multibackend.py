@@ -30,11 +30,19 @@ class PrioritizedMultiBackend(object):
     def __init__(self, backends):
         self._backends = backends
 
+    def _filtered_backends(self, interface):
+        for b in self._backends:
+            if isinstance(b, interface):
+                yield b
+
     def cipher_supported(self, algorithm, mode):
-        return any(b.cipher_supported(algorithm, mode) for b in self._backends)
+        return any(
+            b.cipher_supported(algorithm, mode)
+            for b in self._filtered_backends(CipherBackend)
+        )
 
     def create_symmetric_encryption_ctx(self, algorithm, mode):
-        for b in self._backends:
+        for b in self._filtered_backends(CipherBackend):
             try:
                 return b.create_symmetric_encryption_ctx(algorithm, mode)
             except UnsupportedAlgorithm:
@@ -42,7 +50,7 @@ class PrioritizedMultiBackend(object):
         raise UnsupportedAlgorithm
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
-        for b in self._backends:
+        for b in self._filtered_backends(CipherBackend):
             try:
                 return b.create_symmetric_decryption_ctx(algorithm, mode)
             except UnsupportedAlgorithm:
@@ -50,10 +58,13 @@ class PrioritizedMultiBackend(object):
         raise UnsupportedAlgorithm
 
     def hash_supported(self, algorithm):
-        return any(b.hash_supported(algorithm) for b in self._backends)
+        return any(
+            b.hash_supported(algorithm)
+            for b in self._filtered_backends(HashBackend)
+        )
 
     def create_hash_ctx(self, algorithm):
-        for b in self._backends:
+        for b in self._filtered_backends(HashBackend):
             try:
                 return b.create_hash_ctx(algorithm)
             except UnsupportedAlgorithm:
@@ -61,10 +72,13 @@ class PrioritizedMultiBackend(object):
         raise UnsupportedAlgorithm
 
     def hmac_supported(self, algorithm):
-        return any(b.hmac_supported(algorithm) for b in self._backends)
+        return any(
+            b.hmac_supported(algorithm)
+            for b in self._filtered_backends(HMACBackend)
+        )
 
     def create_hmac_ctx(self, key, algorithm):
-        for b in self._backends:
+        for b in self._filtered_backends(HMACBackend):
             try:
                 return b.create_hmac_ctx(key, algorithm)
             except UnsupportedAlgorithm:
@@ -72,11 +86,14 @@ class PrioritizedMultiBackend(object):
         raise UnsupportedAlgorithm
 
     def pbkdf2_hmac_supported(self, algorithm):
-        return any(b.pbkdf2_hmac_supported(algorithm) for b in self._backends)
+        return any(
+            b.pbkdf2_hmac_supported(algorithm)
+            for b in self._filtered_backends(PBKDF2HMACBackend)
+        )
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
-        for b in self._backends:
+        for b in self._filtered_backends(PBKDF2HMACBackend):
             try:
                 return b.derive_pbkdf2_hmac(
                     algorithm, length, salt, iterations, key_material

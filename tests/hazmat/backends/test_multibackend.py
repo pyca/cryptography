@@ -13,13 +13,17 @@
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.backends.interfaces import (
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
+)
 from cryptography.hazmat.backends.multibackend import PrioritizedMultiBackend
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
+@utils.register_interface(CipherBackend)
 class DummyCipherBackend(object):
     def __init__(self, supported_ciphers):
         self._ciphers = supported_ciphers
@@ -36,6 +40,7 @@ class DummyCipherBackend(object):
             raise UnsupportedAlgorithm
 
 
+@utils.register_interface(HashBackend)
 class DummyHashBackend(object):
     def __init__(self, supported_algorithms):
         self._algorithms = supported_algorithms
@@ -48,6 +53,7 @@ class DummyHashBackend(object):
             raise UnsupportedAlgorithm
 
 
+@utils.register_interface(HMACBackend)
 class DummyHMACBackend(object):
     def __init__(self, supported_algorithms):
         self._algorithms = supported_algorithms
@@ -60,6 +66,7 @@ class DummyHMACBackend(object):
             raise UnsupportedAlgorithm
 
 
+@utils.register_interface(PBKDF2HMACBackend)
 class DummyPBKDF2HMAC(object):
     def __init__(self, supported_algorithms):
         self._algorithms = supported_algorithms
@@ -77,6 +84,7 @@ class DummyPBKDF2HMAC(object):
 class TestPrioritizedMultiBackend(object):
     def test_ciphers(self):
         backend = PrioritizedMultiBackend([
+            DummyHashBackend([]),
             DummyCipherBackend([
                 (algorithms.AES, modes.CBC),
             ])
