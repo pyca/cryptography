@@ -28,7 +28,7 @@ The `OpenSSL`_ C library.
 OS Random Engine
 ----------------
 
-OpenSSL uses a userspace CSPRNG that is seeded from system random (
+OpenSSL uses a user-space CSPRNG that is seeded from system random (
 ``/dev/urandom`` or ``CryptGenRandom``). This CSPRNG is not reseeded
 automatically when a process calls ``fork()``. This can result in situations
 where two different processes can return similar or identical keys and
