@@ -80,7 +80,7 @@ Different KDFs are suitable for different tasks such as:
         keys. See OWASP's `Password Storage Cheat Sheet`_ for more
         detailed recommendations if you intend to use this for password storage.
     :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
         provider.
 
     .. method:: derive(key_material)
