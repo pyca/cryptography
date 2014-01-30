@@ -24,5 +24,6 @@ if CommonCryptoBinding.is_available():
     _ALL_BACKENDS.append(commoncrypto.backend)
 
 
+_default_backend = PrioritizedMultiBackend(_ALL_BACKENDS)
 def default_backend():
-    return PrioritizedMultiBackend(_ALL_BACKENDS)
+    return _default_backend
