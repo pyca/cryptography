@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 import cffi
 
 import pytest
@@ -24,6 +26,11 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
+
+if sys.platform != "win32":
+    libraries = ["crypto", "ssl"]
+else:  # pragma: no cover
+    libraries = ["libeay32", "ssleay32", "advapi32"]
 
 ffi = cffi.FFI()
 
@@ -77,7 +84,7 @@ dummy_engine = ffi.verify(
             return 1;
         }
     """,
-    libraries=["crypto", "ssl"],
+    libraries=libraries
 )
 
 
