@@ -57,26 +57,10 @@ class HKDF(object):
 
         self._used = False
 
-    def extract(self, key_material):
-        if self._used:
-            raise exceptions.AlreadyFinalized
-
-        self._used = True
-
-        return self._extract(key_material)
-
     def _extract(self, key_material):
         h = hmac.HMAC(self._salt, self._algorithm, backend=self._backend)
         h.update(key_material)
         return h.finalize()
-
-    def expand(self, key_material):
-        if self._used:
-            raise exceptions.AlreadyFinalized
-
-        self._used = True
-
-        return self._expand(key_material)
 
     def _expand(self, key_material):
         output = [b""]

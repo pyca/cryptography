@@ -71,24 +71,6 @@ class TestHKDF(object):
             backend=backend
         )
 
-        hkdf.extract(b"\x01" * 16)
-
-        with pytest.raises(exceptions.AlreadyFinalized):
-            hkdf.extract(b"\x02" * 16)
-
-        hkdf = HKDF(
-            hashes.SHA256(),
-            16,
-            salt=None,
-            info=None,
-            backend=backend
-        )
-
-        hkdf.expand(b"\x01" * 16)
-
-        with pytest.raises(exceptions.AlreadyFinalized):
-            hkdf.expand(b"\x02" * 16)
-
     def test_verify(self, backend):
         hkdf = HKDF(
             hashes.SHA256(),
