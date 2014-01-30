@@ -46,6 +46,18 @@ added to the engine list but **not activated** if you only import the binding.
 If you wish to deactivate it call ``unregister_osrandom_engine()`` on the
 backend object.
 
+OS Random Sources
+----------------------------
+
+On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
+utilizes the `Yarrow`_ algorithm.
+
+On Windows ``CryptGenRandom`` is backed by `Fortuna`_.
+
+Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source seeded
+from the ``/dev/random`` pool.
+
+
 .. _`OpenSSL`: https://www.openssl.org/
 .. _`initializing the RNG`: http://en.wikipedia.org/wiki/OpenSSL#Vulnerability_in_the_Debian_implementation
 .. _`Yarrow`: http://en.wikipedia.org/wiki/Yarrow_algorithm
