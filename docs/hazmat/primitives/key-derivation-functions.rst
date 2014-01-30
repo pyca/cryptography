@@ -13,7 +13,8 @@ Different KDFs are suitable for different tasks such as:
 
     Deriving a key suitable for use as input to an encryption algorithm.
     Typically this means taking a password and running it through an algorithm
-    such as :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC` or HKDF.
+    such as :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC` or
+    :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
     This process is typically known as `key stretching`_.
 
 * Password storage
@@ -118,8 +119,71 @@ Different KDFs are suitable for different tasks such as:
         checking whether the password a user provides matches the stored derived
         key.
 
+
+.. currentmodule:: cryptography.hazmat.primitives.kdf.hkdf
+
+.. class:: HKDF(algorithm, length, salt, info, backend)
+
+    .. versionadded:: 0.2
+
+    `HKDF`_ (HMAC-based Extract-and-Expand Key Derivation Function) suitable
+    for deriving keys of a fixed size used for other cryptographic operations.
+
+    It consists of two distinct phases "Extract" and "Expand".  The "Extract"
+    stage takes a low-entropy key and extracts from it a fixed size
+    psuedorandom key.  The "Expand" stage derives a large key of a user
+    determined size from the psuedorandom key.
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider.
+
+    :param int length: The desired length of the derived key. Maximum is
+        255 * (``algorithm.digest_size`` // 8).
+
+    :param bytes salt: A salt.  If ``None`` is explicitly passed a default salt
+        of ``algorithm.digest_size // 8`` null bytes.
+
+    :param bytes info: Application specific context information.  If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :params backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+        provider.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :retunr bytes: The derived key.
+
+        Derives a new key from the input key material by performing both the
+        extract and expand operations.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param key_material bytes: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param expected_key bytes: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match. This can be used for
+        checking whether the password a user provides matches the stored derived
+        key.
+
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
 .. _`PBKDF2`: http://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: http://en.wikipedia.org/wiki/Scrypt
 .. _`key stretching`: http://en.wikipedia.org/wiki/Key_stretching
+.. _`HKDF`: http://tools.ietf.org/html/rfc5869
