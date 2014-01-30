@@ -11,6 +11,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.backends.multibackend import PrioritizedMultiBackend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+
+class DummyCipherBackend(object):
+    def __init__(self, supported_ciphers):
+        self._ciphers = supported_ciphers
+
+    def cipher_supported(self, algorithm, mode):
+        return (type(algorithm), type(mode)) in self._ciphers
+
+    def create_symmetric_encryption_ctx(self, algorithm, mode):
+        if not self.cipher_supported(algorithm, mode):
+            raise UnsupportedAlgorithm
+
+    def create_symmetric_decryption_ctx(self, algorithm, mode):
+        if not self.cipher_supported(algorithm, mode):
+            raise UnsupportedAlgorithm
+
 
 class TestPrioritizedMultiBackend(object):
-    pass
+    def test_ciphers(self):
+        backend = PrioritizedMultiBackend([
+            DummyCipherBackend([
+                (algorithms.AES, modes.CBC),
+            ])
+        ])
+        assert backend.cipher_supported(
+            algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
+        )
+
+        cipher = Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.CBC(b"\x00" * 16),
+            backend=backend
+        )
+        cipher.encryptor()
+        cipher.decryptor()
+
+        cipher = Cipher(
+            algorithms.Camellia(b"\x00" * 16),
+            modes.CBC(b"\x00" * 16),
+            backend=backend
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cipher.encryptor()
+        with pytest.raises(UnsupportedAlgorithm):
+            cipher.decryptor()
