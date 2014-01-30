@@ -4,16 +4,13 @@ from cryptography.hazmat.backends import _ALL_BACKENDS
 from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend, PBKDF2HMACBackend
 )
-from cryptography.hazmat.backends.multibackend import PrioritizedMultiBackend
 
 from .utils import check_for_iface, check_backend_support, select_backends
 
 
 def pytest_generate_tests(metafunc):
     names = metafunc.config.getoption("--backend")
-    selected_backends = select_backends(
-        names, _ALL_BACKENDS + [PrioritizedMultiBackend(_ALL_BACKENDS)]
-    )
+    selected_backends = select_backends(names, _ALL_BACKENDS)
 
     if "backend" in metafunc.fixturenames:
         metafunc.parametrize("backend", selected_backends)
