@@ -5,14 +5,15 @@ Welcome to ``cryptography``
 primitives. We hope it'll be your one-stop-shop for all your cryptographic
 needs in Python.
 
-Installing
-----------
-
+Installation
+------------
 You can install ``cryptography`` with ``pip``:
 
 .. code-block:: console
 
     $ pip install cryptography
+
+See :doc:`Installation <installation>` for more information.
 
 Why a new crypto library for Python?
 ------------------------------------
@@ -75,9 +76,13 @@ The ``cryptography`` open source project
 .. toctree::
     :maxdepth: 2
 
+    installation
     contributing
     security
     api-stability
     doing-a-release
     changelog
     community
+
+
+.. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html

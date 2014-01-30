@@ -65,3 +65,19 @@ class HMACBackend(six.with_metaclass(abc.ABCMeta)):
         """
         Create a HashContext for calculating a message authentication code.
         """
+
+
+class PBKDF2HMACBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def pbkdf2_hmac_supported(self, algorithm):
+        """
+        Return True if the hash algorithm is supported for PBKDF2 by this
+        backend.
+        """
+
+    @abc.abstractmethod
+    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                           key_material):
+        """
+        Return length bytes derived from provided PBKDF2 parameters.
+        """

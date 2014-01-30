@@ -12,3 +12,5 @@ PGP key fingerprints are enclosed in parentheses.
 * Jarret Raim <jarito@gmail.com>
 * Alex Stapleton <alexs@prol.etari.at> (A1C7 E50B 66DE 39ED C847 9665 8E3C 20D1 9BD9 5C4C)
 * David Reid <dreid@dreid.org> (0F83 CC87 B32F 482B C726  B58A 9FBF D8F4 DA89 6D74)
+* Konstantinos Koukopoulos <koukopoulos@gmail.com> (D6BD 52B6 8C99 A91C E2C8  934D 3300 566B 3A46 726E)
+* Stephen Holsapple <sholsapp@gmail.com>

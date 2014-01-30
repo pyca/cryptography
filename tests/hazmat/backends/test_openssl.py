@@ -16,7 +16,7 @@ import cffi
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, InternalError
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces
@@ -168,20 +168,20 @@ class TestOpenSSL(object):
             cipher.encryptor()
 
     def test_handle_unknown_error(self):
-        with pytest.raises(SystemError):
+        with pytest.raises(InternalError):
             backend._handle_error_code(0, 0, 0)
 
-        with pytest.raises(SystemError):
+        with pytest.raises(InternalError):
             backend._handle_error_code(backend._lib.ERR_LIB_EVP, 0, 0)
 
-        with pytest.raises(SystemError):
+        with pytest.raises(InternalError):
             backend._handle_error_code(
                 backend._lib.ERR_LIB_EVP,
                 backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
                 0
             )
 
-        with pytest.raises(SystemError):
+        with pytest.raises(InternalError):
             backend._handle_error_code(
                 backend._lib.ERR_LIB_EVP,
                 backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,

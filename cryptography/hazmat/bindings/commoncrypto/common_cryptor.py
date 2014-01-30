@@ -62,6 +62,7 @@ enum {
     kCCModeXTS = 8,
     kCCModeRC4 = 9,
     kCCModeCFB8 = 10,
+    kCCModeGCM = 11
 };
 typedef uint32_t CCMode;
 enum {
@@ -83,12 +84,25 @@ CCCryptorStatus CCCryptorUpdate(CCCryptorRef, const void *, size_t, void *,
                                 size_t, size_t *);
 CCCryptorStatus CCCryptorFinal(CCCryptorRef, void *, size_t, size_t *);
 CCCryptorStatus CCCryptorRelease(CCCryptorRef);
+
+CCCryptorStatus CCCryptorGCMAddIV(CCCryptorRef, const void *, size_t);
+CCCryptorStatus CCCryptorGCMAddAAD(CCCryptorRef, const void *, size_t);
+CCCryptorStatus CCCryptorGCMEncrypt(CCCryptorRef, const void *, size_t,
+                                    void *);
+CCCryptorStatus CCCryptorGCMDecrypt(CCCryptorRef, const void *, size_t,
+                                    void *);
+CCCryptorStatus CCCryptorGCMFinal(CCCryptorRef, const void *, size_t *);
+CCCryptorStatus CCCryptorGCMReset(CCCryptorRef);
 """
 
 MACROS = """
 """
 
 CUSTOMIZATIONS = """
+// Not defined in the public header
+enum {
+    kCCModeGCM = 11
+};
 """
 
 CONDITIONAL_NAMES = {}

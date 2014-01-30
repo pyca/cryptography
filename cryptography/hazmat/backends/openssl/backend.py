@@ -16,11 +16,13 @@ from __future__ import absolute_import, division, print_function
 import itertools
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
-from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, InvalidTag, InternalError
 )
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.backends.interfaces import (
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
+)
+from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4,
 )
@@ -33,6 +35,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
+@utils.register_interface(PBKDF2HMACBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -43,6 +46,8 @@ class Backend(object):
         self._binding = Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
+
+        self._binding.init_static_locks()
 
         # adds all ciphers/digests for EVP
         self._lib.OpenSSL_add_all_algorithms()
@@ -170,6 +175,49 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
+    def pbkdf2_hmac_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
+            return self.hmac_supported(algorithm)
+        else:
+            # OpenSSL < 1.0.0 has an explicit PBKDF2-HMAC-SHA1 function,
+            # so if the PBKDF2_HMAC function is missing we only support
+            # SHA1 via PBKDF2_HMAC_SHA1.
+            return isinstance(algorithm, hashes.SHA1)
+
+    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                           key_material):
+        buf = self._ffi.new("char[]", length)
+        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
+            evp_md = self._lib.EVP_get_digestbyname(
+                algorithm.name.encode("ascii"))
+            assert evp_md != self._ffi.NULL
+            res = self._lib.PKCS5_PBKDF2_HMAC(
+                key_material,
+                len(key_material),
+                salt,
+                len(salt),
+                iterations,
+                evp_md,
+                length,
+                buf
+            )
+            assert res == 1
+        else:
+            # OpenSSL < 1.0.0
+            assert isinstance(algorithm, hashes.SHA1)
+            res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
+                key_material,
+                len(key_material),
+                salt,
+                len(salt),
+                iterations,
+                length,
+                buf
+            )
+            assert res == 1
+
+        return self._ffi.buffer(buf)[:]
+
     def _handle_error(self, mode):
         code = self._lib.ERR_get_error()
         if not code and isinstance(mode, GCM):
@@ -195,7 +243,7 @@ class Backend(object):
                         "the block length"
                     )
 
-        raise SystemError(
+        raise InternalError(
             "Unknown error code from OpenSSL, you should probably file a bug."
         )
 
