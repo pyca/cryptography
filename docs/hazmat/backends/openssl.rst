@@ -28,15 +28,25 @@ The `OpenSSL`_ C library.
 OS Random Engine
 ----------------
 
-OpenSSL has a CSPRNG that it seeds when starting up. Unfortunately, its state
-is replicated when the process is forked and child processes can deliver
-similar or identical random values. OpenSSL has landed a patch to mitigate this
-issue, but this project can't rely on users having recent versions.
+OpenSSL uses a userspace CSPRNG that is seeded from system random (
+``/dev/urandom`` or ``CryptGenRandom``). This CSPRNG is not reseeded
+automatically when a process calls ``fork()``. This can result in situations
+where two different processes can return similar or identical keys and
+compromise the security of the system.
 
-To work around this cryptography uses a custom OpenSSL engine that replaces the
-standard random source with one that fetches entropy from ``/dev/urandom`` (or
-CryptGenRandom on Windows). This engine is **active** by default when importing
-the OpenSSL backend. It is added to the engine list but not activated if you
-only import the binding.
+The approach this project has chosen to mitigate this vulnerability is to
+include an engine that replaces the OpenSSL default CSPRNG with one that sources
+its entropy from ``/dev/urandom`` on UNIX-like operating systems and uses
+``CryptGenRandom`` on Windows. This method of pulling from the system pool
+allows us to avoid potential issues with `initializing the RNG`_ as well as
+protecting us from the ``fork()`` weakness.
+
+This engine is **active** by default when importing the OpenSSL backend. It is
+added to the engine list but **not activated** if you only import the binding.
+If you wish to deactivate it call ``unregister_osrandom_engine()`` on the
+backend object.
 
 .. _`OpenSSL`: https://www.openssl.org/
+.. _`initializing the RNG`: http://en.wikipedia.org/wiki/OpenSSL#Vulnerability_in_the_Debian_implementation
+.. _`Yarrow`: http://en.wikipedia.org/wiki/Yarrow_algorithm
+.. _`Fortuna`: http://en.wikipedia.org/wiki/Fortuna_(PRNG)
