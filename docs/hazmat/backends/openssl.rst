@@ -47,7 +47,7 @@ If you wish to deactivate it call ``unregister_osrandom_engine()`` on the
 backend object.
 
 OS Random Sources
-----------------------------
+-----------------
 
 On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
 utilizes the `Yarrow`_ algorithm.
