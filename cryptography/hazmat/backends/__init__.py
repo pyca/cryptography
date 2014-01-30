@@ -12,16 +12,17 @@
 # limitations under the License.
 
 from cryptography.hazmat.backends import openssl
+from cryptography.hazmat.backends.multibackend import PrioritizedMultiBackend
 from cryptography.hazmat.bindings.commoncrypto.binding import (
-    Binding as CCBinding
+    Binding as CommonCryptoBinding
 )
 
 _ALL_BACKENDS = [openssl.backend]
 
-if CCBinding.is_available():
+if CommonCryptoBinding.is_available():
     from cryptography.hazmat.backends import commoncrypto
     _ALL_BACKENDS.append(commoncrypto.backend)
 
 
 def default_backend():
-    return openssl.backend
+    return PrioritizedMultiBackend(_ALL_BACKENDS)
