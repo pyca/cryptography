@@ -55,7 +55,7 @@ utilizes the `Yarrow`_ algorithm.
 On Windows ``CryptGenRandom`` is backed by `Fortuna`_.
 
 Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source seeded
-from the ``/dev/random`` pool.
+from the same pool as ``/dev/random``.
 
 
 .. _`OpenSSL`: https://www.openssl.org/

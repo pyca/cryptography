@@ -32,67 +32,7 @@ int Cryptography_add_osrandom_engine(void);
 MACROS = """
 """
 
-CUSTOMIZATIONS = """
-static const char *Cryptography_osrandom_engine_id= "osrandom";
-static const char *Cryptography_osrandom_engine_name = "osrandom_engine";
-
-#ifndef _WIN32
-static int urandom_fd = -1;
-
-static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    ssize_t n;
-    while (0 < size) {
-        do {
-            n = read(urandom_fd, buffer, (size_t)size);
-        } while (n < 0 && errno == EINTR);
-        if (n <= 0) {
-            return 0;
-        }
-        buffer += n;
-        size -= n;
-    }
-    return 1;
-}
-
-static int osrandom_rand_status(void) {
-    if (urandom_fd == -1) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-static int osrandom_init(ENGINE *e) {
-    if (urandom_fd > -1) {
-        return 1;
-    }
-    urandom_fd = open("/dev/urandom", O_RDONLY);
-    if (urandom_fd > -1) {
-        if (fcntl(urandom_fd, F_SETFD, FD_CLOEXEC) == -1) {
-            return 0;
-        }
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-static int osrandom_finish(ENGINE *e) {
-    int n;
-    do {
-        n = close(urandom_fd);
-    } while (n < 0 && errno == EINTR);
-    if (n < 0) {
-        urandom_fd = -1;
-        return 0;
-    } else {
-        urandom_fd = -1;
-        return 1;
-    }
-}
-#endif
-
-#ifdef _WIN32
+WIN32_CUSTOMIZATIONS = """
 static HCRYPTPROV hCryptProv = 0;
 
 static int osrandom_init(ENGINE *e) {
@@ -117,6 +57,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     while (size > 0) {
         chunk = size;
         if (!CryptGenRandom(hCryptProv, (DWORD)chunk, buffer)) {
+            ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
             return 0;
         }
         buffer += chunk;
@@ -141,14 +82,91 @@ static int osrandom_rand_status(void) {
         return 1;
     }
 }
-#endif /* MS_WINDOWS */
+"""
+
+POSIX_CUSTOMIZATIONS = """
+static int urandom_fd = -1;
+
+static int osrandom_init(ENGINE *e) {
+    if (urandom_fd > -1) {
+        return 1;
+    }
+    urandom_fd = open("/dev/urandom", O_RDONLY);
+    if (urandom_fd > -1) {
+        if (fcntl(urandom_fd, F_SETFD, FD_CLOEXEC) == -1) {
+            return 0;
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int osrandom_rand_bytes(unsigned char *buffer, int size) {
+    ssize_t n;
+    while (size > 0) {
+        do {
+            n = read(urandom_fd, buffer, (size_t)size);
+        } while (n < 0 && errno == EINTR);
+        if (n <= 0) {
+            ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
+            return 0;
+        }
+        buffer += n;
+        size -= n;
+    }
+    return 1;
+}
+
+static int osrandom_finish(ENGINE *e) {
+    int n;
+    do {
+        n = close(urandom_fd);
+    } while (n < 0 && errno == EINTR);
+    urandom_fd = -1;
+    if (n < 0) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+static int osrandom_rand_status(void) {
+    if (urandom_fd == -1) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+"""
+
+CUSTOMIZATIONS = """
+static const char *Cryptography_osrandom_engine_id = "osrandom";
+static const char *Cryptography_osrandom_engine_name = "osrandom_engine";
+
+#if defined(_WIN32)
+""" + WIN32_CUSTOMIZATIONS + """
+#else
+""" + POSIX_CUSTOMIZATIONS + """
+#endif
+
+/* This replicates the behavior of the OpenSSL FIPS RNG, which returns a
+-1 in the event that there is an error when calling RAND_pseudo_bytes.  */
+static int osrandom_pseudo_rand_bytes(unsigned char *buffer, int size) {
+    int res = osrandom_rand_bytes(buffer, size);
+    if (res == 0) {
+        return -1;
+    } else {
+        return res;
+    }
+}
 
 static RAND_METHOD osrandom_rand = {
     NULL,
     osrandom_rand_bytes,
     NULL,
     NULL,
-    osrandom_rand_bytes,
+    osrandom_pseudo_rand_bytes,
     osrandom_rand_status,
 };
 
@@ -162,6 +180,7 @@ int Cryptography_add_osrandom_engine(void) {
             !ENGINE_set_RAND(e, &osrandom_rand) ||
             !ENGINE_set_init_function(e, osrandom_init) ||
             !ENGINE_set_finish_function(e, osrandom_finish)) {
+        ENGINE_free(e);
         return 0;
     }
     if (!ENGINE_add(e)) {
