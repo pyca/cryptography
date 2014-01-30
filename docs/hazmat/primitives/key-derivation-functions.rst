@@ -85,7 +85,7 @@ Different KDFs are suitable for different tasks such as:
 
     .. method:: derive(key_material)
 
-        :param key_material bytes: The input key material. For PBKDF2 this
+        :param bytes key_material: The input key material. For PBKDF2 this
             should be a password.
         :return bytes: the derived key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -98,9 +98,9 @@ Different KDFs are suitable for different tasks such as:
 
     .. method:: verify(key_material, expected_key)
 
-        :param key_material bytes: The input key material. This is the same as
+        :param bytes key_material: The input key material. This is the same as
                                    ``key_material`` in :meth:`derive`.
-        :param expected_key bytes: The expected result of deriving a new key,
+        :param bytes expected_key: The expected result of deriving a new key,
                                    this is the same as the return value of
                                    :meth:`derive`.
         :raises cryptography.exceptions.InvalidKey: This is raised when the
