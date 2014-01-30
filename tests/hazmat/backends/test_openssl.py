@@ -40,9 +40,6 @@ class TestOpenSSL(object):
     def test_backend_exists(self):
         assert backend
 
-    def test_is_default(self):
-        assert backend == default_backend()
-
     def test_openssl_version_text(self):
         """
         This test checks the value of OPENSSL_VERSION_TEXT.
