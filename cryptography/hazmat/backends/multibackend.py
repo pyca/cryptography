@@ -15,11 +15,14 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends.interfaces import CipherBackend, HashBackend
+from cryptography.hazmat.backends.interfaces import (
+    CipherBackend, HashBackend, HMACBackend
+)
 
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
+@utils.register_interface(HMACBackend)
 class PrioritizedMultiBackend(object):
     name = "multibackend"
 
@@ -52,6 +55,17 @@ class PrioritizedMultiBackend(object):
         for b in self._backends:
             try:
                 return b.create_hash_ctx(algorithm)
+            except UnsupportedAlgorithm:
+                pass
+        raise UnsupportedAlgorithm
+
+    def hmac_supported(self, algorithm):
+        return any(b.hmac_supported(algorithm) for b in self._backends)
+
+    def create_hmac_ctx(self, key, algorithm):
+        for b in self._backends:
+            try:
+                return b.create_hmac_ctx(key, algorithm)
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm
