@@ -16,9 +16,11 @@ from __future__ import absolute_import, division, print_function
 from collections import namedtuple
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InvalidTag
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, InvalidTag, InternalError
+)
 from cryptography.hazmat.backends.interfaces import (
-    HashBackend, HMACBackend, CipherBackend
+    HashBackend, HMACBackend, CipherBackend, PBKDF2HMACBackend
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces, constant_time
@@ -38,6 +40,7 @@ HashMethods = namedtuple(
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
+@utils.register_interface(PBKDF2HMACBackend)
 class Backend(object):
     """
     CommonCrypto API wrapper.
@@ -87,21 +90,19 @@ class Backend(object):
             "sha512": self._lib.kCCHmacAlgSHA512,
         }
 
+        self._supported_pbkdf2_hmac_algorithms = {
+            "sha1": self._lib.kCCPRFHmacAlgSHA1,
+            "sha224": self._lib.kCCPRFHmacAlgSHA224,
+            "sha256": self._lib.kCCPRFHmacAlgSHA256,
+            "sha384": self._lib.kCCPRFHmacAlgSHA384,
+            "sha512": self._lib.kCCPRFHmacAlgSHA512,
+        }
+
     def hash_supported(self, algorithm):
-        try:
-            self._hash_mapping[algorithm.name]
-        except KeyError:
-            return False
-        else:
-            return True
+        return algorithm.name in self._hash_mapping
 
     def hmac_supported(self, algorithm):
-        try:
-            self._supported_hmac_algorithms[algorithm.name]
-        except KeyError:
-            return False
-        else:
-            return True
+        return algorithm.name in self._supported_hmac_algorithms
 
     def create_hash_ctx(self, algorithm):
         return _HashContext(self, algorithm)
@@ -110,11 +111,7 @@ class Backend(object):
         return _HMACContext(self, key, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        try:
-            self._cipher_registry[type(cipher), type(mode)]
-        except KeyError:
-            return False
-        return True
+        return (type(cipher), type(mode)) in self._cipher_registry
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         if isinstance(mode, GCM):
@@ -131,6 +128,28 @@ class Backend(object):
             )
         else:
             return _CipherContext(self, cipher, mode, self._lib.kCCDecrypt)
+
+    def pbkdf2_hmac_supported(self, algorithm):
+        return algorithm.name in self._supported_pbkdf2_hmac_algorithms
+
+    def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
+                           key_material):
+        alg_enum = self._supported_pbkdf2_hmac_algorithms[algorithm.name]
+        buf = self._ffi.new("char[]", length)
+        res = self._lib.CCKeyDerivationPBKDF(
+            self._lib.kCCPBKDF2,
+            key_material,
+            len(key_material),
+            salt,
+            len(salt),
+            alg_enum,
+            iterations,
+            buf,
+            length
+        )
+        self._check_response(res)
+
+        return self._ffi.buffer(buf)[:]
 
     def _register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
                                  mode_const):
@@ -197,8 +216,9 @@ class Backend(object):
                 "the block length"
             )
         else:
-            raise SystemError(
-                "The backend returned an error. Code: {0}".format(response)
+            raise InternalError(
+                "The backend returned an unknown error, consider filing a bug."
+                " Code: {0}.".format(response)
             )
 
 

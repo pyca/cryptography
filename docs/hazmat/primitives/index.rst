@@ -10,5 +10,6 @@ Primitives
     hmac
     symmetric-encryption
     padding
+    key-derivation-functions
     constant-time
     interfaces
