@@ -80,7 +80,6 @@ class DummyPBKDF2HMAC(object):
             raise UnsupportedAlgorithm
 
 
-
 class TestPrioritizedMultiBackend(object):
     def test_ciphers(self):
         backend = PrioritizedMultiBackend([
