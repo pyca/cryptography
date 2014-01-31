@@ -13,14 +13,14 @@ The `OpenSSL`_ C library.
 
         The string name of this backend: ``"openssl"``
 
-    .. method:: register_osrandom_engine()
+    .. method:: activate_osrandom_engine()
 
-        Registers the OS random engine as default. This will effectively
-        disable OpenSSL's default CSPRNG.
+        Activates the OS random engine. This will effectively disable OpenSSL's
+        default CSPRNG.
 
-    .. method:: unregister_osrandom_engine()
+    .. method:: deactivate_osrandom_engine()
 
-        Unregisters the OS random engine if it is default. This will restore
+        Deactivates the OS random engine if it is default. This will restore
         the default OpenSSL CSPRNG. If the OS random engine is not the default
         engine (e.g. if another engine is set as default) nothing will be
         changed.
@@ -44,9 +44,6 @@ protecting us from the ``fork()`` weakness.
 This engine is **active** by default when importing the OpenSSL backend. When
 active this engine will be used to generate all the random data OpenSSL
 requests.
-
-If you wish to deactivate the engine you may call
-``unregister_osrandom_engine()`` on the backend object.
 
 When importing only the binding it is added to the engine list but
 **not activated**.

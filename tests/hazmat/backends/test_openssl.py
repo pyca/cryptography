@@ -88,7 +88,7 @@ dummy_engine = ffi.verify(
 )
 
 
-def register_dummy_engine():
+def activate_dummy_engine():
     current_rand = backend._lib.ENGINE_get_default_RAND()
     assert current_rand != backend._ffi.NULL
     name = backend._lib.ENGINE_get_name(current_rand)
@@ -110,7 +110,7 @@ def register_dummy_engine():
     backend._lib.RAND_cleanup()
 
 
-def unregister_dummy_engine():
+def deactivate_dummy_engine():
     e = backend._lib.ENGINE_get_default_RAND()
     if e != backend._ffi.NULL:
         name = backend._lib.ENGINE_get_name(e)
@@ -233,77 +233,77 @@ class TestOpenSSLRandomEngine(object):
     def teardown_method(self, method):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
-        unregister_dummy_engine()
-        backend.register_osrandom_engine()
+        deactivate_dummy_engine()
+        backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
-    def test_register_osrandom_already_default(self):
+    def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
         assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
-        backend.register_osrandom_engine()
+        backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
         assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
 
-    def test_unregister_osrandom_engine_nothing_registered(self):
-        backend.unregister_osrandom_engine()
+    def test_deactivate_osrandom_engine_nothing_registered(self):
+        backend.deactivate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
-        backend.unregister_osrandom_engine()
+        backend.deactivate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
 
-    def test_unregister_osrandom_engine(self):
+    def test_deactivate_osrandom_engine(self):
         e = backend._lib.ENGINE_get_default_RAND()
         assert e != backend._ffi.NULL
         name = backend._lib.ENGINE_get_name(e)
         assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
-        backend.unregister_osrandom_engine()
+        backend.deactivate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
 
-    def test_register_osrandom_no_default(self):
-        backend.unregister_osrandom_engine()
+    def test_activate_osrandom_no_default(self):
+        backend.deactivate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
-        backend.register_osrandom_engine()
+        backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
         assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
 
-    def test_unregister_osrandom_other_engine_default(self):
-        register_dummy_engine()
+    def test_deactivate_osrandom_other_engine_default(self):
+        activate_dummy_engine()
         default = backend._lib.ENGINE_get_default_RAND()
         default_name = backend._lib.ENGINE_get_name(default)
         assert default_name == dummy_engine.Cryptography_faux_engine_name
         res = backend._lib.ENGINE_finish(default)
         assert res == 1
-        backend.unregister_osrandom_engine()
+        backend.deactivate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == dummy_engine.Cryptography_faux_engine_name
         res = backend._lib.ENGINE_finish(current_default)
         assert res == 1
 
-    def test_register_osrandom_other_engine_default(self):
-        register_dummy_engine()
+    def test_activate_osrandom_other_engine_default(self):
+        activate_dummy_engine()
         default = backend._lib.ENGINE_get_default_RAND()
         default_name = backend._lib.ENGINE_get_name(default)
         assert default_name == dummy_engine.Cryptography_faux_engine_name
         res = backend._lib.ENGINE_finish(default)
         assert res == 1
-        backend.register_osrandom_engine()
+        backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name

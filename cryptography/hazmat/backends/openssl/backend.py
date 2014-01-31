@@ -58,9 +58,9 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
-        self.register_osrandom_engine()
+        self.activate_osrandom_engine()
 
-    def unregister_osrandom_engine(self):
+    def deactivate_osrandom_engine(self):
         e = self._lib.ENGINE_get_default_RAND()
         if e != self._ffi.NULL:
             name = self._lib.ENGINE_get_name(e)
@@ -72,19 +72,19 @@ class Backend(object):
             res = self._lib.ENGINE_finish(e)
             assert res == 1
 
-    def register_osrandom_engine(self):
+    def activate_osrandom_engine(self):
         current_rand = self._lib.ENGINE_get_default_RAND()
         if current_rand != self._ffi.NULL:
             name = self._lib.ENGINE_get_name(current_rand)
             assert name != self._ffi.NULL
             if name != self._lib.Cryptography_osrandom_engine_name:
-                self._register_osrandom_engine()
+                self._activate_osrandom_engine()
             res = self._lib.ENGINE_finish(current_rand)
             assert res == 1
         else:
-            self._register_osrandom_engine()
+            self._activate_osrandom_engine()
 
-    def _register_osrandom_engine(self):
+    def _activate_osrandom_engine(self):
         e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
         assert e != self._ffi.NULL
         res = self._lib.ENGINE_init(e)
