@@ -1,0 +1,274 @@
+RSA-OAEP encryption with intermediate values
+============================================
+
+This file illustrates the process of encrypting a message with 
+the RSA-OAEP encryption scheme as defined in PKCS #1 v2.0. The message 
+to be encrypted is an octet string of length 16, while the size of the 
+modulus in the public key is 1024 bits. The digest algorithm is SHA-1, 
+and the mask generation function is MGF1 as defined in PKCS #1 v2.0 
+with SHA-1 as the underlying hash function.
+
+This file also contains a demonstration of the RSADP decryption 
+primitive with CRT. Finally, BER encodings of the RSA keys are given 
+at the end of the file.
+
+Integers are represented by strings of octets with the leftmost octet 
+being the most significant octet. For example, 9202000 = 8c 69 50.
+=======================================================================
+# Public key
+# ----------
+
+# Modulus:
+bb f8 2f 09 06 82 ce 9c 23 38 ac 2b 9d a8 71 f7 36 8d 07 ee d4 10 43 a4
+40 d6 b6 f0 74 54 f5 1f b8 df ba af 03 5c 02 ab 61 ea 48 ce eb 6f cd 48
+76 ed 52 0d 60 e1 ec 46 19 71 9d 8a 5b 8b 80 7f af b8 e0 a3 df c7 37 72
+3e e6 b4 b7 d9 3a 25 84 ee 6a 64 9d 06 09 53 74 88 34 b2 45 45 98 39 4e
+e0 aa b1 2d 7b 61 a5 1f 52 7a 9a 41 f6 c1 68 7f e2 53 72 98 ca 2a 8f 59
+46 f8 e5 fd 09 1d bd cb
+
+# Public exponent:
+11
+
+# Private key 
+# -----------
+
+# Modulus and public exponent as above.
+
+# Private exponent:
+a5 da fc 53 41 fa f2 89 c4 b9 88 db 30 c1 cd f8 3f 31 25 1e 06 68 b4 27 
+84 81 38 01 57 96 41 b2 94 10 b3 c7 99 8d 6b c4 65 74 5e 5c 39 26 69 d6 
+87 0d a2 c0 82 a9 39 e3 7f dc b8 2e c9 3e da c9 7f f3 ad 59 50 ac cf bc 
+11 1c 76 f1 a9 52 94 44 e5 6a af 68 c5 6c 09 2c d3 8d c3 be f5 d2 0a 93 
+99 26 ed 4f 74 a1 3e dd fb e1 a1 ce cc 48 94 af 94 28 c2 b7 b8 88 3f e4 
+46 3a 4b c8 5b 1c b3 c1 
+
+# Prime 1:		
+ee cf ae 81 b1 b9 b3 c9 08 81 0b 10 a1 b5 60 01 99 eb 9f 44 ae f4 fd a4
+93 b8 1a 9e 3d 84 f6 32 12 4e f0 23 6e 5d 1e 3b 7e 28 fa e7 aa 04 0a 2d
+5b 25 21 76 45 9d 1f 39 75 41 ba 2a 58 fb 65 99
+
+# Prime 2:
+c9 7f b1 f0 27 f4 53 f6 34 12 33 ea aa d1 d9 35 3f 6c 42 d0 88 66 b1 d0
+5a 0f 20 35 02 8b 9d 86 98 40 b4 16 66 b4 2e 92 ea 0d a3 b4 32 04 b5 cf
+ce 33 52 52 4d 04 16 a5 a4 41 e7 00 af 46 15 03
+
+# Prime exponent 1:
+54 49 4c a6 3e ba 03 37 e4 e2 40 23 fc d6 9a 5a eb 07 dd dc 01 83 a4 d0
+ac 9b 54 b0 51 f2 b1 3e d9 49 09 75 ea b7 74 14 ff 59 c1 f7 69 2e 9a 2e
+20 2b 38 fc 91 0a 47 41 74 ad c9 3c 1f 67 c9 81
+
+# Prime exponent 2:
+47 1e 02 90 ff 0a f0 75 03 51 b7 f8 78 86 4c a9 61 ad bd 3a 8a 7e 99 1c
+5c 05 56 a9 4c 31 46 a7 f9 80 3f 8f 6f 8a e3 42 e9 31 fd 8a e4 7a 22 0d
+1b 99 a4 95 84 98 07 fe 39 f9 24 5a 98 36 da 3d
+
+# Coefficient:
+b0 6c 4f da bb 63 01 19 8d 26 5b db ae 94 23 b3 80 f2 71 f7 34 53 88 50
+93 07 7f cd 39 e2 11 9f c9 86 32 15 4f 58 83 b1 67 a9 67 bf 40 2b 4e 9e
+2e 0f 96 56 e6 98 ea 36 66 ed fb 25 79 80 39 f7
+
+# RSA-OAEP encryption of a message with a random salt
+# ---------------------------------------------------
+
+# Message to be encrypted:
+d4 36 e9 95 69 fd 32 a7 c8 a0 5b bc 90 d3 2c 49
+
+# Encoding parameters: the empty string.
+
+# pHash = Hash(encoding parameters):
+da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09
+
+# DB = pHash || Padding || M:
+da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 d4 36 e9 95 69
+fd 32 a7 c8 a0 5b bc 90 d3 2c 49
+
+# seed:
+aa fd 12 f6 59 ca e6 34 89 b4 79 e5 07 6d de c2 f0 6c b5 8f
+
+# dbMask = MGF(seed, length(DB)):
+06 e1 de b2 36 9a a5 a5 c7 07 d8 2c 8e 4e 93 24 8a c7 83 de e0 b2 c0 46
+26 f5 af f9 3e dc fb 25 c9 c2 b3 ff 8a e1 0e 83 9a 2d db 4c dc fe 4f f4
+77 28 b4 a1 b7 c1 36 2b aa d2 9a b4 8d 28 69 d5 02 41 21 43 58 11 59 1b
+e3 92 f9 82 fb 3e 87 d0 95 ae b4 04 48 db 97 2f 3a c1 4e af f4 9c 8c 3b
+7c fc 95 1a 51 ec d1 dd e6 12 64
+
+# maskedDB = DB xor dbMask:
+dc d8 7d 5c 68 f1 ee a8 f5 52 67 c3 1b 2e 8b b4 25 1f 84 d7 e0 b2 c0 46
+26 f5 af f9 3e dc fb 25 c9 c2 b3 ff 8a e1 0e 83 9a 2d db 4c dc fe 4f f4
+77 28 b4 a1 b7 c1 36 2b aa d2 9a b4 8d 28 69 d5 02 41 21 43 58 11 59 1b
+e3 92 f9 82 fb 3e 87 d0 95 ae b4 04 48 db 97 2f 3a c1 4f 7b c2 75 19 52
+81 ce 32 d2 f1 b7 6d 4d 35 3e 2d
+
+# seedMask = MGF(maskedDB, length(seed)):
+41 87 0b 5a b0 29 e6 57 d9 57 50 b5 4c 28 3c 08 72 5d be a9
+
+# maskedSeed = seed xor seedMask:
+eb 7a 19 ac e9 e3 00 63 50 e3 29 50 4b 45 e2 ca 82 31 0b 26
+
+# EM = maskedSeed || maskedDB:
+eb 7a 19 ac e9 e3 00 63 50 e3 29 50 4b 45 e2 ca 82 31 0b 26 dc d8 7d 5c
+68 f1 ee a8 f5 52 67 c3 1b 2e 8b b4 25 1f 84 d7 e0 b2 c0 46 26 f5 af f9
+3e dc fb 25 c9 c2 b3 ff 8a e1 0e 83 9a 2d db 4c dc fe 4f f4 77 28 b4 a1
+b7 c1 36 2b aa d2 9a b4 8d 28 69 d5 02 41 21 43 58 11 59 1b e3 92 f9 82
+fb 3e 87 d0 95 ae b4 04 48 db 97 2f 3a c1 4f 7b c2 75 19 52 81 ce 32 d2
+f1 b7 6d 4d 35 3e 2d
+
+# Ciphertext, the RSA encryption of EM:
+12 53 e0 4d c0 a5 39 7b b4 4a 7a b8 7e 9b f2 a0 39 a3 3d 1e 99 6f c8 2a
+94 cc d3 00 74 c9 5d f7 63 72 20 17 06 9e 52 68 da 5d 1c 0b 4f 87 2c f6
+53 c1 1d f8 23 14 a6 79 68 df ea e2 8d ef 04 bb 6d 84 b1 c3 1d 65 4a 19
+70 e5 78 3b d6 eb 96 a0 24 c2 ca 2f 4a 90 fe 9f 2e f5 c9 c1 40 e5 bb 48
+da 95 36 ad 87 00 c8 4f c9 13 0a de a7 4e 55 8d 51 a7 4d df 85 d8 b5 0d
+e9 68 38 d6 06 3e 09 55
+
+# CRT decryption of a ciphertext
+# -------------------------------
+
+# c, the ciphertext:
+12 53 e0 4d c0 a5 39 7b b4 4a 7a b8 7e 9b f2 a0 39 a3 3d 1e 99 6f c8 2a
+94 cc d3 00 74 c9 5d f7 63 72 20 17 06 9e 52 68 da 5d 1c 0b 4f 87 2c f6
+53 c1 1d f8 23 14 a6 79 68 df ea e2 8d ef 04 bb 6d 84 b1 c3 1d 65 4a 19
+70 e5 78 3b d6 eb 96 a0 24 c2 ca 2f 4a 90 fe 9f 2e f5 c9 c1 40 e5 bb 48
+da 95 36 ad 87 00 c8 4f c9 13 0a de a7 4e 55 8d 51 a7 4d df 85 d8 b5 0d
+e9 68 38 d6 06 3e 09 55
+
+# c mod p:
+de 63 d4 72 35 66 fa a7 59 bf e4 08 82 1d d5 25 72 ec 92 85 4d df 87 a2
+b6 64 d4 4d aa 37 ca 34 6a 05 20 3d 82 ff 2d e8 e3 6c ec 1d 34 f9 8e b6
+05 e2 a7 d2 6d e7 af 36 9c e4 ec ae 14 e3 56 33
+
+# c mod q:
+a2 d9 24 de d9 c3 6d 62 3e d9 a6 5b 5d 86 2c fb ec 8b 19 9c 64 27 9c 54
+14 e6 41 19 6e f1 c9 3c 50 7a 9b 52 13 88 1a ad 05 b4 cc fa 02 8a c1 ec
+61 42 09 74 bf 16 25 83 6b 0b 7d 05 fb b7 53 36
+
+# m1 = c^dP mod p = (c mod p)^dP mod p:
+89 6c a2 6c d7 e4 87 1c 7f c9 68 a8 ed ea 11 e2 71 82 4f 0e 03 65 52 17
+94 f1 e9 e9 43 b4 a4 4b 57 c9 e3 95 a1 46 74 78 f5 26 49 6b 4b b9 1f 1c
+ba ea 90 0f fc 60 2c f0 c6 63 6e ba 84 fc 9f f7
+
+# m2 = = c^dQ mod q = (c mod q)^dQ mod q:
+4e bb 22 75 85 f0 c1 31 2d ca 19 e0 b5 41 db 14 99 fb f1 4e 27 0e 69 8e
+23 9a 8c 27 a9 6c da 9a 74 09 74 de 93 7b 5c 9c 93 ea d9 46 2c 65 75 02
+1a 23 d4 64 99 dc 9f 6b 35 89 75 59 60 8f 19 be
+
+# h = (m1-m2)*qInv mod p:
+01 2b 2b 24 15 0e 76 e1 59 bd 8d db 42 76 e0 7b fa c1 88 e0 8d 60 47 cf
+0e fb 8a e2 ae bd f2 51 c4 0e bc 23 dc fd 4a 34 42 43 94 ad a9 2c fc be
+1b 2e ff bb 60 fd fb 03 35 9a 95 36 8d 98 09 25
+
+# m = m2 + q*h (= EM):
+eb 7a 19 ac e9 e3 00 63 50 e3 29 50 4b 45 e2 ca 82 31 0b 26 dc d8 7d 5c
+68 f1 ee a8 f5 52 67 c3 1b 2e 8b b4 25 1f 84 d7 e0 b2 c0 46 26 f5 af f9
+3e dc fb 25 c9 c2 b3 ff 8a e1 0e 83 9a 2d db 4c dc fe 4f f4 77 28 b4 a1
+b7 c1 36 2b aa d2 9a b4 8d 28 69 d5 02 41 21 43 58 11 59 1b e3 92 f9 82
+fb 3e 87 d0 95 ae b4 04 48 db 97 2f 3a c1 4f 7b c2 75 19 52 81 ce 32 d2
+f1 b7 6d 4d 35 3e 2d
+
+=======================================================================
+# BER encoding of RSA keys:
+
+# RSAPublicKey
+# ============
+        30 81 87 
+# modulus
+           02 81 81  
+              00 bb f8 2f 09 06 82 ce 9c 23 38 ac 2b 9d a8 71 
+              f7 36 8d 07 ee d4 10 43 a4 40 d6 b6 f0 74 54 f5 
+              1f b8 df ba af 03 5c 02 ab 61 ea 48 ce eb 6f cd 
+              48 76 ed 52 0d 60 e1 ec 46 19 71 9d 8a 5b 8b 80 
+              7f af b8 e0 a3 df c7 37 72 3e e6 b4 b7 d9 3a 25 
+              84 ee 6a 64 9d 06 09 53 74 88 34 b2 45 45 98 39 
+              4e e0 aa b1 2d 7b 61 a5 1f 52 7a 9a 41 f6 c1 68 
+              7f e2 53 72 98 ca 2a 8f 59 46 f8 e5 fd 09 1d bd 
+              cb 
+# publicExponent
+           02 01 
+              11
+
+
+# RSAPrivateKey
+# =============
+        30 82 02 5b 
+# version
+           02 01 
+              00
+# modulus
+           02 81 81 
+              00 bb f8 2f 09 06 82 ce 9c 23 38 ac 2b 9d a8 71 
+              f7 36 8d 07 ee d4 10 43 a4 40 d6 b6 f0 74 54 f5 
+              1f b8 df ba af 03 5c 02 ab 61 ea 48 ce eb 6f cd 
+              48 76 ed 52 0d 60 e1 ec 46 19 71 9d 8a 5b 8b 80 
+              7f af b8 e0 a3 df c7 37 72 3e e6 b4 b7 d9 3a 25 
+              84 ee 6a 64 9d 06 09 53 74 88 34 b2 45 45 98 39 
+              4e e0 aa b1 2d 7b 61 a5 1f 52 7a 9a 41 f6 c1 68 
+              7f e2 53 72 98 ca 2a 8f 59 46 f8 e5 fd 09 1d bd 
+              cb 
+# publicExponent
+           02 01 
+              11 
+# privateExponent
+           02 81 81 
+              00 a5 da fc 53 41 fa f2 89 c4 b9 88 db 30 c1 cd 
+              f8 3f 31 25 1e 06 68 b4 27 84 81 38 01 57 96 41 
+              b2 94 10 b3 c7 99 8d 6b c4 65 74 5e 5c 39 26 69 
+              d6 87 0d a2 c0 82 a9 39 e3 7f dc b8 2e c9 3e da 
+              c9 7f f3 ad 59 50 ac cf bc 11 1c 76 f1 a9 52 94 
+              44 e5 6a af 68 c5 6c 09 2c d3 8d c3 be f5 d2 0a 
+              93 99 26 ed 4f 74 a1 3e dd fb e1 a1 ce cc 48 94 
+              af 94 28 c2 b7 b8 88 3f e4 46 3a 4b c8 5b 1c b3 
+              c1 
+# prime1
+           02 41 
+              00 ee cf ae 81 b1 b9 b3 c9 08 81 0b 10 a1 b5 60 
+              01 99 eb 9f 44 ae f4 fd a4 93 b8 1a 9e 3d 84 f6 
+              32 12 4e f0 23 6e 5d 1e 3b 7e 28 fa e7 aa 04 0a 
+              2d 5b 25 21 76 45 9d 1f 39 75 41 ba 2a 58 fb 65 
+              99 
+# prime2
+           02 41 
+              00 c9 7f b1 f0 27 f4 53 f6 34 12 33 ea aa d1 d9 
+              35 3f 6c 42 d0 88 66 b1 d0 5a 0f 20 35 02 8b 9d 
+              86 98 40 b4 16 66 b4 2e 92 ea 0d a3 b4 32 04 b5 
+              cf ce 33 52 52 4d 04 16 a5 a4 41 e7 00 af 46 15 
+              03 
+# exponent1
+           02 40 
+              54 49 4c a6 3e ba 03 37 e4 e2 40 23 fc d6 9a 5a 
+              eb 07 dd dc 01 83 a4 d0 ac 9b 54 b0 51 f2 b1 3e 
+              d9 49 09 75 ea b7 74 14 ff 59 c1 f7 69 2e 9a 2e 
+              20 2b 38 fc 91 0a 47 41 74 ad c9 3c 1f 67 c9 81 
+# exponent2
+           02 40 
+              47 1e 02 90 ff 0a f0 75 03 51 b7 f8 78 86 4c a9 
+              61 ad bd 3a 8a 7e 99 1c 5c 05 56 a9 4c 31 46 a7 
+              f9 80 3f 8f 6f 8a e3 42 e9 31 fd 8a e4 7a 22 0d 
+              1b 99 a4 95 84 98 07 fe 39 f9 24 5a 98 36 da 3d 
+# coefficient
+           02 41
+              00 b0 6c 4f da bb 63 01 19 8d 26 5b db ae 94 23 
+              b3 80 f2 71 f7 34 53 88 50 93 07 7f cd 39 e2 11
+              9f c9 86 32 15 4f 58 83 b1 67 a9 67 bf 40 2b 4e
+              9e 2e 0f 96 56 e6 98 ea 36 66 ed fb 25 79 80 39
+              f7
+
+
+# PrivateKeyInfo (PKCS #8)
+# ========================
+  30 82 02 75
+# version
+     02 01 
+        00
+# privateKeyAlgorithmIdentifier
+     30 0d
+        06 09 
+           2a 86 48 86 f7 0d 01 01 01
+# parameters
+        05 00 
+# privateKey = RSAPrivateKey encoding
+     04 82 02 5f
+# BER encoding of RSAPrivateKey structure
+        30 82 02 5b ... 79 80 39 f7
