@@ -41,10 +41,16 @@ its entropy from ``/dev/urandom`` on UNIX-like operating systems and uses
 allows us to avoid potential issues with `initializing the RNG`_ as well as
 protecting us from the ``fork()`` weakness.
 
-This engine is **active** by default when importing the OpenSSL backend. It is
-added to the engine list but **not activated** if you only import the binding.
-If you wish to deactivate it call ``unregister_osrandom_engine()`` on the
-backend object.
+This engine is **active** by default when importing the OpenSSL backend. When
+active this engine will be used to generate all the random data OpenSSL
+requests.
+
+If you wish to deactivate the engine you may call
+``unregister_osrandom_engine()`` on the backend object.
+
+When importing only the binding it is added to the engine list but
+**not activated**.
+
 
 OS Random Sources
 -----------------
