@@ -11,7 +11,14 @@ The `CommonCrypto`_ C library provided by Apple on OS X and iOS.
 
 .. data:: cryptography.hazmat.backends.commoncrypto.backend
 
-    This is the exposed API for the CommonCrypto backend. It has one public attribute.
+    This is the exposed API for the CommonCrypto backend.
+
+    * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
+
+    It has one additional public attribute.
 
     .. attribute:: name
 
