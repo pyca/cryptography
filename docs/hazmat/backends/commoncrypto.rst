@@ -13,6 +13,8 @@ The `CommonCrypto`_ C library provided by Apple on OS X and iOS.
 
     This is the exposed API for the CommonCrypto backend.
 
+    It implements the following interfaces:
+
     * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
