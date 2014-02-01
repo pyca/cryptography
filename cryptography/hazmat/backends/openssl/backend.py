@@ -182,12 +182,20 @@ class Backend(object):
         if not code and isinstance(mode, GCM):
             raise InvalidTag
         assert code != 0
+
+        # consume any remaining errors on the stack
+        ignored_code = None
+        while ignored_code != 0:
+            ignored_code = self._lib.ERR_get_error()
+
+        # raise the first error we found
+        return self._handle_error_code(code)
+
+    def _handle_error_code(self, code):
         lib = self._lib.ERR_GET_LIB(code)
         func = self._lib.ERR_GET_FUNC(code)
         reason = self._lib.ERR_GET_REASON(code)
-        return self._handle_error_code(lib, func, reason)
 
-    def _handle_error_code(self, lib, func, reason):
         if lib == self._lib.ERR_LIB_EVP:
             if func == self._lib.EVP_F_EVP_ENCRYPTFINAL_EX:
                 if reason == self._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:

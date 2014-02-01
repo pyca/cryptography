@@ -77,24 +77,44 @@ class TestOpenSSL(object):
 
     def test_handle_unknown_error(self):
         with pytest.raises(InternalError):
-            backend._handle_error_code(0, 0, 0)
+            backend._handle_error_code(0)
+
+        backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
+                                   b"test_openssl.py", -1)
+        with pytest.raises(InternalError):
+            backend._handle_error(None)
+
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            0,
+            b"test_openssl.py",
+            -1
+        )
+        with pytest.raises(InternalError):
+            backend._handle_error(None)
+
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+            0,
+            b"test_openssl.py",
+            -1
+        )
+        with pytest.raises(InternalError):
+            backend._handle_error(None)
+
+    def test_handle_multiple_errors(self):
+        for i in range(10):
+            backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
+                                       b"test_openssl.py", -1)
+
+        assert backend._lib.ERR_peek_error() != 0
 
         with pytest.raises(InternalError):
-            backend._handle_error_code(backend._lib.ERR_LIB_EVP, 0, 0)
+            backend._handle_error(None)
 
-        with pytest.raises(InternalError):
-            backend._handle_error_code(
-                backend._lib.ERR_LIB_EVP,
-                backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-                0
-            )
-
-        with pytest.raises(InternalError):
-            backend._handle_error_code(
-                backend._lib.ERR_LIB_EVP,
-                backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                0
-            )
+        assert backend._lib.ERR_peek_error() == 0
 
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLSv1_method()
