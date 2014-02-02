@@ -185,7 +185,7 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
-    def key_length(self):
+    def key_size(self):
         """
         The bit length of the public modulus.
         """
@@ -241,7 +241,7 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
-    def key_length(self):
+    def key_size(self):
         """
         The bit length of the public modulus.
         """

@@ -130,7 +130,7 @@ Asymmetric Interfaces
 
         The public exponent.
 
-    .. attribute:: key_length
+    .. attribute:: key_size
 
         :type: int
 
@@ -179,7 +179,7 @@ Asymmetric Interfaces
 
         The public modulus.
 
-    .. attribute:: key_length
+    .. attribute:: key_size
 
         :type: int
 
