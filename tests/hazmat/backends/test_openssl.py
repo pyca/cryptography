@@ -116,6 +116,23 @@ class TestOpenSSL(object):
 
         assert backend._lib.ERR_peek_error() == 0
 
+    def test_openssl_error_string(self):
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+            0,
+            b"test_openssl.py",
+            -1
+        )
+
+        with pytest.raises(InternalError) as exc:
+            backend._handle_error(None)
+
+        assert (
+            "digital envelope routines:"
+            "EVP_DecryptFinal_ex:digital envelope routines" in str(exc)
+        )
+
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLSv1_method()
         ctx = backend._lib.SSL_CTX_new(meth)
