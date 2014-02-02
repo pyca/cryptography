@@ -14,6 +14,7 @@
 import collections
 import os
 
+import six
 import pytest
 
 
@@ -190,4 +191,80 @@ def load_hash_vectors(vector_data):
                 md = None
         else:
             raise ValueError("Unknown line in hash vector")
+    return vectors
+
+
+def load_pkcs1_vectors(vector_data):
+    """
+    Loads data out of RSA PKCS #1 vector files.
+
+    Currently only returns the key pairs.
+    """
+    private_key_vector = None
+    public_key_vector = None
+    attr = None
+    key = None
+    vectors = []
+    for line in vector_data:
+        if (
+            line.startswith("# Example") or
+            line.startswith("# =============================================")
+        ):
+            if key:
+                assert private_key_vector
+                assert public_key_vector
+
+                for key, value in six.iteritems(public_key_vector):
+                    hex_str = "".join(value).replace(" ", "")
+                    public_key_vector[key] = int(hex_str, 16)
+
+                for key, value in six.iteritems(private_key_vector):
+                    hex_str = "".join(value).replace(" ", "")
+                    private_key_vector[key] = int(hex_str, 16)
+
+                assert (
+                    private_key_vector['public_exponent'] ==
+                    public_key_vector['public_exponent']
+                )
+
+                assert (
+                    private_key_vector['modulus'] ==
+                    public_key_vector['modulus']
+                )
+
+                vectors.append(
+                    (private_key_vector, public_key_vector)
+                )
+
+            public_key_vector = collections.defaultdict(list)
+            private_key_vector = collections.defaultdict(list)
+            key = None
+            attr = None
+
+        if private_key_vector is None or public_key_vector is None:
+            continue
+
+        if line.startswith("# Private key"):
+            key = private_key_vector
+        elif line.startswith("# Public key"):
+            key = public_key_vector
+        elif line.startswith("# Modulus:"):
+            attr = "modulus"
+        elif line.startswith("# Public exponent:"):
+            attr = "public_exponent"
+        elif line.startswith("# Exponent:"):
+            if key is public_key_vector:
+                attr = "public_exponent"
+            else:
+                assert key is private_key_vector
+                attr = "private_exponent"
+        elif line.startswith("# Prime 1:"):
+            attr = "p"
+        elif line.startswith("# Prime 2:"):
+            attr = "q"
+        elif line.startswith("#"):
+            attr = None
+        else:
+            if key is not None and attr is not None:
+                key[attr].append(line.strip())
     return vectors
