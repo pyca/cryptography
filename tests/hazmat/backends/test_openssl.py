@@ -239,6 +239,13 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
+    def test_osrandom_sanity_check(self):
+        # This test serves as a check against catastrophic failure.
+        buf = backend._ffi.new("char[]", 500)
+        res = backend._lib.RAND_bytes(buf, 500)
+        assert res == 1
+        assert backend._ffi.buffer(buf)[:] != "\x00" * 500
+
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
