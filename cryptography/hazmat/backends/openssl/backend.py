@@ -177,6 +177,11 @@ class Backend(object):
 
         return self._ffi.buffer(buf)[:]
 
+    def _err_string(self, code):
+        err_buf = self._ffi.new("char[]", 256)
+        self._lib.ERR_error_string_n(code, err_buf, 256)
+        return self._ffi.string(err_buf, 256)[:]
+
     def _handle_error(self, mode):
         code = self._lib.ERR_get_error()
         if not code and isinstance(mode, GCM):
@@ -211,7 +216,10 @@ class Backend(object):
                     )
 
         raise InternalError(
-            "Unknown error code from OpenSSL, you should probably file a bug."
+            "Unknown error code {0} from OpenSSL, "
+            "you should probably file a bug. {1}".format(
+                code, self._err_string(code)
+            )
         )
 
 
