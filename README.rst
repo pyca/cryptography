@@ -20,6 +20,8 @@ You can find more information in the `documentation`_.
 Discussion
 ~~~~~~~~~~
 
+If you run into bugs, you can file them in our `issue tracker`_.
+
 We maintain a `cryptography-dev`_ mailing list for development discussion.
 
 You can also join ``#cryptography-dev`` on Freenode to ask questions or get
@@ -27,4 +29,5 @@ involved.
 
 
 .. _`documentation`: https://cryptography.io/
+.. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
