@@ -1,5 +1,5 @@
-Installing
-==========
+Installation
+============
 
 You can install ``cryptography`` with ``pip``:
 
@@ -7,10 +7,9 @@ You can install ``cryptography`` with ``pip``:
 
     $ pip install cryptography
 
-Installation Notes
-==================
 On Windows
 ----------
+
 If you're on Windows you'll need to make sure you have OpenSSL installed.
 There are `pre-compiled binaries`_ available. If your installation is in
 an unusual location set the ``LIB`` and ``INCLUDE`` environment variables
