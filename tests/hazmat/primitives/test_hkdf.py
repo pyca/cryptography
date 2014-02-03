@@ -17,7 +17,7 @@ import six
 
 import pytest
 
-from cryptography.exceptions import AlreadyFinalized,
+from cryptography.exceptions import AlreadyFinalized, InvalidKey
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
