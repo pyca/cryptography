@@ -126,7 +126,7 @@ Different KDFs are suitable for different tasks such as:
 
     .. versionadded:: 0.2
 
-    `HKDF`_ (HMAC-based Extract-and-Expand Key Derivation Function) suitable
+    `HKDF`_ (HMAC-based Extract-and-Expand Key Derivation Function) is suitable
     for deriving keys of a fixed size used for other cryptographic operations.
 
     It consists of two distinct phases "Extract" and "Expand".  The "Extract"
@@ -141,8 +141,15 @@ Different KDFs are suitable for different tasks such as:
     :param int length: The desired length of the derived key. Maximum is
         255 * (``algorithm.digest_size`` // 8).
 
-    :param bytes salt: A salt.  If ``None`` is explicitly passed a default salt
-        of ``algorithm.digest_size // 8`` null bytes.
+    :param bytes salt: A salt. Randomizes the KDF's output. Optional, but
+        highly recommended. Ideally as many bits of entropy as the security
+        level of the hash: often that means cryptographically random and as
+        long as the hash output. Worse (shorter, less entropy) salt values can
+        still meaningfully contribute to security. May be reused. Does not have
+        to be secret, but may cause stronger security guarantees if secret; see
+        `RFC 5869`_ and the `HKDF paper`_ for more details. If ``None`` is
+        explicitly passed a default salt of ``algorithm.digest_size // 8`` null
+        bytes will be used.
 
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
@@ -186,4 +193,6 @@ Different KDFs are suitable for different tasks such as:
 .. _`PBKDF2`: http://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: http://en.wikipedia.org/wiki/Scrypt
 .. _`key stretching`: http://en.wikipedia.org/wiki/Key_stretching
-.. _`HKDF`: http://tools.ietf.org/html/rfc5869
+.. _`HKDF`:
+.. _`RFC 5869`: http://tools.ietf.org/html/rfc5869
+.. _`HKDF paper`: http://eprint.iacr.org/2010/264
