@@ -184,9 +184,7 @@ Different KDFs are suitable for different tasks such as:
 
         This checks whether deriving a new key from the supplied
         ``key_material`` generates the same key as the ``expected_key``, and
-        raises an exception if they do not match. This can be used for
-        checking whether the password a user provides matches the stored derived
-        key.
+        raises an exception if they do not match.
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
