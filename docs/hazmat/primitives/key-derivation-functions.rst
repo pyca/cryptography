@@ -129,11 +129,6 @@ Different KDFs are suitable for different tasks such as:
     `HKDF`_ (HMAC-based Extract-and-Expand Key Derivation Function) is suitable
     for deriving keys of a fixed size used for other cryptographic operations.
 
-    It consists of two distinct phases "Extract" and "Expand".  The "Extract"
-    stage takes a low-entropy key and extracts from it a fixed size
-    pseudorandom key.  The "Expand" stage derives a large key of a user
-    determined size from the pseudorandom key.
-
     :param algorithm: An instance of a
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
         provider.
