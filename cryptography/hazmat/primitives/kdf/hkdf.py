@@ -13,12 +13,9 @@
 
 import six
 
-from cryptography import exceptions
 from cryptography import utils
-
-from cryptography.hazmat.primitives import constant_time
-from cryptography.hazmat.primitives import hmac
-from cryptography.hazmat.primitives import interfaces
+from cryptogrpahy.exceptions import AlreadyFinalized, InvalidKey
+from cryptography.hazmat.primitives import constant_time, hmac, interfaces
 
 
 @utils.register_interface(interfaces.KeyDerivationFunction)
@@ -84,11 +81,11 @@ class HKDF(object):
             )
 
         if self._used:
-            raise exceptions.AlreadyFinalized
+            raise AlreadyFinalized
 
         self._used = True
         return self._expand(self._extract(key_material))
 
     def verify(self, key_material, expected_key):
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
-            raise exceptions.InvalidKey
+            raise InvalidKey

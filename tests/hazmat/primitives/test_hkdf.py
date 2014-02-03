@@ -17,7 +17,7 @@ import six
 
 import pytest
 
-from cryptography import exceptions
+from cryptography.exceptions import AlreadyFinalized,
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
@@ -47,7 +47,7 @@ class TestHKDF(object):
 
         hkdf.derive(b"\x01" * 16)
 
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             hkdf.derive(b"\x02" * 16)
 
         hkdf = HKDF(
@@ -60,7 +60,7 @@ class TestHKDF(object):
 
         hkdf.verify(b"\x01" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             hkdf.verify(b"\x02" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
         hkdf = HKDF(
@@ -91,7 +91,7 @@ class TestHKDF(object):
             backend=backend
         )
 
-        with pytest.raises(exceptions.InvalidKey):
+        with pytest.raises(InvalidKey):
             hkdf.verify(b"\x02" * 16, b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u")
 
     def test_unicode_typeerror(self, backend):
