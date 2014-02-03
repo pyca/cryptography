@@ -281,7 +281,7 @@ The HTML documentation index can now be found at
 
 .. _`GitHub`: https://github.com/pyca/cryptography
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
-.. _`PEP 8`: http://www.peps.io/8/
+.. _`PEP 8`: http://www.python.org/dev/peps/pep-0008/
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
 .. _`pytest`: https://pypi.python.org/pypi/pytest
 .. _`tox`: https://pypi.python.org/pypi/tox
