@@ -131,8 +131,8 @@ Different KDFs are suitable for different tasks such as:
 
     It consists of two distinct phases "Extract" and "Expand".  The "Extract"
     stage takes a low-entropy key and extracts from it a fixed size
-    psuedorandom key.  The "Expand" stage derives a large key of a user
-    determined size from the psuedorandom key.
+    pseudorandom key.  The "Expand" stage derives a large key of a user
+    determined size from the pseudorandom key.
 
     :param algorithm: An instance of a
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
