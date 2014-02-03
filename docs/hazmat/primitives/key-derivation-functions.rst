@@ -129,6 +129,32 @@ Different KDFs are suitable for different tasks such as:
     `HKDF`_ (HMAC-based Extract-and-Expand Key Derivation Function) is suitable
     for deriving keys of a fixed size used for other cryptographic operations.
 
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> salt = os.urandom(16)
+        >>> info = b"hkdf-example"
+        >>> hkdf = HKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     salt=salt,
+        ...     info=info,
+        ...     backend=backend
+        ... )
+        >>> key = hkdf.derive(b"input key)
+        >>> hkdf = HKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     salt=salt,
+        ...     info=info,
+        ...     backend=backend
+        ... )
+        >>> hkdf.verify(b"input key", key)
+
     :param algorithm: An instance of a
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
         provider.
