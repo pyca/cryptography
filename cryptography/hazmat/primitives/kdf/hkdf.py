@@ -14,7 +14,7 @@
 import six
 
 from cryptography import utils
-from cryptogrpahy.exceptions import AlreadyFinalized, InvalidKey
+from cryptography.exceptions import AlreadyFinalized, InvalidKey
 from cryptography.hazmat.primitives import constant_time, hmac, interfaces
 
 
