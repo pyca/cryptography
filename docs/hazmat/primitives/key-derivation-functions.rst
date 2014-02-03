@@ -190,9 +190,9 @@ Different KDFs are suitable for different tasks such as:
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
-.. _`PBKDF2`: http://en.wikipedia.org/wiki/PBKDF2
-.. _`scrypt`: http://en.wikipedia.org/wiki/Scrypt
-.. _`key stretching`: http://en.wikipedia.org/wiki/Key_stretching
+.. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
+.. _`scrypt`: https://en.wikipedia.org/wiki/Scrypt
+.. _`key stretching`: https://en.wikipedia.org/wiki/Key_stretching
 .. _`HKDF`:
-.. _`RFC 5869`: http://tools.ietf.org/html/rfc5869
-.. _`HKDF paper`: http://eprint.iacr.org/2010/264
+.. _`RFC 5869`: https://tools.ietf.org/html/rfc5869
+.. _`HKDF paper`: https://eprint.iacr.org/2010/264
