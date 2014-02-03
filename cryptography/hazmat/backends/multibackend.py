@@ -24,7 +24,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
-class PrioritizedMultiBackend(object):
+class MultiBackend(object):
     name = "multibackend"
 
     def __init__(self, backends):
