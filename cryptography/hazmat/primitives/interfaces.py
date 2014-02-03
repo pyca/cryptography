@@ -185,6 +185,12 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
+    def private_exponent(self):
+        """
+        The private exponent of the RSA key.
+        """
+
+    @abc.abstractproperty
     def key_size(self):
         """
         The bit length of the public modulus.
@@ -217,7 +223,8 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def d(self):
         """
-        The private exponent. This can be calculated using p and q.
+        The private exponent. This can be calculated using p and q. Alias for
+        private_exponent.
         """
 
     @abc.abstractproperty
