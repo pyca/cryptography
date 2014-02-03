@@ -145,7 +145,7 @@ Different KDFs are suitable for different tasks such as:
         ...     info=info,
         ...     backend=backend
         ... )
-        >>> key = hkdf.derive(b"input key)
+        >>> key = hkdf.derive(b"input key")
         >>> hkdf = HKDF(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
