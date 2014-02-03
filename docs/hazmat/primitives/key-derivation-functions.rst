@@ -139,7 +139,7 @@ Different KDFs are suitable for different tasks such as:
         provider.
 
     :param int length: The desired length of the derived key. Maximum is
-        255 * (``algorithm.digest_size`` // 8).
+        ``255 * (algorithm.digest_size // 8)``.
 
     :param bytes salt: A salt. Randomizes the KDF's output. Optional, but
         highly recommended. Ideally as many bits of entropy as the security
