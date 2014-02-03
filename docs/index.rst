@@ -28,7 +28,9 @@ existing libraries:
 * Use of poor implementations of algorithms (i.e. ones with known side-channel
   attacks).
 * Lack of high level, "Cryptography for humans", APIs.
-* Absence of algorithms such as AES-GCM.
+* Absence of algorithms such as
+  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Poor introspectability, and thus poor testability.
 * Extremely error prone APIs, and bad defaults.
 
