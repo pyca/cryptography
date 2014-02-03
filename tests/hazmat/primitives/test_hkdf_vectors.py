@@ -24,10 +24,10 @@ from ...utils import load_nist_vectors
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1."
 )
-@pytest.mark.hash
+@pytest.mark.hmac
 class TestHKDFSHA1(object):
     test_HKDFSHA1 = generate_hkdf_test(
         load_nist_vectors,
@@ -38,10 +38,10 @@ class TestHKDFSHA1(object):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
     skip_message="Does not support SHA256."
 )
-@pytest.mark.hash
+@pytest.mark.hmac
 class TestHKDFSHA256(object):
     test_HKDFSHA1 = generate_hkdf_test(
         load_nist_vectors,

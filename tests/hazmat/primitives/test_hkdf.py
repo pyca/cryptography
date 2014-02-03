@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 
-@pytest.mark.hash
+@pytest.mark.hmac
 class TestHKDF(object):
     def test_length_limit(self, backend):
         big_length = 255 * (hashes.SHA256().digest_size // 8) + 1
