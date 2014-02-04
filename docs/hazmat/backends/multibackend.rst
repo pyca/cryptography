@@ -11,4 +11,4 @@ MultiBackend
     which offers the combined features of all of its constituents.
 
     :param backends: A ``list`` of backend objects. Backends are checked for
-                     feature support in the other they exist in this list.
+                     feature support in the order they appear in this list.
