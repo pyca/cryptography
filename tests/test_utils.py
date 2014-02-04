@@ -15,13 +15,13 @@ import os
 import textwrap
 
 import pretend
-
+import six
 import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
     load_openssl_vectors, load_hash_vectors, check_for_iface,
-    check_backend_support, select_backends
+    check_backend_support, select_backends, load_pkcs1_vectors
 )
 
 
@@ -529,3 +529,134 @@ def test_load_nist_gcm_vectors():
          'ct': b'15c4db4cbb451211179d57017f',
          'fail': True},
     ]
+
+
+def test_load_pkcs1_vectors():
+    vector_data = textwrap.dedent("""
+    Test vectors for Cryptography
+    =============================
+
+    This file contains some junk
+
+    # =============================================
+
+    # Example 1: Some numbers I typed in
+    # -----------------------------------
+
+
+    # Public key
+    # ----------
+
+    # Modulus:
+    01 02 03 04 05 06 07 08
+
+    # Exponent:
+    01 ff 01
+
+    # Private key
+    # -----------
+
+    # Modulus:
+    01 02 03 04
+    05 06 07 08
+
+    # Public exponent:
+    01 ff 01
+
+    # Exponent:
+    01 23 45 67 89
+
+    # Prime 1:
+    07
+
+    # Prime 2:
+    03
+
+    # Prime exponent 1:
+    ff
+
+    # Prime exponent 2:
+    aa
+
+    # Coefficient:
+    be ef ca fe
+
+    # =============================================
+
+    # Example 2: Some more numbers I typed in
+    # ---------------------------------------
+
+
+    # Public key
+    # ----------
+
+    # Modulus:
+    99 99 99
+
+    # Exponent:
+    f0 00 00 00 00 00 00 00 00 0b
+
+    # Private key
+    # -----------
+
+    # Modulus:
+    99 99 99
+
+    # Public exponent:
+    f0 00 00 00 00
+    00 00 00 00 0b
+
+    # Exponent:
+    10 01 10 01 10 01 10
+
+    # Prime 1:
+    0b
+
+    # Prime 2:
+    0d
+
+    # Prime exponent 1:
+    ff
+
+    # Prime exponent 2:
+    aa
+
+    # Coefficient:
+    be ef ca fe
+
+    # =============================================
+
+    # There could be some extra stuff here that we don't
+    # support reading yet too.
+    # -------------------------------------------------------
+    """).splitlines()
+
+    vectors = tuple(load_pkcs1_vectors(vector_data))
+    assert vectors == (
+        (
+            {
+                'public_exponent': 130817,
+                'modulus': 72623859790382856,
+                'p': 7,
+                'q': 3,
+                'private_exponent': 4886718345,
+            },
+            {
+                'public_exponent': 130817,
+                'modulus': 72623859790382856,
+            }
+        ),
+        (
+            {
+                'public_exponent': 1133367955888714851287051L,
+                'modulus': 10066329,
+                'p': 11,
+                'q': 13,
+                'private_exponent': 4504767876301072,
+            },
+            {
+                'public_exponent': 1133367955888714851287051L,
+                'modulus': 10066329,
+            }
+        )
+    )
