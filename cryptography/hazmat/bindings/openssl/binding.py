@@ -60,7 +60,7 @@ class Binding(object):
         "nid",
         "objects",
         "opensslv",
-        "osrand_engine",
+        "osrandom_engine",
         "pem",
         "pkcs7",
         "pkcs12",
