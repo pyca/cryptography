@@ -92,7 +92,7 @@ def activate_dummy_engine():
     assert current_rand != backend._ffi.NULL
     name = backend._lib.ENGINE_get_name(current_rand)
     assert name != backend._ffi.NULL
-    assert name != dummy_engine.Cryptography_faux_engine_id
+    assert name != dummy_engine.Cryptography_faux_engine_name
     res = backend._lib.ENGINE_finish(current_rand)
     assert res == 1
     e = backend._lib.ENGINE_by_id(dummy_engine.Cryptography_faux_engine_id)
