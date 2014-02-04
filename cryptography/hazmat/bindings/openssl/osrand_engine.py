@@ -80,6 +80,8 @@ static int osrandom_rand_status(void) {
 POSIX_CUSTOMIZATIONS = """
 static int urandom_fd = -1;
 
+static int osrandom_finish(ENGINE *e);
+
 static int osrandom_init(ENGINE *e) {
     if (urandom_fd > -1) {
         return 1;
