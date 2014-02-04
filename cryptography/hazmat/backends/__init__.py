@@ -12,6 +12,7 @@
 # limitations under the License.
 
 from cryptography.hazmat.backends import openssl
+from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.bindings.commoncrypto.binding import (
     Binding as CommonCryptoBinding
 )
@@ -23,5 +24,7 @@ if CommonCryptoBinding.is_available():
     _ALL_BACKENDS.append(commoncrypto.backend)
 
 
+_default_backend = MultiBackend(_ALL_BACKENDS)
+
 def default_backend():
-    return openssl.backend
+    return _default_backend
