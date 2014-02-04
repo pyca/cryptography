@@ -16,6 +16,7 @@ Changelog
   available, such as CentOS.
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
+* Added :doc:`/hazmat/backends/multibackend`.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~
