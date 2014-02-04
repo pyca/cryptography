@@ -19,7 +19,6 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, InternalError
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -139,9 +138,6 @@ class TestOpenSSL(object):
     def test_backend_exists(self):
         assert backend
 
-    def test_is_default(self):
-        assert backend == default_backend()
-
     def test_openssl_version_text(self):
         """
         This test checks the value of OPENSSL_VERSION_TEXT.
@@ -176,24 +172,61 @@ class TestOpenSSL(object):
 
     def test_handle_unknown_error(self):
         with pytest.raises(InternalError):
-            backend._handle_error_code(0, 0, 0)
+            backend._handle_error_code(0)
+
+        backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
+                                   b"test_openssl.py", -1)
+        with pytest.raises(InternalError):
+            backend._handle_error(None)
+
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            0,
+            b"test_openssl.py",
+            -1
+        )
+        with pytest.raises(InternalError):
+            backend._handle_error(None)
+
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+            0,
+            b"test_openssl.py",
+            -1
+        )
+        with pytest.raises(InternalError):
+            backend._handle_error(None)
+
+    def test_handle_multiple_errors(self):
+        for i in range(10):
+            backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
+                                       b"test_openssl.py", -1)
+
+        assert backend._lib.ERR_peek_error() != 0
 
         with pytest.raises(InternalError):
-            backend._handle_error_code(backend._lib.ERR_LIB_EVP, 0, 0)
+            backend._handle_error(None)
 
-        with pytest.raises(InternalError):
-            backend._handle_error_code(
-                backend._lib.ERR_LIB_EVP,
-                backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-                0
-            )
+        assert backend._lib.ERR_peek_error() == 0
 
-        with pytest.raises(InternalError):
-            backend._handle_error_code(
-                backend._lib.ERR_LIB_EVP,
-                backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                0
-            )
+    def test_openssl_error_string(self):
+        backend._lib.ERR_put_error(
+            backend._lib.ERR_LIB_EVP,
+            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+            0,
+            b"test_openssl.py",
+            -1
+        )
+
+        with pytest.raises(InternalError) as exc:
+            backend._handle_error(None)
+
+        assert (
+            "digital envelope routines:"
+            "EVP_DecryptFinal_ex:digital envelope routines" in str(exc)
+        )
 
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLSv1_method()

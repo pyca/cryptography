@@ -9,6 +9,15 @@ The `OpenSSL`_ C library.
 
     This is the exposed API for the OpenSSL backend.
 
+    It implements the following interfaces:
+
+    * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
+
+    It also exposes the following:
+
     .. attribute:: name
 
         The string name of this backend: ``"openssl"``

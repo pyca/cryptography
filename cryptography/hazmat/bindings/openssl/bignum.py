@@ -16,6 +16,7 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef ... BN_CTX;
 typedef ... BIGNUM;
 /*
  * TODO: This typedef is wrong.
@@ -41,7 +42,13 @@ FUNCTIONS = """
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 
+BIGNUM *BN_copy(BIGNUM *, const BIGNUM *);
+BIGNUM *BN_dup(const BIGNUM *);
+
 int BN_set_word(BIGNUM *, BN_ULONG);
+BN_ULONG BN_get_word(const BIGNUM *);
+
+const BIGNUM *BN_value_one(void);
 
 char *BN_bn2hex(const BIGNUM *);
 int BN_hex2bn(BIGNUM **, const char *);
@@ -51,9 +58,31 @@ int BN_bn2bin(const BIGNUM *, unsigned char *);
 BIGNUM *BN_bin2bn(const unsigned char *, int, BIGNUM *);
 
 int BN_num_bits(const BIGNUM *);
+
+int BN_add(BIGNUM *, const BIGNUM *, const BIGNUM *);
+int BN_sub(BIGNUM *, const BIGNUM *, const BIGNUM *);
+int BN_mul(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+int BN_sqr(BIGNUM *, const BIGNUM *, BN_CTX *);
+int BN_div(BIGNUM *, BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+int BN_nnmod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+int BN_mod_add(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
+               BN_CTX *);
+int BN_mod_sub(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
+               BN_CTX *);
+int BN_mod_mul(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
+               BN_CTX *);
+int BN_mod_sqr(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+int BN_exp(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+int BN_mod_exp(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
+               BN_CTX *);
+int BN_gcd(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+BIGNUM *BN_mod_inverse(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 """
 
 MACROS = """
+int BN_zero(BIGNUM *);
+int BN_one(BIGNUM *);
+int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 """
 
 CUSTOMIZATIONS = """

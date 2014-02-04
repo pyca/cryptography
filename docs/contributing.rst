@@ -41,7 +41,7 @@ follow the directions on the :doc:`security page </security>`.
 Code
 ----
 
-When in doubt, refer to `PEP 8`_ for Python code.
+When in doubt, refer to :pep:`8` for Python code.
 
 Every code file must start with the boilerplate notice of the Apache License.
 Additionally, every Python code file must contain
@@ -287,7 +287,6 @@ The HTML documentation index can now be found at
 
 .. _`GitHub`: https://github.com/pyca/cryptography
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
-.. _`PEP 8`: http://www.peps.io/8/
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
 .. _`pytest`: https://pypi.python.org/pypi/pytest
 .. _`tox`: https://pypi.python.org/pypi/tox

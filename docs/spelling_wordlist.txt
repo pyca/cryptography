@@ -17,6 +17,7 @@ invariants
 iOS
 pickleable
 plaintext
+pseudorandom
 testability
 unencrypted
 unpadded
