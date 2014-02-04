@@ -18,10 +18,10 @@ MultiBackend
         >>> from cryptography.hazmat.primitives import hashes
         >>> backend1.hash_supported(hashes.SHA256())
         False
-        >>> backend2.hash_supported(hashes.SHA1())
+        >>> backend2.hash_supported(hashes.SHA256())
         True
         >>> multi_backend = MultiBackend([backend1, backend2])
-        >>> multi_backend.hash_supported(hashes.SHA1())
+        >>> multi_backend.hash_supported(hashes.SHA256())
         True
 
     :param backends: A ``list`` of backend objects. Backends are checked for
