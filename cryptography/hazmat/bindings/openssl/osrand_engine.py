@@ -48,20 +48,13 @@ static int osrandom_init(ENGINE *e) {
 }
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
-    size_t chunk;
-
     if (hCryptProv == 0) {
         return 0;
     }
 
-    while (size > 0) {
-        chunk = size;
-        if (!CryptGenRandom(hCryptProv, (DWORD)chunk, buffer)) {
-            ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
-            return 0;
-        }
-        buffer += chunk;
-        size -= chunk;
+    if (!CryptGenRandom(hCryptProv, (DWORD)size, buffer)) {
+        ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
+        return 0;
     }
     return 1;
 }
