@@ -94,6 +94,7 @@ static int osrandom_init(ENGINE *e) {
     urandom_fd = open("/dev/urandom", O_RDONLY);
     if (urandom_fd > -1) {
         if (fcntl(urandom_fd, F_SETFD, FD_CLOEXEC) == -1) {
+            osrandom_finish(e);
             return 0;
         }
         return 1;
