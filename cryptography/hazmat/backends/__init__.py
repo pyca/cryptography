@@ -26,5 +26,6 @@ if CommonCryptoBinding.is_available():
 
 _default_backend = MultiBackend(_ALL_BACKENDS)
 
+
 def default_backend():
     return _default_backend
