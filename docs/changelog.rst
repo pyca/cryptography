@@ -15,6 +15,7 @@ Changelog
 * Fixed compilation on systems where OpenSSL's ``ec.h`` header is not
   available, such as CentOS.
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
+* Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~

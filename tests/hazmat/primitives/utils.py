@@ -1,11 +1,15 @@
 import binascii
 import os
 
+import itertools
+
 import pytest
 
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+
 from cryptography.exceptions import (
     AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
 )
@@ -297,3 +301,60 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
     )
     with pytest.raises(ValueError):
         cipher.encryptor()
+
+
+def hkdf_derive_test(backend, algorithm, params):
+    hkdf = HKDF(
+        algorithm,
+        int(params["l"]),
+        salt=binascii.unhexlify(params["salt"]) or None,
+        info=binascii.unhexlify(params["info"]) or None,
+        backend=backend
+    )
+
+    okm = hkdf.derive(binascii.unhexlify(params["ikm"]))
+
+    assert okm == binascii.unhexlify(params["okm"])
+
+
+def hkdf_extract_test(backend, algorithm, params):
+    hkdf = HKDF(
+        algorithm,
+        int(params["l"]),
+        salt=binascii.unhexlify(params["salt"]) or None,
+        info=binascii.unhexlify(params["info"]) or None,
+        backend=backend
+    )
+
+    prk = hkdf._extract(binascii.unhexlify(params["ikm"]))
+
+    assert prk == binascii.unhexlify(params["prk"])
+
+
+def hkdf_expand_test(backend, algorithm, params):
+    hkdf = HKDF(
+        algorithm,
+        int(params["l"]),
+        salt=binascii.unhexlify(params["salt"]) or None,
+        info=binascii.unhexlify(params["info"]) or None,
+        backend=backend
+    )
+
+    okm = hkdf._expand(binascii.unhexlify(params["prk"]))
+
+    assert okm == binascii.unhexlify(params["okm"])
+
+
+def generate_hkdf_test(param_loader, path, file_names, algorithm):
+    all_params = _load_all_params(path, file_names, param_loader)
+
+    all_tests = [hkdf_extract_test, hkdf_expand_test, hkdf_derive_test]
+
+    @pytest.mark.parametrize(
+        ("params", "hkdf_test"),
+        itertools.product(all_params, all_tests)
+    )
+    def test_hkdf(self, backend, params, hkdf_test):
+        hkdf_test(backend, algorithm, params)
+
+    return test_hkdf

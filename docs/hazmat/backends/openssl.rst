@@ -7,7 +7,16 @@ The `OpenSSL`_ C library.
 
 .. data:: cryptography.hazmat.backends.openssl.backend
 
-    This is the exposed API for the OpenSSL backend. It has one public attribute.
+    This is the exposed API for the OpenSSL backend.
+
+    It implements the following interfaces:
+
+    * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
+
+    It has one additional public attribute.
 
     .. attribute:: name
 
