@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 import six
 
 from cryptography import utils
@@ -20,9 +22,9 @@ from cryptography.hazmat.primitives import interfaces
 
 
 def _bit_length(x):
-    try:
+    if sys.version_info >= (2, 7):
         return x.bit_length()
-    except AttributeError:
+    else:
         return len(bin(x)) - (2 + (x <= 0))
 
 
