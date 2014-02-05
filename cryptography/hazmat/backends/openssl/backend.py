@@ -61,11 +61,11 @@ class Backend(object):
         self.activate_osrandom_engine()
 
     def activate_builtin_random(self):
-        # obtains a new structural reference
+        # Obtain a new structural reference.
         e = self._lib.ENGINE_get_default_RAND()
         if e != self._ffi.NULL:
             self._lib.ENGINE_unregister_RAND(e)
-            # this resets the RNG to use the new engine
+            # Reset the RNG to use the new engine.
             self._lib.RAND_cleanup()
             # decrement the structural reference from get_default_RAND
             res = self._lib.ENGINE_finish(e)
@@ -84,13 +84,13 @@ class Backend(object):
         # Set the engine as the default RAND provider.
         res = self._lib.ENGINE_set_default_RAND(e)
         assert res == 1
-        # decrement the structural ref incremented by ENGINE_by_id
+        # Decrement the structural ref incremented by ENGINE_by_id.
         res = self._lib.ENGINE_free(e)
         assert res == 1
-        # decrement the functional ref incremented by ENGINE_init
+        # Decrement the functional ref incremented by ENGINE_init.
         res = self._lib.ENGINE_finish(e)
         assert res == 1
-        # Reset the RNG to use the new engine
+        # Reset the RNG to use the new engine.
         self._lib.RAND_cleanup()
 
     def openssl_version_text(self):
