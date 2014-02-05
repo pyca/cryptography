@@ -56,6 +56,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             pyenv global 3.3.2
             pip install virtualenv
             ;;
+        docs)
+            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            sudo python get-pip.py
+            sudo pip install virtualenv
+            ;;
     esac
     pyenv rehash
 else
