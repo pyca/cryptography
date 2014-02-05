@@ -50,6 +50,8 @@ class TestRSA(object):
         assert skey.key_size == pkey.key_size
         assert skey.key_size == pkey2.key_size
 
+        assert skey.p * skey.q == skey.modulus
+
     def test_invalid_argument_types(self):
         with pytest.raises(TypeError):
             rsa.RSAPrivateKey(None, None, None, None, None)
