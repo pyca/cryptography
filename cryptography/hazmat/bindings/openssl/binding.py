@@ -86,7 +86,8 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
-        # platform check to set the right library names
+        # OpenSSL goes by a different library name on different operating
+        # systems.
         if sys.platform != "win32":
             libraries = ["crypto", "ssl"]
         else:  # pragma: no cover
@@ -98,7 +99,8 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        # OpenSSL is the only binding so for now it must always be available
+        # For now, OpenSSL is considered our "default" binding, so we treat it
+        # as always available.
         return True
 
     @classmethod
@@ -112,15 +114,15 @@ class Binding(object):
                     cls._lock_cb
                 )
 
-            # use Python's implementation if available
-
+            # Use Python's implementation if available, importing _ssl triggers
+            # the setup for this.
             __import__("_ssl")
 
             if cls.lib.CRYPTO_get_locking_callback() != cls.ffi.NULL:
                 return
 
-            # otherwise setup our version
-
+            # If nothing else has setup a locking callback already, we set up
+            # our own
             num_locks = cls.lib.CRYPTO_num_locks()
             cls._locks = [threading.Lock() for n in range(num_locks)]
 
