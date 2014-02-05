@@ -32,9 +32,10 @@ about the timing attacks on KeyCzar and Java's ``MessageDigest.isEqual()``.
         >>> constant_time.bytes_eq(b"foo", b"bar")
         False
 
-    :param a bytes: The left-hand side.
-    :param b bytes: The right-hand side.
-    :returns boolean: True if ``a`` has the same bytes as ``b``.
+    :param bytes a: The left-hand side.
+    :param bytes b: The right-hand side.
+    :returns bool: ``True`` if ``a`` has the same bytes as ``b``, otherwise
+                   ``False``.
 
 
 .. _`Coda Hale's blog post`: http://codahale.com/a-lesson-in-timing-attacks/
