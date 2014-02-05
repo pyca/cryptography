@@ -50,9 +50,43 @@ class TestRSA(object):
         assert skey.key_size == pkey.key_size
         assert skey.key_size == pkey2.key_size
 
-    def test_invalid_arguments(self):
+    def test_invalid_argument_types(self):
         with pytest.raises(TypeError):
             rsa.RSAPrivateKey(None, None, None, None, None)
 
         with pytest.raises(TypeError):
             rsa.RSAPublicKey(None, None)
+
+    def test_invalid_argument_values(self):
+        # tiny example key
+        rsa.RSAPrivateKey(3, 5, 14, 8, 15)
+
+        # modulus too small
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 5, 14, 8, 2)
+
+        # private exp too high
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 5, 16, 8, 15)
+
+        # public exp too low
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 5, 14, 2, 15)
+
+        # public exp too high
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 5, 14, 16, 15)
+
+        rsa.RSAPublicKey(8, 15)
+
+        # modulus too small
+        with pytest.raises(ValueError):
+            rsa.RSAPublicKey(8, 2)
+
+        # public exp too low
+        with pytest.raises(ValueError):
+            rsa.RSAPublicKey(2, 15)
+
+        # public exp too high
+        with pytest.raises(ValueError):
+            rsa.RSAPublicKey(16, 15)

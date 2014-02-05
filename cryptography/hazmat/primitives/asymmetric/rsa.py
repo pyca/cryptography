@@ -35,6 +35,12 @@ class RSAPublicKey(object):
         ):
             raise TypeError("RSAPublicKey arguments must be integers")
 
+        if modulus < 3:
+            raise ValueError("modulus must be >= 3")
+
+        if public_exponent < 3 or public_exponent >= modulus:
+            raise ValueError("public_exponent must be >= 3 and < modulus")
+
         self._public_exponent = public_exponent
         self._modulus = modulus
 
@@ -70,6 +76,15 @@ class RSAPrivateKey(object):
             not isinstance(modulus, six.integer_types)
         ):
             raise TypeError("RSAPrivateKey arguments must be integers")
+
+        if modulus < 3:
+            raise ValueError("modulus must be >= 3")
+
+        if private_exponent >= modulus:
+            raise ValueError("private_exponent must be < modulus")
+
+        if public_exponent < 3 or public_exponent >= modulus:
+            raise ValueError("public_exponent must be >= 3 and < modulus")
 
         self._p = p
         self._q = q
