@@ -11,5 +11,6 @@ Primitives
     symmetric-encryption
     padding
     key-derivation-functions
+    rsa
     constant-time
     interfaces
