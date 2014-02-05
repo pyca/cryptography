@@ -16,7 +16,7 @@ if [[ "${OPENSSL}" == "0.9.8" ]]; then
     fi
 fi
 
-if [[ "${TOX_ENV}" == "docs"]]; then
+if [[ "${TOX_ENV}" == "docs" ]]; then
     if [[ "$(uname -s)" == "Darwin" ]]; then
         brew update
         brew install enchant
