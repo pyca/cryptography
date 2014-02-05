@@ -162,8 +162,11 @@ class Backend(object):
             )
             assert res == 1
         else:
-            # OpenSSL < 1.0.0
-            assert isinstance(algorithm, hashes.SHA1)
+            if not isinstance(algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This version of OpenSSL only supports PBKDF2HMAC with "
+                    "SHA1"
+                )
             res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
                 key_material,
                 len(key_material),
