@@ -88,7 +88,11 @@ static int osrandom_init(ENGINE *e) {
     }
     urandom_fd = open("/dev/urandom", O_RDONLY);
     if (urandom_fd > -1) {
-        if (fcntl(urandom_fd, F_SETFD, FD_CLOEXEC) == -1) {
+        int flags = fcntl(urandom_fd, F_GETFD);
+        if (flags == -1) {
+            osrandom_finish(e);
+            return 0;
+        } else if (fcntl(urandom_fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
             osrandom_finish(e);
             return 0;
         }
@@ -147,7 +151,7 @@ static const char *Cryptography_osrandom_engine_name = "osrandom_engine";
 #endif
 
 /* This replicates the behavior of the OpenSSL FIPS RNG, which returns a
--1 in the event that there is an error when calling RAND_pseudo_bytes.  */
+   -1 in the event that there is an error when calling RAND_pseudo_bytes. */
 static int osrandom_pseudo_rand_bytes(unsigned char *buffer, int size) {
     int res = osrandom_rand_bytes(buffer, size);
     if (res == 0) {
