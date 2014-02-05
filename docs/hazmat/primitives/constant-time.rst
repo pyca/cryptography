@@ -19,8 +19,10 @@ about the timing attacks on KeyCzar and Java's ``MessageDigest.isEqual()``.
 
 .. function:: bytes_eq(a, b)
 
-    Compare ``a`` and ``b`` to one another in constant time if they are of the
-    same length.
+    Compares ``a`` and ``b`` with one another. If ``a`` and ``b`` have
+    different lengths, this returns ``False`` immediately. Otherwise it
+    compares them in a way that takes the same amount of time, regardless of
+    how many characters are the same between the two.
 
     .. doctest::
 
@@ -30,9 +32,10 @@ about the timing attacks on KeyCzar and Java's ``MessageDigest.isEqual()``.
         >>> constant_time.bytes_eq(b"foo", b"bar")
         False
 
-    :param a bytes: The left-hand side.
-    :param b bytes: The right-hand side.
-    :returns boolean: True if ``a`` has the same bytes as ``b``.
+    :param bytes a: The left-hand side.
+    :param bytes b: The right-hand side.
+    :returns bool: ``True`` if ``a`` has the same bytes as ``b``, otherwise
+                   ``False``.
 
 
 .. _`Coda Hale's blog post`: http://codahale.com/a-lesson-in-timing-attacks/

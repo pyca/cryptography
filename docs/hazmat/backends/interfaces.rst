@@ -19,6 +19,11 @@ A specific ``backend`` may provide one or more of these interfaces.
     A backend which provides methods for using ciphers for encryption
     and decryption.
 
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
+
     .. method:: cipher_supported(cipher, mode)
 
         Check if a ``cipher`` and ``mode`` combination is supported by
@@ -76,6 +81,11 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for using cryptographic hash functions.
 
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
+
     .. method:: hash_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
@@ -106,6 +116,11 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for using cryptographic hash functions as message
     authentication codes.
+
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: hmac_supported(algorithm)
 
@@ -139,6 +154,11 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for using PBKDF2 using HMAC as a PRF.
 
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
+
     .. method:: pbkdf2_hmac_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
@@ -171,4 +191,3 @@ A specific ``backend`` may provide one or more of these interfaces.
             the derived key. This is typically a password.
 
         :return bytes: Derived key.
-
