@@ -27,12 +27,9 @@ The `OpenSSL`_ C library.
         Activates the OS random engine. This will effectively disable OpenSSL's
         default CSPRNG.
 
-    .. method:: deactivate_osrandom_engine()
+    .. method:: activate_builtin_random()
 
-        Deactivates the OS random engine if it is default. This will restore
-        the default OpenSSL CSPRNG. If the OS random engine is not the default
-        engine (e.g. if another engine is set as default) nothing will be
-        changed.
+        This will activate the default OpenSSL CSPRNG.
 
 OS Random Engine
 ----------------

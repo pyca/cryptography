@@ -60,41 +60,20 @@ class Backend(object):
         self._register_default_ciphers()
         self.activate_osrandom_engine()
 
-    def deactivate_osrandom_engine(self):
+    def activate_builtin_random(self):
         # obtains a new structural reference
         e = self._lib.ENGINE_get_default_RAND()
         if e != self._ffi.NULL:
-            # this obtains the name of the engine but does not obtain a
-            # structural or functional reference
-            name = self._lib.ENGINE_get_name(e)
-            assert name != self._ffi.NULL
-            if name == self._lib.Cryptography_osrandom_engine_name:
-                # removes the engine provided from the list of available RAND
-                # engines.
-                self._lib.ENGINE_unregister_RAND(e)
-                # this resets the RNG to use the new engine
-                self._lib.RAND_cleanup()
+            self._lib.ENGINE_unregister_RAND(e)
+            # this resets the RNG to use the new engine
+            self._lib.RAND_cleanup()
             # decrement the structural reference from get_default_RAND
             res = self._lib.ENGINE_finish(e)
             assert res == 1
 
     def activate_osrandom_engine(self):
-        # obtains a new structural reference
-        current_rand = self._lib.ENGINE_get_default_RAND()
-        if current_rand != self._ffi.NULL:
-            # this obtains the name of the engine but does not obtain a
-            # structural or functional reference
-            name = self._lib.ENGINE_get_name(current_rand)
-            assert name != self._ffi.NULL
-            if name != self._lib.Cryptography_osrandom_engine_name:
-                self._activate_osrandom_engine()
-            # decrement the structural reference from get_default_RAND
-            res = self._lib.ENGINE_finish(current_rand)
-            assert res == 1
-        else:
-            self._activate_osrandom_engine()
-
-    def _activate_osrandom_engine(self):
+        # Unregister and free the current engine.
+        self.activate_builtin_random()
         # Fetches an engine by id and returns it. This creates a structural
         # reference.
         e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
