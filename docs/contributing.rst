@@ -43,6 +43,8 @@ Code
 
 When in doubt, refer to :pep:`8` for Python code.
 
+`Write comments as complete sentences.`_
+
 Every code file must start with the boilerplate notice of the Apache License.
 Additionally, every Python code file must contain
 
@@ -287,6 +289,7 @@ The HTML documentation index can now be found at
 
 .. _`GitHub`: https://github.com/pyca/cryptography
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
+.. _`Write comments as complete sentences.`: http://nedbatchelder.com/blog/201401/comments_should_be_sentences.html
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
 .. _`pytest`: https://pypi.python.org/pypi/pytest
 .. _`tox`: https://pypi.python.org/pypi/tox
