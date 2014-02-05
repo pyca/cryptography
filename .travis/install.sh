@@ -16,9 +16,14 @@ if [[ "${OPENSSL}" == "0.9.8" ]]; then
     fi
 fi
 
-if [[ "${TOX_ENV}" == "docs" && "$(name -s)" != "Darwin" ]]; then
-    sudo apt-get -y update
-    sudo apt-get install libenchant-dev
+if [[ "${TOX_ENV}" == "docs" ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        brew update
+        brew install enchant
+    else
+        sudo apt-get -y update
+        sudo apt-get install libenchant-dev
+    fi
 fi
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -50,6 +55,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             pyenv install 3.3.2
             pyenv global 3.3.2
             pip install virtualenv
+            ;;
+        docs)
+            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            sudo python get-pip.py
+            sudo pip install virtualenv
             ;;
     esac
     pyenv rehash
