@@ -40,11 +40,16 @@ class TestRSA(object):
 
         assert skey.modulus
         assert skey.modulus == pkey.modulus
+        assert skey.modulus == skey.n
         assert skey.public_exponent == pkey.public_exponent
+        assert skey.public_exponent == skey.e
+        assert skey.private_exponent == skey.d
 
         assert pkey.modulus
         assert pkey.modulus == pkey2.modulus
+        assert pkey.modulus == pkey.n
         assert pkey.public_exponent == pkey2.public_exponent
+        assert pkey.public_exponent == pkey.e
 
         assert skey.key_size
         assert skey.key_size == pkey.key_size
