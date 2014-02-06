@@ -53,7 +53,9 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     }
 
     if (!CryptGenRandom(hCryptProv, (DWORD)size, buffer)) {
-        ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
+        ERR_put_error(
+            ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom_engine.py", 0
+        );
         return 0;
     }
     return 1;
@@ -109,7 +111,9 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
             n = read(urandom_fd, buffer, (size_t)size);
         } while (n < 0 && errno == EINTR);
         if (n <= 0) {
-            ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
+            ERR_put_error(
+                ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom_engine.py", 0
+            );
             return 0;
         }
         buffer += n;
@@ -145,9 +149,9 @@ static const char *Cryptography_osrandom_engine_id = "osrandom";
 static const char *Cryptography_osrandom_engine_name = "osrandom_engine";
 
 #if defined(_WIN32)
-""" + WIN32_CUSTOMIZATIONS + """
+%(WIN32_CUSTOMIZATIONS)s
 #else
-""" + POSIX_CUSTOMIZATIONS + """
+%(POSIX_CUSTOMIZATIONS)s
 #endif
 
 /* This replicates the behavior of the OpenSSL FIPS RNG, which returns a
@@ -193,6 +197,9 @@ int Cryptography_add_osrandom_engine(void) {
 
     return 1;
 }
-"""
+""" % {
+    "WIN32_CUSTOMIZATIONS": WIN32_CUSTOMIZATIONS,
+    "POSIX_CUSTOMIZATIONS": POSIX_CUSTOMIZATIONS,
+}
 
 CONDITIONAL_NAMES = {}
