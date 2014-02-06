@@ -53,7 +53,9 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     }
 
     if (!CryptGenRandom(hCryptProv, (DWORD)size, buffer)) {
-        ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
+        ERR_put_error(
+            ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom_engine.py", 0
+        );
         return 0;
     }
     return 1;
@@ -109,7 +111,9 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
             n = read(urandom_fd, buffer, (size_t)size);
         } while (n < 0 && errno == EINTR);
         if (n <= 0) {
-            ERR_put_error(ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom.py", 0);
+            ERR_put_error(
+                ERR_LIB_RAND, 0, ERR_R_RAND_LIB, "osrandom_engine.py", 0
+            );
             return 0;
         }
         buffer += n;
