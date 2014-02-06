@@ -82,11 +82,20 @@ class RSAPrivateKey(object):
         if modulus < 3:
             raise ValueError("modulus must be >= 3")
 
+        if p >= modulus:
+            raise ValueError("p must be < modulus")
+
+        if q >= modulus:
+            raise ValueError("q must be < modulus")
+
         if private_exponent >= modulus:
             raise ValueError("private_exponent must be < modulus")
 
         if public_exponent < 3 or public_exponent >= modulus:
             raise ValueError("public_exponent must be >= 3 and < modulus")
+
+        if p * q != modulus:
+            raise ValueError("p*q must equal modulus")
 
         self._p = p
         self._q = q

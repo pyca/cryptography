@@ -22,9 +22,9 @@ RSA
 
     :raises TypeError: This is raised when the arguments are not all integers. 
 
-    :raises ValueError: This is raised when the values of `private_exponent`,
-                        `public_exponent` or `modulus` do not match the bounds
-                        specified in `RFC 3447`_
+    :raises ValueError: This is raised when the values of `p`, `q`,
+                        `private_exponent`, `public_exponent` or `modulus` do 
+                        not match the bounds specified in `RFC 3447`_.
 
 .. class:: RSAPublicKey(public_exponent, modulus)
     

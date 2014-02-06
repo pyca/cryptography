@@ -72,6 +72,18 @@ class TestRSA(object):
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(3, 5, 14, 8, 2)
 
+        # modulus wrong
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 5, 14, 8, 16)
+
+        # p too high
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(16, 5, 14, 8, 15)
+
+        # q too high
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 16, 14, 8, 15)
+
         # private exp too high
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(3, 5, 16, 8, 15)
