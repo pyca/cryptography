@@ -58,6 +58,40 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
+        self.activate_osrandom_engine()
+
+    def activate_builtin_random(self):
+        # Obtain a new structural reference.
+        e = self._lib.ENGINE_get_default_RAND()
+        if e != self._ffi.NULL:
+            self._lib.ENGINE_unregister_RAND(e)
+            # Reset the RNG to use the new engine.
+            self._lib.RAND_cleanup()
+            # decrement the structural reference from get_default_RAND
+            res = self._lib.ENGINE_finish(e)
+            assert res == 1
+
+    def activate_osrandom_engine(self):
+        # Unregister and free the current engine.
+        self.activate_builtin_random()
+        # Fetches an engine by id and returns it. This creates a structural
+        # reference.
+        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
+        assert e != self._ffi.NULL
+        # Initialize the engine for use. This adds a functional reference.
+        res = self._lib.ENGINE_init(e)
+        assert res == 1
+        # Set the engine as the default RAND provider.
+        res = self._lib.ENGINE_set_default_RAND(e)
+        assert res == 1
+        # Decrement the structural ref incremented by ENGINE_by_id.
+        res = self._lib.ENGINE_free(e)
+        assert res == 1
+        # Decrement the functional ref incremented by ENGINE_init.
+        res = self._lib.ENGINE_finish(e)
+        assert res == 1
+        # Reset the RNG to use the new engine.
+        self._lib.RAND_cleanup()
 
     def openssl_version_text(self):
         """

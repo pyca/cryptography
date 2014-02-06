@@ -152,3 +152,72 @@ class TestOpenSSL(object):
             pytest.skip("Requires an older OpenSSL")
         with pytest.raises(UnsupportedAlgorithm):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
+
+    # This test is not in the next class because to check if it's really
+    # default we don't want to run the setup_method before it
+    def test_osrandom_engine_is_default(self):
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
+
+
+class TestOpenSSLRandomEngine(object):
+    def teardown_method(self, method):
+        # we need to reset state to being default. backend is a shared global
+        # for all these tests.
+        backend.activate_osrandom_engine()
+        current_default = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(current_default)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+
+    def test_osrandom_sanity_check(self):
+        # This test serves as a check against catastrophic failure.
+        buf = backend._ffi.new("char[]", 500)
+        res = backend._lib.RAND_bytes(buf, 500)
+        assert res == 1
+        assert backend._ffi.buffer(buf)[:] != "\x00" * 500
+
+    def test_activate_osrandom_already_default(self):
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
+        backend.activate_osrandom_engine()
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
+
+    def test_activate_osrandom_no_default(self):
+        backend.activate_builtin_random()
+        e = backend._lib.ENGINE_get_default_RAND()
+        assert e == backend._ffi.NULL
+        backend.activate_osrandom_engine()
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
+
+    def test_activate_builtin_random(self):
+        e = backend._lib.ENGINE_get_default_RAND()
+        assert e != backend._ffi.NULL
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
+        backend.activate_builtin_random()
+        e = backend._lib.ENGINE_get_default_RAND()
+        assert e == backend._ffi.NULL
+
+    def test_activate_builtin_random_already_active(self):
+        backend.activate_builtin_random()
+        e = backend._lib.ENGINE_get_default_RAND()
+        assert e == backend._ffi.NULL
+        backend.activate_builtin_random()
+        e = backend._lib.ENGINE_get_default_RAND()
+        assert e == backend._ffi.NULL

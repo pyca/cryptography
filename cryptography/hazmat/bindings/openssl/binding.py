@@ -60,6 +60,7 @@ class Binding(object):
         "nid",
         "objects",
         "opensslv",
+        "osrandom_engine",
         "pem",
         "pkcs7",
         "pkcs12",
@@ -91,11 +92,13 @@ class Binding(object):
         if sys.platform != "win32":
             libraries = ["crypto", "ssl"]
         else:  # pragma: no cover
-            libraries = ["libeay32", "ssleay32"]
+            libraries = ["libeay32", "ssleay32", "advapi32"]
 
         cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
                                      _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
                                      libraries)
+        res = cls.lib.Cryptography_add_osrandom_engine()
+        assert res == 1
 
     @classmethod
     def is_available(cls):

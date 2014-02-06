@@ -17,6 +17,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Added :doc:`/hazmat/backends/multibackend`.
+* Set default random for the :doc:`/hazmat/backends/openssl` to the OS random engine.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~
