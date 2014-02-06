@@ -149,9 +149,9 @@ static const char *Cryptography_osrandom_engine_id = "osrandom";
 static const char *Cryptography_osrandom_engine_name = "osrandom_engine";
 
 #if defined(_WIN32)
-""" + WIN32_CUSTOMIZATIONS + """
+%(WIN32_CUSTOMIZATIONS)s
 #else
-""" + POSIX_CUSTOMIZATIONS + """
+%(POSIX_CUSTOMIZATIONS)s
 #endif
 
 /* This replicates the behavior of the OpenSSL FIPS RNG, which returns a
@@ -197,6 +197,9 @@ int Cryptography_add_osrandom_engine(void) {
 
     return 1;
 }
-"""
+""" % {
+    "WIN32_CUSTOMIZATIONS": WIN32_CUSTOMIZATIONS,
+    "POSIX_CUSTOMIZATIONS": POSIX_CUSTOMIZATIONS,
+}
 
 CONDITIONAL_NAMES = {}
