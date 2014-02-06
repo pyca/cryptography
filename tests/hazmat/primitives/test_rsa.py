@@ -14,6 +14,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -25,7 +27,8 @@ class TestRSA(object):
     @pytest.mark.parametrize(
         "pkcs1_example",
         load_vectors_from_file(
-            "asymmetric/RSA/pkcs-1v2-1d2-vec/pss-vect.txt",
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
             load_pkcs1_vectors
         )
     )
