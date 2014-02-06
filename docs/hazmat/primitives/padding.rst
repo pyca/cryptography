@@ -54,11 +54,11 @@ multiple of the block size.
 
 .. class:: PaddingContext
 
-    When calling ``padder()`` or ``unpadder()`` you will receive a return
-    object conforming to the ``PaddingContext`` interface. You can then call
-    ``update(data)`` with data until you have fed everything into the context.
-    Once that is done call ``finalize()`` to finish the operation and obtain
-    the remainder of the data.
+    When calling ``padder()`` or ``unpadder()`` the result will conform to the
+    ``PaddingContext`` interface. You can then call ``update(data)`` with data
+    until you have fed everything into the context. Once that is done call
+    ``finalize()`` to finish the operation and obtain the remainder of the
+    data.
 
     .. method:: update(data)
 

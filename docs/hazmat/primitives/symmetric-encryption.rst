@@ -388,10 +388,10 @@ Interfaces
 .. class:: CipherContext
 
     When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
-    you will receive a return object conforming to the ``CipherContext``
-    interface. You can then call ``update(data)`` with data until you have fed
-    everything into the context. Once that is done call ``finalize()`` to
-    finish the operation and obtain the remainder of the data.
+    the result will conform to the ``CipherContext`` interface. You can then
+    call ``update(data)`` with data until you have fed everything into the
+    context. Once that is done call ``finalize()`` to finish the operation and
+    obtain the remainder of the data.
 
     Block ciphers require that plaintext or ciphertext always be a multiple of
     their block size, because of that **padding** is sometimes required to make
@@ -429,14 +429,14 @@ Interfaces
 
     When calling ``encryptor()`` or ``decryptor()`` on a ``Cipher`` object
     with an AEAD mode (e.g.
-    :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`) you will receive
-    a return object conforming to the ``AEADCipherContext`` and
-    ``CipherContext`` interfaces. If it is an encryption context it will
-    additionally be an ``AEADEncryptionContext`` interface.
-    ``AEADCipherContext`` contains an additional method
-    ``authenticate_additional_data`` for adding additional authenticated but
-    unencrypted data (see note below). You should call this before calls to
-    ``update``. When you are done call ``finalize()`` to finish the operation.
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`) the result will
+    conform to the ``AEADCipherContext`` and ``CipherContext`` interfaces. If
+    it is an encryption context it will additionally be an
+    ``AEADEncryptionContext`` interface. ``AEADCipherContext`` contains an
+    additional method ``authenticate_additional_data`` for adding additional
+    authenticated but unencrypted data (see note below). You should call this
+    before calls to ``update``. When you are done call ``finalize()`` to finish
+    the operation.
 
     .. note::
 
