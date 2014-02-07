@@ -191,3 +191,24 @@ A specific ``backend`` may provide one or more of these interfaces.
             the derived key. This is typically a password.
 
         :return bytes: Derived key.
+
+
+.. class:: RSABackend
+
+    .. versionadded:: 0.2
+
+    A backend with methods for using RSA.
+
+    .. method:: generate_rsa_private_key(public_exponent, bit_length)
+
+        :param int public_exponent: The public exponent of the new key.
+            Often one of the small Fermat primes 3, 5, 17, 257 or 65537.
+
+        :param int bit_length: The length in bits of the modulus. Should be
+            at least 2048.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :raises ValueError: If the public_exponent is not valid.

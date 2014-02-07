@@ -81,3 +81,12 @@ class PBKDF2HMACBackend(six.with_metaclass(abc.ABCMeta)):
         """
         Return length bytes derived from provided PBKDF2 parameters.
         """
+
+
+class RSABackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def generate_rsa_private_key(self, public_exponent, bit_length):
+        """
+        Generate an RSAPrivateKey instance with public_exponent and a modulus
+        of bit_length bits.
+        """
