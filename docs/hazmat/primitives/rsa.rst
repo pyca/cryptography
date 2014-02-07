@@ -16,6 +16,13 @@ RSA
     Normally you do not need to directly construct private keys because you'll
     be loading them from a file or generating them automatically.
 
+    .. warning::
+        This method only checks a limited set of properties of its arguments.
+        Using an RSA that you do not trust or with incorrect parameters may
+        lead to insecure operation, crashes, and other undefined behavior. We
+        recommend that you only ever load private keys that were generated with
+        software you trust.
+
     This class conforms to the
     :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
     interface.
