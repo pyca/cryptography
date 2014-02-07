@@ -60,63 +60,114 @@ class TestRSA(object):
 
         assert skey.p * skey.q == skey.modulus
 
-    def test_invalid_argument_types(self):
+    def test_invalid_private_key_argument_types(self):
         with pytest.raises(TypeError):
             rsa.RSAPrivateKey(None, None, None, None, None)
 
+    def test_invalid_public_key_argument_types(self):
         with pytest.raises(TypeError):
             rsa.RSAPublicKey(None, None)
 
-    def test_invalid_argument_values(self):
-        # tiny example key
-        rsa.RSAPrivateKey(3, 5, 14, 7, 15)
+    def test_invalid_private_key_argument_values(self):
+        # Start with p=3, q=5, private_exponent=14, public_exponent=7,
+        # modulus=15. Then change one value at a time to test the bounds.
 
-        # modulus too small
+        # Test a modulus < 3.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 7, 2)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=5,
+                private_exponent=14,
+                public_exponent=7,
+                modulus=2
+            )
 
-        # modulus wrong
+        # Test a modulus != p * q.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 7, 16)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=5,
+                private_exponent=14,
+                public_exponent=7,
+                modulus=16
+            )
 
-        # p too high
+        # Test a p > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(16, 5, 14, 7, 15)
+            rsa.RSAPrivateKey(
+                p=16,
+                q=5,
+                private_exponent=14,
+                public_exponent=7,
+                modulus=15
+            )
 
-        # q too high
+        # Test a q > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 16, 14, 7, 15)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=16,
+                private_exponent=14,
+                public_exponent=7,
+                modulus=15
+            )
 
-        # private exp too high
+        # Test a private_exponent > modulus
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 16, 7, 15)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=5,
+                private_exponent=16,
+                public_exponent=7,
+                modulus=15
+            )
 
-        # public exp too low
+        # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 1, 15)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=5,
+                private_exponent=14,
+                public_exponent=1,
+                modulus=15
+            )
 
-        # public exp too high
+        # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 17, 15)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=5,
+                private_exponent=14,
+                public_exponent=17,
+                modulus=15
+            )
 
-        # public exp not odd
+        # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 8, 15)
+            rsa.RSAPrivateKey(
+                p=3,
+                q=5,
+                private_exponent=14,
+                public_exponent=6,
+                modulus=15
+            )
 
-        rsa.RSAPublicKey(7, 15)
+    def test_invalid_public_key_argument_values(self):
+        # Start with public_exponent=7, modulus=15. Then change one value at a
+        # time to test the bounds.
 
-        # modulus too small
+        # Test a modulus < 3.
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(7, 2)
+            rsa.RSAPublicKey(public_exponent=7, modulus=2)
 
-        # public exp too low
+        # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(1, 15)
+            rsa.RSAPublicKey(public_exponent=1, modulus=15)
 
-        # public exp too high
+        # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(17, 15)
+            rsa.RSAPublicKey(public_exponent=17, modulus=15)
 
-        # public exp not odd
+        # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(8, 15)
+            rsa.RSAPublicKey(public_exponent=6, modulus=15)
