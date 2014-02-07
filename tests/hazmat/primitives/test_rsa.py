@@ -69,46 +69,54 @@ class TestRSA(object):
 
     def test_invalid_argument_values(self):
         # tiny example key
-        rsa.RSAPrivateKey(3, 5, 14, 8, 15)
+        rsa.RSAPrivateKey(3, 5, 14, 7, 15)
 
         # modulus too small
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 8, 2)
+            rsa.RSAPrivateKey(3, 5, 14, 7, 2)
 
         # modulus wrong
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 8, 16)
+            rsa.RSAPrivateKey(3, 5, 14, 7, 16)
 
         # p too high
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(16, 5, 14, 8, 15)
+            rsa.RSAPrivateKey(16, 5, 14, 7, 15)
 
         # q too high
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 16, 14, 8, 15)
+            rsa.RSAPrivateKey(3, 16, 14, 7, 15)
 
         # private exp too high
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 16, 8, 15)
+            rsa.RSAPrivateKey(3, 5, 16, 7, 15)
 
         # public exp too low
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 2, 15)
+            rsa.RSAPrivateKey(3, 5, 14, 1, 15)
 
         # public exp too high
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(3, 5, 14, 16, 15)
+            rsa.RSAPrivateKey(3, 5, 14, 17, 15)
 
-        rsa.RSAPublicKey(8, 15)
+        # public exp not odd
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(3, 5, 14, 8, 15)
+
+        rsa.RSAPublicKey(7, 15)
 
         # modulus too small
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(8, 2)
+            rsa.RSAPublicKey(7, 2)
 
         # public exp too low
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(2, 15)
+            rsa.RSAPublicKey(1, 15)
 
         # public exp too high
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(16, 15)
+            rsa.RSAPublicKey(17, 15)
+
+        # public exp not odd
+        with pytest.raises(ValueError):
+            rsa.RSAPublicKey(8, 15)

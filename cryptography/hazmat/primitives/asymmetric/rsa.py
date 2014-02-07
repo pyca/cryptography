@@ -43,6 +43,9 @@ class RSAPublicKey(object):
         if public_exponent < 3 or public_exponent >= modulus:
             raise ValueError("public_exponent must be >= 3 and < modulus")
 
+        if public_exponent & 1 == 0:
+            raise ValueError("public_exponent must be odd")
+
         self._public_exponent = public_exponent
         self._modulus = modulus
 
@@ -93,6 +96,9 @@ class RSAPrivateKey(object):
 
         if public_exponent < 3 or public_exponent >= modulus:
             raise ValueError("public_exponent must be >= 3 and < modulus")
+
+        if public_exponent & 1 == 0:
+            raise ValueError("public_exponent must be odd")
 
         if p * q != modulus:
             raise ValueError("p*q must equal modulus")
