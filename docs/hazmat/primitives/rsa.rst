@@ -51,7 +51,7 @@ RSA
 
     :raises ValueError: This is raised when the values of `public_exponent` or
                         `modulus` do not match the bounds specified in
-                        `RFC 3447`_
+                        `RFC 3447`_.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
