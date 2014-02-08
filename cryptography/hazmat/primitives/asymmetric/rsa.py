@@ -109,6 +109,10 @@ class RSAPrivateKey(object):
         self._public_exponent = public_exponent
         self._modulus = modulus
 
+    @classmethod
+    def generate(self, public_exponent, key_size, backend):
+        return backend.generate_rsa_private_key(public_exponent, key_size)
+
     @property
     def key_size(self):
         return _bit_length(self.modulus)
