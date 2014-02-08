@@ -85,8 +85,8 @@ class PBKDF2HMACBackend(six.with_metaclass(abc.ABCMeta)):
 
 class RSABackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
-    def generate_rsa_private_key(self, public_exponent, bit_length):
+    def generate_rsa_private_key(self, public_exponent, key_size):
         """
         Generate an RSAPrivateKey instance with public_exponent and a modulus
-        of bit_length bits.
+        of key_size bits.
         """
