@@ -18,7 +18,7 @@ software.
 Performing the release
 ----------------------
 
-The commit which merged the version number bump is now the official release
+The commit that merged the version number bump is now the official release
 commit for this release. You will need to have ``gpg`` installed and a ``gpg``
 key in order to do a release. Once this has happened:
 

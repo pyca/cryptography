@@ -16,7 +16,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
 .. class:: CipherBackend
 
-    A backend which provides methods for using ciphers for encryption
+    A backend that provides methods for using ciphers for encryption
     and decryption.
 
     The following backends implement this interface:

@@ -67,7 +67,7 @@ message.
         :meth:`finalize` and get an intermediate digest value while we continue
         to call :meth:`update` on the original.
 
-        :return: A new instance of :class:`HMAC` which can be updated
+        :return: A new instance of :class:`HMAC` that can be updated
             and finalized independently of the original instance.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
 

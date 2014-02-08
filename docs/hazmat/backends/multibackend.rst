@@ -10,7 +10,7 @@ MultiBackend
     .. versionadded:: 0.2
 
     This class allows you to combine multiple backends into a single backend
-    which offers the combined features of all of its constituents.
+    that offers the combined features of all of its constituents.
 
     .. code-block:: pycon
 
