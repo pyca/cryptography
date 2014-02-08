@@ -22,7 +22,7 @@ devastating, ``cryptography`` has a strict code review policy:
 * A committer may *never* merge their own pull request, a second party must
   merge their changes. If multiple people work on a pull request, it must be
   merged by someone who did not work on it.
-* A patch which breaks tests, or introduces regressions by changing or removing
+* A patch that breaks tests, or introduces regressions by changing or removing
   existing tests should not be merged. Tests must always be passing on
   ``master``.
 * If somehow the tests get into a failing state on ``master`` (such as by a
@@ -33,7 +33,7 @@ devastating, ``cryptography`` has a strict code review policy:
   :doc:`/changelog`.
 
 The purpose of these policies is to minimize the chances we merge a change
-which jeopardizes our users' security.
+that jeopardizes our users' security.
 
 If you believe you've identified a security issue in ``cryptography``, please
 follow the directions on the :doc:`security page </security>`.
@@ -58,10 +58,10 @@ and make hard things possible". One of the perils of writing cryptographic code
 is that secure code looks just like insecure code, and its results are almost
 always indistinguishable. As a result ``cryptography`` has, as a design
 philosophy: "make it hard to do insecure things". Here are a few strategies for
-API design which should be both followed, and should inspire other API choices:
+API design that should be both followed, and should inspire other API choices:
 
 If it is necessary to compare a user provided value with a computed value (for
-example, verifying a signature), there should be an API provided which performs
+example, verifying a signature), there should be an API provided that performs
 the verification in a secure way (for example, using a constant time
 comparison), rather than requiring the user to perform the comparison
 themselves.

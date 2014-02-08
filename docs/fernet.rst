@@ -31,13 +31,13 @@ symmetric (also known as "secret key") authenticated cryptography.
         Generates a fresh fernet key. Keep this some place safe! If you lose it
         you'll no longer be able to decrypt messages; if anyone else gains
         access to it, they'll be able to decrypt all of your messages, and
-        they'll also be able forge arbitrary messages which will be
+        they'll also be able forge arbitrary messages that will be
         authenticated and decrypted.
 
     .. method:: encrypt(plaintext)
 
         :param bytes plaintext: The message you would like to encrypt.
-        :returns bytes: A secure message which cannot be read or altered
+        :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
                         referred to as a "Fernet token".
 

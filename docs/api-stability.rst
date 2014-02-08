@@ -7,7 +7,7 @@ policy.
 What does this policy cover?
 ----------------------------
 
-This policy includes any API or behavior which is documented in this
+This policy includes any API or behavior that is documented in this
 documentation.
 
 What does "stable" mean?
@@ -47,5 +47,5 @@ entirely. In that case, here's how the process will work:
   ``DeprecationWarning``.
 * In ``cryptography X.Y+3`` the feature will be removed or changed.
 
-In short, code which runs without warnings will always continue to work for a
+In short, code that runs without warnings will always continue to work for a
 period of two releases.
