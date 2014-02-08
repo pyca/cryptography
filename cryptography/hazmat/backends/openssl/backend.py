@@ -20,7 +20,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -30,12 +30,14 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
+@utils.register_interface(RSABackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -257,6 +259,46 @@ class Backend(object):
             "you should probably file a bug. {1}".format(
                 code, self._err_string(code)
             )
+        )
+
+    def _bn_to_int(self, bn):
+        hex_cdata = self._lib.BN_bn2hex(bn)
+        assert hex_cdata != self._ffi.NULL
+        hex_str = self._ffi.string(hex_cdata)
+        self._lib.OPENSSL_free(hex_cdata)
+        return int(hex_str, 16)
+
+    def generate_rsa_private_key(self, public_exponent, key_size):
+        if public_exponent < 3:
+            raise ValueError("public_exponent must be >= 3")
+
+        if public_exponent & 1 == 0:
+            raise ValueError("public_exponent must be odd")
+
+        if key_size < 512:
+            raise ValueError("key_size must be at least 512-bits")
+
+        ctx = backend._lib.RSA_new()
+        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+
+        bn = backend._lib.BN_new()
+        assert bn != self._ffi.NULL
+        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+
+        res = backend._lib.BN_set_word(bn, public_exponent)
+        assert res == 1
+
+        res = backend._lib.RSA_generate_key_ex(
+            ctx, key_size, bn, backend._ffi.NULL
+        )
+        assert res == 1
+
+        return rsa.RSAPrivateKey(
+            p=self._bn_to_int(ctx.p),
+            q=self._bn_to_int(ctx.q),
+            private_exponent=self._bn_to_int(ctx.d),
+            public_exponent=self._bn_to_int(ctx.e),
+            modulus=self._bn_to_int(ctx.n),
         )
 
 

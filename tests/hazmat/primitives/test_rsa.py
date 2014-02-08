@@ -14,6 +14,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import itertools
 import os
 
 import pytest
@@ -23,7 +24,52 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from ...utils import load_pkcs1_vectors, load_vectors_from_file
 
 
+def _check_rsa_private_key(skey):
+    assert skey
+    assert skey.modulus
+    assert skey.public_exponent
+    assert skey.private_exponent
+    assert skey.p * skey.q == skey.modulus
+    assert skey.key_size
+
+    pkey = skey.public_key()
+    assert pkey
+    assert skey.modulus == pkey.modulus
+    assert skey.public_exponent == pkey.public_exponent
+    assert skey.key_size == pkey.key_size
+
+
+@pytest.mark.rsa
 class TestRSA(object):
+    @pytest.mark.parametrize(
+        "public_exponent,key_size",
+        itertools.product(
+            (3, 5, 65537),
+            (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048)
+        )
+    )
+    def test_generate_rsa_keys(self, backend, public_exponent, key_size):
+        skey = backend.generate_rsa_private_key(public_exponent, key_size)
+        _check_rsa_private_key(skey)
+        assert skey.key_size == key_size
+        assert skey.public_exponent == public_exponent
+
+    def test_generate_bad_rsa_key(self, backend):
+        with pytest.raises(ValueError):
+            backend.generate_rsa_private_key(public_exponent=1, key_size=2048)
+
+        with pytest.raises(ValueError):
+            backend.generate_rsa_private_key(public_exponent=4, key_size=2048)
+
+    def test_cant_generate_insecure_tiny_key(self, backend):
+        with pytest.raises(ValueError):
+            backend.generate_rsa_private_key(public_exponent=65537,
+                                             key_size=511)
+
+        with pytest.raises(ValueError):
+            backend.generate_rsa_private_key(public_exponent=65537,
+                                             key_size=256)
+
     @pytest.mark.parametrize(
         "pkcs1_example",
         load_vectors_from_file(
@@ -36,12 +82,15 @@ class TestRSA(object):
         secret, public = pkcs1_example
 
         skey = rsa.RSAPrivateKey(**secret)
+        assert skey
+        _check_rsa_private_key(skey)
+
         pkey = rsa.RSAPublicKey(**public)
+        assert pkey
+
         pkey2 = skey.public_key()
+        assert pkey2
 
-        assert skey and pkey and pkey2
-
-        assert skey.modulus
         assert skey.modulus == pkey.modulus
         assert skey.modulus == skey.n
         assert skey.public_exponent == pkey.public_exponent
@@ -57,8 +106,6 @@ class TestRSA(object):
         assert skey.key_size
         assert skey.key_size == pkey.key_size
         assert skey.key_size == pkey2.key_size
-
-        assert skey.p * skey.q == skey.modulus
 
     def test_invalid_private_key_argument_types(self):
         with pytest.raises(TypeError):

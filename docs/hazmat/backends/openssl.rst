@@ -15,6 +15,7 @@ The `OpenSSL`_ C library.
     * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
     It also exposes the following:
 
