@@ -826,3 +826,101 @@ def test_load_pkcs1_vectors():
         )
     )
     assert vectors == expected
+
+
+def test_load_hotp_vectors():
+    vector_data = textwrap.dedent("""
+    # HOTP Test Vectors
+    # RFC 4226 Appendix D
+
+    COUNT = 0
+    COUNTER = 0
+    INTERMEDIATE = cc93cf18508d94934c64b65d8ba7667fb7cde4b0
+    TRUNCATED = 4c93cf18
+    HOTP = 755224
+
+    COUNT = 1
+    COUNTER = 1
+    INTERMEDIATE = 75a48a19d4cbe100644e8ac1397eea747a2d33ab
+    TRUNCATED = 41397eea
+    HOTP = 287082
+
+    COUNT = 2
+    COUNTER = 2
+    INTERMEDIATE = 0bacb7fa082fef30782211938bc1c5e70416ff44
+    TRUNCATED = 82fef30
+    HOTP = 359152
+
+    COUNT = 3
+    COUNTER = 3
+    INTERMEDIATE = 66c28227d03a2d5529262ff016a1e6ef76557ece
+    TRUNCATED = 66ef7655
+    HOTP = 969429
+    """).splitlines()
+
+    assert load_nist_vectors(vector_data) == [
+        {
+            "counter": b"0",
+            "intermediate": b"cc93cf18508d94934c64b65d8ba7667fb7cde4b0",
+            "truncated": b"4c93cf18",
+            "hotp": b"755224",
+        },
+        {
+            "counter": b"1",
+            "intermediate": b"75a48a19d4cbe100644e8ac1397eea747a2d33ab",
+            "truncated": b"41397eea",
+            "hotp": b"287082",
+        },
+        {
+            "counter": b"2",
+            "intermediate": b"0bacb7fa082fef30782211938bc1c5e70416ff44",
+            "truncated": b"82fef30",
+            "hotp": b"359152",
+        },
+        {
+            "counter": b"3",
+            "intermediate": b"66c28227d03a2d5529262ff016a1e6ef76557ece",
+            "truncated": b"66ef7655",
+            "hotp": b"969429",
+        },
+    ]
+
+
+def test_load_totp_vectors():
+    vector_data = textwrap.dedent("""
+    # TOTP Test Vectors
+    # RFC 6238 Appendix B
+
+    COUNT = 0
+    TIME = 59
+    TOTP = 94287082
+    MODE = SHA1
+
+    COUNT = 1
+    TIME = 59
+    TOTP = 46119246
+    MODE = SHA256
+
+    COUNT = 2
+    TIME = 59
+    TOTP = 90693936
+    MODE = SHA512
+    """).splitlines()
+
+    assert load_nist_vectors(vector_data) == [
+        {
+            "time": b"59",
+            "totp": b"94287082",
+            "mode": b"SHA1",
+        },
+        {
+            "time": b"59",
+            "totp": b"46119246",
+            "mode": b"SHA256",
+        },
+        {
+            "time": b"59",
+            "totp": b"90693936",
+            "mode": b"SHA512",
+        },
+    ]
