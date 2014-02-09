@@ -116,6 +116,16 @@ Algorithms
                       ``56`` bits long), they can simply be concatenated to
                       produce the full key. This must be kept secret.
 
+.. class:: CAST5(key)
+
+    CAST5 (also known as CAST-128) is a block cipher approved for use in the
+    Canadian government by the `Communications Security Establishment`_. It is
+    a variable key length cipher and supports keys from 40-128 bits in length.
+
+    :param bytes key: The secret key, 40-128 bits in length (in increments of
+                      8).  This must be kept secret.
+
+
 Weak Ciphers
 ------------
 
@@ -469,3 +479,4 @@ Interfaces
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`recommends 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
 .. _`NIST SP-800-38D`: http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf
+.. _`Communications Security Establishment`: http://www.cse-cst.gc.ca
