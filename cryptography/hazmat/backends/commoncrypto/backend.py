@@ -25,7 +25,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces, constant_time
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Blowfish, TripleDES, ARC4
+    AES, Blowfish, TripleDES, ARC4, CAST5
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM
@@ -198,6 +198,12 @@ class Backend(object):
                 mode_cls,
                 mode_const
             )
+        self._register_cipher_adapter(
+            CAST5,
+            self._lib.kCCAlgorithmCAST,
+            ECB,
+            self._lib.kCCModeECB
+        )
         self._register_cipher_adapter(
             ARC4,
             self._lib.kCCAlgorithmRC4,
