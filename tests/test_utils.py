@@ -838,24 +838,30 @@ def test_load_hotp_vectors():
     INTERMEDIATE = cc93cf18508d94934c64b65d8ba7667fb7cde4b0
     TRUNCATED = 4c93cf18
     HOTP = 755224
+    SECRET = 12345678901234567890
 
     COUNT = 1
     COUNTER = 1
     INTERMEDIATE = 75a48a19d4cbe100644e8ac1397eea747a2d33ab
     TRUNCATED = 41397eea
     HOTP = 287082
+    SECRET = 12345678901234567890
+
 
     COUNT = 2
     COUNTER = 2
     INTERMEDIATE = 0bacb7fa082fef30782211938bc1c5e70416ff44
     TRUNCATED = 82fef30
     HOTP = 359152
+    SECRET = 12345678901234567890
+
 
     COUNT = 3
     COUNTER = 3
     INTERMEDIATE = 66c28227d03a2d5529262ff016a1e6ef76557ece
     TRUNCATED = 66ef7655
     HOTP = 969429
+    SECRET = 12345678901234567890
     """).splitlines()
 
     assert load_nist_vectors(vector_data) == [
@@ -864,24 +870,28 @@ def test_load_hotp_vectors():
             "intermediate": b"cc93cf18508d94934c64b65d8ba7667fb7cde4b0",
             "truncated": b"4c93cf18",
             "hotp": b"755224",
+            "secret": b"12345678901234567890",
         },
         {
             "counter": b"1",
             "intermediate": b"75a48a19d4cbe100644e8ac1397eea747a2d33ab",
             "truncated": b"41397eea",
             "hotp": b"287082",
+            "secret": b"12345678901234567890",
         },
         {
             "counter": b"2",
             "intermediate": b"0bacb7fa082fef30782211938bc1c5e70416ff44",
             "truncated": b"82fef30",
             "hotp": b"359152",
+            "secret": b"12345678901234567890",
         },
         {
             "counter": b"3",
             "intermediate": b"66c28227d03a2d5529262ff016a1e6ef76557ece",
             "truncated": b"66ef7655",
             "hotp": b"969429",
+            "secret": b"12345678901234567890",
         },
     ]
 
@@ -895,16 +905,19 @@ def test_load_totp_vectors():
     TIME = 59
     TOTP = 94287082
     MODE = SHA1
+    SECRET = 12345678901234567890
 
     COUNT = 1
     TIME = 59
     TOTP = 46119246
     MODE = SHA256
+    SECRET = 12345678901234567890
 
     COUNT = 2
     TIME = 59
     TOTP = 90693936
     MODE = SHA512
+    SECRET = 12345678901234567890
     """).splitlines()
 
     assert load_nist_vectors(vector_data) == [
@@ -912,15 +925,18 @@ def test_load_totp_vectors():
             "time": b"59",
             "totp": b"94287082",
             "mode": b"SHA1",
+            "secret": b"12345678901234567890",
         },
         {
             "time": b"59",
             "totp": b"46119246",
             "mode": b"SHA256",
+            "secret": b"12345678901234567890",
         },
         {
             "time": b"59",
             "totp": b"90693936",
             "mode": b"SHA512",
+            "secret": b"12345678901234567890",
         },
     ]
