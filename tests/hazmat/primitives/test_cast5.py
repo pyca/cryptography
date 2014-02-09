@@ -31,11 +31,62 @@ from ...utils import load_nist_vectors
     skip_message="Does not support CAST5 ECB",
 )
 @pytest.mark.cipher
-class TestCAST5(object):
+class TestCAST5_ECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ecb.txt"],
         lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
         lambda **kwargs: modes.ECB(),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.CAST5("\x00" * 16), modes.CBC("\x00" * 8)
+    ),
+    skip_message="Does not support CAST5 CBC",
+)
+@pytest.mark.cipher
+class TestCAST5_CBC(object):
+    test_CBC = generate_encrypt_test(
+        load_nist_vectors,
+        os.path.join("ciphers", "CAST5"),
+        ["cast5-cbc.txt"],
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv))
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.CAST5("\x00" * 16), modes.OFB("\x00" * 8)
+    ),
+    skip_message="Does not support CAST5 OFB",
+)
+@pytest.mark.cipher
+class TestCAST5_OFB(object):
+    test_OFB = generate_encrypt_test(
+        load_nist_vectors,
+        os.path.join("ciphers", "CAST5"),
+        ["cast5-ofb.txt"],
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv))
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.CAST5("\x00" * 16), modes.CFB("\x00" * 8)
+    ),
+    skip_message="Does not support CAST5 CFB",
+)
+@pytest.mark.cipher
+class TestCAST5_CFB(object):
+    test_CFB = generate_encrypt_test(
+        load_nist_vectors,
+        os.path.join("ciphers", "CAST5"),
+        ["cast5-cfb.txt"],
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv))
     )

@@ -198,12 +198,18 @@ class Backend(object):
                 mode_cls,
                 mode_const
             )
-        self._register_cipher_adapter(
-            CAST5,
-            self._lib.kCCAlgorithmCAST,
-            ECB,
-            self._lib.kCCModeECB
-        )
+        for mode_cls, mode_const in [
+            (CBC, self._lib.kCCModeCBC),
+            (ECB, self._lib.kCCModeECB),
+            (CFB, self._lib.kCCModeCFB),
+            (OFB, self._lib.kCCModeOFB)
+        ]:
+            self._register_cipher_adapter(
+                CAST5,
+                self._lib.kCCAlgorithmCAST,
+                mode_cls,
+                mode_const
+            )
         self._register_cipher_adapter(
             ARC4,
             self._lib.kCCAlgorithmRC4,

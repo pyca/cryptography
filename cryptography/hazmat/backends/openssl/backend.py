@@ -153,11 +153,12 @@ class Backend(object):
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
             )
-        self.register_cipher_adapter(
-            CAST5,
-            ECB,
-            GetCipherByName("cast5-{mode.name}")
-        )
+        for mode_cls in [CBC, CFB, OFB, ECB]:
+            self.register_cipher_adapter(
+                CAST5,
+                mode_cls,
+                GetCipherByName("cast5-{mode.name}")
+            )
         self.register_cipher_adapter(
             ARC4,
             type(None),
