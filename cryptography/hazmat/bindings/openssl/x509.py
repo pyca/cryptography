@@ -167,6 +167,8 @@ X509_STORE *X509_STORE_new(void);
 void X509_STORE_free(X509_STORE *);
 int X509_STORE_add_cert(X509_STORE *, X509 *);
 int X509_verify_cert(X509_STORE_CTX *);
+
+const char *X509_verify_cert_error_string(long);
 """
 
 MACROS = """
