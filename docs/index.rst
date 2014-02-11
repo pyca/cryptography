@@ -2,8 +2,7 @@ Welcome to ``cryptography``
 ===========================
 
 ``cryptography`` is a Python library which exposes cryptographic recipes and
-primitives. We hope it'll be your one-stop-shop for all your cryptographic
-needs in Python.
+primitives. Our goal is for it to be your "cryptographic standard library".
 
 Installation
 ------------
