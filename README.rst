@@ -15,7 +15,7 @@ standard library". It supports Python 2.6-2.7, Python 3.2+, and PyPy.
 ``cryptography`` includes both high level recipes, and low level algorithms.
 For example, to encrypt something with ``cryptography``:
 
-.. code-block:: python
+.. code-block:: pycon
 
     >>> from cryptography.fernet import Fernet
     >>> # Put this somewhere safe!
