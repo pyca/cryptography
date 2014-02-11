@@ -9,13 +9,25 @@ Cryptography
 
 
 ``cryptography`` is a package designed to expose cryptographic recipes and
-primitives to Python developers.
+primitives to Python developers.  Our goal is for it to be your "cryptographic
+standard library". It supports Python 2.6-2.7, Python 3.2+, and PyPy.
 
-It is currently in early development and isn't recommended for general usage
-yet. It targets Python 2.6-2.7, Python 3.2+, and PyPy.
+``cryptography`` includes both high level recipes, and low level algorithms.
+For example, to encrypt something with ``cryptography``:
+
+.. code-block:: python
+
+    >>> from cryptography.fernet import Fernet
+    >>> # Put this somewhere safe!
+    >>> key = Fernet.generate_key()
+    >>> f = Fernet(key)
+    >>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+    >>> token
+    '...'
+    >>> f.decrypt(token)
+    'A really secret message. Not for prying eyes.'
 
 You can find more information in the `documentation`_.
-
 
 Discussion
 ~~~~~~~~~~
