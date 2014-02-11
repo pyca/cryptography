@@ -12,8 +12,10 @@ Cryptography
 primitives to Python developers.  Our goal is for it to be your "cryptographic
 standard library". It supports Python 2.6-2.7, Python 3.2+, and PyPy.
 
-``cryptography`` includes both high level recipes, and low level algorithms.
-For example, to encrypt something with ``cryptography``:
+``cryptography`` includes both high level recipes, and low level interfaces to
+common cryptographic algorithms such as symmetric ciphers, message digests and
+key derivation functions. For example, to encrypt something with
+``cryptography``'s high level symmetric encryption recipe:
 
 .. code-block:: pycon
 
