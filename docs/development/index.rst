@@ -13,6 +13,7 @@ bug check out `what to put in your bug report`_.
     getting-started
     submitting-patches
     reviewing-patches
+    test-vectors
 
 .. _`GitHub`: https://github.com/pyca/cryptography
 .. _`what to put in your bug report`: http://www.contribution-guide.org/#what-to-put-in-your-bug-report
