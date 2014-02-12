@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
 )
 
 
@@ -100,4 +100,9 @@ class MultiBackend(object):
                 )
             except UnsupportedAlgorithm:
                 pass
+        raise UnsupportedAlgorithm
+
+    def generate_rsa_private_key(self, public_exponent, key_size):
+        for b in self._filtered_backends(RSABackend):
+            return b.generate_rsa_private_key(public_exponent, key_size)
         raise UnsupportedAlgorithm

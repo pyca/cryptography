@@ -16,7 +16,7 @@ import pytest
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import hashes, hmac
@@ -67,7 +67,7 @@ class DummyHMACBackend(object):
 
 
 @utils.register_interface(PBKDF2HMACBackend)
-class DummyPBKDF2HMAC(object):
+class DummyPBKDF2HMACBackend(object):
     def __init__(self, supported_algorithms):
         self._algorithms = supported_algorithms
 
@@ -78,6 +78,11 @@ class DummyPBKDF2HMAC(object):
                            key_material):
         if not self.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm
+
+@utils.register_interface(RSABackend)
+class DummyRSABackend(object):
+    def generate_rsa_private_key(self, public_exponent, private_key):
+        pass
 
 
 class TestMultiBackend(object):
@@ -134,7 +139,7 @@ class TestMultiBackend(object):
 
     def test_pbkdf2(self):
         backend = MultiBackend([
-            DummyPBKDF2HMAC([hashes.MD5])
+            DummyPBKDF2HMACBackend([hashes.MD5])
         ])
         assert backend.pbkdf2_hmac_supported(hashes.MD5())
 
@@ -142,3 +147,16 @@ class TestMultiBackend(object):
 
         with pytest.raises(UnsupportedAlgorithm):
             backend.derive_pbkdf2_hmac(hashes.SHA1(), 10, b"", 10, b"")
+
+    def test_rsa(self):
+        backend = MultiBackend([
+            DummyRSABackend()
+        ])
+
+        backend.generate_rsa_private_key(
+            key_size=1024, public_exponent=65537
+        )
+
+        backend = MultiBackend([])
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.generate_rsa_private_key(key_size=1024, public_exponent=3)
