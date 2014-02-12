@@ -8,9 +8,9 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
 .. code-block:: console
 
-   $ # Create a virtualenv and activate it
-   $ pip install --requirement dev-requirements.txt
-   $ pip install --editable .
+    $ # Create a virtualenv and activate it
+    $ pip install --requirement dev-requirements.txt
+    $ pip install --editable .
 
 You are now ready to run the tests and build the documentation.
 
@@ -23,9 +23,9 @@ automatically, so all you have to do is:
 
 .. code-block:: console
 
-   $ py.test
-   ...
-   62746 passed in 220.43 seconds
+    $ py.test
+    ...
+    62746 passed in 220.43 seconds
 
 This runs the tests with the default Python interpreter.
 
@@ -35,15 +35,15 @@ each supported Python version and run the tests. For example:
 
 .. code-block:: console
 
-   $ tox
-   ...
-   ERROR:   py26: InterpreterNotFound: python2.6
-    py27: commands succeeded
-   ERROR:   pypy: InterpreterNotFound: pypy
-   ERROR:   py32: InterpreterNotFound: python3.2
-    py33: commands succeeded
-    docs: commands succeeded
-    pep8: commands succeeded
+    $ tox
+    ...
+    ERROR:   py26: InterpreterNotFound: python2.6
+     py27: commands succeeded
+    ERROR:   pypy: InterpreterNotFound: pypy
+    ERROR:   py32: InterpreterNotFound: python3.2
+     py33: commands succeeded
+     docs: commands succeeded
+     pep8: commands succeeded
 
 You may not have all the required Python versions installed, in which case you
 will see one or more ``InterpreterNotFound`` errors.
@@ -68,10 +68,10 @@ Use `tox`_ to build the documentation. For example:
 
 .. code-block:: console
 
-   $ tox -e docs
-   ...
-   docs: commands succeeded
-   congratulations :)
+    $ tox -e docs
+    ...
+    docs: commands succeeded
+    congratulations :)
 
 The HTML documentation index can now be found at
 ``docs/_build/html/index.html``.
