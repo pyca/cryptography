@@ -43,7 +43,7 @@ class TestHOTP(object):
         assert hotp.generate(counter) == hotp_value
 
     @pytest.mark.parametrize("params", vectors)
-    def test_validate(self, backend, params):
+    def test_verify(self, backend, params):
         secret = params["secret"]
         counter = int(params["counter"])
         hotp_value = params["hotp"]
