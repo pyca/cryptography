@@ -63,7 +63,7 @@ On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
 utilizes the `Yarrow`_ algorithm.
 
 On Windows the implementation of ``CryptGenRandom`` depends on which version of
-the operation sytem you are using. See the `Microsoft documentation`_ for more
+the operation system you are using. See the `Microsoft documentation`_ for more
 details.
 
 Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source seeded
