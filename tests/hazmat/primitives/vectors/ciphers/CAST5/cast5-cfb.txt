@@ -1,5 +1,6 @@
 # CAST5 CBC vectors built for https://github.com/pyca/cryptography
 # Derived from the AESVS MMT test data for CFB128
+# Verified against the CommonCrypto and Go crypto packages
 # Key Length : 128
 
 COUNT = 0
