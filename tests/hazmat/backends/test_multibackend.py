@@ -79,6 +79,7 @@ class DummyPBKDF2HMACBackend(object):
         if not self.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm
 
+
 @utils.register_interface(RSABackend)
 class DummyRSABackend(object):
     def generate_rsa_private_key(self, public_exponent, private_key):
