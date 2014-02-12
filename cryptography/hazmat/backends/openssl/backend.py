@@ -22,15 +22,15 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
 )
+from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
-from cryptography.hazmat.bindings.openssl.binding import Binding
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 @utils.register_interface(CipherBackend)
