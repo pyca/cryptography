@@ -144,7 +144,8 @@ All code changes must be accompanied by unit tests with 100% code coverage (as
 measured by the combined metrics across our build matrix).
 
 When implementing a new primitive or recipe ``cryptography`` requires that you
-provide a set of test vectors.
+provide a set of test vectors. See :doc:`/development/test-vectors` for more
+details.
 
 Documentation
 -------------
