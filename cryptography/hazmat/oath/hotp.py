@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import struct
+import six
 
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.hashes import SHA1
@@ -25,7 +26,8 @@ class HOTP(object):
 
     def generate(self, counter):
         sbit = self._dynamic_truncate(counter)
-        return str(sbit % (10**self.length)).zfill(self.length)
+        foo = sbit % (10**self.length)
+        return ('%s' % foo).zfill(self.length).encode()
 
     def verify(self, hotp, counter):
         return constant_time.bytes_eq(self.generate(counter), hotp)
@@ -35,7 +37,8 @@ class HOTP(object):
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 
-        offset_bits = ord(hmac_value[19]) & 0b1111
+        offset_bits = six.indexbytes(hmac_value, 19) & 0b1111
+
         offset = int(offset_bits)
         P = hmac_value[offset:offset+4]
         return struct.unpack(">I", P)[0] & 0x7fffffff

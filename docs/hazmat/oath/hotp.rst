@@ -17,7 +17,7 @@ values based on Hash-based message authentication codes (HMAC).
 
     This is an implementation of :rfc:`4226`.
 
-    .. doctest::
+    .. code-block:: python
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.oath.hotp import HOTP
@@ -35,12 +35,11 @@ values based on Hash-based message authentication codes (HMAC).
 
     .. method:: generate(counter)
 
-        :param counter: The counter value used to generate the one time password.
+        :param int counter: The counter value used to generate the one time password.
         :return: A one time password value.
 
     .. method:: verify(hotp, counter)
 
-        :param hotp: The one time password value to validate.
-        :param counter: The counter value to validate against.
+        :param bytes hotp: The one time password value to validate.
+        :param bytes counter: The counter value to validate against.
         :return: ``True`` if the one time password value is valid. ``False`` if otherwise.
-

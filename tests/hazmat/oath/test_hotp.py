@@ -26,11 +26,11 @@ class TestHOTP(object):
     def test_truncate(self, backend, params):
         secret = params["secret"]
         counter = int(params["counter"])
-        truncated_value = params["truncated"]
+        truncated = params["truncated"]
 
         hotp = HOTP(secret, 6, backend)
 
-        assert hex(hotp._dynamic_truncate(counter))[2:] == truncated_value
+        assert hex(hotp._dynamic_truncate(counter))[2:] == truncated.decode()
 
     @pytest.mark.parametrize("params", vectors)
     def test_generate(self, backend, params):
