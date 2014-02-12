@@ -1,39 +1,13 @@
-Contributing
-============
+Submitting Patches
+==================
 
-Process
--------
-
-As an open source project, ``cryptography`` welcomes contributions of all
-forms. These can include:
-
-* Bug reports and feature requests
-* Pull requests for both code and documentation
-* Patch reviews
-
-You can file bugs and submit pull requests on `GitHub`_. To discuss larger
-changes you can start a conversation on `our mailing list`_.
-
-Because cryptography is so complex, and the implications of getting it wrong so
-devastating, ``cryptography`` has a strict code review policy:
-
-* Patches must *never* be pushed directly to ``master``, all changes (even the
-  most trivial typo fixes!) must be submitted as a pull request.
-* A committer may *never* merge their own pull request, a second party must
-  merge their changes. If multiple people work on a pull request, it must be
-  merged by someone who did not work on it.
-* A patch that breaks tests, or introduces regressions by changing or removing
-  existing tests should not be merged. Tests must always be passing on
-  ``master``.
-* If somehow the tests get into a failing state on ``master`` (such as by a
-  backwards incompatible release of a dependency) no pull requests may be
-  merged until this is rectified.
-* All merged patches must have 100% test coverage.
+* Always make a new branch for your work.
+* Patches should be small to facilitate easier review. `Studies have shown`_
+  that review quality falls off as patch size grows. Sometimes this will result
+  in many small PRs to land a single large feature.
+* Larger changes should be discussed on `our mailing list`_ before submission.
 * New features and significant bug fixes should be documented in the
   :doc:`/changelog`.
-
-The purpose of these policies is to minimize the chances we merge a change
-that jeopardizes our users' security.
 
 If you believe you've identified a security issue in ``cryptography``, please
 follow the directions on the :doc:`security page </security>`.
@@ -163,28 +137,19 @@ this:
     static const unsigned int SOME_UNSIGNED_INTEGER_LITERAL;
     static const char *const SOME_STRING_LITERAL;
 
+Tests
+-----
+
+All code changes must be accompanied by unit tests with 100% code coverage (as
+measured by the combined metrics across our build matrix).
+
+When implementing a new primitive or recipe ``cryptography`` requires that you
+provide a set of test vectors.
+
 Documentation
 -------------
 
-All features should be documented with prose.
-
-Docstrings should be written like this:
-
-.. code-block:: python
-
-    def some_function(some_arg):
-        """
-        Does some things.
-
-        :param some_arg: Some argument.
-        """
-
-So, specifically:
-
-* Always use three double quotes.
-* Put the three double quotes on their own line.
-* No blank line at the end.
-* Use Sphinx parameter/attribute documentation `syntax`_.
+All features should be documented with prose in the ``docs`` section.
 
 Because of the inherent challenges in implementing correct cryptographic
 systems, we want to make our documentation point people in the right directions
@@ -208,92 +173,27 @@ should begin with the "Hazardous Materials" warning:
 When referring to a hypothetical individual (such as "a person receiving an
 encrypted message") use gender neutral pronouns (they/them/their).
 
-Development Environment
------------------------
+Docstrings are typically only used when writing abstract classes, but should
+be written like this if required:
 
-Working on ``cryptography`` requires the installation of a small number of
-development dependencies. These are listed in ``dev-requirements.txt`` and they
-can be installed in a `virtualenv`_ using `pip`_. Once you've installed the
-dependencies, install ``cryptography`` in ``editable`` mode. For example:
+.. code-block:: python
 
-.. code-block:: console
+    def some_function(some_arg):
+        """
+        Does some things.
 
-   $ # Create a virtualenv and activate it
-   $ pip install --requirement dev-requirements.txt
-   $ pip install --editable .
+        :param some_arg: Some argument.
+        """
 
-You are now ready to run the tests and build the documentation.
+So, specifically:
 
-Running Tests
-~~~~~~~~~~~~~
-
-``cryptography`` unit tests are found in the ``tests/`` directory and are
-designed to be run using `pytest`_. `pytest`_ will discover the tests
-automatically, so all you have to do is:
-
-.. code-block:: console
-
-   $ py.test
-   ...
-   62746 passed in 220.43 seconds
-
-This runs the tests with the default Python interpreter.
-
-You can also verify that the tests pass on other supported Python interpreters.
-For this we use `tox`_, which will automatically create a `virtualenv`_ for
-each supported Python version and run the tests. For example:
-
-.. code-block:: console
-
-   $ tox
-   ...
-   ERROR:   py26: InterpreterNotFound: python2.6
-    py27: commands succeeded
-   ERROR:   pypy: InterpreterNotFound: pypy
-   ERROR:   py32: InterpreterNotFound: python3.2
-    py33: commands succeeded
-    docs: commands succeeded
-    pep8: commands succeeded
-
-You may not have all the required Python versions installed, in which case you
-will see one or more ``InterpreterNotFound`` errors.
+* Always use three double quotes.
+* Put the three double quotes on their own line.
+* No blank line at the end.
+* Use Sphinx parameter/attribute documentation `syntax`_.
 
 
-Explicit Backend Selection
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-While testing you may want to run tests against a subset of the backends that
-cryptography supports. Explicit backend selection can be done via the
-``--backend`` flag. This flag should be passed to ``py.test`` with a comma
-delimited list of backend names. To use it with ``tox`` you must pass it as
-``tox -- --backend=openssl``.
-
-Building Documentation
-~~~~~~~~~~~~~~~~~~~~~~
-
-``cryptography`` documentation is stored in the ``docs/`` directory. It is
-written in `reStructured Text`_ and rendered using `Sphinx`_.
-
-Use `tox`_ to build the documentation. For example:
-
-.. code-block:: console
-
-   $ tox -e docs
-   ...
-   docs: commands succeeded
-   congratulations :)
-
-The HTML documentation index can now be found at
-``docs/_build/html/index.html``.
-
-
-.. _`GitHub`: https://github.com/pyca/cryptography
-.. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`Write comments as complete sentences.`: http://nedbatchelder.com/blog/201401/comments_should_be_sentences.html
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
-.. _`pytest`: https://pypi.python.org/pypi/pytest
-.. _`tox`: https://pypi.python.org/pypi/tox
-.. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
-.. _`pip`: https://pypi.python.org/pypi/pip
-.. _`sphinx`: https://pypi.python.org/pypi/Sphinx
-.. _`reStructured Text`: http://sphinx-doc.org/rest.html
+.. _`Studies have shown`: http://www.ibm.com/developerworks/rational/library/11-proven-practices-for-peer-review/
+.. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
