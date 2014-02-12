@@ -62,7 +62,8 @@ OS Random Sources
 On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
 utilizes the `Yarrow`_ algorithm.
 
-On Windows ``CryptGenRandom`` is backed by `Fortuna`_.
+On Windows ``CryptGenRandom`` can use a variety of algorithms depending on the
+version. View the `Microsoft documentation`_ for more details.
 
 Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source seeded
 from the same pool as ``/dev/random``.
@@ -71,4 +72,4 @@ from the same pool as ``/dev/random``.
 .. _`OpenSSL`: https://www.openssl.org/
 .. _`initializing the RNG`: http://en.wikipedia.org/wiki/OpenSSL#Vulnerability_in_the_Debian_implementation
 .. _`Yarrow`: http://en.wikipedia.org/wiki/Yarrow_algorithm
-.. _`Fortuna`: http://en.wikipedia.org/wiki/Fortuna_(PRNG)
+.. _`Microsoft documentation`: http://msdn.microsoft.com/en-us/library/windows/desktop/aa379942(v=vs.85).aspx
