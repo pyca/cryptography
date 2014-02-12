@@ -49,26 +49,32 @@ class TestRSA(object):
         )
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
-        skey = backend.generate_rsa_private_key(public_exponent, key_size)
+        skey = rsa.RSAPrivateKey.generate(public_exponent, key_size, backend)
         _check_rsa_private_key(skey)
         assert skey.key_size == key_size
         assert skey.public_exponent == public_exponent
 
     def test_generate_bad_rsa_key(self, backend):
         with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=1, key_size=2048)
+            rsa.RSAPrivateKey.generate(public_exponent=1,
+                                       key_size=2048,
+                                       backend=backend)
 
         with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=4, key_size=2048)
+            rsa.RSAPrivateKey.generate(public_exponent=4,
+                                       key_size=2048,
+                                       backend=backend)
 
     def test_cant_generate_insecure_tiny_key(self, backend):
         with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=65537,
-                                             key_size=511)
+            rsa.RSAPrivateKey.generate(public_exponent=65537,
+                                       key_size=511,
+                                       backend=backend)
 
         with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=65537,
-                                             key_size=256)
+            rsa.RSAPrivateKey.generate(public_exponent=65537,
+                                       key_size=256,
+                                       backend=backend)
 
     @pytest.mark.parametrize(
         "pkcs1_example",
