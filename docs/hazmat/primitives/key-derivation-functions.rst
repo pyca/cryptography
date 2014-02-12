@@ -128,6 +128,7 @@ Different KDFs are suitable for different tasks such as:
 
     `HKDF`_ (HMAC-based Extract-and-Expand Key Derivation Function) is suitable
     for deriving keys of a fixed size used for other cryptographic operations.
+    **HKDF should not be used for password storage.**
 
     .. doctest::
 
