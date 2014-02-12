@@ -62,8 +62,9 @@ OS Random Sources
 On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and
 utilizes the `Yarrow`_ algorithm.
 
-On Windows ``CryptGenRandom`` can use a variety of algorithms depending on the
-version. View the `Microsoft documentation`_ for more details.
+On Windows the implementation of ``CryptGenRandom`` depends on which version of
+the operation sytem you are using. See the `Microsoft documentation`_ for more
+details.
 
 Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source seeded
 from the same pool as ``/dev/random``.
