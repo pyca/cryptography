@@ -3,6 +3,7 @@ backends
 boolean
 ciphertext
 committer
+committers
 crypto
 cryptographic
 cryptographically
