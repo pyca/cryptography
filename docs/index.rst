@@ -79,7 +79,7 @@ The ``cryptography`` open source project
     :maxdepth: 2
 
     installation
-    contributing
+    development/index
     security
     api-stability
     doing-a-release
