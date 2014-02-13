@@ -86,8 +86,7 @@ class PKCS7(object):
 class _PKCS7PaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
-        # TODO: O(n ** 2) complexity for repeated concatentation, we should use
-        # zero-buffer (#193)
+        # TODO: more copies than necessary, we should use zero-buffer (#193)
         self._buffer = b""
 
     def update(self, data):
@@ -120,8 +119,7 @@ class _PKCS7PaddingContext(object):
 class _PKCS7UnpaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
-        # TODO: O(n ** 2) complexity for repeated concatentation, we should use
-        # zero-buffer (#193)
+        # TODO: more copies than necessary, we should use zero-buffer (#193)
         self._buffer = b""
 
     def update(self, data):
