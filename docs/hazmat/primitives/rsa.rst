@@ -31,9 +31,10 @@ RSA
 
     :raises TypeError: This is raised when the arguments are not all integers.
 
-    :raises ValueError: This is raised when the values of `p`, `q`,
-                        `private_exponent`, `public_exponent` or `modulus` do
-                        not match the bounds specified in `RFC 3447`_.
+    :raises ValueError: This is raised when the values of ``p``, ``q``,
+                        ``private_exponent``, ``public_exponent``, or
+                        ``modulus`` do not match the bounds specified in
+                        :rfc:`3447`.
 
     .. classmethod:: generate(public_exponent, key_size, backend)
 
@@ -67,12 +68,11 @@ RSA
 
     :raises TypeError: This is raised when the arguments are not all integers.
 
-    :raises ValueError: This is raised when the values of `public_exponent` or
-                        `modulus` do not match the bounds specified in
-                        `RFC 3447`_.
+    :raises ValueError: This is raised when the values of ``public_exponent``
+                        or ``modulus`` do not match the bounds specified in
+                        :rfc:`3447`.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
-.. _`RFC 3447`: https://tools.ietf.org/html/rfc3447
 .. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
