@@ -55,6 +55,8 @@ int RSA_print(BIO *, const RSA *, int);
 """
 
 MACROS = """
+int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
+int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
 """
 
 CUSTOMIZATIONS = """

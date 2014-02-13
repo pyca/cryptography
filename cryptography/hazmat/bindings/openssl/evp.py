@@ -32,6 +32,7 @@ typedef struct evp_pkey_st {
     int type;
     ...;
 } EVP_PKEY;
+typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
 static const int EVP_MAX_MD_SIZE;
@@ -86,6 +87,11 @@ int EVP_PKEY_type(int);
 int EVP_PKEY_bits(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
 
+EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
+void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
+
 int EVP_SignInit(EVP_MD_CTX *, const EVP_MD *);
 int EVP_SignUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_SignFinal(EVP_MD_CTX *, unsigned char *, unsigned int *, EVP_PKEY *);
@@ -110,6 +116,8 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
 int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
+
+int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, EVP_MD_CTX *);
 """
 
 CUSTOMIZATIONS = """
