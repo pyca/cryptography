@@ -24,7 +24,6 @@ def build_vectors(mode, filename):
     key = None
     iv = None
     plaintext = None
-    ct = None
     for line in vector_file:
         line = line.strip()
         if line.startswith("KEY"):
