@@ -8,7 +8,7 @@ RSA
 `RSA`_ is a `public-key`_ algorithm for encrypting and signing messages.
 
 .. class:: RSAPrivateKey(p, q, private_exponent, public_exponent, modulus)
-    
+
     .. versionadded:: 0.2
 
     An RSA private key is required for decryption and signing of messages.
@@ -16,23 +16,23 @@ RSA
     You should use
     :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.generate`
     to generate new keys.
-    
+
     .. warning::
         This method only checks a limited set of properties of its arguments.
-        Using an RSA that you do not trust or with incorrect parameters may
-        lead to insecure operation, crashes, and other undefined behavior. We
-        recommend that you only ever load private keys that were generated with
-        software you trust.
+        Using an RSA private key that you do not trust or with incorrect
+        parameters may lead to insecure operation, crashes, and other undefined
+        behavior. We recommend that you only ever load private keys that were
+        generated with software you trust.
 
 
     This class conforms to the
     :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
     interface.
 
-    :raises TypeError: This is raised when the arguments are not all integers. 
+    :raises TypeError: This is raised when the arguments are not all integers.
 
     :raises ValueError: This is raised when the values of `p`, `q`,
-                        `private_exponent`, `public_exponent` or `modulus` do 
+                        `private_exponent`, `public_exponent` or `modulus` do
                         not match the bounds specified in `RFC 3447`_.
 
     .. classmethod:: generate(public_exponent, key_size, backend)
@@ -52,7 +52,7 @@ RSA
         :return: A new instance of ``RSAPrivateKey``.
 
 .. class:: RSAPublicKey(public_exponent, modulus)
-    
+
     .. versionadded:: 0.2
 
     An RSA public key is required for encryption and verification of messages.
@@ -65,7 +65,7 @@ RSA
     :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
     interface.
 
-    :raises TypeError: This is raised when the arguments are not all integers. 
+    :raises TypeError: This is raised when the arguments are not all integers.
 
     :raises ValueError: This is raised when the values of `public_exponent` or
                         `modulus` do not match the bounds specified in
