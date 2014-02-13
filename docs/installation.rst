@@ -26,8 +26,8 @@ Building cryptography on Linux
 ------------------------------
 
 ``cryptography`` should build very easily on Linux provided you have a C
-compiler, headers for Python (if you're not using `pypy`), and headers for the
-OpenSSL and `libffi` libraries available on your system.
+compiler, headers for Python (if you're not using ``pypy``), and headers for
+the OpenSSL and ``libffi`` libraries available on your system.
 
 Debian and Ubuntu systems
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,13 +37,13 @@ dependencies are installed:
 
 .. code-block:: console
 
-    sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+    $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 
 You should now be able to build and install cryptography with the usual
 
 .. code-block:: console
 
-    python setup.py install
+    $ pip install cryptography
 
 Using your own OpenSSL on Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
