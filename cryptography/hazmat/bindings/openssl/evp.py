@@ -105,6 +105,13 @@ const EVP_MD *EVP_md5(void);
 
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
+
+int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
+int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                  const unsigned char *, size_t);
+int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
+int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
+                    const unsigned char *, size_t);
 """
 
 MACROS = """
