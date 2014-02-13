@@ -23,5 +23,6 @@ Verification
 The following go code was used to verify the vectors.
 
 .. literalinclude:: /development/custom-vectors/cast5/verify_cast5.go
+    :language: go
 
 Download link: :download:`verify_cast5.go </development/custom-vectors/cast5/verify_cast5.go>`
