@@ -42,3 +42,7 @@ class InternalError(Exception):
 
 class InvalidKey(Exception):
     pass
+
+
+class InvalidToken(Exception):
+    pass

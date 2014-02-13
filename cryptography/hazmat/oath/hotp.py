@@ -12,28 +12,37 @@
 # limitations under the License.
 
 import struct
+from cryptography.exceptions import InvalidToken
 import six
 
-from cryptography.hazmat.primitives import constant_time
+from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1
 
 
 class HOTP(object):
-    def __init__(self, secret, length, backend):
-        self.secret = secret
-        self.length = length
-        self.backend = backend
+    def __init__(self, key, length, backend):
+
+        if len(key) < 16:
+            raise ValueError("Key length has to be at least 128 bits.")
+
+        if length < 6:
+            raise ValueError("Length of HOTP has to be at least 6.")
+
+        self._key = key
+        self._length = length
+        self._backend = backend
 
     def generate(self, counter):
-        sbit = self._dynamic_truncate(counter)
-        foo = sbit % (10**self.length)
-        return ('%s' % foo).zfill(self.length).encode()
+        truncated_value = self._dynamic_truncate(counter)
+        hotp = truncated_value % (10**self._length)
+        return "{0:0{1}}".format(hotp, self._length).encode()
 
     def verify(self, hotp, counter):
-        return constant_time.bytes_eq(self.generate(counter), hotp)
+        if not constant_time.bytes_eq(self.generate(counter), hotp):
+            raise InvalidToken("Supplied HOTP value does not match")
 
     def _dynamic_truncate(self, counter):
-        ctx = self.backend.create_hmac_ctx(self.secret, SHA1)
+        ctx = hmac.HMAC(self._key, SHA1(), self._backend)
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 

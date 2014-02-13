@@ -10,17 +10,40 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from cryptography.exceptions import InvalidToken
+
+import os
 
 import pytest
+
 from cryptography.hazmat.oath.hotp import HOTP
+from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
 
 vectors = load_vectors_from_file(
     "oath/rfc-4226.txt", load_nist_vectors)
 
 
-@pytest.mark.oath
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
+    skip_message="Does not support HMAC-SHA1."
+)
+@pytest.mark.hmac
 class TestHOTP(object):
+
+    def test_invalid_key_length(self, backend):
+        secret = os.urandom(10)
+
+        with pytest.raises(ValueError):
+            hotp = HOTP(secret, 6, backend)
+            hotp.generate(0)
+
+    def test_invalid_hotp_length(self, backend):
+        secret = os.urandom(16)
+
+        with pytest.raises(ValueError):
+            hotp = HOTP(secret, 4, backend)
+            hotp.generate(0)
 
     @pytest.mark.parametrize("params", vectors)
     def test_truncate(self, backend, params):
@@ -50,4 +73,13 @@ class TestHOTP(object):
 
         hotp = HOTP(secret, 6, backend)
 
-        assert hotp.verify(hotp_value, counter) is True
+        assert hotp.verify(hotp_value, counter) is None
+
+    def test_invalid_verify(self, backend):
+        secret = b"12345678901234567890"
+        counter = 0
+
+        hotp = HOTP(secret, 6, backend)
+
+        with pytest.raises(InvalidToken):
+            hotp.verify(b"123456", counter)

@@ -17,18 +17,20 @@ values based on Hash-based message authentication codes (HMAC).
 
     This is an implementation of :rfc:`4226`.
 
-    .. code-block:: python
+    .. doctest::
 
+        >>> import os
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.oath.hotp import HOTP
-        >>> hotp = HOTP(secret, 6, backend=default_backend)
-        >>> hotp.generate(0)
-        958695
-        >>> hotp.verify("958695", 0)
-        True
 
-    :param secret: Secret key as ``bytes``.
-    :param length: Length of generated one time password as ``int``.
+        >>> key = "12345678901234567890"
+        >>> hotp = HOTP(key, 6, backend=default_backend())
+        >>> hotp.generate(0)
+        '755224'
+        >>> hotp.verify("755224", 0)
+
+    :param bytes secret: Secret key as ``bytes``.
+    :param int length: Length of generated one time password as ``int``.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
@@ -36,7 +38,7 @@ values based on Hash-based message authentication codes (HMAC).
     .. method:: generate(counter)
 
         :param int counter: The counter value used to generate the one time password.
-        :return: A one time password value.
+        :return bytes: A one time password value.
 
     .. method:: verify(hotp, counter)
 
