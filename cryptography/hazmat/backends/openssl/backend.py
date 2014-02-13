@@ -26,7 +26,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Blowfish, Camellia, TripleDES, ARC4,
+    AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
@@ -152,6 +152,12 @@ class Backend(object):
                 Blowfish,
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
+            )
+        for mode_cls in [CBC, CFB, OFB, ECB]:
+            self.register_cipher_adapter(
+                CAST5,
+                mode_cls,
+                GetCipherByName("cast5-{mode.name}")
             )
         self.register_cipher_adapter(
             ARC4,
