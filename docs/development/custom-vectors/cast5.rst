@@ -13,10 +13,8 @@ Creation
 the following python script was run to generate the vector files.
 
 .. literalinclude:: /development/custom-vectors/cast5/generate_cast5.py
-    :linenos:
-    :lines: 7-16
 
-Full code: :download:`generate_cast5.py </development/custom-vectors/cast5/generate_cast5.py>`
+Download link: :download:`generate_cast5.py </development/custom-vectors/cast5/generate_cast5.py>`
 
 
 Verification
@@ -25,7 +23,5 @@ Verification
 The following go code was used to verify the vectors.
 
 .. literalinclude:: /development/custom-vectors/cast5/verify_cast5.go
-    :linenos:
-    :lines: 36-52
 
-Full code: :download:`verify_cast5.go </development/custom-vectors/cast5/verify_cast5.go>`
+Download link: :download:`verify_cast5.go </development/custom-vectors/cast5/verify_cast5.go>`
