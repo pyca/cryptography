@@ -262,6 +262,12 @@ def load_pkcs1_vectors(vector_data):
             attr = "p"
         elif line.startswith("# Prime 2:"):
             attr = "q"
+        elif line.startswith("# Prime exponent 1:"):
+            attr = "dmp1"
+        elif line.startswith("# Prime exponent 2:"):
+            attr = "dmq1"
+        elif line.startswith("# Coefficient:"):
+            attr = "iqmp"
         elif line.startswith("#"):
             attr = None
         else:

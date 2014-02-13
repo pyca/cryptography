@@ -24,6 +24,20 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from ...utils import load_pkcs1_vectors, load_vectors_from_file
 
 
+def _egcd(a, b):
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = _egcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+
+def _modinv(a, m):
+    g, x, y = _egcd(a, m)
+    assert g == 1
+    return x % m
+
+
 def _check_rsa_private_key(skey):
     assert skey
     assert skey.modulus
@@ -31,6 +45,9 @@ def _check_rsa_private_key(skey):
     assert skey.private_exponent
     assert skey.p * skey.q == skey.modulus
     assert skey.key_size
+    assert skey._dmp1 == skey.d % (skey.p - 1)
+    assert skey._dmq1 == skey.d % (skey.q - 1)
+    assert skey._iqmp == _modinv(skey.q, skey.p)
 
     pkey = skey.public_key()
     assert pkey
@@ -115,22 +132,26 @@ class TestRSA(object):
 
     def test_invalid_private_key_argument_types(self):
         with pytest.raises(TypeError):
-            rsa.RSAPrivateKey(None, None, None, None, None)
+            rsa.RSAPrivateKey(None, None, None, None, None, None, None, None)
 
     def test_invalid_public_key_argument_types(self):
         with pytest.raises(TypeError):
             rsa.RSAPublicKey(None, None)
 
     def test_invalid_private_key_argument_values(self):
-        # Start with p=3, q=5, private_exponent=14, public_exponent=7,
-        # modulus=15. Then change one value at a time to test the bounds.
+        # Start with p=3, q=11, private_exponent=3, public_exponent=7,
+        # modulus=33, dmp1=1, dmq1=3, iqmp=2. Then change one value at
+        # a time to test the bounds.
 
         # Test a modulus < 3.
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=5,
-                private_exponent=14,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=7,
                 modulus=2
             )
@@ -139,70 +160,156 @@ class TestRSA(object):
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=5,
-                private_exponent=14,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=7,
-                modulus=16
+                modulus=35
             )
 
         # Test a p > modulus.
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
-                p=16,
-                q=5,
-                private_exponent=14,
+                p=37,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=7,
-                modulus=15
+                modulus=33
             )
 
         # Test a q > modulus.
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=16,
-                private_exponent=14,
+                q=37,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=7,
-                modulus=15
+                modulus=33
+            )
+
+        # Test a dmp1 > modulus.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=11,
+                private_exponent=3,
+                dmp1=35,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
+        # Test a dmq1 > modulus.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=35,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
+        # Test an iqmp > modulus.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=35,
+                public_exponent=7,
+                modulus=33
             )
 
         # Test a private_exponent > modulus
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=5,
-                private_exponent=16,
+                q=11,
+                private_exponent=37,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=7,
-                modulus=15
+                modulus=33
             )
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=5,
-                private_exponent=14,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=1,
-                modulus=15
+                modulus=33
             )
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=5,
-                private_exponent=14,
-                public_exponent=17,
-                modulus=15
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=65537,
+                modulus=33
             )
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey(
                 p=3,
-                q=5,
-                private_exponent=14,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
                 public_exponent=6,
-                modulus=15
+                modulus=33
+            )
+
+        # Test a dmp1 that is not odd.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=11,
+                private_exponent=3,
+                dmp1=2,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
+        # Test a dmq1 that is not odd.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=4,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
             )
 
     def test_invalid_public_key_argument_values(self):
