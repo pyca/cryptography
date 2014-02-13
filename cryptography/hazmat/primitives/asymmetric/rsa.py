@@ -167,6 +167,18 @@ class RSAPrivateKey(object):
         return self.private_exponent
 
     @property
+    def dmp1(self):
+        return self._dmp1
+
+    @property
+    def dmq1(self):
+        return self._dmq1
+
+    @property
+    def iqmp(self):
+        return self._iqmp
+
+    @property
     def e(self):
         return self.public_exponent
 

@@ -45,9 +45,9 @@ def _check_rsa_private_key(skey):
     assert skey.private_exponent
     assert skey.p * skey.q == skey.modulus
     assert skey.key_size
-    assert skey._dmp1 == skey.d % (skey.p - 1)
-    assert skey._dmq1 == skey.d % (skey.q - 1)
-    assert skey._iqmp == _modinv(skey.q, skey.p)
+    assert skey.dmp1 == skey.d % (skey.p - 1)
+    assert skey.dmq1 == skey.d % (skey.q - 1)
+    assert skey.iqmp == _modinv(skey.q, skey.p)
 
     pkey = skey.public_key()
     assert pkey
