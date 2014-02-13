@@ -53,7 +53,7 @@ class TestHOTP(object):
 
         hotp = HOTP(secret, 6, backend)
 
-        assert hex(hotp._dynamic_truncate(counter))[2:] == truncated.decode()
+        assert hotp._dynamic_truncate(counter) == int(truncated.decode(), 16)
 
     @pytest.mark.parametrize("params", vectors)
     def test_generate(self, backend, params):
