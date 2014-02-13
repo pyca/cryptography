@@ -117,6 +117,8 @@ Algorithms
 
 .. class:: CAST5(key)
 
+    .. versionadded:: 0.2
+
     CAST5 (also known as CAST-128) is a block cipher approved for use in the
     Canadian government by the `Communications Security Establishment`_. It is
     a variable key length cipher and supports keys from 40-128 bits in length.
