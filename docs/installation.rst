@@ -22,17 +22,22 @@ to include the corresponding locations. For example:
     C:\> set INCLUDE=C:\OpenSSL-1.0.1f-64bit\include;%INCLUDE%
     C:\> pip install cryptography
 
-Building cryptography on Linux
-------------------------------
+Building cryptography on GNU/Linux
+----------------------------------
 
-``cryptography`` should build very easily on linux provided you have headers
-for the OpenSSL and libffi available on your system.
+``cryptography`` should build very easily on GNU/Linux provided you have a C
+compiler and headers for Python and the OpenSSL and libffi libraries available
+on your system.
 
-For Ubuntu, the following command line will ensure this is the case:
+Debian and Ubuntu systems
+.........................
+
+For Debian and Ubuntu, the following command line will ensure the required
+dependencies are installed:
 
 .. code-block:: console
 
-    sudo apt-get install libssl-dev libffi-dev
+    sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 
 You should now be able to build and install cryptography with the usual
 
@@ -40,8 +45,8 @@ You should now be able to build and install cryptography with the usual
 
     python setup.py install
 
-Using your own OpenSSL on Linux
-...............................
+Using your own OpenSSL on GNU/Linux
+...................................
 
 Python links to OpenSSL for its own purposes and this can sometimes cause
 problems when you wish to use a different version of OpenSSL with cryptography.
