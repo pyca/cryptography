@@ -99,7 +99,6 @@ Algorithms
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
                       This must be kept secret.
 
-
 .. class:: TripleDES(key)
 
     Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
@@ -124,7 +123,6 @@ Algorithms
 
     :param bytes key: The secret key, 40-128 bits in length (in increments of
                       8).  This must be kept secret.
-
 
 Weak Ciphers
 ------------
