@@ -26,8 +26,8 @@ Building cryptography on GNU/Linux
 ----------------------------------
 
 ``cryptography`` should build very easily on GNU/Linux provided you have a C
-compiler and headers for Python and the OpenSSL and libffi libraries available
-on your system.
+compiler, headers for Python (if you're not using Pypy), and headers for the
+OpenSSL and `libffi` libraries available on your system.
 
 Debian and Ubuntu systems
 .........................
