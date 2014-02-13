@@ -228,6 +228,27 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
+    def dmp1(self):
+        """
+        A Chinese remainder theorem coefficient used to speed up RSA
+        calculations.  Calculated as: d mod (p-1)
+        """
+
+    @abc.abstractproperty
+    def dmq1(self):
+        """
+        A Chinese remainder theorem coefficient used to speed up RSA
+        calculations.  Calculated as: d mod (q-1)
+        """
+
+    @abc.abstractproperty
+    def iqmp(self):
+        """
+        A Chinese remainder theorem coefficient used to speed up RSA
+        calculations. The modular inverse of q modulo p
+        """
+
+    @abc.abstractproperty
     def e(self):
         """
         The public exponent of the RSA key. Alias for public_exponent.
