@@ -35,15 +35,13 @@ class TestHOTP(object):
         secret = os.urandom(10)
 
         with pytest.raises(ValueError):
-            hotp = HOTP(secret, 6, backend)
-            hotp.generate(0)
+            HOTP(secret, 6, backend)
 
     def test_invalid_hotp_length(self, backend):
         secret = os.urandom(16)
 
         with pytest.raises(ValueError):
-            hotp = HOTP(secret, 4, backend)
-            hotp.generate(0)
+            HOTP(secret, 4, backend)
 
     @pytest.mark.parametrize("params", vectors)
     def test_truncate(self, backend, params):

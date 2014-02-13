@@ -25,8 +25,8 @@ class HOTP(object):
         if len(key) < 16:
             raise ValueError("Key length has to be at least 128 bits.")
 
-        if length < 6:
-            raise ValueError("Length of HOTP has to be at least 6.")
+        if length < 6 or length > 8:
+            raise ValueError("Length of HOTP has to be between 6 to 8.")
 
         self._key = key
         self._length = length
