@@ -113,7 +113,7 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
 
-int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, EVP_MD_CTX *);
+int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
 // not macros but must be in this section since they're not available in 0.9.8
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
