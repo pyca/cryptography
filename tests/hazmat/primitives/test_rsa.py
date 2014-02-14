@@ -56,6 +56,42 @@ def _check_rsa_private_key(skey):
     assert skey.key_size == pkey.key_size
 
 
+def test_egcd():
+    assert _egcd(0, 1) == (1, 0, 1)
+    val = _egcd(
+        int("c08e63c2fdf20bd2a05bd448e34a892cc8718c13ac5f8fb3f55cff7bc1a7f891",
+            16),
+        int("e525d5ee4fe6d6142812fe12a7b531ebfaa033be349e4c3680d264f41d82008b",
+            16)
+    )
+    assert val[0] == 1L
+    assert val[1] == int("6caa1a8fae63ab2b8d4051101828985ef93fb0ffc14a955f93fd"
+                         "9c4a3fd8c7b1", 16)
+    assert val[2] == int("-5b4ff48d0c09936986bc3c544f1e7dd684f8c0f09ae36a7819e"
+                         "c95017c4be1c0", 16)
+
+
+def test_modular_inverse():
+    p = int(
+        "d1f9f6c09fd3d38987f7970247b85a6da84907753d42ec52bc23b745093f4fff5cff3"
+        "617ce43d00121a9accc0051f519c76e08cf02fc18acfe4c9e6aea18da470a2b611d2e"
+        "56a7b35caa2c0239bc041a53cc5875ca0b668ae6377d4b23e932d8c995fd1e58ecfd8"
+        "c4b73259c0d8a54d691cca3f6fb85c8a5c1baf588e898d481", 16
+    )
+    q = int(
+        "d1519255eb8f678c86cfd06802d1fbef8b664441ac46b73d33d13a8404580a33a8e74"
+        "cb2ea2e2963125b3d454d7a922cef24dd13e55f989cbabf64255a736671f4629a47b5"
+        "b2347cfcd669133088d1c159518531025297c2d67c9da856a12e80222cd03b4c6ec0f"
+        "86c957cb7bb8de7a127b645ec9e820aa94581e4762e209f01", 16
+    )
+    assert _modinv(q, p) == int(
+        "0275e06afa722999315f8f322275483e15e2fb46d827b17800f99110b269a6732748f"
+        "624a382fa2ed1ec68c99f7fc56fb60e76eea51614881f497ba7034c17dde955f92f15"
+        "772f8b2b41f3e56d88b1e096cdd293eba4eae1e82db815e0fadea0c4ec971bc6fd875"
+        "c20e67e48c31a611e98d32c6213ae4c4d7b53023b2f80c538", 16
+    )
+
+
 @pytest.mark.rsa
 class TestRSA(object):
     @pytest.mark.parametrize(
