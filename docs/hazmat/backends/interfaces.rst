@@ -16,8 +16,13 @@ A specific ``backend`` may provide one or more of these interfaces.
 
 .. class:: CipherBackend
 
-    A backend which provides methods for using ciphers for encryption
+    A backend that provides methods for using ciphers for encryption
     and decryption.
+
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: cipher_supported(cipher, mode)
 
@@ -76,6 +81,11 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for using cryptographic hash functions.
 
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
+
     .. method:: hash_supported(algorithm)
 
         Check if the specified ``algorithm`` is supported by this backend.
@@ -106,6 +116,11 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for using cryptographic hash functions as message
     authentication codes.
+
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: hmac_supported(algorithm)
 
@@ -138,6 +153,11 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. versionadded:: 0.2
 
     A backend with methods for using PBKDF2 using HMAC as a PRF.
+
+    The following backends implement this interface:
+
+    * :doc:`/hazmat/backends/openssl`
+    * :doc:`/hazmat/backends/commoncrypto`
 
     .. method:: pbkdf2_hmac_supported(algorithm)
 
@@ -172,3 +192,23 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :return bytes: Derived key.
 
+
+.. class:: RSABackend
+
+    .. versionadded:: 0.2
+
+    A backend with methods for using RSA.
+
+    .. method:: generate_rsa_private_key(public_exponent, key_size)
+
+        :param int public_exponent: The public exponent of the new key.
+            Often one of the small Fermat primes 3, 5, 17, 257 or 65537.
+
+        :param int key_size: The length in bits of the modulus. Should be
+            at least 2048.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :raises ValueError: If the public_exponent is not valid.

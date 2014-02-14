@@ -20,22 +20,24 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend
+    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
 )
+from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Blowfish, Camellia, TripleDES, ARC4,
+    AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
-from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
+@utils.register_interface(RSABackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -58,6 +60,40 @@ class Backend(object):
 
         self._cipher_registry = {}
         self._register_default_ciphers()
+        self.activate_osrandom_engine()
+
+    def activate_builtin_random(self):
+        # Obtain a new structural reference.
+        e = self._lib.ENGINE_get_default_RAND()
+        if e != self._ffi.NULL:
+            self._lib.ENGINE_unregister_RAND(e)
+            # Reset the RNG to use the new engine.
+            self._lib.RAND_cleanup()
+            # decrement the structural reference from get_default_RAND
+            res = self._lib.ENGINE_finish(e)
+            assert res == 1
+
+    def activate_osrandom_engine(self):
+        # Unregister and free the current engine.
+        self.activate_builtin_random()
+        # Fetches an engine by id and returns it. This creates a structural
+        # reference.
+        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
+        assert e != self._ffi.NULL
+        # Initialize the engine for use. This adds a functional reference.
+        res = self._lib.ENGINE_init(e)
+        assert res == 1
+        # Set the engine as the default RAND provider.
+        res = self._lib.ENGINE_set_default_RAND(e)
+        assert res == 1
+        # Decrement the structural ref incremented by ENGINE_by_id.
+        res = self._lib.ENGINE_free(e)
+        assert res == 1
+        # Decrement the functional ref incremented by ENGINE_init.
+        res = self._lib.ENGINE_finish(e)
+        assert res == 1
+        # Reset the RNG to use the new engine.
+        self._lib.RAND_cleanup()
 
     def openssl_version_text(self):
         """
@@ -117,6 +153,12 @@ class Backend(object):
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
             )
+        for mode_cls in [CBC, CFB, OFB, ECB]:
+            self.register_cipher_adapter(
+                CAST5,
+                mode_cls,
+                GetCipherByName("cast5-{mode.name}")
+            )
         self.register_cipher_adapter(
             ARC4,
             type(None),
@@ -162,8 +204,11 @@ class Backend(object):
             )
             assert res == 1
         else:
-            # OpenSSL < 1.0.0
-            assert isinstance(algorithm, hashes.SHA1)
+            if not isinstance(algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This version of OpenSSL only supports PBKDF2HMAC with "
+                    "SHA1"
+                )
             res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
                 key_material,
                 len(key_material),
@@ -220,6 +265,46 @@ class Backend(object):
             "you should probably file a bug. {1}".format(
                 code, self._err_string(code)
             )
+        )
+
+    def _bn_to_int(self, bn):
+        hex_cdata = self._lib.BN_bn2hex(bn)
+        assert hex_cdata != self._ffi.NULL
+        hex_str = self._ffi.string(hex_cdata)
+        self._lib.OPENSSL_free(hex_cdata)
+        return int(hex_str, 16)
+
+    def generate_rsa_private_key(self, public_exponent, key_size):
+        if public_exponent < 3:
+            raise ValueError("public_exponent must be >= 3")
+
+        if public_exponent & 1 == 0:
+            raise ValueError("public_exponent must be odd")
+
+        if key_size < 512:
+            raise ValueError("key_size must be at least 512-bits")
+
+        ctx = backend._lib.RSA_new()
+        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+
+        bn = backend._lib.BN_new()
+        assert bn != self._ffi.NULL
+        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+
+        res = backend._lib.BN_set_word(bn, public_exponent)
+        assert res == 1
+
+        res = backend._lib.RSA_generate_key_ex(
+            ctx, key_size, bn, backend._ffi.NULL
+        )
+        assert res == 1
+
+        return rsa.RSAPrivateKey(
+            p=self._bn_to_int(ctx.p),
+            q=self._bn_to_int(ctx.q),
+            private_exponent=self._bn_to_int(ctx.d),
+            public_exponent=self._bn_to_int(ctx.e),
+            modulus=self._bn_to_int(ctx.n),
         )
 
 

@@ -2,8 +2,7 @@ Welcome to ``cryptography``
 ===========================
 
 ``cryptography`` is a Python library which exposes cryptographic recipes and
-primitives. We hope it'll be your one-stop-shop for all your cryptographic
-needs in Python.
+primitives. Our goal is for it to be your "cryptographic standard library".
 
 Installation
 ------------
@@ -28,7 +27,9 @@ existing libraries:
 * Use of poor implementations of algorithms (i.e. ones with known side-channel
   attacks).
 * Lack of high level, "Cryptography for humans", APIs.
-* Absence of algorithms such as AES-GCM.
+* Absence of algorithms such as
+  :class:`AES-GCM <cryptography.hazmat.primitives.ciphers.modes.GCM>` and
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Poor introspectability, and thus poor testability.
 * Extremely error prone APIs, and bad defaults.
 
@@ -57,6 +58,7 @@ The recipes layer
     :maxdepth: 2
 
     fernet
+    random-numbers
     exceptions
     glossary
 
@@ -77,7 +79,7 @@ The ``cryptography`` open source project
     :maxdepth: 2
 
     installation
-    contributing
+    development/index
     security
     api-stability
     doing-a-release

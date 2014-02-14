@@ -117,6 +117,7 @@ static const int SSL_MODE_AUTO_RETRY;
 static const int SSL3_RANDOM_SIZE;
 typedef ... X509_STORE_CTX;
 static const int X509_V_OK;
+static const int X509_V_ERR_APPLICATION_VERIFICATION;
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
@@ -267,6 +268,10 @@ const SSL_METHOD *SSLv3_client_method(void);
 const SSL_METHOD *TLSv1_method(void);
 const SSL_METHOD *TLSv1_server_method(void);
 const SSL_METHOD *TLSv1_client_method(void);
+
+const SSL_METHOD *DTLSv1_method(void);
+const SSL_METHOD *DTLSv1_server_method(void);
+const SSL_METHOD *DTLSv1_client_method(void);
 
 const SSL_METHOD *SSLv23_method(void);
 const SSL_METHOD *SSLv23_server_method(void);

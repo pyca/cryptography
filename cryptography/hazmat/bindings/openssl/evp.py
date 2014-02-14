@@ -32,6 +32,7 @@ typedef struct evp_pkey_st {
     int type;
     ...;
 } EVP_PKEY;
+typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
 static const int EVP_MAX_MD_SIZE;
@@ -41,6 +42,7 @@ static const int EVP_CTRL_GCM_SET_TAG;
 
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
+static const int Cryptography_HAS_PKEY_CTX;
 """
 
 FUNCTIONS = """
@@ -110,6 +112,20 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
 int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
+
+int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, EVP_MD_CTX *);
+
+// not macros but must be in this section since they're not available in 0.9.8
+EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
+void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
+int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
+int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                  const unsigned char *, size_t);
+int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
+int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
+                    const unsigned char *, size_t);
 """
 
 CUSTOMIZATIONS = """
@@ -123,10 +139,24 @@ const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
 #if OPENSSL_VERSION_NUMBER >= 0x10000000
 const long Cryptography_HAS_PBKDF2_HMAC = 1;
+const long Cryptography_HAS_PKEY_CTX = 1;
 #else
 const long Cryptography_HAS_PBKDF2_HMAC = 0;
 int (*PKCS5_PBKDF2_HMAC)(const char *, int, const unsigned char *, int, int,
                          const EVP_MD *, int, unsigned char *) = NULL;
+const long Cryptography_HAS_PKEY_CTX = 0;
+typedef void EVP_PKEY_CTX;
+int (*EVP_PKEY_CTX_set_signature_md)(EVP_PKEY_CTX *, EVP_MD_CTX *) = NULL;
+int (*EVP_PKEY_sign_init)(EVP_PKEY_CTX *) = NULL;
+int (*EVP_PKEY_sign)(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                     const unsigned char *, size_t) = NULL;
+int (*EVP_PKEY_verify_init)(EVP_PKEY_CTX *) = NULL;
+int (*EVP_PKEY_verify)(EVP_PKEY_CTX *, const unsigned char *, size_t,
+                       const unsigned char *, size_t) = NULL;
+EVP_PKEY_CTX *(*EVP_PKEY_CTX_new)(EVP_PKEY *, ENGINE *) = NULL;
+EVP_PKEY_CTX *(*EVP_PKEY_CTX_new_id)(int, ENGINE *) = NULL;
+EVP_PKEY_CTX *(*EVP_PKEY_CTX_dup)(EVP_PKEY_CTX *) = NULL;
+void (*EVP_PKEY_CTX_free)(EVP_PKEY_CTX *) = NULL;
 #endif
 """
 
@@ -138,5 +168,16 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_PBKDF2_HMAC": [
         "PKCS5_PBKDF2_HMAC"
+    ],
+    "Cryptography_HAS_PKEY_CTX": [
+        "EVP_PKEY_CTX_new",
+        "EVP_PKEY_CTX_new_id",
+        "EVP_PKEY_CTX_dup",
+        "EVP_PKEY_CTX_free",
+        "EVP_PKEY_sign",
+        "EVP_PKEY_sign_init",
+        "EVP_PKEY_verify",
+        "EVP_PKEY_verify_init",
+        "EVP_PKEY_CTX_set_signature_md",
     ]
 }

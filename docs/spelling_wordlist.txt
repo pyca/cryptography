@@ -3,6 +3,7 @@ backends
 boolean
 ciphertext
 committer
+committers
 crypto
 cryptographic
 cryptographically
@@ -17,6 +18,7 @@ invariants
 iOS
 pickleable
 plaintext
+pseudorandom
 testability
 unencrypted
 unpadded
