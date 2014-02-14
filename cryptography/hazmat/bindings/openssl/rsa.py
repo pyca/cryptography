@@ -52,6 +52,14 @@ int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
 int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
                         RSA *, int);
 int RSA_print(BIO *, const RSA *, int);
+int RSA_verify_PKCS1_PSS(RSA *, const unsigned char *, const EVP_MD *,
+                         const unsigned char *, int);
+int RSA_padding_add_PKCS1_PSS(RSA *, unsigned char *, const unsigned char *,
+                              const EVP_MD *, int);
+int RSA_padding_add_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
+                               int, const unsigned char *, int);
+int RSA_padding_check_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
+                                 int, int, const unsigned char *, int);
 """
 
 MACROS = """
