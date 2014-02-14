@@ -52,12 +52,32 @@ int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
 int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
                         RSA *, int);
 int RSA_print(BIO *, const RSA *, int);
+int RSA_verify_PKCS1_PSS(RSA *, const unsigned char *, const EVP_MD *,
+                         const unsigned char *, int);
+int RSA_padding_add_PKCS1_PSS(RSA *, unsigned char *, const unsigned char *,
+                              const EVP_MD *, int);
+int RSA_padding_add_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
+                               int, const unsigned char *, int);
+int RSA_padding_check_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
+                                 int, int, const unsigned char *, int);
 """
 
 MACROS = """
+int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
+int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
 """
 
 CUSTOMIZATIONS = """
+#if OPENSSL_VERSION_NUMBER < 0x10000000
+// see evp.py for the definition of Cryptography_HAS_PKEY_CTX
+int (*EVP_PKEY_CTX_set_rsa_padding)(EVP_PKEY_CTX *, int) = NULL;
+int (*EVP_PKEY_CTX_set_rsa_pss_saltlen)(EVP_PKEY_CTX *, int) = NULL;
+#endif
 """
 
-CONDITIONAL_NAMES = {}
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_PKEY_CTX": [
+        "EVP_PKEY_CTX_set_rsa_padding",
+        "EVP_PKEY_CTX_set_rsa_pss_saltlen",
+    ]
+}
