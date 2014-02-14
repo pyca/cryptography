@@ -101,6 +101,9 @@ const EVP_MD *EVP_md5(void);
 
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
+
+int EVP_PKEY_set1_RSA(EVP_PKEY *, struct rsa_st *);
+int EVP_PKEY_set1_DSA(EVP_PKEY *, struct dsa_st *);
 """
 
 MACROS = """
