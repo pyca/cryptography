@@ -60,6 +60,16 @@ int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
 """
 
 CUSTOMIZATIONS = """
+#if OPENSSL_VERSION_NUMBER < 0x10000000
+// see evp.py for the definition of Cryptography_HAS_PKEY_CTX
+int (*EVP_PKEY_CTX_set_rsa_padding)(EVP_PKEY_CTX *, int) = NULL;
+int (*EVP_PKEY_CTX_set_rsa_pss_saltlen)(EVP_PKEY_CTX *, int) = NULL;
+#endif
 """
 
-CONDITIONAL_NAMES = {}
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_PKEY_CTX": [
+        "EVP_PKEY_CTX_set_rsa_padding",
+        "EVP_PKEY_CTX_set_rsa_pss_saltlen",
+    ]
+}
