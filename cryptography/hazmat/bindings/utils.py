@@ -52,10 +52,11 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
 
     ffi.cdef("\n".join(types + functions + macros))
 
+    compiler_args = []
     if sys.platform != "win32":
-        compiler_args = ["-Werror", "-Wno-error=unused-command-line-argument"]
-    else:
-        compiler_args = []
+        compiler_args.append("-Werror")
+    if sys.platform == "darwin":
+        compiler_args.append("-Wno-error=unused-command-line-argument")
     # We include functions here so that if we got any of their definitions
     # wrong, the underlying C compiler will explode. In C you are allowed
     # to re-declare a function if it has the same signature. That is:
