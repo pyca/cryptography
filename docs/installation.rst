@@ -39,6 +39,13 @@ dependencies are installed:
 
     $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 
+Fedora and RHEL-based systems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: console
+
+    $ sudo yum install gcc libffi-devel python-devel openssl-devel
+
 You should now be able to build and install cryptography with the usual
 
 .. code-block:: console
