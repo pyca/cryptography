@@ -29,18 +29,15 @@ Building cryptography on Linux
 compiler, headers for Python (if you're not using ``pypy``), and headers for
 the OpenSSL and ``libffi`` libraries available on your system.
 
-Debian and Ubuntu systems
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For Debian and Ubuntu, the following command line will ensure the required
+For Debian and Ubuntu, the following command will ensure that the required
 dependencies are installed:
 
 .. code-block:: console
 
     $ sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 
-Fedora and RHEL-based systems
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For Fedora and RHEL-derivatives, the following command will ensure that the
+required dependencies are installed:
 
 .. code-block:: console
 
