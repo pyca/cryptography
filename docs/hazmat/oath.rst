@@ -57,3 +57,39 @@ codes (HMAC).
         :param bytes counter: The counter value to validate against.
         :raises cryptography.exceptions.InvalidToken: This is raised when the supplied HOTP
                                                       does not match the expected HOTP.
+
+Throttling
+----------
+
+Due to the fact that the HOTP algorithm generates rather short tokens that are 6 - 8 digits
+long, brute force attacks are possible. It is highly recommended that the server that
+validates the token implement a throttling scheme that locks out the account for a period of
+time after a number of failed attempts. The number of allowed attempts should be as low as
+possible while still ensuring that usability is not significantly impacted.
+
+Re-synchronization of the Counter
+---------------------------------
+
+The server's counter value should only be incremented on a successful HOTP authentication.
+However, the counter on the client is incremented every time a new HOTP value is requested.
+This can lead to the counter value being out of synchronization between the client and server.
+
+Due to this, it is highly recommended that the server sets a look-ahead window that allows the
+server to calculate the next ``x`` HOTP values and check them against the supplied HOTP value.
+This can be accomplished with something similar to the following code.
+
+.. code-block:: python
+
+    def verify(hotp, counter, look_ahead):
+        assert look_ahead >= 0
+        correct_counter = None
+
+        otp = HOTP(key, 6, default_backend())
+        for count in range(counter, counter+look_ahead):
+            try:
+                otp.verify(hotp, count)
+                correct_counter = count
+            except InvalidToken:
+                pass
+
+        return correct_counter
