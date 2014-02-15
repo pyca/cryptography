@@ -406,3 +406,21 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
             verifier.verify()
     else:
         verifier.verify()
+
+
+def _check_rsa_private_key(skey):
+    assert skey
+    assert skey.modulus
+    assert skey.public_exponent
+    assert skey.private_exponent
+    assert skey.p * skey.q == skey.modulus
+    assert skey.key_size
+    assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
+    assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
+    assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
+
+    pkey = skey.public_key()
+    assert pkey
+    assert skey.modulus == pkey.modulus
+    assert skey.public_exponent == pkey.public_exponent
+    assert skey.key_size == pkey.key_size
