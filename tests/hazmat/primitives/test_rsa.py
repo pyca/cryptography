@@ -24,18 +24,17 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from ...utils import load_pkcs1_vectors, load_vectors_from_file
 
 
-def _egcd(a, b):
-    if a == 0:
-        return (b, 0, 1)
-    else:
-        g, y, x = _egcd(b % a, a)
-        return (g, x - (b // a) * y, y)
-
-
-def _modinv(a, m):
-    g, x, y = _egcd(a, m)
-    assert g == 1
-    return x % m
+def _modinv(e, m):
+    """
+    Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
+    """
+    x1, y1, x2, y2 = 1, 0, 0, 1
+    a, b = e, m
+    while b > 0:
+        q, r = divmod(a, b)
+        xn, yn = x1 - q * x2, y1 - q * y2
+        a, b, x1, y1, x2, y2 = b, r, x2, y2, xn, yn
+    return x1 % m
 
 
 def _check_rsa_private_key(skey):
@@ -54,21 +53,6 @@ def _check_rsa_private_key(skey):
     assert skey.modulus == pkey.modulus
     assert skey.public_exponent == pkey.public_exponent
     assert skey.key_size == pkey.key_size
-
-
-def test_egcd():
-    assert _egcd(0, 1) == (1, 0, 1)
-    val = _egcd(
-        int("c08e63c2fdf20bd2a05bd448e34a892cc8718c13ac5f8fb3f55cff7bc1a7f891",
-            16),
-        int("e525d5ee4fe6d6142812fe12a7b531ebfaa033be349e4c3680d264f41d82008b",
-            16)
-    )
-    assert val[0] == 1
-    assert val[1] == int("6caa1a8fae63ab2b8d4051101828985ef93fb0ffc14a955f93fd"
-                         "9c4a3fd8c7b1", 16)
-    assert val[2] == int("-5b4ff48d0c09936986bc3c544f1e7dd684f8c0f09ae36a7819e"
-                         "c95017c4be1c0", 16)
 
 
 def test_modular_inverse():
