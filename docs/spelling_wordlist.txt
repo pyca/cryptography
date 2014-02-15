@@ -1,6 +1,9 @@
 backend
 backends
+Backends
+Blowfish
 boolean
+Changelog
 ciphertext
 committer
 committers
@@ -10,7 +13,9 @@ cryptographically
 decrypt
 decrypted
 decrypting
+Docstrings
 fernet
+Fernet
 hazmat
 indistinguishability
 introspectability
@@ -19,13 +24,8 @@ iOS
 pickleable
 plaintext
 pseudorandom
+Schneier
 testability
 unencrypted
 unpadded
 unpadding
-Backends
-Blowfish
-Changelog
-Docstrings
-Fernet
-Schneier
