@@ -101,6 +101,9 @@ const EVP_MD *EVP_md5(void);
 
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
+
+int EVP_PKEY_set1_RSA(EVP_PKEY *, struct rsa_st *);
+int EVP_PKEY_set1_DSA(EVP_PKEY *, struct dsa_st *);
 """
 
 MACROS = """
@@ -113,7 +116,7 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
 
-int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, EVP_MD_CTX *);
+int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
 // not macros but must be in this section since they're not available in 0.9.8
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
@@ -146,7 +149,7 @@ int (*PKCS5_PBKDF2_HMAC)(const char *, int, const unsigned char *, int, int,
                          const EVP_MD *, int, unsigned char *) = NULL;
 const long Cryptography_HAS_PKEY_CTX = 0;
 typedef void EVP_PKEY_CTX;
-int (*EVP_PKEY_CTX_set_signature_md)(EVP_PKEY_CTX *, EVP_MD_CTX *) = NULL;
+int (*EVP_PKEY_CTX_set_signature_md)(EVP_PKEY_CTX *, const EVP_MD *) = NULL;
 int (*EVP_PKEY_sign_init)(EVP_PKEY_CTX *) = NULL;
 int (*EVP_PKEY_sign)(EVP_PKEY_CTX *, unsigned char *, size_t *,
                      const unsigned char *, size_t) = NULL;
