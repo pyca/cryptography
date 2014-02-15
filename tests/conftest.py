@@ -1,5 +1,6 @@
 import pytest
 
+from cryptography.py.hashlib import Hashlib
 from cryptography.hazmat.backends import _ALL_BACKENDS
 from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend, PBKDF2HMACBackend, RSABackend
@@ -14,6 +15,9 @@ def pytest_generate_tests(metafunc):
 
     if "backend" in metafunc.fixturenames:
         metafunc.parametrize("backend", selected_backends)
+
+    if "hashlib" in metafunc.fixturenames:
+        metafunc.parametrize("hashlib", [Hashlib(b) for b in _ALL_BACKENDS])
 
 
 @pytest.mark.trylast
