@@ -135,26 +135,6 @@ def load_cryptrec_vectors(vector_data):
     return cryptrec_list
 
 
-def load_openssl_vectors(vector_data):
-    vectors = []
-
-    for line in vector_data:
-        line = line.strip()
-
-        # Blank lines and comments are ignored
-        if not line or line.startswith("#"):
-            continue
-
-        vector = line.split(":")
-        vectors.append({
-            "key": vector[1].encode("ascii"),
-            "iv": vector[2].encode("ascii"),
-            "plaintext": vector[3].encode("ascii"),
-            "ciphertext": vector[4].encode("ascii"),
-        })
-    return vectors
-
-
 def load_hash_vectors(vector_data):
     vectors = []
     key = None
