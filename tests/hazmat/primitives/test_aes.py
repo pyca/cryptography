@@ -21,9 +21,7 @@ import pytest
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test, generate_aead_test
-from ...utils import (
-    load_nist_vectors, load_openssl_vectors,
-)
+from ...utils import load_nist_vectors
 
 
 @pytest.mark.supported(
@@ -167,7 +165,7 @@ class TestAES_CFB(object):
 @pytest.mark.cipher
 class TestAES_CTR(object):
     test_CTR = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "AES", "CTR"),
         ["aes-128-ctr.txt", "aes-192-ctr.txt", "aes-256-ctr.txt"],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
