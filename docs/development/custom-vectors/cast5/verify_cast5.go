@@ -91,6 +91,26 @@ func (o cfbVerifier) validate(count string, key, iv, plaintext, expected_ciphert
 	}
 }
 
+type ctrVerifier struct{}
+
+func (o ctrVerifier) validate(count string, key, iv, plaintext, expected_ciphertext []byte) {
+	block, err := cast5.NewCipher(key)
+	if err != nil {
+		panic(err)
+	}
+
+	ciphertext := make([]byte, len(plaintext))
+	stream := cipher.NewCTR(block, iv)
+	stream.XORKeyStream(ciphertext, plaintext)
+
+	if !bytes.Equal(ciphertext, expected_ciphertext) {
+		panic(fmt.Errorf("vector mismatch @ COUNT = %s:\n  %s != %s\n",
+			count,
+			hex.EncodeToString(expected_ciphertext),
+			hex.EncodeToString(ciphertext)))
+	}
+}
+
 func validateVectors(verifier VectorVerifier, filename string) {
 	vectors, err := os.Open(filename)
 	if err != nil {
@@ -138,4 +158,7 @@ func main() {
 	validateVectors(cbcVerifier{},
 		"tests/hazmat/primitives/vectors/ciphers/CAST5/cast5-cbc.txt")
 	fmt.Println("CBC OK.")
+	validateVectors(ctrVerifier{},
+		"tests/hazmat/primitives/vectors/ciphers/CAST5/cast5-ctr.txt")
+	fmt.Println("CTR OK.")
 }
