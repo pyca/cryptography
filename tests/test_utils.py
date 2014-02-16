@@ -768,7 +768,19 @@ def test_load_pkcs1_vectors():
                 'q': int(
                     '847e732376fc7900f898ea82eb2b0fc418565fdae62f7d9ec4ce2217b'
                     '97990dd272db157f99f63c0dcbb9fbacdbd4c4dadb6df67756358ca41'
-                    '74825b48f49706d', 16)
+                    '74825b48f49706d', 16),
+                'dmp1': int(
+                    '05c2a83c124b3621a2aa57ea2c3efe035eff4560f33ddebb7adab81fc'
+                    'e69a0c8c2edc16520dda83d59a23be867963ac65f2cc710bbcfb96ee1'
+                    '03deb771d105fd85', 16),
+                'dmq1': int(
+                    '04cae8aa0d9faa165c87b682ec140b8ed3b50b24594b7a3b2c220b366'
+                    '9bb819f984f55310a1ae7823651d4a02e99447972595139363434e5e3'
+                    '0a7e7d241551e1b9', 16),
+                'iqmp': int(
+                    '07d3e47bf686600b11ac283ce88dbb3f6051e8efd04680e44c171ef53'
+                    '1b80b2b7c39fc766320e2cf15d8d99820e96ff30dc69691839c4b40d7'
+                    'b06e45307dc91f3f', 16)
             },
 
             {
@@ -809,7 +821,22 @@ def test_load_pkcs1_vectors():
                     'ed4d71d0a6e24b93c2e5f6b4bbe05f5fb0afa042d204fe3378d365c2f'
                     '288b6a8dad7efe45d153eef40cacc7b81ff934002d108994b94a5e472'
                     '8cd9c963375ae49965bda55cbf0efed8d6553b4027f2d86208a6e6b48'
-                    '9c176128092d629e49d3d', 16)
+                    '9c176128092d629e49d3d', 16),
+                'dmp1': int(
+                    '2bb68bddfb0c4f56c8558bffaf892d8043037841e7fa81cfa61a38c5e'
+                    '39b901c8ee71122a5da2227bd6cdeeb481452c12ad3d61d5e4f776a0a'
+                    'b556591befe3e59e5a7fddb8345e1f2f35b9f4cee57c32414c086aec9'
+                    '93e9353e480d9eec6289f', 16),
+                'dmq1': int(
+                    '4ff897709fad079746494578e70fd8546130eeab5627c49b080f05ee4'
+                    'ad9f3e4b7cba9d6a5dff113a41c3409336833f190816d8a6bc42e9bec'
+                    '56b7567d0f3c9c696db619b245d901dd856db7c8092e77e9a1cccd56e'
+                    'e4dba42c5fdb61aec2669', 16),
+                'iqmp': int(
+                    '77b9d1137b50404a982729316efafc7dfe66d34e5a182600d5f30a0a8'
+                    '512051c560d081d4d0a1835ec3d25a60f4e4d6aa948b2bf3dbb5b124c'
+                    'bbc3489255a3a948372f6978496745f943e1db4f18382ceaa505dfc65'
+                    '757bb3f857a58dce52156', 16)
             },
 
             {

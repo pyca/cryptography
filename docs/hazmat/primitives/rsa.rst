@@ -7,7 +7,8 @@ RSA
 
 `RSA`_ is a `public-key`_ algorithm for encrypting and signing messages.
 
-.. class:: RSAPrivateKey(p, q, private_exponent, public_exponent, modulus)
+.. class:: RSAPrivateKey(p, q, private_exponent, dmp1, dmq1, iqmp,
+                         public_exponent, modulus)
 
     .. versionadded:: 0.2
 
