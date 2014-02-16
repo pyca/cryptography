@@ -4,8 +4,8 @@ CAST5 Vector Creation
 This page documents the code that was used to generate the CAST5 CBC, CFB, OFB,
 and CTR test vectors as well as the code used to verify them against another
 implementation. For CAST5 the CBC, CFB, and OFB vectors were generated using
-OpenSSL and the CTR vectors were generated using Apple's CommonCrypto. All of
-the modes were verified with Go.
+OpenSSL and the CTR vectors were generated using Apple's CommonCrypto. All the
+generated vectors were verified with Go.
 
 Creation
 --------
