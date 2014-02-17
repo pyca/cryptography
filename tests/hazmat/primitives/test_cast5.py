@@ -90,3 +90,20 @@ class TestCAST5_CFB(object):
         lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv))
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.CAST5("\x00" * 16), modes.CTR("\x00" * 8)
+    ),
+    skip_message="Does not support CAST5 CTR",
+)
+@pytest.mark.cipher
+class TestCAST5_CTR(object):
+    test_CFB = generate_encrypt_test(
+        load_nist_vectors,
+        os.path.join("ciphers", "CAST5"),
+        ["cast5-ctr.txt"],
+        lambda key, **kwargs: algorithms.CAST5(binascii.unhexlify((key))),
+        lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv))
+    )
