@@ -37,16 +37,16 @@ Glossary
 
     public key
         This is one of two keys involved in :term:`public-key cryptography`. It
-        can be used to encrypt messages for someone posessing the corrosponding
-        :term:`private key` and to verify signatures created with the
-        corrosponding :term:`private key`. This can be distributed publicly,
-        hence the name.
+        can be used to encrypt messages for someone possessing the
+        corresponding :term:`private key` and to verify signatures created with
+        the corresponding :term:`private key`. This can be distributed
+        publicly, hence the name.
 
     private key
         This is one of two keys involved in :term:`public-key cryptography`. It
         can be used to decrypt messages which were encrypted with the
-        corrosponding :term:`public key`, as well as to create signatures,
-        which can be verified with the corrosponding :term:`public key`. These
+        corresponding :term:`public key`, as well as to create signatures,
+        which can be verified with the corresponding :term:`public key`. These
         **must** be kept secret, if they are exposed, all encrypted messages
         are compromised, and an attacker will be able to forge signatures.
 
