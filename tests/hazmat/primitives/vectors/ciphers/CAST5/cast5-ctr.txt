@@ -1,3 +1,7 @@
+# CAST5 CTR vectors built for https://github.com/pyca/cryptography
+# Derived from the RFC 3686 test vectors for AES CTR
+# Verified against the Go crypto packages
+# Key Length : 128
 
 COUNT = 0
 KEY = AE6852F8121067CC4BF7A5765577F39E
