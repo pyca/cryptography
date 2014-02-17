@@ -100,7 +100,7 @@ class TestCAST5_CFB(object):
 )
 @pytest.mark.cipher
 class TestCAST5_CTR(object):
-    test_CFB = generate_encrypt_test(
+    test_CTR = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
         ["cast5-ctr.txt"],
