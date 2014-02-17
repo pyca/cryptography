@@ -1,6 +1,6 @@
 import binascii
 
-from cryptography.hazmat.backends.openssl.backend import backend
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import base, algorithms, modes
 
 
@@ -8,7 +8,7 @@ def encrypt(mode, key, iv, plaintext):
     cipher = base.Cipher(
         algorithms.CAST5(binascii.unhexlify(key)),
         mode(binascii.unhexlify(iv)),
-        backend
+        default_backend()
     )
     encryptor = cipher.encryptor()
     ct = encryptor.update(binascii.unhexlify(plaintext))
@@ -57,3 +57,5 @@ ofb_path = "tests/hazmat/primitives/vectors/ciphers/AES/OFB/OFBMMT128.rsp"
 write_file(build_vectors(modes.OFB, ofb_path), "cast5-ofb.txt")
 cfb_path = "tests/hazmat/primitives/vectors/ciphers/AES/CFB/CFB128MMT128.rsp"
 write_file(build_vectors(modes.CFB, cfb_path), "cast5-cfb.txt")
+ctr_path = "tests/hazmat/primitives/vectors/ciphers/AES/CTR/aes-128-ctr.txt"
+write_file(build_vectors(modes.CTR, ctr_path), "cast5-ctr.txt")
