@@ -20,8 +20,8 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors, check_for_iface,
-    check_backend_support, select_backends, load_pkcs1_vectors
+    load_hash_vectors, check_for_iface, check_backend_support,
+    select_backends, load_pkcs1_vectors
 )
 
 
@@ -251,57 +251,6 @@ def test_load_cryptrec_vectors_invalid():
 
     with pytest.raises(ValueError):
         load_cryptrec_vectors(vector_data)
-
-
-def test_load_openssl_vectors():
-    vector_data = textwrap.dedent(
-        """
-        # We don't support CFB{1,8}-CAMELLIAxxx.{En,De}crypt
-        # For all CFB128 encrypts and decrypts, the transformed sequence is
-        #   CAMELLIA-bits-CFB:key:IV/ciphertext':plaintext:ciphertext:encdec
-        # CFB128-CAMELLIA128.Encrypt
-        """
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "000102030405060708090A0B0C0D0E0F:6BC1BEE22E409F96E93D7E117393172A:"
-        "14F7646187817EB586599146B82BD719:1\n"
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "14F7646187817EB586599146B82BD719:AE2D8A571E03AC9C9EB76FAC45AF8E51:"
-        "A53D28BB82DF741103EA4F921A44880B:1\n\n"
-        "# CFB128-CAMELLIA128.Decrypt\n"
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "000102030405060708090A0B0C0D0E0F:6BC1BEE22E409F96E93D7E117393172A:"
-        "14F7646187817EB586599146B82BD719:0\n"
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "14F7646187817EB586599146B82BD719:AE2D8A571E03AC9C9EB76FAC45AF8E51:"
-        "A53D28BB82DF741103EA4F921A44880B:0"
-    ).splitlines()
-
-    assert load_openssl_vectors(vector_data) == [
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"000102030405060708090A0B0C0D0E0F",
-            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
-            "ciphertext": b"14F7646187817EB586599146B82BD719",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"14F7646187817EB586599146B82BD719",
-            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"000102030405060708090A0B0C0D0E0F",
-            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
-            "ciphertext": b"14F7646187817EB586599146B82BD719",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"14F7646187817EB586599146B82BD719",
-            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
-        },
-    ]
 
 
 def test_load_hash_vectors():
