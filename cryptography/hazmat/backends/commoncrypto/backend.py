@@ -202,7 +202,8 @@ class Backend(object):
             (CBC, self._lib.kCCModeCBC),
             (ECB, self._lib.kCCModeECB),
             (CFB, self._lib.kCCModeCFB),
-            (OFB, self._lib.kCCModeOFB)
+            (OFB, self._lib.kCCModeOFB),
+            (CTR, self._lib.kCCModeCTR)
         ]:
             self._register_cipher_adapter(
                 CAST5,
