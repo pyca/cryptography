@@ -47,7 +47,8 @@ Recipes
 Symmetric Ciphers
 ~~~~~~~~~~~~~~~~~
 
-* AES (CBC, CFB, CTR, ECB, GCM, OFB) from `NIST CAVP`_.
+* AES (CBC, CFB, ECB, GCM, OFB) from `NIST CAVP`_.
+* AES CTR from :rfc:`3686`.
 * 3DES (CBC, CFB, ECB, OFB) from `NIST CAVP`_.
 * ARC4 from :rfc:`6229`.
 * Blowfish (CBC, CFB, ECB, OFB) from `Bruce Schneier's vectors`_.
