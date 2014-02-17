@@ -7,16 +7,13 @@ RSA
 
 `RSA`_ is a `public-key`_ algorithm for encrypting and signing messages.
 
-.. class:: RSAPrivateKey(p, q, private_exponent, dmp1, dmq1, iqmp,
-                         public_exponent, modulus)
+.. class:: RSAPrivateKey(p, q, private_exponent, dmp1, dmq1, iqmp, public_exponent, modulus)
 
     .. versionadded:: 0.2
 
     An RSA private key is required for decryption and signing of messages.
 
-    You should use
-    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.generate`
-    to generate new keys.
+    You should use :meth:`~generate` to generate new keys.
 
     .. warning::
         This method only checks a limited set of properties of its arguments.
@@ -52,6 +49,7 @@ RSA
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
             provider.
         :return: A new instance of ``RSAPrivateKey``.
+
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
