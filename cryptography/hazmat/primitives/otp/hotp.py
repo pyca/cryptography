@@ -12,9 +12,10 @@
 # limitations under the License.
 
 import struct
-from cryptography.exceptions import InvalidToken
+
 import six
 
+from cryptography.exceptions import InvalidToken
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1
 

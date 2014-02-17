@@ -10,13 +10,13 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from cryptography.exceptions import InvalidToken
 
 import os
 
 import pytest
 
-from cryptography.hazmat.oath.hotp import HOTP
+from cryptography.exceptions import InvalidToken
+from cryptography.hazmat.primitives.otp.hotp import HOTP
 from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
 
