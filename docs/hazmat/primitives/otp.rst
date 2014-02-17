@@ -1,18 +1,18 @@
 .. hazmat::
 
-OATH
-====
+One Time Password
+=================
 
-.. currentmodule:: cryptography.hazmat.oath
+.. currentmodule:: cryptography.hazmat.primitives.otp
 
-This module contains algorithms under the umbrella of the
-Initiative for Open Authentication (OATH).
+This module contains algorithms for generating and verifying one
+time passwords.
 
 Currently, it contains an algorithm for generating and verifying
 one time password values based on Hash-based message authentication
 codes (HMAC).
 
-.. currentmodule:: cryptography.hazmat.oath.hotp
+.. currentmodule:: cryptography.hazmat.primitives.otp.hotp
 
 .. class:: HOTP(key, length, backend)
 
@@ -27,7 +27,7 @@ codes (HMAC).
 
         >>> import os
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.oath.hotp import HOTP
+        >>> from cryptography.hazmat.primitives.otp.hotp import HOTP
 
         >>> key = b"12345678901234567890"
         >>> hotp = HOTP(key, 6, backend=default_backend())

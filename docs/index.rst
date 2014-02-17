@@ -75,7 +75,6 @@ The hazardous materials layer
     hazmat/primitives/index
     hazmat/backends/index
     hazmat/bindings/index
-    hazmat/oath
 
 The ``cryptography`` open source project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
