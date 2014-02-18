@@ -213,7 +213,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :raises ValueError: If the public_exponent is not valid.
 
-    .. method:: create_rsa_sign_ctx(private_key, padding, algorithm)
+    .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
 
         :param private_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
