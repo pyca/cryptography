@@ -17,9 +17,6 @@ import sys
 
 import six
 
-from cryptography import utils
-from cryptography.hazmat.primitives import interfaces
-
 
 def _bit_length(x):
     if sys.version_info >= (2, 7):
@@ -28,7 +25,6 @@ def _bit_length(x):
         return len(bin(x)) - (2 + (x <= 0))
 
 
-@utils.register_interface(interfaces.RSAPublicKey)
 class RSAPublicKey(object):
     def __init__(self, public_exponent, modulus):
         if (
@@ -70,7 +66,6 @@ class RSAPublicKey(object):
         return self.modulus
 
 
-@utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
                  public_exponent, modulus):
