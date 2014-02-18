@@ -231,6 +231,39 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
+.. class:: AsymmetricSignContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you wish to pass into the context.
+
+    .. method:: finalize()
+
+        :return bytes signature: The signature.
+
+
+.. class:: AsymmetricVerifyContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you wish to pass into the context.
+
+    .. method:: finalize()
+
+        :raises cryptography.exceptions.InvalidSignature: If signature does not
+            validate.
+
+
+.. class:: AsymmetricPadding
+
+    A named asymmetric padding.
+
+    .. attribute:: name
+
 Hash Algorithms
 ~~~~~~~~~~~~~~~
 
