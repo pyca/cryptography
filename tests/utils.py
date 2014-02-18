@@ -186,9 +186,10 @@ def load_pkcs1_vectors(vector_data):
     examples = []
     vectors = []
     for line in vector_data:
-        if (line.startswith("# PSS Example") or
-                line.startswith("# PKCS#1 v1.5 Signature")
-            ):
+        if (
+            line.startswith("# PSS Example") or
+            line.startswith("# PKCS#1 v1.5 Signature")
+        ):
             if example_vector:
                 for key, value in six.iteritems(example_vector):
                     hex_str = "".join(value).replace(" ", "")
