@@ -94,7 +94,8 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         """
-        Returns an object conforming to the AsymmetricSignContext interface.
+        Returns an object conforming to the AsymmetricSignatureContext
+        interface.
         """
 
     @abc.abstractmethod

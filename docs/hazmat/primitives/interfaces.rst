@@ -231,13 +231,13 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
-.. class:: AsymmetricSignContext
+.. class:: AsymmetricSignatureContext
 
     .. versionadded:: 0.2
 
     .. method:: update(data)
 
-        :param bytes data: The data you wish to pass into the context.
+        :param bytes data: The data you want to sign.
 
     .. method:: finalize()
 
@@ -250,7 +250,7 @@ Asymmetric Interfaces
 
     .. method:: update(data)
 
-        :param bytes data: The data you wish to pass into the context.
+        :param bytes data: The data you wish to verify using the signature.
 
     .. method:: finalize()
 

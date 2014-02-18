@@ -287,7 +287,7 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AsymmetricSignContext(six.with_metaclass(abc.ABCMeta)):
+class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
         """
