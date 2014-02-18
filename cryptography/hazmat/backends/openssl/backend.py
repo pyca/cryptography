@@ -17,7 +17,7 @@ import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError
+    UnsupportedAlgorithm, InvalidTag, InternalError, InvalidSignature
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -287,12 +287,8 @@ class Backend(object):
         ctx = backend._lib.RSA_new()
         ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
 
-        bn = backend._lib.BN_new()
-        assert bn != self._ffi.NULL
+        bn = self._int_to_bn(public_exponent)
         bn = backend._ffi.gc(bn, backend._lib.BN_free)
-
-        res = backend._lib.BN_set_word(bn, public_exponent)
-        assert res == 1
 
         res = backend._lib.RSA_generate_key_ex(
             ctx, key_size, bn, backend._ffi.NULL
@@ -309,6 +305,49 @@ class Backend(object):
             public_exponent=self._bn_to_int(ctx.e),
             modulus=self._bn_to_int(ctx.n),
         )
+
+    def _num_to_bytes(self, num):
+        num = hex(num)[2:].rstrip("L")
+        if len(num) % 2:
+            return ("0%s" % num).decode('hex')
+        return num.decode("hex")
+
+    def _int_to_bn(self, num):
+        # pack the number in network byte order (big endian)
+        int_bytes = self._num_to_bytes(num)
+        # do not add this object to gc because it will be added to the
+        # RSA ctx
+        bn = backend._lib.BN_bin2bn(
+            int_bytes, len(int_bytes), backend._ffi.NULL)
+        assert bn != self._ffi.NULL
+        return bn
+
+    def _rsa_ctx_from_private_key(self, private_key):
+        ctx = backend._lib.RSA_new()
+        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+        ctx.p = self._int_to_bn(private_key.p)
+        ctx.q = self._int_to_bn(private_key.q)
+        ctx.d = self._int_to_bn(private_key.d)
+        ctx.e = self._int_to_bn(private_key.e)
+        ctx.n = self._int_to_bn(private_key.n)
+        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
+        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
+        ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        return ctx
+
+    def _rsa_ctx_from_public_key(self, public_key):
+        ctx = backend._lib.RSA_new()
+        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+        ctx.e = self._int_to_bn(public_key.e)
+        ctx.n = self._int_to_bn(public_key.n)
+        return ctx
+
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        return _RSASignatureContext(backend, private_key, padding, algorithm)
+
+    def create_rsa_verify_ctx(self, public_key, signature, padding, algorithm):
+        return _RSAVerifyContext(backend, public_key, signature, padding,
+                                 algorithm)
 
 
 class GetCipherByName(object):
@@ -559,6 +598,148 @@ class _HMACContext(object):
         assert res != 0
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:]
+
+
+@utils.register_interface(interfaces.AsymmetricSignatureContext)
+class _RSASignatureContext(object):
+    def __init__(self, backend, private_key, padding, algorithm):
+        self._backend = backend
+        self._private_key = private_key
+        if not isinstance(padding, interfaces.AsymmetricPadding):
+            raise TypeError(
+                "Expected interface of interfaces.AsymmetricPadding")
+
+        self._padding = padding
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        self._hash_ctx.update(data)
+
+    def finalize(self):
+        if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+            evp_pkey = self._backend._lib.EVP_PKEY_new()
+            assert evp_pkey != self._backend._ffi.NULL
+            evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+            rsa_ctx = backend._rsa_ctx_from_private_key(self._private_key)
+            res = self._backend._lib.RSA_blinding_on(
+                rsa_ctx, self._backend._ffi.NULL)
+            assert res == 1
+            res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
+            assert res == 1
+            pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+                evp_pkey, self._backend._ffi.NULL
+            )
+            assert pkey_ctx != self._backend._ffi.NULL
+            res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
+            assert res == 1
+            evp_md = self._backend._lib.EVP_get_digestbyname(
+                self._algorithm.name.encode("ascii"))
+            assert evp_md != self._backend._ffi.NULL
+            res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+                pkey_ctx, evp_md)
+            assert res > 0
+            if self._padding.name == "PKCS1":
+                padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            elif self._padding.name == "PSS":
+                try:
+                    padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+                except AttributeError:
+                    # TODO: this should trigger in the init
+                    raise ValueError("Unsupported padding type")
+            else:
+                raise ValueError("Unsupported padding type")  # TODO: do better
+
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+                pkey_ctx, padding_enum)
+            assert res > 0
+            data_to_sign = self._hash_ctx.finalize()
+            buf = self._backend._ffi.new("unsigned char[]",
+                                         self._private_key.key_size // 8)
+            buflen = self._backend._ffi.new("size_t *")
+            res = self._backend._lib.EVP_PKEY_sign(
+                pkey_ctx,
+                self._backend._ffi.NULL,
+                buflen,
+                data_to_sign,
+                len(data_to_sign)
+            )
+            assert res == 1
+            buf = self._backend._ffi.new("unsigned char[]", buflen[0])
+            res = self._backend._lib.EVP_PKEY_sign(
+                pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
+            assert res == 1
+            return self._backend._ffi.buffer(buf)[:]
+        else:
+            pass
+
+
+@utils.register_interface(interfaces.AsymmetricVerifyContext)
+class _RSAVerifyContext(object):
+    def __init__(self, backend, public_key, signature, padding, algorithm):
+        self._backend = backend
+        self._public_key = public_key
+        self._signature = signature
+        if not isinstance(padding, interfaces.AsymmetricPadding):
+            raise TypeError(
+                "Expected interface of interfaces.AsymmetricPadding")
+
+        self._padding = padding
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        self._hash_ctx.update(data)
+
+    def finalize(self):
+        if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+            evp_pkey = self._backend._lib.EVP_PKEY_new()
+            assert evp_pkey != self._backend._ffi.NULL
+            evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+            rsa_ctx = backend._rsa_ctx_from_public_key(self._public_key)
+            res = self._backend._lib.RSA_blinding_on(
+                rsa_ctx, self._backend._ffi.NULL)
+            assert res == 1
+            res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
+            assert res == 1
+            pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+                evp_pkey, self._backend._ffi.NULL
+            )
+            assert pkey_ctx != self._backend._ffi.NULL
+            res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
+            assert res == 1
+            evp_md = self._backend._lib.EVP_get_digestbyname(
+                self._algorithm.name.encode("ascii"))
+            assert evp_md != self._backend._ffi.NULL
+            res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+                pkey_ctx, evp_md)
+            assert res > 0
+            if self._padding.name == "PKCS1":
+                padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            elif self._padding.name == "PSS":
+                try:
+                    padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+                except AttributeError:
+                    # TODO: this should trigger in the init
+                    raise ValueError("Unsupported padding type")
+            else:
+                raise ValueError("Unsupported padding type")  # TODO: do better
+
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+                pkey_ctx, padding_enum)
+            assert res > 0
+            data_to_verify = self._hash_ctx.finalize()
+            res = self._backend._lib.EVP_PKEY_verify(
+                pkey_ctx,
+                self._signature,
+                len(self._signature),
+                data_to_verify,
+                len(data_to_verify)
+            )
+            if res != 1:
+                raise InvalidSignature
+        else:
+            pass
 
 
 backend = Backend()
