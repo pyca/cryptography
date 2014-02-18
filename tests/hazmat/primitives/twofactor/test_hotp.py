@@ -16,7 +16,7 @@ import os
 import pytest
 
 from cryptography.exceptions import InvalidToken
-from cryptography.hazmat.primitives.otp.hotp import HOTP
+from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
 

@@ -1,18 +1,17 @@
 .. hazmat::
 
-One Time Password
-=================
+Two-factor Authentication
+=========================
 
-.. currentmodule:: cryptography.hazmat.primitives.otp
+.. currentmodule:: cryptography.hazmat.primitives.twofactor
 
-This module contains algorithms for generating and verifying one
-time passwords.
+This module contains algorithms related to two-factor authentication.
 
 Currently, it contains an algorithm for generating and verifying
 one time password values based on Hash-based message authentication
 codes (HMAC).
 
-.. currentmodule:: cryptography.hazmat.primitives.otp.hotp
+.. currentmodule:: cryptography.hazmat.primitives.twofactor.hotp
 
 .. class:: HOTP(key, length, backend)
 
@@ -27,7 +26,7 @@ codes (HMAC).
 
         >>> import os
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives.otp.hotp import HOTP
+        >>> from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
         >>> key = b"12345678901234567890"
         >>> hotp = HOTP(key, 6, backend=default_backend())

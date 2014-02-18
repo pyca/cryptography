@@ -14,4 +14,4 @@ Primitives
     rsa
     constant-time
     interfaces
-    otp
+    twofactor
