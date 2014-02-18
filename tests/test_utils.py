@@ -804,14 +804,15 @@ def test_load_pkcs1_vectors():
                     'b06e45307dc91f3f', 16),
                 'examples': [
                     {
-                        'msg': '81332f4be62948415ea1d899792eeacf6c6e1db1da8be'
-                               '13b5cea41db2fed467092e1ff398914c714259775f595'
-                               'f8547f735692a575e6923af78f22c6997ddb90fb6f72d'
-                               '7bb0dd5744a31decd3dc3685849836ed34aec596304ad'
-                               '11843c4f88489f209735f5fb7fdaf7cec8addc5818168'
-                               'f880acbf490d51005b7a8e84e43e54287977571dd99ee'
-                               'a4b161eb2df1f5108f12a4142a83322edb05a75487a34'
-                               '35c9a78ce53ed93bc550857d7a9fb',
+                        'message': '81332f4be62948415ea1d899792eeacf6c6e1db1da'
+                                   '8be13b5cea41db2fed467092e1ff398914c7142597'
+                                   '75f595f8547f735692a575e6923af78f22c6997ddb'
+                                   '90fb6f72d7bb0dd5744a31decd3dc3685849836ed3'
+                                   '4aec596304ad11843c4f88489f209735f5fb7fdaf7'
+                                   'cec8addc5818168f880acbf490d51005b7a8e84e43'
+                                   'e54287977571dd99eea4b161eb2df1f5108f12a414'
+                                   '2a83322edb05a75487a3435c9a78ce53ed93bc5508'
+                                   '57d7a9fb',
                         'salt': '1d65491d79c864b373009be6f6f2467bac4c78fa',
                         'signature': '0262ac254bfa77f3c1aca22c5179f8f040422b3c'
                                      '5bafd40a8f21cf0fa5a667ccd5993d42dbafb409'
@@ -821,8 +822,8 @@ def test_load_pkcs1_vectors():
                                      'c5424ac4db1e20cb37d0b2744769940ea907e17f'
                                      'bbca673b20522380c5'
                     }, {
-                        'msg': 'e2f96eaf0e05e7ba326ecca0ba7fd2f7c02356f3cede9'
-                               'd0faabf4fcc8e60a973e5595fd9ea08',
+                        'message': 'e2f96eaf0e05e7ba326ecca0ba7fd2f7c02356f3ce'
+                                   'de9d0faabf4fcc8e60a973e5595fd9ea08',
                         'salt': '435c098aa9909eb2377f1248b091b68987ff1838',
                         'signature': '2707b9ad5115c58c94e932e8ec0a280f56339e44'
                                      'a1b58d4ddcff2f312e5f34dcfe39e89c6a94dcee'
@@ -891,9 +892,9 @@ def test_load_pkcs1_vectors():
                     '757bb3f857a58dce52156', 16),
                 'examples': [
                     {
-                        'msg': '06add75ab689de067744e69a2ebd4b90fa9383003cd05f'
-                               'f536cbf294cd215f0923b7fc9004f0aa185271a1d0061f'
-                               'd0e9777ad1ec0c71591f578bf7b8e5a1',
+                        'message': '06add75ab689de067744e69a2ebd4b90fa9383003c'
+                                   'd05ff536cbf294cd215f0923b7fc9004f0aa185271'
+                                   'a1d0061fd0e9777ad1ec0c71591f578bf7b8e5a1',
                         'signature': '4514210e541d5bad7dd60ae549b943acc44f2139'
                                      '0df5b61318455a17610df5b74d84aed232f17e59'
                                      'd91dd2659922f812dbd49681690384b954e9adfb'

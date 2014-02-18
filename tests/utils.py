@@ -200,7 +200,7 @@ def load_pkcs1_vectors(vector_data):
             example_vector = collections.defaultdict(list)
 
         if line.startswith("# Message to be signed"):
-            attr = "msg"
+            attr = "message"
             continue
         elif line.startswith("# Salt"):
             attr = "salt"
