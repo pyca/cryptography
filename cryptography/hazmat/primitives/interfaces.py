@@ -287,6 +287,43 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class AsymmetricSignContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Processes the provided bytes and returns nothing.
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        Returns the signature as bytes.
+        """
+
+
+class AsymmetricVerifyContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Processes the provided bytes and returns nothing.
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        Raises an exception if the bytes provided to update do not match the
+        signature or the signature does not match the public key.
+        """
+
+
+class AsymmetricPadding(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this padding (e.g. "PSS", "PKCS1").
+        """
+
+
 class KeyDerivationFunction(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def derive(self, key_material):
