@@ -177,15 +177,53 @@ def load_hash_vectors(vector_data):
 def load_pkcs1_vectors(vector_data):
     """
     Loads data out of RSA PKCS #1 vector files.
-
-    Currently only returns the key pairs.
     """
     private_key_vector = None
     public_key_vector = None
     attr = None
     key = None
+    example_vector = None
+    examples = []
     vectors = []
     for line in vector_data:
+        if (line.startswith("# PSS Example") or
+                line.startswith("# PKCS#1 v1.5 Signature")
+            ):
+            if example_vector:
+                for key, value in six.iteritems(example_vector):
+                    hex_str = "".join(value).replace(" ", "")
+                    example_vector[key] = hex_str
+                examples.append(example_vector)
+
+            attr = None
+            example_vector = collections.defaultdict(list)
+
+        if line.startswith("# Message to be signed"):
+            attr = "msg"
+            continue
+        elif line.startswith("# Salt"):
+            attr = "salt"
+            continue
+        elif line.startswith("# Signature"):
+            attr = "signature"
+            continue
+        elif (
+            example_vector and
+            line.startswith("# =============================================")
+        ):
+            for key, value in six.iteritems(example_vector):
+                hex_str = "".join(value).replace(" ", "")
+                example_vector[key] = hex_str
+            examples.append(example_vector)
+            example_vector = None
+            attr = None
+        elif example_vector and line.startswith("#"):
+            continue
+        else:
+            if attr is not None and example_vector is not None:
+                example_vector[attr].append(line.strip())
+                continue
+
         if (
             line.startswith("# Example") or
             line.startswith("# =============================================")
@@ -201,6 +239,9 @@ def load_pkcs1_vectors(vector_data):
                 for key, value in six.iteritems(private_key_vector):
                     hex_str = "".join(value).replace(" ", "")
                     private_key_vector[key] = int(hex_str, 16)
+
+                private_key_vector["examples"] = examples
+                examples = []
 
                 assert (
                     private_key_vector['public_exponent'] ==
