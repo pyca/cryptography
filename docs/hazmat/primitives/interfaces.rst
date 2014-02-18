@@ -260,7 +260,7 @@ Asymmetric Interfaces
 
 .. class:: AsymmetricPadding
 
-    A named asymmetric padding.
+    .. versionadded:: 0.2
 
     .. attribute:: name
 
