@@ -247,4 +247,4 @@ A specific ``backend`` may provide one or more of these interfaces.
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerifyContext`
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`

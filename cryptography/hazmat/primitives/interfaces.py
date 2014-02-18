@@ -301,7 +301,7 @@ class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AsymmetricVerifyContext(six.with_metaclass(abc.ABCMeta)):
+class AsymmetricVerificationContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -309,7 +309,7 @@ class AsymmetricVerifyContext(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
-    def finalize(self):
+    def verify(self):
         """
         Raises an exception if the bytes provided to update do not match the
         signature or the signature does not match the public key.

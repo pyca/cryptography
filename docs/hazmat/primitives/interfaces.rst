@@ -244,7 +244,7 @@ Asymmetric Interfaces
         :return bytes signature: The signature.
 
 
-.. class:: AsymmetricVerifyContext
+.. class:: AsymmetricVerificationContext
 
     .. versionadded:: 0.2
 

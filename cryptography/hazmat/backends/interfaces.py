@@ -99,7 +99,8 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractmethod
-    def create_rsa_verify_ctx(self, public_key, signature, padding, algorithm):
+    def create_rsa_verification_ctx(self, public_key, signature, padding, algorithm):
         """
-        Returns an object conforming to the AsymmetricVerifyContext interface.
+        Returns an object conforming to the AsymmetricVerificationContext
+        interface.
         """
