@@ -90,3 +90,15 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         Generate an RSAPrivateKey instance with public_exponent and a modulus
         of key_size bits.
         """
+
+    @abc.abstractmethod
+    def create_rsa_sign_ctx(self, private_key, padding, algorithm):
+        """
+        Returns an object conforming to the AsymmetricSignContext interface.
+        """
+
+    @abc.abstractmethod
+    def create_rsa_verify_ctx(self, public_key, signature, padding, algorithm):
+        """
+        Returns an object conforming to the AsymmetricVerifyContext interface.
+        """
