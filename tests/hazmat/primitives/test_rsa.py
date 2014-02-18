@@ -363,3 +363,19 @@ class TestRSA(object):
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
             rsa.RSAPublicKey(public_exponent=6, modulus=15)
+
+
+@pytest.mark.rsa
+class TestRSASigning(object):
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
+            load_pkcs1_vectors
+        )
+    )
+    def test_pss_signing(self, pkcs1_example):
+        secret, public = pkcs1_example
+        skey = rsa.RSAPrivateKey(**secret)
+        pkey = rsa.RSAPublicKey(**public)
