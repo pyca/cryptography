@@ -215,11 +215,11 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
 
-        :param private_key: An instance of a
+        :param private_key: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
             provider.
 
-        :param padding: An instance of a
+        :param padding: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
@@ -228,9 +228,9 @@ A specific ``backend`` may provide one or more of these interfaces.
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignContext`
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
-    .. method:: create_rsa_verify_ctx(public_key, signature, padding, algorithm)
+    .. method:: create_rsa_verification_ctx(public_key, signature, padding, algorithm)
 
         :param public_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
@@ -238,7 +238,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :param bytes signature: The signature to verify.
 
-        :param padding: An instance of a
+        :param padding: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 

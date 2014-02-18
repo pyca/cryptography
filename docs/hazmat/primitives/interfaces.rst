@@ -252,7 +252,7 @@ Asymmetric Interfaces
 
         :param bytes data: The data you wish to verify using the signature.
 
-    .. method:: finalize()
+    .. method:: verify()
 
         :raises cryptography.exceptions.InvalidSignature: If signature does not
             validate.
