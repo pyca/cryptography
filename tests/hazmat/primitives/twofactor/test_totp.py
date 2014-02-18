@@ -22,6 +22,7 @@ from tests.utils import load_vectors_from_file, load_nist_vectors
 vectors = load_vectors_from_file(
     "twofactor/rfc-6238.txt", load_nist_vectors)
 
+
 @pytest.mark.hmac
 class TestTOTP(object):
 
