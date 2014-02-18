@@ -614,6 +614,7 @@ class _RSASignatureContext(object):
         self._hash_ctx = _HashContext(backend, self._algorithm)
 
     def update(self, data):
+        # TODO: add code to prevent reuse of finalized context
         self._hash_ctx.update(data)
 
     def finalize(self):
@@ -671,6 +672,7 @@ class _RSASignatureContext(object):
             assert res == 1
             return self._backend._ffi.buffer(buf)[:]
         else:
+            # TODO: 0.9.8 implementation
             pass
 
 
@@ -689,6 +691,7 @@ class _RSAVerifyContext(object):
         self._hash_ctx = _HashContext(backend, self._algorithm)
 
     def update(self, data):
+        # TODO: add code to prevent reuse of finalized context
         self._hash_ctx.update(data)
 
     def finalize(self):
@@ -739,6 +742,7 @@ class _RSAVerifyContext(object):
             if res != 1:
                 raise InvalidSignature
         else:
+            # TODO: 0.9.8 implementation
             pass
 
 
