@@ -212,3 +212,39 @@ A specific ``backend`` may provide one or more of these interfaces.
             provider.
 
         :raises ValueError: If the public_exponent is not valid.
+
+    .. method:: create_rsa_sign_ctx(private_key, padding, algorithm)
+
+        :param private_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignContext`
+
+    .. method:: create_rsa_verify_ctx(public_key, signature, padding, algorithm)
+
+        :param public_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            provider.
+
+        :param bytes signature: The signature to verify.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerifyContext`
