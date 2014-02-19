@@ -804,34 +804,34 @@ def test_load_pkcs1_vectors():
                     'b06e45307dc91f3f', 16),
                 'examples': [
                     {
-                        'message': '81332f4be62948415ea1d899792eeacf6c6e1db1da'
-                                   '8be13b5cea41db2fed467092e1ff398914c7142597'
-                                   '75f595f8547f735692a575e6923af78f22c6997ddb'
-                                   '90fb6f72d7bb0dd5744a31decd3dc3685849836ed3'
-                                   '4aec596304ad11843c4f88489f209735f5fb7fdaf7'
-                                   'cec8addc5818168f880acbf490d51005b7a8e84e43'
-                                   'e54287977571dd99eea4b161eb2df1f5108f12a414'
-                                   '2a83322edb05a75487a3435c9a78ce53ed93bc5508'
-                                   '57d7a9fb',
-                        'salt': '1d65491d79c864b373009be6f6f2467bac4c78fa',
-                        'signature': '0262ac254bfa77f3c1aca22c5179f8f040422b3c'
-                                     '5bafd40a8f21cf0fa5a667ccd5993d42dbafb409'
-                                     'c520e25fce2b1ee1e716577f1efa17f3da28052f'
-                                     '40f0419b23106d7845aaf01125b698e7a4dfe92d'
-                                     '3967bb00c4d0d35ba3552ab9a8b3eef07c7fecdb'
-                                     'c5424ac4db1e20cb37d0b2744769940ea907e17f'
-                                     'bbca673b20522380c5'
+                        'message': b'81332f4be62948415ea1d899792eeacf6c6e1db1d'
+                                   b'a8be13b5cea41db2fed467092e1ff398914c71425'
+                                   b'9775f595f8547f735692a575e6923af78f22c6997'
+                                   b'ddb90fb6f72d7bb0dd5744a31decd3dc368584983'
+                                   b'6ed34aec596304ad11843c4f88489f209735f5fb7'
+                                   b'fdaf7cec8addc5818168f880acbf490d51005b7a8'
+                                   b'e84e43e54287977571dd99eea4b161eb2df1f5108'
+                                   b'f12a4142a83322edb05a75487a3435c9a78ce53ed'
+                                   b'93bc550857d7a9fb',
+                        'salt': b'1d65491d79c864b373009be6f6f2467bac4c78fa',
+                        'signature': b'0262ac254bfa77f3c1aca22c5179f8f040422b3'
+                                     b'c5bafd40a8f21cf0fa5a667ccd5993d42dbafb4'
+                                     b'09c520e25fce2b1ee1e716577f1efa17f3da280'
+                                     b'52f40f0419b23106d7845aaf01125b698e7a4df'
+                                     b'e92d3967bb00c4d0d35ba3552ab9a8b3eef07c7'
+                                     b'fecdbc5424ac4db1e20cb37d0b2744769940ea9'
+                                     b'07e17fbbca673b20522380c5'
                     }, {
-                        'message': 'e2f96eaf0e05e7ba326ecca0ba7fd2f7c02356f3ce'
-                                   'de9d0faabf4fcc8e60a973e5595fd9ea08',
-                        'salt': '435c098aa9909eb2377f1248b091b68987ff1838',
-                        'signature': '2707b9ad5115c58c94e932e8ec0a280f56339e44'
-                                     'a1b58d4ddcff2f312e5f34dcfe39e89c6a94dcee'
-                                     '86dbbdae5b79ba4e0819a9e7bfd9d982e7ee6c86'
-                                     'ee68396e8b3a14c9c8f34b178eb741f9d3f12110'
-                                     '9bf5c8172fada2e768f9ea1433032c004a8aa07e'
-                                     'b990000a48dc94c8bac8aabe2b09b1aa46c0a2aa'
-                                     '0e12f63fbba775ba7e'
+                        'message': b'e2f96eaf0e05e7ba326ecca0ba7fd2f7c02356f3c'
+                                   b'ede9d0faabf4fcc8e60a973e5595fd9ea08',
+                        'salt': b'435c098aa9909eb2377f1248b091b68987ff1838',
+                        'signature': b'2707b9ad5115c58c94e932e8ec0a280f56339e4'
+                                     b'4a1b58d4ddcff2f312e5f34dcfe39e89c6a94dc'
+                                     b'ee86dbbdae5b79ba4e0819a9e7bfd9d982e7ee6'
+                                     b'c86ee68396e8b3a14c9c8f34b178eb741f9d3f1'
+                                     b'21109bf5c8172fada2e768f9ea1433032c004a8'
+                                     b'aa07eb990000a48dc94c8bac8aabe2b09b1aa46'
+                                     b'c0a2aa0e12f63fbba775ba7e'
                     }
                 ]
             },
@@ -892,16 +892,17 @@ def test_load_pkcs1_vectors():
                     '757bb3f857a58dce52156', 16),
                 'examples': [
                     {
-                        'message': '06add75ab689de067744e69a2ebd4b90fa9383003c'
-                                   'd05ff536cbf294cd215f0923b7fc9004f0aa185271'
-                                   'a1d0061fd0e9777ad1ec0c71591f578bf7b8e5a1',
-                        'signature': '4514210e541d5bad7dd60ae549b943acc44f2139'
-                                     '0df5b61318455a17610df5b74d84aed232f17e59'
-                                     'd91dd2659922f812dbd49681690384b954e9adfb'
-                                     '9b1a968c0cbff763eceed62750c59164b5e080a8'
-                                     'fef3d55bfe2acfad2752a6a8459fa1fab49ad378'
-                                     'c6964b23ee97fd1034610c5cc14c61e0ebfb1711'
-                                     'f8ade96fe6557b38'
+                        'message': b'06add75ab689de067744e69a2ebd4b90fa9383003'
+                                   b'cd05ff536cbf294cd215f0923b7fc9004f0aa1852'
+                                   b'71a1d0061fd0e9777ad1ec0c71591f578bf7b8e5a'
+                                   b'1',
+                        'signature': b'4514210e541d5bad7dd60ae549b943acc44f213'
+                                     b'90df5b61318455a17610df5b74d84aed232f17e'
+                                     b'59d91dd2659922f812dbd49681690384b954e9a'
+                                     b'dfb9b1a968c0cbff763eceed62750c59164b5e0'
+                                     b'80a8fef3d55bfe2acfad2752a6a8459fa1fab49'
+                                     b'ad378c6964b23ee97fd1034610c5cc14c61e0eb'
+                                     b'fb1711f8ade96fe6557b38'
                     }
                 ]
             },
