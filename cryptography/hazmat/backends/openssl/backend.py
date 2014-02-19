@@ -310,7 +310,7 @@ class Backend(object):
     def _num_to_bytes(self, num):
         num = hex(num)[2:].rstrip("L")
         if len(num) % 2:
-            return binascii.unhexlify("0%s" % num)
+            return binascii.unhexlify("".join(["0", num]))
         return binascii.unhexlify(num)
 
     def _int_to_bn(self, num):
