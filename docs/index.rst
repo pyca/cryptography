@@ -60,6 +60,7 @@ The recipes layer
     fernet
     random-numbers
     exceptions
+    faq
     glossary
 
 The hazardous materials layer
