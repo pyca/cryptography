@@ -21,6 +21,7 @@ import requests
 
 JENKINS_ROOT = "http://jenkins.cryptography.io"
 
+
 @invoke.task
 def release(version):
     """
@@ -33,10 +34,11 @@ def release(version):
     invoke.run("twine upload -s dist/cryptography-{0}*".format(version))
 
     token = getpass.getpass("Input the Jenkins token")
-    requests.post(
+    response = requests.post(
         "{0}/job/cryptography-wheel-builder/build".format(JENKINS_ROOT),
         params={
             "token": token,
             "cause": "Building wheels for {0}".format(version)
         }
     )
+    response.raise_for_status()
