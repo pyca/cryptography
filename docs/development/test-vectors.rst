@@ -15,8 +15,7 @@ Asymmetric Ciphers
 
 * RSA PKCS1 from the RSA FTP site (ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/
   and ftp://ftp.rsa.com/pub/rsalabs/tmp/).
-* OpenSSL PEM serialization vectors from the `OpenSSL`_ and `GnuTLS`_ test
-  suites.
+* OpenSSL PEM serialization vectors from the `OpenSSL test suite`_ and `GnuTLS test suite`_.
 
 Hashes
 ~~~~~~
@@ -102,5 +101,5 @@ header format (substituting the correct information):
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 .. _`Specification repository`: https://github.com/fernet/spec
 .. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
-.. _`OpenSSL`: https://www.openssl.org/
-.. _`GnuTLS`: http://www.gnutls.org/
+.. _`OpenSSL test suite`: http://git.openssl.org/gitweb/?p=openssl.git;a=blob;f=test/testrsa.pem;h=aad21067a8f7cb93a52a511eb9162fd83be39135;hb=66e8211c0b1347970096e04b18aa52567c325200
+.. _`GnuTLS test suite`: https://gitorious.org/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
