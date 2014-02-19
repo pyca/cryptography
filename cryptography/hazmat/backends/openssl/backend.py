@@ -308,9 +308,9 @@ class Backend(object):
         )
 
     def _num_to_bytes(self, num):
-        num = hex(num)[2:].rstrip("L")
+        num = hex(num)[2:].rstrip("L").encode("ascii")
         if len(num) % 2:
-            return binascii.unhexlify("".join(["0", num]).encode("ascii"))
+            return binascii.unhexlify(b"".join([b"0", num]))
         return binascii.unhexlify(num)
 
     def _int_to_bn(self, num):
@@ -616,7 +616,6 @@ class _RSASignatureContext(object):
         self._hash_ctx = _HashContext(backend, self._algorithm)
 
     def update(self, data):
-        # TODO: add code to prevent reuse of finalized context
         self._hash_ctx.update(data)
 
     def finalize(self):
@@ -656,7 +655,7 @@ class _RSASignatureContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
                 pkey_ctx, padding_enum)
             assert res > 0
-            data_to_sign = self._hash_ctx.finalize()
+            data_to_sign = self._hash_ctx.copy().finalize()
             buf = self._backend._ffi.new("unsigned char[]",
                                          self._private_key.key_size // 8)
             buflen = self._backend._ffi.new("size_t *")
@@ -703,7 +702,6 @@ class _RSAVerificationContext(object):
         self._hash_ctx = _HashContext(backend, self._algorithm)
 
     def update(self, data):
-        # TODO: add code to prevent reuse of finalized context
         self._hash_ctx.update(data)
 
     def verify(self):
@@ -733,7 +731,7 @@ class _RSAVerificationContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
                 pkey_ctx, self._padding_enum)
             assert res > 0
-            data_to_verify = self._hash_ctx.finalize()
+            data_to_verify = self._hash_ctx.copy().finalize()
             res = self._backend._lib.EVP_PKEY_verify(
                 pkey_ctx,
                 self._signature,
