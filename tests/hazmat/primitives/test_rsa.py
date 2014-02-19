@@ -123,13 +123,24 @@ class TestRSA(object):
     )
     def test_load_pss_vect_example_keys(self, pkcs1_example):
         secret, public = pkcs1_example
-        secret.pop("examples")
 
-        skey = rsa.RSAPrivateKey(**secret)
+        skey = rsa.RSAPrivateKey(
+            p=secret["p"],
+            q=secret["q"],
+            private_exponent=secret["private_exponent"],
+            dmp1=secret["dmp1"],
+            dmq1=secret["dmq1"],
+            iqmp=secret["iqmp"],
+            public_exponent=secret["public_exponent"],
+            modulus=secret["modulus"]
+        )
         assert skey
         _check_rsa_private_key(skey)
 
-        pkey = rsa.RSAPublicKey(**public)
+        pkey = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
         assert pkey
 
         pkey2 = skey.public_key()
