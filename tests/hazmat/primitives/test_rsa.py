@@ -397,7 +397,7 @@ class TestRSASignature(object):
                 backend
             )
             verifier.update(binascii.unhexlify(example["message"]))
-            verifier.finalize()
+            verifier.verify()
 
     @pytest.mark.parametrize(
         "pkcs1_example",
@@ -425,7 +425,7 @@ class TestRSASignature(object):
                 backend
             )
             verifier.update(binascii.unhexlify(example["message"]))
-            verifier.finalize()
+            verifier.verify()
 
 
 @pytest.mark.rsa
@@ -451,7 +451,7 @@ class TestRSAVerification(object):
                 backend
             )
             verifier.update(binascii.unhexlify(example["message"]))
-            verifier.finalize()
+            verifier.verify()
 
     @pytest.mark.parametrize(
         "pkcs1_example",
@@ -474,4 +474,4 @@ class TestRSAVerification(object):
                 backend
             )
             verifier.update(binascii.unhexlify(example["message"]))
-            verifier.finalize()
+            verifier.verify()

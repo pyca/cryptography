@@ -345,9 +345,10 @@ class Backend(object):
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         return _RSASignatureContext(backend, private_key, padding, algorithm)
 
-    def create_rsa_verify_ctx(self, public_key, signature, padding, algorithm):
-        return _RSAVerifyContext(backend, public_key, signature, padding,
-                                 algorithm)
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
+        return _RSAVerificationContext(backend, public_key, signature, padding,
+                                       algorithm)
 
 
 class GetCipherByName(object):
@@ -676,8 +677,8 @@ class _RSASignatureContext(object):
             pass
 
 
-@utils.register_interface(interfaces.AsymmetricVerifyContext)
-class _RSAVerifyContext(object):
+@utils.register_interface(interfaces.AsymmetricVerificationContext)
+class _RSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, padding, algorithm):
         self._backend = backend
         self._public_key = public_key
@@ -685,6 +686,16 @@ class _RSAVerifyContext(object):
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
                 "Expected interface of interfaces.AsymmetricPadding")
+        # TODO: this is temp code. Doesn't support 0.9.8 properly at all.
+        if padding.name == "PKCS1":
+            self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+        elif padding.name == "PSS":
+            try:
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            except AttributeError:
+                raise ValueError("Unsupported padding type")
+        else:
+            raise ValueError("Unsupported padding type")  # TODO: do better
 
         self._padding = padding
         self._algorithm = algorithm
@@ -694,7 +705,7 @@ class _RSAVerifyContext(object):
         # TODO: add code to prevent reuse of finalized context
         self._hash_ctx.update(data)
 
-    def finalize(self):
+    def verify(self):
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
             evp_pkey = self._backend._lib.EVP_PKEY_new()
             assert evp_pkey != self._backend._ffi.NULL
@@ -717,19 +728,9 @@ class _RSAVerifyContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
                 pkey_ctx, evp_md)
             assert res > 0
-            if self._padding.name == "PKCS1":
-                padding_enum = self._backend._lib.RSA_PKCS1_PADDING
-            elif self._padding.name == "PSS":
-                try:
-                    padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
-                except AttributeError:
-                    # TODO: this should trigger in the init
-                    raise ValueError("Unsupported padding type")
-            else:
-                raise ValueError("Unsupported padding type")  # TODO: do better
 
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
-                pkey_ctx, padding_enum)
+                pkey_ctx, self._padding_enum)
             assert res > 0
             data_to_verify = self._hash_ctx.finalize()
             res = self._backend._lib.EVP_PKEY_verify(
