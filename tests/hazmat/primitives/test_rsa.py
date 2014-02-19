@@ -59,6 +59,17 @@ def _check_rsa_private_key(skey):
     assert skey.key_size == pkey.key_size
 
 
+def _flatten_pkcs1_examples(vectors):
+    flattened_vectors = []
+    for vector in vectors:
+        examples = vector[0].pop("examples")
+        for example in examples:
+            merged_vector = (vector[0], vector[1], example)
+            flattened_vectors.append(merged_vector)
+
+    return flattened_vectors
+
+
 def test_modular_inverse():
     p = int(
         "d1f9f6c09fd3d38987f7970247b85a6da84907753d42ec52bc23b745093f4fff5cff3"
@@ -373,105 +384,94 @@ class TestRSA(object):
 class TestRSASignature(object):
     @pytest.mark.parametrize(
         "pkcs1_example",
-        load_vectors_from_file(
+        _flatten_pkcs1_examples(load_vectors_from_file(
             os.path.join(
                 "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
             load_pkcs1_vectors
-        )
+        ))
     )
     def test_pss_signing(self, pkcs1_example, backend):
-        private, public = pkcs1_example
-        examples = private.pop('examples')
+        private, public, example = pkcs1_example
         private_key = rsa.RSAPrivateKey(**private)
         public_key = rsa.RSAPublicKey(**public)
-        # TODO: flatten this before parametrizing
-        for example in examples:
-            signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
-            signer.update(binascii.unhexlify(example["message"]))
-            signature = signer.finalize()
-            assert len(signature) == math.ceil(private_key.key_size / 8)
-            verifier = public_key.verifier(
-                signature,
-                padding.PSS(),
-                hashes.SHA1(),
-                backend
-            )
-            verifier.update(binascii.unhexlify(example["message"]))
-            verifier.verify()
+        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer.update(binascii.unhexlify(example["message"]))
+        signature = signer.finalize()
+        assert len(signature) == math.ceil(private_key.key_size / 8)
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
 
     @pytest.mark.parametrize(
         "pkcs1_example",
-        load_vectors_from_file(
+        _flatten_pkcs1_examples(load_vectors_from_file(
             os.path.join(
                 "asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
             load_pkcs1_vectors
-        )
+        ))
     )
     def test_pkcs1v15_signing(self, pkcs1_example, backend):
-        private, public = pkcs1_example
-        examples = private.pop('examples')
+        private, public, example = pkcs1_example
         private_key = rsa.RSAPrivateKey(**private)
         public_key = rsa.RSAPublicKey(**public)
-        # TODO: flatten this before parametrizing
-        for example in examples:
-            signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
-            signer.update(binascii.unhexlify(example["message"]))
-            signature = signer.finalize()
-            assert signature == binascii.unhexlify(example["signature"])
-            verifier = public_key.verifier(
-                signature,
-                padding.PKCS1(),
-                hashes.SHA1(),
-                backend
-            )
-            verifier.update(binascii.unhexlify(example["message"]))
-            verifier.verify()
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(),
+                                    backend)
+        signer.update(binascii.unhexlify(example["message"]))
+        signature = signer.finalize()
+        assert signature == binascii.unhexlify(example["signature"])
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
 
 
 @pytest.mark.rsa
 class TestRSAVerification(object):
     @pytest.mark.parametrize(
         "pkcs1_example",
-        load_vectors_from_file(
+        _flatten_pkcs1_examples(load_vectors_from_file(
             os.path.join(
                 "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
             load_pkcs1_vectors
-        )
+        ))
     )
     def test_pss_verification(self, pkcs1_example, backend):
-        private, public = pkcs1_example
-        examples = private.pop('examples')
+        private, public, example = pkcs1_example
         public_key = rsa.RSAPublicKey(**public)
-        # TODO: flatten this before parametrizing
-        for example in examples:
-            verifier = public_key.verifier(
-                binascii.unhexlify(example["signature"]),
-                padding.PSS(),
-                hashes.SHA1(),
-                backend
-            )
-            verifier.update(binascii.unhexlify(example["message"]))
-            verifier.verify()
+        verifier = public_key.verifier(
+            binascii.unhexlify(example["signature"]),
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
 
     @pytest.mark.parametrize(
         "pkcs1_example",
-        load_vectors_from_file(
+        _flatten_pkcs1_examples(load_vectors_from_file(
             os.path.join(
                 "asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
             load_pkcs1_vectors
-        )
+        ))
     )
     def test_pkcs1v15_verification(self, pkcs1_example, backend):
-        private, public = pkcs1_example
-        examples = private.pop('examples')
+        private, public, example = pkcs1_example
         public_key = rsa.RSAPublicKey(**public)
-        # TODO: flatten this before parametrizing
-        for example in examples:
-            verifier = public_key.verifier(
-                binascii.unhexlify(example["signature"]),
-                padding.PKCS1(),
-                hashes.SHA1(),
-                backend
-            )
-            verifier.update(binascii.unhexlify(example["message"]))
-            verifier.verify()
+        verifier = public_key.verifier(
+            binascii.unhexlify(example["signature"]),
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
