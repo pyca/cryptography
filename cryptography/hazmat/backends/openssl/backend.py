@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
 import itertools
 
 from cryptography import utils
@@ -309,8 +310,8 @@ class Backend(object):
     def _num_to_bytes(self, num):
         num = hex(num)[2:].rstrip("L")
         if len(num) % 2:
-            return ("0%s" % num).decode('hex')
-        return num.decode("hex")
+            return binascii.unhexlify("0%s" % num)
+        return binascii.unhexlify(num)
 
     def _int_to_bn(self, num):
         # pack the number in network byte order (big endian)
