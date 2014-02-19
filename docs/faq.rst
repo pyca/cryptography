@@ -9,8 +9,8 @@ easier, and safer, to use for developers, ``cryptography`` is designed to be a
 general purpose library, interoperable with existing systems, while NaCl
 features a collection of hand selected algorithms.
 
-``cryptography``'s :ref:`recipes <cryptography-layout>` layer is similar in
-design to NaCl.
+``cryptography``'s :ref:`recipes <cryptography-layout>` layer has similar goals
+to NaCl.
 
 If you prefer NaCl's design, we highly recommend `PyNaCl`_.
 
