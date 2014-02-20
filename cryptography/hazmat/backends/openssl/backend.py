@@ -13,7 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
 import itertools
 
 from cryptography import utils
@@ -306,22 +305,6 @@ class Backend(object):
             public_exponent=self._bn_to_int(ctx.e),
             modulus=self._bn_to_int(ctx.n),
         )
-
-    def _num_to_bytes(self, num):
-        num = hex(num)[2:].rstrip("L").encode("ascii")
-        if len(num) % 2:
-            return binascii.unhexlify(b"".join([b"0", num]))
-        return binascii.unhexlify(num)
-
-    def _int_to_bn(self, num):
-        # pack the number in network byte order (big endian)
-        int_bytes = self._num_to_bytes(num)
-        # do not add this object to gc because it will be added to the
-        # RSA ctx
-        bn = self._lib.BN_bin2bn(
-            int_bytes, len(int_bytes), self._ffi.NULL)
-        assert bn != self._ffi.NULL
-        return bn
 
     def _rsa_ctx_from_private_key(self, private_key):
         ctx = self._lib.RSA_new()
