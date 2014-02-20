@@ -318,14 +318,15 @@ class Backend(object):
         int_bytes = self._num_to_bytes(num)
         # do not add this object to gc because it will be added to the
         # RSA ctx
-        bn = backend._lib.BN_bin2bn(
-            int_bytes, len(int_bytes), backend._ffi.NULL)
+        bn = self._lib.BN_bin2bn(
+            int_bytes, len(int_bytes), self._ffi.NULL)
         assert bn != self._ffi.NULL
         return bn
 
     def _rsa_ctx_from_private_key(self, private_key):
-        ctx = backend._lib.RSA_new()
-        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
         ctx.p = self._int_to_bn(private_key.p)
         ctx.q = self._int_to_bn(private_key.q)
         ctx.d = self._int_to_bn(private_key.d)
@@ -337,18 +338,18 @@ class Backend(object):
         return ctx
 
     def _rsa_ctx_from_public_key(self, public_key):
-        ctx = backend._lib.RSA_new()
-        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+        ctx = self._lib.RSA_new()
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
         ctx.e = self._int_to_bn(public_key.e)
         ctx.n = self._int_to_bn(public_key.n)
         return ctx
 
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
-        return _RSASignatureContext(backend, private_key, padding, algorithm)
+        return _RSASignatureContext(self, private_key, padding, algorithm)
 
     def create_rsa_verification_ctx(self, public_key, signature, padding,
                                     algorithm):
-        return _RSAVerificationContext(backend, public_key, signature, padding,
+        return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
 
@@ -614,10 +615,8 @@ class _RSASignatureContext(object):
         if padding.name == "PKCS1":
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif padding.name == "PSS":
-            try:
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
-            except AttributeError:
-                pass
         else:
             raise ValueError("Unsupported padding type")  # TODO: do better
 
@@ -722,10 +721,8 @@ class _RSAVerificationContext(object):
         if padding.name == "PKCS1":
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif padding.name == "PSS":
-            try:
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
-            except AttributeError:
-                pass
         else:
             raise ValueError("Unsupported padding type")
 
@@ -801,7 +798,7 @@ class _RSAVerificationContext(object):
                     rsa_ctx,
                     data_to_verify,
                     evp_md,
-                    self._backend._ffi.buffer(buf)[:],
+                    buf,
                     -2
                 )
                 if res != 1:

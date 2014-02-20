@@ -397,7 +397,7 @@ class TestRSASignature(object):
         signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
-        assert len(signature) == math.ceil(private_key.key_size / 8)
+        assert len(signature) == math.ceil(private_key.key_size / 8.0)
         verifier = public_key.verifier(
             signature,
             padding.PSS(),
