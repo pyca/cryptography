@@ -12,7 +12,14 @@
 # limitations under the License.
 from __future__ import absolute_import, division, print_function
 
+import getpass
+
 import invoke
+
+import requests
+
+
+JENKINS_ROOT = "http://jenkins.cryptography.io"
 
 
 @invoke.task
@@ -25,3 +32,13 @@ def release(version):
 
     invoke.run("python setup.py sdist")
     invoke.run("twine upload -s dist/cryptography-{0}*".format(version))
+
+    token = getpass.getpass("Input the Jenkins token")
+    response = requests.post(
+        "{0}/job/cryptography-wheel-builder/build".format(JENKINS_ROOT),
+        params={
+            "token": token,
+            "cause": "Building wheels for {0}".format(version)
+        }
+    )
+    response.raise_for_status()
