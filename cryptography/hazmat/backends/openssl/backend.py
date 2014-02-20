@@ -617,7 +617,8 @@ class _RSASignatureContext(object):
             try:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
             except AttributeError:
-                raise ValueError("Unsupported padding type")
+                raise ValueError("Unsupported padding type. OpenSSL 1.0.0+"
+                                 " required")
         else:
             raise ValueError("Unsupported padding type")  # TODO: do better
 
@@ -629,16 +630,17 @@ class _RSASignatureContext(object):
         self._hash_ctx.update(data)
 
     def finalize(self):
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        rsa_ctx = backend._rsa_ctx_from_private_key(self._private_key)
+        res = self._backend._lib.RSA_blinding_on(
+            rsa_ctx, self._backend._ffi.NULL)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
+        assert res == 1
+
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-            evp_pkey = self._backend._lib.EVP_PKEY_new()
-            assert evp_pkey != self._backend._ffi.NULL
-            evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
-            rsa_ctx = backend._rsa_ctx_from_private_key(self._private_key)
-            res = self._backend._lib.RSA_blinding_on(
-                rsa_ctx, self._backend._ffi.NULL)
-            assert res == 1
-            res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
-            assert res == 1
             pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
                 evp_pkey, self._backend._ffi.NULL
             )
@@ -673,8 +675,19 @@ class _RSASignatureContext(object):
             assert res == 1
             return self._backend._ffi.buffer(buf)[:]
         else:
-            # TODO: 0.9.8 implementation
-            pass
+            sig_buf = self._backend._ffi.new(
+                "char[]",
+                self._backend._lib.EVP_PKEY_size(evp_pkey)
+            )
+            sig_len = self._backend._ffi.new("unsigned int *")
+            res = self._backend._lib.EVP_SignFinal(
+                self._hash_ctx._ctx,
+                sig_buf,
+                sig_len,
+                evp_pkey
+            )
+            assert res == 1
+            return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
 
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
@@ -693,7 +706,8 @@ class _RSAVerificationContext(object):
             try:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
             except AttributeError:
-                raise ValueError("Unsupported padding type")
+                raise ValueError("Unsupported padding type. OpenSSL 1.0.0+"
+                                 " required")
         else:
             raise ValueError("Unsupported padding type")  # TODO: do better
 
@@ -705,16 +719,17 @@ class _RSAVerificationContext(object):
         self._hash_ctx.update(data)
 
     def verify(self):
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        rsa_ctx = backend._rsa_ctx_from_public_key(self._public_key)
+        res = self._backend._lib.RSA_blinding_on(
+            rsa_ctx, self._backend._ffi.NULL)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
+        assert res == 1
+
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-            evp_pkey = self._backend._lib.EVP_PKEY_new()
-            assert evp_pkey != self._backend._ffi.NULL
-            evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
-            rsa_ctx = backend._rsa_ctx_from_public_key(self._public_key)
-            res = self._backend._lib.RSA_blinding_on(
-                rsa_ctx, self._backend._ffi.NULL)
-            assert res == 1
-            res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
-            assert res == 1
             pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
                 evp_pkey, self._backend._ffi.NULL
             )
@@ -742,8 +757,14 @@ class _RSAVerificationContext(object):
             if res != 1:
                 raise InvalidSignature
         else:
-            # TODO: 0.9.8 implementation
-            pass
+            res = self._backend._lib.EVP_VerifyFinal(
+                self._hash_ctx._ctx,
+                self._signature,
+                len(self._signature),
+                evp_pkey
+            )
+            if res != 1:
+                raise InvalidSignature
 
 
 backend = Backend()
