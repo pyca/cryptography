@@ -28,7 +28,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
+    AES, Blowfish, Camellia, CAST5, TripleDES, ARC4, IDEA
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
@@ -175,6 +175,12 @@ class Backend(object):
             GCM,
             GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
         )
+        for mode_cls in [ECB]:
+            self.register_cipher_adapter(
+                IDEA,
+                mode_cls,
+                GetCipherByName("idea-{mode.name}")
+            )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
