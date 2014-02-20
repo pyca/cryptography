@@ -17,6 +17,7 @@ from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, InternalError
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -221,3 +222,38 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_builtin_random()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
+
+
+class TestOpenSSLRSA(object):
+    @pytest.mark.parametrize(
+        "num", [0, 2388484838288382842834823487238429834263462349281]
+    )
+    def test_int_to_bn(self, num):
+        bn = backend._int_to_bn(num)
+        assert num == backend._bn_to_int(bn)
+        backend._lib.BN_free(bn)
+
+    def test_rsa_ctx_from_private_key(self):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        ctx = backend._rsa_ctx_from_private_key(private_key)
+        assert backend._bn_to_int(ctx.p) == private_key.p
+        assert backend._bn_to_int(ctx.q) == private_key.q
+        assert backend._bn_to_int(ctx.e) == private_key.e
+        assert backend._bn_to_int(ctx.d) == private_key.d
+        assert backend._bn_to_int(ctx.n) == private_key.n
+        assert backend._bn_to_int(ctx.dmp1) == private_key.dmp1
+        assert backend._bn_to_int(ctx.dmq1) == private_key.dmq1
+        assert backend._bn_to_int(ctx.iqmp) == private_key.iqmp
+
+    def test_rsa_ctx_from_public_key(self):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        ctx = backend._rsa_ctx_from_public_key(public_key)
+        assert ctx.p == backend._ffi.NULL
+        assert ctx.q == backend._ffi.NULL
+        assert ctx.d == backend._ffi.NULL
+        assert ctx.dmp1 == backend._ffi.NULL
+        assert ctx.dmq1 == backend._ffi.NULL
+        assert ctx.iqmp == backend._ffi.NULL
+        assert backend._bn_to_int(ctx.e) == public_key.e
+        assert backend._bn_to_int(ctx.n) == public_key.n

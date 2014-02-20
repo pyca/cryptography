@@ -311,6 +311,38 @@ class Backend(object):
             modulus=self._bn_to_int(ctx.n),
         )
 
+    def _int_to_bn(self, num):
+        hex_num = hex(num).rstrip("L").lstrip("0x") or "0"
+        bn_ptr = self._ffi.new("BIGNUM **")
+        res = self._lib.BN_hex2bn(bn_ptr, hex_num)
+        assert res != 0
+        assert bn_ptr[0] != self._ffi.NULL
+        # Do not add this object to gc because it should be added to an
+        # RSA ctx, which will then own freeing it.
+        return bn_ptr[0]
+
+    def _rsa_ctx_from_private_key(self, private_key):
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
+        ctx.p = self._int_to_bn(private_key.p)
+        ctx.q = self._int_to_bn(private_key.q)
+        ctx.d = self._int_to_bn(private_key.d)
+        ctx.e = self._int_to_bn(private_key.e)
+        ctx.n = self._int_to_bn(private_key.n)
+        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
+        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
+        ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        return ctx
+
+    def _rsa_ctx_from_public_key(self, public_key):
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
+        ctx.e = self._int_to_bn(public_key.e)
+        ctx.n = self._int_to_bn(public_key.n)
+        return ctx
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
