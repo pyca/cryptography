@@ -160,6 +160,27 @@ Asymmetric Interfaces
 
         The private exponent. Alias for :attr:`private_exponent`.
 
+    .. attribute:: dmp1
+
+        :type: int
+
+        A `Chinese remainder theorem`_ coefficient used to speed up RSA
+        operations. Calculated as: d mod (p-1)
+
+    .. attribute:: dmq1
+
+        :type: int
+
+        A `Chinese remainder theorem`_ coefficient used to speed up RSA
+        operations. Calculated as: d mod (q-1)
+
+    .. attribute:: iqmp
+
+        :type: int
+
+        A `Chinese remainder theorem`_ coefficient used to speed up RSA
+        operations. Calculated as: q\ :sup:`-1` mod p
+
     .. attribute:: n
 
         :type: int
@@ -209,6 +230,39 @@ Asymmetric Interfaces
 
         The public exponent. Alias for :attr:`public_exponent`.
 
+
+.. class:: AsymmetricSignatureContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you want to sign.
+
+    .. method:: finalize()
+
+        :return bytes signature: The signature.
+
+
+.. class:: AsymmetricVerificationContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you wish to verify using the signature.
+
+    .. method:: verify()
+
+        :raises cryptography.exceptions.InvalidSignature: If signature does not
+            validate.
+
+
+.. class:: AsymmetricPadding
+
+    .. versionadded:: 0.2
+
+    .. attribute:: name
 
 Hash Algorithms
 ~~~~~~~~~~~~~~~
@@ -279,4 +333,5 @@ Key Derivation Functions
         something like checking whether a user's password attempt matches the
         stored derived key.
 
-.. _`RSA`: http://en.wikipedia.org/wiki/RSA_(cryptosystem)
+.. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
+.. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem

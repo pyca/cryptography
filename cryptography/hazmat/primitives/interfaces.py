@@ -228,6 +228,27 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
+    def dmp1(self):
+        """
+        A Chinese remainder theorem coefficient used to speed up RSA
+        calculations.  Calculated as: d mod (p-1)
+        """
+
+    @abc.abstractproperty
+    def dmq1(self):
+        """
+        A Chinese remainder theorem coefficient used to speed up RSA
+        calculations.  Calculated as: d mod (q-1)
+        """
+
+    @abc.abstractproperty
+    def iqmp(self):
+        """
+        A Chinese remainder theorem coefficient used to speed up RSA
+        calculations. The modular inverse of q modulo p
+        """
+
+    @abc.abstractproperty
     def e(self):
         """
         The public exponent of the RSA key. Alias for public_exponent.
@@ -263,6 +284,43 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     def e(self):
         """
         The public exponent of the RSA key. Alias for public_exponent.
+        """
+
+
+class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Processes the provided bytes and returns nothing.
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        Returns the signature as bytes.
+        """
+
+
+class AsymmetricVerificationContext(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Processes the provided bytes and returns nothing.
+        """
+
+    @abc.abstractmethod
+    def verify(self):
+        """
+        Raises an exception if the bytes provided to update do not match the
+        signature or the signature does not match the public key.
+        """
+
+
+class AsymmetricPadding(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this padding (e.g. "PSS", "PKCS1").
         """
 
 

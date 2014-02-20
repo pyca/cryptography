@@ -72,10 +72,14 @@ class RSAPublicKey(object):
 
 @utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
-    def __init__(self, p, q, private_exponent, public_exponent, modulus):
+    def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
+                 public_exponent, modulus):
         if (
             not isinstance(p, six.integer_types) or
             not isinstance(q, six.integer_types) or
+            not isinstance(dmp1, six.integer_types) or
+            not isinstance(dmq1, six.integer_types) or
+            not isinstance(iqmp, six.integer_types) or
             not isinstance(private_exponent, six.integer_types) or
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
@@ -91,6 +95,15 @@ class RSAPrivateKey(object):
         if q >= modulus:
             raise ValueError("q must be < modulus")
 
+        if dmp1 >= modulus:
+            raise ValueError("dmp1 must be < modulus")
+
+        if dmq1 >= modulus:
+            raise ValueError("dmq1 must be < modulus")
+
+        if iqmp >= modulus:
+            raise ValueError("iqmp must be < modulus")
+
         if private_exponent >= modulus:
             raise ValueError("private_exponent must be < modulus")
 
@@ -100,11 +113,20 @@ class RSAPrivateKey(object):
         if public_exponent & 1 == 0:
             raise ValueError("public_exponent must be odd")
 
+        if dmp1 & 1 == 0:
+            raise ValueError("dmp1 must be odd")
+
+        if dmq1 & 1 == 0:
+            raise ValueError("dmq1 must be odd")
+
         if p * q != modulus:
             raise ValueError("p*q must equal modulus")
 
         self._p = p
         self._q = q
+        self._dmp1 = dmp1
+        self._dmq1 = dmq1
+        self._iqmp = iqmp
         self._private_exponent = private_exponent
         self._public_exponent = public_exponent
         self._modulus = modulus
@@ -143,6 +165,18 @@ class RSAPrivateKey(object):
     @property
     def d(self):
         return self.private_exponent
+
+    @property
+    def dmp1(self):
+        return self._dmp1
+
+    @property
+    def dmq1(self):
+        return self._dmq1
+
+    @property
+    def iqmp(self):
+        return self._iqmp
 
     @property
     def e(self):

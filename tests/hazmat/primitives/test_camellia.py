@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
-    load_cryptrec_vectors, load_openssl_vectors
+    load_cryptrec_vectors, load_nist_vectors
 )
 
 
@@ -56,7 +56,7 @@ class TestCamellia_ECB(object):
 @pytest.mark.cipher
 class TestCamellia_CBC(object):
     test_CBC = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
@@ -73,7 +73,7 @@ class TestCamellia_CBC(object):
 @pytest.mark.cipher
 class TestCamellia_OFB(object):
     test_OFB = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
@@ -90,7 +90,7 @@ class TestCamellia_OFB(object):
 @pytest.mark.cipher
 class TestCamellia_CFB(object):
     test_CFB = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),

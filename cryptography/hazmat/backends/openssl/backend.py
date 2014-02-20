@@ -302,6 +302,9 @@ class Backend(object):
         return rsa.RSAPrivateKey(
             p=self._bn_to_int(ctx.p),
             q=self._bn_to_int(ctx.q),
+            dmp1=self._bn_to_int(ctx.dmp1),
+            dmq1=self._bn_to_int(ctx.dmq1),
+            iqmp=self._bn_to_int(ctx.iqmp),
             private_exponent=self._bn_to_int(ctx.d),
             public_exponent=self._bn_to_int(ctx.e),
             modulus=self._bn_to_int(ctx.n),

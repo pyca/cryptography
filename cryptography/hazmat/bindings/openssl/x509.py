@@ -169,6 +169,13 @@ int X509_STORE_add_cert(X509_STORE *, X509 *);
 int X509_verify_cert(X509_STORE_CTX *);
 
 const char *X509_verify_cert_error_string(long);
+
+const char *X509_get_default_cert_area(void);
+const char *X509_get_default_cert_dir(void);
+const char *X509_get_default_cert_file(void);
+const char *X509_get_default_cert_dir_env(void);
+const char *X509_get_default_cert_file_env(void);
+const char *X509_get_default_private_dir(void);
 """
 
 MACROS = """
