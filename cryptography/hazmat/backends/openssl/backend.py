@@ -275,6 +275,20 @@ class Backend(object):
         self._lib.OPENSSL_free(hex_cdata)
         return int(hex_str, 16)
 
+    def _int_to_bn(self, num):
+        """
+        Converts a python integer to a BIGNUM. The returned BIGNUM will not
+        be garbage collected (to support adding them to structs that take
+        ownership of the object). Be sure to register it for GC if it will
+        be discarded after use.
+        """
+        hex_num = hex(num).rstrip("L").lstrip("0x") or "0"
+        bn_ptr = self._ffi.new("BIGNUM **")
+        res = self._lib.BN_hex2bn(bn_ptr, hex_num)
+        assert res != 0
+        assert bn_ptr[0] != self._ffi.NULL
+        return bn_ptr[0]
+
     def generate_rsa_private_key(self, public_exponent, key_size):
         if public_exponent < 3:
             raise ValueError("public_exponent must be >= 3")
@@ -290,9 +304,9 @@ class Backend(object):
         ctx = self._ffi.gc(ctx, self._lib.RSA_free)
 
         bn = self._int_to_bn(public_exponent)
-        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+        bn = self._ffi.gc(bn, self._lib.BN_free)
 
-        res = backend._lib.RSA_generate_key_ex(
+        res = self._lib.RSA_generate_key_ex(
             ctx, key_size, bn, self._ffi.NULL
         )
         assert res == 1
