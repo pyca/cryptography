@@ -72,7 +72,7 @@ def _flatten_pkcs1_examples(vectors):
 
 def _check_openssl_version(backend):
     try:
-        return backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000fL
+        return backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000f
     except AttributeError:
         return True
 
