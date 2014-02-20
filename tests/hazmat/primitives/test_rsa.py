@@ -71,10 +71,7 @@ def _flatten_pkcs1_examples(vectors):
 
 
 def _check_openssl_version(backend):
-    try:
-        return backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000f
-    except AttributeError:
-        return True
+    return True
 
 
 def test_modular_inverse():
@@ -434,7 +431,7 @@ class TestRSASignature(object):
                                     backend)
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
-        assert signature == binascii.unhexlify(example["signature"])
+        assert binascii.hexlify(signature) == example["signature"]
         verifier = public_key.verifier(
             signature,
             padding.PKCS1(),

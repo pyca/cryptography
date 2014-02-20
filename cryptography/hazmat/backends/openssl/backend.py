@@ -617,8 +617,7 @@ class _RSASignatureContext(object):
             try:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
             except AttributeError:
-                raise ValueError("Unsupported padding type. OpenSSL 1.0.0+"
-                                 " required")
+                pass
         else:
             raise ValueError("Unsupported padding type")  # TODO: do better
 
@@ -639,6 +638,11 @@ class _RSASignatureContext(object):
         assert res == 1
         res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
         assert res == 1
+        evp_md = self._backend._lib.EVP_get_digestbyname(
+            self._algorithm.name.encode("ascii"))
+        assert evp_md != self._backend._ffi.NULL
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
 
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
             pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
@@ -647,9 +651,6 @@ class _RSASignatureContext(object):
             assert pkey_ctx != self._backend._ffi.NULL
             res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
             assert res == 1
-            evp_md = self._backend._lib.EVP_get_digestbyname(
-                self._algorithm.name.encode("ascii"))
-            assert evp_md != self._backend._ffi.NULL
             res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
                 pkey_ctx, evp_md)
             assert res > 0
@@ -658,8 +659,7 @@ class _RSASignatureContext(object):
                 pkey_ctx, self._padding_enum)
             assert res > 0
             data_to_sign = self._hash_ctx.copy().finalize()
-            buf = self._backend._ffi.new("unsigned char[]",
-                                         self._private_key.key_size // 8)
+            sig_buf = self._backend._ffi.new("unsigned char[]", pkey_size)
             buflen = self._backend._ffi.new("size_t *")
             res = self._backend._lib.EVP_PKEY_sign(
                 pkey_ctx,
@@ -675,19 +675,39 @@ class _RSASignatureContext(object):
             assert res == 1
             return self._backend._ffi.buffer(buf)[:]
         else:
-            sig_buf = self._backend._ffi.new(
-                "char[]",
-                self._backend._lib.EVP_PKEY_size(evp_pkey)
-            )
-            sig_len = self._backend._ffi.new("unsigned int *")
-            res = self._backend._lib.EVP_SignFinal(
-                self._hash_ctx._ctx,
-                sig_buf,
-                sig_len,
-                evp_pkey
-            )
-            assert res == 1
-            return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+            sig_buf = self._backend._ffi.new("char[]", pkey_size)
+            if self._padding.name == "PKCS1":
+                sig_len = self._backend._ffi.new("unsigned int *")
+                res = self._backend._lib.EVP_SignFinal(
+                    self._hash_ctx._ctx,
+                    sig_buf,
+                    sig_len,
+                    evp_pkey
+                )
+                assert res == 1
+                return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+
+            if self._padding.name == "PSS":
+                data_to_sign = self._hash_ctx.copy().finalize()
+                padded = self._backend._ffi.new(
+                    "unsigned char[]", pkey_size)
+                res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
+                    rsa_ctx,
+                    padded,
+                    data_to_sign,
+                    evp_md,
+                    len(data_to_sign)
+                )
+                assert res == 1
+                res = self._backend._lib.RSA_private_encrypt(
+                    pkey_size,
+                    padded,
+                    sig_buf,
+                    rsa_ctx,
+                    self._backend._lib.RSA_NO_PADDING
+                )
+                assert res != -1
+                return self._backend._ffi.buffer(sig_buf)[:]
 
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
@@ -699,17 +719,15 @@ class _RSAVerificationContext(object):
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
                 "Expected interface of interfaces.AsymmetricPadding")
-        # TODO: this is temp code. Doesn't support 0.9.8 properly at all.
         if padding.name == "PKCS1":
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif padding.name == "PSS":
             try:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
             except AttributeError:
-                raise ValueError("Unsupported padding type. OpenSSL 1.0.0+"
-                                 " required")
+                pass
         else:
-            raise ValueError("Unsupported padding type")  # TODO: do better
+            raise ValueError("Unsupported padding type")
 
         self._padding = padding
         self._algorithm = algorithm
@@ -728,6 +746,9 @@ class _RSAVerificationContext(object):
         assert res == 1
         res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
         assert res == 1
+        evp_md = self._backend._lib.EVP_get_digestbyname(
+            self._algorithm.name.encode("ascii"))
+        assert evp_md != self._backend._ffi.NULL
 
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
             pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
@@ -736,9 +757,6 @@ class _RSAVerificationContext(object):
             assert pkey_ctx != self._backend._ffi.NULL
             res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
             assert res == 1
-            evp_md = self._backend._lib.EVP_get_digestbyname(
-                self._algorithm.name.encode("ascii"))
-            assert evp_md != self._backend._ffi.NULL
             res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
                 pkey_ctx, evp_md)
             assert res > 0
@@ -757,14 +775,37 @@ class _RSAVerificationContext(object):
             if res != 1:
                 raise InvalidSignature
         else:
-            res = self._backend._lib.EVP_VerifyFinal(
-                self._hash_ctx._ctx,
-                self._signature,
-                len(self._signature),
-                evp_pkey
-            )
-            if res != 1:
-                raise InvalidSignature
+            if self._padding.name == "PKCS1":
+                res = self._backend._lib.EVP_VerifyFinal(
+                    self._hash_ctx._ctx,
+                    self._signature,
+                    len(self._signature),
+                    evp_pkey
+                )
+                if res != 1:
+                    raise InvalidSignature
+
+            if self._padding.name == "PSS":
+                pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+                buf = self._backend._ffi.new("unsigned char[]", pkey_size)
+                res = self._backend._lib.RSA_public_decrypt(
+                    len(self._signature),
+                    self._signature,
+                    buf,
+                    rsa_ctx,
+                    self._backend._lib.RSA_NO_PADDING
+                )
+                assert res == pkey_size
+                data_to_verify = self._hash_ctx.copy().finalize()
+                res = self._backend._lib.RSA_verify_PKCS1_PSS(
+                    rsa_ctx,
+                    data_to_verify,
+                    evp_md,
+                    self._backend._ffi.buffer(buf)[:],
+                    -2
+                )
+                if res != 1:
+                    raise InvalidSignature
 
 
 backend = Backend()
