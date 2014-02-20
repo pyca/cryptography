@@ -192,7 +192,7 @@ def load_pkcs1_vectors(vector_data):
         ):
             if example_vector:
                 for key, value in six.iteritems(example_vector):
-                    hex_str = "".join(value).replace(" ", "")
+                    hex_str = "".join(value).replace(" ", "").encode("ascii")
                     example_vector[key] = hex_str
                 examples.append(example_vector)
 
@@ -213,7 +213,7 @@ def load_pkcs1_vectors(vector_data):
             line.startswith("# =============================================")
         ):
             for key, value in six.iteritems(example_vector):
-                hex_str = "".join(value).replace(" ", "")
+                hex_str = "".join(value).replace(" ", "").encode("ascii")
                 example_vector[key] = hex_str
             examples.append(example_vector)
             example_vector = None
