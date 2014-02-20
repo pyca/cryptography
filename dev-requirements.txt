@@ -4,6 +4,7 @@ invoke
 iso8601
 pretend
 pytest
+requests
 sphinx
 sphinxcontrib-spelling
 sphinx_rtd_theme
