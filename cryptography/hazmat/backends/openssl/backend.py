@@ -611,6 +611,16 @@ class _RSASignatureContext(object):
             raise TypeError(
                 "Expected interface of interfaces.AsymmetricPadding")
 
+        if padding.name == "PKCS1":
+            self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+        elif padding.name == "PSS":
+            try:
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            except AttributeError:
+                raise ValueError("Unsupported padding type")
+        else:
+            raise ValueError("Unsupported padding type")  # TODO: do better
+
         self._padding = padding
         self._algorithm = algorithm
         self._hash_ctx = _HashContext(backend, self._algorithm)
@@ -641,19 +651,9 @@ class _RSASignatureContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
                 pkey_ctx, evp_md)
             assert res > 0
-            if self._padding.name == "PKCS1":
-                padding_enum = self._backend._lib.RSA_PKCS1_PADDING
-            elif self._padding.name == "PSS":
-                try:
-                    padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
-                except AttributeError:
-                    # TODO: this should trigger in the init
-                    raise ValueError("Unsupported padding type")
-            else:
-                raise ValueError("Unsupported padding type")  # TODO: do better
 
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
-                pkey_ctx, padding_enum)
+                pkey_ctx, self._padding_enum)
             assert res > 0
             data_to_sign = self._hash_ctx.copy().finalize()
             buf = self._backend._ffi.new("unsigned char[]",
