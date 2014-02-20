@@ -216,8 +216,6 @@ X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 void SSL_SESSION_free(SSL_SESSION *);
 
 /* Information about actually used cipher */
-const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
-
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 char *SSL_CIPHER_get_version(const SSL_CIPHER *);
@@ -289,6 +287,8 @@ const SSL_METHOD *SSLv23_client_method(void);
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(SSL_METHOD *);
 long SSL_CTX_get_timeout(const SSL_CTX *);
+
+const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
 
 /* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
  * earlier versions some special handling of these is necessary.
