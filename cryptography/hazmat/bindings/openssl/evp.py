@@ -86,6 +86,7 @@ EVP_PKEY *EVP_PKEY_new(void);
 void EVP_PKEY_free(EVP_PKEY *);
 int EVP_PKEY_type(int);
 int EVP_PKEY_bits(EVP_PKEY *);
+int EVP_PKEY_size(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
 
 int EVP_SignInit(EVP_MD_CTX *, const EVP_MD *);
