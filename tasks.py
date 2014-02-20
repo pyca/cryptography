@@ -13,6 +13,7 @@
 from __future__ import absolute_import, division, print_function
 
 import getpass
+import os
 import time
 
 import invoke
@@ -33,8 +34,40 @@ def wait_for_build_completed():
         )
         response.raise_for_status()
         if not response.json()["building"]:
+            assert response.json()["result"] == "SUCCESS"
             break
         time.sleep(0.1)
+
+
+def download_artifacts():
+    response = requests.get(
+        "{0}/lastBuild/api/json/".format(JENKINS_URL),
+        headers={
+            "Accept": "application/json"
+        }
+    )
+    response.raise_for_status()
+    assert not response.json()["building"]
+    assert response.json()["result"] == "SUCCESS"
+    for run in response.json()["runs"]:
+        response = requests.get(
+            run["url"] + "api/json/",
+            headers={
+                "Accept": "application/json",
+            }
+        )
+        response.raise_for_status()
+        for artifact in response.json()["artifacts"]:
+            response = requests.get(
+                "{}artifacts/{}".format(run["url"], artifact["relativePath"])
+            )
+            out_path = os.path.join(
+                os.path.dirname(__file__),
+                "dist",
+                artifact["fileName"],
+            )
+            with open(out_path, "wb") as f:
+                f.write(response.content)
 
 
 @invoke.task
@@ -58,3 +91,4 @@ def release(version):
     )
     response.raise_for_status()
     wait_for_build_completed()
+    download_artifacts()
