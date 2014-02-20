@@ -140,6 +140,8 @@ typedef struct {
 } SSL;
 
 static const int TLSEXT_NAMETYPE_host_name;
+
+typedef ... SSL_CIPHER;
 """
 
 FUNCTIONS = """
@@ -212,6 +214,13 @@ X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
+
+/* Information about actually used cipher */
+const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
+
+const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
+int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
+char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 """
 
 MACROS = """
