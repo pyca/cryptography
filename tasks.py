@@ -49,6 +49,9 @@ def download_artifacts():
     response.raise_for_status()
     assert not response.json()["building"]
     assert response.json()["result"] == "SUCCESS"
+
+    paths = []
+
     for run in response.json()["runs"]:
         response = requests.get(
             run["url"] + "api/json/",
@@ -68,6 +71,8 @@ def download_artifacts():
             )
             with open(out_path, "wb") as f:
                 f.write(response.content)
+            paths.append(out_path)
+    return paths
 
 
 @invoke.task
@@ -91,4 +96,5 @@ def release(version):
     )
     response.raise_for_status()
     wait_for_build_completed()
-    download_artifacts()
+    paths = download_artifacts()
+    invoke.run("twine upload {0}".format(" ".join(paths)))
