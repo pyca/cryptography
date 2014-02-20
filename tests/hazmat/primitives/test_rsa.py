@@ -70,10 +70,6 @@ def _flatten_pkcs1_examples(vectors):
     return flattened_vectors
 
 
-def _check_openssl_version(backend):
-    return True
-
-
 def test_modular_inverse():
     p = int(
         "d1f9f6c09fd3d38987f7970247b85a6da84907753d42ec52bc23b745093f4fff5cff3"
@@ -386,10 +382,6 @@ class TestRSA(object):
 
 @pytest.mark.rsa
 class TestRSASignature(object):
-    @pytest.mark.supported(
-        only_if=_check_openssl_version,
-        skip_message="OpenSSL < 1.0.0 does not support PSS signatures",
-    )
     @pytest.mark.parametrize(
         "pkcs1_example",
         _flatten_pkcs1_examples(load_vectors_from_file(
@@ -444,10 +436,6 @@ class TestRSASignature(object):
 
 @pytest.mark.rsa
 class TestRSAVerification(object):
-    @pytest.mark.supported(
-        only_if=_check_openssl_version,
-        skip_message="OpenSSL < 1.0.0 does not support PSS signatures",
-    )
     @pytest.mark.parametrize(
         "pkcs1_example",
         _flatten_pkcs1_examples(load_vectors_from_file(
