@@ -18,6 +18,7 @@ fernet
 Fernet
 hazmat
 indistinguishability
+interoperable
 introspectability
 invariants
 iOS

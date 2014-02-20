@@ -33,6 +33,9 @@ existing libraries:
 * Poor introspectability, and thus poor testability.
 * Extremely error prone APIs, and bad defaults.
 
+
+.. _cryptography-layout:
+
 Layout
 ------
 
@@ -60,6 +63,7 @@ The recipes layer
     fernet
     random-numbers
     exceptions
+    faq
     glossary
 
 The hazardous materials layer
