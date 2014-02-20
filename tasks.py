@@ -13,13 +13,28 @@
 from __future__ import absolute_import, division, print_function
 
 import getpass
+import time
 
 import invoke
 
 import requests
 
 
-JENKINS_ROOT = "http://jenkins.cryptography.io"
+JENKINS_URL = "http://jenkins.cryptography.io/job/cryptography-wheel-builder"
+
+
+def wait_for_build_completed():
+    while True:
+        response = requests.get(
+            "{0}/lastBuild/api/json/".format(JENKINS_URL),
+            headers={
+                "Accept": "application/json",
+            }
+        )
+        response.raise_for_status()
+        if not response.json()["building"]:
+            break
+        time.sleep(0.1)
 
 
 @invoke.task
@@ -35,10 +50,11 @@ def release(version):
 
     token = getpass.getpass("Input the Jenkins token")
     response = requests.post(
-        "{0}/job/cryptography-wheel-builder/build".format(JENKINS_ROOT),
+        "{0}/build".format(JENKINS_URL),
         params={
             "token": token,
             "cause": "Building wheels for {0}".format(version)
         }
     )
     response.raise_for_status()
+    wait_for_build_completed()
