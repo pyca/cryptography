@@ -1,10 +1,8 @@
 Changelog
 =========
 
-0.2 - 2014-XX-XX
+0.2 - 2014-02-20
 ~~~~~~~~~~~~~~~~
-
-**In development**
 
 * Added :doc:`/hazmat/backends/commoncrypto`.
 * Added initial :doc:`/hazmat/bindings/commoncrypto`.
