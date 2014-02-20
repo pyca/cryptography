@@ -696,7 +696,7 @@ class _RSASignatureContext(object):
                     padded,
                     data_to_sign,
                     evp_md,
-                    len(data_to_sign)
+                    -2
                 )
                 assert res == 1
                 res = self._backend._lib.RSA_private_encrypt(
