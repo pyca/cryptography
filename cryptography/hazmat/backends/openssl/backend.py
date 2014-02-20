@@ -284,18 +284,19 @@ class Backend(object):
         if key_size < 512:
             raise ValueError("key_size must be at least 512-bits")
 
-        ctx = backend._lib.RSA_new()
-        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
 
-        bn = backend._lib.BN_new()
+        bn = self._lib.BN_new()
         assert bn != self._ffi.NULL
-        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+        bn = self._ffi.gc(bn, self._lib.BN_free)
 
-        res = backend._lib.BN_set_word(bn, public_exponent)
+        res = self._lib.BN_set_word(bn, public_exponent)
         assert res == 1
 
-        res = backend._lib.RSA_generate_key_ex(
-            ctx, key_size, bn, backend._ffi.NULL
+        res = self._lib.RSA_generate_key_ex(
+            ctx, key_size, bn, self._ffi.NULL
         )
         assert res == 1
 
