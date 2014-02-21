@@ -174,6 +174,8 @@ static RAND_METHOD osrandom_rand = {
     osrandom_rand_status,
 };
 
+/* Returns 1 if successfully added, 2 if engine has previously been added,
+   and 0 for error. */
 int Cryptography_add_osrandom_engine(void) {
     ENGINE *osrandom_engine = ENGINE_by_id(Cryptography_osrandom_engine_id);
     if (osrandom_engine != NULL) {
