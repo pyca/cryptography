@@ -13,6 +13,8 @@ cryptographically
 decrypt
 decrypted
 decrypting
+deserialize
+deserialized
 Docstrings
 fernet
 Fernet
