@@ -21,6 +21,7 @@ import os
 
 import pytest
 
+from cryptography import exceptions
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -419,8 +420,7 @@ class TestRSASignature(object):
         private, public, example = pkcs1_example
         private_key = rsa.RSAPrivateKey(**private)
         public_key = rsa.RSAPublicKey(**public)
-        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(),
-                                    backend)
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
@@ -432,6 +432,16 @@ class TestRSASignature(object):
         )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
+
+    def test_use_after_finalize(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signer.finalize()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            signer.finalize()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            signer.update(b"more data")
 
 
 @pytest.mark.rsa
@@ -475,3 +485,23 @@ class TestRSAVerification(object):
         )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
+
+    def test_use_after_finalize(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        verifier.verify()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            verifier.verify()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            verifier.update(b"more data")
