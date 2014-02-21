@@ -44,5 +44,9 @@ class InvalidKey(Exception):
     pass
 
 
+class InvalidToken(Exception):
+    pass
+
+
 class UnsupportedAsymmetricPadding(Exception):
     pass

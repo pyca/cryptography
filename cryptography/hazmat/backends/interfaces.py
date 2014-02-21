@@ -105,3 +105,12 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         Returns an object conforming to the AsymmetricVerificationContext
         interface.
         """
+
+
+class OpenSSLSerializationBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def load_openssl_pem_private_key(data, password, backend):
+        """
+        Load a private key from PEM encoded data, using password if the data
+        is encrypted.
+        """
