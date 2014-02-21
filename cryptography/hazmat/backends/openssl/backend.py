@@ -281,7 +281,7 @@ class Backend(object):
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
-        hex_num = hex(num).rstrip("L").lstrip("0x") or "0"
+        hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
         bn_ptr = self._ffi.new("BIGNUM **")
         res = self._lib.BN_hex2bn(bn_ptr, hex_num)
         assert res != 0
