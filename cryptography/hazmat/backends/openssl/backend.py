@@ -17,7 +17,8 @@ import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError, InvalidSignature
+    UnsupportedAlgorithm, InvalidTag, InternalError, InvalidSignature,
+    AlreadyFinalized
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -608,9 +609,14 @@ class _RSASignatureContext(object):
         self._hash_ctx = _HashContext(backend, self._algorithm)
 
     def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+
         self._hash_ctx.update(data)
 
     def finalize(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
         evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
@@ -640,7 +646,8 @@ class _RSASignatureContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
                 pkey_ctx, self._padding_enum)
             assert res > 0
-            data_to_sign = self._hash_ctx.copy().finalize()
+            data_to_sign = self._hash_ctx.finalize()
+            self._hash_ctx = None
             sig_buf = self._backend._ffi.new("unsigned char[]", pkey_size)
             buflen = self._backend._ffi.new("size_t *")
             res = self._backend._lib.EVP_PKEY_sign(
@@ -666,11 +673,13 @@ class _RSASignatureContext(object):
                     sig_len,
                     evp_pkey
                 )
+                self._hash_ctx = None
                 assert res == 1
                 return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
 
             if self._padding.name == "PSS":
-                data_to_sign = self._hash_ctx.copy().finalize()
+                data_to_sign = self._hash_ctx.finalize()
+                self._hash_ctx = None
                 padded = self._backend._ffi.new(
                     "unsigned char[]", pkey_size)
                 res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
@@ -714,9 +723,15 @@ class _RSAVerificationContext(object):
         self._hash_ctx = _HashContext(backend, self._algorithm)
 
     def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+
         self._hash_ctx.update(data)
 
     def verify(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
         evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
@@ -744,7 +759,8 @@ class _RSAVerificationContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
                 pkey_ctx, self._padding_enum)
             assert res > 0
-            data_to_verify = self._hash_ctx.copy().finalize()
+            data_to_verify = self._hash_ctx.finalize()
+            self._hash_ctx = None
             res = self._backend._lib.EVP_PKEY_verify(
                 pkey_ctx,
                 self._signature,
@@ -762,6 +778,7 @@ class _RSAVerificationContext(object):
                     len(self._signature),
                     evp_pkey
                 )
+                self._hash_ctx = None
                 if res != 1:
                     raise InvalidSignature
 
@@ -776,7 +793,8 @@ class _RSAVerificationContext(object):
                     self._backend._lib.RSA_NO_PADDING
                 )
                 assert res == pkey_size
-                data_to_verify = self._hash_ctx.copy().finalize()
+                data_to_verify = self._hash_ctx.finalize()
+                self._hash_ctx = None
                 res = self._backend._lib.RSA_verify_PKCS1_PSS(
                     rsa_ctx,
                     data_to_verify,
