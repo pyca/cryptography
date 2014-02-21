@@ -18,7 +18,7 @@ import itertools
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError, InvalidSignature,
-    AlreadyFinalized
+    AlreadyFinalized, UnsupportedAsymmetricPadding
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -617,7 +617,7 @@ class _RSASignatureContext(object):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
-            raise ValueError("Unsupported padding type")  # TODO: do better
+            raise UnsupportedAsymmetricPadding
 
         self._padding = padding
         self._algorithm = algorithm
@@ -739,7 +739,7 @@ class _RSAVerificationContext(object):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
-            raise ValueError("Unsupported padding type")
+            raise UnsupportedAsymmetricPadding
 
         self._padding = padding
         self._algorithm = algorithm
