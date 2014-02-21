@@ -96,3 +96,8 @@ class TestOpenSSL(object):
         # unlocked
         assert lock.acquire(False)
         lock.release()
+
+    def test_add_engine_more_than_once(self):
+        b = Binding()
+        res = b.lib.Cryptography_add_osrandom_engine()
+        assert res == 2
