@@ -322,7 +322,7 @@ class Backend(object):
             modulus=self._bn_to_int(ctx.n),
         )
 
-    def _rsa_ctx_from_private_key(self, private_key):
+    def _rsa_cdata_from_private_key(self, private_key):
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.RSA_free)
@@ -336,7 +336,7 @@ class Backend(object):
         ctx.iqmp = self._int_to_bn(private_key.iqmp)
         return ctx
 
-    def _rsa_ctx_from_public_key(self, public_key):
+    def _rsa_cdata_from_public_key(self, public_key):
         ctx = self._lib.RSA_new()
         ctx = self._ffi.gc(ctx, self._lib.RSA_free)
         ctx.e = self._int_to_bn(public_key.e)
@@ -635,11 +635,11 @@ class _RSASignatureContext(object):
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
         evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
-        rsa_ctx = backend._rsa_ctx_from_private_key(self._private_key)
+        rsa_cdata = backend._rsa_cdata_from_private_key(self._private_key)
         res = self._backend._lib.RSA_blinding_on(
-            rsa_ctx, self._backend._ffi.NULL)
+            rsa_cdata, self._backend._ffi.NULL)
         assert res == 1
-        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
         assert res == 1
         evp_md = self._backend._lib.EVP_get_digestbyname(
             self._algorithm.name.encode("ascii"))
@@ -654,7 +654,7 @@ class _RSASignatureContext(object):
                 return self._finalize_pkcs1_padding(evp_pkey, pkey_size)
 
             if self._padding.name == "EMSA-PSS":
-                return self._finalize_pss_padding(rsa_ctx, evp_md, pkey_size)
+                return self._finalize_pss_padding(rsa_cdata, evp_md, pkey_size)
 
     def _finalize_pkey_ctx(self, evp_pkey, evp_md, pkey_size):
         pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
@@ -700,12 +700,12 @@ class _RSASignatureContext(object):
         assert res == 1
         return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
 
-    def _finalize_pss_padding(self, rsa_ctx, evp_md, pkey_size):
+    def _finalize_pss_padding(self, rsa_cdata, evp_md, pkey_size):
         data_to_sign = self._hash_ctx.finalize()
         self._hash_ctx = None
         padded = self._backend._ffi.new("unsigned char[]", pkey_size)
         res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
-            rsa_ctx,
+            rsa_cdata,
             padded,
             data_to_sign,
             evp_md,
@@ -717,7 +717,7 @@ class _RSASignatureContext(object):
             pkey_size,
             padded,
             sig_buf,
-            rsa_ctx,
+            rsa_cdata,
             self._backend._lib.RSA_NO_PADDING
         )
         assert res != -1
@@ -758,11 +758,11 @@ class _RSAVerificationContext(object):
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
         evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
-        rsa_ctx = backend._rsa_ctx_from_public_key(self._public_key)
+        rsa_cdata = backend._rsa_cdata_from_public_key(self._public_key)
         res = self._backend._lib.RSA_blinding_on(
-            rsa_ctx, self._backend._ffi.NULL)
+            rsa_cdata, self._backend._ffi.NULL)
         assert res == 1
-        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_ctx)
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
         assert res == 1
         evp_md = self._backend._lib.EVP_get_digestbyname(
             self._algorithm.name.encode("ascii"))
@@ -775,7 +775,7 @@ class _RSAVerificationContext(object):
                 self._verify_pkcs1(evp_pkey)
 
             if self._padding.name == "EMSA-PSS":
-                self._verify_pss(rsa_ctx, evp_pkey, evp_md)
+                self._verify_pss(rsa_cdata, evp_pkey, evp_md)
 
     def _verify_pkey_ctx(self, evp_pkey, evp_md):
         pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
@@ -814,7 +814,7 @@ class _RSAVerificationContext(object):
         if res != 1:
             raise InvalidSignature
 
-    def _verify_pss(self, rsa_ctx, evp_pkey, evp_md):
+    def _verify_pss(self, rsa_cdata, evp_pkey, evp_md):
         pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
         assert pkey_size > 0
         buf = self._backend._ffi.new("unsigned char[]", pkey_size)
@@ -822,14 +822,14 @@ class _RSAVerificationContext(object):
             len(self._signature),
             self._signature,
             buf,
-            rsa_ctx,
+            rsa_cdata,
             self._backend._lib.RSA_NO_PADDING
         )
         assert res == pkey_size
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
         res = self._backend._lib.RSA_verify_PKCS1_PSS(
-            rsa_ctx,
+            rsa_cdata,
             data_to_verify,
             evp_md,
             buf,
