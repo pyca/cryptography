@@ -177,15 +177,16 @@ static RAND_METHOD osrandom_rand = {
 /* Returns 1 if successfully added, 2 if engine has previously been added,
    and 0 for error. */
 int Cryptography_add_osrandom_engine(void) {
-    ENGINE *osrandom_engine = ENGINE_by_id(Cryptography_osrandom_engine_id);
-    if (osrandom_engine != NULL) {
-        ENGINE_free(osrandom_engine);
+    ENGINE *e;
+    e = ENGINE_by_id(Cryptography_osrandom_engine_id);
+    if (e != NULL) {
+        ENGINE_free(e);
         return 2;
     } else {
         ERR_clear_error();
     }
 
-    ENGINE *e = ENGINE_new();
+    e = ENGINE_new();
     if (e == NULL) {
         return 0;
     }
