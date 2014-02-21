@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
 
 vectors = load_vectors_from_file(
-    "oath/rfc-4226.txt", load_nist_vectors)
+    "twofactor/rfc-4226.txt", load_nist_vectors)
 
 
 @pytest.mark.supported(

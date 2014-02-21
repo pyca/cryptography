@@ -4,7 +4,7 @@ Changelog
 0.3 - 2014-XX-XX
 ~~~~~~~~~~~~~~~~
 
-**In development**
+* Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 
 0.2 - 2014-02-20
 ~~~~~~~~~~~~~~~~
