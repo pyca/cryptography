@@ -453,6 +453,11 @@ class TestRSASignature(object):
         with pytest.raises(exceptions.UnsupportedAsymmetricPadding):
             private_key.signer(FakePadding(), hashes.SHA1(), backend)
 
+    def test_padding_incorrect_type(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        with pytest.raises(TypeError):
+            private_key.signer("notpadding", hashes.SHA1(), backend)
+
 
 @pytest.mark.rsa
 class TestRSAVerification(object):
@@ -495,6 +500,72 @@ class TestRSAVerification(object):
         )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
+
+    def test_invalid_pkcs1v15_signature_wrong_data(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"incorrect data")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_invalid_pss_signature_wrong_data(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"incorrect data")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key2 = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key2.public_key()
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_invalid_pss_signature_wrong_key(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key2 = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key2.public_key()
+        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
 
     def test_use_after_finalize(self, backend):
         private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)

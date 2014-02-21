@@ -611,9 +611,9 @@ class _RSASignatureContext(object):
             raise TypeError(
                 "Expected interface of interfaces.AsymmetricPadding")
 
-        if padding.name == "PKCS1":
+        if padding.name == "EMSA-PKCS1-v1_5":
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
-        elif padding.name == "PSS":
+        elif padding.name == "EMSA-PSS":
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
@@ -650,10 +650,10 @@ class _RSASignatureContext(object):
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
             return self._finalize_pkey_ctx(evp_pkey, evp_md, pkey_size)
         else:
-            if self._padding.name == "PKCS1":
+            if self._padding.name == "EMSA-PKCS1-v1_5":
                 return self._finalize_pkcs1_padding(evp_pkey, pkey_size)
 
-            if self._padding.name == "PSS":
+            if self._padding.name == "EMSA-PSS":
                 return self._finalize_pss_padding(rsa_ctx, evp_md, pkey_size)
 
     def _finalize_pkey_ctx(self, evp_pkey, evp_md, pkey_size):
@@ -733,9 +733,9 @@ class _RSAVerificationContext(object):
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
                 "Expected interface of interfaces.AsymmetricPadding")
-        if padding.name == "PKCS1":
+        if padding.name == "EMSA-PKCS1-v1_5":
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
-        elif padding.name == "PSS":
+        elif padding.name == "EMSA-PSS":
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
@@ -771,10 +771,10 @@ class _RSAVerificationContext(object):
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
             self._verify_pkey_ctx(evp_pkey, evp_md)
         else:
-            if self._padding.name == "PKCS1":
+            if self._padding.name == "EMSA-PKCS1-v1_5":
                 self._verify_pkcs1(evp_pkey)
 
-            if self._padding.name == "PSS":
+            if self._padding.name == "EMSA-PSS":
                 self._verify_pss(rsa_ctx, evp_pkey, evp_md)
 
     def _verify_pkey_ctx(self, evp_pkey, evp_md):
