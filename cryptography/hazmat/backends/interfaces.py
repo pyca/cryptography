@@ -109,7 +109,7 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
 
 class OpenSSLSerializationBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
-    def load_openssl_pem_private_key(data, password, backend):
+    def load_openssl_pem_private_key(self, data, password, backend):
         """
         Load a private key from PEM encoded data, using password if the data
         is encrypted.
