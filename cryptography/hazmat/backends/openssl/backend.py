@@ -648,72 +648,80 @@ class _RSASignatureContext(object):
         assert pkey_size > 0
 
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-            pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
-                evp_pkey, self._backend._ffi.NULL
-            )
-            assert pkey_ctx != self._backend._ffi.NULL
-            res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
-            assert res == 1
-            res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
-                pkey_ctx, evp_md)
-            assert res > 0
-
-            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
-                pkey_ctx, self._padding_enum)
-            assert res > 0
-            data_to_sign = self._hash_ctx.finalize()
-            self._hash_ctx = None
-            sig_buf = self._backend._ffi.new("unsigned char[]", pkey_size)
-            buflen = self._backend._ffi.new("size_t *")
-            res = self._backend._lib.EVP_PKEY_sign(
-                pkey_ctx,
-                self._backend._ffi.NULL,
-                buflen,
-                data_to_sign,
-                len(data_to_sign)
-            )
-            assert res == 1
-            buf = self._backend._ffi.new("unsigned char[]", buflen[0])
-            res = self._backend._lib.EVP_PKEY_sign(
-                pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
-            assert res == 1
-            return self._backend._ffi.buffer(buf)[:]
+            return self._finalize_pkey_ctx(evp_pkey, evp_md, pkey_size)
         else:
-            sig_buf = self._backend._ffi.new("char[]", pkey_size)
             if self._padding.name == "PKCS1":
-                sig_len = self._backend._ffi.new("unsigned int *")
-                res = self._backend._lib.EVP_SignFinal(
-                    self._hash_ctx._ctx,
-                    sig_buf,
-                    sig_len,
-                    evp_pkey
-                )
-                self._hash_ctx = None
-                assert res == 1
-                return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+                return self._finalize_pkcs1_padding(evp_pkey, pkey_size)
 
             if self._padding.name == "PSS":
-                data_to_sign = self._hash_ctx.finalize()
-                self._hash_ctx = None
-                padded = self._backend._ffi.new(
-                    "unsigned char[]", pkey_size)
-                res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
-                    rsa_ctx,
-                    padded,
-                    data_to_sign,
-                    evp_md,
-                    -2
-                )
-                assert res == 1
-                res = self._backend._lib.RSA_private_encrypt(
-                    pkey_size,
-                    padded,
-                    sig_buf,
-                    rsa_ctx,
-                    self._backend._lib.RSA_NO_PADDING
-                )
-                assert res != -1
-                return self._backend._ffi.buffer(sig_buf)[:]
+                return self._finalize_pss_padding(rsa_ctx, evp_md, pkey_size)
+
+    def _finalize_pkey_ctx(self, evp_pkey, evp_md, pkey_size):
+        pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._backend._ffi.NULL
+        )
+        assert pkey_ctx != self._backend._ffi.NULL
+        res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+            pkey_ctx, evp_md)
+        assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, self._padding_enum)
+        assert res > 0
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        buflen = self._backend._ffi.new("size_t *")
+        res = self._backend._lib.EVP_PKEY_sign(
+            pkey_ctx,
+            self._backend._ffi.NULL,
+            buflen,
+            data_to_sign,
+            len(data_to_sign)
+        )
+        assert res == 1
+        buf = self._backend._ffi.new("unsigned char[]", buflen[0])
+        res = self._backend._lib.EVP_PKEY_sign(
+            pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
+        assert res == 1
+        return self._backend._ffi.buffer(buf)[:]
+
+    def _finalize_pkcs1_padding(self, evp_pkey, pkey_size):
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        sig_len = self._backend._ffi.new("unsigned int *")
+        res = self._backend._lib.EVP_SignFinal(
+            self._hash_ctx._ctx,
+            sig_buf,
+            sig_len,
+            evp_pkey
+        )
+        self._hash_ctx = None
+        assert res == 1
+        return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+
+    def _finalize_pss_padding(self, rsa_ctx, evp_md, pkey_size):
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        padded = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
+            rsa_ctx,
+            padded,
+            data_to_sign,
+            evp_md,
+            -2
+        )
+        assert res == 1
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        res = self._backend._lib.RSA_private_encrypt(
+            pkey_size,
+            padded,
+            sig_buf,
+            rsa_ctx,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert res != -1
+        return self._backend._ffi.buffer(sig_buf)[:]
 
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
@@ -761,64 +769,74 @@ class _RSAVerificationContext(object):
         assert evp_md != self._backend._ffi.NULL
 
         if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-            pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
-                evp_pkey, self._backend._ffi.NULL
-            )
-            assert pkey_ctx != self._backend._ffi.NULL
-            res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
-            assert res == 1
-            res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
-                pkey_ctx, evp_md)
-            assert res > 0
-
-            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
-                pkey_ctx, self._padding_enum)
-            assert res > 0
-            data_to_verify = self._hash_ctx.finalize()
-            self._hash_ctx = None
-            res = self._backend._lib.EVP_PKEY_verify(
-                pkey_ctx,
-                self._signature,
-                len(self._signature),
-                data_to_verify,
-                len(data_to_verify)
-            )
-            if res != 1:
-                raise InvalidSignature
+            self._verify_pkey_ctx(evp_pkey, evp_md)
         else:
             if self._padding.name == "PKCS1":
-                res = self._backend._lib.EVP_VerifyFinal(
-                    self._hash_ctx._ctx,
-                    self._signature,
-                    len(self._signature),
-                    evp_pkey
-                )
-                self._hash_ctx = None
-                if res != 1:
-                    raise InvalidSignature
+                self._verify_pkcs1(evp_pkey)
 
             if self._padding.name == "PSS":
-                pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
-                buf = self._backend._ffi.new("unsigned char[]", pkey_size)
-                res = self._backend._lib.RSA_public_decrypt(
-                    len(self._signature),
-                    self._signature,
-                    buf,
-                    rsa_ctx,
-                    self._backend._lib.RSA_NO_PADDING
-                )
-                assert res == pkey_size
-                data_to_verify = self._hash_ctx.finalize()
-                self._hash_ctx = None
-                res = self._backend._lib.RSA_verify_PKCS1_PSS(
-                    rsa_ctx,
-                    data_to_verify,
-                    evp_md,
-                    buf,
-                    -2
-                )
-                if res != 1:
-                    raise InvalidSignature
+                self._verify_pss(rsa_ctx, evp_pkey, evp_md)
+
+    def _verify_pkey_ctx(self, evp_pkey, evp_md):
+        pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._backend._ffi.NULL
+        )
+        assert pkey_ctx != self._backend._ffi.NULL
+        res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+            pkey_ctx, evp_md)
+        assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, self._padding_enum)
+        assert res > 0
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.EVP_PKEY_verify(
+            pkey_ctx,
+            self._signature,
+            len(self._signature),
+            data_to_verify,
+            len(data_to_verify)
+        )
+        if res != 1:
+            raise InvalidSignature
+
+    def _verify_pkcs1(self, evp_pkey):
+        res = self._backend._lib.EVP_VerifyFinal(
+            self._hash_ctx._ctx,
+            self._signature,
+            len(self._signature),
+            evp_pkey
+        )
+        self._hash_ctx = None
+        if res != 1:
+            raise InvalidSignature
+
+    def _verify_pss(self, rsa_ctx, evp_pkey, evp_md):
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
+        buf = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_public_decrypt(
+            len(self._signature),
+            self._signature,
+            buf,
+            rsa_ctx,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert res == pkey_size
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.RSA_verify_PKCS1_PSS(
+            rsa_ctx,
+            data_to_verify,
+            evp_md,
+            buf,
+            -2
+        )
+        if res != 1:
+            raise InvalidSignature
 
 
 backend = Backend()
