@@ -17,8 +17,8 @@ import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError, InvalidSignature,
-    AlreadyFinalized, UnsupportedAsymmetricPadding
+    UnsupportedAlgorithm, InvalidTag, InternalError, AlreadyFinalized,
+    InvalidAsymmetricSignature, UnsupportedAsymmetricPadding
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -801,7 +801,7 @@ class _RSAVerificationContext(object):
             len(data_to_verify)
         )
         if res != 1:
-            raise InvalidSignature
+            raise InvalidAsymmetricSignature
 
     def _verify_pkcs1(self, evp_pkey):
         res = self._backend._lib.EVP_VerifyFinal(
@@ -812,7 +812,7 @@ class _RSAVerificationContext(object):
         )
         self._hash_ctx = None
         if res != 1:
-            raise InvalidSignature
+            raise InvalidAsymmetricSignature
 
     def _verify_pss(self, rsa_cdata, evp_pkey, evp_md):
         pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
@@ -826,7 +826,7 @@ class _RSAVerificationContext(object):
             self._backend._lib.RSA_NO_PADDING
         )
         if res != pkey_size:
-            raise InvalidSignature
+            raise InvalidAsymmetricSignature
 
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
@@ -838,7 +838,7 @@ class _RSAVerificationContext(object):
             -2
         )
         if res != 1:
-            raise InvalidSignature
+            raise InvalidAsymmetricSignature
 
 
 backend = Backend()

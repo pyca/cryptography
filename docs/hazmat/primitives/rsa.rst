@@ -65,7 +65,7 @@ RSA
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignContext`
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
         .. doctest::
 
@@ -116,7 +116,7 @@ RSA
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerifyContext`
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
         .. doctest::
 

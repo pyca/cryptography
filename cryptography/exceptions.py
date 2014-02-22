@@ -50,3 +50,7 @@ class InvalidToken(Exception):
 
 class UnsupportedAsymmetricPadding(Exception):
     pass
+
+
+class InvalidAsymmetricSignature(Exception):
+    pass
