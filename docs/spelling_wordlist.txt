@@ -18,6 +18,7 @@ deserialized
 Docstrings
 fernet
 Fernet
+forgeable
 hazmat
 indistinguishability
 interoperable
