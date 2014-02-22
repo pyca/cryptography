@@ -67,6 +67,17 @@ RSA
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignContext`
 
+        .. doctest::
+
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import rsa, padding
+            >>> private_key = rsa.RSAPrivateKey.generate(65537, 2048, default_backend())
+            >>> signer = private_key.signer(padding.PSS(), hashes.SHA256(), default_backend())
+            >>> signer.update(b"this is some data I'd like")
+            >>> signer.update(b" to sign")
+            >>> signature = signer.finalize()
+
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
@@ -106,6 +117,21 @@ RSA
 
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerifyContext`
+
+        .. doctest::
+
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import rsa, padding
+            >>> private_key = rsa.RSAPrivateKey.generate(65537, 2048, default_backend())
+            >>> signer = private_key.signer(padding.PSS(), hashes.SHA256(), default_backend())
+            >>> data= b"this is some data I'd like to sign"
+            >>> signer.update(data)
+            >>> signature = signer.finalize()
+            >>> public_key = private_key.public_key()
+            >>> verifier = public_key.verifier(signature, padding.PSS(), hashes.SHA256(), default_backend())
+            >>> verifier.update(data)
+            >>> verifier.verify()
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
