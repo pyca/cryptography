@@ -36,9 +36,9 @@ codes (HMAC).
         '755224'
         >>> hotp.verify(b"755224", 0) # doctest: +SKIP
 
-    :param bytes key: Secret key. This value must be generated in a
-                      cryptographically secure fashion and be at least 128 bits.
-                      It is recommended that the key be 160 bits.
+    :param bytes key: Per-user secret key. This value must be kept secret
+                      and be at least 128 bits. It is recommended that the
+                      key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
@@ -124,9 +124,9 @@ This can be accomplished with something similar to the following code.
         '94287082'
         >>> totp.verify(b"94287082", 59) # doctest: +SKIP
 
-    :param bytes key: Secret key. This value must be generated in a
-                      cryptographically secure fashion and be as long as your hash
-                      function's output (e.g 256-bit for SHA256).
+    :param bytes key: Per-user secret key. This value must be kept secret
+                      and be at least 128 bits. It is recommended that the
+                      key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
