@@ -98,7 +98,7 @@ class Binding(object):
                                      _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
                                      libraries)
         res = cls.lib.Cryptography_add_osrandom_engine()
-        assert res == 1
+        assert res != 0
 
     @classmethod
     def is_available(cls):
