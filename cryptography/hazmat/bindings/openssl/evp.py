@@ -105,6 +105,19 @@ int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
 
 int EVP_PKEY_set1_RSA(EVP_PKEY *, struct rsa_st *);
 int EVP_PKEY_set1_DSA(EVP_PKEY *, struct dsa_st *);
+
+int EVP_PKEY_get_attr_count(const EVP_PKEY *);
+int EVP_PKEY_get_attr_by_NID(const EVP_PKEY *, int, int);
+int EVP_PKEY_get_attr_by_OBJ(const EVP_PKEY *, ASN1_OBJECT *, int);
+X509_ATTRIBUTE *EVP_PKEY_get_attr(const EVP_PKEY *, int);
+X509_ATTRIBUTE *EVP_PKEY_delete_attr(EVP_PKEY *, int);
+int EVP_PKEY_add1_attr(EVP_PKEY *, X509_ATTRIBUTE *);
+int EVP_PKEY_add1_attr_by_OBJ(EVP_PKEY *, const ASN1_OBJECT *, int,
+                              const unsigned char *, int);
+int EVP_PKEY_add1_attr_by_NID(EVP_PKEY *, int, int,
+                              const unsigned char *, int);
+int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
+                              const unsigned char *, int);
 """
 
 MACROS = """
