@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.1 - 2014-02-22
+~~~~~~~~~~~~~~~~
+* Fix a bug where importing cryptography from multiple paths could cause initialization to fail.
+
 0.2 - 2014-02-20
 ~~~~~~~~~~~~~~~~
 
