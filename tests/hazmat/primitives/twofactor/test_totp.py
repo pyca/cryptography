@@ -57,3 +57,11 @@ class TestTOTP(object):
 
             with pytest.raises(InvalidToken):
                 totp.verify(b"12345678", time)
+
+    def test_floating_point_time_generate(self, backend):
+        secret = b"12345678901234567890"
+        time = 59.1
+
+        totp = TOTP(secret, 8, SHA1(), 30, backend)
+
+        assert totp.generate(time) == b"94287082"

@@ -30,13 +30,13 @@ codes (HMAC).
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.hotp import HOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
-        >>> key = b"12345678901234567890"
+        >>> key = os.urandom(16)
         >>> hotp = HOTP(key, 6, SHA1(), backend=default_backend())
-        >>> hotp.generate(0)
+        >>> hotp.generate(0) # doctest: +SKIP
         '755224'
-        >>> hotp.verify(b"755224", 0)
+        >>> hotp.verify(b"755224", 0) # doctest: +SKIP
 
-    :param bytes key: Secret key as ``bytes``. This value must be generated in a
+    :param bytes key: Secret key. This value must be generated in a
                       cryptographically secure fashion and be at least 128 bits.
                       It is recommended that the key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
@@ -46,8 +46,8 @@ codes (HMAC).
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
-    :raises ValueError: This is raised if the provided ``key`` is shorter 128 bits
-                        or if the ``length`` parameter is not between 6 to 8.
+    :raises ValueError: This is raised if the provided ``key`` is shorter than 128 bits
+                        or if the ``length`` parameter is not 6, 7 or 8.
     :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm`` is not
                                   ``SHA1()``, ``SHA256()`` or ``SHA512()``.
 
@@ -114,27 +114,28 @@ This can be accomplished with something similar to the following code.
     .. doctest::
 
         >>> import os
+        >>> import time
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.totp import TOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
-        >>> key = b"12345678901234567890"
+        >>> key = os.urandom(16)
         >>> totp = TOTP(key, 8, SHA1(), 30, backend=default_backend())
-        >>> totp.generate(59)
+        >>> totp.generate(time.time()) # doctest: +SKIP
         '94287082'
-        >>> totp.verify(b"94287082", 59)
+        >>> totp.verify(b"94287082", 59) # doctest: +SKIP
 
-    :param bytes key: Secret key as ``bytes``. This value must be generated in a
+    :param bytes key: Secret key. This value must be generated in a
                       cryptographically secure fashion and be as long as your hash
                       function's output (e.g 256-bit for SHA256).
     :param int length: Length of generated one time password as ``int``.
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
         provider.
-    :param int time_step: The time step size. The default should be 30.
+    :param int time_step: The time step size. The recommended size is 30.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
-    :raises ValueError: This is raised if the provided ``key`` is shorter 128 bits
-                        or if the ``length`` parameter is not between 6 to 8.
+    :raises ValueError: This is raised if the provided ``key`` is shorter than 128 bits
+                        or if the ``length`` parameter is not 6, 7 or 8.
     :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm`` is not
                                   ``SHA1()``, ``SHA256()`` or ``SHA512()``.
