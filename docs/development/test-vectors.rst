@@ -13,9 +13,13 @@ Sources
 Asymmetric Ciphers
 ~~~~~~~~~~~~~~~~~~
 
-* RSA PKCS1 from the RSA FTP site (ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/
+* RSA PKCS #1 from the RSA FTP site (ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/
   and ftp://ftp.rsa.com/pub/rsalabs/tmp/).
 * OpenSSL PEM serialization vectors from the `OpenSSL test suite`_ and `GnuTLS test suite`_.
+* PKCS #8 PEM serialization vectors from
+
+  * GnuTLS: `encpkcs8.pem`_, `enc2pkcs8.pem`_, `unencpkcs8.pem`_, `pkcs12_s2k_pem.c`_.
+  * `Botan's ECC private keys`_.
 
 Hashes
 ~~~~~~
@@ -103,3 +107,8 @@ header format (substituting the correct information):
 .. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`OpenSSL test suite`: http://git.openssl.org/gitweb/?p=openssl.git;a=blob;f=test/testrsa.pem;h=aad21067a8f7cb93a52a511eb9162fd83be39135;hb=66e8211c0b1347970096e04b18aa52567c325200
 .. _`GnuTLS test suite`: https://gitorious.org/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
+.. _`encpkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/encpkcs8.pem
+.. _`enc2pkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/enc2pkcs8.pem
+.. _`unencpkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/unencpkcs8.pem
+.. _`pkcs12_s2k_pem.c`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs12_s2k_pem.c
+.. _`Botan's ECC private keys`: https://github.com/randombit/botan/tree/4917f26a2b154e841cd27c1bcecdd41d2bdeb6ce/src/tests/data/ecc
