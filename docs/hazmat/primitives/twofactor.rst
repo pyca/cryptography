@@ -59,7 +59,7 @@ codes (HMAC).
     .. method:: verify(hotp, counter)
 
         :param bytes hotp: The one time password value to validate.
-        :param bytes counter: The counter value to validate against.
+        :param int counter: The counter value to validate against.
         :raises cryptography.exceptions.InvalidToken: This is raised when the supplied HOTP
                                                       does not match the expected HOTP.
 
@@ -139,3 +139,15 @@ This can be accomplished with something similar to the following code.
                         or if the ``length`` parameter is not 6, 7 or 8.
     :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm`` is not
                                   ``SHA1()``, ``SHA256()`` or ``SHA512()``.
+
+    .. method:: generate(time)
+
+        :param int counter: The time value used to generate the one time password.
+        :return bytes: A one time password value.
+
+    .. method:: verify(totp, time)
+
+        :param bytes hotp: The one time password value to validate.
+        :param int time: The time value to validate against.
+        :raises cryptography.exceptions.InvalidToken: This is raised when the supplied TOTP
+                                                      does not match the expected TOTP.
