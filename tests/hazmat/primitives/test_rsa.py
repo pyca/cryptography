@@ -535,8 +535,8 @@ class TestRSAVerification(object):
 
     def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
         private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        private_key2 = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        public_key = private_key2.public_key()
+        public_key = private_key.public_key()
+        public_key._modulus += 2
         signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signature = signer.finalize()
@@ -552,8 +552,8 @@ class TestRSAVerification(object):
 
     def test_invalid_pss_signature_wrong_key(self, backend):
         private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        private_key2 = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        public_key = private_key2.public_key()
+        public_key = private_key.public_key()
+        public_key._modulus += 2
         signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signature = signer.finalize()
