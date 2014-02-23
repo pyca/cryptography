@@ -86,7 +86,7 @@ def release(version):
     invoke.run("python setup.py sdist")
     invoke.run("twine upload -s dist/cryptography-{0}*".format(version))
 
-    token = getpass.getpass("Input the Jenkins token")
+    token = getpass.getpass("Input the Jenkins token: ")
     response = requests.post(
         "{0}/build".format(JENKINS_URL),
         params={
