@@ -17,7 +17,8 @@ import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError
+    UnsupportedAlgorithm, InvalidTag, InternalError, AlreadyFinalized,
+    InvalidAsymmetricSignature, UnsupportedAsymmetricPadding
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -321,6 +322,35 @@ class Backend(object):
             modulus=self._bn_to_int(ctx.n),
         )
 
+    def _rsa_cdata_from_private_key(self, private_key):
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
+        ctx.p = self._int_to_bn(private_key.p)
+        ctx.q = self._int_to_bn(private_key.q)
+        ctx.d = self._int_to_bn(private_key.d)
+        ctx.e = self._int_to_bn(private_key.e)
+        ctx.n = self._int_to_bn(private_key.n)
+        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
+        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
+        ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        return ctx
+
+    def _rsa_cdata_from_public_key(self, public_key):
+        ctx = self._lib.RSA_new()
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
+        ctx.e = self._int_to_bn(public_key.e)
+        ctx.n = self._int_to_bn(public_key.n)
+        return ctx
+
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        return _RSASignatureContext(self, private_key, padding, algorithm)
+
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
+        return _RSAVerificationContext(self, public_key, signature, padding,
+                                       algorithm)
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
@@ -570,6 +600,245 @@ class _HMACContext(object):
         assert res != 0
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:]
+
+
+@utils.register_interface(interfaces.AsymmetricSignatureContext)
+class _RSASignatureContext(object):
+    def __init__(self, backend, private_key, padding, algorithm):
+        self._backend = backend
+        self._private_key = private_key
+        if not isinstance(padding, interfaces.AsymmetricPadding):
+            raise TypeError(
+                "Expected interface of interfaces.AsymmetricPadding")
+
+        if padding.name == "EMSA-PKCS1-v1_5":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            else:
+                self._finalize_method = self._finalize_pkcs1
+        elif padding.name == "EMSA-PSS":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._finalize_method = self._finalize_pss
+        else:
+            raise UnsupportedAsymmetricPadding
+
+        self._padding = padding
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+
+        self._hash_ctx.update(data)
+
+    def finalize(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        rsa_cdata = backend._rsa_cdata_from_private_key(self._private_key)
+        res = self._backend._lib.RSA_blinding_on(
+            rsa_cdata, self._backend._ffi.NULL)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        assert res == 1
+        evp_md = self._backend._lib.EVP_get_digestbyname(
+            self._algorithm.name.encode("ascii"))
+        assert evp_md != self._backend._ffi.NULL
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
+
+        return self._finalize_method(evp_pkey, pkey_size, rsa_cdata, evp_md)
+
+    def _finalize_pkey_ctx(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
+        pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._backend._ffi.NULL
+        )
+        assert pkey_ctx != self._backend._ffi.NULL
+        res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+            pkey_ctx, evp_md)
+        assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, self._padding_enum)
+        assert res > 0
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        buflen = self._backend._ffi.new("size_t *")
+        res = self._backend._lib.EVP_PKEY_sign(
+            pkey_ctx,
+            self._backend._ffi.NULL,
+            buflen,
+            data_to_sign,
+            len(data_to_sign)
+        )
+        assert res == 1
+        buf = self._backend._ffi.new("unsigned char[]", buflen[0])
+        res = self._backend._lib.EVP_PKEY_sign(
+            pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
+        assert res == 1
+        return self._backend._ffi.buffer(buf)[:]
+
+    def _finalize_pkcs1(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        sig_len = self._backend._ffi.new("unsigned int *")
+        res = self._backend._lib.EVP_SignFinal(
+            self._hash_ctx._ctx,
+            sig_buf,
+            sig_len,
+            evp_pkey
+        )
+        self._hash_ctx = None
+        assert res == 1
+        return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+
+    def _finalize_pss(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        padded = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
+            rsa_cdata,
+            padded,
+            data_to_sign,
+            evp_md,
+            -2
+        )
+        assert res == 1
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        res = self._backend._lib.RSA_private_encrypt(
+            pkey_size,
+            padded,
+            sig_buf,
+            rsa_cdata,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert res != -1
+        return self._backend._ffi.buffer(sig_buf)[:]
+
+
+@utils.register_interface(interfaces.AsymmetricVerificationContext)
+class _RSAVerificationContext(object):
+    def __init__(self, backend, public_key, signature, padding, algorithm):
+        self._backend = backend
+        self._public_key = public_key
+        self._signature = signature
+        if not isinstance(padding, interfaces.AsymmetricPadding):
+            raise TypeError(
+                "Expected interface of interfaces.AsymmetricPadding")
+
+        if padding.name == "EMSA-PKCS1-v1_5":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            else:
+                self._verify_method = self._verify_pkcs1
+        elif padding.name == "EMSA-PSS":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._verify_method = self._verify_pss
+        else:
+            raise UnsupportedAsymmetricPadding
+
+        self._padding = padding
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+
+        self._hash_ctx.update(data)
+
+    def verify(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        rsa_cdata = backend._rsa_cdata_from_public_key(self._public_key)
+        res = self._backend._lib.RSA_blinding_on(
+            rsa_cdata, self._backend._ffi.NULL)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        assert res == 1
+        evp_md = self._backend._lib.EVP_get_digestbyname(
+            self._algorithm.name.encode("ascii"))
+        assert evp_md != self._backend._ffi.NULL
+
+        self._verify_method(rsa_cdata, evp_pkey, evp_md)
+
+    def _verify_pkey_ctx(self, rsa_cdata, evp_pkey, evp_md):
+        pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._backend._ffi.NULL
+        )
+        assert pkey_ctx != self._backend._ffi.NULL
+        res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+            pkey_ctx, evp_md)
+        assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, self._padding_enum)
+        assert res > 0
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.EVP_PKEY_verify(
+            pkey_ctx,
+            self._signature,
+            len(self._signature),
+            data_to_verify,
+            len(data_to_verify)
+        )
+        if res != 1:
+            raise InvalidAsymmetricSignature
+
+    def _verify_pkcs1(self, rsa_cdata, evp_pkey, evp_md):
+        res = self._backend._lib.EVP_VerifyFinal(
+            self._hash_ctx._ctx,
+            self._signature,
+            len(self._signature),
+            evp_pkey
+        )
+        self._hash_ctx = None
+        if res != 1:
+            raise InvalidAsymmetricSignature
+
+    def _verify_pss(self, rsa_cdata, evp_pkey, evp_md):
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
+        buf = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_public_decrypt(
+            len(self._signature),
+            self._signature,
+            buf,
+            rsa_cdata,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert res == pkey_size
+
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.RSA_verify_PKCS1_PSS(
+            rsa_cdata,
+            data_to_verify,
+            evp_md,
+            buf,
+            -2
+        )
+        if res != 1:
+            raise InvalidAsymmetricSignature
 
 
 backend = Backend()

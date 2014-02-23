@@ -11,46 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import, division, print_function
 
-class UnsupportedAlgorithm(Exception):
-    pass
-
-
-class AlreadyFinalized(Exception):
-    pass
+from cryptography import utils
+from cryptography.hazmat.primitives import interfaces
 
 
-class AlreadyUpdated(Exception):
-    pass
+@utils.register_interface(interfaces.AsymmetricPadding)
+class PKCS1(object):
+    name = "EMSA-PKCS1-v1_5"
 
 
-class NotYetFinalized(Exception):
-    pass
-
-
-class InvalidTag(Exception):
-    pass
-
-
-class InvalidSignature(Exception):
-    pass
-
-
-class InternalError(Exception):
-    pass
-
-
-class InvalidKey(Exception):
-    pass
-
-
-class InvalidToken(Exception):
-    pass
-
-
-class UnsupportedAsymmetricPadding(Exception):
-    pass
-
-
-class InvalidAsymmetricSignature(Exception):
-    pass
+@utils.register_interface(interfaces.AsymmetricPadding)
+class PSS(object):
+    name = "EMSA-PSS"
