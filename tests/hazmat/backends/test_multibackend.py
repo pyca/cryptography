@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
@@ -83,6 +84,9 @@ class DummyPBKDF2HMACBackend(object):
 @utils.register_interface(RSABackend)
 class DummyRSABackend(object):
     def generate_rsa_private_key(self, public_exponent, private_key):
+        pass
+
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         pass
 
 
@@ -158,6 +162,13 @@ class TestMultiBackend(object):
             key_size=1024, public_exponent=65537
         )
 
+        backend.create_rsa_signature_ctx("private_key", padding.PKCS1(),
+                                         hashes.MD5())
+
         backend = MultiBackend([])
         with pytest.raises(UnsupportedAlgorithm):
             backend.generate_rsa_private_key(key_size=1024, public_exponent=3)
+
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.create_rsa_signature_ctx("private_key", padding.PKCS1(),
+                                             hashes.MD5())
