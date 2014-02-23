@@ -612,10 +612,17 @@ class _RSASignatureContext(object):
                 "Expected interface of interfaces.AsymmetricPadding")
 
         if padding.name == "EMSA-PKCS1-v1_5":
-            self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            else:
+                self._finalize_method = self._finalize_pkcs1
         elif padding.name == "EMSA-PSS":
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._finalize_method = self._finalize_pss
         else:
             raise UnsupportedAsymmetricPadding
 
@@ -647,16 +654,9 @@ class _RSASignatureContext(object):
         pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
         assert pkey_size > 0
 
-        if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-            return self._finalize_pkey_ctx(evp_pkey, evp_md, pkey_size)
-        else:
-            if self._padding.name == "EMSA-PKCS1-v1_5":
-                return self._finalize_pkcs1_padding(evp_pkey, pkey_size)
+        return self._finalize_method(evp_pkey, pkey_size, rsa_cdata, evp_md)
 
-            if self._padding.name == "EMSA-PSS":
-                return self._finalize_pss_padding(rsa_cdata, evp_md, pkey_size)
-
-    def _finalize_pkey_ctx(self, evp_pkey, evp_md, pkey_size):
+    def _finalize_pkey_ctx(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
         pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
             evp_pkey, self._backend._ffi.NULL
         )
@@ -687,7 +687,7 @@ class _RSASignatureContext(object):
         assert res == 1
         return self._backend._ffi.buffer(buf)[:]
 
-    def _finalize_pkcs1_padding(self, evp_pkey, pkey_size):
+    def _finalize_pkcs1(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
         sig_len = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_SignFinal(
@@ -700,7 +700,7 @@ class _RSASignatureContext(object):
         assert res == 1
         return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
 
-    def _finalize_pss_padding(self, rsa_cdata, evp_md, pkey_size):
+    def _finalize_pss(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
         data_to_sign = self._hash_ctx.finalize()
         self._hash_ctx = None
         padded = self._backend._ffi.new("unsigned char[]", pkey_size)
@@ -733,11 +733,19 @@ class _RSAVerificationContext(object):
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
                 "Expected interface of interfaces.AsymmetricPadding")
+
         if padding.name == "EMSA-PKCS1-v1_5":
-            self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            else:
+                self._verify_method = self._verify_pkcs1
         elif padding.name == "EMSA-PSS":
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._verify_method = self._verify_pss
         else:
             raise UnsupportedAsymmetricPadding
 
@@ -768,16 +776,9 @@ class _RSAVerificationContext(object):
             self._algorithm.name.encode("ascii"))
         assert evp_md != self._backend._ffi.NULL
 
-        if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-            self._verify_pkey_ctx(evp_pkey, evp_md)
-        else:
-            if self._padding.name == "EMSA-PKCS1-v1_5":
-                self._verify_pkcs1(evp_pkey)
+        self._verify_method(rsa_cdata, evp_pkey, evp_md)
 
-            if self._padding.name == "EMSA-PSS":
-                self._verify_pss(rsa_cdata, evp_pkey, evp_md)
-
-    def _verify_pkey_ctx(self, evp_pkey, evp_md):
+    def _verify_pkey_ctx(self, rsa_cdata, evp_pkey, evp_md):
         pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
             evp_pkey, self._backend._ffi.NULL
         )
@@ -803,7 +804,7 @@ class _RSAVerificationContext(object):
         if res != 1:
             raise InvalidAsymmetricSignature
 
-    def _verify_pkcs1(self, evp_pkey):
+    def _verify_pkcs1(self, rsa_cdata, evp_pkey, evp_md):
         res = self._backend._lib.EVP_VerifyFinal(
             self._hash_ctx._ctx,
             self._signature,
@@ -825,8 +826,7 @@ class _RSAVerificationContext(object):
             rsa_cdata,
             self._backend._lib.RSA_NO_PADDING
         )
-        if res != pkey_size:
-            raise InvalidAsymmetricSignature
+        assert res == pkey_size
 
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
