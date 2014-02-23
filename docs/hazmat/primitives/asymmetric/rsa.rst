@@ -52,6 +52,8 @@ RSA
 
     .. method:: signer(padding, algorithm, backend)
 
+        .. versionadded:: 0.3
+
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
@@ -100,6 +102,8 @@ RSA
                         :rfc:`3447`.
 
     .. method:: verifier(signature, padding, algorithm, backend)
+
+        .. versionadded:: 0.3
 
         :param bytes signature: The signature to verify.
 

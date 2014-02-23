@@ -6,17 +6,21 @@ Padding
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.padding
 
 .. warning::
-    `Padding is critical`_ when signing or encrypting data using RSA. Failure to do so can result in forgeable signatures,
-    decryption of encrypted data, and compromise of the private key.
-
+    `Padding is critical`_ when signing or encrypting data using RSA. Without
+    correct padding signatures can be forged, messages decrypted, and private
+    keys compromised.
 
 .. class:: PSS()
+
+    .. versionadded:: 0.3
 
     PSS (Probabilistic Signature Scheme) is a signature scheme defined in
     :rfc:`3447`. It is more complex than PKCS1 but possesses a `security proof`_.
     This is the recommended padding algorithm for RSA.
 
 .. class:: PKCS1()
+
+    .. versionadded:: 0.3
 
     PKCS1 (also known as PKCS1 v1.5) is a simpler padding scheme developed for
     use with RSA keys. It is also defined in :rfc:`3447`. While it is generally
