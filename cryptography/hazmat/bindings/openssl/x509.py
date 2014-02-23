@@ -34,6 +34,8 @@ typedef struct {
     ...;
 } X509_ALGOR;
 
+typedef ... X509_ATTRIBUTE;
+
 typedef struct {
     X509_ALGOR *signature;
     ...;
