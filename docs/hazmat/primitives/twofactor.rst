@@ -32,9 +32,8 @@ codes (HMAC).
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> key = os.urandom(16)
         >>> hotp = HOTP(key, 6, SHA1(), backend=default_backend())
-        >>> hotp.generate(0) # doctest: +SKIP
-        '755224'
-        >>> hotp.verify(b"755224", 0) # doctest: +SKIP
+        >>> hotp_value = hotp.generate(0)
+        >>> hotp.verify(hotp_value, 0)
 
     :param bytes key: Per-user secret key. This value must be kept secret
                       and be at least 128 bits. It is recommended that the
@@ -120,9 +119,9 @@ This can be accomplished with something similar to the following code.
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> key = os.urandom(16)
         >>> totp = TOTP(key, 8, SHA1(), 30, backend=default_backend())
-        >>> totp.generate(time.time()) # doctest: +SKIP
-        '94287082'
-        >>> totp.verify(b"94287082", 59) # doctest: +SKIP
+        >>> time_value = time.time()
+        >>> totp_value = totp.generate(time_value)
+        >>> totp.verify(totp_value, time_value)
 
     :param bytes key: Per-user secret key. This value must be kept secret
                       and be at least 128 bits. It is recommended that the
