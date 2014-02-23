@@ -336,13 +336,6 @@ class Backend(object):
         ctx.iqmp = self._int_to_bn(private_key.iqmp)
         return ctx
 
-    def _rsa_cdata_from_public_key(self, public_key):
-        ctx = self._lib.RSA_new()
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-        ctx.e = self._int_to_bn(public_key.e)
-        ctx.n = self._int_to_bn(public_key.n)
-        return ctx
-
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         return _RSASignatureContext(self, private_key, padding, algorithm)
 
