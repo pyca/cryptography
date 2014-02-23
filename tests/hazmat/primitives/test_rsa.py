@@ -29,7 +29,7 @@ from ...utils import load_pkcs1_vectors, load_vectors_from_file
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
-class FakePadding(object):
+class DummyPadding(object):
     name = "UNSUPPORTED-PADDING"
 
 
@@ -415,9 +415,13 @@ class TestRSASignature(object):
             signer.update(b"more data")
 
     def test_unsupported_padding(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         with pytest.raises(exceptions.UnsupportedAsymmetricPadding):
-            private_key.signer(FakePadding(), hashes.SHA1(), backend)
+            private_key.signer(DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
         private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
