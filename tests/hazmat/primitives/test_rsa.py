@@ -404,7 +404,11 @@ class TestRSASignature(object):
         assert binascii.hexlify(signature) == example["signature"]
 
     def test_use_after_finalize(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signer.finalize()
