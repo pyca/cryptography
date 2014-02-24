@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import sys
 from distutils.command.build import build
 
 from setuptools import setup, find_packages
@@ -75,6 +76,7 @@ class PyTest(TestCommand):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
+        
     def run_tests(self):
         # Import here because in module scope the eggs are not loaded.
         import pytest
