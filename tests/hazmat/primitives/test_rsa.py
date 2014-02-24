@@ -443,3 +443,91 @@ class TestRSASignature(object):
         )
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1(), backend)
+
+
+@pytest.mark.rsa
+class TestRSAVerification(object):
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pkcs1v15_verification(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        public_key = rsa.RSAPublicKey(**public)
+        verifier = public_key.verifier(
+            binascii.unhexlify(example["signature"]),
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    def test_invalid_pkcs1v15_signature_wrong_data(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"incorrect data")
+        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+            verifier.verify()
+
+    def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        public_key._modulus += 2
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+            verifier.verify()
+
+    def test_use_after_finalize(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        verifier.verify()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            verifier.verify()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            verifier.update(b"more data")
+
+    def test_unsupported_padding(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        with pytest.raises(exceptions.UnsupportedAsymmetricPadding):
+            public_key.verifier(b"sig", DummyPadding(), hashes.SHA1(), backend)
+
+    def test_padding_incorrect_type(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(b"sig", "notpadding", hashes.SHA1(), backend)

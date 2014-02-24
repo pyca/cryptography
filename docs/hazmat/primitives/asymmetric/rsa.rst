@@ -111,6 +111,42 @@ RSA
                         or ``modulus`` do not match the bounds specified in
                         :rfc:`3447`.
 
+    .. method:: verifier(signature, padding, algorithm, backend)
+
+        .. versionadded:: 0.3
+
+        :param bytes signature: The signature to verify.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+        .. doctest::
+
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import rsa, padding
+            >>> private_key = rsa.RSAPrivateKey.generate(65537, 2048, default_backend())
+            >>> signer = private_key.signer(padding.PKCS1(), hashes.SHA256(), default_backend())
+            >>> data= b"this is some data I'd like to sign"
+            >>> signer.update(data)
+            >>> signature = signer.finalize()
+            >>> public_key = private_key.public_key()
+            >>> verifier = public_key.verifier(signature, padding.PKCS1(), hashes.SHA256(), default_backend())
+            >>> verifier.update(data)
+            >>> verifier.verify()
+
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html

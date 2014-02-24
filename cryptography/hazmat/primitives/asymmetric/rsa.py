@@ -49,6 +49,10 @@ class RSAPublicKey(object):
         self._public_exponent = public_exponent
         self._modulus = modulus
 
+    def verifier(self, signature, padding, algorithm, backend):
+        return backend.create_rsa_verification_ctx(self, signature, padding,
+                                                   algorithm)
+
     @property
     def key_size(self):
         return _bit_length(self.modulus)
