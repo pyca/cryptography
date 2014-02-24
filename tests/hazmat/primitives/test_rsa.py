@@ -397,7 +397,16 @@ class TestRSASignature(object):
     )
     def test_pkcs1v15_signing(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        private_key = rsa.RSAPrivateKey(**private)
+        private_key = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
         signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
