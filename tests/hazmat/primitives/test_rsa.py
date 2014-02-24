@@ -457,7 +457,10 @@ class TestRSAVerification(object):
     )
     def test_pkcs1v15_verification(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        public_key = rsa.RSAPublicKey(**public)
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
         verifier = public_key.verifier(
             binascii.unhexlify(example["signature"]),
             padding.PKCS1(),
