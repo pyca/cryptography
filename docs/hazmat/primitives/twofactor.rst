@@ -39,7 +39,7 @@ codes (HMAC).
                       and be at least 128 bits. It is recommended that the
                       key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
-    :param algorithm: A
+    :param HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
         provider.
     :param backend: A
@@ -48,7 +48,9 @@ codes (HMAC).
     :raises ValueError: This is raised if the provided ``key`` is shorter than 128 bits
                         or if the ``length`` parameter is not 6, 7 or 8.
     :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm`` is not
-                                  ``SHA1()``, ``SHA256()`` or ``SHA512()``.
+                                  :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
+                                  :class:`~cryptography.hazmat.primitives.hashes.SHA256()`
+                                  or :class:`~cryptography.hazmat.primitives.hashes.SHA512()`.
 
     .. method:: generate(counter)
 
@@ -127,7 +129,7 @@ This can be accomplished with something similar to the following code.
                       and be at least 128 bits. It is recommended that the
                       key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
-    :param algorithm: A
+    :param HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
         provider.
     :param int time_step: The time step size. The recommended size is 30.
@@ -137,7 +139,9 @@ This can be accomplished with something similar to the following code.
     :raises ValueError: This is raised if the provided ``key`` is shorter than 128 bits
                         or if the ``length`` parameter is not 6, 7 or 8.
     :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm`` is not
-                                  ``SHA1()``, ``SHA256()`` or ``SHA512()``.
+                                  :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
+                                  :class:`~cryptography.hazmat.primitives.hashes.SHA256()`
+                                  or :class:`~cryptography.hazmat.primitives.hashes.SHA512()`.
 
     .. method:: generate(time)
 
@@ -146,7 +150,7 @@ This can be accomplished with something similar to the following code.
 
     .. method:: verify(totp, time)
 
-        :param bytes hotp: The one time password value to validate.
+        :param bytes totp: The one time password value to validate.
         :param int time: The time value to validate against.
         :raises cryptography.exceptions.InvalidToken: This is raised when the supplied TOTP
                                                       does not match the expected TOTP.

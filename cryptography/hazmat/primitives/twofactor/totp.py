@@ -25,7 +25,7 @@ class TOTP(object):
         self._hotp = HOTP(key, length, algorithm, backend)
 
     def generate(self, time):
-        counter = int(time/self._time_step)
+        counter = int(time / self._time_step)
         return self._hotp.generate(counter)
 
     def verify(self, totp, time):
