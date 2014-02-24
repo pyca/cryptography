@@ -35,7 +35,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support TripleDES CBC",
 )
 @pytest.mark.cipher
-class TestTripleDES_CBC(object):
+class TestTripleDESModeCBC(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CBC"),
@@ -72,7 +72,7 @@ class TestTripleDES_CBC(object):
     skip_message="Does not support TripleDES OFB",
 )
 @pytest.mark.cipher
-class TestTripleDES_OFB(object):
+class TestTripleDESModeOFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "OFB"),
@@ -109,7 +109,7 @@ class TestTripleDES_OFB(object):
     skip_message="Does not support TripleDES CFB",
 )
 @pytest.mark.cipher
-class TestTripleDES_CFB(object):
+class TestTripleDESModeCFB(object):
     test_KAT = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "3DES", "CFB"),

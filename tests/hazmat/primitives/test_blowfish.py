@@ -31,7 +31,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support Blowfish ECB",
 )
 @pytest.mark.cipher
-class TestBlowfish_ECB(object):
+class TestBlowfishModeECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
@@ -48,7 +48,7 @@ class TestBlowfish_ECB(object):
     skip_message="Does not support Blowfish CBC",
 )
 @pytest.mark.cipher
-class TestBlowfish_CBC(object):
+class TestBlowfishModeCBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
@@ -65,7 +65,7 @@ class TestBlowfish_CBC(object):
     skip_message="Does not support Blowfish OFB",
 )
 @pytest.mark.cipher
-class TestBlowfish_OFB(object):
+class TestBlowfishModeOFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
@@ -82,7 +82,7 @@ class TestBlowfish_OFB(object):
     skip_message="Does not support Blowfish CFB",
 )
 @pytest.mark.cipher
-class TestBlowfish_CFB(object):
+class TestBlowfishModeCFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "Blowfish"),
