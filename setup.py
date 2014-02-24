@@ -14,7 +14,7 @@ import os
 from distutils.command.build import build
 
 from setuptools import setup, find_packages
-
+from setuptools.command.test import test as TestCommand
 
 base_dir = os.path.dirname(__file__)
 
@@ -29,6 +29,12 @@ SIX_DEPENDENCY = "six>=1.4.1"
 requirements = [
     CFFI_DEPENDENCY,
     SIX_DEPENDENCY
+]
+
+test_requirements = [
+    "pytest",
+    "pretend",
+    "iso8601"
 ]
 
 
@@ -62,6 +68,17 @@ class CFFIBuild(build):
             )
 
         build.finalize_options(self)
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 
 with open(os.path.join(base_dir, "README.rst")) as f:
@@ -105,11 +122,13 @@ setup(
 
     install_requires=requirements,
     setup_requires=requirements,
+    tests_require=test_requirements,
 
     # for cffi
     zip_safe=False,
     ext_package="cryptography",
     cmdclass={
         "build": CFFIBuild,
+        "test": PyTest,
     }
 )
