@@ -37,7 +37,7 @@ class HOTP(object):
 
     def generate(self, counter):
         truncated_value = self._dynamic_truncate(counter)
-        hotp = truncated_value % (10**self._length)
+        hotp = truncated_value % (10 ** self._length)
         return "{0:0{1}}".format(hotp, self._length).encode()
 
     def verify(self, hotp, counter):
@@ -52,5 +52,5 @@ class HOTP(object):
         offset_bits = six.indexbytes(hmac_value, 19) & 0b1111
 
         offset = int(offset_bits)
-        P = hmac_value[offset:offset+4]
+        P = hmac_value[offset:offset + 4]
         return struct.unpack(">I", P)[0] & 0x7fffffff
