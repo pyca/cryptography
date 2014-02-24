@@ -2,6 +2,7 @@ coverage
 flake8
 invoke
 iso8601
+pep8-naming
 pretend
 pytest
 requests
