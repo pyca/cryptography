@@ -47,3 +47,10 @@ Exceptions
 .. class:: UnsupportedPadding
 
     This is raised when the chosen padding is not supported by the backend.
+
+
+.. class:: InvalidAsymmetricSignature
+
+    This is raised when the verify method of the a signature context fails to
+    validate. This can occur if the data does not match or if the public
+    key does not match the private key used to originally sign the data.
