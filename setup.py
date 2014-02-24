@@ -69,13 +69,14 @@ class CFFIBuild(build):
 
         build.finalize_options(self)
 
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # Import here because in module scope the eggs are not loaded.
         import pytest
         errno = pytest.main(self.test_args)
         sys.exit(errno)
