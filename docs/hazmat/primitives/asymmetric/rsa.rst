@@ -67,7 +67,7 @@ RSA
             ...     backend=default_backend()
             ... )
             >>> signer = private_key.signer(
-            ...     padding.PKCS1v15(),
+            ...     padding.PSS(),
             ...     hashes.SHA256(),
             ...     default_backend()
             ... )
@@ -128,12 +128,21 @@ RSA
             ...     key_size=2048,
             ...     backend=default_backend()
             ... )
-            >>> signer = private_key.signer(padding.PKCS1v15(), hashes.SHA256(), default_backend())
+            >>> signer = private_key.signer(
+            ...     padding.PSS(),
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
             >>> data= b"this is some data I'd like to sign"
             >>> signer.update(data)
             >>> signature = signer.finalize()
             >>> public_key = private_key.public_key()
-            >>> verifier = public_key.verifier(signature, padding.PKCS1v15(), hashes.SHA256(), default_backend())
+            >>> verifier = public_key.verifier(
+            ...     signature,
+            ...     padding.PSS(),
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
             >>> verifier.update(data)
             >>> verifier.verify()
 
@@ -153,6 +162,7 @@ RSA
 
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography

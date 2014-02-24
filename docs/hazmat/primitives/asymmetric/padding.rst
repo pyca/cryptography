@@ -10,6 +10,14 @@ Padding
     correct padding signatures can be forged, messages decrypted, and private
     keys compromised.
 
+.. class:: PSS()
+
+    .. versionadded:: 0.3
+
+    PSS (Probabilistic Signature Scheme) is a signature scheme defined in
+    :rfc:`3447`. It is more complex than PKCS1 but possesses a `security proof`_.
+    This is the recommended padding algorithm for RSA.
+
 .. class:: PKCS1v15()
 
     .. versionadded:: 0.3
@@ -18,3 +26,4 @@ Padding
     developed for use with RSA keys. It is defined in :rfc:`3447`.
 
 .. _`Padding is critical`: http://rdist.root.org/2009/10/06/why-rsa-encryption-padding-is-critical/
+.. _`security proof`: http://eprint.iacr.org/2001/062.pdf

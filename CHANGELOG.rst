@@ -6,6 +6,8 @@ Changelog
 
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 * Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
+* Added signature support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+  and verification support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
 0.2.1 - 2014-02-22
 ~~~~~~~~~~~~~~~~~~

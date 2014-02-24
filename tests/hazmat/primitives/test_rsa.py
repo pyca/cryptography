@@ -15,6 +15,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import math
 import itertools
 import os
 
@@ -412,6 +413,46 @@ class TestRSASignature(object):
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
 
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pss_signing(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        private_key = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
+        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer.update(binascii.unhexlify(example["message"]))
+        signature = signer.finalize()
+        assert len(signature) == math.ceil(private_key.key_size / 8.0)
+        # PSS signatures contain randomness so we can't do an exact
+        # signature check. Instead we'll verify that the signature created
+        # successfully verifies.
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
     def test_use_after_finalize(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -513,6 +554,62 @@ class TestRSAVerification(object):
         )
         verifier.update(b"sign me")
         with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pss_verification(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
+        verifier = public_key.verifier(
+            binascii.unhexlify(example["signature"]),
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    def test_invalid_pss_signature_wrong_data(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"incorrect data")
+        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+            verifier.verify()
+
+    def test_invalid_pss_signature_wrong_key(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        public_key._modulus += 2
+        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidAsymmetricSignature):
             verifier.verify()
 
     def test_use_after_finalize(self, backend):

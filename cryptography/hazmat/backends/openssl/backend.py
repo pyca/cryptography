@@ -627,6 +627,12 @@ class _RSASignatureContext(object):
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
             else:
                 self._finalize_method = self._finalize_pkcs1
+        elif padding.name == "EMSA-PSS":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._finalize_method = self._finalize_pss
         else:
             raise UnsupportedPadding(
                 "{0} is not supported by this backend".format(padding.name)
@@ -707,6 +713,29 @@ class _RSASignatureContext(object):
         assert res == 1
         return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
 
+    def _finalize_pss(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        padded = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
+            rsa_cdata,
+            padded,
+            data_to_sign,
+            evp_md,
+            -2
+        )
+        assert res == 1
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        res = self._backend._lib.RSA_private_encrypt(
+            pkey_size,
+            padded,
+            sig_buf,
+            rsa_cdata,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert res != -1
+        return self._backend._ffi.buffer(sig_buf)[:]
+
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
 class _RSAVerificationContext(object):
@@ -724,6 +753,12 @@ class _RSAVerificationContext(object):
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
             else:
                 self._verify_method = self._verify_pkcs1
+        elif padding.name == "EMSA-PSS":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._verify_method = self._verify_pss
         else:
             raise UnsupportedPadding
 
@@ -803,6 +838,31 @@ class _RSAVerificationContext(object):
         if res == 0:
             assert self._backend._consume_errors()
             raise InvalidSignature
+
+    def _verify_pss(self, rsa_cdata, evp_pkey, evp_md):
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
+        buf = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_public_decrypt(
+            len(self._signature),
+            self._signature,
+            buf,
+            rsa_cdata,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert res == pkey_size
+
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.RSA_verify_PKCS1_PSS(
+            rsa_cdata,
+            data_to_verify,
+            evp_md,
+            buf,
+            -2
+        )
+        if res != 1:
+            raise InvalidAsymmetricSignature
 
 
 backend = Backend()
