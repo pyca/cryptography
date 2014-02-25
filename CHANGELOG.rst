@@ -5,6 +5,7 @@ Changelog
 ~~~~~~~~~~~~~~~~
 
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
+* Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
 
 0.2.1 - 2014-02-22
 ~~~~~~~~~~~~~~~~~~
