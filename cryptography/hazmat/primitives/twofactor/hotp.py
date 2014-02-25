@@ -17,13 +17,13 @@ import struct
 
 import six
 
-from cryptography.exceptions import InvalidToken
+from cryptography.exceptions import InvalidToken, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import constant_time, hmac
-from cryptography.hazmat.primitives.hashes import SHA1
+from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 
 
 class HOTP(object):
-    def __init__(self, key, length, backend):
+    def __init__(self, key, length, algorithm, backend):
 
         if len(key) < 16:
             raise ValueError("Key length has to be at least 128 bits.")
@@ -31,8 +31,13 @@ class HOTP(object):
         if length < 6 or length > 8:
             raise ValueError("Length of HOTP has to be between 6 to 8.")
 
+        if not isinstance(algorithm, (SHA1, SHA256, SHA512)):
+            raise UnsupportedAlgorithm(
+                "Algorithm must be SHA1, SHA256 or SHA512")
+
         self._key = key
         self._length = length
+        self._algorithm = algorithm
         self._backend = backend
 
     def generate(self, counter):
@@ -45,11 +50,11 @@ class HOTP(object):
             raise InvalidToken("Supplied HOTP value does not match")
 
     def _dynamic_truncate(self, counter):
-        ctx = hmac.HMAC(self._key, SHA1(), self._backend)
+        ctx = hmac.HMAC(self._key, self._algorithm, self._backend)
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 
-        offset_bits = six.indexbytes(hmac_value, 19) & 0b1111
+        offset_bits = six.indexbytes(hmac_value, len(hmac_value) - 1) & 0b1111
 
         offset = int(offset_bits)
         p = hmac_value[offset:offset + 4]
