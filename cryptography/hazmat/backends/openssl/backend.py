@@ -18,7 +18,7 @@ import itertools
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, InvalidTag, InternalError, AlreadyFinalized,
-    UnsupportedAsymmetricPadding
+    UnsupportedPadding
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -606,7 +606,7 @@ class _RSASignatureContext(object):
             else:
                 self._finalize_method = self._finalize_pkcs1
         else:
-            raise UnsupportedAsymmetricPadding
+            raise UnsupportedPadding
 
         self._padding = padding
         self._algorithm = algorithm
