@@ -20,7 +20,6 @@ from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
 class TOTP(object):
     def __init__(self, key, length, algorithm, time_step, backend):
-
         self._time_step = time_step
         self._hotp = HOTP(key, length, algorithm, backend)
 
