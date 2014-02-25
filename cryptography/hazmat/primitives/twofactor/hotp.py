@@ -52,5 +52,5 @@ class HOTP(object):
         offset_bits = six.indexbytes(hmac_value, 19) & 0b1111
 
         offset = int(offset_bits)
-        P = hmac_value[offset:offset + 4]
-        return struct.unpack(">I", P)[0] & 0x7fffffff
+        p = hmac_value[offset:offset + 4]
+        return struct.unpack(">I", p)[0] & 0x7fffffff
