@@ -606,7 +606,9 @@ class _RSASignatureContext(object):
             else:
                 self._finalize_method = self._finalize_pkcs1
         else:
-            raise UnsupportedPadding
+            raise UnsupportedPadding(
+                "{0} is not supported by this backend".format(padding.name)
+            )
 
         self._padding = padding
         self._algorithm = algorithm
@@ -678,6 +680,7 @@ class _RSASignatureContext(object):
             sig_len,
             evp_pkey
         )
+        self._hash_ctx.finalize()
         self._hash_ctx = None
         assert res == 1
         return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
