@@ -24,7 +24,6 @@ vectors = load_vectors_from_file(
 
 @pytest.mark.hmac
 class TestTOTP(object):
-
     @pytest.mark.supported(
         only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
         skip_message="Does not support HMAC-SHA1."

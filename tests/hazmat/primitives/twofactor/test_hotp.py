@@ -31,7 +31,6 @@ vectors = load_vectors_from_file(
 )
 @pytest.mark.hmac
 class TestHOTP(object):
-
     def test_invalid_key_length(self, backend):
         secret = os.urandom(10)
 

@@ -24,7 +24,6 @@ from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 
 class HOTP(object):
     def __init__(self, key, length, algorithm, backend):
-
         if len(key) < 16:
             raise ValueError("Key length has to be at least 128 bits.")
 
