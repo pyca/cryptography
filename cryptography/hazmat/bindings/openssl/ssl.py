@@ -303,7 +303,7 @@ void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *));
 
-int SSL_session_reused(SSL *);
+long SSL_session_reused(SSL *);
 """
 
 CUSTOMIZATIONS = """
