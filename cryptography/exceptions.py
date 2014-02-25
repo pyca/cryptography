@@ -48,5 +48,5 @@ class InvalidToken(Exception):
     pass
 
 
-class UnsupportedAsymmetricPadding(Exception):
+class UnsupportedPadding(Exception):
     pass

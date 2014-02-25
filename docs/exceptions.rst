@@ -44,7 +44,6 @@ Exceptions
     computed token does not match the expected token.
 
 
-.. class:: UnsupportedAsymmetricPadding
+.. class:: UnsupportedPadding
 
-    This is raised when the chosen asymmetric padding is not supported by the
-    backend.
+    This is raised when the chosen padding is not supported by the backend.

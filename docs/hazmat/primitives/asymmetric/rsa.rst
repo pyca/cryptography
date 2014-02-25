@@ -79,7 +79,7 @@ RSA
             ...     key_size=2048,
             ...     backend=default_backend()
             ... )
-            >>> signer = private_key.signer(padding.PKCS1(), hashes.SHA256(), default_backend())
+            >>> signer = private_key.signer(padding.PKCS1v15(), hashes.SHA256(), default_backend())
             >>> signer.update(b"this is some data I'd like")
             >>> signer.update(b" to sign")
             >>> signature = signer.finalize()

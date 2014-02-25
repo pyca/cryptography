@@ -18,5 +18,5 @@ from cryptography.hazmat.primitives import interfaces
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
-class PKCS1(object):
+class PKCS1v15(object):
     name = "EMSA-PKCS1-v1_5"

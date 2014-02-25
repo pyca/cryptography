@@ -407,7 +407,7 @@ class TestRSASignature(object):
             public_exponent=private["public_exponent"],
             modulus=private["modulus"]
         )
-        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
@@ -418,7 +418,7 @@ class TestRSASignature(object):
             key_size=512,
             backend=backend
         )
-        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signer.finalize()
         with pytest.raises(exceptions.AlreadyFinalized):
@@ -432,7 +432,7 @@ class TestRSASignature(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(exceptions.UnsupportedAsymmetricPadding):
+        with pytest.raises(exceptions.UnsupportedPadding):
             private_key.signer(DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
