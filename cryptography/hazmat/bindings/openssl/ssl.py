@@ -136,6 +136,7 @@ typedef struct {
 typedef struct {
     SSL3_STATE *s3;
     SSL_SESSION *session;
+    int type;
     ...;
 } SSL;
 
@@ -219,6 +220,9 @@ void SSL_SESSION_free(SSL_SESSION *);
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 char *SSL_CIPHER_get_version(const SSL_CIPHER *);
+
+size_t SSL_get_finished(const SSL *, void *, size_t);
+size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 """
 
 MACROS = """
@@ -298,6 +302,8 @@ void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *));
+
+int SSL_session_reused(SSL *);
 """
 
 CUSTOMIZATIONS = """

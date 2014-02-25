@@ -15,7 +15,10 @@ follow the directions on the :doc:`security page </security>`.
 Code
 ----
 
-When in doubt, refer to :pep:`8` for Python code.
+When in doubt, refer to :pep:`8` for Python code. You can check if your code
+meets our automated requirements by running ``flake8`` against it. If you've
+installed the development requirements this will automatically use our
+configuration. You can also run the ``tox`` job with ``tox -e pep8``.
 
 `Write comments as complete sentences.`_
 

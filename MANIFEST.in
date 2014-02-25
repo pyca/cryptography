@@ -1,8 +1,11 @@
-include LICENSE
 include AUTHORS.rst
+include CHANGELOG.rst
 include CONTRIBUTING.rst
+include LICENSE
 include README.rst
 
+recursive-include docs *
+prune docs/_build
 recursive-include tests *.py
 recursive-include tests/vectors *
 recursive-include tests/hazmat/primitives/vectors *

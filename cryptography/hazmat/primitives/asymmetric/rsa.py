@@ -132,7 +132,7 @@ class RSAPrivateKey(object):
         self._modulus = modulus
 
     @classmethod
-    def generate(self, public_exponent, key_size, backend):
+    def generate(cls, public_exponent, key_size, backend):
         return backend.generate_rsa_private_key(public_exponent, key_size)
 
     @property
