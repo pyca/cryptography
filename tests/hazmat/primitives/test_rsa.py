@@ -436,6 +436,10 @@ class TestRSASignature(object):
             private_key.signer(DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1(), backend)
