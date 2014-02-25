@@ -54,7 +54,7 @@ class HOTP(object):
         ctx.update(struct.pack(">Q", counter))
         hmac_value = ctx.finalize()
 
-        offset_bits = six.indexbytes(hmac_value, len(hmac_value)-1) & 0b1111
+        offset_bits = six.indexbytes(hmac_value, len(hmac_value) - 1) & 0b1111
 
         offset = int(offset_bits)
         p = hmac_value[offset:offset + 4]
