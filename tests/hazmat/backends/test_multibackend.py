@@ -162,7 +162,7 @@ class TestMultiBackend(object):
             key_size=1024, public_exponent=65537
         )
 
-        backend.create_rsa_signature_ctx("private_key", padding.PKCS1(),
+        backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
                                          hashes.MD5())
 
         backend = MultiBackend([])
@@ -170,5 +170,5 @@ class TestMultiBackend(object):
             backend.generate_rsa_private_key(key_size=1024, public_exponent=3)
 
         with pytest.raises(UnsupportedAlgorithm):
-            backend.create_rsa_signature_ctx("private_key", padding.PKCS1(),
+            backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
                                              hashes.MD5())
