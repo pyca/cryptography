@@ -145,7 +145,7 @@ This can be accomplished with something similar to the following code.
 
     .. method:: generate(time)
 
-        :param int counter: The time value used to generate the one time password.
+        :param int time: The time value used to generate the one time password.
         :return bytes: A one time password value.
 
     .. method:: verify(totp, time)
