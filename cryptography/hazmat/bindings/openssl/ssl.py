@@ -136,7 +136,7 @@ typedef struct {
 typedef struct {
     SSL3_STATE *s3;
     SSL_SESSION *session;
-    int type; /* SSL_ST_CONNECT or SSL_ST_ACCEPT */
+    int type;
     ...;
 } SSL;
 
@@ -221,10 +221,6 @@ const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
-/* Obtain latest Finished message
- *   -- that we sent (SSL_get_finished)
- *   -- that we expected from peer (SSL_get_peer_finished).
- * Returns length (0 == no Finished so far), copies up to 'count' bytes. */
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 """
