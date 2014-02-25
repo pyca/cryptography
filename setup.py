@@ -32,7 +32,7 @@ requirements = [
 ]
 
 
-class cffi_build(build):
+class CFFIBuild(build):
     """
     This class exists, instead of just providing ``ext_modules=[...]`` directly
     in ``setup()`` because importing cryptography requires we have several
@@ -110,6 +110,6 @@ setup(
     zip_safe=False,
     ext_package="cryptography",
     cmdclass={
-        "build": cffi_build,
+        "build": CFFIBuild,
     }
 )
