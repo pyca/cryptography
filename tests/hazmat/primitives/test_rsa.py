@@ -463,7 +463,7 @@ class TestRSAVerification(object):
         )
         verifier = public_key.verifier(
             binascii.unhexlify(example["signature"]),
-            padding.PKCS1(),
+            padding.PKCS1v15(),
             hashes.SHA1(),
             backend
         )
@@ -471,48 +471,60 @@ class TestRSAVerification(object):
         verifier.verify()
 
     def test_invalid_pkcs1v15_signature_wrong_data(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
-        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signature = signer.finalize()
         verifier = public_key.verifier(
             signature,
-            padding.PKCS1(),
+            padding.PKCS1v15(),
             hashes.SHA1(),
             backend
         )
         verifier.update(b"incorrect data")
-        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+        with pytest.raises(exceptions.InvalidSignature):
             verifier.verify()
 
     def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
         public_key._modulus += 2
-        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signature = signer.finalize()
         verifier = public_key.verifier(
             signature,
-            padding.PKCS1(),
+            padding.PKCS1v15(),
             hashes.SHA1(),
             backend
         )
         verifier.update(b"sign me")
-        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+        with pytest.raises(exceptions.InvalidSignature):
             verifier.verify()
 
     def test_use_after_finalize(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
-        signer = private_key.signer(padding.PKCS1(), hashes.SHA1(), backend)
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signature = signer.finalize()
 
         verifier = public_key.verifier(
             signature,
-            padding.PKCS1(),
+            padding.PKCS1v15(),
             hashes.SHA1(),
             backend
         )
@@ -524,13 +536,21 @@ class TestRSAVerification(object):
             verifier.update(b"more data")
 
     def test_unsupported_padding(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
-        with pytest.raises(exceptions.UnsupportedAsymmetricPadding):
+        with pytest.raises(exceptions.UnsupportedPadding):
             public_key.verifier(b"sig", DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", "notpadding", hashes.SHA1(), backend)
