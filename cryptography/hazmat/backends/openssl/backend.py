@@ -706,7 +706,7 @@ class _RSAVerificationContext(object):
         self._signature = signature
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
-                "Expected interface of interfaces.AsymmetricPadding")
+                "Expected provider of interfaces.AsymmetricPadding")
 
         if padding.name == "EMSA-PKCS1-v1_5":
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
@@ -723,13 +723,13 @@ class _RSAVerificationContext(object):
 
     def update(self, data):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context has already been finalized")
 
         self._hash_ctx.update(data)
 
     def verify(self):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context has already been finalized")
 
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
