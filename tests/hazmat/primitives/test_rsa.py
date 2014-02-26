@@ -14,14 +14,23 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
 import itertools
 import os
 
 import pytest
 
+from cryptography import exceptions, utils
+from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import padding
 
 from ...utils import load_pkcs1_vectors, load_vectors_from_file
+
+
+@utils.register_interface(interfaces.AsymmetricPadding)
+class DummyPadding(object):
+    name = "UNSUPPORTED-PADDING"
 
 
 def _modinv(e, m):
@@ -53,6 +62,17 @@ def _check_rsa_private_key(skey):
     assert skey.modulus == pkey.modulus
     assert skey.public_exponent == pkey.public_exponent
     assert skey.key_size == pkey.key_size
+
+
+def _flatten_pkcs1_examples(vectors):
+    flattened_vectors = []
+    for vector in vectors:
+        examples = vector[0].pop("examples")
+        for example in examples:
+            merged_vector = (vector[0], vector[1], example)
+            flattened_vectors.append(merged_vector)
+
+    return flattened_vectors
 
 
 def test_modular_inverse():
@@ -363,3 +383,63 @@ class TestRSA(object):
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
             rsa.RSAPublicKey(public_exponent=6, modulus=15)
+
+
+@pytest.mark.rsa
+class TestRSASignature(object):
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pkcs1v15_signing(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        private_key = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
+        signer.update(binascii.unhexlify(example["message"]))
+        signature = signer.finalize()
+        assert binascii.hexlify(signature) == example["signature"]
+
+    def test_use_after_finalize(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signer.finalize()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            signer.finalize()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            signer.update(b"more data")
+
+    def test_unsupported_padding(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(exceptions.UnsupportedPadding):
+            private_key.signer(DummyPadding(), hashes.SHA1(), backend)
+
+    def test_padding_incorrect_type(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(TypeError):
+            private_key.signer("notpadding", hashes.SHA1(), backend)

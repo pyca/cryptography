@@ -24,6 +24,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
+@utils.register_interface(RSABackend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -105,4 +106,9 @@ class MultiBackend(object):
     def generate_rsa_private_key(self, public_exponent, key_size):
         for b in self._filtered_backends(RSABackend):
             return b.generate_rsa_private_key(public_exponent, key_size)
+        raise UnsupportedAlgorithm
+
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        for b in self._filtered_backends(RSABackend):
+            return b.create_rsa_signature_ctx(private_key, padding, algorithm)
         raise UnsupportedAlgorithm
