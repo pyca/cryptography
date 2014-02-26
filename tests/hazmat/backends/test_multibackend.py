@@ -170,7 +170,7 @@ class TestMultiBackend(object):
                                          hashes.MD5())
 
         backend.create_rsa_verification_ctx("public_key", "sig",
-                                            padding.PKCS1(), hashes.MD5())
+                                            padding.PKCS1v15(), hashes.MD5())
 
         backend = MultiBackend([])
         with pytest.raises(UnsupportedAlgorithm):
@@ -181,5 +181,5 @@ class TestMultiBackend(object):
                                              hashes.MD5())
 
         with pytest.raises(UnsupportedAlgorithm):
-            backend.create_rsa_verification_ctx("public_key", "sig",
-                                                padding.PKCS1(), hashes.MD5())
+            backend.create_rsa_verification_ctx(
+                "public_key", "sig", padding.PKCS1v15(), hashes.MD5())
