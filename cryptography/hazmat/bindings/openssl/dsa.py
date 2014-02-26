@@ -29,13 +29,29 @@ typedef struct dsa_st {
     BIGNUM *pub_key;
     ...;
 } DSA;
+typedef struct dsa_method {
+    const char *name;
+    DSA_SIG * (*dsa_do_sign)(const unsigned char *dgst, int dlen, DSA *dsa);
+    int (*dsa_sign_setup)(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,
+                            BIGNUM **rp);
+    ...;
+} DSA_METHOD;
+typedef struct ... DSA_SIG;
 """
 
 FUNCTIONS = """
-DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
-                             void (*)(int, int, void *), void *);
+// DSA_generate_parameters() is deprecated in favor
+// of DSA_generate_parameters_ex()
+int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int, int *,
+                            unsigned long *, BN_GENCB *)
 int DSA_generate_key(DSA *);
+DSA *DSA_new(void);
 void DSA_free(DSA *);
+int DSA_sign_setup(DSA *, BN_CTX *, BIGNUM **, BIGNUM **)
+int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
+                            DSA *)
+int DSA_verify(int, const unsigned char *, int, const unsigned char *, int,
+                            DSA *)
 """
 
 MACROS = """
