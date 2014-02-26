@@ -580,7 +580,11 @@ class TestRSAVerification(object):
         verifier.verify()
 
     def test_invalid_pss_signature_wrong_data(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
         signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
         signer.update(b"sign me")
@@ -592,11 +596,15 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"incorrect data")
-        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+        with pytest.raises(exceptions.InvalidSignature):
             verifier.verify()
 
     def test_invalid_pss_signature_wrong_key(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
         public_key = private_key.public_key()
         public_key._modulus += 2
         signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
@@ -609,7 +617,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"sign me")
-        with pytest.raises(exceptions.InvalidAsymmetricSignature):
+        with pytest.raises(exceptions.InvalidSignature):
             verifier.verify()
 
     def test_use_after_finalize(self, backend):

@@ -862,7 +862,7 @@ class _RSAVerificationContext(object):
             -2
         )
         if res != 1:
-            raise InvalidAsymmetricSignature
+            raise InvalidSignature
 
 
 backend = Backend()
