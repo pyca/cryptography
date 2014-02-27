@@ -779,6 +779,7 @@ class _RSAVerificationContext(object):
             len(self._signature),
             evp_pkey
         )
+        self._hash_ctx.finalize()
         self._hash_ctx = None
         if res != 1:
             raise InvalidSignature

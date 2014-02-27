@@ -496,8 +496,12 @@ class TestRSAVerification(object):
             key_size=512,
             backend=backend
         )
-        public_key = private_key.public_key()
-        public_key._modulus += 2
+        private_key2 = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key2.public_key()
         signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signature = signer.finalize()
