@@ -769,7 +769,11 @@ class _RSAVerificationContext(object):
             data_to_verify,
             len(data_to_verify)
         )
-        if res != 1:
+        # The previous call can return negative numbers in the event of an
+        # error. This is not a signature failure but we need to fail if it
+        # occurs.
+        assert res >= 0
+        if res == 0:
             raise InvalidSignature
 
     def _verify_pkcs1(self, rsa_cdata, evp_pkey, evp_md):
@@ -781,7 +785,11 @@ class _RSAVerificationContext(object):
         )
         self._hash_ctx.finalize()
         self._hash_ctx = None
-        if res != 1:
+        # The previous call can return negative numbers in the event of an
+        # error. This is not a signature failure but we need to fail if it
+        # occurs.
+        assert res >= 0
+        if res == 0:
             raise InvalidSignature
 
 
