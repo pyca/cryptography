@@ -112,3 +112,10 @@ class MultiBackend(object):
         for b in self._filtered_backends(RSABackend):
             return b.create_rsa_signature_ctx(private_key, padding, algorithm)
         raise UnsupportedAlgorithm
+
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
+        for b in self._filtered_backends(RSABackend):
+            return b.create_rsa_verification_ctx(public_key, signature,
+                                                 padding, algorithm)
+        raise UnsupportedAlgorithm
