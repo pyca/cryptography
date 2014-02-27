@@ -115,7 +115,7 @@ RSA
 
         .. versionadded:: 0.3
 
-        Verify data was signed by the private key associated with the public
+        Verify data was signed by the private key associated with this public
         key.
 
         .. doctest::
