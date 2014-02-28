@@ -535,9 +535,10 @@ class _HashContext(object):
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
-        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf,
-                                                    self._backend._ffi.NULL)
+        outlen = self._backend._ffi.new("unsigned int *")
+        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
         assert res != 0
+        assert outlen[0] == self.algorithm.digest_size
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend._ffi.buffer(buf)[:]
