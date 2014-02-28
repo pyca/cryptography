@@ -593,12 +593,12 @@ class _HMACContext(object):
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
-        buflen = self._backend._ffi.new("unsigned int *",
-                                        self.algorithm.digest_size)
+        outlen = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.Cryptography_HMAC_Final(
-            self._ctx, buf, buflen
+            self._ctx, buf, outlen
         )
         assert res != 0
+        assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:]
 
