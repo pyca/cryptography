@@ -862,7 +862,9 @@ class _RSAVerificationContext(object):
             -2
         )
         if res != 1:
-            raise InvalidSignature
+            code = self._backend._lib.ERR_get_error()
+            error_msg = self._backend._err_string(code)
+            raise InvalidSignature(error_msg)
 
 
 backend = Backend()
