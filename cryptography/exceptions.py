@@ -11,29 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
 
-import six
-
-from cryptography import utils
-
-
-class UnsupportedAlgorithm(six.with_metaclass(abc.ABCBase)):
+class UnsupportedAlgorithm(Exception):
     pass
 
 
-@utils.register_interface(UnsupportedAlgorithm)
-class UnsupportedCipher(Exception):
+class UnsupportedCipher(UnsupportedAlgorithm):
     pass
 
 
-@utils.register_interface(UnsupportedAlgorithm)
-class UnsupportedHash(Exception):
+class UnsupportedHash(UnsupportedAlgorithm):
     pass
 
 
-@utils.register_interface(UnsupportedAlgorithm)
-class UnsupportedPadding(Exception):
+class UnsupportedPadding(UnsupportedAlgorithm):
     pass
 
 
