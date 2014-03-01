@@ -15,10 +15,12 @@ Asymmetric Ciphers
 
 * RSA PKCS #1 from the RSA FTP site (ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/
   and ftp://ftp.rsa.com/pub/rsalabs/tmp/).
-* OpenSSL PEM serialization vectors from the `OpenSSL test suite`_ and `GnuTLS test suite`_.
+* OpenSSL PEM serialization vectors from the `OpenSSL test suite`_ and `GnuTLS
+  test suite`_.
 * PKCS #8 PEM serialization vectors from
 
-  * GnuTLS: `encpkcs8.pem`_, `enc2pkcs8.pem`_, `unencpkcs8.pem`_, `pkcs12_s2k_pem.c`_.
+  * GnuTLS: `encpkcs8.pem`_, `enc2pkcs8.pem`_, `unencpkcs8.pem`_,
+    `pkcs12_s2k_pem.c`_.
   * `Botan's ECC private keys`_.
 
 Hashes
@@ -43,6 +45,7 @@ Key Derivation Functions
 
 * HKDF (SHA1, SHA256) from :rfc:`5869`.
 * PBKDF2 (HMAC-SHA1) from :rfc:`6070`.
+* scrypt from the `draft RFC`_.
 
 Recipes
 ~~~~~~~
@@ -67,7 +70,8 @@ Two Factor Authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * HOTP from :rfc:`4226`
-* TOTP from :rfc:`6238` (Note that an `errata`_ for the test vectors in RFC 6238 exists)
+* TOTP from :rfc:`6238` (Note that an `errata`_ for the test vectors in RFC
+  6238 exists)
 
 
 Creating Test Vectors
@@ -103,6 +107,7 @@ header format (substituting the correct information):
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
 .. _`RIPEMD website`: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
+.. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
 .. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`OpenSSL test suite`: http://git.openssl.org/gitweb/?p=openssl.git;a=blob;f=test/testrsa.pem;h=aad21067a8f7cb93a52a511eb9162fd83be39135;hb=66e8211c0b1347970096e04b18aa52567c325200
