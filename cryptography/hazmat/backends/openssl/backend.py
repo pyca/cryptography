@@ -471,6 +471,8 @@ class _CipherContext(object):
                     "The length of the provided data is not a multiple of "
                     "the block length."
                 )
+            else:
+                raise self._backend._unknown_error(errors[0])
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):

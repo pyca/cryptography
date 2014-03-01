@@ -14,7 +14,7 @@
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, InternalError
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -117,6 +117,15 @@ class TestOpenSSL(object):
             b"error:0607F08A:digital envelope routines:EVP_EncryptFinal_ex:"
             b"data not multiple of block length"
         )
+
+    def test_unknown_error_in_cipher_finalize(self):
+        cipher = Cipher(AES(b"\0" * 16), CBC(b"\0" * 16), backend=backend)
+        enc = cipher.encryptor()
+        enc.update(b"\0")
+        backend._lib.ERR_put_error(0, 0, 1,
+                                   b"test_openssl.py", -1)
+        with pytest.raises(InternalError):
+            enc.finalize()
 
     def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
         if backend.pbkdf2_hmac_supported(hashes.SHA256()):
