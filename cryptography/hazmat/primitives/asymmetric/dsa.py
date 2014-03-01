@@ -41,9 +41,9 @@ class DSAPrivateKey(object):
             raise TypeError("DSAPrivateKey arguments must be integers")
 
         self._modulus = modulus
-        self._modulus_length = _bit_length(_modulus)
+        self._modulus_length = _bit_length(self._modulus)
         self._divisor = divisor
-        self._divisor_length = _bit_length(_divisor)
+        self._divisor_length = _bit_length(self._divisor)
         self._generator = generator
         self._private_key = private_key
         self._public_key = public_key
@@ -88,7 +88,7 @@ class DSAPrivateKey(object):
     def g(self):
         return self.generator
 
-    @property 
+    @property
     def L(self):
         return self.modulus_length
 

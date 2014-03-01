@@ -29,7 +29,6 @@ typedef struct dsa_st {
     BIGNUM *pub_key;
     ...;
 } DSA;
-typedef ... BN_GENCB;
 """
 
 FUNCTIONS = """
