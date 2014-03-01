@@ -25,7 +25,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, dsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
 )
@@ -352,6 +352,28 @@ class Backend(object):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
+    def _generate_dsa_parameters(self, modulus_length, ctx):
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, modulus_length, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL
+        )
+        assert res == 1
+
+    def generate_dsa_private_key(self, modulus_length):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        self._generate_dsa_parameters(modulus_length, ctx)
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(ctx.p),
+            divisor=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g),
+            private_key=self._bn_to_int(ctx.priv_key),
+            public_key=self._bn_to_int(ctx.pub_key)
+        )
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
@@ -535,10 +557,9 @@ class _HashContext(object):
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
-        outlen = self._backend._ffi.new("unsigned int *")
-        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
+        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf,
+                                                    self._backend._ffi.NULL)
         assert res != 0
-        assert outlen[0] == self.algorithm.digest_size
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend._ffi.buffer(buf)[:]
@@ -594,12 +615,12 @@ class _HMACContext(object):
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
                                      self.algorithm.digest_size)
-        outlen = self._backend._ffi.new("unsigned int *")
+        buflen = self._backend._ffi.new("unsigned int *",
+                                        self.algorithm.digest_size)
         res = self._backend._lib.Cryptography_HMAC_Final(
-            self._ctx, buf, outlen
+            self._ctx, buf, buflen
         )
         assert res != 0
-        assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:]
 
