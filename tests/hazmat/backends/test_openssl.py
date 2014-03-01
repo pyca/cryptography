@@ -14,7 +14,7 @@
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InternalError
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher
