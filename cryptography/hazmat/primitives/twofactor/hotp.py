@@ -17,7 +17,7 @@ import struct
 
 import six
 
-from cryptography.exceptions import InvalidToken, UnsupportedAlgorithm
+from cryptography.exceptions import InvalidToken
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 
@@ -31,8 +31,7 @@ class HOTP(object):
             raise ValueError("Length of HOTP has to be between 6 to 8.")
 
         if not isinstance(algorithm, (SHA1, SHA256, SHA512)):
-            raise UnsupportedAlgorithm(
-                "Algorithm must be SHA1, SHA256 or SHA512")
+            raise ValueError("Algorithm must be SHA1, SHA256 or SHA512")
 
         self._key = key
         self._length = length
