@@ -601,16 +601,16 @@ class TestRSAVerification(object):
 
     def test_invalid_pss_signature_wrong_key(self, backend):
         signature = binascii.unhexlify(
-            "3a1880165014ba6eb53cc1449d13e5132ebcc0cfd9ade6d7a2494a0503bd0826f"
-            "8a46c431e0d7be0ca3e453f8b2b009e2733764da7927cc6dbe7a021437a242e"
+            b"3a1880165014ba6eb53cc1449d13e5132ebcc0cfd9ade6d7a2494a0503bd0826"
+            b"f8a46c431e0d7be0ca3e453f8b2b009e2733764da7927cc6dbe7a021437a242e"
         )
         public_key = rsa.RSAPublicKey(
             modulus=int(
-                "381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac685"
-                "a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a896"
-                "0cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303231"
-                "b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4030d"
-                "3581e13522e1", 16
+                b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
+                b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
+                b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
+                b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
+                b"030d3581e13522e1", 16
             ),
             public_exponent=65537
         )
@@ -626,16 +626,16 @@ class TestRSAVerification(object):
 
     def test_invalid_pss_signature_data_too_large_for_modulus(self, backend):
         signature = binascii.unhexlify(
-            "cb43bde4f7ab89eb4a79c6e8dd67e0d1af60715da64429d90c716a490b799c291"
-            "94cf8046509c6ed851052367a74e2e92d9b38947ed74332acb115a03fcc0222"
+            b"cb43bde4f7ab89eb4a79c6e8dd67e0d1af60715da64429d90c716a490b799c29"
+            b"194cf8046509c6ed851052367a74e2e92d9b38947ed74332acb115a03fcc0222"
         )
         public_key = rsa.RSAPublicKey(
             modulus=int(
-                "381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac685"
-                "a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a896"
-                "0cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303231"
-                "b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4030d"
-                "3581e13522e1", 16
+                b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
+                b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
+                b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
+                b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
+                b"030d3581e13522e1", 16
             ),
             public_exponent=65537
         )
