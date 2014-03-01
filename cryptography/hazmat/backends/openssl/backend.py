@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import collections
 import itertools
 
 from cryptography import utils
@@ -32,6 +33,10 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
+
+
+_OpenSSLError = collections.namedtuple("_OpenSSLError",
+                                       ["code", "lib", "func", "reason"])
 
 
 @utils.register_interface(CipherBackend)
@@ -239,14 +244,14 @@ class Backend(object):
             func = self._lib.ERR_GET_FUNC(code)
             reason = self._lib.ERR_GET_REASON(code)
 
-            errors.append((code, lib, func, reason))
+            errors.append(_OpenSSLError(code, lib, func, reason))
         return errors
 
     def _unknown_error(self, error):
         return InternalError(
             "Unknown error code {0} from OpenSSL, "
             "you should probably file a bug. {1}".format(
-                error[0], self._err_string(error[0])
+                error.code, self._err_string(error.code)
             )
         )
 
