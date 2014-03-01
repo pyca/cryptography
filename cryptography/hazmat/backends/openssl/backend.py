@@ -534,14 +534,14 @@ class _HashContext(object):
 
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
+                                     self._backend._lib.EVP_MAX_MD_SIZE)
         outlen = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
         assert res != 0
         assert outlen[0] == self.algorithm.digest_size
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
         assert res == 1
-        return self._backend._ffi.buffer(buf)[:]
+        return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
 @utils.register_interface(interfaces.HashContext)
@@ -593,7 +593,7 @@ class _HMACContext(object):
 
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
+                                     self._backend._lib.EVP_MAX_MD_SIZE)
         outlen = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.Cryptography_HMAC_Final(
             self._ctx, buf, outlen
@@ -601,7 +601,7 @@ class _HMACContext(object):
         assert res != 0
         assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
-        return self._backend._ffi.buffer(buf)[:]
+        return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
