@@ -29,11 +29,14 @@ typedef struct dsa_st {
     BIGNUM *pub_key;
     ...;
 } DSA;
+typedef ... BN_GENCB;
 """
 
 FUNCTIONS = """
 DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
                              void (*)(int, int, void *), void *);
+int DSA_generate_parameters_ex(DSA *, int, const unsigned char *, int ,
+                            int *, unsigned long *, BN_GENCB *);
 int DSA_generate_key(DSA *);
 void DSA_free(DSA *);
 """

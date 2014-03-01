@@ -339,6 +339,28 @@ class Backend(object):
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         return _RSASignatureContext(self, private_key, padding, algorithm)
 
+    def _generate_dsa_parameters(self, modulus_length, ctx):
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, modulus_length, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL
+        )
+        assert res == 1
+
+    def generate_dsa_private_key(self, modulus_length):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        _generate_dsa_parameters(modulus_length, ctx)
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+                modulus = self._bn_to_int(ctx.p),
+                divisor = self._bn_to_int(ctx.q),
+                generator = self._bn_to_int(ctx.g),
+                private_key = self._bn_to_int(ctx.priv_key),
+                public_key = self._bn_to_int(ctx.pub_key)
+        )
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
