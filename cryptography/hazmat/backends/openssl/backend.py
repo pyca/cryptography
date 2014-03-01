@@ -235,7 +235,7 @@ class Backend(object):
 
     def _consume_errors(self):
         errors = []
-        while 1:
+        while True:
             code = self._lib.ERR_get_error()
             if code == 0:
                 break
@@ -455,8 +455,8 @@ class _CipherContext(object):
 
             if not errors and isinstance(self._mode, GCM):
                 raise InvalidTag
-            else:
-                assert errors
+
+            assert errors
 
             if errors[0][1:] == (
                 self._backend._lib.ERR_LIB_EVP,
