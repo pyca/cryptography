@@ -784,6 +784,7 @@ class _RSAVerificationContext(object):
         # occurs.
         assert res >= 0
         if res == 0:
+            assert self._backend._consume_errors()
             raise InvalidSignature
 
     def _verify_pkcs1(self, rsa_cdata, evp_pkey, evp_md):
@@ -800,6 +801,7 @@ class _RSAVerificationContext(object):
         # occurs.
         assert res >= 0
         if res == 0:
+            assert self._backend._consume_errors()
             raise InvalidSignature
 
 
