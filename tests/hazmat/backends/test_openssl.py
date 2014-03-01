@@ -71,46 +71,17 @@ class TestOpenSSL(object):
         with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
 
-    def test_handle_unknown_error(self):
-        with pytest.raises(InternalError):
-            backend._handle_error_code(0)
-
-        backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
-                                   b"test_openssl.py", -1)
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
-
-        backend._lib.ERR_put_error(
-            backend._lib.ERR_LIB_EVP,
-            backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-            0,
-            b"test_openssl.py",
-            -1
-        )
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
-
-        backend._lib.ERR_put_error(
-            backend._lib.ERR_LIB_EVP,
-            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-            0,
-            b"test_openssl.py",
-            -1
-        )
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
-
-    def test_handle_multiple_errors(self):
+    def test_consume_errors(self):
         for i in range(10):
             backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
                                        b"test_openssl.py", -1)
 
         assert backend._lib.ERR_peek_error() != 0
 
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
+        errors = backend._consume_errors()
 
         assert backend._lib.ERR_peek_error() == 0
+        assert len(errors) == 10
 
     def test_openssl_error_string(self):
         backend._lib.ERR_put_error(
@@ -121,8 +92,8 @@ class TestOpenSSL(object):
             -1
         )
 
-        with pytest.raises(InternalError) as exc:
-            backend._handle_error(None)
+        errors = backend._consume_errors()
+        exc = backend._unknown_error(errors[0])
 
         assert (
             "digital envelope routines:"

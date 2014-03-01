@@ -228,43 +228,25 @@ class Backend(object):
         self._lib.ERR_error_string_n(code, err_buf, 256)
         return self._ffi.string(err_buf, 256)[:]
 
-    def _handle_error(self, mode):
-        code = self._lib.ERR_get_error()
-        if not code and isinstance(mode, GCM):
-            raise InvalidTag
-        assert code != 0
+    def _consume_errors(self):
+        errors = []
+        while 1:
+            code = self._lib.ERR_get_error()
+            if code == 0:
+                break
 
-        # consume any remaining errors on the stack
-        ignored_code = None
-        while ignored_code != 0:
-            ignored_code = self._lib.ERR_get_error()
+            lib = self._lib.ERR_GET_LIB(code)
+            func = self._lib.ERR_GET_FUNC(code)
+            reason = self._lib.ERR_GET_REASON(code)
 
-        # raise the first error we found
-        return self._handle_error_code(code)
+            errors.append((code, lib, func, reason))
+        return errors
 
-    def _handle_error_code(self, code):
-        lib = self._lib.ERR_GET_LIB(code)
-        func = self._lib.ERR_GET_FUNC(code)
-        reason = self._lib.ERR_GET_REASON(code)
-
-        if lib == self._lib.ERR_LIB_EVP:
-            if func == self._lib.EVP_F_EVP_ENCRYPTFINAL_EX:
-                if reason == self._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise ValueError(
-                        "The length of the provided data is not a multiple of "
-                        "the block length"
-                    )
-            elif func == self._lib.EVP_F_EVP_DECRYPTFINAL_EX:
-                if reason == self._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise ValueError(
-                        "The length of the provided data is not a multiple of "
-                        "the block length"
-                    )
-
-        raise InternalError(
+    def _unknown_error(self, error):
+        return InternalError(
             "Unknown error code {0} from OpenSSL, "
             "you should probably file a bug. {1}".format(
-                code, self._err_string(code)
+                error[0], self._err_string(error[0])
             )
         )
 
@@ -464,7 +446,26 @@ class _CipherContext(object):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
-            self._backend._handle_error(self._mode)
+            errors = self._backend._consume_errors()
+
+            if not errors and isinstance(self._mode, GCM):
+                raise InvalidTag
+            else:
+                assert errors
+
+            if errors[0][1:] == (
+                self._backend._lib.ERR_LIB_EVP,
+                self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+            ) or errors[0][1:] == (
+                self._backend._lib.ERR_LIB_EVP,
+                self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+            ):
+                raise ValueError(
+                    "The length of the provided data is not a multiple of "
+                    "the block length."
+                )
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):
