@@ -775,7 +775,12 @@ class _RSAVerificationContext(object):
         # error. This is not a signature failure but we need to fail if it
         # occurs.
         assert res >= 0
-        if res == 0:
+        if res != 1:
+            try:
+                self._backend._handle_error(None)
+            except:
+                pass
+
             raise InvalidSignature
 
     def _verify_pkcs1(self, rsa_cdata, evp_pkey, evp_md):
@@ -791,7 +796,12 @@ class _RSAVerificationContext(object):
         # error. This is not a signature failure but we need to fail if it
         # occurs.
         assert res >= 0
-        if res == 0:
+        if res != 1:
+            try:
+                self._backend._handle_error(None)
+            except:
+                pass
+
             raise InvalidSignature
 
 
