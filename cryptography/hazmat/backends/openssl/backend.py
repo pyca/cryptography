@@ -26,7 +26,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, dsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
 )
@@ -338,6 +338,28 @@ class Backend(object):
                                     algorithm):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
+
+    def _generate_dsa_parameters(self, modulus_length, ctx):
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, modulus_length, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL
+        )
+        assert res == 1
+
+    def generate_dsa_private_key(self, modulus_length):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        self._generate_dsa_parameters(modulus_length, ctx)
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(ctx.p),
+            divisor=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g),
+            private_key=self._bn_to_int(ctx.priv_key),
+            public_key=self._bn_to_int(ctx.pub_key)
+        )
 
 
 class GetCipherByName(object):
