@@ -47,7 +47,7 @@ codes (HMAC).
         provider.
     :raises ValueError: This is raised if the provided ``key`` is shorter than
         128 bits or if the ``length`` parameter is not 6, 7 or 8.
-    :raises ValueError: This is raised if the provided ``algorithm`` is not
+    :raises TypeError: This is raised if the provided ``algorithm`` is not
         :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
         :class:`~cryptography.hazmat.primitives.hashes.SHA256()` or
         :class:`~cryptography.hazmat.primitives.hashes.SHA512()`.
@@ -142,7 +142,7 @@ similar to the following code.
         provider.
     :raises ValueError: This is raised if the provided ``key`` is shorter than
         128 bits or if the ``length`` parameter is not 6, 7 or 8.
-    :raises ValueError: This is raised if the provided ``algorithm`` is not
+    :raises TypeError: This is raised if the provided ``algorithm`` is not
         :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
         :class:`~cryptography.hazmat.primitives.hashes.SHA256()` or
         :class:`~cryptography.hazmat.primitives.hashes.SHA512()`.

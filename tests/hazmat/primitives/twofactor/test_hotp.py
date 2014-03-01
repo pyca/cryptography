@@ -46,7 +46,7 @@ class TestHOTP(object):
     def test_invalid_algorithm(self, backend):
         secret = os.urandom(16)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             HOTP(secret, 6, MD5(), backend)
 
     @pytest.mark.parametrize("params", vectors)
