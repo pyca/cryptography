@@ -351,7 +351,7 @@ class Backend(object):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        if all( [modulus is not None, divisor is not None, generator is not None ]): 
+        if all( [modulus is not None, divisor is not None, generator is not None] ): 
             ctx.p = _int_to_bn(modulus)
             ctx.q = _int_to_bn(divisor)
             ctx.g = _int_to_bn(generator)
