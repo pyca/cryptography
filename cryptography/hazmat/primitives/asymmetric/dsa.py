@@ -28,25 +28,62 @@ def _bit_length(x):
         return len(bin(x)) - (2 + (x <= 0))
 
 
+@utils.register_interface(interfaces.DSAParams)
+class DSAParams(object):
+    def __init__(self, modulus, divisor, generator):
+        if (
+            not isinstance(modulus, six.integer_types) or
+            not isinstance(divisor, six.integer_types) or
+            not isinstance(generator, six.integer_types)
+        ):
+            raise TypeError("DSAParams arguments must be integers")
+
+        self._modulus = modulus
+        self._divisor = divisor
+        self._generator = generator
+
+    @property
+    def modulus(self):
+        return self._modulus
+
+    @property
+    def divisor(self):
+        return self._divisor
+
+    @property
+    def generator(self):
+        return self._generator
+
+    @property
+    def p(self):
+        return self.modulus
+
+    @property
+    def q(self):
+        return self.divisor
+
+    @property
+    def g(self):
+        return self.generator
+
+
 @utils.register_interface(interfaces.DSAPrivateKey)
 class DSAPrivateKey(object):
-    def __init__(self, modulus, divisor, generator, private_key, public_key):
+    def __init__(self, modulus, divisor, generator, priv_key, pub_key):
         if (
             not isinstance(modulus, six.integer_types) or
             not isinstance(divisor, six.integer_types) or
             not isinstance(generator, six.integer_types) or
-            not isinstance(private_key, six.integer_types) or
-            not isinstance(public_key, six.integer_types)
+            not isinstance(priv_key, six.integer_types) or
+            not isinstance(pub_key, six.integer_types)
         ):
             raise TypeError("DSAPrivateKey arguments must be integers")
 
         self._modulus = modulus
-        self._modulus_length = _bit_length(self._modulus)
         self._divisor = divisor
-        self._divisor_length = _bit_length(self._divisor)
         self._generator = generator
-        self._private_key = private_key
-        self._public_key = public_key
+        self._priv_key = priv_key
+        self._pub_key = pub_key
 
     @classmethod
     def generate(cls, modulus_length, backend):
@@ -54,7 +91,7 @@ class DSAPrivateKey(object):
 
     @property
     def modulus(self):
-        return _bit_length(self.modulus)
+        return self._modulus
 
     @property
     def divisor(self):
@@ -66,15 +103,19 @@ class DSAPrivateKey(object):
 
     @property
     def modulus_length(self):
-        return self._modulus_length
+        return self._bit_length(self.modulus)
 
     @property
     def divisor_length(self):
-        return self._divisor_length
+        return self._bit_length(self.divisor)
+
+    @property
+    def priv_key(self):
+        return self._priv_key
 
     @property
     def public_key(self):
-        return self._public_key
+        return DSAPublicKey(self.modulus, self.divisor, self.generator, self.y)
 
     @property
     def p(self):
@@ -98,4 +139,57 @@ class DSAPrivateKey(object):
 
     @property
     def y(self):
-        return self.public_key
+        return self._pub_key
+
+    @property
+    def params(self):
+        return DSAParams(self.modulus, self.divisor, self.generator)
+
+
+@utils.register_interface(interfaces.DSAPublicKey)
+class DSAPublicKey(object):
+    def __init__(self, modulus, divisor, generator, pub_key):
+        if (
+            not isinstance(modulus, six.integer_types) or
+            not isinstance(divisor, six.integer_types) or
+            not isinstance(generator, six.integer_types) or
+            not isinstance(pub_key, six.integer_types)
+        ):
+            raise TypeError("DSAParams arguments must be integers")
+
+        self._modulus = modulus
+        self._divisor = divisor
+        self._generator = generator
+        self._pub_key = pub_key
+
+    @property
+    def modulus(self):
+        return self._modulus
+
+    @property
+    def divisor(self):
+        return self._divisor
+
+    @property
+    def generator(self):
+        return self._generator
+
+    @property
+    def pub_key(self):
+        return self._pub_key
+
+    @property
+    def p(self):
+        return self.modulus
+
+    @property
+    def q(self):
+        return self.divisor
+
+    @property
+    def g(self):
+        return self.generator
+
+    @property
+    def params(self):
+        return DSAParams(self.modulus, self.divisor, self.generator)

@@ -357,8 +357,8 @@ class Backend(object):
             modulus=self._bn_to_int(ctx.p),
             divisor=self._bn_to_int(ctx.q),
             generator=self._bn_to_int(ctx.g),
-            private_key=self._bn_to_int(ctx.priv_key),
-            public_key=self._bn_to_int(ctx.pub_key)
+            priv_key=self._bn_to_int(ctx.priv_key),
+            pub_key=self._bn_to_int(ctx.pub_key)
         )
 
 
