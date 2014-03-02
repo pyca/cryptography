@@ -58,7 +58,7 @@ class DSAPrivateKey(object):
 
     @property
     def divisor(self):
-        return self._public_exponent
+        return self._divisor
 
     @property
     def generator(self):
