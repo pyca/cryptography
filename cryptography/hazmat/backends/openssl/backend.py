@@ -347,15 +347,16 @@ class Backend(object):
         assert res == 1
 
     # Will definitely need proper error handling, just prototyping API design
-    def generate_dsa_private_key(self, modulus_length=None, modulus=None, divisor=None, generator=None):
+    def generate_dsa_private_key(self, modulus_length=None, modulus=None,
+                                 divisor=None, generator=None):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        if all( [not modulus, not divisor, not generator] ): 
-            ctx.p = _int_to_bn(modulus)
-            ctx.q = _int_to_bn(divisor)
-            ctx.g = _int_to_bn(generator)
-        else: 
+        if all([not modulus, not divisor, not generator]):
+            ctx.p = self._int_to_bn(modulus)
+            ctx.q = self._int_to_bn(divisor)
+            ctx.g = self._int_to_bn(generator)
+        else:
             self._generate_dsa_parameters(modulus_length, ctx)
 
         self._lib.DSA_generate_key(ctx)
