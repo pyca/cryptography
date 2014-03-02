@@ -28,6 +28,7 @@ pickleable
 plaintext
 pseudorandom
 Schneier
+scrypt
 testability
 unencrypted
 unpadded
