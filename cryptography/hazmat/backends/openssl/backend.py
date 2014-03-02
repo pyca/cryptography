@@ -851,9 +851,8 @@ class _RSAVerificationContext(object):
             self._backend._lib.RSA_NO_PADDING
         )
         if res != pkey_size:
-            code = self._backend._lib.ERR_get_error()
-            error_msg = self._backend._err_string(code)
-            raise InvalidSignature(error_msg)
+            assert self._backend._consume_errors()
+            raise InvalidSignature
 
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
@@ -865,9 +864,8 @@ class _RSAVerificationContext(object):
             -2
         )
         if res != 1:
-            code = self._backend._lib.ERR_get_error()
-            error_msg = self._backend._err_string(code)
-            raise InvalidSignature(error_msg)
+            assert self._backend._consume_errors()
+            raise InvalidSignature
 
 
 backend = Backend()
