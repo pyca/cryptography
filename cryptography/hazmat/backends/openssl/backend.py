@@ -346,11 +346,18 @@ class Backend(object):
         )
         assert res == 1
 
-    def generate_dsa_private_key(self, modulus_length):
+    # Will definitely need proper error handling, just prototyping API design
+    def generate_dsa_private_key(self, modulus_length=None, modulus=None, divisor=None, generator=None):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        self._generate_dsa_parameters(modulus_length, ctx)
+        if all( [modulus is not None, divisor is not None, generator is not None ]): 
+            ctx.p = _int_to_bn(modulus)
+            ctx.q = _int_to_bn(divisor)
+            ctx.g = _int_to_bn(generator)
+        else: 
+            self._generate_dsa_parameters(modulus_length, ctx)
+
         self._lib.DSA_generate_key(ctx)
 
         return dsa.DSAPrivateKey(

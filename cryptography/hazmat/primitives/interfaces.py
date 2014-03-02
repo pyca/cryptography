@@ -306,10 +306,31 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
         The generator that is used in generating the DSA keypair.
         """
 
-    @abc.abstractproperty
-    def y(self):
+    @abc.abstractmethod
+    def generate(self):
         """
-        The y parameter in the DSA structure. Alias for pub_key
+        Generate DSAPrivateKey from the object's parameters
+        """
+    
+    @abc.abstractproperty
+    def p(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        Alias for modulus.
+        """
+
+    @abc.abstractproperty
+    def q(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        Alias for divisor.
+        """
+
+    @abc.abstractproperty
+    def g(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        Alias for generator.
         """
 
 
