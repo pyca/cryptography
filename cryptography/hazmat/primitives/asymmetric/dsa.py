@@ -66,11 +66,9 @@ class DSAParams(object):
     def generator(self):
         return self._generator
 
-    # Generate DSAPrivateKey from the object's parameters
-    def generate(self, backend):
-        return backend.generate_dsa_private_key(modulus=self.modulus,
-                                                divisor=self.divisor,
-                                                generator=self.generator)
+    # Generate DSAParams
+    def generate(self, key_size, backend):
+        return backend.generate_dsa_parameters(key_size, backend)
 
     @property
     def p(self):
@@ -116,8 +114,8 @@ class DSAPrivateKey(object):
         self._y = y
 
     @classmethod
-    def generate(cls, modulus_length, backend):
-        return backend.generate_dsa_private_key(modulus_length)
+    def generate(cls, key_size, backend):
+        return backend.generate_dsa_private_key(key_size)
 
     @property
     def key_size(self):

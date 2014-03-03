@@ -339,15 +339,21 @@ class Backend(object):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
-    def _generate_dsa_parameters(self, modulus_size, ctx):
+    def generate_dsa_parameters(self, key_size, ctx):
         res = self._lib.DSA_generate_parameters_ex(
-            ctx, modulus_size, self._ffi.NULL, self._ffi.NULL,
+            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
             self._ffi.NULL, self._ffi.NULL
         )
         assert res == 1
 
+        return dsa.DSAParams(
+            modulus=self._bn_to_int(ctx.p),
+            divisor=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g)
+        )
+
     # Will definitely need proper error handling, just prototyping API design
-    def generate_dsa_private_key(self, modulus_size=None, modulus=None,
+    def generate_dsa_private_key(self, key_size=None, modulus=None,
                                  divisor=None, generator=None):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
@@ -357,7 +363,7 @@ class Backend(object):
             ctx.q = self._int_to_bn(divisor)
             ctx.g = self._int_to_bn(generator)
         else:
-            self._generate_dsa_parameters(modulus_size, ctx)
+            self.generate_dsa_parameters(key_size, ctx)
 
         self._lib.DSA_generate_key(ctx)
 
