@@ -38,6 +38,18 @@ class DSAParams(object):
         ):
             raise TypeError("DSAParams arguments must be integers")
 
+        if _bit_length(modulus) < 1024:
+            raise ValueError("Prime Modulus length must be at least 1024 bits")
+
+        if _bit_length(divisor) < 160:
+            raise ValueError("Prime Divisor length must be at least 160 bits")
+
+        if generator <= 1:
+            raise ValueError("Generator must be > 1")
+
+        if generator >= modulus:
+            raise ValueError("Generator must be < Prime Modulus")
+
         self._modulus = modulus
         self._divisor = divisor
         self._generator = generator
@@ -85,6 +97,18 @@ class DSAPrivateKey(object):
         ):
             raise TypeError("DSAPrivateKey arguments must be integers")
 
+        if _bit_length(modulus) < 1024:
+            raise ValueError("Prime Modulus length must be at least 1024 bits")
+
+        if _bit_length(divisor) < 160:
+            raise ValueError("Prime Divisor length must be at least 160 bits")
+
+        if generator <= 1:
+            raise ValueError("Generator must be > 1")
+
+        if generator >= modulus:
+            raise ValueError("Generator must be < Prime Modulus")
+
         self._modulus = modulus
         self._divisor = divisor
         self._generator = generator
@@ -109,11 +133,11 @@ class DSAPrivateKey(object):
 
     @property
     def modulus_length(self):
-        return self._bit_length(self.modulus)
+        return _bit_length(self.modulus)
 
     @property
     def divisor_length(self):
-        return self._bit_length(self.divisor)
+        return _bit_length(self.divisor)
 
     @property
     def priv_key(self):
@@ -162,6 +186,18 @@ class DSAPublicKey(object):
             not isinstance(pub_key, six.integer_types)
         ):
             raise TypeError("DSAParams arguments must be integers")
+
+        if _bit_length(modulus) < 1024:
+            raise ValueError("Prime Modulus length must be at least 1024 bits")
+
+        if _bit_length(divisor) < 160:
+            raise ValueError("Prime Divisor length must be at least 160 bits")
+
+        if generator <= 1:
+            raise ValueError("Generator must be > 1")
+
+        if generator >= modulus:
+            raise ValueError("Generator must be < Prime Modulus")
 
         self._modulus = modulus
         self._divisor = divisor
