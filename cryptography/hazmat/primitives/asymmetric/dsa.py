@@ -87,13 +87,13 @@ class DSAParams(object):
 
 @utils.register_interface(interfaces.DSAPrivateKey)
 class DSAPrivateKey(object):
-    def __init__(self, modulus, divisor, generator, priv_key, pub_key):
+    def __init__(self, modulus, divisor, generator, x, y):
         if (
             not isinstance(modulus, six.integer_types) or
             not isinstance(divisor, six.integer_types) or
             not isinstance(generator, six.integer_types) or
-            not isinstance(priv_key, six.integer_types) or
-            not isinstance(pub_key, six.integer_types)
+            not isinstance(x, six.integer_types) or
+            not isinstance(y, six.integer_types)
         ):
             raise TypeError("DSAPrivateKey arguments must be integers")
 
@@ -112,8 +112,8 @@ class DSAPrivateKey(object):
         self._modulus = modulus
         self._divisor = divisor
         self._generator = generator
-        self._priv_key = priv_key
-        self._pub_key = pub_key
+        self._x = y 
+        self._y = y
 
     @classmethod
     def generate(cls, modulus_length, backend):
@@ -123,28 +123,16 @@ class DSAPrivateKey(object):
     def key_size(self):
         return _bit_length(self._modulus)
 
-    @property
-    def divisor_size(self):
-        return _bit_length(self._divisor)
-
-    @property
-    def priv_key(self):
-        return self._priv_key
-
     def public_key(self):
         return DSAPublicKey(self._modulus, self._divisor, self._generator, self.y)
 
     @property
-    def L(self):
-        return self.key_size
-
-    @property
-    def N(self):
-        return self.divisor_size
+    def x(self):
+        return self._x
 
     @property
     def y(self):
-        return self._pub_key
+        return self._y
 
     @property
     def params(self):
@@ -153,12 +141,12 @@ class DSAPrivateKey(object):
 
 @utils.register_interface(interfaces.DSAPublicKey)
 class DSAPublicKey(object):
-    def __init__(self, modulus, divisor, generator, pub_key):
+    def __init__(self, modulus, divisor, generator, y):
         if (
             not isinstance(modulus, six.integer_types) or
             not isinstance(divisor, six.integer_types) or
             not isinstance(generator, six.integer_types) or
-            not isinstance(pub_key, six.integer_types)
+            not isinstance(y, six.integer_types)
         ):
             raise TypeError("DSAParams arguments must be integers")
 
@@ -177,11 +165,11 @@ class DSAPublicKey(object):
         self._modulus = modulus
         self._divisor = divisor
         self._generator = generator
-        self._pub_key = pub_key
+        self._y = y 
 
     @property
-    def pub_key(self):
-        return self._pub_key
+    def y(self):
+        return self._y
 
     @property
     def params(self):
