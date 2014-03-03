@@ -362,7 +362,7 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
-    def params(self):
+    def parameters(self):
         """
         The DSAParams object associated with this private key.
         """
@@ -376,7 +376,7 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
-    def params(self):
+    def parameters(self):
         """
         The DSAParams object associated with this public key.
         """
