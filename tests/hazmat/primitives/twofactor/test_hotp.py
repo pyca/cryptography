@@ -19,6 +19,7 @@ from cryptography.exceptions import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
+from cryptography.hazmat.primitives.hashes import MD5, SHA1
 
 vectors = load_vectors_from_file(
     "twofactor/rfc-4226.txt", load_nist_vectors)
@@ -30,18 +31,23 @@ vectors = load_vectors_from_file(
 )
 @pytest.mark.hmac
 class TestHOTP(object):
-
     def test_invalid_key_length(self, backend):
         secret = os.urandom(10)
 
         with pytest.raises(ValueError):
-            HOTP(secret, 6, backend)
+            HOTP(secret, 6, SHA1(), backend)
 
     def test_invalid_hotp_length(self, backend):
         secret = os.urandom(16)
 
         with pytest.raises(ValueError):
-            HOTP(secret, 4, backend)
+            HOTP(secret, 4, SHA1(), backend)
+
+    def test_invalid_algorithm(self, backend):
+        secret = os.urandom(16)
+
+        with pytest.raises(TypeError):
+            HOTP(secret, 6, MD5(), backend)
 
     @pytest.mark.parametrize("params", vectors)
     def test_truncate(self, backend, params):
@@ -49,7 +55,7 @@ class TestHOTP(object):
         counter = int(params["counter"])
         truncated = params["truncated"]
 
-        hotp = HOTP(secret, 6, backend)
+        hotp = HOTP(secret, 6, SHA1(), backend)
 
         assert hotp._dynamic_truncate(counter) == int(truncated.decode(), 16)
 
@@ -59,7 +65,7 @@ class TestHOTP(object):
         counter = int(params["counter"])
         hotp_value = params["hotp"]
 
-        hotp = HOTP(secret, 6, backend)
+        hotp = HOTP(secret, 6, SHA1(), backend)
 
         assert hotp.generate(counter) == hotp_value
 
@@ -69,7 +75,7 @@ class TestHOTP(object):
         counter = int(params["counter"])
         hotp_value = params["hotp"]
 
-        hotp = HOTP(secret, 6, backend)
+        hotp = HOTP(secret, 6, SHA1(), backend)
 
         assert hotp.verify(hotp_value, counter) is None
 
@@ -77,7 +83,7 @@ class TestHOTP(object):
         secret = b"12345678901234567890"
         counter = 0
 
-        hotp = HOTP(secret, 6, backend)
+        hotp = HOTP(secret, 6, SHA1(), backend)
 
         with pytest.raises(InvalidToken):
             hotp.verify(b"123456", counter)

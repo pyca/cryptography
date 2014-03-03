@@ -179,7 +179,7 @@ Different KDFs are suitable for different tasks such as:
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :params backend: A
+    :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
 

@@ -254,8 +254,8 @@ Asymmetric Interfaces
 
     .. method:: verify()
 
-        :raises cryptography.exceptions.InvalidSignature: If signature does not
-            validate.
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
 
 
 .. class:: AsymmetricPadding

@@ -88,7 +88,7 @@ Algorithms
     choice for encryption.
 
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
-                      This must be kept secret.
+        This must be kept secret.
 
 .. class:: Camellia(key)
 
@@ -97,7 +97,7 @@ Algorithms
     is not as widely studied or deployed.
 
     :param bytes key: The secret key, either ``128``, ``192``, or ``256`` bits.
-                      This must be kept secret.
+        This must be kept secret.
 
 .. class:: TripleDES(key)
 
@@ -108,12 +108,11 @@ Algorithms
     is incredibly slow; old applications should consider moving away from it.
 
     :param bytes key: The secret key, either ``64``, ``128``, or ``192`` bits
-                      (note that DES functionally uses ``56``, ``112``, or
-                      ``168`` bits of the key, there is a parity byte in each
-                      component of the key), in some materials these are
-                      referred to as being up to three separate keys (each
-                      ``56`` bits long), they can simply be concatenated to
-                      produce the full key. This must be kept secret.
+        (note that DES functionally uses ``56``, ``112``, or ``168`` bits of
+        the key, there is a parity byte in each component of the key), in some
+        materials these are referred to as being up to three separate keys
+        (each ``56`` bits long), they can simply be concatenated to produce the
+        full key. This must be kept secret.
 
 .. class:: CAST5(key)
 
@@ -124,7 +123,7 @@ Algorithms
     a variable key length cipher and supports keys from 40-128 bits in length.
 
     :param bytes key: The secret key, 40-128 bits in length (in increments of
-                      8).  This must be kept secret.
+        8).  This must be kept secret.
 
 Weak Ciphers
 ------------
@@ -142,7 +141,7 @@ Weak Ciphers
     that users of Blowfish move to newer algorithms, such as :class:`AES`.
 
     :param bytes key: The secret key, 32-448 bits in length (in increments of
-                      8).  This must be kept secret.
+        8).  This must be kept secret.
 
 .. class:: ARC4(key)
 
@@ -151,8 +150,7 @@ Weak Ciphers
     mode constructions.
 
     :param bytes key: The secret key, ``40``, ``56``, ``64``, ``80``, ``128``,
-                      ``192``, or ``256`` bits in length.  This must be kept
-                      secret.
+        ``192``, or ``256`` bits in length.  This must be kept secret.
 
     .. doctest::
 
@@ -182,17 +180,12 @@ Modes
     **Padding is required when using this mode.**
 
     :param bytes initialization_vector: Must be random bytes. They do not need
-                                        to be kept secret (they can be included
-                                        in a transmitted message). Must be the
-                                        same number of bytes as the
-                                        ``block_size`` of the cipher. Each time
-                                        something is encrypted a new
-                                        ``initialization_vector`` should be
-                                        generated. Do not reuse an
-                                        ``initialization_vector`` with
-                                        a given ``key``, and particularly do
-                                        not use a constant
-                                        ``initialization_vector``.
+        to be kept secret (they can be included in a transmitted message). Must
+        be the same number of bytes as the ``block_size`` of the cipher. Each
+        time something is encrypted a new ``initialization_vector`` should be
+        generated. Do not reuse an ``initialization_vector`` with a given
+        ``key``, and particularly do not use a constant
+        ``initialization_vector``.
 
     A good construction looks like:
 
@@ -226,12 +219,11 @@ Modes
     **This mode does not require padding.**
 
     :param bytes nonce: Should be random bytes. It is critical to never reuse a
-                        ``nonce`` with a given key.  Any reuse of a nonce
-                        with the same key compromises the security of every
-                        message encrypted with that key. Must be the same
-                        number of bytes as the ``block_size`` of the cipher
-                        with a given key. The nonce does not need to be kept
-                        secret and may be included alongside the ciphertext.
+        ``nonce`` with a given key.  Any reuse of a nonce with the same key
+        compromises the security of every message encrypted with that key. Must
+        be the same number of bytes as the ``block_size`` of the cipher with a
+        given key. The nonce does not need to be kept secret and may be
+        included alongside the ciphertext.
 
 .. class:: OFB(initialization_vector)
 
@@ -241,12 +233,9 @@ Modes
     **This mode does not require padding.**
 
     :param bytes initialization_vector: Must be random bytes. They do not need
-                                        to be kept secret (they can be included
-                                        in a transmitted message). Must be the
-                                        same number of bytes as the
-                                        ``block_size`` of the cipher. Do not
-                                        reuse an ``initialization_vector`` with
-                                        a given ``key``.
+        to be kept secret (they can be included in a transmitted message). Must
+        be the same number of bytes as the ``block_size`` of the cipher. Do not
+        reuse an ``initialization_vector`` with a given ``key``.
 
 .. class:: CFB(initialization_vector)
 
@@ -256,12 +245,9 @@ Modes
     **This mode does not require padding.**
 
     :param bytes initialization_vector: Must be random bytes. They do not need
-                                        to be kept secret (they can be included
-                                        in a transmitted message). Must be the
-                                        same number of bytes as the
-                                        ``block_size`` of the cipher. Do not
-                                        reuse an ``initialization_vector`` with
-                                        a given ``key``.
+        to be kept secret (they can be included in a transmitted message). Must
+        be the same number of bytes as the ``block_size`` of the cipher. Do not
+        reuse an ``initialization_vector`` with a given ``key``.
 
 .. class:: GCM(initialization_vector, tag=None)
 
@@ -282,13 +268,10 @@ Modes
     **This mode does not require padding.**
 
     :param bytes initialization_vector: Must be random bytes. They do not need
-                                        to be kept secret (they can be included
-                                        in a transmitted message). NIST
-                                        `recommends 96-bit IV length`_ for
-                                        performance critical situations, but it
-                                        can be up to 2\ :sup:`64` - 1 bits.
-                                        Do not reuse an ``initialization_vector``
-                                        with a given ``key``.
+        to be kept secret (they can be included in a transmitted message). NIST
+        `recommends 96-bit IV length`_ for performance critical situations, but
+        it can be up to 2\ :sup:`64` - 1 bits. Do not reuse an
+        ``initialization_vector`` with a given ``key``.
 
     .. note::
 
@@ -300,8 +283,8 @@ Modes
         (32-bits). Applications **must** verify the tag is the expected length
         to guarantee the expected security margin.
 
-    :param bytes tag: The tag bytes to verify during decryption. When encrypting
-                      this must be None.
+    :param bytes tag: The tag bytes to verify during decryption. When
+        encrypting this must be ``None``.
 
     .. testcode::
 
@@ -428,8 +411,7 @@ Interfaces
 
         :return bytes: Returns the remainder of the data.
         :raises ValueError: This is raised when the data provided isn't
-                            correctly padded to be a multiple of the
-                            algorithm's block size.
+            correctly padded to be a multiple of the algorithm's block size.
 
         Once ``finalize`` is called this object can no longer be used and
         :meth:`update` and :meth:`finalize` will raise
@@ -473,7 +455,7 @@ Interfaces
 
         :return bytes: Returns the tag value as bytes.
         :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
-                 before the context is finalized.
+            before the context is finalized.
 
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html

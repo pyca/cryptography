@@ -10,8 +10,8 @@ Exceptions
 
 .. class:: InvalidSignature
 
-    This is raised when the verify method of a hash context's computed digest
-    does not match the expected digest.
+    This is raised when signature verification fails. This can occur with
+    HMAC or asymmetric key signature validation.
 
 
 .. class:: NotYetFinalized
@@ -42,3 +42,8 @@ Exceptions
 
     This is raised when the verify method of a one time password function's
     computed token does not match the expected token.
+
+
+.. class:: UnsupportedPadding
+
+    This is raised when the chosen padding is not supported by the backend.
