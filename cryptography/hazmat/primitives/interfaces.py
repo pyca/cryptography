@@ -295,9 +295,10 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
-    def divisor(self):
+    def subgroup_order(self):
         """
-        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        The subgroup order that's used in generating the DSA keypair 
+        by the generator.
         """
 
     @abc.abstractproperty
@@ -322,8 +323,9 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def q(self):
         """
-        The prime divisor of (p-1) that's used in generating the DSA keypair.
-        Alias for divisor.
+        The subgroup order that's used in generating the DSA keypair 
+        by the generator.
+        Alias for subgroup_order.
         """
 
     @abc.abstractproperty
