@@ -370,7 +370,7 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def pub_key(self):
         """
-        The pub_key that's in the DSA structure, also known as y.
+        The pub_key that's in the DSA structure.
         """
 
     @abc.abstractproperty
