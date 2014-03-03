@@ -8,7 +8,7 @@ Cryptography
     :target: https://coveralls.io/r/pyca/cryptography?branch=master
 
 
-``cryptography`` is a package designed to expose cryptographic recipes and
+``cryptography`` is a package which provides cryptographic recipes and
 primitives to Python developers.  Our goal is for it to be your "cryptographic
 standard library". It supports Python 2.6-2.7, Python 3.2+, and PyPy.
 
