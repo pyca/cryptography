@@ -143,7 +143,6 @@ class DSAPrivateKey(object):
     def priv_key(self):
         return self._priv_key
 
-    @property
     def public_key(self):
         return DSAPublicKey(self.modulus, self.divisor, self.generator, self.y)
 

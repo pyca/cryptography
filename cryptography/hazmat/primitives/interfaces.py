@@ -371,7 +371,7 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         The private key in the DSA structure.
         """
 
-    @abc.abstractproperty
+    @abc.abstractmethod
     def public_key(self):
         """
         The DSAPublicKey associated with this private key.
