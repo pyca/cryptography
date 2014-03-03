@@ -297,7 +297,7 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def subgroup_order(self):
         """
-        The subgroup order that's used in generating the DSA keypair 
+        The subgroup order that's used in generating the DSA keypair
         by the generator.
         """
 
@@ -323,7 +323,7 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def q(self):
         """
-        The subgroup order that's used in generating the DSA keypair 
+        The subgroup order that's used in generating the DSA keypair
         by the generator.
         Alias for subgroup_order.
         """
