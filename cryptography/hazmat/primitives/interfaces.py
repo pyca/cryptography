@@ -310,7 +310,7 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def generate(self):
         """
-        Generate DSAPrivateKey from the object's parameters.
+        Generate DSA domain parameters.
         """
 
     @abc.abstractproperty
