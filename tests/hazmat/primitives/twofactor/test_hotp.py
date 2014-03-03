@@ -87,3 +87,9 @@ class TestHOTP(object):
 
         with pytest.raises(InvalidToken):
             hotp.verify(b"123456", counter)
+
+    def test_length_not_int(self, backend):
+        secret = b"12345678901234567890"
+
+        with pytest.raises(TypeError):
+            HOTP(secret, b"foo", SHA1(), backend)
