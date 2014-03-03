@@ -356,14 +356,13 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def y(self):
         """
-        The DSAPublicKey associated with this private key.
-        Alias for public_key.
+        The integer value of y.
         """
 
     @abc.abstractproperty
     def params(self):
         """
-        The params associated with a DSA keypair
+        The DSAParams object associated with this private key.
         """
 
 
@@ -377,7 +376,7 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def params(self):
         """
-        The params associated with a DSA keypair
+        The DSAParams object associated with this public key.
         """
 
 
