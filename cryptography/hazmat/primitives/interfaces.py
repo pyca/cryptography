@@ -475,6 +475,7 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         The params associated with a DSA keypair
         """
 
+
 class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
