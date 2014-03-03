@@ -726,15 +726,15 @@ class _RSASignatureContext(object):
         )
         assert res == 1
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
-        res = self._backend._lib.RSA_private_encrypt(
+        sig_len = self._backend._lib.RSA_private_encrypt(
             pkey_size,
             padded,
             sig_buf,
             rsa_cdata,
             self._backend._lib.RSA_NO_PADDING
         )
-        assert res != -1
-        return self._backend._ffi.buffer(sig_buf)[:]
+        assert sig_len != -1
+        return self._backend._ffi.buffer(sig_buf)[:sig_len]
 
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
