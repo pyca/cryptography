@@ -26,7 +26,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, dsa
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
 )
@@ -338,6 +338,46 @@ class Backend(object):
                                     algorithm):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
+
+    def generate_dsa_parameters(self, key_size, ctx=None):
+        if ctx is None:
+            ctx = self._lib.DSA_new()
+            assert ctx != self._ffi.NULL
+            ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL
+        )
+
+        assert res == 1
+
+        return dsa.DSAParams(
+            modulus=self._bn_to_int(ctx.p),
+            subroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g)
+        )
+
+    def generate_dsa_private_key(self, parameters, key_size):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        if all([parameters.p, parameters.q, parameters.g]):
+            ctx.p = self._int_to_bn(parameters.p)
+            ctx.q = self._int_to_bn(parameters.q)
+            ctx.g = self._int_to_bn(parameters.g)
+        else:
+            self.generate_dsa_parameters(key_size, ctx)
+
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(ctx.p),
+            subgroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g),
+            x=self._bn_to_int(ctx.priv_key),
+            y=self._bn_to_int(ctx.pub_key)
+        )
 
 
 class GetCipherByName(object):
