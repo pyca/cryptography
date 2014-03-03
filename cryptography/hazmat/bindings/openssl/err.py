@@ -151,7 +151,6 @@ static const int EVP_R_CTRL_OPERATION_NOT_IMPLEMENTED;
 static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
 static const int EVP_R_DECODE_ERROR;
 static const int EVP_R_DIFFERENT_KEY_TYPES;
-static const int EVP_R_DISABLED_FOR_FIPS;
 static const int EVP_R_ENCODE_ERROR;
 static const int EVP_R_INITIALIZATION_ERROR;
 static const int EVP_R_INPUT_NOT_INITIALIZED;
