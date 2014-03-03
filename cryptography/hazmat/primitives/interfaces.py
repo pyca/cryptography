@@ -309,7 +309,7 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def generate(self):
         """
-        Generate DSAPrivateKey from the object's parameters
+        Generate DSAPrivateKey from the object's parameters.
         """
 
     @abc.abstractproperty
@@ -341,18 +341,6 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         The bit length of the prime modulus.
         """
 
-    @abc.abstractproperty
-    def divisor_size(self):
-        """
-        The bit length of the divisor.
-        """
-
-    @abc.abstractproperty
-    def priv_key(self):
-        """
-        The private key in the DSA structure.
-        """
-
     @abc.abstractmethod
     def public_key(self):
         """
@@ -360,42 +348,35 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
     @abc.abstractproperty
-    def L(self):
+    def x(self):
         """
-        The bit length of the prime modulus. Alias for modulus_length.
-        """
-
-    @abc.abstractproperty
-    def N(self):
-        """
-        The bit length of the divisor. Alias for divisor_length.
+        The private key "x" in the DSA structure.
         """
 
     @abc.abstractproperty
     def y(self):
         """
-        The DSAPublicKey associated with this private key.
-        Alias for public_key.
+        The integer value of y.
         """
 
     @abc.abstractproperty
     def params(self):
         """
-        The params associated with a DSA keypair
+        The DSAParams object associated with this private key.
         """
 
 
 class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
-    def pub_key(self):
+    def y(self):
         """
-        The pub_key that's in the DSA structure, also known as y.
+        The integer value of y.
         """
 
     @abc.abstractproperty
     def params(self):
         """
-        The params associated with a DSA keypair
+        The DSAParams object associated with this public key.
         """
 
 
