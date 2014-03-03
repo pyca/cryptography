@@ -287,6 +287,194 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class DSAParams(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def modulus(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def divisor(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def generator(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        """
+
+    @abc.abstractmethod
+    def generate(self):
+        """
+        Generate DSAPrivateKey from the object's parameters
+        """
+
+    @abc.abstractproperty
+    def p(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        Alias for modulus.
+        """
+
+    @abc.abstractproperty
+    def q(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        Alias for divisor.
+        """
+
+    @abc.abstractproperty
+    def g(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        Alias for generator.
+        """
+
+
+class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def modulus(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def divisor(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def generator(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def modulus_length(self):
+        """
+        The bit length of the prime modulus.
+        """
+
+    @abc.abstractproperty
+    def divisor_length(self):
+        """
+        The bit length of the divisor.
+        """
+
+    @abc.abstractproperty
+    def priv_key(self):
+        """
+        The private key in the DSA structure.
+        """
+
+    @abc.abstractproperty
+    def public_key(self):
+        """
+        The DSAPublicKey associated with this private key.
+        """
+
+    @abc.abstractproperty
+    def p(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        Alias for modulus.
+        """
+
+    @abc.abstractproperty
+    def q(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        Alias for divisor.
+        """
+
+    @abc.abstractproperty
+    def g(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        Alias for generator.
+        """
+
+    @abc.abstractproperty
+    def L(self):
+        """
+        The bit length of the prime modulus. Alias for modulus_length.
+        """
+
+    @abc.abstractproperty
+    def N(self):
+        """
+        The bit length of the divisor. Alias for divisor_length.
+        """
+
+    @abc.abstractproperty
+    def y(self):
+        """
+        The DSAPublicKey associated with this private key.
+        Alias for public_key.
+        """
+
+    @abc.abstractproperty
+    def params(self):
+        """
+        The params associated with a DSA keypair
+        """
+
+
+class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def modulus(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def divisor(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def generator(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        """
+
+    @abc.abstractproperty
+    def pub_key(self):
+        """
+        The pub_key that's in the DSA structure, also known as y.
+        """
+    @abc.abstractproperty
+    def p(self):
+        """
+        The prime modulus that's used in generating the DSA keypair.
+        Alias for modulus.
+        """
+
+    @abc.abstractproperty
+    def q(self):
+        """
+        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        Alias for divisor.
+        """
+
+    @abc.abstractproperty
+    def g(self):
+        """
+        The generator that is used in generating the DSA keypair.
+        Alias for generator.
+        """
+
+    @abc.abstractproperty
+    def params(self):
+        """
+        The params associated with a DSA keypair
+        """
+
 class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
