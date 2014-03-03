@@ -112,7 +112,7 @@ class DSAPrivateKey(object):
         self._modulus = modulus
         self._divisor = divisor
         self._generator = generator
-        self._x = y 
+        self._x = y
         self._y = y
 
     @classmethod
@@ -124,7 +124,8 @@ class DSAPrivateKey(object):
         return _bit_length(self._modulus)
 
     def public_key(self):
-        return DSAPublicKey(self._modulus, self._divisor, self._generator, self.y)
+        return DSAPublicKey(self._modulus, self._divisor, self._generator,
+                            self.y)
 
     @property
     def x(self):
@@ -165,7 +166,7 @@ class DSAPublicKey(object):
         self._modulus = modulus
         self._divisor = divisor
         self._generator = generator
-        self._y = y 
+        self._y = y
 
     @property
     def y(self):
