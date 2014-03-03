@@ -120,51 +120,27 @@ class DSAPrivateKey(object):
         return backend.generate_dsa_private_key(modulus_length)
 
     @property
-    def modulus(self):
-        return self._modulus
+    def key_size(self):
+        return _bit_length(self._modulus)
 
     @property
-    def divisor(self):
-        return self._divisor
-
-    @property
-    def generator(self):
-        return self._generator
-
-    @property
-    def modulus_length(self):
-        return _bit_length(self.modulus)
-
-    @property
-    def divisor_length(self):
-        return _bit_length(self.divisor)
+    def divisor_size(self):
+        return _bit_length(self._divisor)
 
     @property
     def priv_key(self):
         return self._priv_key
 
     def public_key(self):
-        return DSAPublicKey(self.modulus, self.divisor, self.generator, self.y)
-
-    @property
-    def p(self):
-        return self.modulus
-
-    @property
-    def q(self):
-        return self.divisor
-
-    @property
-    def g(self):
-        return self.generator
+        return DSAPublicKey(self._modulus, self._divisor, self._generator, self.y)
 
     @property
     def L(self):
-        return self.modulus_length
+        return self.key_size
 
     @property
     def N(self):
-        return self.divisor_length
+        return self.divisor_size
 
     @property
     def y(self):
@@ -172,7 +148,7 @@ class DSAPrivateKey(object):
 
     @property
     def params(self):
-        return DSAParams(self.modulus, self.divisor, self.generator)
+        return DSAParams(self._modulus, self._divisor, self._generator)
 
 
 @utils.register_interface(interfaces.DSAPublicKey)
@@ -204,33 +180,9 @@ class DSAPublicKey(object):
         self._pub_key = pub_key
 
     @property
-    def modulus(self):
-        return self._modulus
-
-    @property
-    def divisor(self):
-        return self._divisor
-
-    @property
-    def generator(self):
-        return self._generator
-
-    @property
     def pub_key(self):
         return self._pub_key
 
     @property
-    def p(self):
-        return self.modulus
-
-    @property
-    def q(self):
-        return self.divisor
-
-    @property
-    def g(self):
-        return self.generator
-
-    @property
     def params(self):
-        return DSAParams(self.modulus, self.divisor, self.generator)
+        return DSAParams(self._modulus, self._divisor, self._generator)
