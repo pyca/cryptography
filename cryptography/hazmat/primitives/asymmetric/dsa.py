@@ -30,10 +30,10 @@ def _bit_length(x):
 
 @utils.register_interface(interfaces.DSAParams)
 class DSAParams(object):
-    def __init__(self, modulus, divisor, generator):
+    def __init__(self, modulus, subgroup_order, generator):
         if (
             not isinstance(modulus, six.integer_types) or
-            not isinstance(divisor, six.integer_types) or
+            not isinstance(subgroup_order, six.integer_types) or
             not isinstance(generator, six.integer_types)
         ):
             raise TypeError("DSAParams arguments must be integers")
@@ -41,8 +41,8 @@ class DSAParams(object):
         if _bit_length(modulus) < 1024:
             raise ValueError("Prime Modulus length must be at least 1024 bits")
 
-        if _bit_length(divisor) < 160:
-            raise ValueError("Prime Divisor length must be at least 160 bits")
+        if _bit_length(subgroup_order) < 160:
+            raise ValueError("Subgroup order length must be at least 160 bits")
 
         if generator <= 1:
             raise ValueError("Generator must be > 1")
@@ -51,24 +51,24 @@ class DSAParams(object):
             raise ValueError("Generator must be < Prime Modulus")
 
         self._modulus = modulus
-        self._divisor = divisor
+        self._subgroup_order = subgroup_order
         self._generator = generator
+
+    @classmethod
+    def generate(cls, key_size, backend):
+        return backend.generate_dsa_parameters(key_size)
 
     @property
     def modulus(self):
         return self._modulus
 
     @property
-    def divisor(self):
-        return self._divisor
+    def subgroup_order(self):
+        return self._subgroup_order
 
     @property
     def generator(self):
         return self._generator
-
-    # Generate DSAParams
-    def generate(self, key_size, backend):
-        return backend.generate_dsa_parameters(key_size, backend)
 
     @property
     def p(self):
@@ -76,7 +76,7 @@ class DSAParams(object):
 
     @property
     def q(self):
-        return self.divisor
+        return self.subgroup_order
 
     @property
     def g(self):
@@ -85,10 +85,10 @@ class DSAParams(object):
 
 @utils.register_interface(interfaces.DSAPrivateKey)
 class DSAPrivateKey(object):
-    def __init__(self, modulus, divisor, generator, x, y):
+    def __init__(self, modulus, subgroup_order, generator, x, y):
         if (
             not isinstance(modulus, six.integer_types) or
-            not isinstance(divisor, six.integer_types) or
+            not isinstance(subgroup_order, six.integer_types) or
             not isinstance(generator, six.integer_types) or
             not isinstance(x, six.integer_types) or
             not isinstance(y, six.integer_types)
@@ -98,8 +98,8 @@ class DSAPrivateKey(object):
         if _bit_length(modulus) < 1024:
             raise ValueError("Prime Modulus length must be at least 1024 bits")
 
-        if _bit_length(divisor) < 160:
-            raise ValueError("Prime Divisor length must be at least 160 bits")
+        if _bit_length(subgroup_order) < 160:
+            raise ValueError("Subgroup order length must be at least 160 bits")
 
         if generator <= 1:
             raise ValueError("Generator must be > 1")
@@ -108,22 +108,22 @@ class DSAPrivateKey(object):
             raise ValueError("Generator must be < Prime Modulus")
 
         self._modulus = modulus
-        self._divisor = divisor
+        self._subgroup_order = subgroup_order
         self._generator = generator
         self._x = y
         self._y = y
 
     @classmethod
-    def generate(cls, key_size, backend):
-        return backend.generate_dsa_private_key(key_size)
+    def generate(cls, backend, params=None, key_size=None):
+        return backend.generate_dsa_private_key(params, key_size)
 
     @property
     def key_size(self):
         return _bit_length(self._modulus)
 
     def public_key(self):
-        return DSAPublicKey(self._modulus, self._divisor, self._generator,
-                            self.y)
+        return DSAPublicKey(self._modulus, self._subgroup_order,
+                            self._generator, self.y)
 
     @property
     def x(self):
@@ -135,15 +135,15 @@ class DSAPrivateKey(object):
 
     @property
     def params(self):
-        return DSAParams(self._modulus, self._divisor, self._generator)
+        return DSAParams(self._modulus, self._subgroup_order, self._generator)
 
 
 @utils.register_interface(interfaces.DSAPublicKey)
 class DSAPublicKey(object):
-    def __init__(self, modulus, divisor, generator, y):
+    def __init__(self, modulus, subgroup_order, generator, y):
         if (
             not isinstance(modulus, six.integer_types) or
-            not isinstance(divisor, six.integer_types) or
+            not isinstance(subgroup_order, six.integer_types) or
             not isinstance(generator, six.integer_types) or
             not isinstance(y, six.integer_types)
         ):
@@ -152,8 +152,8 @@ class DSAPublicKey(object):
         if _bit_length(modulus) < 1024:
             raise ValueError("Prime Modulus length must be at least 1024 bits")
 
-        if _bit_length(divisor) < 160:
-            raise ValueError("Prime Divisor length must be at least 160 bits")
+        if _bit_length(subgroup_order) < 160:
+            raise ValueError("Subgroup order length must be at least 160 bits")
 
         if generator <= 1:
             raise ValueError("Generator must be > 1")
@@ -162,7 +162,7 @@ class DSAPublicKey(object):
             raise ValueError("Generator must be < Prime Modulus")
 
         self._modulus = modulus
-        self._divisor = divisor
+        self._subgroup_order = subgroup_order
         self._generator = generator
         self._y = y
 
@@ -172,4 +172,4 @@ class DSAPublicKey(object):
 
     @property
     def params(self):
-        return DSAParams(self._modulus, self._divisor, self._generator)
+        return DSAParams(self._modulus, self._subgroup_order, self._generator)

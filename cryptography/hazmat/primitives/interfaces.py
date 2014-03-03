@@ -306,12 +306,6 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
         The generator that is used in generating the DSA keypair.
         """
 
-    @abc.abstractmethod
-    def generate(self):
-        """
-        Generate DSAPrivateKey from the object's parameters.
-        """
-
     @abc.abstractproperty
     def p(self):
         """

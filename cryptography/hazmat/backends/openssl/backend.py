@@ -339,29 +339,33 @@ class Backend(object):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
-    def generate_dsa_parameters(self, key_size, ctx):
-        res = self._lib.DSA_generate_parameters_ex(
-            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
-            self._ffi.NULL, self._ffi.NULL
-        )
+    def generate_dsa_parameters(self, key_size, ctx=None):
+        if ctx is not None:
+            res = self._lib.DSA_generate_parameters_ex(
+                ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+                self._ffi.NULL, self._ffi.NULL
+            )
+        else:
+            ctx = self._lib.DSA_new()
+            assert ctx != self._ffi.NULL
+            ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+
         assert res == 1
 
         return dsa.DSAParams(
             modulus=self._bn_to_int(ctx.p),
-            divisor=self._bn_to_int(ctx.q),
+            subroup_order=self._bn_to_int(ctx.q),
             generator=self._bn_to_int(ctx.g)
         )
 
-    # Will definitely need proper error handling, just prototyping API design
-    def generate_dsa_private_key(self, key_size=None, modulus=None,
-                                 divisor=None, generator=None):
+    def generate_dsa_private_key(self, params, key_size):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        if all([not modulus, not divisor, not generator]):
-            ctx.p = self._int_to_bn(modulus)
-            ctx.q = self._int_to_bn(divisor)
-            ctx.g = self._int_to_bn(generator)
+        if all([params.p, params.q, params.g]):
+            ctx.p = self._int_to_bn(params.p)
+            ctx.q = self._int_to_bn(params.q)
+            ctx.g = self._int_to_bn(params.g)
         else:
             self.generate_dsa_parameters(key_size, ctx)
 
@@ -369,7 +373,7 @@ class Backend(object):
 
         return dsa.DSAPrivateKey(
             modulus=self._bn_to_int(ctx.p),
-            divisor=self._bn_to_int(ctx.q),
+            subgroup_order=self._bn_to_int(ctx.q),
             generator=self._bn_to_int(ctx.g),
             x=self._bn_to_int(ctx.priv_key),
             y=self._bn_to_int(ctx.pub_key)
