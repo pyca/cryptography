@@ -39,6 +39,8 @@ void DSA_free(DSA *);
 """
 
 MACROS = """
+int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
+                               int *, unsigned long *, BN_GENCB *);
 """
 
 CUSTOMIZATIONS = """
