@@ -340,15 +340,15 @@ class Backend(object):
                                        algorithm)
 
     def generate_dsa_parameters(self, key_size, ctx=None):
-        if ctx is not None:
-            res = self._lib.DSA_generate_parameters_ex(
-                ctx, key_size, self._ffi.NULL, self._ffi.NULL,
-                self._ffi.NULL, self._ffi.NULL
-            )
-        else:
+        if ctx is None:
             ctx = self._lib.DSA_new()
             assert ctx != self._ffi.NULL
             ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL
+        )
 
         assert res == 1
 
