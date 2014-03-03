@@ -341,16 +341,16 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         The bit length of the prime modulus.
         """
 
-    @abc.abstractproperty
-    def priv_key(self):
-        """
-        The private key in the DSA structure.
-        """
-
     @abc.abstractmethod
     def public_key(self):
         """
         The DSAPublicKey associated with this private key.
+        """
+
+    @abc.abstractproperty
+    def x(self):
+        """
+        The private key "x" in the DSA structure.
         """
 
     @abc.abstractproperty
@@ -368,9 +368,9 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
 
 class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
-    def pub_key(self):
+    def y(self):
         """
-        The pub_key that's in the DSA structure.
+        The integer value of y.
         """
 
     @abc.abstractproperty
