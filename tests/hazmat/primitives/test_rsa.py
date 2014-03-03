@@ -635,7 +635,7 @@ class TestRSAVerification(object):
                 b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
                 b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
                 b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
-                b"030d3581e13522e1", 16
+                b"030d3581e13522", 16
             ),
             public_exponent=65537
         )
