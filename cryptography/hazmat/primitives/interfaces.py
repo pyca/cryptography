@@ -291,40 +291,45 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def modulus(self):
         """
-        The prime modulus that's used in generating the DSA keypair.
+        The prime modulus that's used in generating the DSA keypair and used
+        in the DSA signing and verification processes.
         """
 
     @abc.abstractproperty
-    def divisor(self):
+    def subgroup_order(self):
         """
-        The prime divisor of (p-1) that's used in generating the DSA keypair.
+        The subgroup order that's used in generating the DSA keypair
+        by the generator and used in the DSA signing and verification
+        processes.
         """
 
     @abc.abstractproperty
     def generator(self):
         """
-        The generator that is used in generating the DSA keypair.
+        The generator that is used in generating the DSA keypair and used
+        in the DSA signing and verification processes."
         """
 
     @abc.abstractproperty
     def p(self):
         """
-        The prime modulus that's used in generating the DSA keypair.
-        Alias for modulus.
+        The prime modulus that's used in generating the DSA keypair and used
+        in the DSA signing and verification processes. Alias for modulus.
         """
 
     @abc.abstractproperty
     def q(self):
         """
-        The prime divisor of (p-1) that's used in generating the DSA keypair.
-        Alias for divisor.
+        The subgroup order that's used in generating the DSA keypair
+        by the generator and used in the DSA signing and verification
+        processes. Alias for subgroup_order.
         """
 
     @abc.abstractproperty
     def g(self):
         """
-        The generator that is used in generating the DSA keypair.
-        Alias for generator.
+        The generator that is used in generating the DSA keypair and used
+        in the DSA signing and verification processes. Alias for generator.
         """
 
 
@@ -350,11 +355,11 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def y(self):
         """
-        The integer value of y.
+        The public key.
         """
 
     @abc.abstractproperty
-    def params(self):
+    def parameters(self):
         """
         The DSAParams object associated with this private key.
         """
@@ -364,11 +369,11 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def y(self):
         """
-        The integer value of y.
+        The public key.
         """
 
     @abc.abstractproperty
-    def params(self):
+    def parameters(self):
         """
         The DSAParams object associated with this public key.
         """

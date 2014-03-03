@@ -114,8 +114,8 @@ class DSAPrivateKey(object):
         self._y = y
 
     @classmethod
-    def generate(cls, backend, params=None, key_size=None):
-        return backend.generate_dsa_private_key(params, key_size)
+    def generate(cls, backend, parameters=None, key_size=None):
+        return backend.generate_dsa_private_key(parameters, key_size)
 
     @property
     def key_size(self):
@@ -134,7 +134,7 @@ class DSAPrivateKey(object):
         return self._y
 
     @property
-    def params(self):
+    def parameters(self):
         return DSAParams(self._modulus, self._subgroup_order, self._generator)
 
 
@@ -171,5 +171,5 @@ class DSAPublicKey(object):
         return self._y
 
     @property
-    def params(self):
+    def parameters(self):
         return DSAParams(self._modulus, self._subgroup_order, self._generator)

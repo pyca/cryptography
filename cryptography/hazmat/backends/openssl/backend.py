@@ -358,14 +358,14 @@ class Backend(object):
             generator=self._bn_to_int(ctx.g)
         )
 
-    def generate_dsa_private_key(self, params, key_size):
+    def generate_dsa_private_key(self, parameters, key_size):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        if all([params.p, params.q, params.g]):
-            ctx.p = self._int_to_bn(params.p)
-            ctx.q = self._int_to_bn(params.q)
-            ctx.g = self._int_to_bn(params.g)
+        if all([parameters.p, parameters.q, parameters.g]):
+            ctx.p = self._int_to_bn(parameters.p)
+            ctx.q = self._int_to_bn(parameters.q)
+            ctx.g = self._int_to_bn(parameters.g)
         else:
             self.generate_dsa_parameters(key_size, ctx)
 
