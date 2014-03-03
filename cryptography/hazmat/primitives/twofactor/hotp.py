@@ -27,6 +27,9 @@ class HOTP(object):
         if len(key) < 16:
             raise ValueError("Key length has to be at least 128 bits.")
 
+        if not isinstance(length, six.integer_types):
+            raise TypeError("Length parameter must be an integer type")
+
         if length < 6 or length > 8:
             raise ValueError("Length of HOTP has to be between 6 to 8.")
 
