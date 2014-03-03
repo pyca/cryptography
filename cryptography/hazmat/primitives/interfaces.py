@@ -311,7 +311,7 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
         """
         Generate DSAPrivateKey from the object's parameters
         """
-    
+
     @abc.abstractproperty
     def p(self):
         """
