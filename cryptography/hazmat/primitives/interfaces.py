@@ -307,7 +307,7 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
     def generator(self):
         """
         The generator that is used in generating the DSA keypair and used
-        in the DSA signing and verification processes."
+        in the DSA signing and verification processes.
         """
 
     @abc.abstractproperty
