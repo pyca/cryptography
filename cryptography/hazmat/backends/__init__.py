@@ -30,7 +30,6 @@ if OpenSSLBinding.is_available():
     _ALL_BACKENDS.append(openssl.backend)
 
 
-
 _default_backend = MultiBackend(_ALL_BACKENDS)
 
 
