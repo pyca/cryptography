@@ -47,10 +47,11 @@ codes (HMAC).
         provider.
     :raises ValueError: This is raised if the provided ``key`` is shorter than
         128 bits or if the ``length`` parameter is not 6, 7 or 8.
-    :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm``
-        is not :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
+    :raises TypeError: This is raised if the provided ``algorithm`` is not
+        :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
         :class:`~cryptography.hazmat.primitives.hashes.SHA256()` or
-        :class:`~cryptography.hazmat.primitives.hashes.SHA512()`.
+        :class:`~cryptography.hazmat.primitives.hashes.SHA512()` or if the
+        ``length`` parameter is not an integer.
 
     .. method:: generate(counter)
 
@@ -142,10 +143,11 @@ similar to the following code.
         provider.
     :raises ValueError: This is raised if the provided ``key`` is shorter than
         128 bits or if the ``length`` parameter is not 6, 7 or 8.
-    :raises UnsupportedAlgorithm: This is raised if the provided ``algorithm``
-        is not :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
+    :raises TypeError: This is raised if the provided ``algorithm`` is not
+        :class:`~cryptography.hazmat.primitives.hashes.SHA1()`,
         :class:`~cryptography.hazmat.primitives.hashes.SHA256()` or
-        :class:`~cryptography.hazmat.primitives.hashes.SHA512()`.
+        :class:`~cryptography.hazmat.primitives.hashes.SHA512()` or if the
+        ``length`` parameter is not an integer.
 
     .. method:: generate(time)
 

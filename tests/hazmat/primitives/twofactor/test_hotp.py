@@ -15,7 +15,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidToken, UnsupportedAlgorithm
+from cryptography.exceptions import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
@@ -46,7 +46,7 @@ class TestHOTP(object):
     def test_invalid_algorithm(self, backend):
         secret = os.urandom(16)
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(TypeError):
             HOTP(secret, 6, MD5(), backend)
 
     @pytest.mark.parametrize("params", vectors)
@@ -87,3 +87,9 @@ class TestHOTP(object):
 
         with pytest.raises(InvalidToken):
             hotp.verify(b"123456", counter)
+
+    def test_length_not_int(self, backend):
+        secret = b"12345678901234567890"
+
+        with pytest.raises(TypeError):
+            HOTP(secret, b"foo", SHA1(), backend)

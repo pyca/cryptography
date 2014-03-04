@@ -9,8 +9,14 @@ Changelog
 * Added signature support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
   and verification support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
+0.2.2 - 2014-03-03
+~~~~~~~~~~~~~~~~~~
+
+* Removed a constant definition that was causing compilation problems with specific versions of OpenSSL.
+
 0.2.1 - 2014-02-22
 ~~~~~~~~~~~~~~~~~~
+
 * Fix a bug where importing cryptography from multiple paths could cause initialization to fail.
 
 0.2 - 2014-02-20
