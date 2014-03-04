@@ -95,6 +95,6 @@ The ``cryptography`` open source project
 
     ``cryptography`` has not been subjected to an external audit of its code or
     documentation. If you're interested in discussing an audit please
-    :doc:`getting in touch </community>`.
+    :doc:`get in touch </community>`.
 
 .. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
