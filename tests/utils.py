@@ -419,3 +419,74 @@ def load_fips_dsa_key_pair_vectors(vector_data):
                 vectors[-1]['y'] = int(line.split("=")[1], 16)
 
     return vectors
+
+
+def load_fips_dsa_vectors(vector_data):
+    dict_1024 = {'p': None, 'q': None, 'g': None, 'x': None, 'y': None}
+    dict_2048 = {'p': None, 'q': None, 'g': None, 'x': None, 'y': None}
+    dict_3072 = {'p': None, 'q': None, 'g': None, 'x': None, 'y': None}
+    length = None
+
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("[mod = L=1024"):
+            length = 1024
+            continue
+
+        if line.startswith("[mod = L=2048, N=256"):
+            length = 2048
+            continue
+
+        if line.startswith("[mod = L=3072"):
+            length = 3072
+            continue
+
+        if line.startswith("P"):
+            if length == 1024 and not dict_1024['p']:
+                dict_1024['p'] = line.split("=")[1]
+            if length == 2048 and not dict_2048['p']:
+                dict_2048['p'] = line.split("=")[1]
+            if length == 3072 and not dict_3072['p']:
+                dict_3072['p'] = line.split("=")[1]
+            continue
+
+        if line.startswith("Q"):
+            if length == 1024 and not dict_1024['q']:
+                dict_1024['q'] = line.split("=")[1]
+            if length == 2048 and not dict_2048['q']:
+                dict_2048['q'] = line.split("=")[1]
+            if length == 3072 and not dict_3072['q']:
+                dict_3072['q'] = line.split("=")[1]
+            continue
+
+        if line.startswith("G"):
+            if length == 1024 and not dict_1024['g']:
+                dict_1024['g'] = line.split("=")[1]
+            if length == 2048 and not dict_2048['g']:
+                dict_2048['g'] = line.split("=")[1]
+            if length == 3072 and not dict_3072['g']:
+                dict_3072['g'] = line.split("=")[1]
+            continue
+
+        if line.startswith("X"):
+            if length == 1024 and not dict_1024['x']:
+                dict_1024['x'] = line.split("=")[1]
+            if length == 2048 and not dict_2048['x']:
+                dict_2048['x'] = line.split("=")[1]
+            if length == 3072 and not dict_3072['x']:
+                dict_3072['x'] = line.split("=")[1]
+            continue
+
+        if line.startswith("Y"):
+            if length == 1024 and not dict_1024['y']:
+                dict_1024['y'] = line.split("=")[1]
+            if length == 2048 and not dict_2048['y']:
+                dict_2048['y'] = line.split("=")[1]
+            if length == 3072 and not dict_3072['y']:
+                dict_3072['y'] = line.split("=")[1]
+            continue
+    return dict_1024, dict_2048, dict_3072
