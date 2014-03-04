@@ -15,7 +15,7 @@ import sys
 from distutils.command.build import build
 
 from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
+from setuptools.command.test import test
 
 base_dir = os.path.dirname(__file__)
 
@@ -71,7 +71,7 @@ class CFFIBuild(build):
         build.finalize_options(self)
 
 
-class PyTest(TestCommand):
+class PyTest(test):
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
