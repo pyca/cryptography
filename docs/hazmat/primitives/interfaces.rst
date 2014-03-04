@@ -264,7 +264,7 @@ Asymmetric Interfaces
         :type: int
 
         The prime modulus that's used in generating the DSA keypair and used
-        in the DSA signing and verification processes. Alias for modulus.
+        in the DSA signing and verification processes. Alias for :attr:`modulus`.
 
     .. attribute:: q
 
@@ -272,14 +272,14 @@ Asymmetric Interfaces
 
         The subgroup order that's used in generating the DSA keypair
         by the generator and used in the DSA signing and verification
-        processes. Alias for subgroup_order.
+        processes. Alias for :attr:`subgroup_order`.
 
     .. attribute:: g
 
         :type: int
 
         The generator that is used in generating the DSA keypair and used
-        in the DSA signing and verification processes. Alias for generator.
+        in the DSA signing and verification processes. Alias for :attr:`generator`.
 
 
 .. class:: DSAPrivateKey
