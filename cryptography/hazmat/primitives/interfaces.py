@@ -310,12 +310,6 @@ class DSAParams(six.with_metaclass(abc.ABCMeta)):
         in the DSA signing and verification processes."
         """
 
-    @abc.abstractmethod
-    def generate(self):
-        """
-        Generate DSA domain parameters.
-        """
-
     @abc.abstractproperty
     def p(self):
         """
