@@ -73,7 +73,7 @@ class CFFIBuild(build):
 
 class PyTest(test):
     def finalize_options(self):
-        TestCommand.finalize_options(self)
+        test.finalize_options(self)
         self.test_args = []
         self.test_suite = True
 
