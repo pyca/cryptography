@@ -241,14 +241,14 @@ Asymmetric Interfaces
 
         :type: int
 
-        The prime modulus that's used in generating the DSA keypair and used
+        The prime modulus that's used in generating the DSA key pair and used
         in the DSA signing and verification processes.
 
     .. attribute:: subgroup_order
 
         :type: int
 
-        The subgroup order that's used in generating the DSA keypair
+        The subgroup order that's used in generating the DSA key pair
         by the generator and used in the DSA signing and verification
         processes.
 
@@ -256,21 +256,21 @@ Asymmetric Interfaces
 
         :type: int
 
-        The generator that is used in generating the DSA keypair and used
+        The generator that is used in generating the DSA key pair and used
         in the DSA signing and verification processes."
 
     .. attribute:: p
 
         :type: int
 
-        The prime modulus that's used in generating the DSA keypair and used
+        The prime modulus that's used in generating the DSA key pair and used
         in the DSA signing and verification processes. Alias for :attr:`modulus`.
 
     .. attribute:: q
 
         :type: int
 
-        The subgroup order that's used in generating the DSA keypair
+        The subgroup order that's used in generating the DSA key pair
         by the generator and used in the DSA signing and verification
         processes. Alias for :attr:`subgroup_order`.
 
@@ -278,7 +278,7 @@ Asymmetric Interfaces
 
         :type: int
 
-        The generator that is used in generating the DSA keypair and used
+        The generator that is used in generating the DSA key pair and used
         in the DSA signing and verification processes. Alias for :attr:`generator`.
 
 
