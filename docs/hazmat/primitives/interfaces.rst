@@ -442,3 +442,4 @@ Key Derivation Functions
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
+.. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
