@@ -231,6 +231,113 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
+.. class:: DSAParams
+
+    .. versionadded:: 0.3
+
+    `DSA`_ parameters.
+
+    .. attribute:: modulus
+
+        :type: int
+
+        The prime modulus that's used in generating the DSA keypair and used
+        in the DSA signing and verification processes.
+
+    .. attribute:: subgroup_order
+
+        :type: int
+
+        The subgroup order that's used in generating the DSA keypair
+        by the generator and used in the DSA signing and verification
+        processes.
+
+    .. attribute:: generator
+
+        :type: int
+
+        The generator that is used in generating the DSA keypair and used
+        in the DSA signing and verification processes."
+
+    .. attribute:: p
+
+        :type: int
+
+        The prime modulus that's used in generating the DSA keypair and used
+        in the DSA signing and verification processes. Alias for modulus.
+
+    .. attribute:: q
+
+        :type: int
+
+        The subgroup order that's used in generating the DSA keypair
+        by the generator and used in the DSA signing and verification
+        processes. Alias for subgroup_order.
+
+    .. attribute:: g
+
+        :type: int
+
+        The generator that is used in generating the DSA keypair and used
+        in the DSA signing and verification processes. Alias for generator.
+
+
+.. class:: DSAPrivateKey
+
+    .. versionadded:: 0.3
+
+    An `DSA`_ private key.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+
+        An DSA public key object corresponding to the values of the private key.
+
+    .. method:: parameters()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParams`
+
+        The DSAParams object associated with this private key.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. attribute:: x
+
+        :type: int
+
+        The private key.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public key.
+
+
+.. class:: DSAPublicKey
+
+    .. versionadded:: 0.3
+
+    An `DSA`_ private key.
+
+    .. method:: parameters()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParams`
+
+        The DSAParams object associated with this public key.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public key.
+
+
 .. class:: AsymmetricSignatureContext
 
     .. versionadded:: 0.2
