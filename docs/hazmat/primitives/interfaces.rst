@@ -231,7 +231,7 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
-.. class:: DSAParams
+.. class:: DSAParameters
 
     .. versionadded:: 0.3
 
@@ -296,9 +296,9 @@ Asymmetric Interfaces
 
     .. method:: parameters()
 
-        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParams`
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
 
-        The DSAParams object associated with this private key.
+        The DSAParameters object associated with this private key.
 
     .. attribute:: key_size
 
@@ -327,9 +327,9 @@ Asymmetric Interfaces
 
     .. method:: parameters()
 
-        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParams`
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
 
-        The DSAParams object associated with this public key.
+        The DSAParameters object associated with this public key.
 
     .. attribute:: y
 

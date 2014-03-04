@@ -287,7 +287,7 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class DSAParams(six.with_metaclass(abc.ABCMeta)):
+class DSAParameters(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractproperty
     def modulus(self):
         """
@@ -361,7 +361,7 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def parameters(self):
         """
-        The DSAParams object associated with this private key.
+        The DSAParameters object associated with this private key.
         """
 
 
@@ -375,7 +375,7 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def parameters(self):
         """
-        The DSAParams object associated with this public key.
+        The DSAParameters object associated with this public key.
         """
 
 
