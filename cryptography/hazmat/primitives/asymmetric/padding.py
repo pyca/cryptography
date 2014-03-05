@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import six
+
 from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
@@ -25,3 +27,24 @@ class PKCS1v15(object):
 @utils.register_interface(interfaces.AsymmetricPadding)
 class PSS(object):
     name = "EMSA-PSS"
+
+    def __init__(self, mgf):
+        self.mgf = mgf
+
+
+class MGF1(object):
+    MAX_LENGTH = -2
+
+    def __init__(self, algorithm, salt_length):
+        if not isinstance(algorithm, interfaces.HashAlgorithm):
+            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+
+        self.algorithm = algorithm
+
+        if not isinstance(salt_length, six.integer_types):
+            raise TypeError("salt_length must be an integer")
+
+        if salt_length != -2 and salt_length < 0:
+            raise ValueError("salt_length must be zero or greater")
+
+        self.salt_length = salt_length

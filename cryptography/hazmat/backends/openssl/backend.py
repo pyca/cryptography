@@ -27,6 +27,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric.padding import MGF1
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, TripleDES, ARC4, CAST5
 )
@@ -628,6 +629,14 @@ class _RSASignatureContext(object):
             else:
                 self._finalize_method = self._finalize_pkcs1
         elif padding.name == "EMSA-PSS":
+            if not isinstance(padding.mgf, MGF1):
+                raise TypeError("Only MGF1 is supported by this backend")
+
+            if (not isinstance(padding.mgf.algorithm, hashes.SHA1) and
+                    not self._backend._lib.Cryptography_HAS_MGF1_MD):
+                raise ValueError("This backend only supports MGF1 with SHA1 "
+                                 "when OpenSSL is not 1.0.1+")
+
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._finalize_method = self._finalize_pkey_ctx
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
@@ -682,6 +691,17 @@ class _RSASignatureContext(object):
         res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
             pkey_ctx, self._padding_enum)
         assert res > 0
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
+            pkey_ctx, self._padding.mgf.salt_length)
+        assert res > 0
+        if self._backend._lib.Cryptography_HAS_MGF1_MD:
+            mgf1_md = self._backend._lib.EVP_get_digestbyname(
+                self._padding.mgf.algorithm.name.encode("ascii"))
+            assert mgf1_md != self._backend._ffi.NULL
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+                pkey_ctx, mgf1_md
+            )
+            assert res > 0
         data_to_sign = self._hash_ctx.finalize()
         self._hash_ctx = None
         buflen = self._backend._ffi.new("size_t *")
@@ -722,7 +742,7 @@ class _RSASignatureContext(object):
             padded,
             data_to_sign,
             evp_md,
-            -2
+            self._padding.mgf.salt_length
         )
         assert res == 1
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
@@ -754,6 +774,14 @@ class _RSAVerificationContext(object):
             else:
                 self._verify_method = self._verify_pkcs1
         elif padding.name == "EMSA-PSS":
+            if not isinstance(padding.mgf, MGF1):
+                raise TypeError("Only MGF1 is supported by this backend")
+
+            if (not isinstance(padding.mgf.algorithm, hashes.SHA1) and
+                    not self._backend._lib.Cryptography_HAS_MGF1_MD):
+                raise ValueError("This backend only supports MGF1 with SHA1 "
+                                 "when OpenSSL is not 1.0.1+")
+
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._verify_method = self._verify_pkey_ctx
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
@@ -804,6 +832,18 @@ class _RSAVerificationContext(object):
 
         res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
             pkey_ctx, self._padding_enum)
+        assert res > 0
+        if self._backend._lib.Cryptography_HAS_MGF1_MD:
+            mgf1_md = self._backend._lib.EVP_get_digestbyname(
+                self._padding.mgf.algorithm.name.encode("ascii"))
+            assert mgf1_md != self._backend._ffi.NULL
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+                pkey_ctx, mgf1_md
+            )
+            assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
+            pkey_ctx, self._padding.mgf.salt_length)
         assert res > 0
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
@@ -861,7 +901,7 @@ class _RSAVerificationContext(object):
             data_to_verify,
             evp_md,
             buf,
-            -2
+            self._padding.mgf.salt_length
         )
         if res != 1:
             assert self._backend._consume_errors()
