@@ -43,7 +43,7 @@ void EC_KEY_free(EC_KEY *);
 
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 
-int Cryptography_EC_builtin_curve_get_nid(EC_builtin_curve);
+int Cryptography_EC_builtin_curve_get_nid(EC_builtin_curve *);
 """
 
 CUSTOMIZATIONS = """
@@ -54,12 +54,12 @@ typedef void EC_builtin_curve;
 EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 void (*EC_KEY_free)(EC_KEY *) = NULL;
 size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
-int (*Cryptography_EC_builtin_curve_get_nid)(EC_builtin_curve) = NULL;
+int (*Cryptography_EC_builtin_curve_get_nid)(EC_builtin_curve *) = NULL;
 #else
 static const long Cryptography_HAS_EC = 1;
 
-int Cryptography_EC_builtin_curve_get_nid(EC_builtin_curve c) {
-    return c.nid;
+int Cryptography_EC_builtin_curve_get_nid(EC_builtin_curve *c) {
+    return c->nid;
 }
 #endif
 """
