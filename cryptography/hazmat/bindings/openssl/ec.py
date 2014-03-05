@@ -23,7 +23,9 @@ TYPES = """
 static const int Cryptography_HAS_EC;
 
 typedef ... EC_KEY;
-typedef ... EC_builtin_curve;
+typedef struct {
+    ...;
+} EC_builtin_curve;
 
 static const int NID_X9_62_c2pnb163v1;
 static const int NID_X9_62_c2pnb163v2;
