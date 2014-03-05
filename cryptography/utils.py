@@ -13,9 +13,18 @@
 
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 
 def register_interface(iface):
     def register_decorator(klass):
         iface.register(klass)
         return klass
     return register_decorator
+
+
+def bit_length(x):
+    if sys.version_info >= (2, 7):
+        return x.bit_length()
+    else:
+        return len(bin(x)) - (2 + (x <= 0))
