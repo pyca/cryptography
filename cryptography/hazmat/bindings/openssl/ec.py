@@ -192,6 +192,8 @@ EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 void (*EC_KEY_free)(EC_KEY *) = NULL;
 size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
 int (*Cryptography_EC_builtin_curve_get_nid)(EC_builtin_curve *) = NULL;
+const char *(*Cryptography_EC_builtin_curve_get_comment)(EC_builtin_curve *) =\
+    NULL;
 #else
 static const long Cryptography_HAS_EC = 1;
 
