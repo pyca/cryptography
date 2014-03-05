@@ -23,7 +23,10 @@ TYPES = """
 static const int Cryptography_HAS_EC;
 
 typedef ... EC_KEY;
-typedef ... EC_builtin_curve;
+typedef struct {
+    int nid;
+    const char *comment;
+} EC_builtin_curve;
 
 static const int NID_X9_62_prime192v1;
 static const int NID_X9_62_prime192v2;
