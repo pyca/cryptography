@@ -48,7 +48,7 @@ CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC = 0;
 typedef void EC_KEY;
-typdef void EC_builtin_curve;
+typedef void EC_builtin_curve;
 EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 void (*EC_KEY_free)(EC_KEY *) = NULL;
 size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
