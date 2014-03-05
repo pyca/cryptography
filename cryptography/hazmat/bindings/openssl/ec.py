@@ -180,6 +180,7 @@ void EC_KEY_free(EC_KEY *);
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 
 int Cryptography_EC_builtin_curve_get_nid(EC_builtin_curve *);
+const char *Cryptography_EC_builtin_curve_get_comment(EC_builtin_curve *);
 """
 
 CUSTOMIZATIONS = """
@@ -197,6 +198,10 @@ static const long Cryptography_HAS_EC = 1;
 int Cryptography_EC_builtin_curve_get_nid(EC_builtin_curve *c) {
     return c->nid;
 }
+
+const char *Cryptography_EC_builtin_curve_get_comment(EC_builtin_curve *c) {
+    return c->comment;
+}
 #endif
 """
 
@@ -207,5 +212,6 @@ CONDITIONAL_NAMES = {
         "EC_get_builtin_curves",
 
         "Cryptography_EC_builtin_curve_get_nid",
+        "Cryptography_EC_builtin_curve_get_comment"
     ],
 }
