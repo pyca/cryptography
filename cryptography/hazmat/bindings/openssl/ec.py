@@ -23,6 +23,7 @@ TYPES = """
 static const int Cryptography_HAS_EC;
 
 typedef ... EC_KEY;
+typedef ... EC_builtin_curve;
 
 static const int NID_X9_62_prime192v1;
 static const int NID_X9_62_prime192v2;
@@ -39,14 +40,18 @@ FUNCTIONS = """
 MACROS = """
 EC_KEY *EC_KEY_new_by_curve_name(int);
 void EC_KEY_free(EC_KEY *);
+
+size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 """
 
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC = 0;
 typedef void EC_KEY;
+typdef void EC_builtin_curve;
 EC_KEY* (*EC_KEY_new_by_curve_name)(int) = NULL;
 void (*EC_KEY_free)(EC_KEY *) = NULL;
+size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
 #else
 static const long Cryptography_HAS_EC = 1;
 #endif
