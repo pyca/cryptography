@@ -231,6 +231,113 @@ Asymmetric Interfaces
         The public exponent. Alias for :attr:`public_exponent`.
 
 
+.. class:: DSAParameters
+
+    .. versionadded:: 0.3
+
+    `DSA`_ parameters.
+
+    .. attribute:: modulus
+
+        :type: int
+
+        The prime modulus that is used in generating the DSA key pair and used
+        in the DSA signing and verification processes.
+
+    .. attribute:: subgroup_order
+
+        :type: int
+
+        The subgroup order that is used in generating the DSA key pair
+        by the generator and used in the DSA signing and verification
+        processes.
+
+    .. attribute:: generator
+
+        :type: int
+
+        The generator that is used in generating the DSA key pair and used
+        in the DSA signing and verification processes.
+
+    .. attribute:: p
+
+        :type: int
+
+        The prime modulus that is used in generating the DSA key pair and used
+        in the DSA signing and verification processes. Alias for :attr:`modulus`.
+
+    .. attribute:: q
+
+        :type: int
+
+        The subgroup order that is used in generating the DSA key pair
+        by the generator and used in the DSA signing and verification
+        processes. Alias for :attr:`subgroup_order`.
+
+    .. attribute:: g
+
+        :type: int
+
+        The generator that is used in generating the DSA key pair and used
+        in the DSA signing and verification processes. Alias for :attr:`generator`.
+
+
+.. class:: DSAPrivateKey
+
+    .. versionadded:: 0.3
+
+    A `DSA`_ private key.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+
+        An DSA public key object corresponding to the values of the private key.
+
+    .. method:: parameters()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+
+        The DSAParameters object associated with this private key.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. attribute:: x
+
+        :type: int
+
+        The private key.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public key.
+
+
+.. class:: DSAPublicKey
+
+    .. versionadded:: 0.3
+
+    A `DSA`_ private key.
+
+    .. method:: parameters()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+
+        The DSAParameters object associated with this public key.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public key.
+
+
 .. class:: AsymmetricSignatureContext
 
     .. versionadded:: 0.2
@@ -335,3 +442,4 @@ Key Derivation Functions
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
+.. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm

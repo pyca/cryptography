@@ -26,7 +26,7 @@ from ...utils import load_hash_vectors
     skip_message="Does not support MD5",
 )
 @pytest.mark.hmac
-class TestHMAC_MD5(object):
+class TestHMACMD5(object):
     test_hmac_md5 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",
@@ -42,7 +42,7 @@ class TestHMAC_MD5(object):
     skip_message="Does not support SHA1",
 )
 @pytest.mark.hmac
-class TestHMAC_SHA1(object):
+class TestHMACSHA1(object):
     test_hmac_sha1 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",
@@ -58,7 +58,7 @@ class TestHMAC_SHA1(object):
     skip_message="Does not support SHA224",
 )
 @pytest.mark.hmac
-class TestHMAC_SHA224(object):
+class TestHMACSHA224(object):
     test_hmac_sha224 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",
@@ -74,7 +74,7 @@ class TestHMAC_SHA224(object):
     skip_message="Does not support SHA256",
 )
 @pytest.mark.hmac
-class TestHMAC_SHA256(object):
+class TestHMACSHA256(object):
     test_hmac_sha256 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",
@@ -90,7 +90,7 @@ class TestHMAC_SHA256(object):
     skip_message="Does not support SHA384",
 )
 @pytest.mark.hmac
-class TestHMAC_SHA384(object):
+class TestHMACSHA384(object):
     test_hmac_sha384 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",
@@ -106,7 +106,7 @@ class TestHMAC_SHA384(object):
     skip_message="Does not support SHA512",
 )
 @pytest.mark.hmac
-class TestHMAC_SHA512(object):
+class TestHMACSHA512(object):
     test_hmac_sha512 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",
@@ -122,7 +122,7 @@ class TestHMAC_SHA512(object):
     skip_message="Does not support RIPEMD160",
 )
 @pytest.mark.hmac
-class TestHMAC_RIPEMD160(object):
+class TestHMACRIPEMD160(object):
     test_hmac_ripemd160 = generate_hmac_test(
         load_hash_vectors,
         "HMAC",

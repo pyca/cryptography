@@ -31,7 +31,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support AES CBC",
 )
 @pytest.mark.cipher
-class TestAES_CBC(object):
+class TestAESModeCBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CBC"),
@@ -64,7 +64,7 @@ class TestAES_CBC(object):
     skip_message="Does not support AES ECB",
 )
 @pytest.mark.cipher
-class TestAES_ECB(object):
+class TestAESModeECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "ECB"),
@@ -97,7 +97,7 @@ class TestAES_ECB(object):
     skip_message="Does not support AES OFB",
 )
 @pytest.mark.cipher
-class TestAES_OFB(object):
+class TestAESModeOFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "OFB"),
@@ -130,7 +130,7 @@ class TestAES_OFB(object):
     skip_message="Does not support AES CFB",
 )
 @pytest.mark.cipher
-class TestAES_CFB(object):
+class TestAESModeCFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CFB"),
@@ -163,7 +163,7 @@ class TestAES_CFB(object):
     skip_message="Does not support AES CTR",
 )
 @pytest.mark.cipher
-class TestAES_CTR(object):
+class TestAESModeCTR(object):
     test_CTR = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "CTR"),
@@ -180,7 +180,7 @@ class TestAES_CTR(object):
     skip_message="Does not support AES GCM",
 )
 @pytest.mark.cipher
-class TestAES_GCM(object):
+class TestAESModeGCM(object):
     test_GCM = generate_aead_test(
         load_nist_vectors,
         os.path.join("ciphers", "AES", "GCM"),

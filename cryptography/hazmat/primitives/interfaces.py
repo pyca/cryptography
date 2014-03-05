@@ -287,6 +287,98 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class DSAParameters(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def modulus(self):
+        """
+        The prime modulus that's used in generating the DSA keypair and used
+        in the DSA signing and verification processes.
+        """
+
+    @abc.abstractproperty
+    def subgroup_order(self):
+        """
+        The subgroup order that's used in generating the DSA keypair
+        by the generator and used in the DSA signing and verification
+        processes.
+        """
+
+    @abc.abstractproperty
+    def generator(self):
+        """
+        The generator that is used in generating the DSA keypair and used
+        in the DSA signing and verification processes.
+        """
+
+    @abc.abstractproperty
+    def p(self):
+        """
+        The prime modulus that's used in generating the DSA keypair and used
+        in the DSA signing and verification processes. Alias for modulus.
+        """
+
+    @abc.abstractproperty
+    def q(self):
+        """
+        The subgroup order that's used in generating the DSA keypair
+        by the generator and used in the DSA signing and verification
+        processes. Alias for subgroup_order.
+        """
+
+    @abc.abstractproperty
+    def g(self):
+        """
+        The generator that is used in generating the DSA keypair and used
+        in the DSA signing and verification processes. Alias for generator.
+        """
+
+
+class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the prime modulus.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The DSAPublicKey associated with this private key.
+        """
+
+    @abc.abstractproperty
+    def x(self):
+        """
+        The private key "x" in the DSA structure.
+        """
+
+    @abc.abstractproperty
+    def y(self):
+        """
+        The public key.
+        """
+
+    @abc.abstractmethod
+    def parameters(self):
+        """
+        The DSAParameters object associated with this private key.
+        """
+
+
+class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def y(self):
+        """
+        The public key.
+        """
+
+    @abc.abstractmethod
+    def parameters(self):
+        """
+        The DSAParameters object associated with this public key.
+        """
+
+
 class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def update(self, data):
