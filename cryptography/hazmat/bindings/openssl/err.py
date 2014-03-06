@@ -265,7 +265,7 @@ static const long Cryptography_HAS_REMOVE_THREAD_STATE = 1;
 #else
 static const long Cryptography_HAS_REMOVE_THREAD_STATE = 0;
 typedef uint32_t CRYPTO_THREADID;
-void (*ERR_remove_thread_state)(const CRYPTO_THREADID *);
+void (*ERR_remove_thread_state)(const CRYPTO_THREADID *) = NULL;
 #endif
 """
 
