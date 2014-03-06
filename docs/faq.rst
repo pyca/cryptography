@@ -14,7 +14,5 @@ to NaCl.
 
 If you prefer NaCl's design, we highly recommend `PyNaCl`_.
 
-Also, we have a version control system.
-
 .. _`NaCl`: http://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.org
