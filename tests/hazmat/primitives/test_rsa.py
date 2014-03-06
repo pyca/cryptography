@@ -437,7 +437,16 @@ class TestRSASignature(object):
             public_exponent=public["public_exponent"],
             modulus=public["modulus"]
         )
-        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert len(signature) == math.ceil(private_key.key_size / 8.0)
@@ -446,7 +455,12 @@ class TestRSASignature(object):
         # successfully verifies.
         verifier = public_key.verifier(
             signature,
-            padding.PSS(),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
             hashes.SHA1(),
             backend
         )
@@ -572,7 +586,12 @@ class TestRSAVerification(object):
         )
         verifier = public_key.verifier(
             binascii.unhexlify(example["signature"]),
-            padding.PSS(),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
             hashes.SHA1(),
             backend
         )
@@ -586,12 +605,26 @@ class TestRSAVerification(object):
             backend=backend
         )
         public_key = private_key.public_key()
-        signer = private_key.signer(padding.PSS(), hashes.SHA1(), backend)
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
         signer.update(b"sign me")
         signature = signer.finalize()
         verifier = public_key.verifier(
             signature,
-            padding.PSS(),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
             hashes.SHA1(),
             backend
         )
@@ -616,7 +649,12 @@ class TestRSAVerification(object):
         )
         verifier = public_key.verifier(
             signature,
-            padding.PSS(),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
             hashes.SHA1(),
             backend
         )
@@ -641,7 +679,12 @@ class TestRSAVerification(object):
         )
         verifier = public_key.verifier(
             signature,
-            padding.PSS(),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
             hashes.SHA1(),
             backend
         )
