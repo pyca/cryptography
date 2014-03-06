@@ -13,7 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import sys
 import platform
 
 from pkg_resources import parse_version
@@ -49,13 +48,5 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        if sys.platform == "darwin":
-            version = parse_version(platform.mac_ver()[0])
-            if version < parse_version("10.8"):
-                return False
-
-            else:
-                return True
-
-        else:
-            return False
+        version = parse_version(platform.mac_ver()[0])
+        return version >= parse_version("10.8")
