@@ -18,8 +18,8 @@ import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidTag, InternalError, AlreadyFinalized, UnsupportedPadding,
-    InvalidSignature
+    InvalidTag, InternalError, AlreadyFinalized, UnsupportedCipher,
+    UnsupportedHash, UnsupportedPadding, InvalidSignature
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
