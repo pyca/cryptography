@@ -29,7 +29,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, dsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, PKCS1v15, PSS
 )
@@ -409,12 +409,78 @@ class Backend(object):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
+    def generate_dsa_parameters(self, key_size, ctx=None):
+        if key_size not in [1024, 2048, 3072]:
+            raise ValueError("Key size must be 1024 or 2048 or"
+                             "3072 bits")
+
+        if ctx is None:
+            ctx = self._lib.DSA_new()
+            assert ctx != self._ffi.NULL
+            ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL
+        )
+
+        assert res == 1
+
+        return dsa.DSAParams(
+            modulus=self._bn_to_int(ctx.p),
+            subroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g)
+        )
+
+    def generate_dsa_private_key(self, parameters, key_size):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        if all([parameters.p, parameters.q, parameters.g]):
+            if ctx.p not in [1024, 2048, 3072]:
+                raise ValueError("Prime Modulus length must be 1024 or 2048 or"
+                                 "3072 bits")
+
+            if ctx.q not in [160, 256]:
+                raise ValueError("Subgroup order length must be 160 or"
+                                 "256 bits")
+
+            if (ctx.p, ctx.q) not in [
+                    (1024, 160),
+                    (2048, 256),
+                    (3072, 256)]:
+                raise ValueError("Prime Modulus and Subgroup order lengths"
+                                 "must be one of these pairs (1024, 160)"
+                                 "or (2048, 256) or (3072, 256)")
+
+            if ctx.g <= 1 or ctx.g >= ctx.p:
+                raise ValueError("Generator must be > 1 and < Prime Modulus")
+
+            ctx.p = self._int_to_bn(parameters.p)
+            ctx.q = self._int_to_bn(parameters.q)
+            ctx.g = self._int_to_bn(parameters.g)
+
+        else:
+            if key_size not in [1024, 2048, 3072]:
+                raise ValueError("Key size must be 1024 or 2048 or"
+                                 "3072 bits")
+            self.generate_dsa_parameters(key_size, ctx)
+
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(ctx.p),
+            subgroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g),
+            x=self._bn_to_int(ctx.priv_key),
+            y=self._bn_to_int(ctx.pub_key)
+        )
+
     def mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
             return self.hash_supported(algorithm)
         else:
             return isinstance(algorithm, hashes.SHA1)
-
 
 class GetCipherByName(object):
     def __init__(self, fmt):
