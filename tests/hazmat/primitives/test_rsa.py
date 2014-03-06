@@ -443,3 +443,118 @@ class TestRSASignature(object):
         )
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1(), backend)
+
+
+@pytest.mark.rsa
+class TestRSAVerification(object):
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pkcs1v15_verification(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
+        verifier = public_key.verifier(
+            binascii.unhexlify(example["signature"]),
+            padding.PKCS1v15(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    def test_invalid_pkcs1v15_signature_wrong_data(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1v15(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"incorrect data")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        private_key2 = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key2.public_key()
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1v15(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_use_after_finalize(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
+        signer.update(b"sign me")
+        signature = signer.finalize()
+
+        verifier = public_key.verifier(
+            signature,
+            padding.PKCS1v15(),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        verifier.verify()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            verifier.verify()
+        with pytest.raises(exceptions.AlreadyFinalized):
+            verifier.update(b"more data")
+
+    def test_unsupported_padding(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(exceptions.UnsupportedPadding):
+            public_key.verifier(b"sig", DummyPadding(), hashes.SHA1(), backend)
+
+    def test_padding_incorrect_type(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(b"sig", "notpadding", hashes.SHA1(), backend)

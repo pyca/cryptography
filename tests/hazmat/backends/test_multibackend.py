@@ -89,6 +89,10 @@ class DummyRSABackend(object):
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         pass
 
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
+        pass
+
 
 class TestMultiBackend(object):
     def test_ciphers(self):
@@ -165,6 +169,9 @@ class TestMultiBackend(object):
         backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
                                          hashes.MD5())
 
+        backend.create_rsa_verification_ctx("public_key", "sig",
+                                            padding.PKCS1v15(), hashes.MD5())
+
         backend = MultiBackend([])
         with pytest.raises(UnsupportedAlgorithm):
             backend.generate_rsa_private_key(key_size=1024, public_exponent=3)
@@ -172,3 +179,7 @@ class TestMultiBackend(object):
         with pytest.raises(UnsupportedAlgorithm):
             backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
                                              hashes.MD5())
+
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.create_rsa_verification_ctx(
+                "public_key", "sig", padding.PKCS1v15(), hashes.MD5())

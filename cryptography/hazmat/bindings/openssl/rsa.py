@@ -37,6 +37,7 @@ static const int RSA_PKCS1_PSS_PADDING;
 static const int RSA_F4;
 
 static const int Cryptography_HAS_PSS_PADDING;
+static const int Cryptography_HAS_MGF1_MD;
 """
 
 FUNCTIONS = """
@@ -70,6 +71,7 @@ int RSA_padding_check_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
 MACROS = """
 int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
 int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
+int EVP_PKEY_CTX_set_rsa_mgf1_md(EVP_PKEY_CTX *, EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
@@ -82,6 +84,12 @@ int (*EVP_PKEY_CTX_set_rsa_padding)(EVP_PKEY_CTX *, int) = NULL;
 int (*EVP_PKEY_CTX_set_rsa_pss_saltlen)(EVP_PKEY_CTX *, int) = NULL;
 static const long RSA_PKCS1_PSS_PADDING = 0;
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x1000100f
+static const long Cryptography_HAS_MGF1_MD = 1;
+#else
+static const long Cryptography_HAS_MGF1_MD = 0;
+int (*EVP_PKEY_CTX_set_rsa_mgf1_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -91,5 +99,8 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_PSS_PADDING": [
         "RSA_PKCS1_PSS_PADDING",
+    ],
+    "Cryptography_HAS_MGF1_MD": [
+        "EVP_PKEY_CTX_set_rsa_mgf1_md",
     ],
 }
