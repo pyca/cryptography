@@ -444,7 +444,7 @@ class _CipherContext(object):
         # should be taken only when length is zero and mode is not GCM because
         # AES GCM can return improper tag values if you don't call update
         # with empty plaintext when authenticating AAD for ...reasons.
-        if not len(data) and not isinstance(self._mode, GCM):
+        if len(data) == 0 and not isinstance(self._mode, GCM):
             return b""
 
         buf = self._backend._ffi.new("unsigned char[]",
