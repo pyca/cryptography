@@ -438,6 +438,15 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
+        # OpenSSL 0.9.8e has an assertion in its EVP code that causes it
+        # to SIGABRT if you call update with an empty byte string. This can be
+        # removed when we drop support for 0.9.8e (CentOS/RHEL 5). This branch
+        # should be taken only when length is zero and mode is not GCM because
+        # AES GCM can return improper tag values if you don't call update
+        # with empty plaintext when authenticating AAD for ...reasons.
+        if len(data) == 0 and not isinstance(self._mode, GCM):
+            return b""
+
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
         outlen = self._backend._ffi.new("int *")
