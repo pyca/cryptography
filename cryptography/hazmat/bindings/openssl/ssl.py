@@ -37,6 +37,8 @@ static const int Cryptography_HAS_RELEASE_BUFFERS;
 static const int Cryptography_HAS_OP_NO_COMPRESSION;
 
 static const int Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
+static const int Cryptography_HAS_SSL_SET_SSL_CTX;
+static const int Cryptography_HAS_SSL_OP_NO_TICKET;
 
 static const int SSL_FILETYPE_PEM;
 static const int SSL_FILETYPE_ASN1;
@@ -150,7 +152,6 @@ void SSL_load_error_strings(void);
 int SSL_library_init(void);
 
 /*  SSL */
-SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 SSL_SESSION *SSL_get1_session(SSL *);
 int SSL_set_session(SSL *, SSL_SESSION *);
 int SSL_get_verify_mode(const SSL *);
@@ -187,8 +188,6 @@ int SSL_CTX_set_default_verify_paths(SSL_CTX *);
 void SSL_CTX_set_verify(SSL_CTX *, int, int (*)(int, X509_STORE_CTX *));
 void SSL_CTX_set_verify_depth(SSL_CTX *, int);
 int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
-void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
-void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 int SSL_CTX_get_verify_mode(const SSL_CTX *);
 int SSL_CTX_get_verify_depth(const SSL_CTX *);
 int SSL_CTX_set_cipher_list(SSL_CTX *, const char *);
@@ -304,6 +303,14 @@ void SSL_CTX_set_tlsext_servername_callback(
     int (*)(const SSL *, int *, void *));
 
 long SSL_session_reused(SSL *);
+
+/* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
+   we should move these back to FUNCTIONS. */
+void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
+void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
+/* This function does not exist in 0.9.8e. Once we drop support for
+   RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
+SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
@@ -371,6 +378,22 @@ const long SSL_OP_MSIE_SSLV2_RSA_PADDING = 0;
 #ifdef OPENSSL_NO_EC
 long (*SSL_CTX_set_tmp_ecdh)(SSL_CTX *, EC_KEY *) = NULL;
 #endif
+
+#ifdef SSL_OP_NO_TICKET
+static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
+#else
+static const long Cryptography_HAS_SSL_OP_NO_TICKET = 0;
+const long SSL_OP_NO_TICKET = 0;
+#endif
+
+// OpenSSL 0.9.8f+
+#if OPENSSL_VERSION_NUMBER >= 0x00908070L
+static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
+#else
+static const long Cryptography_HAS_SSL_SET_SSL_CTX = 0;
+static const int TLSEXT_NAMETYPE_host_name = 0;
+SSL_CTX *(*SSL_set_SSL_CTX)(SSL *, SSL_CTX *) = NULL;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -414,5 +437,14 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_EC": [
         "SSL_CTX_set_tmp_ecdh",
-    ]
+    ],
+
+    "Cryptography_HAS_SSL_OP_NO_TICKET": [
+        "SSL_OP_NO_TICKET",
+    ],
+
+    "Cryptography_HAS_SSL_SET_SSL_CTX": [
+        "SSL_set_SSL_CTX",
+        "TLSEXT_NAMETYPE_host_name",
+    ],
 }
