@@ -14,7 +14,7 @@
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InternalError
+from cryptography.exceptions import UnsupportedCipher, InternalError
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
@@ -61,5 +61,5 @@ class TestCommonCrypto(object):
         cipher = Cipher(
             DummyCipher(), GCM(b"fake_iv_here"), backend=b,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedCipher):
             cipher.encryptor()

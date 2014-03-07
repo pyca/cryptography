@@ -18,8 +18,8 @@ import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError, AlreadyFinalized,
-    UnsupportedPadding, InvalidSignature
+    InvalidTag, InternalError, AlreadyFinalized, UnsupportedCipher,
+    UnsupportedHash, UnsupportedPadding, InvalidSignature
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -211,7 +211,7 @@ class Backend(object):
             assert res == 1
         else:
             if not isinstance(algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "This version of OpenSSL only supports PBKDF2HMAC with "
                     "SHA1"
                 )
@@ -377,7 +377,7 @@ class _CipherContext(object):
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedAlgorithm(
+            raise UnsupportedCipher(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -385,7 +385,7 @@ class _CipherContext(object):
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend._ffi.NULL:
-            raise UnsupportedAlgorithm(
+            raise UnsupportedCipher(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -438,6 +438,15 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
+        # OpenSSL 0.9.8e has an assertion in its EVP code that causes it
+        # to SIGABRT if you call update with an empty byte string. This can be
+        # removed when we drop support for 0.9.8e (CentOS/RHEL 5). This branch
+        # should be taken only when length is zero and mode is not GCM because
+        # AES GCM can return improper tag values if you don't call update
+        # with empty plaintext when authenticating AAD for ...reasons.
+        if len(data) == 0 and not isinstance(self._mode, GCM):
+            return b""
+
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
         outlen = self._backend._ffi.new("int *")
@@ -517,7 +526,7 @@ class _HashContext(object):
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
             if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -567,7 +576,7 @@ class _HMACContext(object):
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode('ascii'))
             if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
