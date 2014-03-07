@@ -258,7 +258,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     style key serialization.
 
     .. method:: load_openssl_pem_private_key(data, password)
-       
+
         :param bytes data: PEM data to deserialize.
 
         :param bytes password: The password to use if this data is encrypted.

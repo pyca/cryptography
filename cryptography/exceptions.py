@@ -16,6 +16,18 @@ class UnsupportedAlgorithm(Exception):
     pass
 
 
+class UnsupportedCipher(UnsupportedAlgorithm):
+    pass
+
+
+class UnsupportedHash(UnsupportedAlgorithm):
+    pass
+
+
+class UnsupportedPadding(UnsupportedAlgorithm):
+    pass
+
+
 class AlreadyFinalized(Exception):
     pass
 
@@ -45,8 +57,4 @@ class InvalidKey(Exception):
 
 
 class InvalidToken(Exception):
-    pass
-
-
-class UnsupportedPadding(Exception):
     pass
