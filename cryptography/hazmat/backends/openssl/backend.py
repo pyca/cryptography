@@ -318,14 +318,24 @@ class Backend(object):
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-        ctx.p = self._int_to_bn_or_null(private_key.p)
-        ctx.q = self._int_to_bn_or_null(private_key.q)
+        ctx.p = self._int_to_bn(private_key.p)
+        ctx.q = self._int_to_bn(private_key.q)
         ctx.d = self._int_to_bn(private_key.d)
         ctx.e = self._int_to_bn(private_key.e)
         ctx.n = self._int_to_bn(private_key.n)
-        ctx.dmp1 = self._int_to_bn_or_null(private_key.dmp1)
-        ctx.dmq1 = self._int_to_bn_or_null(private_key.dmq1)
-        ctx.iqmp = self._int_to_bn_or_null(private_key.iqmp)
+        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
+        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
+        if private_key.iqmp is not None:
+            ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        else:
+            bn_ctx = self._lib.BN_CTX_new()
+            assert bn_ctx != self._ffi.NULL
+            self._lib.BN_CTX_start(bn_ctx)
+            ctx.iqmp = self._lib.BN_mod_inverse(
+                self._ffi.NULL, ctx.q, ctx.p, bn_ctx)
+            assert ctx.iqmp != self._ffi.NULL
+            self._lib.BN_CTX_end(bn_ctx)
+            self._lib.BN_CTX_free(bn_ctx)
         return ctx
 
     def _rsa_cdata_from_public_key(self, public_key):

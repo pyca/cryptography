@@ -65,6 +65,33 @@ class RSAPublicKey(object):
         return self.modulus
 
 
+def isqrt(n):
+    """
+    Integer square root, using Newton's method.
+    """
+    x = n
+    y = (x + n // x) // 2
+    while y < x:
+        x = y
+        y = (x + n // x) // 2
+    return x
+
+
+def factor_n(n, e, d):
+    """
+    For an RSA private key, given N, E, and D, find P and Q.
+    """
+    k = 1 + (e * d) // n
+    phi = (e * d - 1) // k
+    m = n + 1 - phi
+    root = isqrt(m**2 - 4*n)
+    p = (m + root) // 2
+    q = (m - root) // 2
+    if p * q != n:
+        raise ValueError('factorization failed')
+    return p, q
+
+
 @utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
@@ -116,6 +143,15 @@ class RSAPrivateKey(object):
 
         if p is not None and q is not None and p * q != modulus:
             raise ValueError("p*q must equal modulus")
+
+        if p is None and q is None:
+            p, q = factor_n(modulus, public_exponent, private_exponent)
+
+        if dmp1 is None:
+            dmp1 = private_exponent % (p - 1)
+
+        if dmq1 is None:
+            dmq1 = private_exponent % (q - 1)
 
         self._p = p
         self._q = q
