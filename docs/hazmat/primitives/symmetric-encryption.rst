@@ -172,8 +172,8 @@ Weak Ciphers
     is susceptible to attacks when using weak keys. It is recommended that you
     do not use this cipher for new applications.
 
-    :param bytes key: The secret key, 128 bits in length.  This must be kept
-                      secret.
+    :param bytes key: The secret key This must be kept secret. ``128`` bits in
+        length.
 
 
 .. _symmetric-encryption-modes:

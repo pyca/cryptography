@@ -159,11 +159,14 @@ class Backend(object):
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
             )
-        for mode_cls in [CBC, CFB, OFB, ECB]:
+        for cipher_cls, mode_cls in itertools.product(
+            [CAST5, IDEA],
+            [CBC, OFB, CFB, ECB],
+        ):
             self.register_cipher_adapter(
-                CAST5,
+                cipher_cls,
                 mode_cls,
-                GetCipherByName("cast5-{mode.name}")
+                GetCipherByName("{cipher.name}-{mode.name}")
             )
         self.register_cipher_adapter(
             ARC4,
@@ -175,12 +178,6 @@ class Backend(object):
             GCM,
             GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
         )
-        for mode_cls in [ECB]:
-            self.register_cipher_adapter(
-                IDEA,
-                mode_cls,
-                GetCipherByName("idea-{mode.name}")
-            )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
         return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
