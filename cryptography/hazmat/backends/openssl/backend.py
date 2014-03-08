@@ -13,11 +13,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import collections
 import itertools
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError
+    InvalidTag, InternalError, AlreadyFinalized, UnsupportedCipher,
+    UnsupportedHash, UnsupportedPadding, InvalidSignature
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -31,6 +33,10 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CTR, ECB, OFB, CFB, GCM,
 )
+
+
+_OpenSSLError = collections.namedtuple("_OpenSSLError",
+                                       ["code", "lib", "func", "reason"])
 
 
 @utils.register_interface(CipherBackend)
@@ -205,7 +211,7 @@ class Backend(object):
             assert res == 1
         else:
             if not isinstance(algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "This version of OpenSSL only supports PBKDF2HMAC with "
                     "SHA1"
                 )
@@ -227,43 +233,25 @@ class Backend(object):
         self._lib.ERR_error_string_n(code, err_buf, 256)
         return self._ffi.string(err_buf, 256)[:]
 
-    def _handle_error(self, mode):
-        code = self._lib.ERR_get_error()
-        if not code and isinstance(mode, GCM):
-            raise InvalidTag
-        assert code != 0
+    def _consume_errors(self):
+        errors = []
+        while True:
+            code = self._lib.ERR_get_error()
+            if code == 0:
+                break
 
-        # consume any remaining errors on the stack
-        ignored_code = None
-        while ignored_code != 0:
-            ignored_code = self._lib.ERR_get_error()
+            lib = self._lib.ERR_GET_LIB(code)
+            func = self._lib.ERR_GET_FUNC(code)
+            reason = self._lib.ERR_GET_REASON(code)
 
-        # raise the first error we found
-        return self._handle_error_code(code)
+            errors.append(_OpenSSLError(code, lib, func, reason))
+        return errors
 
-    def _handle_error_code(self, code):
-        lib = self._lib.ERR_GET_LIB(code)
-        func = self._lib.ERR_GET_FUNC(code)
-        reason = self._lib.ERR_GET_REASON(code)
-
-        if lib == self._lib.ERR_LIB_EVP:
-            if func == self._lib.EVP_F_EVP_ENCRYPTFINAL_EX:
-                if reason == self._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise ValueError(
-                        "The length of the provided data is not a multiple of "
-                        "the block length"
-                    )
-            elif func == self._lib.EVP_F_EVP_DECRYPTFINAL_EX:
-                if reason == self._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH:
-                    raise ValueError(
-                        "The length of the provided data is not a multiple of "
-                        "the block length"
-                    )
-
-        raise InternalError(
+    def _unknown_error(self, error):
+        return InternalError(
             "Unknown error code {0} from OpenSSL, "
             "you should probably file a bug. {1}".format(
-                code, self._err_string(code)
+                error.code, self._err_string(error.code)
             )
         )
 
@@ -273,6 +261,20 @@ class Backend(object):
         hex_str = self._ffi.string(hex_cdata)
         self._lib.OPENSSL_free(hex_cdata)
         return int(hex_str, 16)
+
+    def _int_to_bn(self, num):
+        """
+        Converts a python integer to a BIGNUM. The returned BIGNUM will not
+        be garbage collected (to support adding them to structs that take
+        ownership of the object). Be sure to register it for GC if it will
+        be discarded after use.
+        """
+        hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
+        bn_ptr = self._ffi.new("BIGNUM **")
+        res = self._lib.BN_hex2bn(bn_ptr, hex_num)
+        assert res != 0
+        assert bn_ptr[0] != self._ffi.NULL
+        return bn_ptr[0]
 
     def generate_rsa_private_key(self, public_exponent, key_size):
         if public_exponent < 3:
@@ -284,18 +286,15 @@ class Backend(object):
         if key_size < 512:
             raise ValueError("key_size must be at least 512-bits")
 
-        ctx = backend._lib.RSA_new()
-        ctx = backend._ffi.gc(ctx, backend._lib.RSA_free)
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
 
-        bn = backend._lib.BN_new()
-        assert bn != self._ffi.NULL
-        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+        bn = self._int_to_bn(public_exponent)
+        bn = self._ffi.gc(bn, self._lib.BN_free)
 
-        res = backend._lib.BN_set_word(bn, public_exponent)
-        assert res == 1
-
-        res = backend._lib.RSA_generate_key_ex(
-            ctx, key_size, bn, backend._ffi.NULL
+        res = self._lib.RSA_generate_key_ex(
+            ctx, key_size, bn, self._ffi.NULL
         )
         assert res == 1
 
@@ -309,6 +308,36 @@ class Backend(object):
             public_exponent=self._bn_to_int(ctx.e),
             modulus=self._bn_to_int(ctx.n),
         )
+
+    def _rsa_cdata_from_private_key(self, private_key):
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
+        ctx.p = self._int_to_bn(private_key.p)
+        ctx.q = self._int_to_bn(private_key.q)
+        ctx.d = self._int_to_bn(private_key.d)
+        ctx.e = self._int_to_bn(private_key.e)
+        ctx.n = self._int_to_bn(private_key.n)
+        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
+        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
+        ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        return ctx
+
+    def _rsa_cdata_from_public_key(self, public_key):
+        ctx = self._lib.RSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
+        ctx.e = self._int_to_bn(public_key.e)
+        ctx.n = self._int_to_bn(public_key.n)
+        return ctx
+
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        return _RSASignatureContext(self, private_key, padding, algorithm)
+
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
+        return _RSAVerificationContext(self, public_key, signature, padding,
+                                       algorithm)
 
 
 class GetCipherByName(object):
@@ -348,7 +377,7 @@ class _CipherContext(object):
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedAlgorithm(
+            raise UnsupportedCipher(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -356,7 +385,7 @@ class _CipherContext(object):
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend._ffi.NULL:
-            raise UnsupportedAlgorithm(
+            raise UnsupportedCipher(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -409,6 +438,15 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
+        # OpenSSL 0.9.8e has an assertion in its EVP code that causes it
+        # to SIGABRT if you call update with an empty byte string. This can be
+        # removed when we drop support for 0.9.8e (CentOS/RHEL 5). This branch
+        # should be taken only when length is zero and mode is not GCM because
+        # AES GCM can return improper tag values if you don't call update
+        # with empty plaintext when authenticating AAD for ...reasons.
+        if len(data) == 0 and not isinstance(self._mode, GCM):
+            return b""
+
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
         outlen = self._backend._ffi.new("int *")
@@ -422,7 +460,28 @@ class _CipherContext(object):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
         if res == 0:
-            self._backend._handle_error(self._mode)
+            errors = self._backend._consume_errors()
+
+            if not errors and isinstance(self._mode, GCM):
+                raise InvalidTag
+
+            assert errors
+
+            if errors[0][1:] == (
+                self._backend._lib.ERR_LIB_EVP,
+                self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+            ) or errors[0][1:] == (
+                self._backend._lib.ERR_LIB_EVP,
+                self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+            ):
+                raise ValueError(
+                    "The length of the provided data is not a multiple of "
+                    "the block length."
+                )
+            else:
+                raise self._backend._unknown_error(errors[0])
 
         if (isinstance(self._mode, GCM) and
            self._operation == self._ENCRYPT):
@@ -467,7 +526,7 @@ class _HashContext(object):
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
             if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -492,13 +551,14 @@ class _HashContext(object):
 
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
-        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf,
-                                                    self._backend._ffi.NULL)
+                                     self._backend._lib.EVP_MAX_MD_SIZE)
+        outlen = self._backend._ffi.new("unsigned int *")
+        res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
         assert res != 0
+        assert outlen[0] == self.algorithm.digest_size
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
         assert res == 1
-        return self._backend._ffi.buffer(buf)[:]
+        return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
 @utils.register_interface(interfaces.HashContext)
@@ -516,7 +576,7 @@ class _HMACContext(object):
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode('ascii'))
             if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -550,15 +610,208 @@ class _HMACContext(object):
 
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
-        buflen = self._backend._ffi.new("unsigned int *",
-                                        self.algorithm.digest_size)
+                                     self._backend._lib.EVP_MAX_MD_SIZE)
+        outlen = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.Cryptography_HMAC_Final(
-            self._ctx, buf, buflen
+            self._ctx, buf, outlen
         )
         assert res != 0
+        assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
+        return self._backend._ffi.buffer(buf)[:outlen[0]]
+
+
+@utils.register_interface(interfaces.AsymmetricSignatureContext)
+class _RSASignatureContext(object):
+    def __init__(self, backend, private_key, padding, algorithm):
+        self._backend = backend
+        self._private_key = private_key
+        if not isinstance(padding, interfaces.AsymmetricPadding):
+            raise TypeError(
+                "Expected provider of interfaces.AsymmetricPadding")
+
+        if padding.name == "EMSA-PKCS1-v1_5":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            else:
+                self._finalize_method = self._finalize_pkcs1
+        else:
+            raise UnsupportedPadding(
+                "{0} is not supported by this backend".format(padding.name)
+            )
+
+        self._padding = padding
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        self._hash_ctx.update(data)
+
+    def finalize(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        rsa_cdata = backend._rsa_cdata_from_private_key(self._private_key)
+        res = self._backend._lib.RSA_blinding_on(
+            rsa_cdata, self._backend._ffi.NULL)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        assert res == 1
+        evp_md = self._backend._lib.EVP_get_digestbyname(
+            self._algorithm.name.encode("ascii"))
+        assert evp_md != self._backend._ffi.NULL
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
+
+        return self._finalize_method(evp_pkey, pkey_size, rsa_cdata, evp_md)
+
+    def _finalize_pkey_ctx(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
+        pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._backend._ffi.NULL
+        )
+        assert pkey_ctx != self._backend._ffi.NULL
+        res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+            pkey_ctx, evp_md)
+        assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, self._padding_enum)
+        assert res > 0
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        buflen = self._backend._ffi.new("size_t *")
+        res = self._backend._lib.EVP_PKEY_sign(
+            pkey_ctx,
+            self._backend._ffi.NULL,
+            buflen,
+            data_to_sign,
+            len(data_to_sign)
+        )
+        assert res == 1
+        buf = self._backend._ffi.new("unsigned char[]", buflen[0])
+        res = self._backend._lib.EVP_PKEY_sign(
+            pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
+        assert res == 1
         return self._backend._ffi.buffer(buf)[:]
+
+    def _finalize_pkcs1(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        sig_len = self._backend._ffi.new("unsigned int *")
+        res = self._backend._lib.EVP_SignFinal(
+            self._hash_ctx._ctx,
+            sig_buf,
+            sig_len,
+            evp_pkey
+        )
+        self._hash_ctx.finalize()
+        self._hash_ctx = None
+        assert res == 1
+        return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+
+
+@utils.register_interface(interfaces.AsymmetricVerificationContext)
+class _RSAVerificationContext(object):
+    def __init__(self, backend, public_key, signature, padding, algorithm):
+        self._backend = backend
+        self._public_key = public_key
+        self._signature = signature
+        if not isinstance(padding, interfaces.AsymmetricPadding):
+            raise TypeError(
+                "Expected provider of interfaces.AsymmetricPadding")
+
+        if padding.name == "EMSA-PKCS1-v1_5":
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
+            else:
+                self._verify_method = self._verify_pkcs1
+        else:
+            raise UnsupportedPadding
+
+        self._padding = padding
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        self._hash_ctx.update(data)
+
+    def verify(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        rsa_cdata = backend._rsa_cdata_from_public_key(self._public_key)
+        res = self._backend._lib.RSA_blinding_on(
+            rsa_cdata, self._backend._ffi.NULL)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        assert res == 1
+        evp_md = self._backend._lib.EVP_get_digestbyname(
+            self._algorithm.name.encode("ascii"))
+        assert evp_md != self._backend._ffi.NULL
+
+        self._verify_method(rsa_cdata, evp_pkey, evp_md)
+
+    def _verify_pkey_ctx(self, rsa_cdata, evp_pkey, evp_md):
+        pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._backend._ffi.NULL
+        )
+        assert pkey_ctx != self._backend._ffi.NULL
+        res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
+        assert res == 1
+        res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
+            pkey_ctx, evp_md)
+        assert res > 0
+
+        res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, self._padding_enum)
+        assert res > 0
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.EVP_PKEY_verify(
+            pkey_ctx,
+            self._signature,
+            len(self._signature),
+            data_to_verify,
+            len(data_to_verify)
+        )
+        # The previous call can return negative numbers in the event of an
+        # error. This is not a signature failure but we need to fail if it
+        # occurs.
+        assert res >= 0
+        if res == 0:
+            assert self._backend._consume_errors()
+            raise InvalidSignature
+
+    def _verify_pkcs1(self, rsa_cdata, evp_pkey, evp_md):
+        res = self._backend._lib.EVP_VerifyFinal(
+            self._hash_ctx._ctx,
+            self._signature,
+            len(self._signature),
+            evp_pkey
+        )
+        self._hash_ctx.finalize()
+        self._hash_ctx = None
+        # The previous call can return negative numbers in the event of an
+        # error. This is not a signature failure but we need to fail if it
+        # occurs.
+        assert res >= 0
+        if res == 0:
+            assert self._backend._consume_errors()
+            raise InvalidSignature
 
 
 backend = Backend()

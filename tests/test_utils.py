@@ -20,8 +20,8 @@ import pytest
 
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_openssl_vectors, load_hash_vectors, check_for_iface,
-    check_backend_support, select_backends, load_pkcs1_vectors
+    load_hash_vectors, check_for_iface, check_backend_support,
+    select_backends, load_pkcs1_vectors
 )
 
 
@@ -251,57 +251,6 @@ def test_load_cryptrec_vectors_invalid():
 
     with pytest.raises(ValueError):
         load_cryptrec_vectors(vector_data)
-
-
-def test_load_openssl_vectors():
-    vector_data = textwrap.dedent(
-        """
-        # We don't support CFB{1,8}-CAMELLIAxxx.{En,De}crypt
-        # For all CFB128 encrypts and decrypts, the transformed sequence is
-        #   CAMELLIA-bits-CFB:key:IV/ciphertext':plaintext:ciphertext:encdec
-        # CFB128-CAMELLIA128.Encrypt
-        """
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "000102030405060708090A0B0C0D0E0F:6BC1BEE22E409F96E93D7E117393172A:"
-        "14F7646187817EB586599146B82BD719:1\n"
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "14F7646187817EB586599146B82BD719:AE2D8A571E03AC9C9EB76FAC45AF8E51:"
-        "A53D28BB82DF741103EA4F921A44880B:1\n\n"
-        "# CFB128-CAMELLIA128.Decrypt\n"
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "000102030405060708090A0B0C0D0E0F:6BC1BEE22E409F96E93D7E117393172A:"
-        "14F7646187817EB586599146B82BD719:0\n"
-        "CAMELLIA-128-CFB:2B7E151628AED2A6ABF7158809CF4F3C:"
-        "14F7646187817EB586599146B82BD719:AE2D8A571E03AC9C9EB76FAC45AF8E51:"
-        "A53D28BB82DF741103EA4F921A44880B:0"
-    ).splitlines()
-
-    assert load_openssl_vectors(vector_data) == [
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"000102030405060708090A0B0C0D0E0F",
-            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
-            "ciphertext": b"14F7646187817EB586599146B82BD719",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"14F7646187817EB586599146B82BD719",
-            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"000102030405060708090A0B0C0D0E0F",
-            "plaintext": b"6BC1BEE22E409F96E93D7E117393172A",
-            "ciphertext": b"14F7646187817EB586599146B82BD719",
-        },
-        {
-            "key": b"2B7E151628AED2A6ABF7158809CF4F3C",
-            "iv": b"14F7646187817EB586599146B82BD719",
-            "plaintext": b"AE2D8A571E03AC9C9EB76FAC45AF8E51",
-            "ciphertext": b"A53D28BB82DF741103EA4F921A44880B",
-        },
-    ]
 
 
 def test_load_hash_vectors():
@@ -631,8 +580,63 @@ def test_load_pkcs1_vectors():
 
     # RSA-PSS signing of 6 random messages with random salts
     # -------------------------------------------------------
+    # PSS Example 8.1
 
-    <snip>
+    # -----------------
+
+    # Message to be signed:
+    81 33 2f 4b e6 29 48 41 5e a1 d8 99 79 2e ea cf
+    6c 6e 1d b1 da 8b e1 3b 5c ea 41 db 2f ed 46 70
+    92 e1 ff 39 89 14 c7 14 25 97 75 f5 95 f8 54 7f
+    73 56 92 a5 75 e6 92 3a f7 8f 22 c6 99 7d db 90
+    fb 6f 72 d7 bb 0d d5 74 4a 31 de cd 3d c3 68 58
+    49 83 6e d3 4a ec 59 63 04 ad 11 84 3c 4f 88 48
+    9f 20 97 35 f5 fb 7f da f7 ce c8 ad dc 58 18 16
+    8f 88 0a cb f4 90 d5 10 05 b7 a8 e8 4e 43 e5 42
+    87 97 75 71 dd 99 ee a4 b1 61 eb 2d f1 f5 10 8f
+    12 a4 14 2a 83 32 2e db 05 a7 54 87 a3 43 5c 9a
+    78 ce 53 ed 93 bc 55 08 57 d7 a9 fb
+
+    # Salt:
+    1d 65 49 1d 79 c8 64 b3 73 00 9b e6 f6 f2 46 7b
+    ac 4c 78 fa
+
+    # Signature:
+    02 62 ac 25 4b fa 77 f3 c1 ac a2 2c 51 79 f8 f0
+    40 42 2b 3c 5b af d4 0a 8f 21 cf 0f a5 a6 67 cc
+    d5 99 3d 42 db af b4 09 c5 20 e2 5f ce 2b 1e e1
+    e7 16 57 7f 1e fa 17 f3 da 28 05 2f 40 f0 41 9b
+    23 10 6d 78 45 aa f0 11 25 b6 98 e7 a4 df e9 2d
+    39 67 bb 00 c4 d0 d3 5b a3 55 2a b9 a8 b3 ee f0
+    7c 7f ec db c5 42 4a c4 db 1e 20 cb 37 d0 b2 74
+    47 69 94 0e a9 07 e1 7f bb ca 67 3b 20 52 23 80
+    c5
+
+    # PSS Example 8.2
+
+    # -----------------
+
+    # Message to be signed:
+    e2 f9 6e af 0e 05 e7 ba 32 6e cc a0 ba 7f d2 f7
+    c0 23 56 f3 ce de 9d 0f aa bf 4f cc 8e 60 a9 73
+    e5 59 5f d9 ea 08
+
+    # Salt:
+    43 5c 09 8a a9 90 9e b2 37 7f 12 48 b0 91 b6 89
+    87 ff 18 38
+
+    # Signature:
+    27 07 b9 ad 51 15 c5 8c 94 e9 32 e8 ec 0a 28 0f
+    56 33 9e 44 a1 b5 8d 4d dc ff 2f 31 2e 5f 34 dc
+    fe 39 e8 9c 6a 94 dc ee 86 db bd ae 5b 79 ba 4e
+    08 19 a9 e7 bf d9 d9 82 e7 ee 6c 86 ee 68 39 6e
+    8b 3a 14 c9 c8 f3 4b 17 8e b7 41 f9 d3 f1 21 10
+    9b f5 c8 17 2f ad a2 e7 68 f9 ea 14 33 03 2c 00
+    4a 8a a0 7e b9 90 00 0a 48 dc 94 c8 ba c8 aa be
+    2b 09 b1 aa 46 c0 a2 aa 0e 12 f6 3f bb a7 75 ba
+    7e
+
+    # <snip>
 
     # =============================================
 
@@ -734,14 +738,31 @@ def test_load_pkcs1_vectors():
     48 37 2f 69 78 49 67 45 f9 43 e1 db 4f 18 38 2c
     ea a5 05 df c6 57 57 bb 3f 85 7a 58 dc e5 21 56
 
-    # RSA-PSS signing of 6 random messages with random salts
-    # -------------------------------------------------------
+    # PKCS#1 v1.5 Signature Example 2.17
 
-    <snip>
+    # -----------------
+
+    # Message to be signed:
+    06 ad d7 5a b6 89 de 06 77 44 e6 9a 2e bd 4b 90
+    fa 93 83 00 3c d0 5f f5 36 cb f2 94 cd 21 5f 09
+    23 b7 fc 90 04 f0 aa 18 52 71 a1 d0 06 1f d0 e9
+    77 7a d1 ec 0c 71 59 1f 57 8b f7 b8 e5 a1
+
+    # Signature:
+    45 14 21 0e 54 1d 5b ad 7d d6 0a e5 49 b9 43 ac
+    c4 4f 21 39 0d f5 b6 13 18 45 5a 17 61 0d f5 b7
+    4d 84 ae d2 32 f1 7e 59 d9 1d d2 65 99 22 f8 12
+    db d4 96 81 69 03 84 b9 54 e9 ad fb 9b 1a 96 8c
+    0c bf f7 63 ec ee d6 27 50 c5 91 64 b5 e0 80 a8
+    fe f3 d5 5b fe 2a cf ad 27 52 a6 a8 45 9f a1 fa
+    b4 9a d3 78 c6 96 4b 23 ee 97 fd 10 34 61 0c 5c
+    c1 4c 61 e0 eb fb 17 11 f8 ad e9 6f e6 55 7b 38
+
+    # <snip>
 
     # =============================================
 
-    <snip>
+    # <snip>
     """).splitlines()
 
     vectors = tuple(load_pkcs1_vectors(vector_data))
@@ -780,7 +801,39 @@ def test_load_pkcs1_vectors():
                 'iqmp': int(
                     '07d3e47bf686600b11ac283ce88dbb3f6051e8efd04680e44c171ef53'
                     '1b80b2b7c39fc766320e2cf15d8d99820e96ff30dc69691839c4b40d7'
-                    'b06e45307dc91f3f', 16)
+                    'b06e45307dc91f3f', 16),
+                'examples': [
+                    {
+                        'message': b'81332f4be62948415ea1d899792eeacf6c6e1db1d'
+                                   b'a8be13b5cea41db2fed467092e1ff398914c71425'
+                                   b'9775f595f8547f735692a575e6923af78f22c6997'
+                                   b'ddb90fb6f72d7bb0dd5744a31decd3dc368584983'
+                                   b'6ed34aec596304ad11843c4f88489f209735f5fb7'
+                                   b'fdaf7cec8addc5818168f880acbf490d51005b7a8'
+                                   b'e84e43e54287977571dd99eea4b161eb2df1f5108'
+                                   b'f12a4142a83322edb05a75487a3435c9a78ce53ed'
+                                   b'93bc550857d7a9fb',
+                        'salt': b'1d65491d79c864b373009be6f6f2467bac4c78fa',
+                        'signature': b'0262ac254bfa77f3c1aca22c5179f8f040422b3'
+                                     b'c5bafd40a8f21cf0fa5a667ccd5993d42dbafb4'
+                                     b'09c520e25fce2b1ee1e716577f1efa17f3da280'
+                                     b'52f40f0419b23106d7845aaf01125b698e7a4df'
+                                     b'e92d3967bb00c4d0d35ba3552ab9a8b3eef07c7'
+                                     b'fecdbc5424ac4db1e20cb37d0b2744769940ea9'
+                                     b'07e17fbbca673b20522380c5'
+                    }, {
+                        'message': b'e2f96eaf0e05e7ba326ecca0ba7fd2f7c02356f3c'
+                                   b'ede9d0faabf4fcc8e60a973e5595fd9ea08',
+                        'salt': b'435c098aa9909eb2377f1248b091b68987ff1838',
+                        'signature': b'2707b9ad5115c58c94e932e8ec0a280f56339e4'
+                                     b'4a1b58d4ddcff2f312e5f34dcfe39e89c6a94dc'
+                                     b'ee86dbbdae5b79ba4e0819a9e7bfd9d982e7ee6'
+                                     b'c86ee68396e8b3a14c9c8f34b178eb741f9d3f1'
+                                     b'21109bf5c8172fada2e768f9ea1433032c004a8'
+                                     b'aa07eb990000a48dc94c8bac8aabe2b09b1aa46'
+                                     b'c0a2aa0e12f63fbba775ba7e'
+                    }
+                ]
             },
 
             {
@@ -836,7 +889,22 @@ def test_load_pkcs1_vectors():
                     '77b9d1137b50404a982729316efafc7dfe66d34e5a182600d5f30a0a8'
                     '512051c560d081d4d0a1835ec3d25a60f4e4d6aa948b2bf3dbb5b124c'
                     'bbc3489255a3a948372f6978496745f943e1db4f18382ceaa505dfc65'
-                    '757bb3f857a58dce52156', 16)
+                    '757bb3f857a58dce52156', 16),
+                'examples': [
+                    {
+                        'message': b'06add75ab689de067744e69a2ebd4b90fa9383003'
+                                   b'cd05ff536cbf294cd215f0923b7fc9004f0aa1852'
+                                   b'71a1d0061fd0e9777ad1ec0c71591f578bf7b8e5a'
+                                   b'1',
+                        'signature': b'4514210e541d5bad7dd60ae549b943acc44f213'
+                                     b'90df5b61318455a17610df5b74d84aed232f17e'
+                                     b'59d91dd2659922f812dbd49681690384b954e9a'
+                                     b'dfb9b1a968c0cbff763eceed62750c59164b5e0'
+                                     b'80a8fef3d55bfe2acfad2752a6a8459fa1fab49'
+                                     b'ad378c6964b23ee97fd1034610c5cc14c61e0eb'
+                                     b'fb1711f8ade96fe6557b38'
+                    }
+                ]
             },
 
             {

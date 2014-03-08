@@ -34,6 +34,8 @@ typedef struct {
     ...;
 } X509_ALGOR;
 
+typedef ... X509_ATTRIBUTE;
+
 typedef struct {
     X509_ALGOR *signature;
     ...;
@@ -118,8 +120,6 @@ int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
-int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
-X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
@@ -169,6 +169,13 @@ int X509_STORE_add_cert(X509_STORE *, X509 *);
 int X509_verify_cert(X509_STORE_CTX *);
 
 const char *X509_verify_cert_error_string(long);
+
+const char *X509_get_default_cert_area(void);
+const char *X509_get_default_cert_dir(void);
+const char *X509_get_default_cert_file(void);
+const char *X509_get_default_cert_dir_env(void);
+const char *X509_get_default_cert_file_env(void);
+const char *X509_get_default_private_dir(void);
 """
 
 MACROS = """
@@ -199,9 +206,18 @@ X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
+
+/* these use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
+   RHEL/CentOS 5 we should move these back to FUNCTIONS. */
+int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
+X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
 """
 
 CUSTOMIZATIONS = """
+// OpenSSL 0.9.8e does not have this definition
+#if OPENSSL_VERSION_NUMBER <= 0x0090805fL
+typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
+#endif
 """
 
 CONDITIONAL_NAMES = {}

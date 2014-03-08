@@ -14,12 +14,15 @@
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, UnsupportedCipher, UnsupportedHash
+)
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
@@ -33,11 +36,11 @@ class DummyCipherBackend(object):
 
     def create_symmetric_encryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
-            raise UnsupportedAlgorithm
+            raise UnsupportedCipher
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
-            raise UnsupportedAlgorithm
+            raise UnsupportedCipher
 
 
 @utils.register_interface(HashBackend)
@@ -50,7 +53,7 @@ class DummyHashBackend(object):
 
     def create_hash_ctx(self, algorithm):
         if not self.hash_supported(algorithm):
-            raise UnsupportedAlgorithm
+            raise UnsupportedHash
 
 
 @utils.register_interface(HMACBackend)
@@ -63,7 +66,7 @@ class DummyHMACBackend(object):
 
     def create_hmac_ctx(self, key, algorithm):
         if not self.hmac_supported(algorithm):
-            raise UnsupportedAlgorithm
+            raise UnsupportedHash
 
 
 @utils.register_interface(PBKDF2HMACBackend)
@@ -77,12 +80,19 @@ class DummyPBKDF2HMACBackend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         if not self.pbkdf2_hmac_supported(algorithm):
-            raise UnsupportedAlgorithm
+            raise UnsupportedHash
 
 
 @utils.register_interface(RSABackend)
 class DummyRSABackend(object):
     def generate_rsa_private_key(self, public_exponent, private_key):
+        pass
+
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        pass
+
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
         pass
 
 
@@ -111,9 +121,9 @@ class TestMultiBackend(object):
             modes.CBC(b"\x00" * 16),
             backend=backend
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedCipher):
             cipher.encryptor()
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedCipher):
             cipher.decryptor()
 
     def test_hashes(self):
@@ -124,7 +134,7 @@ class TestMultiBackend(object):
 
         hashes.Hash(hashes.MD5(), backend=backend)
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedHash):
             hashes.Hash(hashes.SHA1(), backend=backend)
 
     def test_hmac(self):
@@ -135,7 +145,7 @@ class TestMultiBackend(object):
 
         hmac.HMAC(b"", hashes.MD5(), backend=backend)
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedHash):
             hmac.HMAC(b"", hashes.SHA1(), backend=backend)
 
     def test_pbkdf2(self):
@@ -146,7 +156,7 @@ class TestMultiBackend(object):
 
         backend.derive_pbkdf2_hmac(hashes.MD5(), 10, b"", 10, b"")
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedHash):
             backend.derive_pbkdf2_hmac(hashes.SHA1(), 10, b"", 10, b"")
 
     def test_rsa(self):
@@ -158,6 +168,20 @@ class TestMultiBackend(object):
             key_size=1024, public_exponent=65537
         )
 
+        backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
+                                         hashes.MD5())
+
+        backend.create_rsa_verification_ctx("public_key", "sig",
+                                            padding.PKCS1v15(), hashes.MD5())
+
         backend = MultiBackend([])
         with pytest.raises(UnsupportedAlgorithm):
             backend.generate_rsa_private_key(key_size=1024, public_exponent=3)
+
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
+                                             hashes.MD5())
+
+        with pytest.raises(UnsupportedAlgorithm):
+            backend.create_rsa_verification_ctx(
+                "public_key", "sig", padding.PKCS1v15(), hashes.MD5())

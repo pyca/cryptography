@@ -212,3 +212,62 @@ A specific ``backend`` may provide one or more of these interfaces.
             provider.
 
         :raises ValueError: If the public_exponent is not valid.
+
+    .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
+
+        :param private_key: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+    .. method:: create_rsa_verification_ctx(public_key, signature, padding, algorithm)
+
+        :param public_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            provider.
+
+        :param bytes signature: The signature to verify.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+
+.. class:: OpenSSLSerializationBackend
+
+    .. versionadded:: 0.3
+
+    A backend with methods for working with OpenSSL's "traditional" PKCS #1
+    style key serialization.
+
+    .. method:: load_openssl_pem_private_key(data, password)
+
+        :param bytes data: PEM data to deserialize.
+
+        :param bytes password: The password to use if this data is encrypted.
+            Should be None if the data is not encrypted.
+
+        :return: A new instance of
+            :class:`~cryptography.hazmat.primitives.serialization.OpenSSLPrivateKey`
+
+        :raises ValueError: If the data could not be deserialized correctly.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
+            encrypted with an unsupported algorithm.

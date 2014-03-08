@@ -18,11 +18,11 @@ __all__ = [
 ]
 
 __title__ = "cryptography"
-__summary__ = ("cryptography is a package designed to expose cryptographic "
-               "recipes and primitives to Python developers.")
+__summary__ = ("cryptography is a package which provides cryptographic recipes"
+               " and primitives to Python developers.")
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "0.2.dev1"
+__version__ = "0.3.dev1"
 
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"

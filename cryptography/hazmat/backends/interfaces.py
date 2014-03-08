@@ -90,3 +90,27 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         Generate an RSAPrivateKey instance with public_exponent and a modulus
         of key_size bits.
         """
+
+    @abc.abstractmethod
+    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        """
+        Returns an object conforming to the AsymmetricSignatureContext
+        interface.
+        """
+
+    @abc.abstractmethod
+    def create_rsa_verification_ctx(self, public_key, signature, padding,
+                                    algorithm):
+        """
+        Returns an object conforming to the AsymmetricVerificationContext
+        interface.
+        """
+
+
+class OpenSSLSerializationBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def load_openssl_pem_private_key(self, data, password):
+        """
+        Load a private key from PEM encoded data, using password if the data
+        is encrypted.
+        """

@@ -20,7 +20,7 @@ import pytest
 import six
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
+from cryptography.exceptions import AlreadyFinalized, UnsupportedHash
 from cryptography.hazmat.primitives import hashes, interfaces
 
 from .utils import generate_base_hash_test
@@ -65,7 +65,7 @@ class TestHashContext(object):
             h.finalize()
 
     def test_unsupported_hash(self, backend):
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedHash):
             hashes.Hash(UnsupportedDummyHash(), backend)
 
 

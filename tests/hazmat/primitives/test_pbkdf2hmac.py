@@ -18,7 +18,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidKey, UnsupportedAlgorithm, AlreadyFinalized
+    InvalidKey, UnsupportedHash, AlreadyFinalized
 )
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -48,7 +48,7 @@ class TestPBKDF2HMAC(object):
             kdf.verify(b"password", key)
 
     def test_unsupported_algorithm(self):
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedHash):
             PBKDF2HMAC(DummyHash(), 20, b"salt", 10, default_backend())
 
     def test_invalid_key(self):

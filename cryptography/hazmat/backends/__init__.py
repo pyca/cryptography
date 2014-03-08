@@ -17,11 +17,13 @@ from cryptography.hazmat.bindings.commoncrypto.binding import (
     Binding as CommonCryptoBinding
 )
 
-_ALL_BACKENDS = [openssl.backend]
+_ALL_BACKENDS = []
 
 if CommonCryptoBinding.is_available():
     from cryptography.hazmat.backends import commoncrypto
     _ALL_BACKENDS.append(commoncrypto.backend)
+
+_ALL_BACKENDS.append(openssl.backend)
 
 
 _default_backend = MultiBackend(_ALL_BACKENDS)

@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
 from ...utils import (
-    load_cryptrec_vectors, load_openssl_vectors
+    load_cryptrec_vectors, load_nist_vectors
 )
 
 
@@ -33,7 +33,7 @@ from ...utils import (
     skip_message="Does not support Camellia ECB",
 )
 @pytest.mark.cipher
-class TestCamellia_ECB(object):
+class TestCamelliaModeECB(object):
     test_ECB = generate_encrypt_test(
         load_cryptrec_vectors,
         os.path.join("ciphers", "Camellia"),
@@ -54,9 +54,9 @@ class TestCamellia_ECB(object):
     skip_message="Does not support Camellia CBC",
 )
 @pytest.mark.cipher
-class TestCamellia_CBC(object):
+class TestCamelliaModeCBC(object):
     test_CBC = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cbc.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
@@ -71,9 +71,9 @@ class TestCamellia_CBC(object):
     skip_message="Does not support Camellia OFB",
 )
 @pytest.mark.cipher
-class TestCamellia_OFB(object):
+class TestCamelliaModeOFB(object):
     test_OFB = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
@@ -88,9 +88,9 @@ class TestCamellia_OFB(object):
     skip_message="Does not support Camellia CFB",
 )
 @pytest.mark.cipher
-class TestCamellia_CFB(object):
+class TestCamelliaModeCFB(object):
     test_CFB = generate_encrypt_test(
-        load_openssl_vectors,
+        load_nist_vectors,
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),

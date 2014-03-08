@@ -14,7 +14,9 @@
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, InternalError
+from cryptography.exceptions import (
+    UnsupportedCipher, UnsupportedHash, InternalError
+)
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -68,49 +70,20 @@ class TestOpenSSL(object):
         cipher = Cipher(
             DummyCipher(), mode, backend=b,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedCipher):
             cipher.encryptor()
 
-    def test_handle_unknown_error(self):
-        with pytest.raises(InternalError):
-            backend._handle_error_code(0)
-
-        backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
-                                   b"test_openssl.py", -1)
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
-
-        backend._lib.ERR_put_error(
-            backend._lib.ERR_LIB_EVP,
-            backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-            0,
-            b"test_openssl.py",
-            -1
-        )
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
-
-        backend._lib.ERR_put_error(
-            backend._lib.ERR_LIB_EVP,
-            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-            0,
-            b"test_openssl.py",
-            -1
-        )
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
-
-    def test_handle_multiple_errors(self):
+    def test_consume_errors(self):
         for i in range(10):
             backend._lib.ERR_put_error(backend._lib.ERR_LIB_EVP, 0, 0,
                                        b"test_openssl.py", -1)
 
         assert backend._lib.ERR_peek_error() != 0
 
-        with pytest.raises(InternalError):
-            backend._handle_error(None)
+        errors = backend._consume_errors()
 
         assert backend._lib.ERR_peek_error() == 0
+        assert len(errors) == 10
 
     def test_openssl_error_string(self):
         backend._lib.ERR_put_error(
@@ -121,8 +94,8 @@ class TestOpenSSL(object):
             -1
         )
 
-        with pytest.raises(InternalError) as exc:
-            backend._handle_error(None)
+        errors = backend._consume_errors()
+        exc = backend._unknown_error(errors[0])
 
         assert (
             "digital envelope routines:"
@@ -147,10 +120,19 @@ class TestOpenSSL(object):
             b"data not multiple of block length"
         )
 
+    def test_unknown_error_in_cipher_finalize(self):
+        cipher = Cipher(AES(b"\0" * 16), CBC(b"\0" * 16), backend=backend)
+        enc = cipher.encryptor()
+        enc.update(b"\0")
+        backend._lib.ERR_put_error(0, 0, 1,
+                                   b"test_openssl.py", -1)
+        with pytest.raises(InternalError):
+            enc.finalize()
+
     def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
         if backend.pbkdf2_hmac_supported(hashes.SHA256()):
             pytest.skip("Requires an older OpenSSL")
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(UnsupportedHash):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
     # This test is not in the next class because to check if it's really

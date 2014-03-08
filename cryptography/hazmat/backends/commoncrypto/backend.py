@@ -17,7 +17,7 @@ from collections import namedtuple
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, InvalidTag, InternalError
+    InvalidTag, InternalError, UnsupportedCipher, UnsupportedHash
 )
 from cryptography.hazmat.backends.interfaces import (
     HashBackend, HMACBackend, CipherBackend, PBKDF2HMACBackend
@@ -202,7 +202,8 @@ class Backend(object):
             (CBC, self._lib.kCCModeCBC),
             (ECB, self._lib.kCCModeECB),
             (CFB, self._lib.kCCModeCFB),
-            (OFB, self._lib.kCCModeOFB)
+            (OFB, self._lib.kCCModeOFB),
+            (CTR, self._lib.kCCModeCTR)
         ]:
             self._register_cipher_adapter(
                 CAST5,
@@ -272,7 +273,7 @@ class _CipherContext(object):
         try:
             cipher_enum, mode_enum = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedAlgorithm(
+            raise UnsupportedCipher(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -345,7 +346,7 @@ class _GCMCipherContext(object):
         try:
             cipher_enum, mode_enum = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedAlgorithm(
+            raise UnsupportedCipher(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -419,7 +420,7 @@ class _HashContext(object):
             try:
                 methods = self._backend._hash_mapping[self.algorithm.name]
             except KeyError:
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -462,7 +463,7 @@ class _HMACContext(object):
             try:
                 alg = self._backend._supported_hmac_algorithms[algorithm.name]
             except KeyError:
-                raise UnsupportedAlgorithm(
+                raise UnsupportedHash(
                     "{0} is not a supported HMAC hash on this backend".format(
                         algorithm.name)
                 )

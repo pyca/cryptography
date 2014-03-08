@@ -64,8 +64,6 @@ int EVP_CipherUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
                      const unsigned char *, int);
 int EVP_CipherFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
 int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
-const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
-int EVP_CIPHER_block_size(const EVP_CIPHER *);
 void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
 EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
@@ -79,13 +77,12 @@ int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
 int EVP_MD_CTX_cleanup(EVP_MD_CTX *);
 void EVP_MD_CTX_destroy(EVP_MD_CTX *);
 const EVP_MD *EVP_get_digestbyname(const char *);
-const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
-int EVP_MD_size(const EVP_MD *);
 
 EVP_PKEY *EVP_PKEY_new(void);
 void EVP_PKEY_free(EVP_PKEY *);
 int EVP_PKEY_type(int);
 int EVP_PKEY_bits(EVP_PKEY *);
+int EVP_PKEY_size(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
 
 int EVP_SignInit(EVP_MD_CTX *, const EVP_MD *);
@@ -104,6 +101,19 @@ int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
 
 int EVP_PKEY_set1_RSA(EVP_PKEY *, struct rsa_st *);
 int EVP_PKEY_set1_DSA(EVP_PKEY *, struct dsa_st *);
+
+int EVP_PKEY_get_attr_count(const EVP_PKEY *);
+int EVP_PKEY_get_attr_by_NID(const EVP_PKEY *, int, int);
+int EVP_PKEY_get_attr_by_OBJ(const EVP_PKEY *, ASN1_OBJECT *, int);
+X509_ATTRIBUTE *EVP_PKEY_get_attr(const EVP_PKEY *, int);
+X509_ATTRIBUTE *EVP_PKEY_delete_attr(EVP_PKEY *, int);
+int EVP_PKEY_add1_attr(EVP_PKEY *, X509_ATTRIBUTE *);
+int EVP_PKEY_add1_attr_by_OBJ(EVP_PKEY *, const ASN1_OBJECT *, int,
+                              const unsigned char *, int);
+int EVP_PKEY_add1_attr_by_NID(EVP_PKEY *, int, int,
+                              const unsigned char *, int);
+int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
+                              const unsigned char *, int);
 """
 
 MACROS = """
@@ -129,6 +139,13 @@ int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
 int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
 int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
                     const unsigned char *, size_t);
+
+/* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
+   we should move these back to FUNCTIONS. */
+const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *);
+int EVP_CIPHER_block_size(const EVP_CIPHER *);
+const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *);
+int EVP_MD_size(const EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
@@ -140,7 +157,7 @@ const long EVP_CTRL_GCM_GET_TAG = -1;
 const long EVP_CTRL_GCM_SET_TAG = -1;
 const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
-#if OPENSSL_VERSION_NUMBER >= 0x10000000
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const long Cryptography_HAS_PBKDF2_HMAC = 1;
 const long Cryptography_HAS_PKEY_CTX = 1;
 #else

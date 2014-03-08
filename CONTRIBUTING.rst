@@ -10,9 +10,9 @@ Examples of contributions include:
 * Bug reports and patch reviews
 
 Extensive contribution guidelines are available in the repository at
-``docs/contributing.rst``, or online at:
+``docs/development/index.rst``, or online at:
 
-https://cryptography.io/en/latest/contributing/
+https://cryptography.io/en/latest/development/
 
 Security issues
 ---------------

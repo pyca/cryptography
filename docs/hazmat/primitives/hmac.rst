@@ -35,7 +35,7 @@ message.
         '#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'
 
     If the backend doesn't support the requested ``algorithm`` an
-    :class:`~cryptography.exceptions.UnsupportedAlgorithm` will be raised.
+    :class:`~cryptography.exceptions.UnsupportedHash` will be raised.
 
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:

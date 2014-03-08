@@ -13,11 +13,14 @@ cryptographically
 decrypt
 decrypted
 decrypting
+deserialize
+deserialized
 Docstrings
 fernet
 Fernet
 hazmat
 indistinguishability
+interoperable
 introspectability
 invariants
 iOS
@@ -25,6 +28,7 @@ pickleable
 plaintext
 pseudorandom
 Schneier
+scrypt
 testability
 unencrypted
 unpadded

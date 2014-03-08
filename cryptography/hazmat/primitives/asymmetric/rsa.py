@@ -13,19 +13,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-import sys
-
 import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
-
-
-def _bit_length(x):
-    if sys.version_info >= (2, 7):
-        return x.bit_length()
-    else:
-        return len(bin(x)) - (2 + (x <= 0))
 
 
 @utils.register_interface(interfaces.RSAPublicKey)
@@ -49,9 +40,13 @@ class RSAPublicKey(object):
         self._public_exponent = public_exponent
         self._modulus = modulus
 
+    def verifier(self, signature, padding, algorithm, backend):
+        return backend.create_rsa_verification_ctx(self, signature, padding,
+                                                   algorithm)
+
     @property
     def key_size(self):
-        return _bit_length(self.modulus)
+        return utils.bit_length(self.modulus)
 
     @property
     def public_exponent(self):
@@ -132,12 +127,15 @@ class RSAPrivateKey(object):
         self._modulus = modulus
 
     @classmethod
-    def generate(self, public_exponent, key_size, backend):
+    def generate(cls, public_exponent, key_size, backend):
         return backend.generate_rsa_private_key(public_exponent, key_size)
+
+    def signer(self, padding, algorithm, backend):
+        return backend.create_rsa_signature_ctx(self, padding, algorithm)
 
     @property
     def key_size(self):
-        return _bit_length(self.modulus)
+        return utils.bit_length(self.modulus)
 
     def public_key(self):
         return RSAPublicKey(self.public_exponent, self.modulus)
