@@ -47,5 +47,5 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        return sys.platform == "darwin" and map(
-            int, platform.mac_ver()[0].split(".")) >= [10, 8, 0]
+        return sys.platform == "darwin" and list(map(
+            int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]
