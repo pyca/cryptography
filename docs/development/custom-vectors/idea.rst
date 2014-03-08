@@ -20,6 +20,11 @@ Download link: :download:`generate_idea.py </development/custom-vectors/idea/gen
 Verification
 ------------
 
-The following go code was used to verify the vectors.
+The following python code was used to verify the vectors using the `Botan`_
+project's Python bindings.
 
-TODO: verify the vectors.
+.. literalinclude:: /development/custom-vectors/idea/verify_idea.py
+
+Download link: :download:`verify_idea.py </development/custom-vectors/idea/verify_idea.py>`
+
+.. _`Botan`: http://botan.randombit.net

@@ -1,7 +1,7 @@
-# IDEA OFB vectors built for https://cryptography.io
+# IDEA OFB vectors built for https://github.com/pyca/cryptography
 # Derived from the AESVS MMT test data for OFB
+# Verified against Botan
 # Key Length : 128
-
 
 COUNT = 0
 KEY = d7d57bd847154af9722a8df096e61a42

@@ -1,5 +1,6 @@
-# IDEA CFB128 vectors built for https://cryptography.io
+# IDEA CFB vectors built for https://github.com/pyca/cryptography
 # Derived from the AESVS MMT test data for CFB128
+# Verified against Botan
 # Key Length : 128
 
 COUNT = 0
