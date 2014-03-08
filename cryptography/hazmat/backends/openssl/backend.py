@@ -276,6 +276,11 @@ class Backend(object):
         assert bn_ptr[0] != self._ffi.NULL
         return bn_ptr[0]
 
+    def _int_to_bn_or_null(self, num):
+        if num is None:
+            return self._ffi.NULL
+        return self._int_to_bn(num)
+
     def generate_rsa_private_key(self, public_exponent, key_size):
         if public_exponent < 3:
             raise ValueError("public_exponent must be >= 3")
@@ -313,14 +318,14 @@ class Backend(object):
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-        ctx.p = self._int_to_bn(private_key.p)
-        ctx.q = self._int_to_bn(private_key.q)
+        ctx.p = self._int_to_bn_or_null(private_key.p)
+        ctx.q = self._int_to_bn_or_null(private_key.q)
         ctx.d = self._int_to_bn(private_key.d)
         ctx.e = self._int_to_bn(private_key.e)
         ctx.n = self._int_to_bn(private_key.n)
-        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
-        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
-        ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        ctx.dmp1 = self._int_to_bn_or_null(private_key.dmp1)
+        ctx.dmq1 = self._int_to_bn_or_null(private_key.dmq1)
+        ctx.iqmp = self._int_to_bn_or_null(private_key.iqmp)
         return ctx
 
     def _rsa_cdata_from_public_key(self, public_key):
