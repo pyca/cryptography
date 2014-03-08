@@ -3,7 +3,8 @@
 CommonCrypto Backend
 ====================
 
-The `CommonCrypto`_ C library provided by Apple on OS X and iOS.
+The `CommonCrypto`_ C library provided by Apple on OS X and iOS. The CommonCrypto
+backend is only supported on OS X versions 10.8 and above.
 
 .. currentmodule:: cryptography.hazmat.backends.commoncrypto.backend
 
