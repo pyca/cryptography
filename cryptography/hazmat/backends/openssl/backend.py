@@ -419,8 +419,11 @@ class Backend(object):
             assert ctx != self._ffi.NULL
             ctx = self._ffi.gc(ctx, self._lib.DSA_free)
 
+        bn = self._int_to_bn(key_size)
+        bn = self._ffi.gc(bn, self._lib.BN_free)
+
         res = self._lib.DSA_generate_parameters_ex(
-            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+            ctx, bn, self._ffi.NULL, self._ffi.NULL,
             self._ffi.NULL, self._ffi.NULL
         )
 
@@ -445,7 +448,9 @@ class Backend(object):
             if key_size not in (1024, 2048, 3072):
                 raise ValueError("Key size must be 1024 or 2048 or"
                                  "3072 bits")
-            self.generate_dsa_parameters(key_size, ctx)
+            bn = self._int_to_bn(key_size)
+            bn = self._ffi.gc(bn, self._lib.BN_free)
+            self.generate_dsa_parameters(bn, ctx)
 
         self._lib.DSA_generate_key(ctx)
 
@@ -462,6 +467,7 @@ class Backend(object):
             return self.hash_supported(algorithm)
         else:
             return isinstance(algorithm, hashes.SHA1)
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
