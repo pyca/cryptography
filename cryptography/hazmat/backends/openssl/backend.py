@@ -276,11 +276,6 @@ class Backend(object):
         assert bn_ptr[0] != self._ffi.NULL
         return bn_ptr[0]
 
-    def _int_to_bn_or_null(self, num):
-        if num is None:
-            return self._ffi.NULL
-        return self._int_to_bn(num)
-
     def generate_rsa_private_key(self, public_exponent, key_size):
         if public_exponent < 3:
             raise ValueError("public_exponent must be >= 3")
