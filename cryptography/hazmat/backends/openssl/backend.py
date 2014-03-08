@@ -410,7 +410,7 @@ class Backend(object):
                                        algorithm)
 
     def generate_dsa_parameters(self, key_size, ctx=None):
-        if key_size not in [1024, 2048, 3072]:
+        if key_size not in (1024, 2048, 3072):
             raise ValueError("Key size must be 1024 or 2048 or"
                              "3072 bits")
 
@@ -437,31 +437,12 @@ class Backend(object):
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
         if all([parameters.p, parameters.q, parameters.g]):
-            if ctx.p not in [1024, 2048, 3072]:
-                raise ValueError("Prime Modulus length must be 1024 or 2048 or"
-                                 "3072 bits")
-
-            if ctx.q not in [160, 256]:
-                raise ValueError("Subgroup order length must be 160 or"
-                                 "256 bits")
-
-            if (ctx.p, ctx.q) not in [
-                    (1024, 160),
-                    (2048, 256),
-                    (3072, 256)]:
-                raise ValueError("Prime Modulus and Subgroup order lengths"
-                                 "must be one of these pairs (1024, 160)"
-                                 "or (2048, 256) or (3072, 256)")
-
-            if ctx.g <= 1 or ctx.g >= ctx.p:
-                raise ValueError("Generator must be > 1 and < Prime Modulus")
-
             ctx.p = self._int_to_bn(parameters.p)
             ctx.q = self._int_to_bn(parameters.q)
             ctx.g = self._int_to_bn(parameters.g)
 
         else:
-            if key_size not in [1024, 2048, 3072]:
+            if key_size not in (1024, 2048, 3072):
                 raise ValueError("Key size must be 1024 or 2048 or"
                                  "3072 bits")
             self.generate_dsa_parameters(key_size, ctx)
