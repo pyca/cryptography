@@ -13,9 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import sys
 import platform
-
-from pkg_resources import parse_version
 
 from cryptography.hazmat.bindings.utils import build_ffi
 
@@ -48,5 +47,5 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        version = parse_version(platform.mac_ver()[0])
-        return version >= parse_version("10.8")
+        return sys.platform == "darwin" and map(
+            int, platform.mac_ver()[0].split(".")) >= [10, 8, 0]
