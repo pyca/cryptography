@@ -31,7 +31,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support CAST5 ECB",
 )
 @pytest.mark.cipher
-class TestCAST5_ECB(object):
+class TestCAST5ModeECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -48,7 +48,7 @@ class TestCAST5_ECB(object):
     skip_message="Does not support CAST5 CBC",
 )
 @pytest.mark.cipher
-class TestCAST5_CBC(object):
+class TestCAST5ModeCBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -65,7 +65,7 @@ class TestCAST5_CBC(object):
     skip_message="Does not support CAST5 OFB",
 )
 @pytest.mark.cipher
-class TestCAST5_OFB(object):
+class TestCAST5ModeOFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -82,7 +82,7 @@ class TestCAST5_OFB(object):
     skip_message="Does not support CAST5 CFB",
 )
 @pytest.mark.cipher
-class TestCAST5_CFB(object):
+class TestCAST5ModeCFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),
@@ -99,7 +99,7 @@ class TestCAST5_CFB(object):
     skip_message="Does not support CAST5 CTR",
 )
 @pytest.mark.cipher
-class TestCAST5_CTR(object):
+class TestCAST5ModeCTR(object):
     test_CTR = generate_encrypt_test(
         load_nist_vectors,
         os.path.join("ciphers", "CAST5"),

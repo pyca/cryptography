@@ -17,7 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidKey, UnsupportedAlgorithm, AlreadyFinalized
+    InvalidKey, UnsupportedHash, AlreadyFinalized
 )
 from cryptography.hazmat.primitives import constant_time, interfaces
 
@@ -26,7 +26,7 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
         if not backend.pbkdf2_hmac_supported(algorithm):
-            raise UnsupportedAlgorithm(
+            raise UnsupportedHash(
                 "{0} is not supported for PBKDF2 by this backend".format(
                     algorithm.name)
             )

@@ -15,6 +15,7 @@ Asymmetric Ciphers
 
 * RSA PKCS #1 from the RSA FTP site (ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/
   and ftp://ftp.rsa.com/pub/rsalabs/tmp/).
+* RSA FIPS 186-2 and PKCS1 v1.5 vulnerability test vectors from `NIST CAVP`_.
 * DSA test vectors from `FIPS 186-2`_ and `FIPS 186-3`_.
 * OpenSSL PEM RSA serialization vectors from the `OpenSSL example key`_ and
   `GnuTLS key parsing tests`_.

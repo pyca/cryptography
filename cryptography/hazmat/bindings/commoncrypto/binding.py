@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+import platform
 
 from cryptography.hazmat.bindings.utils import build_ffi
 
@@ -46,4 +47,5 @@ class Binding(object):
 
     @classmethod
     def is_available(cls):
-        return sys.platform == "darwin"
+        return sys.platform == "darwin" and list(map(
+            int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]

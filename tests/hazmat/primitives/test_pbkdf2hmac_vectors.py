@@ -26,7 +26,7 @@ from ...utils import load_nist_vectors
     skip_message="Does not support SHA1 for PBKDF2HMAC",
 )
 @pytest.mark.pbkdf2hmac
-class TestPBKDF2HMAC_SHA1(object):
+class TestPBKDF2HMACSHA1(object):
     test_pbkdf2_sha1 = generate_pbkdf2_test(
         load_nist_vectors,
         "KDF",
