@@ -471,6 +471,26 @@ class TestRSASignature(object):
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
 
+    def test_pss_signing_salt_length_too_long(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=1000000
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        signer.update(b"failure coming")
+        with pytest.raises(ValueError):
+            signer.finalize()
+
     def test_use_after_finalize(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -750,3 +770,37 @@ class TestRSAVerification(object):
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
                                 hashes.SHA1(), backend)
+
+    def test_pss_verify_salt_length_too_long(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        signer.update(b"sign me")
+        signature = signer.finalize()
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=1000000
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()

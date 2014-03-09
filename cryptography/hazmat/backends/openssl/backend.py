@@ -728,7 +728,13 @@ class _RSASignatureContext(object):
         buf = self._backend._ffi.new("unsigned char[]", buflen[0])
         res = self._backend._lib.EVP_PKEY_sign(
             pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
-        assert res == 1
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError("Salt length too long for key size")
+
         return self._backend._ffi.buffer(buf)[:]
 
     def _finalize_pkcs1(self, evp_pkey, pkey_size, rsa_cdata, evp_md):
@@ -756,7 +762,13 @@ class _RSASignatureContext(object):
             evp_md,
             self._padding.mgf.salt_length
         )
-        assert res == 1
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError("Salt length too long for key size")
+
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
         sig_len = self._backend._lib.RSA_private_encrypt(
             pkey_size,
