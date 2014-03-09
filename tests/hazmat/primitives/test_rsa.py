@@ -34,6 +34,10 @@ class DummyPadding(object):
     name = "UNSUPPORTED-PADDING"
 
 
+class DummyMGF(object):
+    pass
+
+
 def _modinv(e, m):
     """
     Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
@@ -735,3 +739,14 @@ class TestRSAVerification(object):
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", "notpadding", hashes.SHA1(), backend)
+
+    def test_unsupported_pss_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
+                                hashes.SHA1(), backend)
