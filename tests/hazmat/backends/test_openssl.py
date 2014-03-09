@@ -146,7 +146,7 @@ class TestOpenSSL(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedHash):
             private_key.signer(
                 padding.PSS(
                     mgf=padding.MGF1(
@@ -158,7 +158,7 @@ class TestOpenSSL(object):
                 backend
             )
         public_key = private_key.public_key()
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedHash):
             public_key.verifier(
                 b"sig",
                 padding.PSS(

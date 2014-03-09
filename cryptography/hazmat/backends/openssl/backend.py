@@ -645,8 +645,8 @@ class _RSASignatureContext(object):
 
             if (not isinstance(padding.mgf.algorithm, hashes.SHA1) and
                     not self._backend._lib.Cryptography_HAS_MGF1_MD):
-                raise ValueError("This backend only supports MGF1 with SHA1 "
-                                 "when OpenSSL is not 1.0.1+")
+                raise UnsupportedHash("This backend only supports MGF1 with "
+                                      "SHA1 when OpenSSL is not 1.0.1+")
 
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._finalize_method = self._finalize_pkey_ctx
@@ -803,8 +803,8 @@ class _RSAVerificationContext(object):
 
             if (not isinstance(padding.mgf.algorithm, hashes.SHA1) and
                     not self._backend._lib.Cryptography_HAS_MGF1_MD):
-                raise ValueError("This backend only supports MGF1 with SHA1 "
-                                 "when OpenSSL is not 1.0.1+")
+                raise UnsupportedHash("This backend only supports MGF1 with "
+                                      "SHA1 when OpenSSL is not 1.0.1+")
 
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._verify_method = self._verify_pkey_ctx
