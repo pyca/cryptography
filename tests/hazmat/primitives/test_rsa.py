@@ -371,6 +371,19 @@ class TestRSA(object):
         with pytest.raises(ValueError):
             rsa.RSAPublicKey(public_exponent=6, modulus=15)
 
+    def test_filling_in_unspecified_fields(self):
+        key = rsa.RSAPrivateKey(
+            p=None,
+            q=None,
+            private_exponent=2753,
+            dmp1=None,
+            dmq1=None,
+            iqmp=None,
+            public_exponent=17,
+            modulus=3233,
+        )
+        _check_rsa_private_key(key)
+
 
 @pytest.mark.rsa
 class TestRSASignature(object):
