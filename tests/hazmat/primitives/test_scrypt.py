@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
+
 import pytest
 
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
@@ -35,4 +37,4 @@ class TestScrypt(object):
         derived_key = params["derived_key"]
 
         scrypt = Scrypt(salt, length, N, r, p, backend)
-        assert scrypt.derive(password).encode("hex_codec") == derived_key
+        assert binascii.hexlify(scrypt.derive(password)) == derived_key
