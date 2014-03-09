@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
+
 import sys
 
 import cffi
@@ -60,14 +62,16 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
     # is legal, but the following will fail to compile:
     #   int foo(int);
     #   int foo(short);
+    source = "\n".join(
+        [pre_include] +
+        includes +
+        [post_include] +
+        functions +
+        customizations
+    )
     lib = ffi.verify(
-        source="\n".join(
-            [pre_include] +
-            includes +
-            [post_include] +
-            functions +
-            customizations
-        ),
+        source=source,
+        modulename=create_modulename(ffi, source),
         libraries=libraries,
         ext_package="cryptography",
     )
@@ -81,3 +85,21 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
                     delattr(lib, name)
 
     return ffi, lib
+
+
+def create_modulename(ffi, source):
+    """
+    cffi creates a modulename internally that incorporates the cffi version.
+    This will cause cryptography's wheels to break when the version of cffi
+    the user has does not match what was used when building the wheel. To
+    resolve this we build our own modulename that uses most of the same code
+    from cffi but elides the version key.
+    """
+    key = '\x00'.join([sys.version[:3], source] + ffi._cdefsources)
+    if sys.version_info >= (3,):
+        key = key.encode('utf-8')
+    k1 = hex(binascii.crc32(key[0::2]) & 0xffffffff)
+    k1 = k1.lstrip('0x').rstrip('L')
+    k2 = hex(binascii.crc32(key[1::2]) & 0xffffffff)
+    k2 = k2.lstrip('0').rstrip('L')
+    return '_cffi_{0}{1}'.format(k1, k2)
