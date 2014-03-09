@@ -320,17 +320,7 @@ class Backend(object):
         ctx.n = self._int_to_bn(private_key.n)
         ctx.dmp1 = self._int_to_bn(private_key.dmp1)
         ctx.dmq1 = self._int_to_bn(private_key.dmq1)
-        if private_key.iqmp is not None:
-            ctx.iqmp = self._int_to_bn(private_key.iqmp)
-        else:
-            bn_ctx = self._lib.BN_CTX_new()
-            assert bn_ctx != self._ffi.NULL
-            self._lib.BN_CTX_start(bn_ctx)
-            ctx.iqmp = self._lib.BN_mod_inverse(
-                self._ffi.NULL, ctx.q, ctx.p, bn_ctx)
-            assert ctx.iqmp != self._ffi.NULL
-            self._lib.BN_CTX_end(bn_ctx)
-            self._lib.BN_CTX_free(bn_ctx)
+        ctx.iqmp = self._int_to_bn(private_key.iqmp)
         return ctx
 
     def _rsa_cdata_from_public_key(self, public_key):

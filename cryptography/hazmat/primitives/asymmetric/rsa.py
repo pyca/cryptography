@@ -92,6 +92,19 @@ def factor_n(n, e, d):
     return p, q
 
 
+def modinv(e, m):
+    """
+    Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
+    """
+    x1, y1, x2, y2 = 1, 0, 0, 1
+    a, b = e, m
+    while b > 0:
+        q, r = divmod(a, b)
+        xn, yn = x1 - q * x2, y1 - q * y2
+        a, b, x1, y1, x2, y2 = b, r, x2, y2, xn, yn
+    return x1 % m
+
+
 @utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
@@ -152,6 +165,9 @@ class RSAPrivateKey(object):
 
         if dmq1 is None:
             dmq1 = private_exponent % (q - 1)
+
+        if iqmp is None:
+            iqmp = modinv(q, p)
 
         self._p = p
         self._q = q
