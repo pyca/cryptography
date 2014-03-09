@@ -17,12 +17,12 @@ from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, RSABackend, ScryptBackend
 )
 
 
 @utils.register_interface(CMACBackend)
-@utils.register_interface(CipherBackend)
+@utils.register_interface(ScryptBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -302,3 +302,7 @@ class MultiBackend(object):
             "This backend does not support this elliptic curve.",
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
+
+    def derive_scrypt(self, key_material, salt, length, N, r, p):
+        for b in self._filtered_backends(ScryptBackend):
+            return b.derive_scrypt(key_material, salt, length, N, r, p)

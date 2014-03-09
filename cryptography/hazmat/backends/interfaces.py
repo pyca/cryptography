@@ -290,3 +290,11 @@ class EllipticCurveBackend(object):
         """
         Return an EllipticCurvePublicKey provider using the given numbers.
         """
+
+
+class ScryptBackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def derive_scrypt(self, key_material, salt, length, N, r, p):
+        """
+        Return length bytes derived from provided Scrypt parameters.
+        """

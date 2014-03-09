@@ -20,7 +20,9 @@ from cryptography.hazmat.bindings.commoncrypto.binding import (
 from cryptography.hazmat.bindings.openssl.binding import (
     Binding as OpenSSLBinding
 )
-
+from cryptography.hazmat.bindings.libscrypt.binding import (
+    Binding as LibscryptBinding
+)
 
 _available_backends_list = None
 
@@ -38,6 +40,10 @@ def _available_backends():
         if OpenSSLBinding.is_available():
             from cryptography.hazmat.backends import openssl
             _available_backends_list.append(openssl.backend)
+
+        if LibscryptBinding.is_available():
+            from cryptography.hazmat.backends import libscrypt
+            _available_backends_list.append(libscrypt.backend)
 
     return _available_backends_list
 
