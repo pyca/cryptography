@@ -100,7 +100,6 @@ static const int ASN1_R_WRONG_TAG;
 static const int ASN1_R_WRONG_TYPE;
 
 static const int EVP_F_AES_INIT_KEY;
-static const int EVP_F_CAMELLIA_INIT_KEY;
 static const int EVP_F_D2I_PKEY;
 static const int EVP_F_DSA_PKEY2PKCS8;
 static const int EVP_F_DSAPKEY2PKCS8;
@@ -141,7 +140,6 @@ static const int EVP_R_BAD_BLOCK_LENGTH;
 static const int EVP_R_BAD_KEY_LENGTH;
 static const int EVP_R_BN_DECODE_ERROR;
 static const int EVP_R_BN_PUBKEY_ERROR;
-static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 static const int EVP_R_CIPHER_PARAMETER_ERROR;
 static const int EVP_R_CTRL_NOT_IMPLEMENTED;
 static const int EVP_R_CTRL_OPERATION_NOT_IMPLEMENTED;
@@ -266,6 +264,8 @@ static const int ASN1_F_SMIME_TEXT;
 static const int ASN1_R_NO_CONTENT_TYPE;
 static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY;
+static const int EVP_F_CAMELLIA_INIT_KEY;
+static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 """
 
 CUSTOMIZATIONS = """
@@ -290,6 +290,16 @@ static const int ASN1_R_NO_CONTENT_TYPE = 0;
 static const int ASN1_R_NO_MULTIPART_BODY_FAILURE = 0;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY = 0;
 #endif
+
+// OpenSSL 0.9.8c+
+#if OPENSSL_VERSION_NUMBER >= 0x0090803fL
+static const long Cryptography_HAS_098C_ERROR_CODES = 1;
+#else
+static const long Cryptography_HAS_098C_ERROR_CODES = 0;
+static const int EVP_F_CAMELLIA_INIT_KEY = 0;
+static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED = 0;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -303,6 +313,10 @@ CONDITIONAL_NAMES = {
         "ASN1_F_SMIME_TEXT",
         "ASN1_R_NO_CONTENT_TYPE",
         "ASN1_R_NO_MULTIPART_BODY_FAILURE",
-        "ASN1_R_NO_MULTIPART_BOUNDARY",
+        "ASN1_R_NO_MULTIPART_BOUNDARY"
     ],
+    "Cryptography_HAS_098C_ERROR_CODES": [
+        "EVP_F_CAMELLIA_INIT_KEY",
+        "EVP_R_CAMELLIA_KEY_SETUP_FAILED"
+    ]
 }
