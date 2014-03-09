@@ -29,7 +29,7 @@ Message Digests
         'l\xa1=R\xcap\xc8\x83\xe0\xf0\xbb\x10\x1eBZ\x89\xe8bM\xe5\x1d\xb2\xd29%\x93\xafj\x84\x11\x80\x90'
 
     If the backend doesn't support the requested ``algorithm`` an
-    :class:`~cryptography.exceptions.UnsupportedHash` will be raised.
+    :class:`~cryptography.exceptions.UnsupportedHash` exception will be raised.
 
     Keep in mind that attacks against cryptographic hashes only get stronger
     with time, and that often algorithms that were once thought to be strong,
@@ -47,26 +47,26 @@ Message Digests
 
     .. method:: update(data)
 
-        :param bytes data: The bytes you wish to hash.
-        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :param bytes data: The bytes to be hashed.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
 
     .. method:: copy()
 
-        Copy this :class:`Hash` instance, usually so that we may call
-        :meth:`finalize` and get an intermediate digest value while we continue
-        to call :meth:`update` on the original.
+        Copy this :class:`Hash` instance, usually so that you may call
+        :meth:`finalize` to get an intermediate digest value while we continue
+        to call :meth:`update` on the original instance.
 
         :return: A new instance of :class:`Hash` that can be updated
-            and finalized independently of the original instance.
-        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+             and finalized independently of the original instance.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
 
     .. method:: finalize()
 
         Finalize the current context and return the message digest as bytes.
 
-        Once ``finalize`` is called this object can no longer be used and
-        :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise
-        :class:`~cryptography.exceptions.AlreadyFinalized`.
+        After ``finalize`` has been called this object can no longer be used
+        and :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise an
+        :class:`~cryptography.exceptions.AlreadyFinalized` exception.
 
         :return bytes: The message digest as bytes.
 
@@ -83,7 +83,7 @@ SHA-1
 
 .. class:: SHA1()
 
-    SHA-1 is a cryptographic hash function standardized by NIST. It has a
+    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
     160-bit message digest.
 
 SHA-2 Family
@@ -91,23 +91,23 @@ SHA-2 Family
 
 .. class:: SHA224()
 
-    SHA-224 is a cryptographic hash function from the SHA-2 family and
-    standardized by NIST. It has a 224-bit message digest.
+    SHA-224 is a cryptographic hash function from the SHA-2 family and is
+    standardized by NIST. It produces a 224-bit message digest.
 
 .. class:: SHA256()
 
-    SHA-256 is a cryptographic hash function from the SHA-2 family and
-    standardized by NIST. It has a 256-bit message digest.
+    SHA-256 is a cryptographic hash function from the SHA-2 family and is
+    standardized by NIST. It produces a 256-bit message digest.
 
 .. class:: SHA384()
 
-    SHA-384 is a cryptographic hash function from the SHA-2 family and
-    standardized by NIST. It has a 384-bit message digest.
+    SHA-384 is a cryptographic hash function from the SHA-2 family and is
+    standardized by NIST. It produces a 384-bit message digest.
 
 .. class:: SHA512()
 
-    SHA-512 is a cryptographic hash function from the SHA-2 family and
-    standardized by NIST. It has a 512-bit message digest.
+    SHA-512 is a cryptographic hash function from the SHA-2 family and is
+    standardized by NIST. It produces a 512-bit message digest.
 
 RIPEMD160
 ~~~~~~~~~
@@ -115,7 +115,7 @@ RIPEMD160
 .. class:: RIPEMD160()
 
     RIPEMD160 is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It has a 160-bit message digest.
+    10118-3:2004. It produces a 160-bit message digest.
 
 Whirlpool
 ~~~~~~~~~
@@ -123,7 +123,7 @@ Whirlpool
 .. class:: Whirlpool()
 
     Whirlpool is a cryptographic hash function that is part of ISO/IEC
-    10118-3:2004. It has a 512-bit message digest.
+    10118-3:2004. It produces a 512-bit message digest.
 
 MD5
 ~~~
@@ -136,8 +136,8 @@ MD5
 
 .. class:: MD5()
 
-    MD5 is a deprecated cryptographic hash function. It has a 128-bit message
-    digest and has practical known collision attacks.
+    MD5 is a deprecated cryptographic hash function. It produces a 128-bit
+    message digest and has practical known collision attacks.
 
 
 .. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
