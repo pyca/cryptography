@@ -523,6 +523,16 @@ class TestRSASignature(object):
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1(), backend)
 
+    def test_unsupported_pss_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(TypeError):
+            private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1(),
+                               backend)
+
 
 @pytest.mark.rsa
 class TestRSAVerification(object):
