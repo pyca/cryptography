@@ -84,7 +84,7 @@ def factor_n(n, e, d):
     k = 1 + (e * d) // n
     phi = (e * d - 1) // k
     m = n + 1 - phi
-    root = isqrt(m**2 - 4*n)
+    root = isqrt(m ** 2 - 4 * n)
     p = (m + root) // 2
     q = (m - root) // 2
     if p * q != n:
