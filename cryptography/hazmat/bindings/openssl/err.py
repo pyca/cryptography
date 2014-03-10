@@ -31,6 +31,7 @@ typedef struct ERR_string_data_st ERR_STRING_DATA;
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
+static const int ERR_LIB_RSA;
 
 static const int ASN1_F_ASN1_ENUMERATED_TO_BN;
 static const int ASN1_F_ASN1_EX_C2I;
@@ -213,6 +214,8 @@ static const int PEM_R_READ_KEY;
 static const int PEM_R_SHORT_HEADER;
 static const int PEM_R_UNSUPPORTED_CIPHER;
 static const int PEM_R_UNSUPPORTED_ENCRYPTION;
+
+static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
 """
 
 FUNCTIONS = """
