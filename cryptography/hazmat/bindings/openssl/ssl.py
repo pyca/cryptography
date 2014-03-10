@@ -80,7 +80,7 @@ static const int SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG;
 static const int SSL_OP_NO_QUERY_MTU;
 static const int SSL_OP_COOKIE_EXCHANGE;
 static const int SSL_OP_NO_TICKET;
-static const int SSL_OP_ALL;
+static const long SSL_OP_ALL;
 static const int SSL_OP_SINGLE_ECDH_USE;
 static const int SSL_VERIFY_PEER;
 static const int SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
