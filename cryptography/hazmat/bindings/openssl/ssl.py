@@ -21,107 +21,107 @@ TYPES = """
 /*
  * Internally invented symbols to tell which versions of SSL/TLS are supported.
 */
-static const int Cryptography_HAS_SSL2;
-static const int Cryptography_HAS_TLSv1_1;
-static const int Cryptography_HAS_TLSv1_2;
+static const long Cryptography_HAS_SSL2;
+static const long Cryptography_HAS_TLSv1_1;
+static const long Cryptography_HAS_TLSv1_2;
 
 /* Internally invented symbol to tell us if SNI is supported */
-static const int Cryptography_HAS_TLSEXT_HOSTNAME;
+static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
  */
-static const int Cryptography_HAS_RELEASE_BUFFERS;
+static const long Cryptography_HAS_RELEASE_BUFFERS;
 
 /* Internally invented symbol to tell us if SSL_OP_NO_COMPRESSION is
  * supported
  */
-static const int Cryptography_HAS_OP_NO_COMPRESSION;
+static const long Cryptography_HAS_OP_NO_COMPRESSION;
 
-static const int Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
-static const int Cryptography_HAS_SSL_SET_SSL_CTX;
-static const int Cryptography_HAS_SSL_OP_NO_TICKET;
+static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
+static const long Cryptography_HAS_SSL_SET_SSL_CTX;
+static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 
-static const int SSL_FILETYPE_PEM;
-static const int SSL_FILETYPE_ASN1;
-static const int SSL_ERROR_NONE;
-static const int SSL_ERROR_ZERO_RETURN;
-static const int SSL_ERROR_WANT_READ;
-static const int SSL_ERROR_WANT_WRITE;
-static const int SSL_ERROR_WANT_X509_LOOKUP;
-static const int SSL_ERROR_SYSCALL;
-static const int SSL_ERROR_SSL;
-static const int SSL_SENT_SHUTDOWN;
-static const int SSL_RECEIVED_SHUTDOWN;
-static const int SSL_OP_NO_SSLv2;
-static const int SSL_OP_NO_SSLv3;
-static const int SSL_OP_NO_TLSv1;
-static const int SSL_OP_NO_TLSv1_1;
-static const int SSL_OP_NO_TLSv1_2;
-static const int SSL_OP_NO_COMPRESSION;
-static const int SSL_OP_SINGLE_DH_USE;
-static const int SSL_OP_EPHEMERAL_RSA;
-static const int SSL_OP_MICROSOFT_SESS_ID_BUG;
-static const int SSL_OP_NETSCAPE_CHALLENGE_BUG;
-static const int SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG;
-static const int SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG;
-static const int SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER;
-static const int SSL_OP_MSIE_SSLV2_RSA_PADDING;
-static const int SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
-static const int SSL_OP_TLS_D5_BUG;
-static const int SSL_OP_TLS_BLOCK_PADDING_BUG;
-static const int SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
-static const int SSL_OP_CIPHER_SERVER_PREFERENCE;
-static const int SSL_OP_TLS_ROLLBACK_BUG;
-static const int SSL_OP_PKCS1_CHECK_1;
-static const int SSL_OP_PKCS1_CHECK_2;
-static const int SSL_OP_NETSCAPE_CA_DN_BUG;
-static const int SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG;
-static const int SSL_OP_NO_QUERY_MTU;
-static const int SSL_OP_COOKIE_EXCHANGE;
-static const int SSL_OP_NO_TICKET;
+static const long SSL_FILETYPE_PEM;
+static const long SSL_FILETYPE_ASN1;
+static const long SSL_ERROR_NONE;
+static const long SSL_ERROR_ZERO_RETURN;
+static const long SSL_ERROR_WANT_READ;
+static const long SSL_ERROR_WANT_WRITE;
+static const long SSL_ERROR_WANT_X509_LOOKUP;
+static const long SSL_ERROR_SYSCALL;
+static const long SSL_ERROR_SSL;
+static const long SSL_SENT_SHUTDOWN;
+static const long SSL_RECEIVED_SHUTDOWN;
+static const long SSL_OP_NO_SSLv2;
+static const long SSL_OP_NO_SSLv3;
+static const long SSL_OP_NO_TLSv1;
+static const long SSL_OP_NO_TLSv1_1;
+static const long SSL_OP_NO_TLSv1_2;
+static const long SSL_OP_NO_COMPRESSION;
+static const long SSL_OP_SINGLE_DH_USE;
+static const long SSL_OP_EPHEMERAL_RSA;
+static const long SSL_OP_MICROSOFT_SESS_ID_BUG;
+static const long SSL_OP_NETSCAPE_CHALLENGE_BUG;
+static const long SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG;
+static const long SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG;
+static const long SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER;
+static const long SSL_OP_MSIE_SSLV2_RSA_PADDING;
+static const long SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
+static const long SSL_OP_TLS_D5_BUG;
+static const long SSL_OP_TLS_BLOCK_PADDING_BUG;
+static const long SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+static const long SSL_OP_CIPHER_SERVER_PREFERENCE;
+static const long SSL_OP_TLS_ROLLBACK_BUG;
+static const long SSL_OP_PKCS1_CHECK_1;
+static const long SSL_OP_PKCS1_CHECK_2;
+static const long SSL_OP_NETSCAPE_CA_DN_BUG;
+static const long SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG;
+static const long SSL_OP_NO_QUERY_MTU;
+static const long SSL_OP_COOKIE_EXCHANGE;
+static const long SSL_OP_NO_TICKET;
 static const long SSL_OP_ALL;
-static const int SSL_OP_SINGLE_ECDH_USE;
-static const int SSL_VERIFY_PEER;
-static const int SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-static const int SSL_VERIFY_CLIENT_ONCE;
-static const int SSL_VERIFY_NONE;
-static const int SSL_SESS_CACHE_OFF;
-static const int SSL_SESS_CACHE_CLIENT;
-static const int SSL_SESS_CACHE_SERVER;
-static const int SSL_SESS_CACHE_BOTH;
-static const int SSL_SESS_CACHE_NO_AUTO_CLEAR;
-static const int SSL_SESS_CACHE_NO_INTERNAL_LOOKUP;
-static const int SSL_SESS_CACHE_NO_INTERNAL_STORE;
-static const int SSL_SESS_CACHE_NO_INTERNAL;
-static const int SSL_ST_CONNECT;
-static const int SSL_ST_ACCEPT;
-static const int SSL_ST_MASK;
-static const int SSL_ST_INIT;
-static const int SSL_ST_BEFORE;
-static const int SSL_ST_OK;
-static const int SSL_ST_RENEGOTIATE;
-static const int SSL_CB_LOOP;
-static const int SSL_CB_EXIT;
-static const int SSL_CB_READ;
-static const int SSL_CB_WRITE;
-static const int SSL_CB_ALERT;
-static const int SSL_CB_READ_ALERT;
-static const int SSL_CB_WRITE_ALERT;
-static const int SSL_CB_ACCEPT_LOOP;
-static const int SSL_CB_ACCEPT_EXIT;
-static const int SSL_CB_CONNECT_LOOP;
-static const int SSL_CB_CONNECT_EXIT;
-static const int SSL_CB_HANDSHAKE_START;
-static const int SSL_CB_HANDSHAKE_DONE;
-static const int SSL_MODE_RELEASE_BUFFERS;
-static const int SSL_MODE_ENABLE_PARTIAL_WRITE;
-static const int SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
-static const int SSL_MODE_AUTO_RETRY;
-static const int SSL3_RANDOM_SIZE;
+static const long SSL_OP_SINGLE_ECDH_USE;
+static const long SSL_VERIFY_PEER;
+static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+static const long SSL_VERIFY_CLIENT_ONCE;
+static const long SSL_VERIFY_NONE;
+static const long SSL_SESS_CACHE_OFF;
+static const long SSL_SESS_CACHE_CLIENT;
+static const long SSL_SESS_CACHE_SERVER;
+static const long SSL_SESS_CACHE_BOTH;
+static const long SSL_SESS_CACHE_NO_AUTO_CLEAR;
+static const long SSL_SESS_CACHE_NO_INTERNAL_LOOKUP;
+static const long SSL_SESS_CACHE_NO_INTERNAL_STORE;
+static const long SSL_SESS_CACHE_NO_INTERNAL;
+static const long SSL_ST_CONNECT;
+static const long SSL_ST_ACCEPT;
+static const long SSL_ST_MASK;
+static const long SSL_ST_INIT;
+static const long SSL_ST_BEFORE;
+static const long SSL_ST_OK;
+static const long SSL_ST_RENEGOTIATE;
+static const long SSL_CB_LOOP;
+static const long SSL_CB_EXIT;
+static const long SSL_CB_READ;
+static const long SSL_CB_WRITE;
+static const long SSL_CB_ALERT;
+static const long SSL_CB_READ_ALERT;
+static const long SSL_CB_WRITE_ALERT;
+static const long SSL_CB_ACCEPT_LOOP;
+static const long SSL_CB_ACCEPT_EXIT;
+static const long SSL_CB_CONNECT_LOOP;
+static const long SSL_CB_CONNECT_EXIT;
+static const long SSL_CB_HANDSHAKE_START;
+static const long SSL_CB_HANDSHAKE_DONE;
+static const long SSL_MODE_RELEASE_BUFFERS;
+static const long SSL_MODE_ENABLE_PARTIAL_WRITE;
+static const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
+static const long SSL_MODE_AUTO_RETRY;
+static const long SSL3_RANDOM_SIZE;
 typedef ... X509_STORE_CTX;
-static const int X509_V_OK;
-static const int X509_V_ERR_APPLICATION_VERIFICATION;
+static const long X509_V_OK;
+static const long X509_V_ERR_APPLICATION_VERIFICATION;
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
@@ -144,7 +144,7 @@ typedef struct {
     ...;
 } SSL;
 
-static const int TLSEXT_NAMETYPE_host_name;
+static const long TLSEXT_NAMETYPE_host_name;
 
 typedef ... SSL_CIPHER;
 """
@@ -393,7 +393,7 @@ const long SSL_OP_NO_TICKET = 0;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 #else
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 0;
-static const int TLSEXT_NAMETYPE_host_name = 0;
+static const long TLSEXT_NAMETYPE_host_name = 0;
 SSL_CTX *(*SSL_set_SSL_CTX)(SSL *, SSL_CTX *) = NULL;
 #endif
 """
