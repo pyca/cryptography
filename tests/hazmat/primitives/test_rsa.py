@@ -26,7 +26,9 @@ from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from ...utils import load_pkcs1_vectors, load_vectors_from_file
+from ...utils import (
+    load_pkcs1_vectors, load_vectors_from_file, load_rsa_nist_vectors
+)
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
@@ -630,6 +632,38 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    @pytest.mark.parametrize(
+        "nist_example",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "FIPS_186-2", "SigGenPSS_186-2.rsp"),
+            load_rsa_nist_vectors
+        ) + load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "FIPS_186-2", "SigGenPSS_186-3.rsp"),
+            load_rsa_nist_vectors
+        )
+    )
+    def test_pss_verification_nist(self, nist_example, backend):
+        public_key = rsa.RSAPublicKey(
+            public_exponent=nist_example["public_exponent"],
+            modulus=nist_example["modulus"]
+        )
+        hash_cls = getattr(hashes, nist_example["algorithm"])
+        verifier = public_key.verifier(
+            binascii.unhexlify(nist_example["s"]),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hash_cls(),
+                    salt_length=nist_example["salt_length"]
+                )
+            ),
+            hash_cls(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(nist_example["msg"]))
         verifier.verify()
 
     def test_invalid_pss_signature_wrong_data(self, backend):
