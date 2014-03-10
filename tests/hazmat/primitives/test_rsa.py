@@ -29,6 +29,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from ...utils import (
     load_pkcs1_vectors, load_vectors_from_file, load_rsa_nist_vectors
 )
+from .utils import generate_rsa_pss_test
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
@@ -634,38 +635,6 @@ class TestRSAVerification(object):
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
 
-    @pytest.mark.parametrize(
-        "nist_example",
-        load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "RSA", "FIPS_186-2", "SigGenPSS_186-2.rsp"),
-            load_rsa_nist_vectors
-        ) + load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "RSA", "FIPS_186-2", "SigGenPSS_186-3.rsp"),
-            load_rsa_nist_vectors
-        )
-    )
-    def test_pss_verification_nist(self, nist_example, backend):
-        public_key = rsa.RSAPublicKey(
-            public_exponent=nist_example["public_exponent"],
-            modulus=nist_example["modulus"]
-        )
-        hash_cls = getattr(hashes, nist_example["algorithm"].encode("utf8"))
-        verifier = public_key.verifier(
-            binascii.unhexlify(nist_example["s"]),
-            padding.PSS(
-                mgf=padding.MGF1(
-                    algorithm=hash_cls(),
-                    salt_length=nist_example["salt_length"]
-                )
-            ),
-            hash_cls(),
-            backend
-        )
-        verifier.update(binascii.unhexlify(nist_example["msg"]))
-        verifier.verify()
-
     def test_invalid_pss_signature_wrong_data(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -848,3 +817,88 @@ class TestRSAVerification(object):
         verifier.update(b"sign me")
         with pytest.raises(exceptions.InvalidSignature):
             verifier.verify()
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA1()),
+    skip_message="Does not support SHA1 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA1(object):
+    test_rsa_pss_mgf1_sha1 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA1"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA224()),
+    skip_message="Does not support SHA224 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA224(object):
+    test_rsa_pss_mgf1_sha224 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA224"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA256()),
+    skip_message="Does not support SHA256 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA256(object):
+    test_rsa_pss_mgf1_sha256 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA256"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA384()),
+    skip_message="Does not support SHA384 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA384(object):
+    test_rsa_pss_mgf1_sha384 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA384"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA512()),
+    skip_message="Does not support SHA512 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA512(object):
+    test_rsa_pss_mgf1_sha512 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA512"
+    )
