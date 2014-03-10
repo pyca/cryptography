@@ -651,7 +651,7 @@ class TestRSAVerification(object):
             public_exponent=nist_example["public_exponent"],
             modulus=nist_example["modulus"]
         )
-        hash_cls = getattr(hashes, nist_example["algorithm"])
+        hash_cls = getattr(hashes, nist_example["algorithm"].encode("utf8"))
         verifier = public_key.verifier(
             binascii.unhexlify(nist_example["s"]),
             padding.PSS(
