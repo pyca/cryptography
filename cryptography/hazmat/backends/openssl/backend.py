@@ -342,6 +342,12 @@ class Backend(object):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
+    def mgf1_hash_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_MGF1_MD:
+            return self.hash_supported(algorithm)
+        else:
+            return isinstance(algorithm, hashes.SHA1)
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
