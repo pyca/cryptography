@@ -377,7 +377,7 @@ def rsa_pss_test(backend, params):
             public_exponent=params["public_exponent"],
             modulus=params["modulus"]
         )
-        hash_cls = getattr(hashes, params["algorithm"].encode("utf8"))
+        hash_cls = getattr(hashes, params["algorithm"].decode("utf8"))
         verifier = public_key.verifier(
             binascii.unhexlify(params["s"]),
             padding.PSS(
