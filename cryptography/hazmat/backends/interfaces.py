@@ -106,6 +106,12 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         interface.
         """
 
+    @abc.abstractmethod
+    def mgf1_hash_supported(self, algorithm):
+        """
+        Return True if the hash algorithm is supported for MGF1 in PSS.
+        """
+
 
 class OpenSSLSerializationBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod

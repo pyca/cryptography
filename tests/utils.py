@@ -298,3 +298,44 @@ def load_pkcs1_vectors(vector_data):
             if key is not None and attr is not None:
                 key[attr].append(line.strip())
     return vectors
+
+
+def load_rsa_nist_vectors(vector_data):
+    test_data = None
+    data = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and section headers are ignored
+        if not line or line.startswith("["):
+            continue
+
+        if line.startswith("# Salt len:"):
+            salt_length = int(line.split(":")[1].strip())
+            continue
+        elif line.startswith("#"):
+            continue
+
+        # Build our data using a simple Key = Value format
+        name, value = [c.strip() for c in line.split("=")]
+
+        if name == "n":
+            n = int(value, 16)
+        elif name == "e":
+            e = int(value, 16)
+        elif name == "SHAAlg":
+            test_data = {
+                "modulus": n,
+                "public_exponent": e,
+                "salt_length": salt_length,
+                "algorithm": value.encode("ascii")
+            }
+            data.append(test_data)
+            continue
+        # For all other tokens we simply want the name, value stored in
+        # the dictionary
+        else:
+            test_data[name.lower()] = value.encode("ascii")
+
+    return data

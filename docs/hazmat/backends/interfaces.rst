@@ -249,6 +249,20 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
+    .. method:: mgf1_hash_supported(algorithm)
+
+        Check if the specified ``algorithm`` is supported for use with
+        :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+        inside :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+        padding.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns: ``True`` if the specified ``algorithm`` is supported by this
+            backend, otherwise ``False``.
+
 
 .. class:: OpenSSLSerializationBackend
 

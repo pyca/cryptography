@@ -23,7 +23,7 @@ import pytest
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
     load_hash_vectors, check_for_iface, check_backend_support,
-    select_backends, load_pkcs1_vectors
+    select_backends, load_pkcs1_vectors, load_rsa_nist_vectors
 )
 
 
@@ -1035,5 +1035,69 @@ def test_load_totp_vectors():
             "totp": b"90693936",
             "mode": b"SHA512",
             "secret": b"12345678901234567890",
+        },
+    ]
+
+
+def test_load_rsa_nist_vectors():
+    vector_data = textwrap.dedent("""
+    # SHA Algorithm selected:SHA1 SHA224 SHA256 SHA384 SHA512
+    # Salt len: 20
+
+    [mod = 1024]
+
+    n = bcb47b2e0dafcba81ff2a2b5cb115ca7e757184c9d72bcdcda707a146b3b4e29989d
+
+    e = 00000000000000000000000000000000000000000000000000000000000000000010001
+    SHAAlg = SHA1
+    Msg = 1248f62a4389f42f7b4bb131053d6c88a994db2075b912ccbe3ea7dc611714f14e
+    S = 682cf53c1145d22a50caa9eb1a9ba70670c5915e0fdfde6457a765de2a8fe12de97
+
+    SHAAlg = SHA384
+    Msg = e511903c2f1bfba245467295ac95413ac4746c984c3750a728c388aa628b0ebf
+    S = 9c748702bbcc1f9468864cd360c8c39d007b2d8aaee833606c70f7593cf0d1519
+
+    [mod = 1024]
+
+    n = 1234567890
+
+    e = 0010001
+
+    SHAAlg = SHA512
+    Msg = 3456781293fab829
+    S = deadbeef0000
+    """).splitlines()
+
+    vectors = load_rsa_nist_vectors(vector_data)
+    assert vectors == [
+        {
+            "modulus": int("bcb47b2e0dafcba81ff2a2b5cb115ca7e757184c9d72bcdcda"
+                           "707a146b3b4e29989d", 16),
+            "public_exponent": 65537,
+            "algorithm": b"SHA1",
+            "salt_length": 20,
+            "msg": b"1248f62a4389f42f7b4bb131053d6c88a994db2075b912ccbe3ea7dc6"
+                   b"11714f14e",
+            "s": b"682cf53c1145d22a50caa9eb1a9ba70670c5915e0fdfde6457a765de2a8"
+                 b"fe12de97"
+        },
+        {
+            "modulus": int("bcb47b2e0dafcba81ff2a2b5cb115ca7e757184c9d72bcdcda"
+                           "707a146b3b4e29989d", 16),
+            "public_exponent": 65537,
+            "algorithm": b"SHA384",
+            "salt_length": 20,
+            "msg": b"e511903c2f1bfba245467295ac95413ac4746c984c3750a728c388aa6"
+                   b"28b0ebf",
+            "s": b"9c748702bbcc1f9468864cd360c8c39d007b2d8aaee833606c70f7593cf"
+                 b"0d1519"
+        },
+        {
+            "modulus": 78187493520,
+            "public_exponent": 65537,
+            "algorithm": b"SHA512",
+            "salt_length": 20,
+            "msg": b"3456781293fab829",
+            "s": b"deadbeef0000"
         },
     ]
