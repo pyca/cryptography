@@ -33,7 +33,7 @@ class MGF1(object):
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
 
-        self.algorithm = algorithm
+        self._algorithm = algorithm
 
         if (not isinstance(salt_length, six.integer_types) and
                 not salt_length is self.MAX_LENGTH):
@@ -42,4 +42,4 @@ class MGF1(object):
         if not salt_length is self.MAX_LENGTH and salt_length < 0:
             raise ValueError("salt_length must be zero or greater")
 
-        self.salt_length = salt_length
+        self._salt_length = salt_length

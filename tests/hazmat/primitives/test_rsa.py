@@ -577,11 +577,11 @@ class TestMGF1(object):
         algorithm = hashes.SHA1()
         salt_length = algorithm.digest_size
         mgf = padding.MGF1(algorithm, salt_length)
-        assert mgf.algorithm == algorithm
-        assert mgf.salt_length == salt_length
+        assert mgf._algorithm == algorithm
+        assert mgf._salt_length == salt_length
 
     def test_valid_mgf1_parameters_maximum(self):
         algorithm = hashes.SHA1()
         mgf = padding.MGF1(algorithm, padding.MGF1.MAX_LENGTH)
-        assert mgf.algorithm == algorithm
-        assert mgf.salt_length == padding.MGF1.MAX_LENGTH
+        assert mgf._algorithm == algorithm
+        assert mgf._salt_length == padding.MGF1.MAX_LENGTH
