@@ -83,6 +83,11 @@ def test_modular_inverse():
     )
 
 
+def test_factor_n_with_bad_parameters():
+    with pytest.raises(ValueError):
+        rsa._factor_n(10, 10, 10)
+
+
 @pytest.mark.rsa
 class TestRSA(object):
     @pytest.mark.parametrize(
