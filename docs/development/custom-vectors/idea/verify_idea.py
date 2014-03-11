@@ -17,7 +17,9 @@ def encrypt(mode, key, iv, plaintext):
 
 
 def verify_vectors(mode, filename):
-    vector_file = open(filename, "r")
+    with open(filename, "r") as f:
+        vector_file = f.read()
+
     vectors = load_nist_vectors(vector_file)
     for vector in vectors:
         ct = encrypt(
