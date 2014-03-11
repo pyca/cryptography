@@ -356,6 +356,32 @@ class TestRSA(object):
                 modulus=33
             )
 
+        # Test specifying p but not q.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=None,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
+        # Test specifying q but not p.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=None,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
     def test_invalid_public_key_argument_values(self):
         # Start with public_exponent=7, modulus=15. Then change one value at a
         # time to test the bounds.

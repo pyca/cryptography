@@ -157,6 +157,9 @@ class RSAPrivateKey(object):
         if p is not None and q is not None and p * q != modulus:
             raise ValueError("p*q must equal modulus")
 
+        if (p is None) != (q is None):
+            raise ValueError("both or neither of p and q must be specified")
+
         if p is None and q is None:
             p, q = _factor_n(modulus, public_exponent, private_exponent)
 
