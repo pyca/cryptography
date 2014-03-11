@@ -18,7 +18,7 @@ def encrypt(mode, key, iv, plaintext):
 
 def verify_vectors(mode, filename):
     with open(filename, "r") as f:
-        vector_file = f.read()
+        vector_file = f.read().splitlines()
 
     vectors = load_nist_vectors(vector_file)
     for vector in vectors:

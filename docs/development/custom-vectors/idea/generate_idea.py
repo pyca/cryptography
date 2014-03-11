@@ -18,7 +18,7 @@ def encrypt(mode, key, iv, plaintext):
 
 def build_vectors(mode, filename):
     with open(filename, "r") as f:
-        vector_file = f.read()
+        vector_file = f.read().splitlines()
 
     count = 0
     output = []
