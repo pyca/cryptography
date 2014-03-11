@@ -558,3 +558,30 @@ class TestRSAVerification(object):
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", "notpadding", hashes.SHA1(), backend)
+
+
+class TestMGF1(object):
+    def test_invalid_hash_algorithm(self):
+        with pytest.raises(TypeError):
+            padding.MGF1(b"not_a_hash", 0)
+
+    def test_invalid_salt_length_not_integer(self):
+        with pytest.raises(TypeError):
+            padding.MGF1(hashes.SHA1(), b"not_a_length")
+
+    def test_invalid_salt_length_negative_integer(self):
+        with pytest.raises(ValueError):
+            padding.MGF1(hashes.SHA1(), -1)
+
+    def test_valid_mgf1_parameters(self):
+        algorithm = hashes.SHA1()
+        salt_length = algorithm.digest_size
+        mgf = padding.MGF1(algorithm, salt_length)
+        assert mgf.algorithm == algorithm
+        assert mgf.salt_length == salt_length
+
+    def test_valid_mgf1_parameters_maximum(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm, padding.MGF1.MAX_LENGTH)
+        assert mgf.algorithm == algorithm
+        assert mgf.salt_length == padding.MGF1.MAX_LENGTH
