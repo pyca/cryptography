@@ -39,13 +39,6 @@ typedef uintptr_t BN_ULONG;
 """
 
 FUNCTIONS = """
-BN_CTX *BN_CTX_new(void);
-void BN_CTX_free(BN_CTX *c);
-
-void BN_CTX_start(BN_CTX *ctx);
-BIGNUM *BN_CTX_get(BN_CTX *ctx);
-void BN_CTX_end(BN_CTX *ctx);
-
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 
