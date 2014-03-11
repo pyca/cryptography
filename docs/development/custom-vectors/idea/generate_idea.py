@@ -29,22 +29,22 @@ def build_vectors(mode, filename):
         line = line.strip()
         if line.startswith("KEY"):
             if count != 0:
-                output.append("CIPHERTEXT = {}".format(
+                output.append("CIPHERTEXT = {0}".format(
                     encrypt(mode, key, iv, plaintext))
                 )
-            output.append("\nCOUNT = {}".format(count))
+            output.append("\nCOUNT = {0}".format(count))
             count += 1
             name, key = line.split(" = ")
-            output.append("KEY = {}".format(key))
+            output.append("KEY = {0}".format(key))
         elif line.startswith("IV"):
             name, iv = line.split(" = ")
             iv = iv[0:16]
-            output.append("IV = {}".format(iv))
+            output.append("IV = {0}".format(iv))
         elif line.startswith("PLAINTEXT"):
             name, plaintext = line.split(" = ")
-            output.append("PLAINTEXT = {}".format(plaintext))
+            output.append("PLAINTEXT = {0}".format(plaintext))
 
-    output.append("CIPHERTEXT = {}".format(encrypt(mode, key, iv, plaintext)))
+    output.append("CIPHERTEXT = {0}".format(encrypt(mode, key, iv, plaintext)))
     return "\n".join(output)
 
 
@@ -52,9 +52,9 @@ def write_file(data, filename):
     with open(filename, "w") as f:
         f.write(data)
 
-cbc_path = "tests/hazmat/primitives/vectors/ciphers/AES/CBC/CBCMMT128.rsp"
-write_file(build_vectors(modes.CBC, cbc_path), "idea-cbc.txt")
-ofb_path = "tests/hazmat/primitives/vectors/ciphers/AES/OFB/OFBMMT128.rsp"
-write_file(build_vectors(modes.OFB, ofb_path), "idea-ofb.txt")
-cfb_path = "tests/hazmat/primitives/vectors/ciphers/AES/CFB/CFB128MMT128.rsp"
-write_file(build_vectors(modes.CFB, cfb_path), "idea-cfb.txt")
+CBC_PATH = "tests/hazmat/primitives/vectors/ciphers/AES/CBC/CBCMMT128.rsp"
+write_file(build_vectors(modes.CBC, CBC_PATH), "idea-cbc.txt")
+OFB_PATH = "tests/hazmat/primitives/vectors/ciphers/AES/OFB/OFBMMT128.rsp"
+write_file(build_vectors(modes.OFB, OFB_PATH), "idea-ofb.txt")
+CFB_PATH = "tests/hazmat/primitives/vectors/ciphers/AES/CFB/CFB128MMT128.rsp"
+write_file(build_vectors(modes.CFB, CFB_PATH), "idea-cfb.txt")
