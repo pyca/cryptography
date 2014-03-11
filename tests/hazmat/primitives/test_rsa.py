@@ -42,7 +42,7 @@ def _check_rsa_private_key(skey):
     assert skey.key_size
     assert skey.dmp1 == skey.d % (skey.p - 1)
     assert skey.dmq1 == skey.d % (skey.q - 1)
-    assert skey.iqmp == rsa.modinv(skey.q, skey.p)
+    assert skey.iqmp == rsa._modinv(skey.q, skey.p)
 
     pkey = skey.public_key()
     assert pkey
@@ -75,7 +75,7 @@ def test_modular_inverse():
         "b2347cfcd669133088d1c159518531025297c2d67c9da856a12e80222cd03b4c6ec0f"
         "86c957cb7bb8de7a127b645ec9e820aa94581e4762e209f01", 16
     )
-    assert rsa.modinv(q, p) == int(
+    assert rsa._modinv(q, p) == int(
         "0275e06afa722999315f8f322275483e15e2fb46d827b17800f99110b269a6732748f"
         "624a382fa2ed1ec68c99f7fc56fb60e76eea51614881f497ba7034c17dde955f92f15"
         "772f8b2b41f3e56d88b1e096cdd293eba4eae1e82db815e0fadea0c4ec971bc6fd875"

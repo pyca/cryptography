@@ -65,7 +65,7 @@ class RSAPublicKey(object):
         return self.modulus
 
 
-def isqrt(n):
+def _isqrt(n):
     """
     Integer square root, using Newton's method.
     """
@@ -77,14 +77,14 @@ def isqrt(n):
     return x
 
 
-def factor_n(n, e, d):
+def _factor_n(n, e, d):
     """
     For an RSA private key, given N, E, and D, find P and Q.
     """
     k = 1 + (e * d) // n
     phi = (e * d - 1) // k
     m = n + 1 - phi
-    root = isqrt(m ** 2 - 4 * n)
+    root = _isqrt(m ** 2 - 4 * n)
     p = (m + root) // 2
     q = (m - root) // 2
     if p * q != n:
@@ -92,7 +92,7 @@ def factor_n(n, e, d):
     return p, q
 
 
-def modinv(e, m):
+def _modinv(e, m):
     """
     Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
     """
@@ -158,7 +158,7 @@ class RSAPrivateKey(object):
             raise ValueError("p*q must equal modulus")
 
         if p is None and q is None:
-            p, q = factor_n(modulus, public_exponent, private_exponent)
+            p, q = _factor_n(modulus, public_exponent, private_exponent)
 
         if dmp1 is None:
             dmp1 = private_exponent % (p - 1)
@@ -167,7 +167,7 @@ class RSAPrivateKey(object):
             dmq1 = private_exponent % (q - 1)
 
         if iqmp is None:
-            iqmp = modinv(q, p)
+            iqmp = _modinv(q, p)
 
         self._p = p
         self._q = q
