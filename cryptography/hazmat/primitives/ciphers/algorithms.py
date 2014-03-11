@@ -116,3 +116,17 @@ class ARC4(object):
     @property
     def key_size(self):
         return len(self.key) * 8
+
+
+@utils.register_interface(interfaces.CipherAlgorithm)
+class IDEA(object):
+    name = "IDEA"
+    block_size = 64
+    key_sizes = frozenset([128])
+
+    def __init__(self, key):
+        self.key = _verify_key_size(self, key)
+
+    @property
+    def key_size(self):
+        return len(self.key) * 8
