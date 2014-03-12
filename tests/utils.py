@@ -372,25 +372,19 @@ def load_fips_dsa_key_pair_vectors(vector_data):
         if flag == "on":
             if line.startswith("P"):
                 vectors.append({'p': int(line.split("=")[1], 16)})
-                continue
-            if line.startswith("Q"):
+            elif line.startswith("Q"):
                 vectors[-1]['q'] = int(line.split("=")[1], 16)
-                continue
-            if line.startswith("G"):
+            elif line.startswith("G"):
                 vectors[-1]['g'] = int(line.split("=")[1], 16)
-                continue
-            if line.startswith("X") and 'x' not in vectors[-1]:
+            elif line.startswith("X") and 'x' not in vectors[-1]:
                 vectors[-1]['x'] = int(line.split("=")[1], 16)
-                continue
-            if line.startswith("X") and 'x' in vectors[-1]:
+            elif line.startswith("X") and 'x' in vectors[-1]:
                 vectors.append({'p': vectors[-1]['p'],
                                 'q': vectors[-1]['q'],
                                 'g': vectors[-1]['g'],
                                 'x': int(line.split("=")[1], 16)
                                 })
-                continue
-            if line.startswith("Y"):
+            elif line.startswith("Y"):
                 vectors[-1]['y'] = int(line.split("=")[1], 16)
-                continue
 
     return vectors
