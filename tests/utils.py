@@ -14,11 +14,10 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import os
-
-import pytest
 
 import six
+
+import pytest
 
 
 HashVector = collections.namedtuple("HashVector", ["message", "digest"])
@@ -67,11 +66,9 @@ def check_backend_support(item):
 
 
 def load_vectors_from_file(filename, loader):
-    base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
-        return loader(vector_file)
+    from cryptography import vectors
+    vector_file = vectors.open_vector_file('hazmat', 'primitives', filename)
+    return loader(vector_file)
 
 
 def load_nist_vectors(vector_data):

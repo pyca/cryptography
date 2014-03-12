@@ -16,7 +16,6 @@ from __future__ import absolute_import, division, print_function
 import base64
 import calendar
 import json
-import os
 import time
 
 import iso8601
@@ -30,10 +29,10 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 
-def json_parametrize(keys, fname):
-    path = os.path.join(os.path.dirname(__file__), "vectors", "fernet", fname)
-    with open(path) as f:
-        data = json.load(f)
+def json_parametrize(keys, filename):
+    from cryptography import vectors
+    vector_file = vectors.open_vector_file('fernet', filename)
+    data = json.load(vector_file)
     return pytest.mark.parametrize(keys, [
         tuple([entry[k] for k in keys])
         for entry in data
