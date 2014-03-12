@@ -346,30 +346,30 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     Loads data out of the FIPS DSA KeyPair vector files.
     """
     vectors = []
-    # When the flag is "on" it tells the loader to continue constructing
-    # dictionaries. We turn the flag to "off" during the blocks of the
-    # vectors of N=224 because we don't support it.
-    flag = "on"
+    # When reading_key_data is set to True it tells the loader to continue
+    # constructing dictionaries. We set reading_key_data to False during the
+    # blocks of the vectors of N=224 because we don't support it.
+    reading_key_data = True
     for line in vector_data:
         line = line.strip()
 
         if not line or line.startswith("#"):
             continue
-        if line.startswith("[mod = L=1024"):
+        elif line.startswith("[mod = L=1024"):
             continue
-        if line.startswith("[mod = L=2048, N=224"):
-            flag = "off"
+        elif line.startswith("[mod = L=2048, N=224"):
+            reading_key_data = False
             continue
-        if line.startswith("[mod = L=2048, N=256"):
-            flag = "on"
+        elif line.startswith("[mod = L=2048, N=256"):
+            reading_key_data = True
             continue
-        if line.startswith("[mod = L=3072"):
-            continue
-
-        if flag == "off":
+        elif line.startswith("[mod = L=3072"):
             continue
 
-        if flag == "on":
+        if not reading_key_data:
+            continue
+
+        elif reading_key_data:
             if line.startswith("P"):
                 vectors.append({'p': int(line.split("=")[1], 16)})
             elif line.startswith("Q"):
