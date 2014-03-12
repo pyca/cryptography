@@ -34,5 +34,10 @@ Mask Generation Functions
     :param int salt_length: The length of the salt. It is recommended that this
         be set to ``MGF1.MAX_LENGTH``.
 
+    .. attribute:: MAX_LENGTH
+
+        Pass this attribute to ``salt_length`` to get the maximum salt length
+        available.
+
 
 .. _`Padding is critical`: http://rdist.root.org/2009/10/06/why-rsa-encryption-padding-is-critical/
