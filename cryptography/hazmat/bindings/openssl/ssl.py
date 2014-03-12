@@ -123,7 +123,12 @@ typedef ... X509_STORE_CTX;
 static const long X509_V_OK;
 static const long X509_V_ERR_APPLICATION_VERIFICATION;
 typedef ... SSL_METHOD;
-typedef ... SSL_CTX;
+typedef struct ssl_st {
+    int version;
+    int type;
+    const SSL_METHOD *method;
+    ...;
+} SSL_CTX;
 
 typedef struct {
     int master_key_length;
