@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import textwrap
 
+import six
+
 import pretend
 
 import pytest
@@ -1888,7 +1890,7 @@ e76422070edb71db44ff568280fdb1709f8fc3feab39f1f824adaeb2a29808815\
     expected = []
     for dictionary in expected_vectors:
         new_dict = {}
-        for k, v in dictionary.iteritems():
+        for k, v in six.iteritems(dictionary):
             v = v.strip()
             v = v.replace(" ", "")
             v = int(v, 16)
