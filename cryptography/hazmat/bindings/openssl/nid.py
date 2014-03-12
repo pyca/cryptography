@@ -17,6 +17,7 @@ INCLUDES = ""
 
 TYPES = """
 static const int Cryptography_HAS_ECDSA_SHA2_NIDS;
+static const int Cryptography_HAS_BRAINPOOL_NIDS;
 
 static const int NID_undef;
 static const int NID_dsa;
@@ -184,6 +185,35 @@ static const char *const SN_wap_wsg_idm_ecid_wtls11;
 static const char *const SN_wap_wsg_idm_ecid_wtls12;
 static const char *const SN_ipsec3;
 static const char *const SN_ipsec4;
+
+static const int NID_brainpoolP160r1;
+static const int NID_brainpoolP160t1;
+static const int NID_brainpoolP192r1;
+static const int NID_brainpoolP192t1;
+static const int NID_brainpoolP224r1;
+static const int NID_brainpoolP224t1;
+static const int NID_brainpoolP256r1;
+static const int NID_brainpoolP256t1;
+static const int NID_brainpoolP320r1;
+static const int NID_brainpoolP320t1;
+static const int NID_brainpoolP384r1;
+static const int NID_brainpoolP384t1;
+static const int NID_brainpoolP512r1;
+static const int NID_brainpoolP512t1;
+static const char *const SN_brainpoolP160r1;
+static const char *const SN_brainpoolP160t1;
+static const char *const SN_brainpoolP192r1;
+static const char *const SN_brainpoolP192t1;
+static const char *const SN_brainpoolP224r1;
+static const char *const SN_brainpoolP224t1;
+static const char *const SN_brainpoolP256r1;
+static const char *const SN_brainpoolP256t1;
+static const char *const SN_brainpoolP320r1;
+static const char *const SN_brainpoolP320t1;
+static const char *const SN_brainpoolP384r1;
+static const char *const SN_brainpoolP384t1;
+static const char *const SN_brainpoolP512r1;
+static const char *const SN_brainpoolP512t1;
 """
 
 FUNCTIONS = """
@@ -198,10 +228,45 @@ CUSTOMIZATIONS = """
 static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 1;
 #else
 static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 0;
-static const int NID_ecdsa_with_SHA224 = 0;
-static const int NID_ecdsa_with_SHA256 = 0;
-static const int NID_ecdsa_with_SHA384 = 0;
-static const int NID_ecdsa_with_SHA512 = 0;
+static const long NID_ecdsa_with_SHA224 = 0;
+static const long NID_ecdsa_with_SHA256 = 0;
+static const long NID_ecdsa_with_SHA384 = 0;
+static const long NID_ecdsa_with_SHA512 = 0;
+#endif
+
+// OpenSSL 1.0.2beta1+
+#if OPENSSL_VERSION_NUMBER >= 0x10002001L
+static const long Cryptography_HAS_BRAINPOOL_NIDS = 1;
+#else
+static const long Cryptography_HAS_BRAINPOOL_NIDS = 0;
+static const long NID_brainpoolP160r1 = 0;
+static const long NID_brainpoolP160t1 = 0;
+static const long NID_brainpoolP192r1 = 0;
+static const long NID_brainpoolP192t1 = 0;
+static const long NID_brainpoolP224r1 = 0;
+static const long NID_brainpoolP224t1 = 0;
+static const long NID_brainpoolP256r1 = 0;
+static const long NID_brainpoolP256t1 = 0;
+static const long NID_brainpoolP320r1 = 0;
+static const long NID_brainpoolP320t1 = 0;
+static const long NID_brainpoolP384r1 = 0;
+static const long NID_brainpoolP384t1 = 0;
+static const long NID_brainpoolP512r1 = 0;
+static const long NID_brainpoolP512t1 = 0;
+static const char *const SN_brainpoolP160r1 = NULL;
+static const char *const SN_brainpoolP160t1 = NULL;
+static const char *const SN_brainpoolP192r1 = NULL;
+static const char *const SN_brainpoolP192t1 = NULL;
+static const char *const SN_brainpoolP224r1 = NULL;
+static const char *const SN_brainpoolP224t1 = NULL;
+static const char *const SN_brainpoolP256r1 = NULL;
+static const char *const SN_brainpoolP256t1 = NULL;
+static const char *const SN_brainpoolP320r1 = NULL;
+static const char *const SN_brainpoolP320t1 = NULL;
+static const char *const SN_brainpoolP384r1 = NULL;
+static const char *const SN_brainpoolP384t1 = NULL;
+static const char *const SN_brainpoolP512r1 = NULL;
+static const char *const SN_brainpoolP512t1 = NULL;
 #endif
 """
 
@@ -211,5 +276,35 @@ CONDITIONAL_NAMES = {
         "NID_ecdsa_with_SHA256",
         "NID_ecdsa_with_SHA384",
         "NID_ecdsa_with_SHA512",
+    ],
+    "Cryptography_HAS_BRAINPOOL_NIDS": [
+        "NID_brainpoolP160r1",
+        "NID_brainpoolP160t1",
+        "NID_brainpoolP192r1",
+        "NID_brainpoolP192t1",
+        "NID_brainpoolP224r1",
+        "NID_brainpoolP224t1",
+        "NID_brainpoolP256r1",
+        "NID_brainpoolP256t1",
+        "NID_brainpoolP320r1",
+        "NID_brainpoolP320t1",
+        "NID_brainpoolP384r1",
+        "NID_brainpoolP384t1",
+        "NID_brainpoolP512r1",
+        "NID_brainpoolP512t1",
+        "SN_brainpoolP160r1",
+        "SN_brainpoolP160t1",
+        "SN_brainpoolP192r1",
+        "SN_brainpoolP192t1",
+        "SN_brainpoolP224r1",
+        "SN_brainpoolP224t1",
+        "SN_brainpoolP256r1",
+        "SN_brainpoolP256t1",
+        "SN_brainpoolP320r1",
+        "SN_brainpoolP320t1",
+        "SN_brainpoolP384r1",
+        "SN_brainpoolP384t1",
+        "SN_brainpoolP512r1",
+        "SN_brainpoolP512t1",
     ],
 }
