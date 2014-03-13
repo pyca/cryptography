@@ -71,11 +71,7 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
     )
     lib = ffi.verify(
         source=source,
-        modulename=_create_modulename(
-            ffi, source,
-            sys.version,
-            sys.version_info
-        ),
+        modulename=_create_modulename(ffi, source, sys.version),
         libraries=libraries,
         ext_package="cryptography",
     )
@@ -91,7 +87,7 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
     return ffi, lib
 
 
-def _create_modulename(ffi, source, sys_version, sys_version_info):
+def _create_modulename(ffi, source, sys_version):
     """
     cffi creates a modulename internally that incorporates the cffi version.
     This will cause cryptography's wheels to break when the version of cffi
@@ -100,8 +96,7 @@ def _create_modulename(ffi, source, sys_version, sys_version_info):
     from cffi but elides the version key.
     """
     key = '\x00'.join([sys_version[:3], source] + ffi._cdefsources)
-    if sys_version_info >= (3,):
-        key = key.encode('utf-8')
+    key = key.encode('utf-8')
     k1 = hex(binascii.crc32(key[0::2]) & 0xffffffff)
     k1 = k1.lstrip('0x').rstrip('L')
     k2 = hex(binascii.crc32(key[1::2]) & 0xffffffff)
