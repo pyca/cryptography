@@ -20,7 +20,7 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
-static const int Cryptography_HAS_098C_ERROR_CODES;
+static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -265,6 +265,7 @@ static const int ASN1_F_SMIME_TEXT;
 static const int ASN1_R_NO_CONTENT_TYPE;
 static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY;
+/* These were added in OpenSSL 0.9.8c. */
 static const int EVP_F_CAMELLIA_INIT_KEY;
 static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 """
@@ -293,10 +294,10 @@ static const int ASN1_R_NO_MULTIPART_BOUNDARY = 0;
 #endif
 
 // OpenSSL 0.9.8c+
-#if OPENSSL_VERSION_NUMBER >= 0x0090803fL
-static const long Cryptography_HAS_098C_ERROR_CODES = 1;
+#ifdef EVP_F_CAMELLIA_INIT_KEY
+static const long Cryptography_HAS_098C_CAMELLIA_CODES = 1;
 #else
-static const long Cryptography_HAS_098C_ERROR_CODES = 0;
+static const long Cryptography_HAS_098C_CAMELLIA_CODES = 0;
 static const int EVP_F_CAMELLIA_INIT_KEY = 0;
 static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED = 0;
 #endif
@@ -316,7 +317,7 @@ CONDITIONAL_NAMES = {
         "ASN1_R_NO_MULTIPART_BODY_FAILURE",
         "ASN1_R_NO_MULTIPART_BOUNDARY",
     ],
-    "Cryptography_HAS_098C_ERROR_CODES": [
+    "Cryptography_HAS_098C_CAMELLIA_CODES": [
         "EVP_F_CAMELLIA_INIT_KEY",
         "EVP_R_CAMELLIA_KEY_SETUP_FAILED"
     ]
