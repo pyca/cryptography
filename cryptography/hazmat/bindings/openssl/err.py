@@ -20,6 +20,7 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
+static const int Cryptography_HAS_098C_ERROR_CODES;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -313,7 +314,7 @@ CONDITIONAL_NAMES = {
         "ASN1_F_SMIME_TEXT",
         "ASN1_R_NO_CONTENT_TYPE",
         "ASN1_R_NO_MULTIPART_BODY_FAILURE",
-        "ASN1_R_NO_MULTIPART_BOUNDARY"
+        "ASN1_R_NO_MULTIPART_BOUNDARY",
     ],
     "Cryptography_HAS_098C_ERROR_CODES": [
         "EVP_F_CAMELLIA_INIT_KEY",
