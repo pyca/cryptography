@@ -15,6 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+from cryptography.exceptions import UnsupportedInterface
+
 
 def register_interface(iface):
     def register_decorator(klass):
@@ -28,3 +30,15 @@ def bit_length(x):
         return x.bit_length()
     else:
         return len(bin(x)) - (2 + (x <= 0))
+
+
+def check_backend_interface(backend, interfaces):
+    unsupported_interfaces = []
+    for i in interfaces:
+        if not isinstance(backend, i):
+            unsupported_interfaces.append(i.__name__)
+
+    if len(unsupported_interfaces) != 0:
+        error_msg = "Backend object does not implement " + ', '.join(
+            unsupported_interfaces)
+        raise UnsupportedInterface(error_msg)
