@@ -18,12 +18,17 @@ import struct
 import six
 
 from cryptography.exceptions import InvalidToken
+from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
+from cryptography.utils import check_backend_interface
 
 
 class HOTP(object):
     def __init__(self, key, length, algorithm, backend):
+
+        check_backend_interface(backend, [HMACBackend])
+
         if len(key) < 16:
             raise ValueError("Key length has to be at least 128 bits.")
 
