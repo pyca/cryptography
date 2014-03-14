@@ -10,18 +10,22 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import absolute_import, division, print_function
-
-__import__('pkg_resources').declare_namespace(__name__)
-
-from cryptography.__about__ import (
-    __author__, __copyright__, __email__, __license__, __summary__, __title__,
-    __uri__, __version__
-)
-
 
 __all__ = [
     "__title__", "__summary__", "__uri__", "__version__", "__author__",
     "__email__", "__license__", "__copyright__",
 ]
+
+__title__ = "cryptography.vectors"
+__summary__ = "Test vectors for the cryptography package."
+
+__uri__ = "https://github.com/pyca/cryptography"
+
+__version__ = "0.3.dev1"
+
+__author__ = "The cryptography developers"
+__email__ = "cryptography-dev@python.org"
+
+__license__ = "Apache License, Version 2.0"
+__copyright__ = "Copyright 2013-2014 %s" % __author__
