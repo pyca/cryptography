@@ -24,6 +24,7 @@ from cryptography.exceptions import (
     AlreadyFinalized, UnsupportedHash, InvalidSignature
 )
 from cryptography.hazmat.primitives import hashes, hmac, interfaces
+from cryptography.hazmat.backends.interfaces import HMACBackend
 
 from .utils import generate_base_hmac_test
 
@@ -52,8 +53,12 @@ class TestHMAC(object):
             h.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        pretend_hmac = pretend.stub()
-        pretend_backend = pretend.stub(hmacs=pretend_hmac)
+
+        @utils.register_interface(HMACBackend)
+        class FakeBackend(object):
+            pass
+
+        pretend_backend = FakeBackend()
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hmac.HMAC(b"key", hashes.SHA1(), backend=pretend_backend,

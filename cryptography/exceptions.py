@@ -60,3 +60,7 @@ class InvalidKey(Exception):
 
 class InvalidToken(Exception):
     pass
+
+
+class UnsupportedInterface(Exception):
+    pass

@@ -13,13 +13,18 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 import os
 import textwrap
+
+import six
 
 import pretend
 
 import pytest
+from cryptography.exceptions import UnsupportedInterface
 
+from cryptography.utils import check_backend_interface, register_interface
 from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
     load_hash_vectors, check_for_iface, check_backend_support,
@@ -1101,3 +1106,24 @@ def test_load_rsa_nist_vectors():
             "s": b"deadbeef0000"
         },
     ]
+
+
+def test_check_backend_interface():
+
+    class MockInterface(six.with_metaclass(abc.ABCMeta)):
+        pass
+
+    class MockBackend(object):
+        pass
+
+    @register_interface(MockInterface)
+    class MockBackendWithInterface(object):
+        pass
+
+    backend1 = MockBackend()
+    backend2 = MockBackendWithInterface()
+
+    with pytest.raises(UnsupportedInterface):
+        check_backend_interface(backend1, [MockInterface])
+
+    assert check_backend_interface(backend2, [MockInterface]) is None

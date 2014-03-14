@@ -22,6 +22,7 @@ import six
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, UnsupportedHash
 from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.backends.interfaces import HashBackend
 
 from .utils import generate_base_hash_test
 
@@ -39,7 +40,12 @@ class TestHashContext(object):
             m.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        pretend_backend = pretend.stub()
+
+        @utils.register_interface(HashBackend)
+        class FakeBackend(object):
+            pass
+
+        pretend_backend = FakeBackend()
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hashes.Hash(hashes.SHA1(), backend=pretend_backend,

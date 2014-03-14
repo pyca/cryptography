@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.utils import check_backend_interface
 from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.primitives import constant_time, interfaces
 
@@ -23,6 +25,9 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 @utils.register_interface(interfaces.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, backend, ctx=None):
+
+        check_backend_interface(backend, [HMACBackend])
+
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
         self.algorithm = algorithm

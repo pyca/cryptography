@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.utils import check_backend_interface
 from cryptography.exceptions import InvalidToken
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
@@ -20,6 +22,9 @@ from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
 class TOTP(object):
     def __init__(self, key, length, algorithm, time_step, backend):
+
+        check_backend_interface(backend, [HMACBackend])
+
         self._time_step = time_step
         self._hotp = HOTP(key, length, algorithm, backend)
 
