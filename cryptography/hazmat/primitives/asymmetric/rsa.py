@@ -16,12 +16,15 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends.interfaces import RSABackend
+from cryptography.utils import check_backend_interface
 from cryptography.hazmat.primitives import interfaces
 
 
 @utils.register_interface(interfaces.RSAPublicKey)
 class RSAPublicKey(object):
     def __init__(self, public_exponent, modulus):
+
         if (
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
@@ -41,6 +44,7 @@ class RSAPublicKey(object):
         self._modulus = modulus
 
     def verifier(self, signature, padding, algorithm, backend):
+        check_backend_interface(backend, [RSABackend])
         return backend.create_rsa_verification_ctx(self, signature, padding,
                                                    algorithm)
 
@@ -128,9 +132,11 @@ class RSAPrivateKey(object):
 
     @classmethod
     def generate(cls, public_exponent, key_size, backend):
+        check_backend_interface(backend, [RSABackend])
         return backend.generate_rsa_private_key(public_exponent, key_size)
 
     def signer(self, padding, algorithm, backend):
+        check_backend_interface(backend, [RSABackend])
         return backend.create_rsa_signature_ctx(self, padding, algorithm)
 
     @property
