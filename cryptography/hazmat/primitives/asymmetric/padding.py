@@ -24,6 +24,14 @@ class PKCS1v15(object):
     name = "EMSA-PKCS1-v1_5"
 
 
+@utils.register_interface(interfaces.AsymmetricPadding)
+class PSS(object):
+    name = "EMSA-PSS"
+
+    def __init__(self, mgf):
+        self.mgf = mgf
+
+
 class MGF1(object):
     MAX_LENGTH = object()
 

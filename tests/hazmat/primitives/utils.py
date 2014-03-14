@@ -21,6 +21,7 @@ import itertools
 import pytest
 
 from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -373,3 +374,35 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
         hkdf_test(backend, algorithm, params)
 
     return test_hkdf
+
+
+def generate_rsa_pss_test(param_loader, path, file_names, hash_name):
+    all_params = _load_all_params(path, file_names, param_loader)
+    all_params = [i for i in all_params if i["algorithm"] == hash_name]
+
+    @pytest.mark.parametrize("params", all_params)
+    def test_rsa_pss(self, backend, params):
+        rsa_pss_test(backend, params)
+
+    return test_rsa_pss
+
+
+def rsa_pss_test(backend, params):
+        public_key = rsa.RSAPublicKey(
+            public_exponent=params["public_exponent"],
+            modulus=params["modulus"]
+        )
+        hash_cls = getattr(hashes, params["algorithm"].decode("utf8"))
+        verifier = public_key.verifier(
+            binascii.unhexlify(params["s"]),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hash_cls(),
+                    salt_length=params["salt_length"]
+                )
+            ),
+            hash_cls(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(params["msg"]))
+        verifier.verify()

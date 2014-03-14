@@ -25,12 +25,19 @@ from cryptography.exceptions import UnsupportedInterface
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
-from ...utils import load_pkcs1_vectors, load_vectors_from_file
+from .utils import generate_rsa_pss_test
+from ...utils import (
+    load_pkcs1_vectors, load_vectors_from_file, load_rsa_nist_vectors
+)
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
 class DummyPadding(object):
     name = "UNSUPPORTED-PADDING"
+
+
+class DummyMGF(object):
+    pass
 
 
 def _modinv(e, m):
@@ -530,6 +537,122 @@ class TestRSAVerification(object):
         with pytest.raises(exceptions.InvalidSignature):
             verifier.verify()
 
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pss_verification(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
+        verifier = public_key.verifier(
+            binascii.unhexlify(example["signature"]),
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    def test_invalid_pss_signature_wrong_data(self, backend):
+        public_key = rsa.RSAPublicKey(
+            modulus=int(
+                b"dffc2137d5e810cde9e4b4612f5796447218bab913b3fa98bdf7982e4fa6"
+                b"ec4d6653ef2b29fb1642b095befcbea6decc178fb4bed243d3c3592c6854"
+                b"6af2d3f3", 16
+            ),
+            public_exponent=65537
+        )
+        signature = binascii.unhexlify(
+            b"0e68c3649df91c5bc3665f96e157efa75b71934aaa514d91e94ca8418d100f45"
+            b"6f05288e58525f99666bab052adcffdf7186eb40f583bd38d98c97d3d524808b"
+        )
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"incorrect data")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_invalid_pss_signature_wrong_key(self, backend):
+        signature = binascii.unhexlify(
+            b"3a1880165014ba6eb53cc1449d13e5132ebcc0cfd9ade6d7a2494a0503bd0826"
+            b"f8a46c431e0d7be0ca3e453f8b2b009e2733764da7927cc6dbe7a021437a242e"
+        )
+        public_key = rsa.RSAPublicKey(
+            modulus=int(
+                b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
+                b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
+                b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
+                b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
+                b"030d3581e13522e1", 16
+            ),
+            public_exponent=65537
+        )
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+    def test_invalid_pss_signature_data_too_large_for_modulus(self, backend):
+        signature = binascii.unhexlify(
+            b"cb43bde4f7ab89eb4a79c6e8dd67e0d1af60715da64429d90c716a490b799c29"
+            b"194cf8046509c6ed851052367a74e2e92d9b38947ed74332acb115a03fcc0222"
+        )
+        public_key = rsa.RSAPublicKey(
+            modulus=int(
+                b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
+                b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
+                b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
+                b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
+                b"030d3581e13522", 16
+            ),
+            public_exponent=65537
+        )
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
     def test_use_after_finalize(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -582,6 +705,130 @@ class TestRSAVerification(object):
         with pytest.raises(UnsupportedInterface):
             public_key.verifier(
                 b"foo", padding.PKCS1v15(), hashes.SHA256(), pretend_backend)
+
+    def test_unsupported_pss_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(TypeError):
+            public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
+                                hashes.SHA1(), backend)
+
+    def test_pss_verify_salt_length_too_long(self, backend):
+        signature = binascii.unhexlify(
+            b"8b9a3ae9fb3b64158f3476dd8d8a1f1425444e98940e0926378baa9944d219d8"
+            b"534c050ef6b19b1bdc6eb4da422e89161106a6f5b5cc16135b11eb6439b646bd"
+        )
+        public_key = rsa.RSAPublicKey(
+            modulus=int(
+                b"d309e4612809437548b747d7f9eb9cd3340f54fe42bb3f84a36933b0839c"
+                b"11b0c8b7f67e11f7252370161e31159c49c784d4bc41c42a78ce0f0b40a3"
+                b"ca8ffb91", 16
+            ),
+            public_exponent=65537
+        )
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=1000000
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(b"sign me")
+        with pytest.raises(exceptions.InvalidSignature):
+            verifier.verify()
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA1()),
+    skip_message="Does not support SHA1 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA1(object):
+    test_rsa_pss_mgf1_sha1 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA1"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA224()),
+    skip_message="Does not support SHA224 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA224(object):
+    test_rsa_pss_mgf1_sha224 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA224"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA256()),
+    skip_message="Does not support SHA256 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA256(object):
+    test_rsa_pss_mgf1_sha256 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA256"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA384()),
+    skip_message="Does not support SHA384 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA384(object):
+    test_rsa_pss_mgf1_sha384 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA384"
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA512()),
+    skip_message="Does not support SHA512 with MGF1."
+)
+@pytest.mark.rsa
+class TestRSAPSSMGF1VerificationSHA512(object):
+    test_rsa_pss_mgf1_sha512 = generate_rsa_pss_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGenPSS_186-2.rsp",
+            "SigGenPSS_186-3.rsp",
+        ],
+        b"SHA512"
+    )
 
 
 class TestMGF1(object):
