@@ -10,13 +10,6 @@ Padding
     correct padding signatures can be forged, messages decrypted, and private
     keys compromised.
 
-.. class:: PKCS1v15()
-
-    .. versionadded:: 0.3
-
-    PKCS1 v1.5 (also known as simply PKCS1) is a simple padding scheme
-    developed for use with RSA keys. It is defined in :rfc:`3447`.
-
 .. class:: PSS(mgf)
 
     .. versionadded:: 0.3
@@ -27,6 +20,13 @@ Padding
 
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
+
+.. class:: PKCS1v15()
+
+    .. versionadded:: 0.3
+
+    PKCS1 v1.5 (also known as simply PKCS1) is a simple padding scheme
+    developed for use with RSA keys. It is defined in :rfc:`3447`.
 
 
 Mask Generation Functions
