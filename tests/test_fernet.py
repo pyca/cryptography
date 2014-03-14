@@ -28,15 +28,17 @@ from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
+import cryptography_vectors
+
 
 def json_parametrize(keys, filename):
-    from cryptography import vectors
-    vector_file = vectors.open_vector_file('fernet', filename)
-    data = json.load(vector_file)
-    return pytest.mark.parametrize(keys, [
-        tuple([entry[k] for k in keys])
-        for entry in data
-    ])
+    vector_file = cryptography_vectors.open_vector_file('fernet', filename)
+    with vector_file:
+        data = json.load(vector_file)
+        return pytest.mark.parametrize(keys, [
+            tuple([entry[k] for k in keys])
+            for entry in data
+        ])
 
 
 @pytest.mark.cipher

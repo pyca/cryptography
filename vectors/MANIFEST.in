@@ -1,1 +1,1 @@
-recursive-include cryptography/vectors *
+recursive-include cryptography_vectors *

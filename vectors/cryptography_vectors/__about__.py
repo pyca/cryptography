@@ -2,7 +2,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,10 +12,20 @@
 # limitations under the License.
 from __future__ import absolute_import, division, print_function
 
-import os
+__all__ = [
+    "__title__", "__summary__", "__uri__", "__version__", "__author__",
+    "__email__", "__license__", "__copyright__",
+]
 
+__title__ = "cryptography_vectors"
+__summary__ = "Test vectors for the cryptography package."
 
-def open_vector_file(*args):
-    base = os.path.dirname(__file__)
-    filepath = [base] + list(args)
-    return open(os.path.join(*filepath), "r")
+__uri__ = "https://github.com/pyca/cryptography"
+
+__version__ = "0.3.dev1"
+
+__author__ = "The cryptography developers"
+__email__ = "cryptography-dev@python.org"
+
+__license__ = "Apache License, Version 2.0"
+__copyright__ = "Copyright 2013-2014 %s" % __author__

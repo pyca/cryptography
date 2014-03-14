@@ -84,7 +84,12 @@ def release(version):
     invoke.run("git push --tags")
 
     invoke.run("python setup.py sdist")
-    invoke.run("twine upload -s dist/cryptography-{0}*".format(version))
+    invoke.run("python vectors/setup.py sdist")
+
+    invoke.run(
+        "twine upload -s dist/cryptography-{0}* "
+        "dist/cryptography_vectors-{0}*".format(version)
+    )
 
     token = getpass.getpass("Input the Jenkins token: ")
     response = requests.post(
