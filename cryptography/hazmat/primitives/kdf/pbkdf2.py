@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
+from cryptography.utils import check_backend_interface
 from cryptography.exceptions import (
     InvalidKey, UnsupportedHash, AlreadyFinalized
 )
@@ -25,6 +27,9 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 @utils.register_interface(interfaces.KeyDerivationFunction)
 class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
+
+        check_backend_interface(backend, [PBKDF2HMACBackend])
+
         if not backend.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedHash(
                 "{0} is not supported for PBKDF2 by this backend".format(

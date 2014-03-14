@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
+from cryptography.hazmat.backends.interfaces import HMACBackend
+from cryptography.utils import check_backend_interface
 from cryptography.exceptions import AlreadyFinalized, InvalidKey
 from cryptography.hazmat.primitives import constant_time, hmac, interfaces
 
@@ -23,6 +25,9 @@ from cryptography.hazmat.primitives import constant_time, hmac, interfaces
 @utils.register_interface(interfaces.KeyDerivationFunction)
 class HKDF(object):
     def __init__(self, algorithm, length, salt, info, backend):
+
+        check_backend_interface(backend, [HMACBackend])
+
         self._algorithm = algorithm
 
         max_length = 255 * (algorithm.digest_size // 8)
