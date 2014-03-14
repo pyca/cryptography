@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import collections
-
 import six
 
 from cryptography import utils
@@ -27,7 +25,7 @@ class PKCS1v15(object):
 
 
 class MGF1(object):
-    MAX_LENGTH = collections.namedtuple("MAX_LENGTH", [])()
+    MAX_LENGTH = object()
 
     def __init__(self, algorithm, salt_length):
         if not isinstance(algorithm, interfaces.HashAlgorithm):
