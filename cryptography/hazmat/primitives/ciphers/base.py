@@ -14,6 +14,8 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
+from cryptography.hazmat.backends.interfaces import CipherBackend
+from cryptography.utils import check_backend_interface
 from cryptography.exceptions import (
     AlreadyFinalized, NotYetFinalized, AlreadyUpdated,
 )
@@ -22,6 +24,9 @@ from cryptography.hazmat.primitives import interfaces
 
 class Cipher(object):
     def __init__(self, algorithm, mode, backend):
+
+        check_backend_interface(backend, [CipherBackend])
+
         if not isinstance(algorithm, interfaces.CipherAlgorithm):
             raise TypeError("Expected interface of interfaces.CipherAlgorithm")
 
