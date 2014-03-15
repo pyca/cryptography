@@ -35,6 +35,7 @@ fi
 if [[ "$DARWIN" = true ]]; then
     brew update
     brew install pyenv
+    brew install libscrypt
     if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     case "${TOX_ENV}" in
         py26)
