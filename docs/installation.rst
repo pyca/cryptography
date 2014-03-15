@@ -13,10 +13,10 @@ Supported platforms
 Currently we test ``cryptography`` on Python 2.6, 2.7, 3.2, 3.3 and PyPy on
 these operating systems.
 
-* x86-64 Ubuntu 12.04 LTS
 * x86-64 CentOS 6.4 and CentOS 5
 * x86-64 FreeBSD 9.2 and FreeBSD 10
 * OS X 10.9 and OS X 10.8.5
+* x86-64 Ubuntu 12.04 LTS
 * 64-bit Windows Server 2008
 
 On Windows
