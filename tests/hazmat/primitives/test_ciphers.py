@@ -18,7 +18,7 @@ import binascii
 import pytest
 
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Camellia, TripleDES, Blowfish, ARC4, CAST5
+    AES, Camellia, TripleDES, Blowfish, ARC4, CAST5, IDEA
 )
 
 
@@ -110,3 +110,13 @@ class TestARC4(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             ARC4(binascii.unhexlify(b"0" * 34))
+
+
+class TestIDEA(object):
+    def test_key_size(self):
+        cipher = IDEA(b"\x00" * 16)
+        assert cipher.key_size == 128
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            IDEA(b"\x00" * 17)
