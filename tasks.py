@@ -21,7 +21,7 @@ import invoke
 import requests
 
 
-JENKINS_URL = "http://jenkins.cryptography.io/job/cryptography-wheel-builder"
+JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
 
 
 def wait_for_build_completed():
