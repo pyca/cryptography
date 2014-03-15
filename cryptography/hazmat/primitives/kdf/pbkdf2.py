@@ -27,7 +27,6 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 @utils.register_interface(interfaces.KeyDerivationFunction)
 class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
-
         if not isinstance(backend, PBKDF2HMACBackend):
             raise UnsupportedInterface(
                 "Backend object does not implement PBKDF2HMACBackend")
