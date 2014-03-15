@@ -29,7 +29,7 @@ class PSS(object):
     name = "EMSA-PSS"
 
     def __init__(self, mgf):
-        self.mgf = mgf
+        self._mgf = mgf
 
 
 class MGF1(object):

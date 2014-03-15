@@ -776,10 +776,10 @@ class _RSAVerificationContext(object):
             else:
                 self._verify_method = self._verify_pkcs1
         elif isinstance(padding, PSS):
-            if not isinstance(padding.mgf, MGF1):
+            if not isinstance(padding._mgf, MGF1):
                 raise TypeError("Only MGF1 is supported by this backend")
 
-            if (not isinstance(padding.mgf._algorithm, hashes.SHA1) and
+            if (not isinstance(padding._mgf._algorithm, hashes.SHA1) and
                     not self._backend._lib.Cryptography_HAS_MGF1_MD):
                 raise UnsupportedHash("This backend only supports MGF1 with "
                                       "SHA1 when OpenSSL is not 1.0.1+")
@@ -836,7 +836,7 @@ class _RSAVerificationContext(object):
             if self._backend._lib.Cryptography_HAS_MGF1_MD:
                 # MGF1 MD is configurable in OpenSSL 1.0.1+
                 mgf1_md = self._backend._lib.EVP_get_digestbyname(
-                    self._padding.mgf._algorithm.name.encode("ascii"))
+                    self._padding._mgf._algorithm.name.encode("ascii"))
                 assert mgf1_md != self._backend._ffi.NULL
                 res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
                     pkey_ctx, mgf1_md
@@ -908,10 +908,10 @@ class _RSAVerificationContext(object):
             raise InvalidSignature
 
     def _get_salt_length(self):
-        if self._padding.mgf._salt_length is MGF1.MAX_LENGTH:
+        if self._padding._mgf._salt_length is MGF1.MAX_LENGTH:
             return -2
         else:
-            return self._padding.mgf._salt_length
+            return self._padding._mgf._salt_length
 
 
 backend = Backend()
