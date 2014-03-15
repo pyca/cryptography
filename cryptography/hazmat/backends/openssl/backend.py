@@ -891,7 +891,8 @@ class _RSAVerificationContext(object):
             self._backend._lib.RSA_NO_PADDING
         )
         if res != pkey_size:
-            assert self._backend._consume_errors()
+            errors = self._backend._consume_errors()
+            assert errors
             raise InvalidSignature
 
         data_to_verify = self._hash_ctx.finalize()
@@ -904,7 +905,8 @@ class _RSAVerificationContext(object):
             self._get_salt_length()
         )
         if res != 1:
-            assert self._backend._consume_errors()
+            errors = self._backend._consume_errors()
+            assert errors
             raise InvalidSignature
 
     def _get_salt_length(self):
