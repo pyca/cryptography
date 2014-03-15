@@ -56,3 +56,9 @@ Exceptions
     This is raised when the verify method of a one time password function's
     computed token does not match the expected token.
 
+.. class:: UnsupportedInterface
+
+    .. versionadded:: 0.3
+
+    This is raised when the provided backend does not support the required
+    interface.

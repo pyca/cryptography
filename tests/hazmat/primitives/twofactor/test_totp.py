@@ -13,9 +13,11 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pretend
+
 import pytest
 
-from cryptography.exceptions import InvalidToken
+from cryptography.exceptions import InvalidToken, UnsupportedInterface
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 from tests.utils import load_vectors_from_file, load_nist_vectors
@@ -129,3 +131,12 @@ class TestTOTP(object):
         totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
 
         assert totp.generate(time) == b"94287082"
+
+
+def test_invalid_backend():
+    secret = b"12345678901234567890"
+
+    pretend_backend = pretend.stub()
+
+    with pytest.raises(UnsupportedInterface):
+        TOTP(secret, 8, hashes.SHA1(), 30, pretend_backend)
