@@ -34,10 +34,10 @@ class MGF1(object):
         self._algorithm = algorithm
 
         if (not isinstance(salt_length, six.integer_types) and
-                not salt_length is self.MAX_LENGTH):
+                salt_length is not self.MAX_LENGTH):
             raise TypeError("salt_length must be an integer")
 
-        if not salt_length is self.MAX_LENGTH and salt_length < 0:
+        if salt_length is not self.MAX_LENGTH and salt_length < 0:
             raise ValueError("salt_length must be zero or greater")
 
         self._salt_length = salt_length
