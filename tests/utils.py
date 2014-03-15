@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import, division, print_function
+
 import collections
 import os
 
@@ -295,4 +297,94 @@ def load_pkcs1_vectors(vector_data):
         else:
             if key is not None and attr is not None:
                 key[attr].append(line.strip())
+    return vectors
+
+
+def load_rsa_nist_vectors(vector_data):
+    test_data = None
+    data = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and section headers are ignored
+        if not line or line.startswith("["):
+            continue
+
+        if line.startswith("# Salt len:"):
+            salt_length = int(line.split(":")[1].strip())
+            continue
+        elif line.startswith("#"):
+            continue
+
+        # Build our data using a simple Key = Value format
+        name, value = [c.strip() for c in line.split("=")]
+
+        if name == "n":
+            n = int(value, 16)
+        elif name == "e":
+            e = int(value, 16)
+        elif name == "SHAAlg":
+            test_data = {
+                "modulus": n,
+                "public_exponent": e,
+                "salt_length": salt_length,
+                "algorithm": value.encode("ascii")
+            }
+            data.append(test_data)
+            continue
+        # For all other tokens we simply want the name, value stored in
+        # the dictionary
+        else:
+            test_data[name.lower()] = value.encode("ascii")
+
+    return data
+
+
+def load_fips_dsa_key_pair_vectors(vector_data):
+    """
+    Loads data out of the FIPS DSA KeyPair vector files.
+    """
+    vectors = []
+    # When reading_key_data is set to True it tells the loader to continue
+    # constructing dictionaries. We set reading_key_data to False during the
+    # blocks of the vectors of N=224 because we don't support it.
+    reading_key_data = True
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+        elif line.startswith("[mod = L=1024"):
+            continue
+        elif line.startswith("[mod = L=2048, N=224"):
+            reading_key_data = False
+            continue
+        elif line.startswith("[mod = L=2048, N=256"):
+            reading_key_data = True
+            continue
+        elif line.startswith("[mod = L=3072"):
+            continue
+
+        if not reading_key_data:
+            continue
+
+        elif reading_key_data:
+            if line.startswith("P"):
+                vectors.append({'p': int(line.split("=")[1], 16)})
+            elif line.startswith("Q"):
+                vectors[-1]['q'] = int(line.split("=")[1], 16)
+            elif line.startswith("G"):
+                vectors[-1]['g'] = int(line.split("=")[1], 16)
+            elif line.startswith("X") and 'x' not in vectors[-1]:
+                vectors[-1]['x'] = int(line.split("=")[1], 16)
+            elif line.startswith("X") and 'x' in vectors[-1]:
+                vectors.append({'p': vectors[-1]['p'],
+                                'q': vectors[-1]['q'],
+                                'g': vectors[-1]['g'],
+                                'x': int(line.split("=")[1], 16)
+                                })
+            elif line.startswith("Y"):
+                vectors[-1]['y'] = int(line.split("=")[1], 16)
+
     return vectors

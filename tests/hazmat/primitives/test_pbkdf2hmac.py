@@ -18,7 +18,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidKey, UnsupportedHash, AlreadyFinalized
+    InvalidKey, UnsupportedHash, AlreadyFinalized, UnsupportedInterface
 )
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -67,3 +67,10 @@ class TestPBKDF2HMAC(object):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         with pytest.raises(TypeError):
             kdf.derive(six.u("unicode here"))
+
+
+def test_invalid_backend():
+    pretend_backend = object()
+
+    with pytest.raises(UnsupportedInterface):
+        PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, pretend_backend)

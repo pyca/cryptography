@@ -3,7 +3,9 @@
 OpenSSL Backend
 ===============
 
-The `OpenSSL`_ C library.
+The `OpenSSL`_ C library. Cryptography supports version ``0.9.8e`` (present in
+Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
+**not tested or supported**.
 
 .. data:: cryptography.hazmat.backends.openssl.backend
 

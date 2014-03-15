@@ -7,8 +7,8 @@ CommonCrypto Binding
 
 .. versionadded:: 0.2
 
-These are `CFFI`_ bindings to the `CommonCrypto`_ C library. It is available on
-Mac OS X.
+These are `CFFI`_ bindings to the `CommonCrypto`_ C library. It is only
+available on Mac OS X versions 10.8 and above.
 
 .. class:: cryptography.hazmat.bindings.commoncrypto.binding.Binding()
 

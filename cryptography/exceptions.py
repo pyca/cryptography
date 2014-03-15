@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import, division, print_function
+
 
 class UnsupportedAlgorithm(Exception):
     pass
@@ -57,4 +59,8 @@ class InvalidKey(Exception):
 
 
 class InvalidToken(Exception):
+    pass
+
+
+class UnsupportedInterface(Exception):
     pass

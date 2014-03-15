@@ -11,11 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import, division, print_function
+
 import os
 
 import pytest
 
-from cryptography.exceptions import InvalidToken
+from cryptography.exceptions import InvalidToken, UnsupportedInterface
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives import hashes
 from tests.utils import load_vectors_from_file, load_nist_vectors
@@ -93,3 +95,12 @@ class TestHOTP(object):
 
         with pytest.raises(TypeError):
             HOTP(secret, b"foo", SHA1(), backend)
+
+
+def test_invalid_backend():
+    secret = b"12345678901234567890"
+
+    pretend_backend = object()
+
+    with pytest.raises(UnsupportedInterface):
+        HOTP(secret, 8, hashes.SHA1(), pretend_backend)
