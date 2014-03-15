@@ -25,7 +25,6 @@ from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 
 class HOTP(object):
     def __init__(self, key, length, algorithm, backend):
-
         if not isinstance(backend, HMACBackend):
             raise UnsupportedInterface(
                 "Backend object does not implement HMACBackend")

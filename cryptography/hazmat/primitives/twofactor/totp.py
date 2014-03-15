@@ -21,7 +21,6 @@ from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
 class TOTP(object):
     def __init__(self, key, length, algorithm, time_step, backend):
-
         if not isinstance(backend, HMACBackend):
             raise UnsupportedInterface(
                 "Backend object does not implement HMACBackend")

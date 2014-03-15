@@ -84,6 +84,10 @@ Different KDFs are suitable for different tasks such as:
         :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
         provider.
 
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
+
     .. method:: derive(key_material)
 
         :param bytes key_material: The input key material. For PBKDF2 this
@@ -182,6 +186,10 @@ Different KDFs are suitable for different tasks such as:
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
+
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     .. method:: derive(key_material)
 
