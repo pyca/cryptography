@@ -52,6 +52,9 @@ codes (HMAC).
         :class:`~cryptography.hazmat.primitives.hashes.SHA256()` or
         :class:`~cryptography.hazmat.primitives.hashes.SHA512()` or if the
         ``length`` parameter is not an integer.
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     .. method:: generate(counter)
 
@@ -148,6 +151,9 @@ similar to the following code.
         :class:`~cryptography.hazmat.primitives.hashes.SHA256()` or
         :class:`~cryptography.hazmat.primitives.hashes.SHA512()` or if the
         ``length`` parameter is not an integer.
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     .. method:: generate(time)
 

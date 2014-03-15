@@ -13,13 +13,19 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.exceptions import InvalidToken
+from cryptography.exceptions import InvalidToken, UnsupportedInterface
+from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
 
 class TOTP(object):
     def __init__(self, key, length, algorithm, time_step, backend):
+
+        if not isinstance(backend, HMACBackend):
+            raise UnsupportedInterface(
+                "Backend object does not implement HMACBackend")
+
         self._time_step = time_step
         self._hotp = HOTP(key, length, algorithm, backend)
 
