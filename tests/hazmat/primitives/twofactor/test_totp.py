@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 import pytest
 
 from cryptography.exceptions import InvalidToken, UnsupportedInterface
@@ -136,7 +134,7 @@ class TestTOTP(object):
 def test_invalid_backend():
     secret = b"12345678901234567890"
 
-    pretend_backend = pretend.stub()
+    pretend_backend = object()
 
     with pytest.raises(UnsupportedInterface):
         TOTP(secret, 8, hashes.SHA1(), 30, pretend_backend)
