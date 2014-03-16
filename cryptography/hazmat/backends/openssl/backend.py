@@ -315,7 +315,7 @@ class Backend(object):
         res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
         assert res == 1
 
-        res = self._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        res = self._lib.EVP_PKEY_assign_RSA(evp_pkey, rsa_cdata)
         assert res == 1
 
         return evp_pkey
@@ -327,7 +327,7 @@ class Backend(object):
         res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
         assert res == 1
 
-        res = self._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        res = self._lib.EVP_PKEY_assign_RSA(evp_pkey, rsa_cdata)
         assert res == 1
 
         return evp_pkey
