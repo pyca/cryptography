@@ -45,6 +45,10 @@ Message Digests
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
         provider.
 
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+
     .. method:: update(data)
 
         :param bytes data: The bytes to be hashed.

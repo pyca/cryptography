@@ -20,7 +20,11 @@ import pytest
 import six
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized, UnsupportedHash
+from cryptography.exceptions import (
+    AlreadyFinalized, UnsupportedHash, UnsupportedInterface
+)
+
+from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 
 from .utils import generate_base_hash_test
@@ -39,7 +43,11 @@ class TestHashContext(object):
             m.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        pretend_backend = pretend.stub()
+        @utils.register_interface(HashBackend)
+        class PretendBackend(object):
+            pass
+
+        pretend_backend = PretendBackend()
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hashes.Hash(hashes.SHA1(), backend=pretend_backend,
@@ -171,3 +179,10 @@ class TestMD5(object):
         digest_size=16,
         block_size=64,
     )
+
+
+def test_invalid_backend():
+    pretend_backend = object()
+
+    with pytest.raises(UnsupportedInterface):
+        hashes.Hash(hashes.SHA1(), pretend_backend)
