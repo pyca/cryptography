@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import itertools
+from cryptography.exceptions import UnsupportedInterface
 import os
 
 import pytest
@@ -385,6 +386,13 @@ class TestRSA(object):
             rsa.RSAPublicKey(public_exponent=6, modulus=15)
 
 
+def test_rsa_generate_invalid_backend():
+    pretend_backend = object()
+
+    with pytest.raises(UnsupportedInterface):
+        rsa.RSAPrivateKey.generate(65537, 2048, pretend_backend)
+
+
 @pytest.mark.rsa
 class TestRSASignature(object):
     @pytest.mark.parametrize(
@@ -443,6 +451,14 @@ class TestRSASignature(object):
         )
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1(), backend)
+
+    def test_rsa_signer_invalid_backend(self, backend):
+        pretend_backend = object()
+        private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
+
+        with pytest.raises(UnsupportedInterface):
+            private_key.signer(
+                padding.PKCS1v15(), hashes.SHA256, pretend_backend)
 
 
 @pytest.mark.rsa
@@ -558,6 +574,15 @@ class TestRSAVerification(object):
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", "notpadding", hashes.SHA1(), backend)
+
+    def test_rsa_verifier_invalid_backend(self, backend):
+        pretend_backend = object()
+        private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
+        public_key = private_key.public_key()
+
+        with pytest.raises(UnsupportedInterface):
+            public_key.verifier(
+                b"foo", padding.PKCS1v15(), hashes.SHA256(), pretend_backend)
 
 
 class TestMGF1(object):
