@@ -345,9 +345,10 @@ class Backend(object):
         )
 
     def _rsa_cdata_from_private_key(self, private_key):
+        # Does not GC the RSA cdata. You *must* make sure it's freed
+        # correctly yourself!
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
         ctx.p = self._int_to_bn(private_key.p)
         ctx.q = self._int_to_bn(private_key.q)
         ctx.d = self._int_to_bn(private_key.d)
@@ -359,9 +360,11 @@ class Backend(object):
         return ctx
 
     def _rsa_cdata_from_public_key(self, public_key):
+        # Does not GC the RSA cdata. You *must* make sure it's freed
+        # correctly yourself!
+
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
         ctx.e = self._int_to_bn(public_key.e)
         ctx.n = self._int_to_bn(public_key.n)
         return ctx
