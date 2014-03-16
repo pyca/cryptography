@@ -15,7 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.backends import available_backends
+from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
@@ -25,7 +25,7 @@ from .utils import check_for_iface, check_backend_support, select_backends
 
 def pytest_generate_tests(metafunc):
     names = metafunc.config.getoption("--backend")
-    selected_backends = select_backends(names, available_backends())
+    selected_backends = select_backends(names, _available_backends())
 
     if "backend" in metafunc.fixturenames:
         metafunc.parametrize("backend", selected_backends)

@@ -22,24 +22,24 @@ from cryptography.hazmat.bindings.openssl.binding import (
 )
 
 
-_available_backends = None
+_available_backends_list = None
 
 
-def available_backends():
-    global _available_backends
+def _available_backends():
+    global _available_backends_list
 
-    if _available_backends is None:
-        _available_backends = []
+    if _available_backends_list is None:
+        _available_backends_list = []
 
         if CommonCryptoBinding.is_available():
             from cryptography.hazmat.backends import commoncrypto
-            _available_backends.append(commoncrypto.backend)
+            _available_backends_list.append(commoncrypto.backend)
 
         if OpenSSLBinding.is_available():
             from cryptography.hazmat.backends import openssl
-            _available_backends.append(openssl.backend)
+            _available_backends_list.append(openssl.backend)
 
-    return _available_backends
+    return _available_backends_list
 
 
 _default_backend = None
@@ -49,6 +49,6 @@ def default_backend():
     global _default_backend
 
     if _default_backend is None:
-        _default_backend = MultiBackend(available_backends())
+        _default_backend = MultiBackend(_available_backends())
 
     return _default_backend
