@@ -879,9 +879,13 @@ class _RSAVerificationContext(object):
             assert errors
             raise InvalidSignature
 
-    def _verify_pss(self, rsa_cdata, evp_pkey, evp_md):
+    def _verify_pss(self, evp_pkey, evp_md):
         pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
         assert pkey_size > 0
+        rsa_cdata = self._backend._lib.EVP_PKEY_get1_RSA(evp_pkey)
+        assert rsa_cdata != self._backend._ffi.NULL
+        rsa_cdata = self._backend._ffi.gc(rsa_cdata,
+                                          self._backend._lib.RSA_free)
         buf = self._backend._ffi.new("unsigned char[]", pkey_size)
         res = self._backend._lib.RSA_public_decrypt(
             len(self._signature),
