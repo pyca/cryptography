@@ -21,6 +21,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.openssl.backend import backend, Backend
 from cryptography.hazmat.primitives import interfaces, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -136,6 +137,30 @@ class TestOpenSSL(object):
             pytest.skip("Requires an older OpenSSL")
         with pytest.raises(UnsupportedHash):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(UnsupportedHash):
+            public_key.verifier(
+                b"sig",
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA256(),
+                        salt_length=padding.MGF1.MAX_LENGTH
+                    )
+                ),
+                hashes.SHA1(),
+                backend
+            )
 
     # This test is not in the next class because to check if it's really
     # default we don't want to run the setup_method before it
