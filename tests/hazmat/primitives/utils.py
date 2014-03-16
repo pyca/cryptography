@@ -388,21 +388,21 @@ def generate_rsa_pss_test(param_loader, path, file_names, hash_name):
 
 
 def rsa_pss_test(backend, params):
-        public_key = rsa.RSAPublicKey(
-            public_exponent=params["public_exponent"],
-            modulus=params["modulus"]
-        )
-        hash_cls = getattr(hashes, params["algorithm"].decode("utf8"))
-        verifier = public_key.verifier(
-            binascii.unhexlify(params["s"]),
-            padding.PSS(
-                mgf=padding.MGF1(
-                    algorithm=hash_cls(),
-                    salt_length=params["salt_length"]
-                )
-            ),
-            hash_cls(),
-            backend
-        )
-        verifier.update(binascii.unhexlify(params["msg"]))
-        verifier.verify()
+    public_key = rsa.RSAPublicKey(
+        public_exponent=params["public_exponent"],
+        modulus=params["modulus"]
+    )
+    hash_cls = getattr(hashes, params["algorithm"].decode("utf8"))
+    verifier = public_key.verifier(
+        binascii.unhexlify(params["s"]),
+        padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_cls(),
+                salt_length=params["salt_length"]
+            )
+        ),
+        hash_cls(),
+        backend
+    )
+    verifier.update(binascii.unhexlify(params["msg"]))
+    verifier.verify()
