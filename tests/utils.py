@@ -329,7 +329,7 @@ def load_rsa_nist_vectors(vector_data):
                 "modulus": n,
                 "public_exponent": e,
                 "salt_length": salt_length,
-                "algorithm": value.encode("ascii")
+                "algorithm": value
             }
             data.append(test_data)
             continue
