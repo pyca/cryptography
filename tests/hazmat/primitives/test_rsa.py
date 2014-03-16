@@ -16,12 +16,12 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import itertools
-from cryptography.exceptions import UnsupportedInterface
 import os
 
 import pytest
 
 from cryptography import exceptions, utils
+from cryptography.exceptions import UnsupportedInterface
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
