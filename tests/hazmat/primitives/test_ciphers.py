@@ -18,12 +18,10 @@ import binascii
 import pytest
 
 from cryptography.exceptions import UnsupportedInterface
-
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Camellia, TripleDES, Blowfish, ARC4, CAST5, IDEA
 )
-
 from cryptography.hazmat.primitives.ciphers.modes import ECB
 
 
