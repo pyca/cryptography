@@ -56,6 +56,10 @@ of a message.
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
 
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+
     .. method:: update(msg)
 
         :param bytes msg: The bytes to hash and authenticate.
