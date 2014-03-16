@@ -23,8 +23,7 @@ import pytest
 from cryptography import exceptions, utils
 from cryptography.exceptions import UnsupportedInterface
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
 from ...utils import load_pkcs1_vectors, load_vectors_from_file
 

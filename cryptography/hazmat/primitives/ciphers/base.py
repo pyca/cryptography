@@ -15,9 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, NotYetFinalized, AlreadyUpdated,
-    UnsupportedInterface)
-
+    AlreadyFinalized, NotYetFinalized, AlreadyUpdated, UnsupportedInterface
+)
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import interfaces
 

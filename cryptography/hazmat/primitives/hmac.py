@@ -19,7 +19,6 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, UnsupportedInterface
 )
-
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces
 
