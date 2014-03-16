@@ -759,7 +759,7 @@ class TestRSAPSSMGF1VerificationSHA1(object):
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
         ],
-        b"SHA1"
+        hashes.SHA1()
     )
 
 
@@ -776,7 +776,7 @@ class TestRSAPSSMGF1VerificationSHA224(object):
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
         ],
-        b"SHA224"
+        hashes.SHA224()
     )
 
 
@@ -793,7 +793,7 @@ class TestRSAPSSMGF1VerificationSHA256(object):
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
         ],
-        b"SHA256"
+        hashes.SHA256()
     )
 
 
@@ -810,7 +810,7 @@ class TestRSAPSSMGF1VerificationSHA384(object):
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
         ],
-        b"SHA384"
+        hashes.SHA384()
     )
 
 
@@ -827,7 +827,7 @@ class TestRSAPSSMGF1VerificationSHA512(object):
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
         ],
-        b"SHA512"
+        hashes.SHA512()
     )
 
 
