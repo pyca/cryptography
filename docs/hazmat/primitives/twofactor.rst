@@ -27,7 +27,7 @@ codes (HMAC).
     .. doctest::
 
         >>> import os
-        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.backends.utils import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.hotp import HOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> key = os.urandom(16)
@@ -124,7 +124,7 @@ similar to the following code.
 
         >>> import os
         >>> import time
-        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.backends.utils import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.totp import TOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
         >>> key = os.urandom(16)

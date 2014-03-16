@@ -22,7 +22,7 @@ import time
 import six
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.utils import default_backend
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.hmac import HMAC

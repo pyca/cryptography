@@ -15,7 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.backends import _ALL_BACKENDS
+from cryptography.hazmat.backends.utils import _ALL_BACKENDS
 from cryptography.hazmat.backends.interfaces import (
     HMACBackend, CipherBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )

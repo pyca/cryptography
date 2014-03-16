@@ -20,7 +20,7 @@ Message Digests
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.backends.utils import default_backend
         >>> from cryptography.hazmat.primitives import hashes
         >>> digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
         >>> digest.update(b"abc")
@@ -44,10 +44,6 @@ Message Digests
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
         provider.
-
-    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
 
     .. method:: update(data)
 
