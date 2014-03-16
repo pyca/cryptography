@@ -16,13 +16,18 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized
+from cryptography.exceptions import AlreadyFinalized, UnsupportedInterface
+from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import interfaces
 
 
 @utils.register_interface(interfaces.HashContext)
 class Hash(object):
     def __init__(self, algorithm, backend, ctx=None):
+        if not isinstance(backend, HashBackend):
+            raise UnsupportedInterface(
+                "Backend object does not implement HashBackend")
+
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
         self.algorithm = algorithm
