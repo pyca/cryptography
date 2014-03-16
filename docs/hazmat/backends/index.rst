@@ -12,7 +12,7 @@ Getting a Backend
 the widest number of supported cryptographic algorithms as well as supporting
 platform specific implementations.
 
-You can get the default backend by calling :func:`~default_backend`.
+You can get the default backend by calling :func:`~utils.default_backend`.
 
 The default backend will change over time as we implement new backends and
 the libraries we use in those backends changes.

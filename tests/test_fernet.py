@@ -26,7 +26,7 @@ import pytest
 import six
 
 from cryptography.fernet import Fernet, InvalidToken
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.utils import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 

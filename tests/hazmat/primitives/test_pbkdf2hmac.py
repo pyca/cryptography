@@ -22,7 +22,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.utils import default_backend
 
 
 @utils.register_interface(interfaces.HashAlgorithm)

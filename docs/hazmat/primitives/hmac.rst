@@ -27,7 +27,7 @@ of a message.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.backends.utils import default_backend
         >>> from cryptography.hazmat.primitives import hashes, hmac
         >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
         >>> h.update(b"message to hash")
@@ -55,10 +55,6 @@ of a message.
     :param backend: An
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
-
-    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     .. method:: update(msg)
 

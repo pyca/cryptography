@@ -46,7 +46,7 @@ Different KDFs are suitable for different tasks such as:
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.backends.utils import default_backend
         >>> backend = default_backend()
         >>> salt = os.urandom(16)
         >>> # derive
@@ -142,7 +142,7 @@ Different KDFs are suitable for different tasks such as:
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.backends.utils import default_backend
         >>> backend = default_backend()
         >>> salt = os.urandom(16)
         >>> info = b"hkdf-example"
