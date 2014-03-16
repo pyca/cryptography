@@ -21,7 +21,8 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, UnsupportedHash, UnsupportedInterface)
+    AlreadyFinalized, UnsupportedHash, UnsupportedInterface
+)
 
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes, interfaces
