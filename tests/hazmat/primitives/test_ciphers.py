@@ -14,7 +14,6 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-from cryptography.hazmat.primitives.ciphers.modes import ECB
 
 import pytest
 
@@ -24,6 +23,8 @@ from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Camellia, TripleDES, Blowfish, ARC4, CAST5, IDEA
 )
+
+from cryptography.hazmat.primitives.ciphers.modes import ECB
 
 
 class TestAES(object):
