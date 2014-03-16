@@ -56,6 +56,10 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
         provider.
 
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+
     .. method:: encryptor()
 
         :return: An encrypting

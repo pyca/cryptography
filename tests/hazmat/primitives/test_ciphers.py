@@ -14,9 +14,13 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+from cryptography.hazmat.primitives.ciphers.modes import ECB
 
 import pytest
 
+from cryptography.exceptions import UnsupportedInterface
+
+from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Camellia, TripleDES, Blowfish, ARC4, CAST5, IDEA
 )
@@ -120,3 +124,10 @@ class TestIDEA(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             IDEA(b"\x00" * 17)
+
+
+def test_invalid_backend():
+    pretend_backend = object()
+
+    with pytest.raises(UnsupportedInterface):
+        ciphers.Cipher(AES(b"AAAAAAAAAAAAAAAA"), ECB, pretend_backend)
