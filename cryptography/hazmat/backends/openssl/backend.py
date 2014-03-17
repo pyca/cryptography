@@ -19,7 +19,7 @@ import itertools
 from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, InternalError, AlreadyFinalized, UnsupportedCipher,
-    UnsupportedHash, UnsupportedPadding, InvalidSignature
+    UnsupportedAlgorithm, UnsupportedHash, UnsupportedPadding, InvalidSignature
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -777,11 +777,15 @@ class _RSAVerificationContext(object):
                 self._verify_method = self._verify_pkcs1
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
-                raise TypeError("Only MGF1 is supported by this backend")
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend"
+                )
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
-                raise UnsupportedHash("This backend only supports MGF1 with "
-                                      "SHA1 when OpenSSL is not 1.0.1+")
+                raise UnsupportedHash(
+                    "When OpenSSL is older than 1.0.1 then only SHA1 is "
+                    "supported with MGF1."
+                )
 
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._verify_method = self._verify_pkey_ctx

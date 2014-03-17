@@ -21,7 +21,9 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
-from cryptography.exceptions import UnsupportedInterface
+from cryptography.exceptions import (
+    UnsupportedAlgorithm, UnsupportedInterface
+)
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
@@ -713,7 +715,7 @@ class TestRSAVerification(object):
             backend=backend
         )
         public_key = private_key.public_key()
-        with pytest.raises(TypeError):
+        with pytest.raises(UnsupportedAlgorithm):
             public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
                                 hashes.SHA1(), backend)
 
