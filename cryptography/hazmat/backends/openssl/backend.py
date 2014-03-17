@@ -779,8 +779,7 @@ class _RSAVerificationContext(object):
             if not isinstance(padding._mgf, MGF1):
                 raise TypeError("Only MGF1 is supported by this backend")
 
-            if (not isinstance(padding._mgf._algorithm, hashes.SHA1) and
-                    not self._backend._lib.Cryptography_HAS_MGF1_MD):
+            if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedHash("This backend only supports MGF1 with "
                                       "SHA1 when OpenSSL is not 1.0.1+")
 
