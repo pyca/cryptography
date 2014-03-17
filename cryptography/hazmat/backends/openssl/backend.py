@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import collections
 import itertools
 
+import six
+
 from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, InternalError, AlreadyFinalized, UnsupportedCipher,
@@ -259,11 +261,24 @@ class Backend(object):
         )
 
     def _bn_to_int(self, bn):
-        hex_cdata = self._lib.BN_bn2hex(bn)
-        assert hex_cdata != self._ffi.NULL
-        hex_str = self._ffi.string(hex_cdata)
-        self._lib.OPENSSL_free(hex_cdata)
-        return int(hex_str, 16)
+        if six.PY3:
+            # Python 3 has constant time from_bytes, so use that.
+
+            bn_num_bytes = (self._lib.BN_num_bits(bn) + 7) // 8
+            bin_ptr = self._ffi.new("unsigned char[]", bn_num_bytes)
+            bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
+            assert bin_len > 0
+            assert bin_ptr != self._ffi.NULL
+            return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
+
+        else:
+            # Under Python 2 the best we can do is hex()
+
+            hex_cdata = self._lib.BN_bn2hex(bn)
+            assert hex_cdata != self._ffi.NULL
+            hex_str = self._ffi.string(hex_cdata)
+            self._lib.OPENSSL_free(hex_cdata)
+            return int(hex_str, 16)
 
     def _int_to_bn(self, num):
         """
@@ -272,12 +287,24 @@ class Backend(object):
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
-        hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
-        bn_ptr = self._ffi.new("BIGNUM **")
-        res = self._lib.BN_hex2bn(bn_ptr, hex_num)
-        assert res != 0
-        assert bn_ptr[0] != self._ffi.NULL
-        return bn_ptr[0]
+
+        if six.PY3:
+            # Python 3 has constant time to_bytes, so use that.
+
+            binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
+            bn_ptr = self._lib.BN_bin2bn(binary, len(binary), self._ffi.NULL)
+            assert bn_ptr != self._ffi.NULL
+            return bn_ptr
+
+        else:
+            # Under Python 2 the best we can do is hex()
+
+            hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
+            bn_ptr = self._ffi.new("BIGNUM **")
+            res = self._lib.BN_hex2bn(bn_ptr, hex_num)
+            assert res != 0
+            assert bn_ptr[0] != self._ffi.NULL
+            return bn_ptr[0]
 
     def generate_rsa_private_key(self, public_exponent, key_size):
         if public_exponent < 3:
