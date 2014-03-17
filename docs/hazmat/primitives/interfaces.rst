@@ -323,7 +323,13 @@ Asymmetric Interfaces
 
     .. versionadded:: 0.3
 
-    A `DSA`_ private key.
+    A `DSA`_ public key.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
 
     .. method:: parameters()
 
