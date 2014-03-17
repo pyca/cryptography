@@ -52,8 +52,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             pip install virtualenv
             ;;
         py33)
-            pyenv install 3.3.2
-            pyenv global 3.3.2
+            pyenv install 3.3.5
+            pyenv global 3.3.5
             pip install virtualenv
             ;;
         docs)
