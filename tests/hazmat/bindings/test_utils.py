@@ -13,15 +13,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pretend
-
 from cryptography.hazmat.bindings import utils
 
 
 def test_create_modulename():
-    pretend_ffi = pretend.stub(_cdefsources=["cdef sources go here"])
+    cdef_sources = ["cdef sources go here"]
     source = "source code"
-    name = utils._create_modulename(pretend_ffi, source, "2.7")
-    assert name == "_cffi_bcba7f4bx4a14b588"
-    name = utils._create_modulename(pretend_ffi, source, "3.2")
-    assert name == "_cffi_a7462526x4a14b588"
+    name = utils._create_modulename(cdef_sources, source, "2.7")
+    assert name == "_Cryptography_cffi_bcba7f4bx4a14b588"
+    name = utils._create_modulename(cdef_sources, source, "3.2")
+    assert name == "_Cryptography_cffi_a7462526x4a14b588"
