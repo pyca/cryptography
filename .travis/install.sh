@@ -56,6 +56,11 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             pyenv global 3.3.2
             pip install virtualenv
             ;;
+        py34)
+            pyenv install 3.4.0
+            pyenv global 3.4.0
+            pip install virtualenv
+            ;;
         docs)
             curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
             sudo python get-pip.py
@@ -77,6 +82,9 @@ else
             ;;
         py33)
             sudo apt-get install python3.3 python3.3-dev
+            ;;
+        py34)
+            sudo apt-get install python3.4 python3.4-dev
             ;;
         py3pep8)
             sudo apt-get install python3.3 python3.3-dev

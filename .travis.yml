@@ -16,11 +16,13 @@ env:
         - TOX_ENV=py27
         - TOX_ENV=py32
         - TOX_ENV=py33
+        - TOX_ENV=py34
         - TOX_ENV=pypy
         - TOX_ENV=py26 OPENSSL=0.9.8
         - TOX_ENV=py27 OPENSSL=0.9.8
         - TOX_ENV=py32 OPENSSL=0.9.8
         - TOX_ENV=py33 OPENSSL=0.9.8
+        - TOX_ENV=py34 OPENSSL=0.9.8
         - TOX_ENV=pypy OPENSSL=0.9.8
         - TOX_ENV=docs
         - TOX_ENV=pep8
@@ -60,6 +62,9 @@ matrix:
           env: TOX_ENV=py33
           compiler: gcc
         - os: osx
+          env: TOX_ENV=py34
+          compiler: gcc
+        - os: osx
           env: TOX_ENV=pypy
           compiler: gcc
         - os: osx
@@ -73,6 +78,9 @@ matrix:
           compiler: gcc
         - os: osx
           env: TOX_ENV=py33 OPENSSL=0.9.8
+          compiler: gcc
+        - os: osx
+          env: TOX_ENV=py34 OPENSSL=0.9.8
           compiler: gcc
         - os: osx
           env: TOX_ENV=pypy OPENSSL=0.9.8
