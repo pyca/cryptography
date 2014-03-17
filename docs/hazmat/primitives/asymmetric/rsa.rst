@@ -27,7 +27,12 @@ RSA
     :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
     interface.
 
-    :raises TypeError: This is raised when the arguments are not all integers.
+   ``p``, ``q``, ``dmp1``, ``dmq1``, and ``iqmp`` may be specified as ``None``,
+   in which case their values will be calculated from the ``private_exponent``,
+   ``public_exponent``, and ``modulus``.
+
+    :raises TypeError: This is raised when the arguments are not all integers
+		       or ``None``.
 
     :raises ValueError: This is raised when the values of ``p``, ``q``,
                         ``private_exponent``, ``public_exponent``, or

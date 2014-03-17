@@ -33,19 +33,6 @@ class DummyPadding(object):
     name = "UNSUPPORTED-PADDING"
 
 
-def _modinv(e, m):
-    """
-    Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
-    """
-    x1, y1, x2, y2 = 1, 0, 0, 1
-    a, b = e, m
-    while b > 0:
-        q, r = divmod(a, b)
-        xn, yn = x1 - q * x2, y1 - q * y2
-        a, b, x1, y1, x2, y2 = b, r, x2, y2, xn, yn
-    return x1 % m
-
-
 def _check_rsa_private_key(skey):
     assert skey
     assert skey.modulus
@@ -55,7 +42,7 @@ def _check_rsa_private_key(skey):
     assert skey.key_size
     assert skey.dmp1 == skey.d % (skey.p - 1)
     assert skey.dmq1 == skey.d % (skey.q - 1)
-    assert skey.iqmp == _modinv(skey.q, skey.p)
+    assert skey.iqmp == rsa._modinv(skey.q, skey.p)
 
     pkey = skey.public_key()
     assert pkey
@@ -88,12 +75,17 @@ def test_modular_inverse():
         "b2347cfcd669133088d1c159518531025297c2d67c9da856a12e80222cd03b4c6ec0f"
         "86c957cb7bb8de7a127b645ec9e820aa94581e4762e209f01", 16
     )
-    assert _modinv(q, p) == int(
+    assert rsa._modinv(q, p) == int(
         "0275e06afa722999315f8f322275483e15e2fb46d827b17800f99110b269a6732748f"
         "624a382fa2ed1ec68c99f7fc56fb60e76eea51614881f497ba7034c17dde955f92f15"
         "772f8b2b41f3e56d88b1e096cdd293eba4eae1e82db815e0fadea0c4ec971bc6fd875"
         "c20e67e48c31a611e98d32c6213ae4c4d7b53023b2f80c538", 16
     )
+
+
+def test_factor_n_with_bad_parameters():
+    with pytest.raises(ValueError):
+        rsa._factor_n(10, 10, 10)
 
 
 @pytest.mark.rsa
@@ -364,6 +356,32 @@ class TestRSA(object):
                 modulus=33
             )
 
+        # Test specifying p but not q.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=3,
+                q=None,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
+        # Test specifying q but not p.
+        with pytest.raises(ValueError):
+            rsa.RSAPrivateKey(
+                p=None,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+
     def test_invalid_public_key_argument_values(self):
         # Start with public_exponent=7, modulus=15. Then change one value at a
         # time to test the bounds.
@@ -383,6 +401,19 @@ class TestRSA(object):
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
             rsa.RSAPublicKey(public_exponent=6, modulus=15)
+
+    def test_filling_in_unspecified_fields(self):
+        key = rsa.RSAPrivateKey(
+            p=None,
+            q=None,
+            private_exponent=2753,
+            dmp1=None,
+            dmq1=None,
+            iqmp=None,
+            public_exponent=17,
+            modulus=3233,
+        )
+        _check_rsa_private_key(key)
 
 
 def test_rsa_generate_invalid_backend():

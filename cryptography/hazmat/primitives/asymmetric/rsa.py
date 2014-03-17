@@ -71,16 +71,56 @@ class RSAPublicKey(object):
         return self.modulus
 
 
+def _isqrt(n):
+    """
+    Integer square root, using Newton's method.
+    """
+    x = n
+    y = (x + n // x) // 2
+    while y < x:
+        x = y
+        y = (x + n // x) // 2
+    return x
+
+
+def _factor_n(n, e, d):
+    """
+    For an RSA private key, given N, E, and D, find P and Q.
+    """
+    k = 1 + (e * d) // n
+    phi = (e * d - 1) // k
+    m = n + 1 - phi
+    root = _isqrt(m ** 2 - 4 * n)
+    p = (m + root) // 2
+    q = (m - root) // 2
+    if p * q != n:
+        raise ValueError('factorization failed')
+    return p, q
+
+
+def _modinv(e, m):
+    """
+    Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
+    """
+    x1, y1, x2, y2 = 1, 0, 0, 1
+    a, b = e, m
+    while b > 0:
+        q, r = divmod(a, b)
+        xn, yn = x1 - q * x2, y1 - q * y2
+        a, b, x1, y1, x2, y2 = b, r, x2, y2, xn, yn
+    return x1 % m
+
+
 @utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
                  public_exponent, modulus):
         if (
-            not isinstance(p, six.integer_types) or
-            not isinstance(q, six.integer_types) or
-            not isinstance(dmp1, six.integer_types) or
-            not isinstance(dmq1, six.integer_types) or
-            not isinstance(iqmp, six.integer_types) or
+            (not isinstance(p, six.integer_types) and p is not None) or
+            (not isinstance(q, six.integer_types) and q is not None) or
+            (not isinstance(dmp1, six.integer_types) and dmp1 is not None) or
+            (not isinstance(dmq1, six.integer_types) and dmp1 is not None) or
+            (not isinstance(iqmp, six.integer_types) and iqmp is not None) or
             not isinstance(private_exponent, six.integer_types) or
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
@@ -90,19 +130,19 @@ class RSAPrivateKey(object):
         if modulus < 3:
             raise ValueError("modulus must be >= 3")
 
-        if p >= modulus:
+        if p is not None and p >= modulus:
             raise ValueError("p must be < modulus")
 
-        if q >= modulus:
+        if q is not None and q >= modulus:
             raise ValueError("q must be < modulus")
 
-        if dmp1 >= modulus:
+        if dmp1 is not None and dmp1 >= modulus:
             raise ValueError("dmp1 must be < modulus")
 
-        if dmq1 >= modulus:
+        if dmq1 is not None and dmq1 >= modulus:
             raise ValueError("dmq1 must be < modulus")
 
-        if iqmp >= modulus:
+        if iqmp is not None and iqmp >= modulus:
             raise ValueError("iqmp must be < modulus")
 
         if private_exponent >= modulus:
@@ -114,14 +154,29 @@ class RSAPrivateKey(object):
         if public_exponent & 1 == 0:
             raise ValueError("public_exponent must be odd")
 
-        if dmp1 & 1 == 0:
+        if dmp1 is not None and dmp1 & 1 == 0:
             raise ValueError("dmp1 must be odd")
 
-        if dmq1 & 1 == 0:
+        if dmq1 is not None and dmq1 & 1 == 0:
             raise ValueError("dmq1 must be odd")
 
-        if p * q != modulus:
+        if p is not None and q is not None and p * q != modulus:
             raise ValueError("p*q must equal modulus")
+
+        if (p is None) != (q is None):
+            raise ValueError("both or neither of p and q must be specified")
+
+        if p is None and q is None:
+            p, q = _factor_n(modulus, public_exponent, private_exponent)
+
+        if dmp1 is None:
+            dmp1 = private_exponent % (p - 1)
+
+        if dmq1 is None:
+            dmq1 = private_exponent % (q - 1)
+
+        if iqmp is None:
+            iqmp = _modinv(q, p)
 
         self._p = p
         self._q = q
