@@ -1107,7 +1107,7 @@ def test_load_rsa_nist_vectors():
     ]
 
 
-def test_load_rsa_nist_verification_vectors():
+def test_load_rsa_nist_pkcs1v15_verification_vectors():
     vector_data = textwrap.dedent("""
     # Generated on Wed Mar 02 00:25:22 2011
 
@@ -1170,6 +1170,67 @@ def test_load_rsa_nist_verification_vectors():
             "s": b"2b91c6ae2b3c46ff18d5b7abe239634cb752d0acb53eea0ccd8ea848303"
                  b"6a50e8faf",
             "saltval": b"11223344555432167890",
+            "fail": False
+        },
+    ]
+
+
+def test_load_rsa_nist_pss_verification_vectors():
+    vector_data = textwrap.dedent("""
+    # SHA Algorithm selected:SHA1 SHA224 SHA256 SHA384 SHA512
+    # Salt len: 10
+    # Generated on Wed Mar 02 00:25:22 2011
+
+    [mod = 1024]
+
+    n = be499b5e7f06c83fa0293e31465c8eb6b5
+
+    p = e7a80c5d211c06acb900939495f26d365f
+    q = d248aa248000f720258742da67b711940c
+
+    SHAAlg = SHA1
+    e = 00000000000000011
+    d = c8e26a88239672cf49b3422a07c4d834ba
+    Msg = 6b9cfac0ba1c7890b13e381ce752195c
+    S = 562d87b5781c01d166fef3972669a0495c
+    SaltVal = 11223344555432167890
+    Result = F (3 - Signature changed )
+
+    SHAAlg = SHA384
+    e = 000003
+    d = 0d0f17362bdad181db4e1fe03e8de1a320
+    Msg = 2a67c70ff14f9b34ddb42e6f89d59710
+    S = 2b91c6ae2b3c46ff18d5b7abe239634cb7
+    SaltVal = 11223344555432167890
+    Result = P
+    """).splitlines()
+
+    vectors = load_rsa_nist_vectors(vector_data)
+    assert vectors == [
+        {
+            "modulus": int("be499b5e7f06c83fa0293e31465c8eb6b5", 16),
+            "p": int("e7a80c5d211c06acb900939495f26d365f", 16),
+            "q": int("d248aa248000f720258742da67b711940c", 16),
+            "public_exponent": 17,
+            "algorithm": "SHA1",
+            "private_exponent": int("c8e26a88239672cf49b3422a07c4d834ba", 16),
+            "msg": b"6b9cfac0ba1c7890b13e381ce752195c",
+            "s": b"562d87b5781c01d166fef3972669a0495c",
+            "saltval": b"11223344555432167890",
+            "salt_length": 10,
+            "fail": True
+        },
+        {
+            "modulus": int("be499b5e7f06c83fa0293e31465c8eb6b5", 16),
+            "p": int("e7a80c5d211c06acb900939495f26d365f", 16),
+            "q": int("d248aa248000f720258742da67b711940c", 16),
+            "public_exponent": 3,
+            "algorithm": "SHA384",
+            "private_exponent": int("0d0f17362bdad181db4e1fe03e8de1a320", 16),
+            "msg": b"2a67c70ff14f9b34ddb42e6f89d59710",
+            "s": b"2b91c6ae2b3c46ff18d5b7abe239634cb7",
+            "saltval": b"11223344555432167890",
+            "salt_length": 10,
             "fail": False
         },
     ]

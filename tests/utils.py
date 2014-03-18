@@ -303,6 +303,7 @@ def load_pkcs1_vectors(vector_data):
 def load_rsa_nist_vectors(vector_data):
     test_data = None
     p = None
+    salt_length = None
     data = []
 
     for line in vector_data:
@@ -345,6 +346,8 @@ def load_rsa_nist_vectors(vector_data):
                     "q": q,
                     "algorithm": value.encode("ascii")
                 }
+                if salt_length is not None:
+                    test_data["salt_length"] = salt_length
             data.append(test_data)
         elif name == "e" and p is not None:
             test_data["public_exponent"] = int(value, 16)
