@@ -336,7 +336,7 @@ def load_rsa_nist_vectors(vector_data):
                     "modulus": n,
                     "public_exponent": e,
                     "salt_length": salt_length,
-                    "algorithm": value.encode("ascii"),
+                    "algorithm": value,
                     "fail": False
                 }
             else:
@@ -344,7 +344,7 @@ def load_rsa_nist_vectors(vector_data):
                     "modulus": n,
                     "p": p,
                     "q": q,
-                    "algorithm": value.encode("ascii")
+                    "algorithm": value
                 }
                 if salt_length is not None:
                     test_data["salt_length"] = salt_length
