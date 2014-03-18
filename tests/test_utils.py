@@ -1042,6 +1042,9 @@ def test_load_totp_vectors():
 
 def test_load_rsa_nist_vectors():
     vector_data = textwrap.dedent("""
+    # CAVS 11.4
+    # "SigGen PKCS#1 RSASSA-PSS" information
+    # Mod sizes selected: 1024 1536 2048 3072 4096
     # SHA Algorithm selected:SHA1 SHA224 SHA256 SHA384 SHA512
     # Salt len: 20
 
@@ -1109,7 +1112,11 @@ def test_load_rsa_nist_vectors():
 
 def test_load_rsa_nist_pkcs1v15_verification_vectors():
     vector_data = textwrap.dedent("""
-    # Generated on Wed Mar 02 00:25:22 2011
+    # CAVS 11.0
+    # "SigVer PKCS#1 Ver 1.5" information
+    # Mod sizes selected: 1024 1536 2048 3072 4096
+    # SHA Algorithm selected:SHA1 SHA224 SHA256 SHA384 SHA512
+    # Generated on Wed Mar 02 00:13:02 2011
 
     [mod = 1024]
 
@@ -1177,6 +1184,9 @@ def test_load_rsa_nist_pkcs1v15_verification_vectors():
 
 def test_load_rsa_nist_pss_verification_vectors():
     vector_data = textwrap.dedent("""
+    # CAVS 11.0
+    # "SigVer PKCS#1 RSASSA-PSS" information
+    # Mod sizes selected: 1024 1536 2048 3072 4096
     # SHA Algorithm selected:SHA1 SHA224 SHA256 SHA384 SHA512
     # Salt len: 10
     # Generated on Wed Mar 02 00:25:22 2011
