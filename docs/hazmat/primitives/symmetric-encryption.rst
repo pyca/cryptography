@@ -1,7 +1,7 @@
 .. hazmat:: /fernet
 
 
-Symmetric Encryption
+Symmetric encryption
 ====================
 
 .. currentmodule:: cryptography.hazmat.primitives.ciphers
@@ -130,7 +130,7 @@ Algorithms
     :param bytes key: The secret key, This must be kept secret. 40 to 128 bits
         in length in increments of 8 bits.
 
-Weak Ciphers
+Weak ciphers
 ------------
 
 .. warning::
@@ -372,7 +372,7 @@ Modes
         a secret message!
 
 
-Insecure Modes
+Insecure modes
 --------------
 
 .. warning::

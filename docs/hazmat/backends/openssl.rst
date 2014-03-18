@@ -1,6 +1,6 @@
 .. hazmat::
 
-OpenSSL Backend
+OpenSSL backend
 ===============
 
 The `OpenSSL`_ C library. Cryptography supports version ``0.9.8e`` (present in
@@ -34,7 +34,7 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
 
         This will activate the default OpenSSL CSPRNG.
 
-OS Random Engine
+OS random engine
 ----------------
 
 OpenSSL uses a user-space CSPRNG that is seeded from system random (
@@ -58,7 +58,7 @@ When importing only the binding it is added to the engine list but
 **not activated**.
 
 
-OS Random Sources
+OS random sources
 -----------------
 
 On OS X and FreeBSD ``/dev/urandom`` is an alias for ``/dev/random`` and

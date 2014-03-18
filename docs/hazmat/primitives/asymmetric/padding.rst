@@ -28,8 +28,7 @@ Padding
     PKCS1 v1.5 (also known as simply PKCS1) is a simple padding scheme
     developed for use with RSA keys. It is defined in :rfc:`3447`.
 
-
-Mask Generation Functions
+Mask generation functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: MGF1(algorithm, salt_length)

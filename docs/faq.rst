@@ -1,4 +1,4 @@
-Frequently Asked Questions
+Frequently asked questions
 ==========================
 
 How does ``cryptography`` compare to NaCl (Networking and Cryptography Library)?

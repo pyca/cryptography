@@ -12,7 +12,7 @@ to document argument and return types.
 .. _`Abstract Base Classes`: http://docs.python.org/3.2/library/abc.html
 
 
-Symmetric Ciphers
+Symmetric ciphers
 ~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
@@ -47,7 +47,7 @@ Symmetric Ciphers
         The number of bits in a block.
 
 
-Cipher Modes
+Cipher modes
 ------------
 
 Interfaces used by the symmetric cipher modes described in
@@ -103,7 +103,7 @@ Interfaces used by the symmetric cipher modes described in
         Exact requirements of the nonce are described by the documentation of
         individual modes.
 
-Asymmetric Interfaces
+Asymmetric interfaces
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: RSAPrivateKey
@@ -377,7 +377,7 @@ Asymmetric Interfaces
 
     .. attribute:: name
 
-Hash Algorithms
+Hash algorithms
 ~~~~~~~~~~~~~~~
 
 .. class:: HashAlgorithm
@@ -402,7 +402,7 @@ Hash Algorithms
         The internal block size of the hash algorithm in bytes.
 
 
-Key Derivation Functions
+Key derivation functions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: KeyDerivationFunction
