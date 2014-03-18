@@ -704,12 +704,29 @@ class _RSASignatureContext(object):
             raise TypeError(
                 "Expected provider of interfaces.AsymmetricPadding")
 
-        if padding.name == "EMSA-PKCS1-v1_5":
+        if isinstance(padding, PKCS1v15):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._finalize_method = self._finalize_pkey_ctx
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
             else:
                 self._finalize_method = self._finalize_pkcs1
+        elif isinstance(padding, PSS):
+            if not isinstance(padding._mgf, MGF1):
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend"
+                )
+
+            if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
+                raise UnsupportedHash(
+                    "When OpenSSL is older than 1.0.1 then only SHA1 is "
+                    "supported with MGF1."
+                )
+
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._finalize_method = self._finalize_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._finalize_method = self._finalize_pss
         else:
             raise UnsupportedPadding(
                 "{0} is not supported by this backend".format(padding.name)
@@ -754,6 +771,19 @@ class _RSASignatureContext(object):
         res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
             pkey_ctx, self._padding_enum)
         assert res > 0
+        if isinstance(self._padding, PSS):
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
+                pkey_ctx, self._get_salt_length())
+            assert res > 0
+            if self._backend._lib.Cryptography_HAS_MGF1_MD:
+                # MGF1 MD is configurable in OpenSSL 1.0.1+
+                mgf1_md = self._backend._lib.EVP_get_digestbyname(
+                    self._padding._mgf._algorithm.name.encode("ascii"))
+                assert mgf1_md != self._backend._ffi.NULL
+                res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+                    pkey_ctx, mgf1_md
+                )
+                assert res > 0
         data_to_sign = self._hash_ctx.finalize()
         self._hash_ctx = None
         buflen = self._backend._ffi.new("size_t *")
@@ -768,7 +798,13 @@ class _RSASignatureContext(object):
         buf = self._backend._ffi.new("unsigned char[]", buflen[0])
         res = self._backend._lib.EVP_PKEY_sign(
             pkey_ctx, buf, buflen, data_to_sign, len(data_to_sign))
-        assert res == 1
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError("Salt length too long for key size")
+
         return self._backend._ffi.buffer(buf)[:]
 
     def _finalize_pkcs1(self, evp_pkey, pkey_size, evp_md):
@@ -784,6 +820,45 @@ class _RSASignatureContext(object):
         self._hash_ctx = None
         assert res == 1
         return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
+
+    def _finalize_pss(self, evp_pkey, pkey_size, evp_md):
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        padded = self._backend._ffi.new("unsigned char[]", pkey_size)
+        rsa_cdata = self._backend._lib.EVP_PKEY_get1_RSA(evp_pkey)
+        assert rsa_cdata != self._backend._ffi.NULL
+        rsa_cdata = self._backend._ffi.gc(rsa_cdata,
+                                          self._backend._lib.RSA_free)
+        res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
+            rsa_cdata,
+            padded,
+            data_to_sign,
+            evp_md,
+            self._get_salt_length()
+        )
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError("Salt length too long for key size")
+
+        sig_buf = self._backend._ffi.new("char[]", pkey_size)
+        sig_len = self._backend._lib.RSA_private_encrypt(
+            pkey_size,
+            padded,
+            sig_buf,
+            rsa_cdata,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        assert sig_len != -1
+        return self._backend._ffi.buffer(sig_buf)[:sig_len]
+
+    def _get_salt_length(self):
+        if self._padding._mgf._salt_length is MGF1.MAX_LENGTH:
+            return -2
+        else:
+            return self._padding._mgf._salt_length
 
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)

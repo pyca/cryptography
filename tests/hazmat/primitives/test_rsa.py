@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import itertools
+import math
 import os
 
 import pytest
@@ -428,6 +429,80 @@ class TestRSASignature(object):
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
 
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pss_signing(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        private_key = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        signer.update(binascii.unhexlify(example["message"]))
+        signature = signer.finalize()
+        assert len(signature) == math.ceil(private_key.key_size / 8.0)
+        # PSS signatures contain randomness so we can't do an exact
+        # signature check. Instead we'll verify that the signature created
+        # successfully verifies.
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    def test_pss_signing_salt_length_too_long(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=1000000
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        signer.update(b"failure coming")
+        with pytest.raises(ValueError):
+            signer.finalize()
+
     def test_use_after_finalize(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -467,6 +542,16 @@ class TestRSASignature(object):
         with pytest.raises(UnsupportedInterface):
             private_key.signer(
                 padding.PKCS1v15(), hashes.SHA256, pretend_backend)
+
+    def test_unsupported_pss_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1(),
+                               backend)
 
 
 @pytest.mark.rsa

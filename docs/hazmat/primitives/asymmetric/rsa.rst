@@ -72,7 +72,12 @@ RSA
             ...     backend=default_backend()
             ... )
             >>> signer = private_key.signer(
-            ...     padding.PKCS1v15(),
+            ...     padding.PSS(
+            ...         mgf=padding.MGF1(
+            ...             algorithm=hashes.SHA256(),
+            ...             salt_length=padding.MGF1.MAX_LENGTH
+            ...         )
+            ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()
             ... )
@@ -98,6 +103,22 @@ RSA
         :raises cryptography.exceptions.UnsupportedInterface: This is raised if
             the provided ``backend`` does not implement
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+
+        :raises TypeError: This is raised when the padding is not an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :raises UnsupportedHash: This is raised when the backend does not
+            support the chosen hash algorithm. If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+            with the
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+            mask generation function it may also refer to the `MGF1` hash
+            algorithm.
+
+        :raises UnsupportedPadding: This is raised when the backend does not
+            support the chosen padding.
+
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
@@ -136,12 +157,31 @@ RSA
             ...     key_size=2048,
             ...     backend=default_backend()
             ... )
-            >>> signer = private_key.signer(padding.PKCS1v15(), hashes.SHA256(), default_backend())
+            >>> signer = private_key.signer(
+            ...     padding.PSS(
+            ...         mgf=padding.MGF1(
+            ...             algorithm=hashes.SHA256(),
+            ...             salt_length=padding.MGF1.MAX_LENGTH
+            ...         )
+            ...     ),
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
             >>> data= b"this is some data I'd like to sign"
             >>> signer.update(data)
             >>> signature = signer.finalize()
             >>> public_key = private_key.public_key()
-            >>> verifier = public_key.verifier(signature, padding.PKCS1v15(), hashes.SHA256(), default_backend())
+            >>> verifier = public_key.verifier(
+            ...     signature,
+            ...     padding.PSS(
+            ...         mgf=padding.MGF1(
+            ...             algorithm=hashes.SHA256(),
+            ...             salt_length=padding.MGF1.MAX_LENGTH
+            ...         )
+            ...     ),
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
             >>> verifier.update(data)
             >>> verifier.verify()
 
@@ -165,6 +205,21 @@ RSA
         :raises cryptography.exceptions.UnsupportedInterface: This is raised if
             the provided ``backend`` does not implement
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+
+        :raises TypeError: This is raised when the padding is not an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :raises UnsupportedHash: This is raised when the backend does not
+            support the chosen hash algorithm. If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+            with the
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+            mask generation function it may also refer to the `MGF1` hash
+            algorithm.
+
+        :raises UnsupportedPadding: This is raised when the backend does not
+            support the chosen padding.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
