@@ -27,7 +27,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from .utils import generate_rsa_pss_test
+from .utils import generate_rsa_signature_test
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file
 )
@@ -754,14 +754,16 @@ class TestRSAVerification(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA1(object):
-    test_rsa_pss_mgf1_sha1 = generate_rsa_pss_test(
+    test_rsa_pss_mgf1_sha1 = generate_rsa_signature_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
+            "SigVerPSS_186-3.rsp",
         ],
-        hashes.SHA1()
+        hashes.SHA1(),
+        padding.PSS
     )
 
 
@@ -771,14 +773,16 @@ class TestRSAPSSMGF1VerificationSHA1(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA224(object):
-    test_rsa_pss_mgf1_sha224 = generate_rsa_pss_test(
+    test_rsa_pss_mgf1_sha224 = generate_rsa_signature_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
+            "SigVerPSS_186-3.rsp",
         ],
-        hashes.SHA224()
+        hashes.SHA224(),
+        padding.PSS
     )
 
 
@@ -788,14 +792,16 @@ class TestRSAPSSMGF1VerificationSHA224(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA256(object):
-    test_rsa_pss_mgf1_sha256 = generate_rsa_pss_test(
+    test_rsa_pss_mgf1_sha256 = generate_rsa_signature_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
+            "SigVerPSS_186-3.rsp",
         ],
-        hashes.SHA256()
+        hashes.SHA256(),
+        padding.PSS
     )
 
 
@@ -805,14 +811,16 @@ class TestRSAPSSMGF1VerificationSHA256(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA384(object):
-    test_rsa_pss_mgf1_sha384 = generate_rsa_pss_test(
+    test_rsa_pss_mgf1_sha384 = generate_rsa_signature_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
+            "SigVerPSS_186-3.rsp",
         ],
-        hashes.SHA384()
+        hashes.SHA384(),
+        padding.PSS
     )
 
 
@@ -822,14 +830,101 @@ class TestRSAPSSMGF1VerificationSHA384(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA512(object):
-    test_rsa_pss_mgf1_sha512 = generate_rsa_pss_test(
+    test_rsa_pss_mgf1_sha512 = generate_rsa_signature_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
             "SigGenPSS_186-2.rsp",
             "SigGenPSS_186-3.rsp",
+            "SigVerPSS_186-3.rsp",
         ],
-        hashes.SHA512()
+        hashes.SHA512(),
+        padding.PSS
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
+    skip_message="Does not support SHA1",
+)
+@pytest.mark.rsa
+class TestRSAPKCS1SHA1Verification(object):
+    test_rsa_pkcs1v15_verify_sha1 = generate_rsa_signature_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA1(),
+        padding.PKCS1v15
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
+    skip_message="Does not support SHA224",
+)
+@pytest.mark.rsa
+class TestRSAPKCS1SHA224Verification(object):
+    test_rsa_pkcs1v15_verify_sha224 = generate_rsa_signature_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA224(),
+        padding.PKCS1v15
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
+    skip_message="Does not support SHA256",
+)
+@pytest.mark.rsa
+class TestRSAPKCS1SHA256Verification(object):
+    test_rsa_pkcs1v15_verify_sha256 = generate_rsa_signature_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA256(),
+        padding.PKCS1v15
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
+    skip_message="Does not support SHA384",
+)
+@pytest.mark.rsa
+class TestRSAPKCS1SHA384Verification(object):
+    test_rsa_pkcs1v15_verify_sha384 = generate_rsa_signature_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA384(),
+        padding.PKCS1v15
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
+    skip_message="Does not support SHA512",
+)
+@pytest.mark.rsa
+class TestRSAPKCS1SHA512Verification(object):
+    test_rsa_pkcs1v15_verify_sha512 = generate_rsa_signature_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA512(),
+        padding.PKCS1v15
     )
 
 

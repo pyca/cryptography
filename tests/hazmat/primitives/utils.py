@@ -20,7 +20,8 @@ import os
 import pytest
 
 from cryptography.exceptions import (
-    AlreadyFinalized, AlreadyUpdated, InvalidTag, NotYetFinalized
+    AlreadyFinalized, AlreadyUpdated, InvalidSignature, InvalidTag,
+    NotYetFinalized
 )
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -374,33 +375,42 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
     return test_hkdf
 
 
-def generate_rsa_pss_test(param_loader, path, file_names, hash_alg):
+def generate_rsa_signature_test(param_loader, path, file_names, hash_alg,
+                                pad_cls):
     all_params = _load_all_params(path, file_names, param_loader)
     all_params = [i for i in all_params
                   if i["algorithm"] == hash_alg.name.upper()]
 
     @pytest.mark.parametrize("params", all_params)
-    def test_rsa_pss(self, backend, params):
-        rsa_pss_test(backend, params, hash_alg)
+    def test_rsa_signature(self, backend, params):
+        rsa_signature_test(backend, params, hash_alg, pad_cls)
 
-    return test_rsa_pss
+    return test_rsa_signature
 
 
-def rsa_pss_test(backend, params, hash_alg):
+def rsa_signature_test(backend, params, hash_alg, pad_cls):
     public_key = rsa.RSAPublicKey(
         public_exponent=params["public_exponent"],
         modulus=params["modulus"]
     )
-    verifier = public_key.verifier(
-        binascii.unhexlify(params["s"]),
-        padding.PSS(
+    if pad_cls is padding.PKCS1v15:
+        pad = padding.PKCS1v15()
+    else:
+        pad = padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
                 salt_length=params["salt_length"]
             )
-        ),
+        )
+    verifier = public_key.verifier(
+        binascii.unhexlify(params["s"]),
+        pad,
         hash_alg,
         backend
     )
     verifier.update(binascii.unhexlify(params["msg"]))
-    verifier.verify()
+    if params["fail"]:
+        with pytest.raises(InvalidSignature):
+            verifier.verify()
+    else:
+        verifier.verify()
