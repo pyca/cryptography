@@ -1075,7 +1075,7 @@ def test_load_rsa_nist_vectors():
             "modulus": int("bcb47b2e0dafcba81ff2a2b5cb115ca7e757184c9d72bcdcda"
                            "707a146b3b4e29989d", 16),
             "public_exponent": 65537,
-            "algorithm": b"SHA1",
+            "algorithm": "SHA1",
             "salt_length": 20,
             "msg": b"1248f62a4389f42f7b4bb131053d6c88a994db2075b912ccbe3ea7dc6"
                    b"11714f14e",
@@ -1086,7 +1086,7 @@ def test_load_rsa_nist_vectors():
             "modulus": int("bcb47b2e0dafcba81ff2a2b5cb115ca7e757184c9d72bcdcda"
                            "707a146b3b4e29989d", 16),
             "public_exponent": 65537,
-            "algorithm": b"SHA384",
+            "algorithm": "SHA384",
             "salt_length": 20,
             "msg": b"e511903c2f1bfba245467295ac95413ac4746c984c3750a728c388aa6"
                    b"28b0ebf",
@@ -1096,7 +1096,7 @@ def test_load_rsa_nist_vectors():
         {
             "modulus": 78187493520,
             "public_exponent": 65537,
-            "algorithm": b"SHA512",
+            "algorithm": "SHA512",
             "salt_length": 20,
             "msg": b"3456781293fab829",
             "s": b"deadbeef0000"

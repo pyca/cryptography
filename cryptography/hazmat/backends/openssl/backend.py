@@ -21,7 +21,7 @@ import six
 from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, InternalError, AlreadyFinalized, UnsupportedCipher,
-    UnsupportedHash, UnsupportedPadding, InvalidSignature
+    UnsupportedAlgorithm, UnsupportedHash, UnsupportedPadding, InvalidSignature
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
@@ -29,6 +29,9 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import interfaces, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric.padding import (
+    PKCS1v15, PSS, MGF1
+)
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, Blowfish, Camellia, CAST5, TripleDES, ARC4, IDEA
 )
@@ -403,6 +406,12 @@ class Backend(object):
                                     algorithm):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
+
+    def mgf1_hash_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_MGF1_MD:
+            return self.hash_supported(algorithm)
+        else:
+            return isinstance(algorithm, hashes.SHA1)
 
 
 class GetCipherByName(object):
@@ -787,12 +796,29 @@ class _RSAVerificationContext(object):
             raise TypeError(
                 "Expected provider of interfaces.AsymmetricPadding")
 
-        if padding.name == "EMSA-PKCS1-v1_5":
+        if isinstance(padding, PKCS1v15):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
                 self._verify_method = self._verify_pkey_ctx
                 self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
             else:
                 self._verify_method = self._verify_pkcs1
+        elif isinstance(padding, PSS):
+            if not isinstance(padding._mgf, MGF1):
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend"
+                )
+
+            if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
+                raise UnsupportedHash(
+                    "When OpenSSL is older than 1.0.1 then only SHA1 is "
+                    "supported with MGF1."
+                )
+
+            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
+                self._verify_method = self._verify_pkey_ctx
+                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
+            else:
+                self._verify_method = self._verify_pss
         else:
             raise UnsupportedPadding
 
@@ -833,6 +859,20 @@ class _RSAVerificationContext(object):
         res = self._backend._lib.EVP_PKEY_CTX_set_rsa_padding(
             pkey_ctx, self._padding_enum)
         assert res > 0
+        if isinstance(self._padding, PSS):
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
+                pkey_ctx, self._get_salt_length())
+            assert res > 0
+            if self._backend._lib.Cryptography_HAS_MGF1_MD:
+                # MGF1 MD is configurable in OpenSSL 1.0.1+
+                mgf1_md = self._backend._lib.EVP_get_digestbyname(
+                    self._padding._mgf._algorithm.name.encode("ascii"))
+                assert mgf1_md != self._backend._ffi.NULL
+                res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+                    pkey_ctx, mgf1_md
+                )
+                assert res > 0
+
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
         res = self._backend._lib.EVP_PKEY_verify(
@@ -868,6 +908,46 @@ class _RSAVerificationContext(object):
             errors = self._backend._consume_errors()
             assert errors
             raise InvalidSignature
+
+    def _verify_pss(self, evp_pkey, evp_md):
+        pkey_size = self._backend._lib.EVP_PKEY_size(evp_pkey)
+        assert pkey_size > 0
+        rsa_cdata = self._backend._lib.EVP_PKEY_get1_RSA(evp_pkey)
+        assert rsa_cdata != self._backend._ffi.NULL
+        rsa_cdata = self._backend._ffi.gc(rsa_cdata,
+                                          self._backend._lib.RSA_free)
+        buf = self._backend._ffi.new("unsigned char[]", pkey_size)
+        res = self._backend._lib.RSA_public_decrypt(
+            len(self._signature),
+            self._signature,
+            buf,
+            rsa_cdata,
+            self._backend._lib.RSA_NO_PADDING
+        )
+        if res != pkey_size:
+            errors = self._backend._consume_errors()
+            assert errors
+            raise InvalidSignature
+
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        res = self._backend._lib.RSA_verify_PKCS1_PSS(
+            rsa_cdata,
+            data_to_verify,
+            evp_md,
+            buf,
+            self._get_salt_length()
+        )
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors
+            raise InvalidSignature
+
+    def _get_salt_length(self):
+        if self._padding._mgf._salt_length is MGF1.MAX_LENGTH:
+            return -2
+        else:
+            return self._padding._mgf._salt_length
 
 
 backend = Backend()
