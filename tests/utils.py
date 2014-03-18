@@ -302,6 +302,7 @@ def load_pkcs1_vectors(vector_data):
 
 def load_rsa_nist_vectors(vector_data):
     test_data = None
+    p = None
     data = []
 
     for line in vector_data:
@@ -322,17 +323,35 @@ def load_rsa_nist_vectors(vector_data):
 
         if name == "n":
             n = int(value, 16)
-        elif name == "e":
+        elif name == "e" and p is None:
             e = int(value, 16)
+        elif name == "p":
+            p = int(value, 16)
+        elif name == "q":
+            q = int(value, 16)
         elif name == "SHAAlg":
-            test_data = {
-                "modulus": n,
-                "public_exponent": e,
-                "salt_length": salt_length,
-                "algorithm": value
-            }
+            if p is None:
+                test_data = {
+                    "modulus": n,
+                    "public_exponent": e,
+                    "salt_length": salt_length,
+                    "algorithm": value.encode("ascii"),
+                    "fail": False
+                }
+            else:
+                test_data = {
+                    "modulus": n,
+                    "p": p,
+                    "q": q,
+                    "algorithm": value.encode("ascii")
+                }
             data.append(test_data)
-            continue
+        elif name == "e" and p is not None:
+            test_data["public_exponent"] = int(value, 16)
+        elif name == "d":
+            test_data["private_exponent"] = int(value, 16)
+        elif name == "Result":
+            test_data["fail"] = value.startswith("F")
         # For all other tokens we simply want the name, value stored in
         # the dictionary
         else:
