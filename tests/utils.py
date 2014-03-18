@@ -388,3 +388,48 @@ def load_fips_dsa_key_pair_vectors(vector_data):
                 vectors[-1]['y'] = int(line.split("=")[1], 16)
 
     return vectors
+
+
+def load_rsa_sig_verification_vectors(vector_data):
+    test_data = None
+    data = []
+
+    for line in vector_data:
+        line = line.strip()
+
+        # Blank lines and section headers are ignored
+        if not line or line.startswith("["):
+            continue
+
+        if line.startswith("#"):
+            continue
+
+        # Build our data using a simple Key = Value format
+        name, value = [c.strip() for c in line.split("=")]
+
+        if name == "n":
+            modulus = int(value, 16)
+        elif name == "p":
+            p = int(value, 16)
+        elif name == "q":
+            q = int(value, 16)
+        elif name == "SHAAlg":
+            test_data = {
+                "modulus": modulus,
+                "p": p,
+                "q": q,
+                "algorithm": value
+            }
+            data.append(test_data)
+        elif name == "e":
+            test_data["public_exponent"] = int(value, 16)
+        elif name == "d":
+            test_data["private_exponent"] = int(value, 16)
+        elif name == "Result":
+            test_data["fail"] = value.startswith("F")
+        # For all other tokens we simply want the name, value stored in
+        # the dictionary
+        else:
+            test_data[name.lower()] = value.encode("ascii")
+
+    return data

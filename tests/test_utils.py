@@ -24,7 +24,7 @@ from .utils import (
     load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
     load_hash_vectors, check_for_iface, check_backend_support,
     select_backends, load_pkcs1_vectors, load_rsa_nist_vectors,
-    load_fips_dsa_key_pair_vectors
+    load_fips_dsa_key_pair_vectors, load_rsa_sig_verification_vectors
 )
 
 
@@ -1459,3 +1459,71 @@ de61329a78d526f65245380ce877e979c5b50de66c9c30d66382c8f254653d25a1eb1d3a4897d7\
     ]
 
     assert expected == load_fips_dsa_key_pair_vectors(vector_data)
+
+
+def test_load_rsa_sig_verification_vectors():
+    vector_data = textwrap.dedent("""
+    # Generated on Wed Mar 02 00:25:22 2011
+
+    [mod = 1024]
+
+    n = be499b5e7f06c83fa0293e31465c8eb6b58af920bae52a7b5b9bfeb7aa72db126411
+
+    p = e7a80c5d211c06acb900939495f26d365fc2b4825b75e356f89003eaa5931e6be5c3
+    q = d248aa248000f720258742da67b711940c8f76e1ecd52b67a6ffe1e49354d66ff84f
+
+    SHAAlg = SHA1
+    e = 00000000000000000000000000000000000000000000000000000000000000000011
+    d = 0d0f17362bdad181db4e1fe03e8de1a3208989914e14bf269558826bfa20faf4b68d
+    Msg = 6b9cfac0ba1c7890b13e381ce752195cc1375237db2afcf6a9dcd1f95ec733a80c
+    S = 562d87b5781c01d166fef3972669a0495c145b898a17df4743fbefb0a1582bd6ba9d
+    SaltVal = 11223344555432167890
+    Result = F (3 - Signature changed )
+
+    SHAAlg = SHA1
+    e = 0000000000003
+    d = bfa20faf4b68d
+    Msg = 2a67c70ff14f9b34ddb42e6f89d5971057a0da980fc9ae70c81a84da0c0ac42737
+    S = 2b91c6ae2b3c46ff18d5b7abe239634cb752d0acb53eea0ccd8ea8483036a50e8faf
+    SaltVal = 11223344555432167890
+    Result = P
+    """).splitlines()
+
+    vectors = load_rsa_sig_verification_vectors(vector_data)
+    assert vectors == [
+        {
+            "modulus": int("be499b5e7f06c83fa0293e31465c8eb6b58af920bae52a7b5b"
+                           "9bfeb7aa72db126411", 16),
+            "p": int("e7a80c5d211c06acb900939495f26d365fc2b4825b75e356f89003ea"
+                     "a5931e6be5c3", 16),
+            "q": int("d248aa248000f720258742da67b711940c8f76e1ecd52b67a6ffe1e4"
+                     "9354d66ff84f", 16),
+            "public_exponent": 17,
+            "algorithm": "SHA1",
+            "private_exponent": int("0d0f17362bdad181db4e1fe03e8de1a3208989914"
+                                    "e14bf269558826bfa20faf4b68d", 16),
+            "msg": b"6b9cfac0ba1c7890b13e381ce752195cc1375237db2afcf6a9dcd1f95"
+                   b"ec733a80c",
+            "s": b"562d87b5781c01d166fef3972669a0495c145b898a17df4743fbefb0a15"
+                 b"82bd6ba9d",
+            "saltval": b"11223344555432167890",
+            "fail": True
+        },
+        {
+            "modulus": int("be499b5e7f06c83fa0293e31465c8eb6b58af920bae52a7b5b"
+                           "9bfeb7aa72db126411", 16),
+            "p": int("e7a80c5d211c06acb900939495f26d365fc2b4825b75e356f89003ea"
+                     "a5931e6be5c3", 16),
+            "q": int("d248aa248000f720258742da67b711940c8f76e1ecd52b67a6ffe1e4"
+                     "9354d66ff84f", 16),
+            "public_exponent": 3,
+            "algorithm": "SHA1",
+            "private_exponent": int("bfa20faf4b68d", 16),
+            "msg": b"2a67c70ff14f9b34ddb42e6f89d5971057a0da980fc9ae70c81a84da0"
+                   b"c0ac42737",
+            "s": b"2b91c6ae2b3c46ff18d5b7abe239634cb752d0acb53eea0ccd8ea848303"
+                 b"6a50e8faf",
+            "saltval": b"11223344555432167890",
+            "fail": False
+        },
+    ]
