@@ -1,6 +1,6 @@
 .. hazmat::
 
-Message Digests
+Message digests
 ===============
 
 .. currentmodule:: cryptography.hazmat.primitives.hashes
@@ -90,7 +90,7 @@ SHA-1
     SHA-1 is a cryptographic hash function standardized by NIST. It produces an
     160-bit message digest.
 
-SHA-2 Family
+SHA-2 family
 ~~~~~~~~~~~~
 
 .. class:: SHA224()

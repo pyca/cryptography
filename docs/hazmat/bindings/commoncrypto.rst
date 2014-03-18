@@ -1,6 +1,6 @@
 .. hazmat::
 
-CommonCrypto Binding
+CommonCrypto binding
 ====================
 
 .. currentmodule:: cryptography.hazmat.bindings.commoncrypto.binding

@@ -1,4 +1,4 @@
-Getting Started
+Getting started
 ===============
 
 Working on ``cryptography`` requires the installation of a small number of
@@ -14,7 +14,7 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
 You are now ready to run the tests and build the documentation.
 
-Running Tests
+Running tests
 ~~~~~~~~~~~~~
 
 ``cryptography`` unit tests are found in the ``tests/`` directory and are
@@ -49,7 +49,7 @@ You may not have all the required Python versions installed, in which case you
 will see one or more ``InterpreterNotFound`` errors.
 
 
-Explicit Backend Selection
+Explicit backend selection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While testing you may want to run tests against a subset of the backends that
@@ -63,7 +63,7 @@ delimited list of backend names.
     $ tox -- --backend=openssl
     $ py.test --backend=openssl,commoncrypto
 
-Building Documentation
+Building documentation
 ~~~~~~~~~~~~~~~~~~~~~~
 
 ``cryptography`` documentation is stored in the ``docs/`` directory. It is

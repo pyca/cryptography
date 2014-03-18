@@ -1,6 +1,6 @@
 .. hazmat::
 
-CommonCrypto Backend
+CommonCrypto backend
 ====================
 
 The `CommonCrypto`_ C library provided by Apple on OS X and iOS. The CommonCrypto

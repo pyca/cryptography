@@ -1,4 +1,4 @@
-Submitting Patches
+Submitting patches
 ==================
 
 * Always make a new branch for your work.
@@ -29,7 +29,7 @@ Additionally, every Python code file must contain
 
     from __future__ import absolute_import, division, print_function
 
-API Considerations
+API considerations
 ~~~~~~~~~~~~~~~~~~
 
 Most projects' APIs are designed with a philosophy of "make easy things easy,

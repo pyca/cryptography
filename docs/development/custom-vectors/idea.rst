@@ -1,4 +1,4 @@
-IDEA Vector Creation
+IDEA vector creation
 =====================
 
 This page documents the code that was used to generate the IDEA CBC, CFB, and

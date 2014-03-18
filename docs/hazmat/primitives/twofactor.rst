@@ -1,6 +1,6 @@
 .. hazmat::
 
-Two-factor Authentication
+Two-factor authentication
 =========================
 
 .. currentmodule:: cryptography.hazmat.primitives.twofactor
@@ -79,7 +79,7 @@ locks out the account for a period of time after a number of failed attempts.
 The number of allowed attempts should be as low as possible while still
 ensuring that usability is not significantly impacted.
 
-Re-synchronization of the Counter
+Re-synchronization of the counter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The server's counter value should only be incremented on a successful HOTP

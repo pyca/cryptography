@@ -1,4 +1,4 @@
-CAST5 Vector Creation
+CAST5 vector creation
 =====================
 
 This page documents the code that was used to generate the CAST5 CBC, CFB, OFB,

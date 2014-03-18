@@ -3,7 +3,7 @@
 Backends
 ========
 
-Getting a Backend
+Getting a backend
 -----------------
 
 .. currentmodule:: cryptography.hazmat.backends
@@ -24,7 +24,7 @@ the libraries we use in those backends changes.
         :class:`~interfaces.CipherBackend`, :class:`~interfaces.HashBackend`, and
         :class:`~interfaces.HMACBackend`.
 
-Individual Backends
+Individual backends
 -------------------
 
 .. toctree::

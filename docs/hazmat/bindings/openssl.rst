@@ -1,6 +1,6 @@
 .. hazmat::
 
-OpenSSL Binding
+OpenSSL binding
 ===============
 
 .. currentmodule:: cryptography.hazmat.bindings.openssl.binding

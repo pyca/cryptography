@@ -1,4 +1,4 @@
-API Stability
+API stability
 =============
 
 From its first release, ``cryptography`` will have a strong API stability

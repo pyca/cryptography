@@ -1,6 +1,6 @@
 .. hazmat::
 
-Asymmetric Algorithms
+Asymmetric algorithms
 =====================
 
 .. toctree::
