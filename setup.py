@@ -13,12 +13,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+from distutils.command.build import build
 import os
 import sys
-from distutils.command.build import build
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 from setuptools.command.test import test
+
 
 base_dir = os.path.dirname(__file__)
 

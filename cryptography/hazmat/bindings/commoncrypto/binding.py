@@ -13,8 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import sys
 import platform
+import sys
 
 from cryptography.hazmat.bindings.utils import build_ffi
 

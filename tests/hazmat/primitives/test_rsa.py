@@ -25,11 +25,11 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, UnsupportedInterface
 )
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from .utils import generate_rsa_pss_test
 from ...utils import (
-    load_pkcs1_vectors, load_vectors_from_file, load_rsa_nist_vectors
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file
 )
 
 

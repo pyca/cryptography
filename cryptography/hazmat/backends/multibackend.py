@@ -18,7 +18,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, UnsupportedCipher, UnsupportedHash
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
 
 

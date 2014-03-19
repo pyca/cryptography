@@ -17,11 +17,11 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedCipher, UnsupportedHash, InternalError
+    InternalError, UnsupportedCipher, UnsupportedHash
 )
-from cryptography.hazmat.backends.openssl.backend import backend, Backend
-from cryptography.hazmat.primitives import interfaces, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
