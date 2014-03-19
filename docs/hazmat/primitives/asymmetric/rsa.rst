@@ -108,6 +108,9 @@ RSA
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
+        :raises ValueError: This is raised when the chosen hash algorithm is
+            too large for the key size.
+
         :raises UnsupportedHash: This is raised when the backend does not
             support the chosen hash algorithm. If the padding is
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
@@ -209,6 +212,9 @@ RSA
         :raises TypeError: This is raised when the padding is not an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
+
+        :raises ValueError: This is raised when the chosen hash algorithm is
+            too large for the key size.
 
         :raises UnsupportedHash: This is raised when the backend does not
             support the chosen hash algorithm. If the padding is

@@ -712,7 +712,6 @@ class _RSASignatureContext(object):
     def __init__(self, backend, private_key, padding, algorithm):
         self._backend = backend
         self._private_key = private_key
-        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
 
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
@@ -732,6 +731,7 @@ class _RSASignatureContext(object):
 
             # Size of key in bytes - 2 is the maximum
             # PSS signature length (salt length is checked later)
+            key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
             if key_size_bytes - algorithm.digest_size - 2 < 0:
                 raise ValueError("Digest too large for key size.")
 
@@ -891,7 +891,6 @@ class _RSAVerificationContext(object):
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
-        key_size_bytes = int(math.ceil(public_key.key_size / 8.0))
 
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
@@ -911,6 +910,7 @@ class _RSAVerificationContext(object):
 
             # Size of key in bytes - 2 is the maximum
             # PSS signature length (salt length is checked later)
+            key_size_bytes = int(math.ceil(public_key.key_size / 8.0))
             if key_size_bytes - algorithm.digest_size - 2 < 0:
                 raise ValueError("Digest too large for key size.")
 
