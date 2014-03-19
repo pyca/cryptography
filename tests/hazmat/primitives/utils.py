@@ -24,7 +24,7 @@ from cryptography.exceptions import (
     NotYetFinalized
 )
 from cryptography.hazmat.primitives import hashes, hmac
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -376,32 +376,24 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
 
 
 def generate_rsa_verification_test(param_loader, path, file_names, hash_alg,
-                                   pad_cls):
+                                   pad_factory):
     all_params = _load_all_params(path, file_names, param_loader)
     all_params = [i for i in all_params
                   if i["algorithm"] == hash_alg.name.upper()]
 
     @pytest.mark.parametrize("params", all_params)
     def test_rsa_verification(self, backend, params):
-        rsa_verification_test(backend, params, hash_alg, pad_cls)
+        rsa_verification_test(backend, params, hash_alg, pad_factory)
 
     return test_rsa_verification
 
 
-def rsa_verification_test(backend, params, hash_alg, pad_cls):
+def rsa_verification_test(backend, params, hash_alg, pad_factory):
     public_key = rsa.RSAPublicKey(
         public_exponent=params["public_exponent"],
         modulus=params["modulus"]
     )
-    if pad_cls is padding.PKCS1v15:
-        pad = padding.PKCS1v15()
-    else:
-        pad = padding.PSS(
-            mgf=padding.MGF1(
-                algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
-        )
+    pad = pad_factory(params, hash_alg)
     verifier = public_key.verifier(
         binascii.unhexlify(params["s"]),
         pad,

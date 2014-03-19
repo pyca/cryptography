@@ -763,7 +763,12 @@ class TestRSAPSSMGF1VerificationSHA1(object):
             "SigVerPSS_186-3.rsp",
         ],
         hashes.SHA1(),
-        padding.PSS
+        lambda params, hash_alg: padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=params["salt_length"]
+            )
+        )
     )
 
 
@@ -782,7 +787,12 @@ class TestRSAPSSMGF1VerificationSHA224(object):
             "SigVerPSS_186-3.rsp",
         ],
         hashes.SHA224(),
-        padding.PSS
+        lambda params, hash_alg: padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=params["salt_length"]
+            )
+        )
     )
 
 
@@ -801,7 +811,12 @@ class TestRSAPSSMGF1VerificationSHA256(object):
             "SigVerPSS_186-3.rsp",
         ],
         hashes.SHA256(),
-        padding.PSS
+        lambda params, hash_alg: padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=params["salt_length"]
+            )
+        )
     )
 
 
@@ -820,7 +835,12 @@ class TestRSAPSSMGF1VerificationSHA384(object):
             "SigVerPSS_186-3.rsp",
         ],
         hashes.SHA384(),
-        padding.PSS
+        lambda params, hash_alg: padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=params["salt_length"]
+            )
+        )
     )
 
 
@@ -839,7 +859,12 @@ class TestRSAPSSMGF1VerificationSHA512(object):
             "SigVerPSS_186-3.rsp",
         ],
         hashes.SHA512(),
-        padding.PSS
+        lambda params, hash_alg: padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=params["salt_length"]
+            )
+        )
     )
 
 
@@ -856,7 +881,7 @@ class TestRSAPKCS1SHA1Verification(object):
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA1(),
-        padding.PKCS1v15
+        lambda params, hash_alg: padding.PKCS1v15()
     )
 
 
@@ -873,7 +898,7 @@ class TestRSAPKCS1SHA224Verification(object):
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA224(),
-        padding.PKCS1v15
+        lambda params, hash_alg: padding.PKCS1v15()
     )
 
 
@@ -890,7 +915,7 @@ class TestRSAPKCS1SHA256Verification(object):
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA256(),
-        padding.PKCS1v15
+        lambda params, hash_alg: padding.PKCS1v15()
     )
 
 
@@ -907,7 +932,7 @@ class TestRSAPKCS1SHA384Verification(object):
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA384(),
-        padding.PKCS1v15
+        lambda params, hash_alg: padding.PKCS1v15()
     )
 
 
@@ -924,7 +949,7 @@ class TestRSAPKCS1SHA512Verification(object):
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA512(),
-        padding.PKCS1v15
+        lambda params, hash_alg: padding.PKCS1v15()
     )
 
 
