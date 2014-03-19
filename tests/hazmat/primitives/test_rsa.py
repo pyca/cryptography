@@ -748,13 +748,12 @@ class TestRSAVerification(object):
             verifier.verify()
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA1()),
-    skip_message="Does not support SHA1 with MGF1."
-)
 @pytest.mark.rsa
-class TestRSAPSSMGF1VerificationSHA1(object):
-    test_rsa_pss_mgf1_sha1 = generate_rsa_verification_test(
+class TestRSAPSSMGF1Verification(object):
+    test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
+        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA1()),
+        skip_message="Does not support SHA1 with MGF1."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -769,16 +768,12 @@ class TestRSAPSSMGF1VerificationSHA1(object):
                 salt_length=params["salt_length"]
             )
         )
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA224()),
-    skip_message="Does not support SHA224 with MGF1."
-)
-@pytest.mark.rsa
-class TestRSAPSSMGF1VerificationSHA224(object):
-    test_rsa_pss_mgf1_sha224 = generate_rsa_verification_test(
+    test_rsa_pss_mgf1_sha224 = pytest.mark.supported(
+        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA224()),
+        skip_message="Does not support SHA224 with MGF1."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -793,16 +788,12 @@ class TestRSAPSSMGF1VerificationSHA224(object):
                 salt_length=params["salt_length"]
             )
         )
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256 with MGF1."
-)
-@pytest.mark.rsa
-class TestRSAPSSMGF1VerificationSHA256(object):
-    test_rsa_pss_mgf1_sha256 = generate_rsa_verification_test(
+    test_rsa_pss_mgf1_sha256 = pytest.mark.supported(
+        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA256()),
+        skip_message="Does not support SHA256 with MGF1."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -817,16 +808,12 @@ class TestRSAPSSMGF1VerificationSHA256(object):
                 salt_length=params["salt_length"]
             )
         )
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA384()),
-    skip_message="Does not support SHA384 with MGF1."
-)
-@pytest.mark.rsa
-class TestRSAPSSMGF1VerificationSHA384(object):
-    test_rsa_pss_mgf1_sha384 = generate_rsa_verification_test(
+    test_rsa_pss_mgf1_sha384 = pytest.mark.supported(
+        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA384()),
+        skip_message="Does not support SHA384 with MGF1."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -841,16 +828,12 @@ class TestRSAPSSMGF1VerificationSHA384(object):
                 salt_length=params["salt_length"]
             )
         )
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA512()),
-    skip_message="Does not support SHA512 with MGF1."
-)
-@pytest.mark.rsa
-class TestRSAPSSMGF1VerificationSHA512(object):
-    test_rsa_pss_mgf1_sha512 = generate_rsa_verification_test(
+    test_rsa_pss_mgf1_sha512 = pytest.mark.supported(
+        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA512()),
+        skip_message="Does not support SHA512 with MGF1."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -865,16 +848,15 @@ class TestRSAPSSMGF1VerificationSHA512(object):
                 salt_length=params["salt_length"]
             )
         )
-    )
+    ))
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
-    skip_message="Does not support SHA1",
-)
 @pytest.mark.rsa
-class TestRSAPKCS1SHA1Verification(object):
-    test_rsa_pkcs1v15_verify_sha1 = generate_rsa_verification_test(
+class TestRSAPKCS1Verification(object):
+    test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
+        skip_message="Does not support SHA1."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -882,16 +864,12 @@ class TestRSAPKCS1SHA1Verification(object):
         ],
         hashes.SHA1(),
         lambda params, hash_alg: padding.PKCS1v15()
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
-    skip_message="Does not support SHA224",
-)
-@pytest.mark.rsa
-class TestRSAPKCS1SHA224Verification(object):
-    test_rsa_pkcs1v15_verify_sha224 = generate_rsa_verification_test(
+    test_rsa_pkcs1v15_verify_sha224 = pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
+        skip_message="Does not support SHA224."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -899,16 +877,12 @@ class TestRSAPKCS1SHA224Verification(object):
         ],
         hashes.SHA224(),
         lambda params, hash_alg: padding.PKCS1v15()
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256",
-)
-@pytest.mark.rsa
-class TestRSAPKCS1SHA256Verification(object):
-    test_rsa_pkcs1v15_verify_sha256 = generate_rsa_verification_test(
+    test_rsa_pkcs1v15_verify_sha256 = pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
+        skip_message="Does not support SHA256."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -916,16 +890,12 @@ class TestRSAPKCS1SHA256Verification(object):
         ],
         hashes.SHA256(),
         lambda params, hash_alg: padding.PKCS1v15()
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
-    skip_message="Does not support SHA384",
-)
-@pytest.mark.rsa
-class TestRSAPKCS1SHA384Verification(object):
-    test_rsa_pkcs1v15_verify_sha384 = generate_rsa_verification_test(
+    test_rsa_pkcs1v15_verify_sha384 = pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
+        skip_message="Does not support SHA384."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -933,16 +903,12 @@ class TestRSAPKCS1SHA384Verification(object):
         ],
         hashes.SHA384(),
         lambda params, hash_alg: padding.PKCS1v15()
-    )
+    ))
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
-    skip_message="Does not support SHA512",
-)
-@pytest.mark.rsa
-class TestRSAPKCS1SHA512Verification(object):
-    test_rsa_pkcs1v15_verify_sha512 = generate_rsa_verification_test(
+    test_rsa_pkcs1v15_verify_sha512 = pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
+        skip_message="Does not support SHA512."
+    )(generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -950,7 +916,7 @@ class TestRSAPKCS1SHA512Verification(object):
         ],
         hashes.SHA512(),
         lambda params, hash_alg: padding.PKCS1v15()
-    )
+    ))
 
 
 class TestMGF1(object):
