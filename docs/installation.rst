@@ -110,11 +110,13 @@ or `MacPorts`_:
 Then install cryptography linking against the brewed version:
 
 on `Homebrew`_:
+
 .. code-block:: console
 
     $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip install cryptography
 
 on `MacPorts`_:
+
 .. code-block:: console
 
     $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" pip install cryptography
