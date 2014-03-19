@@ -27,7 +27,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from .utils import generate_rsa_signature_test
+from .utils import generate_rsa_verification_test
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file
 )
@@ -754,7 +754,7 @@ class TestRSAVerification(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA1(object):
-    test_rsa_pss_mgf1_sha1 = generate_rsa_signature_test(
+    test_rsa_pss_mgf1_sha1 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -773,7 +773,7 @@ class TestRSAPSSMGF1VerificationSHA1(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA224(object):
-    test_rsa_pss_mgf1_sha224 = generate_rsa_signature_test(
+    test_rsa_pss_mgf1_sha224 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -792,7 +792,7 @@ class TestRSAPSSMGF1VerificationSHA224(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA256(object):
-    test_rsa_pss_mgf1_sha256 = generate_rsa_signature_test(
+    test_rsa_pss_mgf1_sha256 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -811,7 +811,7 @@ class TestRSAPSSMGF1VerificationSHA256(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA384(object):
-    test_rsa_pss_mgf1_sha384 = generate_rsa_signature_test(
+    test_rsa_pss_mgf1_sha384 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -830,7 +830,7 @@ class TestRSAPSSMGF1VerificationSHA384(object):
 )
 @pytest.mark.rsa
 class TestRSAPSSMGF1VerificationSHA512(object):
-    test_rsa_pss_mgf1_sha512 = generate_rsa_signature_test(
+    test_rsa_pss_mgf1_sha512 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -849,7 +849,7 @@ class TestRSAPSSMGF1VerificationSHA512(object):
 )
 @pytest.mark.rsa
 class TestRSAPKCS1SHA1Verification(object):
-    test_rsa_pkcs1v15_verify_sha1 = generate_rsa_signature_test(
+    test_rsa_pkcs1v15_verify_sha1 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -866,7 +866,7 @@ class TestRSAPKCS1SHA1Verification(object):
 )
 @pytest.mark.rsa
 class TestRSAPKCS1SHA224Verification(object):
-    test_rsa_pkcs1v15_verify_sha224 = generate_rsa_signature_test(
+    test_rsa_pkcs1v15_verify_sha224 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -883,7 +883,7 @@ class TestRSAPKCS1SHA224Verification(object):
 )
 @pytest.mark.rsa
 class TestRSAPKCS1SHA256Verification(object):
-    test_rsa_pkcs1v15_verify_sha256 = generate_rsa_signature_test(
+    test_rsa_pkcs1v15_verify_sha256 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -900,7 +900,7 @@ class TestRSAPKCS1SHA256Verification(object):
 )
 @pytest.mark.rsa
 class TestRSAPKCS1SHA384Verification(object):
-    test_rsa_pkcs1v15_verify_sha384 = generate_rsa_signature_test(
+    test_rsa_pkcs1v15_verify_sha384 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
@@ -917,7 +917,7 @@ class TestRSAPKCS1SHA384Verification(object):
 )
 @pytest.mark.rsa
 class TestRSAPKCS1SHA512Verification(object):
-    test_rsa_pkcs1v15_verify_sha512 = generate_rsa_signature_test(
+    test_rsa_pkcs1v15_verify_sha512 = generate_rsa_verification_test(
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
