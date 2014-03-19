@@ -17,6 +17,7 @@ import collections
 import os
 
 import pytest
+
 import six
 
 
