@@ -20,7 +20,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, UnsupportedCipher, UnsupportedHash
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HashBackend, HMACBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import hashes, hmac

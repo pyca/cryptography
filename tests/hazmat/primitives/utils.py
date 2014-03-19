@@ -14,21 +14,19 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import os
-
 import itertools
+import os
 
 import pytest
 
+from cryptography.exceptions import (
+    AlreadyFinalized, AlreadyUpdated, InvalidTag, NotYetFinalized
+)
 from cryptography.hazmat.primitives import hashes, hmac
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-
-from cryptography.exceptions import (
-    AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
-)
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from ...utils import load_vectors_from_file
 

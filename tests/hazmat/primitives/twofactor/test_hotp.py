@@ -18,10 +18,11 @@ import os
 import pytest
 
 from cryptography.exceptions import InvalidToken, UnsupportedInterface
-from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 from cryptography.hazmat.primitives import hashes
-from tests.utils import load_vectors_from_file, load_nist_vectors
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
+from cryptography.hazmat.primitives.twofactor.hotp import HOTP
+
+from ....utils import load_nist_vectors, load_vectors_from_file
 
 vectors = load_vectors_from_file(
     "twofactor/rfc-4226.txt", load_nist_vectors)
