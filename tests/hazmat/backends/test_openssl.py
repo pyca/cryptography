@@ -40,6 +40,11 @@ class DummyCipher(object):
     name = "dummy-cipher"
 
 
+@utils.register_interface(interfaces.HashAlgorithm)
+class DummyHash(object):
+    name = "dummy-hash"
+
+
 class TestOpenSSL(object):
     def test_backend_exists(self):
         assert backend
@@ -161,6 +166,9 @@ class TestOpenSSL(object):
                 hashes.SHA1(),
                 backend
             )
+
+    def test_unsupported_mgf1_hash_algorithm(self):
+        assert backend.mgf1_hash_supported(DummyHash()) is False
 
     # This test is not in the next class because to check if it's really
     # default we don't want to run the setup_method before it
