@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import collections
 import itertools
+import math
 
 import six
 
@@ -695,11 +696,24 @@ class _HMACContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
+def _get_rsa_pss_salt_length(mgf, key_size, digest_size):
+    if mgf._salt_length is MGF1.MAX_LENGTH:
+        # bit length - 1 per RFC 3447
+        emlen = int(math.ceil((key_size - 1) / 8.0))
+        salt_length = emlen - digest_size - 2
+        assert salt_length >= 0
+        return salt_length
+    else:
+        return mgf._salt_length
+
+
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
 class _RSASignatureContext(object):
     def __init__(self, backend, private_key, padding, algorithm):
         self._backend = backend
         self._private_key = private_key
+        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
+
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
                 "Expected provider of interfaces.AsymmetricPadding")
@@ -715,6 +729,11 @@ class _RSASignatureContext(object):
                 raise UnsupportedAlgorithm(
                     "Only MGF1 is supported by this backend"
                 )
+
+            # Size of key in bytes - 2 is the maximum
+            # PSS signature length (salt length is checked later)
+            if key_size_bytes - algorithm.digest_size - 2 < 0:
+                raise ValueError("Digest too large for key size.")
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedHash(
@@ -773,8 +792,15 @@ class _RSASignatureContext(object):
         assert res > 0
         if isinstance(self._padding, PSS):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
-                pkey_ctx, self._get_salt_length())
+                pkey_ctx,
+                _get_rsa_pss_salt_length(
+                    self._padding._mgf,
+                    self._private_key.key_size,
+                    self._hash_ctx.algorithm.digest_size
+                )
+            )
             assert res > 0
+
             if self._backend._lib.Cryptography_HAS_MGF1_MD:
                 # MGF1 MD is configurable in OpenSSL 1.0.1+
                 mgf1_md = self._backend._lib.EVP_get_digestbyname(
@@ -834,7 +860,11 @@ class _RSASignatureContext(object):
             padded,
             data_to_sign,
             evp_md,
-            self._get_salt_length()
+            _get_rsa_pss_salt_length(
+                self._padding._mgf,
+                self._private_key.key_size,
+                len(data_to_sign)
+            )
         )
         if res != 1:
             errors = self._backend._consume_errors()
@@ -854,12 +884,6 @@ class _RSASignatureContext(object):
         assert sig_len != -1
         return self._backend._ffi.buffer(sig_buf)[:sig_len]
 
-    def _get_salt_length(self):
-        if self._padding._mgf._salt_length is MGF1.MAX_LENGTH:
-            return -2
-        else:
-            return self._padding._mgf._salt_length
-
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
 class _RSAVerificationContext(object):
@@ -867,6 +891,8 @@ class _RSAVerificationContext(object):
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
+        key_size_bytes = int(math.ceil(public_key.key_size / 8.0))
+
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
                 "Expected provider of interfaces.AsymmetricPadding")
@@ -882,6 +908,11 @@ class _RSAVerificationContext(object):
                 raise UnsupportedAlgorithm(
                     "Only MGF1 is supported by this backend"
                 )
+
+            # Size of key in bytes - 2 is the maximum
+            # PSS signature length (salt length is checked later)
+            if key_size_bytes - algorithm.digest_size - 2 < 0:
+                raise ValueError("Digest too large for key size.")
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedHash(
@@ -936,7 +967,13 @@ class _RSAVerificationContext(object):
         assert res > 0
         if isinstance(self._padding, PSS):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
-                pkey_ctx, self._get_salt_length())
+                pkey_ctx,
+                _get_rsa_pss_salt_length(
+                    self._padding._mgf,
+                    self._public_key.key_size,
+                    self._hash_ctx.algorithm.digest_size
+                )
+            )
             assert res > 0
             if self._backend._lib.Cryptography_HAS_MGF1_MD:
                 # MGF1 MD is configurable in OpenSSL 1.0.1+
@@ -1011,18 +1048,16 @@ class _RSAVerificationContext(object):
             data_to_verify,
             evp_md,
             buf,
-            self._get_salt_length()
+            _get_rsa_pss_salt_length(
+                self._padding._mgf,
+                self._public_key.key_size,
+                len(data_to_verify)
+            )
         )
         if res != 1:
             errors = self._backend._consume_errors()
             assert errors
             raise InvalidSignature
-
-    def _get_salt_length(self):
-        if self._padding._mgf._salt_length is MGF1.MAX_LENGTH:
-            return -2
-        else:
-            return self._padding._mgf._salt_length
 
 
 backend = Backend()
