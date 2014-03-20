@@ -28,7 +28,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from .utils import generate_rsa_verification_test, rsa_pss_signing_test
+from .utils import generate_rsa_verification_test
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file
 )
@@ -483,33 +483,42 @@ class TestRSASignature(object):
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA224()),
-        skip_message="Does not support SHA224 with MGF1."
+    @pytest.mark.parametrize(
+        "hash_alg",
+        [hashes.SHA224(), hashes.SHA256(), hashes.SHA384(), hashes.SHA512()]
     )
-    def test_pss_signing_sha224(self, backend):
-        rsa_pss_signing_test(backend, hashes.SHA224())
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA256()),
-        skip_message="Does not support SHA256 with MGF1."
-    )
-    def test_pss_signing_sha256(self, backend):
-        rsa_pss_signing_test(backend, hashes.SHA256())
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA384()),
-        skip_message="Does not support SHA384 with MGF1."
-    )
-    def test_pss_signing_sha384(self, backend):
-        rsa_pss_signing_test(backend, hashes.SHA384())
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.mgf1_hash_supported(hashes.SHA512()),
-        skip_message="Does not support SHA512 with MGF1."
-    )
-    def test_pss_signing_sha512(self, backend):
-        rsa_pss_signing_test(backend, hashes.SHA512())
+    def test_pss_signing_sha2(self, hash_alg, backend):
+        if not backend.mgf1_hash_supported(hash_alg):
+            pytest.skip(
+                "Does not support {0} with MGF1.".format(hash_alg.name)
+            )
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=768,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        pss = padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=padding.MGF1.MAX_LENGTH
+            )
+        )
+        signer = private_key.signer(
+            pss,
+            hash_alg,
+            backend
+        )
+        signer.update(b"testing signature")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            pss,
+            hash_alg,
+            backend
+        )
+        verifier.update(b"testing signature")
+        verifier.verify()
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.SHA512()),

@@ -734,7 +734,8 @@ class _RSASignatureContext(object):
             # PSS signature length (salt length is checked later)
             key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
             if key_size_bytes - algorithm.digest_size - 2 < 0:
-                raise ValueError("Digest too large for key size.")
+                raise ValueError("Digest too large for key size. Use a larger "
+                                 "key.")
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedHash(
@@ -830,7 +831,8 @@ class _RSASignatureContext(object):
             assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
             assert (errors[0].reason ==
                     self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
-            raise ValueError("Salt length too long for key size")
+            raise ValueError("Salt length too long for key size. Try using "
+                             "MAX_LENGTH instead.")
 
         return self._backend._ffi.buffer(buf)[:]
 
@@ -872,7 +874,8 @@ class _RSASignatureContext(object):
             assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
             assert (errors[0].reason ==
                     self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
-            raise ValueError("Salt length too long for key size")
+            raise ValueError("Salt length too long for key size. Try using "
+                             "MAX_LENGTH instead.")
 
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
         sig_len = self._backend._lib.RSA_private_encrypt(
@@ -913,7 +916,10 @@ class _RSAVerificationContext(object):
             # PSS signature length (salt length is checked later)
             key_size_bytes = int(math.ceil(public_key.key_size / 8.0))
             if key_size_bytes - algorithm.digest_size - 2 < 0:
-                raise ValueError("Digest too large for key size.")
+                raise ValueError(
+                    "Digest too large for key size. Check that you have the "
+                    "correct key and digest algorithm."
+                )
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedHash(

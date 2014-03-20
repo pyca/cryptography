@@ -24,7 +24,7 @@ from cryptography.exceptions import (
     NotYetFinalized
 )
 from cryptography.hazmat.primitives import hashes, hmac
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -406,33 +406,3 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
             verifier.verify()
     else:
         verifier.verify()
-
-
-def rsa_pss_signing_test(backend, hash_alg):
-    private_key = rsa.RSAPrivateKey.generate(
-        public_exponent=65537,
-        key_size=768,
-        backend=backend
-    )
-    public_key = private_key.public_key()
-    pss = padding.PSS(
-        mgf=padding.MGF1(
-            algorithm=hash_alg,
-            salt_length=padding.MGF1.MAX_LENGTH
-        )
-    )
-    signer = private_key.signer(
-        pss,
-        hash_alg,
-        backend
-    )
-    signer.update(b"testing signature")
-    signature = signer.finalize()
-    verifier = public_key.verifier(
-        signature,
-        pss,
-        hash_alg,
-        backend
-    )
-    verifier.update(b"testing signature")
-    verifier.verify()
