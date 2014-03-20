@@ -18,7 +18,7 @@ import binascii
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedCipher, AlreadyFinalized
+from cryptography.exceptions import AlreadyFinalized, UnsupportedCipher
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes

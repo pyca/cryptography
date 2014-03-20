@@ -17,18 +17,18 @@ from collections import namedtuple
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidTag, InternalError, UnsupportedCipher, UnsupportedHash
+    InternalError, InvalidTag, UnsupportedCipher, UnsupportedHash
 )
 from cryptography.hazmat.backends.interfaces import (
-    HashBackend, HMACBackend, CipherBackend, PBKDF2HMACBackend
+    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
-from cryptography.hazmat.primitives import interfaces, constant_time
+from cryptography.hazmat.primitives import constant_time, interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Blowfish, TripleDES, ARC4, CAST5
+    AES, ARC4, Blowfish, CAST5, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CTR, ECB, OFB, CFB, GCM
+    CBC, CFB, CTR, ECB, GCM, OFB
 )
 
 

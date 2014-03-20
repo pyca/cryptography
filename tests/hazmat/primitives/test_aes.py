@@ -20,7 +20,7 @@ import pytest
 
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
-from .utils import generate_encrypt_test, generate_aead_test
+from .utils import generate_aead_test, generate_encrypt_test
 from ...utils import load_nist_vectors
 
 

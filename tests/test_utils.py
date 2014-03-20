@@ -21,10 +21,10 @@ import pretend
 import pytest
 
 from .utils import (
-    load_nist_vectors, load_vectors_from_file, load_cryptrec_vectors,
-    load_hash_vectors, check_for_iface, check_backend_support,
-    select_backends, load_pkcs1_vectors, load_rsa_nist_vectors,
-    load_fips_dsa_key_pair_vectors
+    check_backend_support, check_for_iface, load_cryptrec_vectors,
+    load_fips_dsa_key_pair_vectors, load_hash_vectors, load_nist_vectors,
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    select_backends
 )
 
 

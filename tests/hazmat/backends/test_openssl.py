@@ -17,11 +17,11 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedCipher, UnsupportedHash, InternalError
+    InternalError, UnsupportedCipher, UnsupportedHash
 )
-from cryptography.hazmat.backends.openssl.backend import backend, Backend
-from cryptography.hazmat.primitives import interfaces, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -38,6 +38,11 @@ class DummyMode(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
+
+
+@utils.register_interface(interfaces.HashAlgorithm)
+class DummyHash(object):
+    name = "dummy-hash"
 
 
 class TestOpenSSL(object):
@@ -172,6 +177,9 @@ class TestOpenSSL(object):
                 hashes.SHA1(),
                 backend
             )
+
+    def test_unsupported_mgf1_hash_algorithm(self):
+        assert backend.mgf1_hash_supported(DummyHash()) is False
 
     # This test is not in the next class because to check if it's really
     # default we don't want to run the setup_method before it

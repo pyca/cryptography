@@ -14,21 +14,20 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import os
-
 import itertools
+import os
 
 import pytest
 
+from cryptography.exceptions import (
+    AlreadyFinalized, AlreadyUpdated, InvalidSignature, InvalidTag,
+    NotYetFinalized
+)
 from cryptography.hazmat.primitives import hashes, hmac
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-
-from cryptography.exceptions import (
-    AlreadyFinalized, NotYetFinalized, AlreadyUpdated, InvalidTag,
-)
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from ...utils import load_vectors_from_file
 
@@ -376,36 +375,37 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
     return test_hkdf
 
 
-def generate_rsa_pss_test(param_loader, path, file_names, hash_alg):
+def generate_rsa_verification_test(param_loader, path, file_names, hash_alg,
+                                   pad_factory):
     all_params = _load_all_params(path, file_names, param_loader)
     all_params = [i for i in all_params
                   if i["algorithm"] == hash_alg.name.upper()]
 
     @pytest.mark.parametrize("params", all_params)
-    def test_rsa_pss(self, backend, params):
-        rsa_pss_test(backend, params, hash_alg)
+    def test_rsa_verification(self, backend, params):
+        rsa_verification_test(backend, params, hash_alg, pad_factory)
 
-    return test_rsa_pss
+    return test_rsa_verification
 
 
-def rsa_pss_test(backend, params, hash_alg):
+def rsa_verification_test(backend, params, hash_alg, pad_factory):
     public_key = rsa.RSAPublicKey(
         public_exponent=params["public_exponent"],
         modulus=params["modulus"]
     )
+    pad = pad_factory(params, hash_alg)
     verifier = public_key.verifier(
         binascii.unhexlify(params["s"]),
-        padding.PSS(
-            mgf=padding.MGF1(
-                algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
-        ),
+        pad,
         hash_alg,
         backend
     )
     verifier.update(binascii.unhexlify(params["msg"]))
-    verifier.verify()
+    if params["fail"]:
+        with pytest.raises(InvalidSignature):
+            verifier.verify()
+    else:
+        verifier.verify()
 
 
 def rsa_pss_signing_test(backend, hash_alg):

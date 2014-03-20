@@ -18,7 +18,8 @@ import pytest
 from cryptography.exceptions import InvalidToken, UnsupportedInterface
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
-from tests.utils import load_vectors_from_file, load_nist_vectors
+
+from ....utils import load_nist_vectors, load_vectors_from_file
 
 vectors = load_vectors_from_file(
     "twofactor/rfc-6238.txt", load_nist_vectors)

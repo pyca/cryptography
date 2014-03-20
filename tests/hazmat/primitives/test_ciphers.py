@@ -20,7 +20,7 @@ import pytest
 from cryptography.exceptions import UnsupportedInterface
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Camellia, TripleDES, Blowfish, ARC4, CAST5, IDEA
+    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import ECB
 

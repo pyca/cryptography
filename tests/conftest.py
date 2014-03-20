@@ -17,10 +17,10 @@ import pytest
 
 from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.backends.interfaces import (
-    HMACBackend, CipherBackend, HashBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
 
-from .utils import check_for_iface, check_backend_support, select_backends
+from .utils import check_backend_support, check_for_iface, select_backends
 
 
 def pytest_generate_tests(metafunc):
