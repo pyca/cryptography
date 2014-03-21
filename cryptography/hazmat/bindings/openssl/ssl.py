@@ -411,7 +411,7 @@ SSL_CTX *(*SSL_set_SSL_CTX)(SSL *, SSL_CTX *) = NULL;
 #  include <sys/param.h>
 #  if (__NetBSD_Version__ < 699003800)
 static const long Cryptography_HAS_NETBSD_D1_METH = 0;
-const SSL_METHOD *DTLSv1_method)(void) {
+const SSL_METHOD *DTLSv1_method(void) {
     return NULL;
 }
 #  else
