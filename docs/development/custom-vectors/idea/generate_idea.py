@@ -1,7 +1,7 @@
 import binascii
 
 from cryptography.hazmat.backends.openssl.backend import backend
-from cryptography.hazmat.primitives.ciphers import base, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 
 def encrypt(mode, key, iv, plaintext):
