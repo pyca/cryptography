@@ -41,6 +41,7 @@ static const long Cryptography_HAS_OP_NO_COMPRESSION;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
+static const long Cryptography_HAS_NETBSD_D1_METH;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -401,6 +402,24 @@ static const long Cryptography_HAS_SSL_SET_SSL_CTX = 0;
 static const long TLSEXT_NAMETYPE_host_name = 0;
 SSL_CTX *(*SSL_set_SSL_CTX)(SSL *, SSL_CTX *) = NULL;
 #endif
+
+/* NetBSD shipped without including d1_meth.c. This workaround checks to see
+   if the version of NetBSD we're currently running on is old enough to
+   have the bug and provides an empty implementation so we can link and
+   then remove the function from the ffi object. */
+#ifdef __NetBSD__
+#  include <sys/param.h>
+#  if (__NetBSD_Version__ < 699003800)
+static const long Cryptography_HAS_NETBSD_D1_METH = 0;
+const SSL_METHOD *DTLSv1_method(void) {
+    return NULL;
+}
+#  else
+static const long Cryptography_HAS_NETBSD_D1_METH = 1;
+#  endif
+#else
+static const long Cryptography_HAS_NETBSD_D1_METH = 1;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -453,5 +472,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_SET_SSL_CTX": [
         "SSL_set_SSL_CTX",
         "TLSEXT_NAMETYPE_host_name",
+    ],
+
+    "Cryptography_HAS_NETBSD_D1_METH": [
+        "DTLSv1_method",
     ],
 }
