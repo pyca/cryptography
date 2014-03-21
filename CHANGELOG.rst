@@ -1,8 +1,10 @@
 Changelog
 =========
 
-0.3 - 2014-XX-XX
-~~~~~~~~~~~~~~~~
+0.3 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
 
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 * Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
@@ -40,3 +42,4 @@ Changelog
 
 * Initial release.
 
+.. _`master`: https://github.com/pyca/cryptography/

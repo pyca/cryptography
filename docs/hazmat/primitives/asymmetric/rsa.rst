@@ -50,6 +50,11 @@ RSA
             provider.
         :return: A new instance of ``RSAPrivateKey``.
 
+        :raises cryptography.exceptions.UnsupportedInterface: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+
+
     .. method:: signer(padding, algorithm, backend)
 
         .. versionadded:: 0.3
@@ -90,6 +95,9 @@ RSA
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
+        :raises cryptography.exceptions.UnsupportedInterface: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
@@ -153,6 +161,10 @@ RSA
 
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+        :raises cryptography.exceptions.UnsupportedInterface: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography

@@ -13,18 +13,20 @@
 
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 import cffi
 
 import six
 
+from cryptography.hazmat.bindings.utils import _create_modulename
 
-_ffi = cffi.FFI()
-_ffi.cdef("""
+TYPES = """
 uint8_t Cryptography_constant_time_bytes_eq(uint8_t *, size_t, uint8_t *,
                                             size_t);
-""")
-_lib = _ffi.verify(
-    """
+"""
+
+FUNCTIONS = """
 uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
                                             uint8_t *b, size_t len_b) {
     size_t i = 0;
@@ -43,7 +45,13 @@ uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
     /* Now check the low bit to see if it's set */
     return (mismatch & 1) == 0;
 }
-""",
+"""
+
+_ffi = cffi.FFI()
+_ffi.cdef(TYPES)
+_lib = _ffi.verify(
+    source=FUNCTIONS,
+    modulename=_create_modulename([TYPES], FUNCTIONS, sys.version),
     ext_package="cryptography",
 )
 

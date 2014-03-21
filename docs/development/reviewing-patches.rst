@@ -1,4 +1,4 @@
-Reviewing/Merging Patches
+Reviewing/merging patches
 =========================
 
 Everyone is encouraged to review open pull requests. When reviewing a patch try
@@ -32,7 +32,7 @@ These are small things that are not caught by the automated style checkers.
 * Does a variable need a better name?
 * Should this be a keyword argument?
 
-Merge Requirements
+Merge requirements
 ------------------
 
 Because cryptography is so complex, and the implications of getting it wrong so

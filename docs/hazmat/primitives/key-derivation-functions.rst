@@ -1,6 +1,6 @@
 .. hazmat::
 
-Key Derivation Functions
+Key derivation functions
 ========================
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf

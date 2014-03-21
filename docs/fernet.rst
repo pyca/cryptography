@@ -1,4 +1,4 @@
-Fernet (Symmetric encryption)
+Fernet (symmetric encryption)
 =============================
 
 .. currentmodule:: cryptography.fernet

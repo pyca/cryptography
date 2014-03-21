@@ -1,4 +1,4 @@
-Doing a Release
+Doing a release
 ===============
 
 Doing a release of ``cryptography`` is a two part process.

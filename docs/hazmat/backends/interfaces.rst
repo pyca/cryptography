@@ -1,6 +1,6 @@
 .. hazmat::
 
-Backend Interfaces
+Backend interfaces
 ==================
 
 .. currentmodule:: cryptography.hazmat.backends.interfaces

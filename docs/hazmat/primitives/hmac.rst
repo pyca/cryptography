@@ -1,6 +1,6 @@
 .. hazmat::
 
-Hash-based Message Authentication Codes
+Hash-based message authentication codes
 =======================================
 
 .. currentmodule:: cryptography.hazmat.primitives.hmac
@@ -55,6 +55,10 @@ of a message.
     :param backend: An
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
+
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     .. method:: update(msg)
 

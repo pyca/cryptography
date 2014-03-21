@@ -13,7 +13,7 @@ Using these functions directly is likely to require you to be careful in
 managing memory allocation, locking and other resources.
 
 
-Individual Bindings
+Individual bindings
 -------------------
 
 .. toctree::

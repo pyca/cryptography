@@ -17,9 +17,12 @@ import binascii
 
 import pytest
 
+from cryptography.exceptions import UnsupportedInterface
+from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, Camellia, TripleDES, Blowfish, ARC4, CAST5
+    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES
 )
+from cryptography.hazmat.primitives.ciphers.modes import ECB
 
 
 class TestAES(object):
@@ -110,3 +113,20 @@ class TestARC4(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             ARC4(binascii.unhexlify(b"0" * 34))
+
+
+class TestIDEA(object):
+    def test_key_size(self):
+        cipher = IDEA(b"\x00" * 16)
+        assert cipher.key_size == 128
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            IDEA(b"\x00" * 17)
+
+
+def test_invalid_backend():
+    pretend_backend = object()
+
+    with pytest.raises(UnsupportedInterface):
+        ciphers.Cipher(AES(b"AAAAAAAAAAAAAAAA"), ECB, pretend_backend)

@@ -17,7 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InvalidKey, UnsupportedHash, AlreadyFinalized, UnsupportedInterface
+    AlreadyFinalized, InvalidKey, UnsupportedHash, UnsupportedInterface
 )
 from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces

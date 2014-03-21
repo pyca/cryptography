@@ -1,7 +1,7 @@
 .. hazmat:: /fernet
 
 
-Symmetric Encryption
+Symmetric encryption
 ====================
 
 .. currentmodule:: cryptography.hazmat.primitives.ciphers
@@ -55,6 +55,10 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
         provider.
+
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
 
     .. method:: encryptor()
 
@@ -126,7 +130,7 @@ Algorithms
     :param bytes key: The secret key, This must be kept secret. 40 to 128 bits
         in length in increments of 8 bits.
 
-Weak Ciphers
+Weak ciphers
 ------------
 
 .. warning::
@@ -368,7 +372,7 @@ Modes
         a secret message!
 
 
-Insecure Modes
+Insecure modes
 --------------
 
 .. warning::

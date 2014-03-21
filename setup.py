@@ -17,8 +17,9 @@ import os
 import sys
 from distutils.command.build import build
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 from setuptools.command.test import test
+
 
 base_dir = os.path.dirname(__file__)
 
@@ -119,6 +120,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Security :: Cryptography",

@@ -1,6 +1,6 @@
 .. hazmat::
 
-Message Digests
+Message digests
 ===============
 
 .. currentmodule:: cryptography.hazmat.primitives.hashes
@@ -45,6 +45,10 @@ Message Digests
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
         provider.
 
+    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+
     .. method:: update(data)
 
         :param bytes data: The bytes to be hashed.
@@ -86,7 +90,7 @@ SHA-1
     SHA-1 is a cryptographic hash function standardized by NIST. It produces an
     160-bit message digest.
 
-SHA-2 Family
+SHA-2 family
 ~~~~~~~~~~~~
 
 .. class:: SHA224()
