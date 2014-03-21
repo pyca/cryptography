@@ -127,7 +127,7 @@ typedef ... SSL_METHOD;
 typedef struct ssl_st {
     int version;
     int type;
-    const SSL_METHOD *method;
+    SSL_METHOD *method;
     ...;
 } SSL_CTX;
 
