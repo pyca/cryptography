@@ -897,10 +897,15 @@ class _RSASignatureContext(object):
         if res != 1:
             errors = self._backend._consume_errors()
             assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
-            assert (errors[0].reason ==
-                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
-            raise ValueError("Salt length too long for key size. Try using "
-                             "MAX_LENGTH instead.")
+            raise ValueError(
+                {
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE:
+                    "Salt length too long for key size. Try using MAX_LENGTH "
+                    "instead.",
+                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY:
+                    "Digest too large for key size. Use a larger key."
+                }[errors[0].reason]
+            )
 
         return self._backend._ffi.buffer(buf)[:]
 
@@ -915,7 +920,14 @@ class _RSASignatureContext(object):
         )
         self._hash_ctx.finalize()
         self._hash_ctx = None
-        assert res == 1
+        if res == 0:
+            errors = self._backend._consume_errors()
+            assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY)
+            raise ValueError("Digest too large for key size. Use a larger "
+                             "key.")
+
         return self._backend._ffi.buffer(sig_buf)[:sig_len[0]]
 
     def _finalize_pss(self, evp_pkey, pkey_size, evp_md):
