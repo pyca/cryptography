@@ -17,7 +17,7 @@ from collections import namedtuple
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InternalError, InvalidTag, UnsupportedCipher, UnsupportedHash
+    InternalError, InvalidTag, UnsupportedAlgorithm
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
@@ -273,7 +273,7 @@ class _CipherContext(object):
         try:
             cipher_enum, mode_enum = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedCipher(
+            raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -346,7 +346,7 @@ class _GCMCipherContext(object):
         try:
             cipher_enum, mode_enum = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedCipher(
+            raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -420,7 +420,7 @@ class _HashContext(object):
             try:
                 methods = self._backend._hash_mapping[self.algorithm.name]
             except KeyError:
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -463,7 +463,7 @@ class _HMACContext(object):
             try:
                 alg = self._backend._supported_hmac_algorithms[algorithm.name]
             except KeyError:
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "{0} is not a supported HMAC hash on this backend".format(
                         algorithm.name)
                 )

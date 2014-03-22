@@ -15,7 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.exceptions import InvalidToken, UnsupportedInterface
+from cryptography.exceptions import InvalidToken, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 
@@ -137,5 +137,5 @@ def test_invalid_backend():
 
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with pytest.raises(UnsupportedAlgorithm):
         TOTP(secret, 8, hashes.SHA1(), 30, pretend_backend)

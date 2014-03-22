@@ -17,7 +17,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidToken, UnsupportedInterface
+from cryptography.exceptions import InvalidToken, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
@@ -103,5 +103,5 @@ def test_invalid_backend():
 
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with pytest.raises(UnsupportedAlgorithm):
         HOTP(secret, 8, hashes.SHA1(), pretend_backend)

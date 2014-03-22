@@ -35,7 +35,8 @@ of a message.
         '#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'
 
     If the backend doesn't support the requested ``algorithm`` an
-    :class:`~cryptography.exceptions.UnsupportedHash` exception will be raised.
+    :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be
+    raised.
 
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
@@ -56,7 +57,7 @@ of a message.
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
 
-    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 

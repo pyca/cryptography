@@ -18,7 +18,7 @@ import pytest
 import six
 
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidKey, UnsupportedInterface
+    AlreadyFinalized, InvalidKey, UnsupportedAlgorithm
 )
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -152,5 +152,5 @@ class TestHKDF(object):
 def test_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with pytest.raises(UnsupportedAlgorithm):
         HKDF(hashes.SHA256(), 16, None, None, pretend_backend)

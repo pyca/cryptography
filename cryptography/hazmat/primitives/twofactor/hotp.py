@@ -17,7 +17,7 @@ import struct
 
 import six
 
-from cryptography.exceptions import InvalidToken, UnsupportedInterface
+from cryptography.exceptions import InvalidToken, UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
@@ -26,7 +26,7 @@ from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 class HOTP(object):
     def __init__(self, key, length, algorithm, backend):
         if not isinstance(backend, HMACBackend):
-            raise UnsupportedInterface(
+            raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend")
 
         if len(key) < 16:
