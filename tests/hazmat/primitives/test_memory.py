@@ -17,8 +17,8 @@ from cryptography.hazmat.primitives import memory
 
 
 def test_secure_wipe():
-    original_data = "A" * 128
-    data = "A" * 128
+    original_data = b"A" * 128
+    data = b"A" * 128
     assert data == original_data
     with memory.secure_wipe(data):
         assert data == original_data
@@ -26,8 +26,8 @@ def test_secure_wipe():
 
 
 def test_secure_wipe_empty():
-    original_data = ""
-    data = ""
+    original_data = b""
+    data = b""
     assert data == original_data
     with memory.secure_wipe(data):
         assert data == original_data
