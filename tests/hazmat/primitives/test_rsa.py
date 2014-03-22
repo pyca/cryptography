@@ -22,7 +22,9 @@ import os
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
+from cryptography.exceptions import (
+    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm
+)
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
