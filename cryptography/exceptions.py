@@ -14,20 +14,14 @@
 from __future__ import absolute_import, division, print_function
 
 
+class _Causes(object):
+    BACKEND_MISSING_INTERFACE = 0
+
+
 class UnsupportedAlgorithm(Exception):
-    pass
-
-
-class UnsupportedCipher(UnsupportedAlgorithm):
-    pass
-
-
-class UnsupportedHash(UnsupportedAlgorithm):
-    pass
-
-
-class UnsupportedPadding(UnsupportedAlgorithm):
-    pass
+    def __init__(self, message, cause=None):
+        super(UnsupportedAlgorithm, self).__init__(message)
+        self._cause = cause
 
 
 class AlreadyFinalized(Exception):
@@ -59,8 +53,4 @@ class InvalidKey(Exception):
 
 
 class InvalidToken(Exception):
-    pass
-
-
-class UnsupportedInterface(Exception):
     pass

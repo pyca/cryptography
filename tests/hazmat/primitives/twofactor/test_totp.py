@@ -15,11 +15,13 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.exceptions import InvalidToken, UnsupportedInterface
+from cryptography.exceptions import InvalidToken, _Causes
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 
-from ....utils import load_nist_vectors, load_vectors_from_file
+from ....utils import (
+    load_nist_vectors, load_vectors_from_file, raises_unsupported
+)
 
 vectors = load_vectors_from_file(
     "twofactor/rfc-6238.txt", load_nist_vectors)
@@ -137,5 +139,5 @@ def test_invalid_backend():
 
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with raises_unsupported(_Causes.BACKEND_MISSING_INTERFACE):
         TOTP(secret, 8, hashes.SHA1(), 30, pretend_backend)

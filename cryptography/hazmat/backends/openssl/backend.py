@@ -22,8 +22,7 @@ import six
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InternalError, InvalidSignature, InvalidTag,
-    UnsupportedAlgorithm, UnsupportedCipher, UnsupportedHash,
-    UnsupportedPadding
+    UnsupportedAlgorithm
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
@@ -221,7 +220,7 @@ class Backend(object):
             assert res == 1
         else:
             if not isinstance(algorithm, hashes.SHA1):
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "This version of OpenSSL only supports PBKDF2HMAC with "
                     "SHA1"
                 )
@@ -268,17 +267,14 @@ class Backend(object):
     def _bn_to_int(self, bn):
         if six.PY3:
             # Python 3 has constant time from_bytes, so use that.
-
             bn_num_bytes = (self._lib.BN_num_bits(bn) + 7) // 8
             bin_ptr = self._ffi.new("unsigned char[]", bn_num_bytes)
             bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
             assert bin_len > 0
             assert bin_ptr != self._ffi.NULL
             return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
-
         else:
             # Under Python 2 the best we can do is hex()
-
             hex_cdata = self._lib.BN_bn2hex(bn)
             assert hex_cdata != self._ffi.NULL
             hex_str = self._ffi.string(hex_cdata)
@@ -295,12 +291,10 @@ class Backend(object):
 
         if six.PY3:
             # Python 3 has constant time to_bytes, so use that.
-
             binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
             bn_ptr = self._lib.BN_bin2bn(binary, len(binary), self._ffi.NULL)
             assert bn_ptr != self._ffi.NULL
             return bn_ptr
-
         else:
             # Under Python 2 the best we can do is hex()
 
@@ -453,7 +447,7 @@ class _CipherContext(object):
         try:
             adapter = registry[type(cipher), type(mode)]
         except KeyError:
-            raise UnsupportedCipher(
+            raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -461,7 +455,7 @@ class _CipherContext(object):
 
         evp_cipher = adapter(self._backend, cipher, mode)
         if evp_cipher == self._backend._ffi.NULL:
-            raise UnsupportedCipher(
+            raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
                     cipher.name, mode.name if mode else mode)
@@ -602,7 +596,7 @@ class _HashContext(object):
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
             if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -652,7 +646,7 @@ class _HMACContext(object):
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode('ascii'))
             if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
                         algorithm.name)
                 )
@@ -738,7 +732,7 @@ class _RSASignatureContext(object):
                                  "key.")
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1."
                 )
@@ -749,7 +743,7 @@ class _RSASignatureContext(object):
             else:
                 self._finalize_method = self._finalize_pss
         else:
-            raise UnsupportedPadding(
+            raise UnsupportedAlgorithm(
                 "{0} is not supported by this backend".format(padding.name)
             )
 
@@ -922,7 +916,7 @@ class _RSAVerificationContext(object):
                 )
 
             if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
-                raise UnsupportedHash(
+                raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1."
                 )
@@ -933,7 +927,10 @@ class _RSAVerificationContext(object):
             else:
                 self._verify_method = self._verify_pss
         else:
-            raise UnsupportedPadding
+            raise UnsupportedAlgorithm(
+                "OpenSSL backend doesn't support {0} for padding. Only PSS "
+                "(recommended) and PKCS1v15 are supported."
+            )
 
         self._padding = padding
         self._algorithm = algorithm
