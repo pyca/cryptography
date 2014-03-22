@@ -23,6 +23,7 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_EC;
+static const long Cryptography_HAS_EC_CURVE_API;
 
 typedef ... EC_KEY;
 typedef struct {
@@ -40,6 +41,8 @@ void EC_KEY_free(EC_KEY *);
 
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 
+const char *EC_curve_nid2nist(int);
+int EC_curve_nist2nid(const char *);
 """
 
 CUSTOMIZATIONS = """
@@ -56,6 +59,14 @@ size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
 #else
 static const long Cryptography_HAS_EC = 1;
 #endif
+
+#if !defined(OPENSSL_NO_EC) && OPENSSL_VERSION_NUMBER >= 0x10002000L
+static const long Cryptography_HAS_EC_CURVE_API = 1;
+#else
+static const long Cryptography_HAS_EC_CURVE_API = 0;
+const char *(*EC_curve_nid2nist)(int);
+int (*EC_curve_nist2nid)(const char *);
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -63,5 +74,10 @@ CONDITIONAL_NAMES = {
         "EC_KEY_new_by_curve_name",
         "EC_KEY_free",
         "EC_get_builtin_curves",
+    ],
+
+    "Cryptography_HAS_EC_CURVE_API": [
+        "EC_curve_nid2nist",
+        "EC_curve_nist2nid",
     ],
 }
