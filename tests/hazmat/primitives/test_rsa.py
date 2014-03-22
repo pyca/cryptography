@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import itertools
+import math
 import os
 
 import pytest
@@ -428,6 +429,162 @@ class TestRSASignature(object):
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
 
+    @pytest.mark.parametrize(
+        "pkcs1_example",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_pss_signing(self, pkcs1_example, backend):
+        private, public, example = pkcs1_example
+        private_key = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        public_key = rsa.RSAPublicKey(
+            public_exponent=public["public_exponent"],
+            modulus=public["modulus"]
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        signer.update(binascii.unhexlify(example["message"]))
+        signature = signer.finalize()
+        assert len(signature) == math.ceil(private_key.key_size / 8.0)
+        # PSS signatures contain randomness so we can't do an exact
+        # signature check. Instead we'll verify that the signature created
+        # successfully verifies.
+        verifier = public_key.verifier(
+            signature,
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        verifier.update(binascii.unhexlify(example["message"]))
+        verifier.verify()
+
+    @pytest.mark.parametrize(
+        "hash_alg",
+        [hashes.SHA224(), hashes.SHA256(), hashes.SHA384(), hashes.SHA512()]
+    )
+    def test_pss_signing_sha2(self, hash_alg, backend):
+        if not backend.mgf1_hash_supported(hash_alg):
+            pytest.skip(
+                "Does not support {0} with MGF1.".format(hash_alg.name)
+            )
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=768,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        pss = padding.PSS(
+            mgf=padding.MGF1(
+                algorithm=hash_alg,
+                salt_length=padding.MGF1.MAX_LENGTH
+            )
+        )
+        signer = private_key.signer(
+            pss,
+            hash_alg,
+            backend
+        )
+        signer.update(b"testing signature")
+        signature = signer.finalize()
+        verifier = public_key.verifier(
+            signature,
+            pss,
+            hash_alg,
+            backend
+        )
+        verifier.update(b"testing signature")
+        verifier.verify()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
+        skip_message="Does not support SHA512."
+    )
+    def test_pss_minimum_key_size_for_digest(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=522,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            ),
+            hashes.SHA512(),
+            backend
+        )
+        signer.update(b"no failure")
+        signer.finalize()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
+        skip_message="Does not support SHA512."
+    )
+    def test_pss_signing_digest_too_large_for_key_size(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(ValueError):
+            private_key.signer(
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA1(),
+                        salt_length=padding.MGF1.MAX_LENGTH
+                    )
+                ),
+                hashes.SHA512(),
+                backend
+            )
+
+    def test_pss_signing_salt_length_too_long(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PSS(
+                mgf=padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=1000000
+                )
+            ),
+            hashes.SHA1(),
+            backend
+        )
+        signer.update(b"failure coming")
+        with pytest.raises(ValueError):
+            signer.finalize()
+
     def test_use_after_finalize(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -467,6 +624,16 @@ class TestRSASignature(object):
         with pytest.raises(UnsupportedInterface):
             private_key.signer(
                 padding.PKCS1v15(), hashes.SHA256, pretend_backend)
+
+    def test_unsupported_pss_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1(),
+                               backend)
 
 
 @pytest.mark.rsa
@@ -558,7 +725,7 @@ class TestRSAVerification(object):
             padding.PSS(
                 mgf=padding.MGF1(
                     algorithm=hashes.SHA1(),
-                    salt_length=padding.MGF1.MAX_LENGTH
+                    salt_length=20
                 )
             ),
             hashes.SHA1(),
@@ -718,6 +885,34 @@ class TestRSAVerification(object):
         with pytest.raises(UnsupportedAlgorithm):
             public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
                                 hashes.SHA1(), backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
+        skip_message="Does not support SHA512."
+    )
+    def test_pss_verify_digest_too_large_for_key_size(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        signature = binascii.unhexlify(
+            b"8b9a3ae9fb3b64158f3476dd8d8a1f1425444e98940e0926378baa9944d219d8"
+            b"534c050ef6b19b1bdc6eb4da422e89161106a6f5b5cc16135b11eb6439b646bd"
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(ValueError):
+            public_key.verifier(
+                signature,
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA1(),
+                        salt_length=padding.MGF1.MAX_LENGTH
+                    )
+                ),
+                hashes.SHA512(),
+                backend
+            )
 
     def test_pss_verify_salt_length_too_long(self, backend):
         signature = binascii.unhexlify(

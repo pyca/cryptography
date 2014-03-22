@@ -153,6 +153,17 @@ class TestOpenSSL(object):
             key_size=512,
             backend=backend
         )
+        with pytest.raises(UnsupportedHash):
+            private_key.signer(
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA256(),
+                        salt_length=padding.MGF1.MAX_LENGTH
+                    )
+                ),
+                hashes.SHA1(),
+                backend
+            )
         public_key = private_key.public_key()
         with pytest.raises(UnsupportedHash):
             public_key.verifier(
