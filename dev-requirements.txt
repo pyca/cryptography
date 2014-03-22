@@ -1,15 +1,15 @@
 coverage
 flake8
+flake8-import-order
 invoke
 iso8601
 pep8-naming
-flake8-import-order
 pretend
 pytest
 requests
 sphinx
-sphinxcontrib-spelling
 sphinx_rtd_theme
+sphinxcontrib-spelling
 tox
 twine
 -e .
