@@ -6,7 +6,7 @@ Lack of secure memory wiping
 
 `Memory wiping`_ is used to protect secret data or key material from attackers
 with access to uninitialized memory. This can be either because the attacker
-has some kind of local user access or because of other softwares use of
+has some kind of local user access or because of how other software uses
 uninitialized memory.
 
 Python exposes no API for us to implement this reliably and as such most
