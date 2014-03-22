@@ -15,8 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
-from distutils.command.build import build
 import subprocess
+from distutils.command.build import build
 
 import pkg_resources
 
