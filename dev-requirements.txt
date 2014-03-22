@@ -3,6 +3,7 @@ flake8
 invoke
 iso8601
 pep8-naming
+flake8-import-order
 pretend
 pytest
 requests
