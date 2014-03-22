@@ -127,7 +127,6 @@ typedef ... SSL_METHOD;
 typedef struct ssl_st {
     int version;
     int type;
-    const SSL_METHOD *method;
     ...;
 } SSL_CTX;
 
@@ -319,6 +318,8 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 /* This function does not exist in 0.9.8e. Once we drop support for
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
+
+const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX*);
 """
 
 CUSTOMIZATIONS = """
@@ -420,6 +421,11 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #else
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
+
+// Workaround for #794 caused by cffi const** bug.
+const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX* ctx) {
+    return ctx->method;
+}
 """
 
 CONDITIONAL_NAMES = {
