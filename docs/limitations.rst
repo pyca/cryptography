@@ -11,7 +11,7 @@ uninitialized memory.
 
 Python exposes no API for us to implement this reliably and as such most
 software in Python is vulnerable to this attack. However the
-`CERT secure coding guidelines`_ categorise this issue as "low severity,
+`CERT secure coding guidelines`_ consider this issue as "low severity,
 unlikely, expensive to repair" and we do not consider this a high risk for most
 users.
 
