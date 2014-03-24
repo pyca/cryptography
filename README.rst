@@ -1,7 +1,7 @@
 Cryptography
 ============
 
-.. image:: https://travis-ci.org/pyca/cryptography.png?branch=master
+.. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
 .. image:: https://coveralls.io/repos/pyca/cryptography/badge.png?branch=master
