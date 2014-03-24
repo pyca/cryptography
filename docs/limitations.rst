@@ -10,7 +10,10 @@ has some kind of local user access or because of how other software uses
 uninitialized memory.
 
 Python exposes no API for us to implement this reliably and as such most
-software in Python is vulnerable to this attack. However we do not currently
-believe this to be particularly high risk issue for most users.
+software in Python is vulnerable to this attack. However the
+`CERT secure coding guidelines`_ categorise this issue as "low severity,
+unlikely, expensive to repair" and we do not consider this a high risk for most
+users.
 
 .. _`Memory wiping`:  http://blogs.msdn.com/b/oldnewthing/archive/2013/05/29/10421912.aspx
+.. _`CERT secure coding guidelines`: https://www.securecoding.cert.org/confluence/display/seccode/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
