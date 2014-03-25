@@ -85,6 +85,7 @@ The ``cryptography`` open source project
     installation
     development/index
     security
+    limitations
     api-stability
     doing-a-release
     changelog
