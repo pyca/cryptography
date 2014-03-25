@@ -9,8 +9,8 @@ with access to uninitialized memory. This can be either because the attacker
 has some kind of local user access or because of how other software uses
 uninitialized memory.
 
-Python exposes no API for us to implement this reliably and as such most
-software in Python is vulnerable to this attack. However the
+Python exposes no API for us to implement this reliably and as such almost all
+software in Python is potentially vulnerable to this attack. However the
 `CERT secure coding guidelines`_ consider this issue as "low severity,
 unlikely, expensive to repair" and we do not consider this a high risk for most
 users.
