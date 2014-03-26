@@ -16,6 +16,9 @@ from __future__ import absolute_import, division, print_function
 
 class _Reasons(object):
     BACKEND_MISSING_INTERFACE = object()
+    UNSUPPORTED_HASH = object()
+    UNSUPPORTED_CIPHER = object()
+    UNSUPPORTED_PADDING = object()
 
 
 class UnsupportedAlgorithm(Exception):
