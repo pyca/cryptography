@@ -16,13 +16,17 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import InternalError, UnsupportedAlgorithm
+from cryptography.exceptions import (
+    InternalError, _Reasons
+)
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
+
+from ...utils import raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.Mode)
@@ -76,7 +80,7 @@ class TestOpenSSL(object):
         cipher = Cipher(
             DummyCipher(), mode, backend=b,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
     def test_consume_errors(self):
@@ -138,7 +142,7 @@ class TestOpenSSL(object):
     def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
         if backend.pbkdf2_hmac_supported(hashes.SHA256()):
             pytest.skip("Requires an older OpenSSL")
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
     @pytest.mark.skipif(
@@ -151,7 +155,7 @@ class TestOpenSSL(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.signer(
                 padding.PSS(
                     mgf=padding.MGF1(
@@ -163,7 +167,7 @@ class TestOpenSSL(object):
                 backend
             )
         public_key = private_key.public_key()
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             public_key.verifier(
                 b"sig",
                 padding.PSS(

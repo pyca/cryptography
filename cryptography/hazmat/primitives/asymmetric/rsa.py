@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import interfaces
 
@@ -45,7 +45,9 @@ class RSAPublicKey(object):
     def verifier(self, signature, padding, algorithm, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend")
+                "Backend object does not implement RSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         return backend.create_rsa_verification_ctx(self, signature, padding,
                                                    algorithm)
@@ -136,14 +138,18 @@ class RSAPrivateKey(object):
     def generate(cls, public_exponent, key_size, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend")
+                "Backend object does not implement RSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         return backend.generate_rsa_private_key(public_exponent, key_size)
 
     def signer(self, padding, algorithm, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend")
+                "Backend object does not implement RSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         return backend.create_rsa_signature_ctx(self, padding, algorithm)
 

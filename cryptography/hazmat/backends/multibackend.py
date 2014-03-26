@@ -14,7 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
@@ -49,7 +49,9 @@ class MultiBackend(object):
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
+            "cipher {0} in {1} mode is not supported by this backend".format(
+                algorithm.name, mode.name if mode else mode),
+            _Reasons.UNSUPPORTED_CIPHER
         )
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
@@ -59,7 +61,9 @@ class MultiBackend(object):
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
+            "cipher {0} in {1} mode is not supported by this backend".format(
+                algorithm.name, mode.name if mode else mode),
+            _Reasons.UNSUPPORTED_CIPHER
         )
 
     def hash_supported(self, algorithm):
@@ -75,7 +79,9 @@ class MultiBackend(object):
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
+            "{0} is not a supported hash on this backend".format(
+                algorithm.name),
+            _Reasons.UNSUPPORTED_HASH
         )
 
     def hmac_supported(self, algorithm):
@@ -91,7 +97,9 @@ class MultiBackend(object):
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
+            "{0} is not a supported hash on this backend".format(
+                algorithm.name),
+            _Reasons.UNSUPPORTED_HASH
         )
 
     def pbkdf2_hmac_supported(self, algorithm):
@@ -110,28 +118,24 @@ class MultiBackend(object):
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
+            "{0} is not a supported hash on this backend".format(
+                algorithm.name),
+            _Reasons.UNSUPPORTED_HASH
         )
 
     def generate_rsa_private_key(self, public_exponent, key_size):
         for b in self._filtered_backends(RSABackend):
             return b.generate_rsa_private_key(public_exponent, key_size)
-        raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
-        )
+        raise UnsupportedAlgorithm("RSA is not supported by the backend")
 
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         for b in self._filtered_backends(RSABackend):
             return b.create_rsa_signature_ctx(private_key, padding, algorithm)
-        raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
-        )
+        raise UnsupportedAlgorithm("RSA is not supported by the backend")
 
     def create_rsa_verification_ctx(self, public_key, signature, padding,
                                     algorithm):
         for b in self._filtered_backends(RSABackend):
             return b.create_rsa_verification_ctx(public_key, signature,
                                                  padding, algorithm)
-        raise UnsupportedAlgorithm(
-            "None of the constituents backends support this algorithm."
-        )
+        raise UnsupportedAlgorithm("RSA is not supported by the backend")

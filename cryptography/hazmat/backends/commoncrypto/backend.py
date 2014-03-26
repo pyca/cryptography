@@ -17,7 +17,7 @@ from collections import namedtuple
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InternalError, InvalidTag, UnsupportedAlgorithm
+    InternalError, InvalidTag, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
@@ -276,7 +276,8 @@ class _CipherContext(object):
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
-                    cipher.name, mode.name if mode else mode)
+                    cipher.name, mode.name if mode else mode),
+                _Reasons.UNSUPPORTED_CIPHER
             )
 
         ctx = self._backend._ffi.new("CCCryptorRef *")
@@ -349,7 +350,8 @@ class _GCMCipherContext(object):
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
                 "by this backend".format(
-                    cipher.name, mode.name if mode else mode)
+                    cipher.name, mode.name if mode else mode),
+                _Reasons.UNSUPPORTED_CIPHER
             )
 
         ctx = self._backend._ffi.new("CCCryptorRef *")
@@ -422,7 +424,8 @@ class _HashContext(object):
             except KeyError:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend".format(
-                        algorithm.name)
+                        algorithm.name),
+                    _Reasons.UNSUPPORTED_HASH
                 )
             ctx = self._backend._ffi.new(methods.ctx)
             res = methods.hash_init(ctx)
@@ -465,7 +468,8 @@ class _HMACContext(object):
             except KeyError:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported HMAC hash on this backend".format(
-                        algorithm.name)
+                        algorithm.name),
+                    _Reasons.UNSUPPORTED_HASH
                 )
 
             self._backend._lib.CCHmacInit(ctx, alg, key, len(key))
