@@ -70,10 +70,10 @@ def check_backend_support(item):
 
 
 @contextmanager
-def raises_unsupported(cause):
+def raises_unsupported_algorithm(cause):
     with pytest.raises(UnsupportedAlgorithm) as exc_info:
-        yield
-    assert exc_info.value._cause == cause
+        yield exc_info
+    assert exc_info.value._cause is cause
 
 
 def load_vectors_from_file(filename, loader):

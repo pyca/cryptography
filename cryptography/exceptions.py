@@ -14,8 +14,8 @@
 from __future__ import absolute_import, division, print_function
 
 
-class _Causes(object):
-    BACKEND_MISSING_INTERFACE = 0
+class _Reasons(object):
+    BACKEND_MISSING_INTERFACE = object()
 
 
 class UnsupportedAlgorithm(Exception):

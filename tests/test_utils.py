@@ -21,13 +21,15 @@ import pretend
 import pytest
 
 import cryptography
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+
 import cryptography_vectors
 
 from .utils import (
     check_backend_support, check_for_iface, load_cryptrec_vectors,
     load_fips_dsa_key_pair_vectors, load_hash_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    select_backends
+    raises_unsupported_algorithm, select_backends
 )
 
 
@@ -1608,3 +1610,32 @@ de61329a78d526f65245380ce877e979c5b50de66c9c30d66382c8f254653d25a1eb1d3a4897d7\
 
 def test_vector_version():
     assert cryptography.__version__ == cryptography_vectors.__version__
+
+
+def test_raises_unsupported_algorithm_wrong_type():
+    # Check that it asserts if the wrong type of exception is raised.
+
+    class TestException(Exception):
+        pass
+
+    with pytest.raises(TestException):
+        with raises_unsupported_algorithm(None):
+            raise TestException
+
+
+def test_raises_unsupported_algorithm_wrong_reason():
+    # Check that it asserts if the wrong reason code is raised.
+    with pytest.raises(AssertionError):
+        with raises_unsupported_algorithm(None):
+            raise UnsupportedAlgorithm("An error.",
+                                       _Reasons.BACKEND_MISSING_INTERFACE)
+
+
+def test_raises_unsupported_algorithm():
+    # Check that it doesnt assert if the right things are raised.
+    with raises_unsupported_algorithm(
+        _Reasons.BACKEND_MISSING_INTERFACE
+    ) as exc:
+        raise UnsupportedAlgorithm("An error.",
+                                   _Reasons.BACKEND_MISSING_INTERFACE)
+    assert exc
