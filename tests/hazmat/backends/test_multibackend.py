@@ -36,11 +36,11 @@ class DummyCipherBackend(object):
 
     def create_symmetric_encryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(None)
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(HashBackend)
@@ -53,7 +53,7 @@ class DummyHashBackend(object):
 
     def create_hash_ctx(self, algorithm):
         if not self.hash_supported(algorithm):
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(HMACBackend)
@@ -66,7 +66,7 @@ class DummyHMACBackend(object):
 
     def create_hmac_ctx(self, key, algorithm):
         if not self.hmac_supported(algorithm):
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(PBKDF2HMACBackend)
@@ -80,7 +80,7 @@ class DummyPBKDF2HMACBackend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         if not self.pbkdf2_hmac_supported(algorithm):
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(RSABackend)
