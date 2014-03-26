@@ -15,10 +15,13 @@ from __future__ import absolute_import, division, print_function
 
 import collections
 import os
+from contextlib import contextmanager
 
 import pytest
 
 import six
+
+from cryptography.exceptions import UnsupportedAlgorithm
 
 
 HashVector = collections.namedtuple("HashVector", ["message", "digest"])
@@ -64,6 +67,13 @@ def check_backend_support(item):
     elif supported:
         raise ValueError("This mark is only available on methods that take a "
                          "backend")
+
+
+@contextmanager
+def raises_unsupported(cause):
+    with pytest.raises(UnsupportedAlgorithm) as exc_info:
+        yield
+    assert exc_info.value._cause == cause
 
 
 def load_vectors_from_file(filename, loader):
