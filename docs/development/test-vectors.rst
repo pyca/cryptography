@@ -2,10 +2,14 @@ Test vectors
 ============
 
 Testing the correctness of the primitives implemented in each ``cryptography``
-backend requires trusted test vectors. Where possible these vectors are obtained
-from official sources such as `NIST`_ or `IETF`_ RFCs. When this is not possible
-``cryptography`` has chosen to create a set of custom vectors using an official
-vector file as input to verify consistency between implemented backends.
+backend requires trusted test vectors. Where possible these vectors are
+obtained from official sources such as `NIST`_ or `IETF`_ RFCs. When this is
+not possible ``cryptography`` has chosen to create a set of custom vectors
+using an official vector file as input to verify consistency between
+implemented backends.
+
+Vectors are kept in the `cryptography_vectors` package rather than within our
+main test suite.
 
 Sources
 -------

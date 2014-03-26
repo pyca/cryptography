@@ -10,6 +10,7 @@ The first step in doing a release is bumping the version number in the
 software.
 
 * Update the version number in ``cryptography/__about__.py``.
+* Update the version number in ``vectors/cryptography_vectors/__about__.py``.
 * Set the release date in the :doc:`/changelog`.
 * Do a commit indicating this.
 * Send a pull request with this.
@@ -32,6 +33,9 @@ correctly:
 
     >>> import cryptography
     >>> cryptography.__version__
+    '...'
+    >>> import cryptography_vectors
+    >>> cryptography_vectors.__version__
     '...'
 
 Verify that this is the version you just released.

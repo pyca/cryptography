@@ -16,6 +16,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 from distutils.command.build import build
+import subprocess
+
+import pkg_resources
 
 from setuptools import find_packages, setup
 from setuptools.command.test import test
@@ -30,6 +33,7 @@ with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
 
 CFFI_DEPENDENCY = "cffi>=0.8"
 SIX_DEPENDENCY = "six>=1.4.1"
+VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
     CFFI_DEPENDENCY,
@@ -39,8 +43,13 @@ requirements = [
 test_requirements = [
     "pytest",
     "pretend",
-    "iso8601"
+    "iso8601",
 ]
+
+# If there's no vectors locally that probably means we are in a tarball and
+# need to go and get the matching vectors package from PyPi
+if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
+    test_requirements.append(VECTORS_DEPENDENCY)
 
 
 class CFFIBuild(build):
@@ -80,6 +89,13 @@ class PyTest(test):
         test.finalize_options(self)
         self.test_args = []
         self.test_suite = True
+
+        # This means there's a vectors/ folder with the package in here.
+        # cd into it, install the vectors package and then refresh sys.path
+        if VECTORS_DEPENDENCY not in test_requirements:
+            subprocess.Popen([sys.executable, "setup.py", "install"],
+                             cwd="vectors").communicate()
+            pkg_resources.get_distribution("cryptography_vectors").activate()
 
     def run_tests(self):
         # Import here because in module scope the eggs are not loaded.

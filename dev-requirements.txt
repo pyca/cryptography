@@ -12,3 +12,4 @@ sphinx_rtd_theme
 tox
 twine
 -e .
+-e vectors

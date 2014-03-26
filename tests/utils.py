@@ -14,12 +14,13 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import os
 from contextlib import contextmanager
 
 import pytest
 
 import six
+
+import cryptography_vectors
 
 from cryptography.exceptions import UnsupportedAlgorithm
 
@@ -77,10 +78,7 @@ def raises_unsupported(cause):
 
 
 def load_vectors_from_file(filename, loader):
-    base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
+    with cryptography_vectors.open_vector_file(filename) as vector_file:
         return loader(vector_file)
 
 

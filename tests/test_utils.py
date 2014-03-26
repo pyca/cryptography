@@ -20,6 +20,9 @@ import pretend
 
 import pytest
 
+import cryptography
+import cryptography_vectors
+
 from .utils import (
     check_backend_support, check_for_iface, load_cryptrec_vectors,
     load_fips_dsa_key_pair_vectors, load_hash_vectors, load_nist_vectors,
@@ -1601,3 +1604,7 @@ de61329a78d526f65245380ce877e979c5b50de66c9c30d66382c8f254653d25a1eb1d3a4897d7\
     ]
 
     assert expected == load_fips_dsa_key_pair_vectors(vector_data)
+
+
+def test_vector_version():
+    assert cryptography.__version__ == cryptography_vectors.__version__
