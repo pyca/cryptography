@@ -927,7 +927,10 @@ class _RSAVerificationContext(object):
             else:
                 self._verify_method = self._verify_pss
         else:
-            raise UnsupportedAlgorithm
+            raise UnsupportedAlgorithm(
+                "OpenSSL backend doesn't support {0} for padding. Only PSS "
+                "(recommended) and PKCS1v15 are supported."
+            )
 
         self._padding = padding
         self._algorithm = algorithm
