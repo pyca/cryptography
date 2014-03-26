@@ -48,7 +48,9 @@ class MultiBackend(object):
                 return b.create_symmetric_encryption_ctx(algorithm, mode)
             except UnsupportedAlgorithm:
                 pass
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
         for b in self._filtered_backends(CipherBackend):
@@ -56,7 +58,9 @@ class MultiBackend(object):
                 return b.create_symmetric_decryption_ctx(algorithm, mode)
             except UnsupportedAlgorithm:
                 pass
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def hash_supported(self, algorithm):
         return any(
@@ -70,7 +74,9 @@ class MultiBackend(object):
                 return b.create_hash_ctx(algorithm)
             except UnsupportedAlgorithm:
                 pass
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def hmac_supported(self, algorithm):
         return any(
@@ -84,7 +90,9 @@ class MultiBackend(object):
                 return b.create_hmac_ctx(key, algorithm)
             except UnsupportedAlgorithm:
                 pass
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def pbkdf2_hmac_supported(self, algorithm):
         return any(
@@ -101,21 +109,29 @@ class MultiBackend(object):
                 )
             except UnsupportedAlgorithm:
                 pass
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def generate_rsa_private_key(self, public_exponent, key_size):
         for b in self._filtered_backends(RSABackend):
             return b.generate_rsa_private_key(public_exponent, key_size)
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         for b in self._filtered_backends(RSABackend):
             return b.create_rsa_signature_ctx(private_key, padding, algorithm)
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
 
     def create_rsa_verification_ctx(self, public_key, signature, padding,
                                     algorithm):
         for b in self._filtered_backends(RSABackend):
             return b.create_rsa_verification_ctx(public_key, signature,
                                                  padding, algorithm)
-        raise UnsupportedAlgorithm
+        raise UnsupportedAlgorithm(
+            "None of the constituents backends support this algorithm."
+        )
