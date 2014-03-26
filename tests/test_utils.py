@@ -1612,23 +1612,28 @@ def test_vector_version():
     assert cryptography.__version__ == cryptography_vectors.__version__
 
 
+@pytest.mark.xfail
 def test_raises_unsupported_algorithm_wrong_type():
     # Check that it asserts if the wrong type of exception is raised.
-
-    class TestException(Exception):
-        pass
-
-    with pytest.raises(TestException):
-        with raises_unsupported_algorithm(None):
-            raise TestException
+    with raises_unsupported_algorithm(None):
+        raise Exception
 
 
+@pytest.mark.xfail
 def test_raises_unsupported_algorithm_wrong_reason():
     # Check that it asserts if the wrong reason code is raised.
-    with pytest.raises(AssertionError):
-        with raises_unsupported_algorithm(None):
-            raise UnsupportedAlgorithm("An error.",
-                                       _Reasons.BACKEND_MISSING_INTERFACE)
+    with raises_unsupported_algorithm(None):
+        raise UnsupportedAlgorithm("An error.",
+                                   _Reasons.BACKEND_MISSING_INTERFACE)
+
+
+@pytest.mark.xfail
+def test_raises_unsupported_no_exc():
+    # Check that it raises if no exception is raised.
+    with raises_unsupported_algorithm(
+        _Reasons.BACKEND_MISSING_INTERFACE
+    ):
+        pass
 
 
 def test_raises_unsupported_algorithm():
