@@ -1,10 +1,8 @@
 Changelog
 =========
 
-0.3 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+0.3 - 2014-03-27
+~~~~~~~~~~~~~~~~
 
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 * Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
