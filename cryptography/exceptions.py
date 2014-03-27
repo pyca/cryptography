@@ -22,9 +22,9 @@ class _Reasons(object):
 
 
 class UnsupportedAlgorithm(Exception):
-    def __init__(self, message, cause=None):
+    def __init__(self, message, reason=None):
         super(UnsupportedAlgorithm, self).__init__(message)
-        self._cause = cause
+        self._reason = reason
 
 
 class AlreadyFinalized(Exception):

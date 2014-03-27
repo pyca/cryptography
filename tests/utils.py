@@ -70,10 +70,12 @@ def check_backend_support(item):
 
 
 @contextmanager
-def raises_unsupported_algorithm(cause):
+def raises_unsupported_algorithm(reason):
     with pytest.raises(UnsupportedAlgorithm) as exc_info:
         yield exc_info
-    assert exc_info.value._cause is cause
+
+    if exc_info.value._reason is not reason:
+        pytest.fail("Did not get expected reason tag for UnsupportedAlgorithm")
 
 
 def load_vectors_from_file(filename, loader):
