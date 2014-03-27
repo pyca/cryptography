@@ -9,7 +9,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA` support.
 * Added signature support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
   and verification support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
-* Moved test vectors to the new ``cryptography-vectors`` package.
+* Moved test vectors to the new ``cryptography_vectors`` package.
 
 0.2.2 - 2014-03-03
 ~~~~~~~~~~~~~~~~~~
