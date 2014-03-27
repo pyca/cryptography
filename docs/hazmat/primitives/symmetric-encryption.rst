@@ -56,7 +56,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
         provider.
 
-    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
 
@@ -67,7 +67,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` an :class:`~cryptography.exceptions.UnsupportedCipher`
+        and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
         exception will be raised.
 
     .. method:: decryptor()
@@ -77,7 +77,7 @@ an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
-        and ``mode`` an :class:`cryptography.exceptions.UnsupportedCipher`
+        and ``mode`` an :class:`cryptography.exceptions.UnsupportedAlgorithm`
         exception will be raised.
 
 .. _symmetric-encryption-algorithms:

@@ -3,6 +3,13 @@ Exceptions
 
 .. currentmodule:: cryptography.exceptions
 
+
+.. class:: UnsupportedAlgorithm
+
+    Raised when the requested algorithm, or combination of algorithms is not
+    supported.
+
+
 .. class:: AlreadyFinalized
 
     This is raised when a context is used after being finalized.
@@ -25,25 +32,6 @@ Exceptions
     This is raised when additional data is added to a context after update
     has already been called.
 
-.. class:: UnsupportedCipher
-
-    .. versionadded:: 0.3
-
-    This is raised when a backend doesn't support the requested cipher
-    algorithm and mode combination.
-
-.. class:: UnsupportedHash
-
-    .. versionadded:: 0.3
-
-    This is raised when a backend doesn't support the requested hash algorithm.
-
-.. class:: UnsupportedPadding
-
-    .. versionadded:: 0.3
-
-    This is raised when the requested padding is not supported by the backend.
-
 
 .. class:: InvalidKey
 
@@ -55,10 +43,3 @@ Exceptions
 
     This is raised when the verify method of a one time password function's
     computed token does not match the expected token.
-
-.. class:: UnsupportedInterface
-
-    .. versionadded:: 0.3
-
-    This is raised when the provided backend does not support the required
-    interface.

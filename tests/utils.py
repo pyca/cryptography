@@ -14,11 +14,13 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+from contextlib import contextmanager
 
 import pytest
 
 import six
 
+from cryptography.exceptions import UnsupportedAlgorithm
 import cryptography_vectors
 
 
@@ -65,6 +67,14 @@ def check_backend_support(item):
     elif supported:
         raise ValueError("This mark is only available on methods that take a "
                          "backend")
+
+
+@contextmanager
+def raises_unsupported_algorithm(reason):
+    with pytest.raises(UnsupportedAlgorithm) as exc_info:
+        yield exc_info
+
+    assert exc_info.value._reason is reason
 
 
 def load_vectors_from_file(filename, loader):

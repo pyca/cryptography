@@ -17,12 +17,14 @@ import binascii
 
 import pytest
 
-from cryptography.exceptions import UnsupportedInterface
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import ECB
+
+from ...utils import raises_unsupported_algorithm
 
 
 class TestAES(object):
@@ -128,5 +130,5 @@ class TestIDEA(object):
 def test_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         ciphers.Cipher(AES(b"AAAAAAAAAAAAAAAA"), ECB, pretend_backend)
