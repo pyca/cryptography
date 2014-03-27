@@ -1624,7 +1624,7 @@ def test_raises_unsupported_algorithm_wrong_type():
 
 def test_raises_unsupported_algorithm_wrong_reason():
     # Check that it fails if the wrong reason code is raised.
-    with pytest.raises(pytest.fail.Exception):
+    with pytest.raises(AssertionError):
         with raises_unsupported_algorithm(None):
             raise UnsupportedAlgorithm("An error.",
                                        _Reasons.BACKEND_MISSING_INTERFACE)

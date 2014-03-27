@@ -74,8 +74,7 @@ def raises_unsupported_algorithm(reason):
     with pytest.raises(UnsupportedAlgorithm) as exc_info:
         yield exc_info
 
-    if exc_info.value._reason is not reason:
-        pytest.fail("Did not get expected reason tag for UnsupportedAlgorithm")
+    assert exc_info.value._reason is reason
 
 
 def load_vectors_from_file(filename, loader):
