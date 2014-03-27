@@ -16,9 +16,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import (
-    InternalError, UnsupportedCipher, UnsupportedHash
-)
+from cryptography.exceptions import InternalError, UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -78,7 +76,7 @@ class TestOpenSSL(object):
         cipher = Cipher(
             DummyCipher(), mode, backend=b,
         )
-        with pytest.raises(UnsupportedCipher):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
 
     def test_consume_errors(self):
@@ -140,7 +138,7 @@ class TestOpenSSL(object):
     def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
         if backend.pbkdf2_hmac_supported(hashes.SHA256()):
             pytest.skip("Requires an older OpenSSL")
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
     @pytest.mark.skipif(
@@ -153,7 +151,7 @@ class TestOpenSSL(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             private_key.signer(
                 padding.PSS(
                     mgf=padding.MGF1(
@@ -165,7 +163,7 @@ class TestOpenSSL(object):
                 backend
             )
         public_key = private_key.public_key()
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             public_key.verifier(
                 b"sig",
                 padding.PSS(

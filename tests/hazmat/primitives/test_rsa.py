@@ -21,9 +21,9 @@ import os
 
 import pytest
 
-from cryptography import exceptions, utils
+from cryptography import utils
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, UnsupportedInterface
+    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm
 )
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -398,7 +398,7 @@ class TestRSA(object):
 def test_rsa_generate_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with pytest.raises(UnsupportedAlgorithm):
         rsa.RSAPrivateKey.generate(65537, 2048, pretend_backend)
 
 
@@ -594,9 +594,9 @@ class TestRSASignature(object):
         signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
         signer.update(b"sign me")
         signer.finalize()
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             signer.finalize()
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             signer.update(b"more data")
 
     def test_unsupported_padding(self, backend):
@@ -605,7 +605,7 @@ class TestRSASignature(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(exceptions.UnsupportedPadding):
+        with pytest.raises(UnsupportedAlgorithm):
             private_key.signer(DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
@@ -621,7 +621,7 @@ class TestRSASignature(object):
         pretend_backend = object()
         private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
 
-        with pytest.raises(UnsupportedInterface):
+        with pytest.raises(UnsupportedAlgorithm):
             private_key.signer(
                 padding.PKCS1v15(), hashes.SHA256, pretend_backend)
 
@@ -678,7 +678,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"incorrect data")
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             verifier.verify()
 
     def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
@@ -703,7 +703,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"sign me")
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             verifier.verify()
 
     @pytest.mark.parametrize(
@@ -759,7 +759,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"incorrect data")
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             verifier.verify()
 
     def test_invalid_pss_signature_wrong_key(self, backend):
@@ -789,7 +789,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"sign me")
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             verifier.verify()
 
     def test_invalid_pss_signature_data_too_large_for_modulus(self, backend):
@@ -819,7 +819,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"sign me")
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             verifier.verify()
 
     def test_use_after_finalize(self, backend):
@@ -841,9 +841,9 @@ class TestRSAVerification(object):
         )
         verifier.update(b"sign me")
         verifier.verify()
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             verifier.verify()
-        with pytest.raises(exceptions.AlreadyFinalized):
+        with pytest.raises(AlreadyFinalized):
             verifier.update(b"more data")
 
     def test_unsupported_padding(self, backend):
@@ -853,7 +853,7 @@ class TestRSAVerification(object):
             backend=backend
         )
         public_key = private_key.public_key()
-        with pytest.raises(exceptions.UnsupportedPadding):
+        with pytest.raises(UnsupportedAlgorithm):
             public_key.verifier(b"sig", DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
@@ -871,7 +871,7 @@ class TestRSAVerification(object):
         private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
         public_key = private_key.public_key()
 
-        with pytest.raises(UnsupportedInterface):
+        with pytest.raises(UnsupportedAlgorithm):
             public_key.verifier(
                 b"foo", padding.PKCS1v15(), hashes.SHA256(), pretend_backend)
 
@@ -939,7 +939,7 @@ class TestRSAVerification(object):
             backend
         )
         verifier.update(b"sign me")
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             verifier.verify()
 
 

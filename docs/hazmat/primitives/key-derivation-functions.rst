@@ -84,7 +84,7 @@ Different KDFs are suitable for different tasks such as:
         :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
         provider.
 
-    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
 
@@ -187,7 +187,7 @@ Different KDFs are suitable for different tasks such as:
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
         provider.
 
-    :raises cryptography.exceptions.UnsupportedInterface: This is raised if the
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 

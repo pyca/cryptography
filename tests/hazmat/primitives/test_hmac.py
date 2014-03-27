@@ -21,7 +21,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, UnsupportedHash, UnsupportedInterface
+    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes, hmac, interfaces
@@ -106,12 +106,12 @@ class TestHMAC(object):
             h.verify(six.u(''))
 
     def test_unsupported_hash(self, backend):
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             hmac.HMAC(b"key", UnsupportedDummyHash(), backend)
 
 
 def test_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with pytest.raises(UnsupportedAlgorithm):
         hmac.HMAC(b"key", hashes.SHA1(), pretend_backend)

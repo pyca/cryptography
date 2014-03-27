@@ -16,9 +16,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import (
-    UnsupportedAlgorithm, UnsupportedCipher, UnsupportedHash
-)
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
@@ -38,11 +36,11 @@ class DummyCipherBackend(object):
 
     def create_symmetric_encryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
-            raise UnsupportedCipher
+            raise UnsupportedAlgorithm(None)
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
         if not self.cipher_supported(algorithm, mode):
-            raise UnsupportedCipher
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(HashBackend)
@@ -55,7 +53,7 @@ class DummyHashBackend(object):
 
     def create_hash_ctx(self, algorithm):
         if not self.hash_supported(algorithm):
-            raise UnsupportedHash
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(HMACBackend)
@@ -68,7 +66,7 @@ class DummyHMACBackend(object):
 
     def create_hmac_ctx(self, key, algorithm):
         if not self.hmac_supported(algorithm):
-            raise UnsupportedHash
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(PBKDF2HMACBackend)
@@ -82,7 +80,7 @@ class DummyPBKDF2HMACBackend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         if not self.pbkdf2_hmac_supported(algorithm):
-            raise UnsupportedHash
+            raise UnsupportedAlgorithm(None)
 
 
 @utils.register_interface(RSABackend)
@@ -123,9 +121,9 @@ class TestMultiBackend(object):
             modes.CBC(b"\x00" * 16),
             backend=backend
         )
-        with pytest.raises(UnsupportedCipher):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
-        with pytest.raises(UnsupportedCipher):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()
 
     def test_hashes(self):
@@ -136,7 +134,7 @@ class TestMultiBackend(object):
 
         hashes.Hash(hashes.MD5(), backend=backend)
 
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             hashes.Hash(hashes.SHA1(), backend=backend)
 
     def test_hmac(self):
@@ -147,7 +145,7 @@ class TestMultiBackend(object):
 
         hmac.HMAC(b"", hashes.MD5(), backend=backend)
 
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             hmac.HMAC(b"", hashes.SHA1(), backend=backend)
 
     def test_pbkdf2(self):
@@ -158,7 +156,7 @@ class TestMultiBackend(object):
 
         backend.derive_pbkdf2_hmac(hashes.MD5(), 10, b"", 10, b"")
 
-        with pytest.raises(UnsupportedHash):
+        with pytest.raises(UnsupportedAlgorithm):
             backend.derive_pbkdf2_hmac(hashes.SHA1(), 10, b"", 10, b"")
 
     def test_rsa(self):

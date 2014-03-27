@@ -18,7 +18,7 @@ import binascii
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized, UnsupportedCipher
+from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
@@ -114,10 +114,10 @@ class TestCipherContext(object):
         cipher = Cipher(
             DummyCipher(), mode, backend
         )
-        with pytest.raises(UnsupportedCipher):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.encryptor()
 
-        with pytest.raises(UnsupportedCipher):
+        with pytest.raises(UnsupportedAlgorithm):
             cipher.decryptor()
 
     def test_incorrectly_padded(self, backend):
