@@ -319,7 +319,7 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *);
+const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX*);
 """
 
 CUSTOMIZATIONS = """
@@ -423,7 +423,7 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
 
 // Workaround for #794 caused by cffi const** bug.
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *ctx) {
+const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX* ctx) {
     return ctx->method;
 }
 """
