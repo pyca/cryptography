@@ -326,18 +326,18 @@ const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX*);
  * versions some special handling of these is necessary.
  */
 void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
-                                           int (*) (SSL *,
-                                                    const unsigned char **,
-                                                    unsigned int *,
-                                                    void *),
+                                           int (*)(SSL *,
+                                                   const unsigned char **,
+                                                   unsigned int *,
+                                                   void *),
                                            void *);
 void SSL_CTX_set_next_proto_select_cb(SSL_CTX *,
-                                      int (*) (SSL *,
-                                               unsigned char **,
-                                               unsigned char *,
-                                               const unsigned char *,
-                                               unsigned int,
-                                               void *),
+                                      int (*)(SSL *,
+                                              unsigned char **,
+                                              unsigned char *,
+                                              const unsigned char *,
+                                              unsigned int,
+                                              void *),
                                       void *);
 int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int,
