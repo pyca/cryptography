@@ -42,6 +42,7 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_NETBSD_D1_METH;
+static const long Cryptography_HAS_NEXTPROTONEG;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -320,6 +321,29 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
 const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX*);
+
+/* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
+ * versions some special handling of these is necessary.
+ */
+void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
+                                           int (*)(SSL *,
+                                                   const unsigned char **,
+                                                   unsigned int *,
+                                                   void *),
+                                           void *);
+void SSL_CTX_set_next_proto_select_cb(SSL_CTX *,
+                                      int (*)(SSL *,
+                                              unsigned char **,
+                                              unsigned char *,
+                                              const unsigned char *,
+                                              unsigned int,
+                                              void *),
+                                      void *);
+int SSL_select_next_proto(unsigned char **, unsigned char *,
+                          const unsigned char *, unsigned int,
+                          const unsigned char *, unsigned int);
+void SSL_get0_next_proto_negotiated(const SSL *,
+                                    const unsigned char **, unsigned *);
 """
 
 CUSTOMIZATIONS = """
@@ -426,6 +450,37 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX* ctx) {
     return ctx->method;
 }
+
+/* Because OPENSSL defines macros that claim lack of support for things, rather
+ * than macros that claim support for things, we need to do a version check in
+ * addition to a definition check. NPN was added in 1.0.1: for any version
+ * before that, there is no compatibility.
+ */
+#if defined(OPENSSL_NO_NEXTPROTONEG) || OPENSSL_VERSION_NUMBER < 0x1000100fL
+static const long Cryptography_HAS_NEXTPROTONEG = 0;
+void (*SSL_CTX_set_next_protos_advertised_cb)(SSL_CTX *,
+                                              int (*)(SSL *,
+                                                      const unsigned char **,
+                                                      unsigned int *,
+                                                      void *),
+                                              void *) = NULL;
+void (*SSL_CTX_set_next_proto_select_cb)(SSL_CTX *,
+                                         int (*)(SSL *,
+                                                 unsigned char **,
+                                                 unsigned char *,
+                                                 const unsigned char *,
+                                                 unsigned int,
+                                                 void *),
+                                         void *) = NULL;
+int (*SSL_select_next_proto)(unsigned char **, unsigned char *,
+                             const unsigned char *, unsigned int,
+                             const unsigned char *, unsigned int) = NULL;
+void (*SSL_get0_next_proto_negotiated)(const SSL *,
+                                       const unsigned char **,
+                                       unsigned *) = NULL;
+#else
+static const long Cryptography_HAS_NEXTPROTONEG = 1;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -483,4 +538,11 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_NETBSD_D1_METH": [
         "DTLSv1_method",
     ],
+
+    "Cryptography_HAS_NEXTPROTONEG": [
+        "SSL_CTX_set_next_protos_advertised_cb",
+        "SSL_CTX_set_next_proto_select_cb",
+        "SSL_select_next_proto",
+        "SSL_get0_next_proto_negotiated",
+    ]
 }
