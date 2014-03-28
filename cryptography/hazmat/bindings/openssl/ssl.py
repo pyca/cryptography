@@ -42,6 +42,7 @@ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_NETBSD_D1_METH;
+static const long Cryptography_HAS_SSL_EC_API;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -319,6 +320,16 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
+/* SSL EC APIs added in OpenSSL 1.0.2 */
+int SSL_CTX_set1_curves(SSL_CTX *, int *, int);
+int SSL_CTX_set1_curves_list(SSL_CTX *, char *);
+int SSL_CTX_set_ecdh_auto(SSL_CTX *, int);
+int SSL_get1_curves(SSL *, int *);
+int SSL_get_shared_curve(SSL *, int );
+int SSL_set1_curves(SSL *, int *, int);
+int SSL_set1_curves_list(SSL *, char *);
+int SSL_set_ecdh_auto(SSL *, int);
+
 const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX*);
 """
 
@@ -422,6 +433,20 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x10002001L
+static const long Cryptography_HAS_SSL_EC_API = 1;
+#else
+static const long Cryptography_HAS_SSL_EC_API = 0;
+int (*SSL_CTX_set1_curves)(SSL_CTX *, int *, int) = NULL;
+int (*SSL_CTX_set1_curves_list)(SSL_CTX *, char *) = NULL;
+int (*SSL_CTX_set_ecdh_auto)(SSL_CTX *, int) = NULL;
+int (*SSL_get1_curves)(SSL *, int *) = NULL;
+int (*SSL_get_shared_curve)(SSL *, int ) = NULL;
+int (*SSL_set1_curves)(SSL *, int *, int);
+int (*SSL_set1_curves_list)(SSL *, char *);
+int (*SSL_set_ecdh_auto)(SSL *, int);
+#endif
+
 // Workaround for #794 caused by cffi const** bug.
 const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX* ctx) {
     return ctx->method;
@@ -482,5 +507,16 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_NETBSD_D1_METH": [
         "DTLSv1_method",
+    ],
+
+    "Cryptography_HAS_SSL_EC_API": [
+        "SSL_CTX_set1_curves",
+        "SSL_CTX_set1_curves_list",
+        "SSL_CTX_set_ecdh_auto",
+        "SSL_get1_curves",
+        "SSL_get_shared_curve",
+        "SSL_set1_curves",
+        "SSL_set1_curves_list",
+        "SSL_set_ecdh_auto",
     ],
 }
