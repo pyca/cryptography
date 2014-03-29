@@ -32,7 +32,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    MGF1, PKCS1v15, PSS
+    MGF1, OAEP, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
@@ -472,6 +472,79 @@ class Backend(object):
             x=self._bn_to_int(ctx.priv_key),
             y=self._bn_to_int(ctx.pub_key)
         )
+
+    def rsa_decrypt(self, private_key, ciphertext, padding):
+        if isinstance(padding, PKCS1v15):
+            padding_enum = self._lib.RSA_PKCS1_PADDING
+        elif isinstance(padding, OAEP):
+            padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
+            if not isinstance(padding._mgf, MGF1):
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend"
+                )
+
+            if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend only supports SHA1 inside MGF1 when "
+                    "using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+        else:
+            raise UnsupportedAlgorithm(
+                "{0} is not supported by this backend".format(
+                    padding.name
+                ),
+                _Reasons.UNSUPPORTED_PADDING
+            )
+
+        if self._lib.Cryptography_HAS_PKEY_CTX:
+            evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
+            pkey_ctx = self._lib.EVP_PKEY_CTX_new(
+                evp_pkey, self._ffi.NULL
+            )
+            assert pkey_ctx != self._ffi.NULL
+            res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
+            assert res == 1
+            res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
+                pkey_ctx, padding_enum)
+            assert res > 0
+            buf_size = self._lib.EVP_PKEY_size(evp_pkey)
+            assert buf_size > 0
+            outlen = self._ffi.new("size_t *", buf_size)
+            buf = self._ffi.new("char[]", buf_size)
+            res = self._lib.Cryptography_EVP_PKEY_decrypt(
+                pkey_ctx,
+                buf,
+                outlen,
+                ciphertext,
+                len(ciphertext)
+            )
+            assert res >= 0
+            if res == 0:
+                errors = self._consume_errors()
+                assert errors
+                raise SystemError  # TODO
+
+            return self._ffi.buffer(buf)[:outlen[0]]
+        else:
+            rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+            key_size = self._lib.RSA_size(rsa_cdata)
+            assert key_size > 0
+            buf = self._ffi.new("unsigned char[]", key_size)
+            res = self._lib.RSA_private_decrypt(
+                len(ciphertext),
+                ciphertext,
+                buf,
+                rsa_cdata,
+                padding_enum
+            )
+            if res < 0:
+                errors = self._consume_errors()
+                assert errors
+                raise SystemError  # TODO
+
+            return self._ffi.buffer(buf)[:res]
 
 
 class GetCipherByName(object):

@@ -1225,3 +1225,66 @@ class TestMGF1(object):
         mgf = padding.MGF1(algorithm, padding.MGF1.MAX_LENGTH)
         assert mgf._algorithm == algorithm
         assert mgf._salt_length == padding.MGF1.MAX_LENGTH
+
+
+@pytest.mark.rsa
+class TestRSADecryption(object):
+    @pytest.mark.parametrize(
+        "vector",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "oaep-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_decrypt_oaep_vectors(self, vector, backend):
+        private, public, example = vector
+        skey = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        message = backend.rsa_decrypt(
+            skey,
+            binascii.unhexlify(example["encryption"]),
+            # TODO: handle MGF1 here
+            padding.OAEP(
+                padding.MGF1(
+                    algorithm=hashes.SHA1(),
+                    salt_length=padding.MGF1.MAX_LENGTH
+                )
+            )
+        )
+        assert message == binascii.unhexlify(example["message"])
+
+    @pytest.mark.parametrize(
+        "vector",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_decrypt_pkcs1v15_vectors(self, vector, backend):
+        private, public, example = vector
+        skey = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        message = backend.rsa_decrypt(
+            skey,
+            binascii.unhexlify(example["encryption"]),
+            padding.PKCS1v15()
+        )
+        assert message == binascii.unhexlify(example["message"])
