@@ -141,6 +141,12 @@ int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
 int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
 int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
                     const unsigned char *, size_t);
+int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
+int EVP_PKEY_encrypt(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                     const unsigned char *, size_t);
+int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
+int EVP_PKEY_decrypt(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                     const unsigned char *, size_t);
 
 /* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
    we should move these back to FUNCTIONS. */
@@ -179,6 +185,12 @@ EVP_PKEY_CTX *(*EVP_PKEY_CTX_new)(EVP_PKEY *, ENGINE *) = NULL;
 EVP_PKEY_CTX *(*EVP_PKEY_CTX_new_id)(int, ENGINE *) = NULL;
 EVP_PKEY_CTX *(*EVP_PKEY_CTX_dup)(EVP_PKEY_CTX *) = NULL;
 void (*EVP_PKEY_CTX_free)(EVP_PKEY_CTX *) = NULL;
+int (*EVP_PKEY_encrypt_init)(EVP_PKEY_CTX *) = NULL;
+int (*EVP_PKEY_encrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                        const unsigned char *, size_t) = NULL;
+int (*EVP_PKEY_decrypt_init)(EVP_PKEY_CTX *) = NULL;
+int (*EVP_PKEY_decrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                        const unsigned char *, size_t) = NULL;
 #endif
 """
 
@@ -200,6 +212,10 @@ CONDITIONAL_NAMES = {
         "EVP_PKEY_sign_init",
         "EVP_PKEY_verify",
         "EVP_PKEY_verify_init",
+        "EVP_PKEY_encrypt",
+        "EVP_PKEY_encrypt_init",
+        "EVP_PKEY_decrypt",
+        "EVP_PKEY_decrypt_init",
         "EVP_PKEY_CTX_set_signature_md",
     ]
 }
