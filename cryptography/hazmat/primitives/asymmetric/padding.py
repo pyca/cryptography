@@ -54,6 +54,14 @@ class PSS(object):
         self._salt_length = salt_length
 
 
+@utils.register_interface(interfaces.AsymmetricPadding)
+class OAEP(object):
+    name = "EME-OAEP"
+
+    def __init__(self, mgf):
+        self._mgf = mgf
+
+
 class MGF1(object):
     MAX_LENGTH = object()
 
