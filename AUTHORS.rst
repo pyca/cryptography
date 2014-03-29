@@ -8,7 +8,7 @@ PGP key fingerprints are enclosed in parentheses.
 * Donald Stufft <donald@stufft.io>
 * Laurens Van Houtven <_@lvh.io> (D9DC 4315 772F 8E91 DD22 B153 DFD1 3DF7 A8DD 569B)
 * Christian Heimes <christian@python.org>
-* Paul Kehrer <paul.l.kehrer@gmail.com>
+* Paul Kehrer <paul.l.kehrer@gmail.com> (05FD 9FA1 6CF7 5735 0D91 A560 235A E5F1 29F9 ED98)
 * Jarret Raim <jarito@gmail.com>
 * Alex Stapleton <alexs@prol.etari.at> (A1C7 E50B 66DE 39ED C847 9665 8E3C 20D1 9BD9 5C4C)
 * David Reid <dreid@dreid.org> (0F83 CC87 B32F 482B C726  B58A 9FBF D8F4 DA89 6D74)

@@ -17,7 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidKey, UnsupportedInterface
+    AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac, interfaces
@@ -27,8 +27,10 @@ from cryptography.hazmat.primitives import constant_time, hmac, interfaces
 class HKDF(object):
     def __init__(self, algorithm, length, salt, info, backend):
         if not isinstance(backend, HMACBackend):
-            raise UnsupportedInterface(
-                "Backend object does not implement HMACBackend")
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement HMACBackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         self._algorithm = algorithm
 

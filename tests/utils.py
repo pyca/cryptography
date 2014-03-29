@@ -14,11 +14,14 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
-import os
+from contextlib import contextmanager
 
 import pytest
 
 import six
+
+from cryptography.exceptions import UnsupportedAlgorithm
+import cryptography_vectors
 
 
 HashVector = collections.namedtuple("HashVector", ["message", "digest"])
@@ -66,11 +69,16 @@ def check_backend_support(item):
                          "backend")
 
 
+@contextmanager
+def raises_unsupported_algorithm(reason):
+    with pytest.raises(UnsupportedAlgorithm) as exc_info:
+        yield exc_info
+
+    assert exc_info.value._reason is reason
+
+
 def load_vectors_from_file(filename, loader):
-    base = os.path.join(
-        os.path.dirname(__file__), "hazmat", "primitives", "vectors",
-    )
-    with open(os.path.join(base, filename), "r") as vector_file:
+    with cryptography_vectors.open_vector_file(filename) as vector_file:
         return loader(vector_file)
 
 

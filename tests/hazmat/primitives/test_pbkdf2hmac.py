@@ -18,11 +18,13 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidKey, UnsupportedHash, UnsupportedInterface
+    AlreadyFinalized, InvalidKey, _Reasons
 )
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from ...utils import raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.HashAlgorithm)
@@ -48,7 +50,7 @@ class TestPBKDF2HMAC(object):
             kdf.verify(b"password", key)
 
     def test_unsupported_algorithm(self):
-        with pytest.raises(UnsupportedHash):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             PBKDF2HMAC(DummyHash(), 20, b"salt", 10, default_backend())
 
     def test_invalid_key(self):
@@ -72,5 +74,5 @@ class TestPBKDF2HMAC(object):
 def test_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, pretend_backend)

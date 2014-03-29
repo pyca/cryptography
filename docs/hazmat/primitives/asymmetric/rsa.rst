@@ -50,7 +50,7 @@ RSA
             provider.
         :return: A new instance of ``RSAPrivateKey``.
 
-        :raises cryptography.exceptions.UnsupportedInterface: This is raised if
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
             the provided ``backend`` does not implement
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
@@ -100,9 +100,16 @@ RSA
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
-        :raises cryptography.exceptions.UnsupportedInterface: This is raised if
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
             the provided ``backend`` does not implement
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or if
+            the backend does not support the chosen hash or padding algorithm.
+            If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+            with the
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+            mask generation function it may also refer to the ``MGF1`` hash
+            algorithm.
 
         :raises TypeError: This is raised when the padding is not an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
@@ -110,17 +117,6 @@ RSA
 
         :raises ValueError: This is raised when the chosen hash algorithm is
             too large for the key size.
-
-        :raises UnsupportedHash: This is raised when the backend does not
-            support the chosen hash algorithm. If the padding is
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
-            with the
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
-            mask generation function it may also refer to the `MGF1` hash
-            algorithm.
-
-        :raises UnsupportedPadding: This is raised when the backend does not
-            support the chosen padding.
 
 
 .. class:: RSAPublicKey(public_exponent, modulus)
@@ -205,9 +201,16 @@ RSA
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
-        :raises cryptography.exceptions.UnsupportedInterface: This is raised if
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
             the provided ``backend`` does not implement
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or if
+            the backend does not support the chosen hash or padding algorithm.
+            If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+            with the
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+            mask generation function it may also refer to the ``MGF1`` hash
+            algorithm.
 
         :raises TypeError: This is raised when the padding is not an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
@@ -216,16 +219,6 @@ RSA
         :raises ValueError: This is raised when the chosen hash algorithm is
             too large for the key size.
 
-        :raises UnsupportedHash: This is raised when the backend does not
-            support the chosen hash algorithm. If the padding is
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
-            with the
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
-            mask generation function it may also refer to the `MGF1` hash
-            algorithm.
-
-        :raises UnsupportedPadding: This is raised when the backend does not
-            support the chosen padding.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography

@@ -17,7 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, UnsupportedInterface
+    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces
@@ -27,8 +27,10 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 class HMAC(object):
     def __init__(self, key, algorithm, backend, ctx=None):
         if not isinstance(backend, HMACBackend):
-            raise UnsupportedInterface(
-                "Backend object does not implement HMACBackend")
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement HMACBackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")

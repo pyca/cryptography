@@ -21,12 +21,13 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, UnsupportedHash, UnsupportedInterface
+    AlreadyFinalized, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 
 from .utils import generate_base_hash_test
+from ...utils import raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.HashAlgorithm)
@@ -72,7 +73,7 @@ class TestHashContext(object):
             h.finalize()
 
     def test_unsupported_hash(self, backend):
-        with pytest.raises(UnsupportedHash):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             hashes.Hash(UnsupportedDummyHash(), backend)
 
 
@@ -183,5 +184,5 @@ class TestMD5(object):
 def test_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         hashes.Hash(hashes.SHA1(), pretend_backend)

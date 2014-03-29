@@ -10,22 +10,32 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import absolute_import, division, print_function
 
-__all__ = [
-    "__title__", "__summary__", "__uri__", "__version__", "__author__",
-    "__email__", "__license__", "__copyright__",
-]
+import os
 
-__title__ = "cryptography"
-__summary__ = ("cryptography is a package which provides cryptographic recipes"
-               " and primitives to Python developers.")
-__uri__ = "https://github.com/pyca/cryptography"
+from setuptools import setup, find_packages
 
-__version__ = "0.4.dev1"
 
-__author__ = "The cryptography developers"
-__email__ = "cryptography-dev@python.org"
+base_dir = os.path.dirname(__file__)
 
-__license__ = "Apache License, Version 2.0"
-__copyright__ = "Copyright 2013-2014 %s" % __author__
+about = {}
+with open(os.path.join(base_dir, "cryptography_vectors", "__about__.py")) as f:
+    exec(f.read(), about)
+
+
+setup(
+    name=about["__title__"],
+    version=about["__version__"],
+
+    description=about["__summary__"],
+    license=about["__license__"],
+    url=about["__uri__"],
+    author=about["__author__"],
+    author_email=about["__email__"],
+
+    packages=find_packages(),
+    zip_safe=False,
+    include_package_data=True
+)

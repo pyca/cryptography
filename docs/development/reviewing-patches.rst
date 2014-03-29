@@ -1,8 +1,11 @@
-Reviewing/merging patches
-=========================
+Reviewing and merging patches
+=============================
 
-Everyone is encouraged to review open pull requests. When reviewing a patch try
-to keep each of these concepts in mind:
+Everyone is encouraged to review open pull requests. We only ask that you try
+and think carefully, ask questions and are `excellent to one another`_. Code
+review is our opportunity to share knowledge, design ideas and make friends.
+
+When reviewing a patch try to keep each of these concepts in mind:
 
 Architecture
 ------------
@@ -24,8 +27,8 @@ Implementation
 * Has it been documented?
 * Will this change introduce new bugs?
 
-Grammar/Style
--------------
+Grammar and style
+-----------------
 
 These are small things that are not caught by the automated style checkers.
 
@@ -54,3 +57,4 @@ devastating, ``cryptography`` has a strict merge policy for committers:
 The purpose of these policies is to minimize the chances we merge a change
 that jeopardizes our users' security.
 
+.. _`excellent to one another`: https://speakerdeck.com/ohrite/better-code-review

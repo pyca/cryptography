@@ -22,15 +22,14 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
-from cryptography.exceptions import (
-    UnsupportedAlgorithm, UnsupportedInterface
-)
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from .utils import generate_rsa_verification_test
 from ...utils import (
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
 )
 
 
@@ -398,7 +397,7 @@ class TestRSA(object):
 def test_rsa_generate_invalid_backend():
     pretend_backend = object()
 
-    with pytest.raises(UnsupportedInterface):
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         rsa.RSAPrivateKey.generate(65537, 2048, pretend_backend)
 
 
@@ -605,7 +604,7 @@ class TestRSASignature(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(exceptions.UnsupportedPadding):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.signer(DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
@@ -621,7 +620,7 @@ class TestRSASignature(object):
         pretend_backend = object()
         private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
 
-        with pytest.raises(UnsupportedInterface):
+        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
             private_key.signer(
                 padding.PKCS1v15(), hashes.SHA256, pretend_backend)
 
@@ -853,7 +852,7 @@ class TestRSAVerification(object):
             backend=backend
         )
         public_key = private_key.public_key()
-        with pytest.raises(exceptions.UnsupportedPadding):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.verifier(b"sig", DummyPadding(), hashes.SHA1(), backend)
 
     def test_padding_incorrect_type(self, backend):
@@ -871,7 +870,7 @@ class TestRSAVerification(object):
         private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
         public_key = private_key.public_key()
 
-        with pytest.raises(UnsupportedInterface):
+        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
             public_key.verifier(
                 b"foo", padding.PKCS1v15(), hashes.SHA256(), pretend_backend)
 

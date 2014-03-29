@@ -17,7 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidKey, UnsupportedHash, UnsupportedInterface
+    AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces
@@ -27,13 +27,16 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
         if not isinstance(backend, PBKDF2HMACBackend):
-            raise UnsupportedInterface(
-                "Backend object does not implement PBKDF2HMACBackend")
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement PBKDF2HMACBackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
 
         if not backend.pbkdf2_hmac_supported(algorithm):
-            raise UnsupportedHash(
+            raise UnsupportedAlgorithm(
                 "{0} is not supported for PBKDF2 by this backend".format(
-                    algorithm.name)
+                    algorithm.name),
+                _Reasons.UNSUPPORTED_HASH
             )
         self._used = False
         self._algorithm = algorithm
