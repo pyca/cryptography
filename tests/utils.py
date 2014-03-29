@@ -199,7 +199,8 @@ def load_pkcs1_vectors(vector_data):
     for line in vector_data:
         if (
             line.startswith("# PSS Example") or
-            line.startswith("# PKCS#1 v1.5 Signature")
+            line.startswith("# OAEP Example") or
+            line.startswith("# PKCS#1 v1.5")
         ):
             if example_vector:
                 for key, value in six.iteritems(example_vector):
@@ -210,14 +211,20 @@ def load_pkcs1_vectors(vector_data):
             attr = None
             example_vector = collections.defaultdict(list)
 
-        if line.startswith("# Message to be signed"):
+        if line.startswith("# Message"):
             attr = "message"
             continue
         elif line.startswith("# Salt"):
             attr = "salt"
             continue
+        elif line.startswith("# Seed"):
+            attr = "seed"
+            continue
         elif line.startswith("# Signature"):
             attr = "signature"
+            continue
+        elif line.startswith("# Encryption"):
+            attr = "encryption"
             continue
         elif (
             example_vector and

@@ -931,6 +931,220 @@ def test_load_pkcs1_vectors():
     assert vectors == expected
 
 
+def test_load_pkcs1_oaep_vectors():
+    vector_data = textwrap.dedent("""
+    Test vectors for RSA-OAEP
+    =========================
+
+    This file contains test vectors for the RSA-OAEP encryption
+
+    Key lengths:
+
+    Key  1: 1024 bits
+    # <snip>
+    ===========================================================================
+    # Example 1: A 1024-bit RSA key pair
+    # -----------------------------------
+
+
+    # Public key
+    # ----------
+
+    # Modulus:
+    a8 b3 b2 84 af 8e b5 0b 38 70 34 a8 60 f1 46 c4
+    91 9f 31 87 63 cd 6c 55 98 c8 ae 48 11 a1 e0 ab
+    c4 c7 e0 b0 82 d6 93 a5 e7 fc ed 67 5c f4 66 85
+    12 77 2c 0c bc 64 a7 42 c6 c6 30 f5 33 c8 cc 72
+    f6 2a e8 33 c4 0b f2 58 42 e9 84 bb 78 bd bf 97
+    c0 10 7d 55 bd b6 62 f5 c4 e0 fa b9 84 5c b5 14
+    8e f7 39 2d d3 aa ff 93 ae 1e 6b 66 7b b3 d4 24
+    76 16 d4 f5 ba 10 d4 cf d2 26 de 88 d3 9f 16 fb
+
+    # Exponent:
+    01 00 01
+
+    # Private key
+    # -----------
+
+    # Modulus:
+    a8 b3 b2 84 af 8e b5 0b 38 70 34 a8 60 f1 46 c4
+    91 9f 31 87 63 cd 6c 55 98 c8 ae 48 11 a1 e0 ab
+    c4 c7 e0 b0 82 d6 93 a5 e7 fc ed 67 5c f4 66 85
+    12 77 2c 0c bc 64 a7 42 c6 c6 30 f5 33 c8 cc 72
+    f6 2a e8 33 c4 0b f2 58 42 e9 84 bb 78 bd bf 97
+    c0 10 7d 55 bd b6 62 f5 c4 e0 fa b9 84 5c b5 14
+    8e f7 39 2d d3 aa ff 93 ae 1e 6b 66 7b b3 d4 24
+    76 16 d4 f5 ba 10 d4 cf d2 26 de 88 d3 9f 16 fb
+
+    # Public exponent:
+    01 00 01
+
+    # Exponent:
+    53 33 9c fd b7 9f c8 46 6a 65 5c 73 16 ac a8 5c
+    55 fd 8f 6d d8 98 fd af 11 95 17 ef 4f 52 e8 fd
+    8e 25 8d f9 3f ee 18 0f a0 e4 ab 29 69 3c d8 3b
+    15 2a 55 3d 4a c4 d1 81 2b 8b 9f a5 af 0e 7f 55
+    fe 73 04 df 41 57 09 26 f3 31 1f 15 c4 d6 5a 73
+    2c 48 31 16 ee 3d 3d 2d 0a f3 54 9a d9 bf 7c bf
+    b7 8a d8 84 f8 4d 5b eb 04 72 4d c7 36 9b 31 de
+    f3 7d 0c f5 39 e9 cf cd d3 de 65 37 29 ea d5 d1
+
+    # Prime 1:
+    d3 27 37 e7 26 7f fe 13 41 b2 d5 c0 d1 50 a8 1b
+    58 6f b3 13 2b ed 2f 8d 52 62 86 4a 9c b9 f3 0a
+    f3 8b e4 48 59 8d 41 3a 17 2e fb 80 2c 21 ac f1
+    c1 1c 52 0c 2f 26 a4 71 dc ad 21 2e ac 7c a3 9d
+
+    # Prime 2:
+    cc 88 53 d1 d5 4d a6 30 fa c0 04 f4 71 f2 81 c7
+    b8 98 2d 82 24 a4 90 ed be b3 3d 3e 3d 5c c9 3c
+    47 65 70 3d 1d d7 91 64 2f 1f 11 6a 0d d8 52 be
+    24 19 b2 af 72 bf e9 a0 30 e8 60 b0 28 8b 5d 77
+
+    # Prime exponent 1:
+    0e 12 bf 17 18 e9 ce f5 59 9b a1 c3 88 2f e8 04
+    6a 90 87 4e ef ce 8f 2c cc 20 e4 f2 74 1f b0 a3
+    3a 38 48 ae c9 c9 30 5f be cb d2 d7 68 19 96 7d
+    46 71 ac c6 43 1e 40 37 96 8d b3 78 78 e6 95 c1
+
+    # Prime exponent 2:
+    95 29 7b 0f 95 a2 fa 67 d0 07 07 d6 09 df d4 fc
+    05 c8 9d af c2 ef 6d 6e a5 5b ec 77 1e a3 33 73
+    4d 92 51 e7 90 82 ec da 86 6e fe f1 3c 45 9e 1a
+    63 13 86 b7 e3 54 c8 99 f5 f1 12 ca 85 d7 15 83
+
+    # Coefficient:
+    4f 45 6c 50 24 93 bd c0 ed 2a b7 56 a3 a6 ed 4d
+    67 35 2a 69 7d 42 16 e9 32 12 b1 27 a6 3d 54 11
+    ce 6f a9 8d 5d be fd 73 26 3e 37 28 14 27 43 81
+    81 66 ed 7d d6 36 87 dd 2a 8c a1 d2 f4 fb d8 e1
+
+    # RSA-OAEP encryption of 6 random messages with random seeds
+    # -----------------------------------------------------------
+
+    # OAEP Example 1.1
+    # ------------------
+
+    # Message:
+    66 28 19 4e 12 07 3d b0 3b a9 4c da 9e f9 53 23
+    97 d5 0d ba 79 b9 87 00 4a fe fe 34
+
+    # Seed:
+    18 b7 76 ea 21 06 9d 69 77 6a 33 e9 6b ad 48 e1
+    dd a0 a5 ef
+
+    # Encryption:
+    35 4f e6 7b 4a 12 6d 5d 35 fe 36 c7 77 79 1a 3f
+    7b a1 3d ef 48 4e 2d 39 08 af f7 22 fa d4 68 fb
+    21 69 6d e9 5d 0b e9 11 c2 d3 17 4f 8a fc c2 01
+    03 5f 7b 6d 8e 69 40 2d e5 45 16 18 c2 1a 53 5f
+    a9 d7 bf c5 b8 dd 9f c2 43 f8 cf 92 7d b3 13 22
+    d6 e8 81 ea a9 1a 99 61 70 e6 57 a0 5a 26 64 26
+    d9 8c 88 00 3f 84 77 c1 22 70 94 a0 d9 fa 1e 8c
+    40 24 30 9c e1 ec cc b5 21 00 35 d4 7a c7 2e 8a
+
+    # OAEP Example 1.2
+    # ------------------
+
+    # Message:
+    75 0c 40 47 f5 47 e8 e4 14 11 85 65 23 29 8a c9
+    ba e2 45 ef af 13 97 fb e5 6f 9d d5
+
+    # Seed:
+    0c c7 42 ce 4a 9b 7f 32 f9 51 bc b2 51 ef d9 25
+    fe 4f e3 5f
+
+    # Encryption:
+    64 0d b1 ac c5 8e 05 68 fe 54 07 e5 f9 b7 01 df
+    f8 c3 c9 1e 71 6c 53 6f c7 fc ec 6c b5 b7 1c 11
+    65 98 8d 4a 27 9e 15 77 d7 30 fc 7a 29 93 2e 3f
+    00 c8 15 15 23 6d 8d 8e 31 01 7a 7a 09 df 43 52
+    d9 04 cd eb 79 aa 58 3a dc c3 1e a6 98 a4 c0 52
+    83 da ba 90 89 be 54 91 f6 7c 1a 4e e4 8d c7 4b
+    bb e6 64 3a ef 84 66 79 b4 cb 39 5a 35 2d 5e d1
+    15 91 2d f6 96 ff e0 70 29 32 94 6d 71 49 2b 44
+
+    # =============================================
+    """).splitlines()
+
+    vectors = load_pkcs1_vectors(vector_data)
+    expected = [
+        (
+            {
+                'modulus': int(
+                    'a8b3b284af8eb50b387034a860f146c4919f318763cd6c5598c8ae481'
+                    '1a1e0abc4c7e0b082d693a5e7fced675cf4668512772c0cbc64a742c6'
+                    'c630f533c8cc72f62ae833c40bf25842e984bb78bdbf97c0107d55bdb'
+                    '662f5c4e0fab9845cb5148ef7392dd3aaff93ae1e6b667bb3d4247616'
+                    'd4f5ba10d4cfd226de88d39f16fb', 16),
+                'public_exponent': int('10001', 16),
+                'private_exponent': int(
+                    '53339cfdb79fc8466a655c7316aca85c55fd8f6dd898fdaf119517ef4'
+                    'f52e8fd8e258df93fee180fa0e4ab29693cd83b152a553d4ac4d1812b'
+                    '8b9fa5af0e7f55fe7304df41570926f3311f15c4d65a732c483116ee3'
+                    'd3d2d0af3549ad9bf7cbfb78ad884f84d5beb04724dc7369b31def37d'
+                    '0cf539e9cfcdd3de653729ead5d1', 16),
+                'p': int(
+                    'd32737e7267ffe1341b2d5c0d150a81b586fb3132bed2f8d5262864a9'
+                    'cb9f30af38be448598d413a172efb802c21acf1c11c520c2f26a471dc'
+                    'ad212eac7ca39d', 16),
+                'q': int(
+                    'cc8853d1d54da630fac004f471f281c7b8982d8224a490edbeb33d3e3'
+                    'd5cc93c4765703d1dd791642f1f116a0dd852be2419b2af72bfe9a030'
+                    'e860b0288b5d77', 16),
+                'dmp1': int(
+                    '0e12bf1718e9cef5599ba1c3882fe8046a90874eefce8f2ccc20e4f27'
+                    '41fb0a33a3848aec9c9305fbecbd2d76819967d4671acc6431e403796'
+                    '8db37878e695c1', 16),
+                'dmq1': int(
+                    '95297b0f95a2fa67d00707d609dfd4fc05c89dafc2ef6d6ea55bec771'
+                    'ea333734d9251e79082ecda866efef13c459e1a631386b7e354c899f5'
+                    'f112ca85d71583', 16),
+                'iqmp': int(
+                    '4f456c502493bdc0ed2ab756a3a6ed4d67352a697d4216e93212b127a'
+                    '63d5411ce6fa98d5dbefd73263e3728142743818166ed7dd63687dd2a'
+                    '8ca1d2f4fbd8e1', 16),
+                'examples': [
+                    {
+                        'message': b'6628194e12073db03ba94cda9ef9532397d50dba7'
+                                   b'9b987004afefe34',
+                        'seed': b'18b776ea21069d69776a33e96bad48e1dda0a5ef',
+                        'encryption': b'354fe67b4a126d5d35fe36c777791a3f7ba13d'
+                                      b'ef484e2d3908aff722fad468fb21696de95d0b'
+                                      b'e911c2d3174f8afcc201035f7b6d8e69402de5'
+                                      b'451618c21a535fa9d7bfc5b8dd9fc243f8cf92'
+                                      b'7db31322d6e881eaa91a996170e657a05a2664'
+                                      b'26d98c88003f8477c1227094a0d9fa1e8c4024'
+                                      b'309ce1ecccb5210035d47ac72e8a'
+                    }, {
+                        'message': b'750c4047f547e8e41411856523298ac9bae245efa'
+                                   b'f1397fbe56f9dd5',
+                        'seed': b'0cc742ce4a9b7f32f951bcb251efd925fe4fe35f',
+                        'encryption': b'640db1acc58e0568fe5407e5f9b701dff8c3c9'
+                                      b'1e716c536fc7fcec6cb5b71c1165988d4a279e'
+                                      b'1577d730fc7a29932e3f00c81515236d8d8e31'
+                                      b'017a7a09df4352d904cdeb79aa583adcc31ea6'
+                                      b'98a4c05283daba9089be5491f67c1a4ee48dc7'
+                                      b'4bbbe6643aef846679b4cb395a352d5ed11591'
+                                      b'2df696ffe0702932946d71492b44'
+                    }
+                ]
+            },
+
+            {
+                'modulus': int(
+                    'a8b3b284af8eb50b387034a860f146c4919f318763cd6c5598c8ae481'
+                    '1a1e0abc4c7e0b082d693a5e7fced675cf4668512772c0cbc64a742c6'
+                    'c630f533c8cc72f62ae833c40bf25842e984bb78bdbf97c0107d55bdb'
+                    '662f5c4e0fab9845cb5148ef7392dd3aaff93ae1e6b667bb3d4247616'
+                    'd4f5ba10d4cfd226de88d39f16fb', 16),
+                'public_exponent': int('10001', 16),
+            }
+        )
+    ]
+    assert vectors == expected
+
+
 def test_load_hotp_vectors():
     vector_data = textwrap.dedent("""
     # HOTP Test Vectors
