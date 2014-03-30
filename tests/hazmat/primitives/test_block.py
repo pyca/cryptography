@@ -158,6 +158,7 @@ class TestAEADCipherContext(object):
     )
 
 
+@pytest.mark.cipher
 class TestModeValidation(object):
     def test_cbc(self, backend):
         with pytest.raises(ValueError):
