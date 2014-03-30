@@ -127,6 +127,10 @@ class TestDSA(object):
         with pytest.raises(TypeError):
             dsa.DSAParameters(None, None, None)
 
+    def test_invalid_public_key_argument_types(self):
+        with pytest.raises(TypeError):
+            dsa.DSAPublicKey(None, None, None, None)
+
     def test_load_dsa_example_keys(self):
         parameters = dsa.DSAParameters(
             modulus=int(self._parameters_1024['p'], 16),
@@ -140,6 +144,21 @@ class TestDSA(object):
         assert parameters.modulus == parameters.p
         assert parameters.subgroup_order == parameters.q
         assert parameters.generator == parameters.g
+
+        pkey = dsa.DSAPublicKey(
+            modulus=int(self._parameters_1024["p"], 16),
+            subgroup_order=int(self._parameters_1024["q"], 16),
+            generator=int(self._parameters_1024["g"], 16),
+            y=int(self._parameters_1024["y"], 16)
+        )
+        assert pkey
+        assert pkey.key_size
+        assert pkey.y
+        pkey_parameters = pkey.parameters()
+        assert pkey_parameters
+        assert pkey_parameters.modulus
+        assert pkey_parameters.subgroup_order
+        assert pkey_parameters.generator
 
     def test_invalid_parameters_values(self):
         # Test a modulus < 1024 bits in length
@@ -244,4 +263,131 @@ class TestDSA(object):
                 modulus=int(self._parameters_1024['p'], 16),
                 subgroup_order=int(self._parameters_1024['q'], 16),
                 generator=2 ** 1200
+            )
+
+    def test_invalid_dsa_public_key_arguments(self):
+        # Test a modulus < 1024 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=2 ** 1000,
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=int(self._parameters_1024['g'], 16),
+                y=int(self._parameters_1024['y'], 16)
+            )
+
+        # Test a modulus < 2048 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=2 ** 2000,
+                subgroup_order=int(self._parameters_2048['q'], 16),
+                generator=int(self._parameters_2048['g'], 16),
+                y=int(self._parameters_2048['y'], 16)
+            )
+
+        # Test a modulus < 3072 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=2 ** 3000,
+                subgroup_order=int(self._parameters_3072['q'], 16),
+                generator=int(self._parameters_3072['g'], 16),
+                y=int(self._parameters_3072['y'], 16)
+            )
+
+        # Test a modulus > 3072 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=2 ** 3100,
+                subgroup_order=int(self._parameters_3072['q'], 16),
+                generator=int(self._parameters_3072['g'], 16),
+                y=int(self._parameters_3072['y'], 16)
+            )
+
+        # Test a subgroup_order < 160 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_1024['p'], 16),
+                subgroup_order=2 ** 150,
+                generator=int(self._parameters_1024['g'], 16),
+                y=int(self._parameters_1024['y'], 16)
+            )
+
+        # Test a subgroup_order < 256 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_2048['p'], 16),
+                subgroup_order=2 ** 250,
+                generator=int(self._parameters_2048['g'], 16),
+                y=int(self._parameters_2048['y'], 16)
+            )
+
+        # Test a subgroup_order > 256 bits in length
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_3072['p'], 16),
+                subgroup_order=2 ** 260,
+                generator=int(self._parameters_3072['g'], 16),
+                y=int(self._parameters_3072['y'], 16)
+            )
+
+        # Test a modulus, subgroup_order pair of (1024, 256) bit lengths
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_1024['p'], 16),
+                subgroup_order=int(self._parameters_2048['q'], 16),
+                generator=int(self._parameters_1024['g'], 16),
+                y=int(self._parameters_1024['y'], 16)
+            )
+
+        # Test a modulus, subgroup_order pair of (2048, 160) bit lengths
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_2048['p'], 16),
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=int(self._parameters_2048['g'], 16),
+                y=int(self._parameters_2048['y'], 16)
+            )
+
+        # Test a modulus, subgroup_order pair of (3072, 160) bit lengths
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_3072['p'], 16),
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=int(self._parameters_3072['g'], 16),
+                y=int(self._parameters_3072['y'], 16)
+            )
+
+        # Test a generator < 1
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_1024['p'], 16),
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=0,
+                y=int(self._parameters_1024['y'], 16)
+            )
+
+        # Test a generator = 1
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_1024['p'], 16),
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=1,
+                y=int(self._parameters_1024['y'], 16)
+            )
+
+        # Test a generator > modulus
+        with pytest.raises(ValueError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_1024['p'], 16),
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=2 ** 1200,
+                y=int(self._parameters_1024['y'], 16)
+            )
+
+        # Test a non-integer y value
+        with pytest.raises(TypeError):
+            dsa.DSAPublicKey(
+                modulus=int(self._parameters_1024['p'], 16),
+                subgroup_order=int(self._parameters_1024['q'], 16),
+                generator=int(self._parameters_1024['g'], 16),
+                y=None
             )
