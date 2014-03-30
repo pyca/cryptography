@@ -72,3 +72,28 @@ class DSAParameters(object):
     @property
     def g(self):
         return self.generator
+
+
+@utils.register_interface(interfaces.DSAPublicKey)
+class DSAPublicKey(object):
+    def __init__(self, modulus, subgroup_order, generator, y):
+        _check_dsa_parameters(modulus, subgroup_order, generator)
+        if not isinstance(y, six.integer_types):
+            raise TypeError("y must be an integer")
+
+        self._modulus = modulus
+        self._subgroup_order = subgroup_order
+        self._generator = generator
+        self._y = y
+
+    @property
+    def key_size(self):
+        return utils.bit_length(self._modulus)
+
+    @property
+    def y(self):
+        return self._y
+
+    def parameters(self):
+        return DSAParameters(self._modulus, self._subgroup_order,
+                             self._generator)
