@@ -74,6 +74,49 @@ class DSAParameters(object):
         return self.generator
 
 
+@utils.register_interface(interfaces.DSAPrivateKey)
+class DSAPrivateKey(object):
+    def __init__(self, modulus, subgroup_order, generator, x, y):
+        _check_dsa_parameters(modulus, subgroup_order, generator)
+        if (
+            not isinstance(x, six.integer_types) or
+            not isinstance(y, six.integer_types)
+        ):
+            raise TypeError("DSAPrivateKey arguments must be integers")
+
+        if x <= 0 or x >= subgroup_order:
+            raise ValueError("x must be > 0 and < subgroup_order")
+
+        if y != pow(generator, x, modulus):
+            raise ValueError("y must be equal to (generator ** x % modulus)")
+
+        self._modulus = modulus
+        self._subgroup_order = subgroup_order
+        self._generator = generator
+        self._x = x
+        self._y = y
+
+    @property
+    def key_size(self):
+        return utils.bit_length(self._modulus)
+
+    def public_key(self):
+        return DSAPublicKey(self._modulus, self._subgroup_order,
+                            self._generator, self.y)
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
+
+    def parameters(self):
+        return DSAParameters(self._modulus, self._subgroup_order,
+                             self._generator)
+
+
 @utils.register_interface(interfaces.DSAPublicKey)
 class DSAPublicKey(object):
     def __init__(self, modulus, subgroup_order, generator, y):

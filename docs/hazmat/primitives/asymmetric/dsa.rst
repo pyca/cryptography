@@ -24,6 +24,23 @@ DSA
                         not match the bounds specified in `FIPS 186-4`_.
 
 
+.. class:: DSAPrivateKey(modulus, subgroup_order, generator, x, y)
+
+    .. versionadded:: 0.4
+
+    A DSA private key is required for signing messages.
+
+    This class conforms to the
+    :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+    interface.
+
+    :raises TypeError: This is raised when the arguments are not all integers.
+
+    :raises ValueError: This is raised when the values of ``modulus``,
+                        ``subgroup_order``, or ``generator`` do
+                        not match the bounds specified in `FIPS 186-4`_.
+
+
 .. class:: DSAPublicKey(modulus, subgroup_order, generator, y)
 
     .. versionadded:: 0.4
