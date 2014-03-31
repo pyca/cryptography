@@ -60,7 +60,7 @@ class TestScrypt(object):
         p = 16
         length = 64
         salt = b"NaCl"
-        derived_key = "fdbabe1c9d3472007856e7190d01e9fe7c6ad7cbc8237830e773"
+        derived_key = b"fdbabe1c9d3472007856e7190d01e9fe7c6ad7cbc8237830e773"
 
         scrypt = Scrypt(salt, length, N, r, p, backend)
         with pytest.raises(InvalidKey):
