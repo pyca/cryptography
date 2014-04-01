@@ -431,15 +431,15 @@ class Backend(object):
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
 
         res = self._lib.DSA_generate_parameters_ex(
-            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+            ctx, key_size, self._ffi.NULL, 0,
             self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
         )
 
         assert res == 1
 
-        return dsa.DSAParams(
+        return dsa.DSAParameters(
             modulus=self._bn_to_int(ctx.p),
-            subroup_order=self._bn_to_int(ctx.q),
+            subgroup_order=self._bn_to_int(ctx.q),
             generator=self._bn_to_int(ctx.g)
         )
 

@@ -14,9 +14,17 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
 from cryptography.hazmat.primitives.asymmetric import dsa
+
+from cryptography.utils import bit_length
+
+from ...utils import (
+    load_vectors_from_file, load_fips_dsa_key_pair_vectors
+)
 
 
 def _check_dsa_private_key(skey):
@@ -156,6 +164,39 @@ class TestDSA(object):
         '1e3cb6a3259c3d0da354cce89ea3552c59609db10ee989986527436af21d9485ddf25'
         'f90f7dff6d2bae'
     }
+
+    def test_generate_dsa_parameters(self, backend):
+        parameters = dsa.DSAParameters.generate(1024, backend)
+        assert bit_length(parameters.p) == 1024
+        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000fL:
+            parameters = dsa.DSAParameters.generate(2048, backend)
+            assert bit_length(parameters.p) == 2048
+            parameters = dsa.DSAParameters.generate(3072, backend)
+            assert bit_length(parameters.p) == 3072
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "DSA", "FIPS_186-3", "KeyPair.rsp"),
+            load_fips_dsa_key_pair_vectors
+        )
+    )
+    def test_generate_dsa_keys(self, vector, backend):
+        class Object(object):
+            pass
+        parameters = Object()
+        parameters.p = vector['p']
+        parameters.q = vector['q']
+        parameters.g = vector['g']
+        skey = dsa.DSAPrivateKey.generate(parameters, backend)
+
+        skey_parameters = skey.parameters()
+        assert skey_parameters.p == vector['p']
+        assert skey_parameters.q == vector['q']
+        assert skey_parameters.g == vector['g']
+        assert skey.key_size == bit_length(vector['p'])
+        assert skey.y == pow(skey_parameters.g, skey.x, skey_parameters.p)
 
     def test_invalid_parameters_argument_types(self):
         with pytest.raises(TypeError):

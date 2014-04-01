@@ -50,7 +50,7 @@ class DSAParameters(object):
         self._generator = generator
 
     @classmethod
-    def generate(cls, backend, key_size):
+    def generate(cls, key_size, backend):
         return backend.generate_dsa_parameters(key_size)
 
     @property
@@ -101,7 +101,7 @@ class DSAPrivateKey(object):
         self._y = y
 
     @classmethod
-    def generate(cls, backend, parameters):
+    def generate(cls, parameters, backend):
         return backend.generate_dsa_private_key(parameters)
 
     @property
