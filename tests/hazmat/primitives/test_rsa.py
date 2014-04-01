@@ -22,7 +22,7 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
