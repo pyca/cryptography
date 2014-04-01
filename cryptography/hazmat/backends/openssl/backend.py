@@ -29,7 +29,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa, dsa
+from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, PKCS1v15, PSS
 )
@@ -409,22 +409,30 @@ class Backend(object):
         return _RSAVerificationContext(self, public_key, signature, padding,
                                        algorithm)
 
-    def generate_dsa_parameters(self, key_size, ctx=None):
+    def mgf1_hash_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_MGF1_MD:
+            return self.hash_supported(algorithm)
+        else:
+            return isinstance(algorithm, hashes.SHA1)
+
+    def generate_dsa_parameters(self, key_size):
         if key_size not in (1024, 2048, 3072):
-            raise ValueError("Key size must be 1024 or 2048 or"
-                             "3072 bits")
+            raise ValueError(
+                "Key size must be 1024 or 2048 or 3072 bits")
 
-        if ctx is None:
-            ctx = self._lib.DSA_new()
-            assert ctx != self._ffi.NULL
-            ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f \
+                and key_size > 1024:
+            raise ValueError(
+                "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
+                "support larger key sizes")
 
-        bn = self._int_to_bn(key_size)
-        bn = self._ffi.gc(bn, self._lib.BN_free)
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
 
         res = self._lib.DSA_generate_parameters_ex(
-            ctx, bn, self._ffi.NULL, self._ffi.NULL,
-            self._ffi.NULL, self._ffi.NULL
+            ctx, key_size, self._ffi.NULL, self._ffi.NULL,
+            self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
         )
 
         assert res == 1
@@ -435,22 +443,13 @@ class Backend(object):
             generator=self._bn_to_int(ctx.g)
         )
 
-    def generate_dsa_private_key(self, parameters, key_size):
+    def generate_dsa_private_key(self, parameters):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        if all([parameters.p, parameters.q, parameters.g]):
-            ctx.p = self._int_to_bn(parameters.p)
-            ctx.q = self._int_to_bn(parameters.q)
-            ctx.g = self._int_to_bn(parameters.g)
-
-        else:
-            if key_size not in (1024, 2048, 3072):
-                raise ValueError("Key size must be 1024 or 2048 or"
-                                 "3072 bits")
-            bn = self._int_to_bn(key_size)
-            bn = self._ffi.gc(bn, self._lib.BN_free)
-            self.generate_dsa_parameters(bn, ctx)
+        ctx.p = self._int_to_bn(parameters.p)
+        ctx.q = self._int_to_bn(parameters.q)
+        ctx.g = self._int_to_bn(parameters.g)
 
         self._lib.DSA_generate_key(ctx)
 
@@ -461,12 +460,6 @@ class Backend(object):
             x=self._bn_to_int(ctx.priv_key),
             y=self._bn_to_int(ctx.pub_key)
         )
-
-    def mgf1_hash_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_MGF1_MD:
-            return self.hash_supported(algorithm)
-        else:
-            return isinstance(algorithm, hashes.SHA1)
 
 
 class GetCipherByName(object):
