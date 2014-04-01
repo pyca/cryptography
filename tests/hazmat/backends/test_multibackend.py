@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
-
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -179,13 +177,19 @@ class TestMultiBackend(object):
                                             padding.PKCS1v15(), hashes.MD5())
 
         backend = MultiBackend([])
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
             backend.generate_rsa_private_key(key_size=1024, public_exponent=3)
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
             backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
                                              hashes.MD5())
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
             backend.create_rsa_verification_ctx(
                 "public_key", "sig", padding.PKCS1v15(), hashes.MD5())

@@ -19,6 +19,8 @@ class _Reasons(object):
     UNSUPPORTED_HASH = object()
     UNSUPPORTED_CIPHER = object()
     UNSUPPORTED_PADDING = object()
+    UNSUPPORTED_MGF = object()
+    UNSUPPORTED_PUBLIC_KEY_ALGORITHM = object()
 
 
 class UnsupportedAlgorithm(Exception):
