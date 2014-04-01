@@ -463,6 +463,101 @@ Asymmetric interfaces
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
 
+.. class:: EllipticCurve
+
+    .. versionadded:: 0.4
+
+    A named elliptic curve.
+
+    .. attribute:: name
+
+        :type: string
+
+        The name of the curve. Usually the name used for the ASN.1 OID such as
+        "secp256k1".
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the curves base point.
+
+
+.. class:: EllipticCurvePrivateKey
+
+    .. versionadded:: 0.4
+
+    An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
+    `EdDSA`_.
+
+    .. attribute:: curve
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+
+        The elliptic curve for this key.
+
+    .. attribute:: private_key
+
+        :type: int
+
+        The private key.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the curves base point.
+
+    .. attribute:: x
+
+        :type: int
+
+        The affine x component of the public point used for verifying.
+
+    .. attribute:: y
+
+        :type: int
+
+        The affine y component of the public point used for verifying.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+
+        The EllipticCurvePublicKey object for this private key.
+
+
+.. class:: EllipticCurvePublicKey
+
+    .. versionadded:: 0.4
+
+    An elliptic curve public key.
+
+     .. attribute:: curve
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+
+        The elliptic curve for this key.
+
+    .. attribute:: x
+
+        :type: int
+
+        The affine x component of the public point used for verifying.
+
+    .. attribute:: y
+
+        :type: int
+
+        The affine y component of the public point used for verifying.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the curves base point.
+
+
 .. class:: AsymmetricSignatureContext
 
     .. versionadded:: 0.2
@@ -612,3 +707,5 @@ Key derivation functions
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
+.. _`ECDSA`: http://en.wikipedia.org/wiki/ECDSA
+.. _`EdDSA`: http://en.wikipedia.org/wiki/EdDSA

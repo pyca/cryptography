@@ -489,3 +489,81 @@ class CMACContext(object):
         """
         Return a CMACContext that is a copy of the current context.
         """
+
+
+class EllipticCurve(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def name(self):
+        """
+        The name of the curve. e.g. secp256r1.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
+
+
+class EllipticCurvePrivateKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
+        """
+
+    @abc.abstractproperty
+    def private_key(self):
+        """
+        The private value used for signing.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
+
+    @abc.abstractproperty
+    def x(self):
+        """
+        The affine x component of the public point used for verifying.
+        """
+
+    @abc.abstractproperty
+    def y(self):
+        """
+        The affine y component of the public point used for verifying.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The ECDSAPublicKey for this private key.
+        """
+
+
+class EllipticCurvePublicKey(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
+        """
+
+    @abc.abstractproperty
+    def x(self):
+        """
+        The affine x component of the public point used for verifying.
+        """
+
+    @abc.abstractproperty
+    def y(self):
+        """
+        The affine y component of the public point used for verifying.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
