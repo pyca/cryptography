@@ -18,12 +18,13 @@ import os
 
 import pytest
 
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives.asymmetric import dsa
-
 from cryptography.utils import bit_length
 
 from ...utils import (
-    load_vectors_from_file, load_fips_dsa_key_pair_vectors
+    load_vectors_from_file, load_fips_dsa_key_pair_vectors,
+    raises_unsupported_algorithm
 )
 
 
@@ -61,6 +62,7 @@ def _check_dsa_private_key(skey):
     assert skey_parameters.generator == pkey_parameters.generator
 
 
+@pytest.mark.dsa
 class TestDSA(object):
     _parameters_1024 = {
         'p': 'd38311e2cd388c3ed698e82fdf88eb92b5a9a483dc88005d4b725ef341eabb47'
@@ -168,11 +170,10 @@ class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.DSAParameters.generate(1024, backend)
         assert bit_length(parameters.p) == 1024
-        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000fL:
-            parameters = dsa.DSAParameters.generate(2048, backend)
-            assert bit_length(parameters.p) == 2048
-            parameters = dsa.DSAParameters.generate(3072, backend)
-            assert bit_length(parameters.p) == 3072
+
+    def test_generate_invalid_dsa_parameters(self, backend):
+        with pytest.raises(ValueError):
+            dsa.DSAParameters.generate(1, backend)
 
     @pytest.mark.parametrize(
         "vector",
@@ -183,12 +184,9 @@ class TestDSA(object):
         )
     )
     def test_generate_dsa_keys(self, vector, backend):
-        class Object(object):
-            pass
-        parameters = Object()
-        parameters.p = vector['p']
-        parameters.q = vector['q']
-        parameters.g = vector['g']
+        parameters = dsa.DSAParameters(modulus=vector['p'],
+                                       subgroup_order=vector['q'],
+                                       generator=vector['g'])
         skey = dsa.DSAPrivateKey.generate(parameters, backend)
 
         skey_parameters = skey.parameters()
@@ -720,3 +718,14 @@ class TestDSA(object):
                 generator=int(self._parameters_1024['g'], 16),
                 y=None
             )
+
+
+def test_dsa_generate_invalid_backend():
+    pretend_backend = object()
+
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        dsa.DSAParameters.generate(1024, pretend_backend)
+
+    pretend_parameters = object()
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        dsa.DSAPrivateKey.generate(pretend_parameters, pretend_backend)

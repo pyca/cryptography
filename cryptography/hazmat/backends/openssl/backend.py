@@ -25,7 +25,8 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
@@ -46,6 +47,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 
 @utils.register_interface(CipherBackend)
+@utils.register_interface(DSABackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -420,8 +422,8 @@ class Backend(object):
             raise ValueError(
                 "Key size must be 1024 or 2048 or 3072 bits")
 
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f \
-                and key_size > 1024:
+        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
+                key_size > 1024):
             raise ValueError(
                 "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
                 "support larger key sizes")

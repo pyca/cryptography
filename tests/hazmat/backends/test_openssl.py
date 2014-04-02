@@ -28,6 +28,8 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ...utils import raises_unsupported_algorithm
 
+from cryptography.utils import bit_length
+
 
 @utils.register_interface(interfaces.Mode)
 class DummyMode(object):
@@ -202,6 +204,16 @@ class TestOpenSSL(object):
 
         with pytest.raises(ValueError):
             dsa.DSAParameters.generate(3072, backend=backend)
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
+        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
+    )
+    def test_large_key_size_on_new_openssl(self):
+        parameters = dsa.DSAParameters.generate(2048, backend)
+        assert bit_length(parameters.p) == 2048
+        parameters = dsa.DSAParameters.generate(3072, backend)
+        assert bit_length(parameters.p) == 3072
 
 
 class TestOpenSSLRandomEngine(object):
