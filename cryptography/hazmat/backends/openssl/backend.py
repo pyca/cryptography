@@ -701,15 +701,20 @@ class _HMACContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
-def _get_rsa_pss_salt_length(mgf, key_size, digest_size):
-    if mgf._salt_length is MGF1.MAX_LENGTH:
+def _get_rsa_pss_salt_length(pss, key_size, digest_size):
+    if pss._mgf._salt_length is not None:
+        salt = pss._mgf._salt_length
+    else:
+        salt = pss._salt_length
+
+    if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
         # bit length - 1 per RFC 3447
         emlen = int(math.ceil((key_size - 1) / 8.0))
         salt_length = emlen - digest_size - 2
         assert salt_length >= 0
         return salt_length
     else:
-        return mgf._salt_length
+        return salt
 
 
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
@@ -803,7 +808,7 @@ class _RSASignatureContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
                 pkey_ctx,
                 _get_rsa_pss_salt_length(
-                    self._padding._mgf,
+                    self._padding,
                     self._private_key.key_size,
                     self._hash_ctx.algorithm.digest_size
                 )
@@ -871,7 +876,7 @@ class _RSASignatureContext(object):
             data_to_sign,
             evp_md,
             _get_rsa_pss_salt_length(
-                self._padding._mgf,
+                self._padding,
                 self._private_key.key_size,
                 len(data_to_sign)
             )
@@ -988,7 +993,7 @@ class _RSAVerificationContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
                 pkey_ctx,
                 _get_rsa_pss_salt_length(
-                    self._padding._mgf,
+                    self._padding,
                     self._public_key.key_size,
                     self._hash_ctx.algorithm.digest_size
                 )
@@ -1068,7 +1073,7 @@ class _RSAVerificationContext(object):
             evp_md,
             buf,
             _get_rsa_pss_salt_length(
-                self._padding._mgf,
+                self._padding,
                 self._public_key.key_size,
                 len(data_to_verify)
             )
