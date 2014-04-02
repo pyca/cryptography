@@ -20,7 +20,8 @@ Asymmetric ciphers
 * RSA PKCS #1 from the RSA FTP site (ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/
   and ftp://ftp.rsa.com/pub/rsalabs/tmp/).
 * RSA FIPS 186-2 and PKCS1 v1.5 vulnerability test vectors from `NIST CAVP`_.
-* DSA test vectors from `FIPS 186-2`_ and `FIPS 186-3`_.
+* FIPS 186-2 and FIPS 186-3 DSA test vectors from `NIST CAVP`_.
+* FIPS 186-2 and FIPS 186-3 ECDSA test vectors from `NIST CAVP`_.
 * OpenSSL PEM RSA serialization vectors from the `OpenSSL example key`_ and
   `GnuTLS key parsing tests`_.
 * OpenSSL PEM DSA serialization vectors from the `GnuTLS example keys`_.
@@ -127,8 +128,6 @@ header format (substituting the correct information):
 .. _`unencpkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/unencpkcs8.pem
 .. _`pkcs12_s2k_pem.c`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs12_s2k_pem.c
 .. _`Botan's ECC private keys`: https://github.com/randombit/botan/tree/4917f26a2b154e841cd27c1bcecdd41d2bdeb6ce/src/tests/data/ecc
-.. _`FIPS 186-2`: http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-2dsatestvectors.zip
-.. _`FIPS 186-3`: http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-3dsatestvectors.zip
 .. _`GnuTLS example keys`: https://gitorious.org/gnutls/gnutls/commit/ad2061deafdd7db78fd405f9d143b0a7c579da7b
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
