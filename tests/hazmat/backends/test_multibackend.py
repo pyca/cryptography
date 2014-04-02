@@ -18,8 +18,8 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend,
-    DSABackend
+    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import hashes, hmac
@@ -27,8 +27,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from ...utils import raises_unsupported_algorithm
-
-from pretend import stub
 
 
 @utils.register_interface(CipherBackend)
@@ -213,7 +211,7 @@ class TestMultiBackend(object):
 
         backend.generate_dsa_parameters(key_size=1024)
 
-        parameters = stub()
+        parameters = object()
         backend.generate_dsa_private_key(parameters)
 
         backend = MultiBackend([])
