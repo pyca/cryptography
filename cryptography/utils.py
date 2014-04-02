@@ -16,6 +16,9 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 
+DeprecatedIn04 = PendingDeprecationWarning
+
+
 def register_interface(iface):
     def register_decorator(klass):
         iface.register(klass)

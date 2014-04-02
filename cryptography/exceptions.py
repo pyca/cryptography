@@ -59,6 +59,3 @@ class InvalidKey(Exception):
 
 class InvalidToken(Exception):
     pass
-
-
-DeprecatedIn04 = PendingDeprecationWarning

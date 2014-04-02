@@ -17,7 +17,7 @@ import warnings
 
 import six
 
-from cryptography import exceptions, utils
+from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -38,7 +38,7 @@ class PSS(object):
             warnings.warn(
                 "salt_length is deprecated on MGF1 and should be added via the"
                 " PSS constructor.",
-                exceptions.DeprecatedIn04
+                utils.DeprecatedIn04
             )
         else:
             if (not isinstance(salt_length, six.integer_types) and
@@ -67,7 +67,7 @@ class MGF1(object):
             warnings.warn(
                 "salt_length is deprecated on MGF1 and should be passed to "
                 "the PSS constructor instead.",
-                exceptions.DeprecatedIn04
+                utils.DeprecatedIn04
             )
             if (not isinstance(salt_length, six.integer_types) and
                     salt_length is not self.MAX_LENGTH):
