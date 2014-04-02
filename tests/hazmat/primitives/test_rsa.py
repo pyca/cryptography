@@ -1128,7 +1128,7 @@ class TestPSS(object):
     def test_deprecation_warning(self):
         pytest.deprecated_call(
             padding.PSS,
-            **{"mgf": padding.MGF1(hashes.SHA1(), 20)}
+            padding.MGF1(hashes.SHA1(), 20)
         )
 
     def test_invalid_salt_length_not_integer(self):
@@ -1149,6 +1149,10 @@ class TestPSS(object):
                 salt_length=-1
             )
 
+    def test_no_salt_length_supplied_pss_or_mgf1(self):
+        with pytest.raises(ValueError):
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()))
+
     def test_valid_pss_parameters(self):
         algorithm = hashes.SHA1()
         salt_length = algorithm.digest_size
@@ -1168,8 +1172,7 @@ class TestPSS(object):
 class TestMGF1(object):
     def test_deprecation_warning(self):
         pytest.deprecated_call(
-            padding.MGF1,
-            **{"algorithm": hashes.SHA1(), "salt_length": 20}
+            padding.MGF1, hashes.SHA1(), 20
         )
 
     def test_invalid_hash_algorithm(self):
