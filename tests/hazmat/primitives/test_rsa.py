@@ -39,7 +39,7 @@ class DummyPadding(object):
 
 
 class DummyMGF(object):
-    pass
+    _salt_length = 0
 
 
 def _modinv(e, m):
