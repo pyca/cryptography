@@ -43,9 +43,9 @@ Verify that this is the version you just released.
 Post-release tasks
 ------------------
 
-* Update the version number to the next major (e.g. 0.5.dev1) in
+* Update the version number to the next major (e.g. ``0.5.dev1``) in
   ``cryptography/__about__.py`` and
   ``vectors/cryptography_vectors/__about__.py``.
-* Add new changelog entry with next version and note that it is under active
-  development
+* Add new :doc:`/changelog` entry with next version and note that it is under
+  active development
 * Send a pull request with these items
