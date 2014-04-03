@@ -53,6 +53,7 @@ class Binding(object):
         "dh",
         "dsa",
         "ec",
+        "ecdsa",
         "engine",
         "err",
         "evp",

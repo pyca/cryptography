@@ -22,7 +22,7 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
@@ -630,7 +630,7 @@ class TestRSASignature(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1(),
                                backend)
 
@@ -881,7 +881,7 @@ class TestRSAVerification(object):
             backend=backend
         )
         public_key = private_key.public_key()
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
                                 hashes.SHA1(), backend)
 

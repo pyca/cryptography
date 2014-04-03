@@ -731,7 +731,8 @@ class _RSASignatureContext(object):
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend"
+                    "Only MGF1 is supported by this backend",
+                    _Reasons.UNSUPPORTED_MGF
                 )
 
             # Size of key in bytes - 2 is the maximum
@@ -915,7 +916,8 @@ class _RSAVerificationContext(object):
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend"
+                    "Only MGF1 is supported by this backend",
+                    _Reasons.UNSUPPORTED_MGF
                 )
 
             # Size of key in bytes - 2 is the maximum

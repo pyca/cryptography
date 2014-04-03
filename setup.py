@@ -21,6 +21,7 @@ import subprocess
 import pkg_resources
 
 from setuptools import find_packages, setup
+from setuptools.command.install import install
 from setuptools.command.test import test
 
 
@@ -53,6 +54,25 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
+def get_ext_modules():
+    from cryptography.hazmat.bindings.commoncrypto.binding import (
+        Binding as CommonCryptoBinding
+    )
+    from cryptography.hazmat.bindings.openssl.binding import (
+        Binding as OpenSSLBinding
+    )
+    from cryptography.hazmat.primitives import constant_time, padding
+
+    ext_modules = [
+        OpenSSLBinding().ffi.verifier.get_extension(),
+        constant_time._ffi.verifier.get_extension(),
+        padding._ffi.verifier.get_extension()
+    ]
+    if CommonCryptoBinding.is_available():
+        ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
+    return ext_modules
+
+
 class CFFIBuild(build):
     """
     This class exists, instead of just providing ``ext_modules=[...]`` directly
@@ -64,25 +84,20 @@ class CFFIBuild(build):
     """
 
     def finalize_options(self):
-        from cryptography.hazmat.bindings.commoncrypto.binding import (
-            Binding as CommonCryptoBinding
-        )
-        from cryptography.hazmat.bindings.openssl.binding import (
-            Binding as OpenSSLBinding
-        )
-        from cryptography.hazmat.primitives import constant_time, padding
-
-        self.distribution.ext_modules = [
-            OpenSSLBinding().ffi.verifier.get_extension(),
-            constant_time._ffi.verifier.get_extension(),
-            padding._ffi.verifier.get_extension()
-        ]
-        if CommonCryptoBinding.is_available():
-            self.distribution.ext_modules.append(
-                CommonCryptoBinding().ffi.verifier.get_extension()
-            )
-
+        self.distribution.ext_modules = get_ext_modules()
         build.finalize_options(self)
+
+
+class CFFIInstall(install):
+    """
+    As a consequence of CFFIBuild and it's late addition of ext_modules, we
+    need the equivalent for the ``install`` command to install into platlib
+    install-dir rather than purelib.
+    """
+
+    def finalize_options(self):
+        self.distribution.ext_modules = get_ext_modules()
+        install.finalize_options(self)
 
 
 class PyTest(test):
@@ -154,6 +169,7 @@ setup(
     ext_package="cryptography",
     cmdclass={
         "build": CFFIBuild,
+        "install": CFFIInstall,
         "test": PyTest,
     }
 )
