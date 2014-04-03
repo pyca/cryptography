@@ -171,6 +171,7 @@ int SSL_pending(const SSL *);
 int SSL_write(SSL *, const void *, int);
 int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
+int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
@@ -212,6 +213,9 @@ int X509_STORE_CTX_get_error(X509_STORE_CTX *);
 void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
 int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
 X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
+int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
+void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
+
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
