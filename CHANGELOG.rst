@@ -6,6 +6,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated ``salt_length`` on
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1` and added it
+  to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. It will be
+  removed from ``MGF1`` in two releases per our :doc:`/api-stability` policy.
+
 0.3 - 2014-03-27
 ~~~~~~~~~~~~~~~~
 

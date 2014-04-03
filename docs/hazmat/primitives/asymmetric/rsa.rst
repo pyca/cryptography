@@ -73,10 +73,8 @@ RSA
             ... )
             >>> signer = private_key.signer(
             ...     padding.PSS(
-            ...         mgf=padding.MGF1(
-            ...             algorithm=hashes.SHA256(),
-            ...             salt_length=padding.MGF1.MAX_LENGTH
-            ...         )
+            ...         mgf=padding.MGF1(hashes.SHA256()),
+            ...         salt_length=padding.PSS.MAX_LENGTH
             ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()
@@ -158,10 +156,8 @@ RSA
             ... )
             >>> signer = private_key.signer(
             ...     padding.PSS(
-            ...         mgf=padding.MGF1(
-            ...             algorithm=hashes.SHA256(),
-            ...             salt_length=padding.MGF1.MAX_LENGTH
-            ...         )
+            ...         mgf=padding.MGF1(hashes.SHA256()),
+            ...         salt_length=padding.PSS.MAX_LENGTH
             ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()
@@ -173,10 +169,8 @@ RSA
             >>> verifier = public_key.verifier(
             ...     signature,
             ...     padding.PSS(
-            ...         mgf=padding.MGF1(
-            ...             algorithm=hashes.SHA256(),
-            ...             salt_length=padding.MGF1.MAX_LENGTH
-            ...         )
+            ...         mgf=padding.MGF1(hashes.SHA256()),
+            ...         salt_length=padding.PSS.MAX_LENGTH
             ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()
