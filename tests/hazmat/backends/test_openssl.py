@@ -27,7 +27,6 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 from ...utils import raises_unsupported_algorithm
 
 
-
 @utils.register_interface(interfaces.Mode)
 class DummyMode(object):
     name = "dummy-mode"
