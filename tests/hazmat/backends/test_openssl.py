@@ -21,12 +21,14 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ...utils import raises_unsupported_algorithm
+
+from cryptography.utils import bit_length
 
 
 @utils.register_interface(interfaces.Mode)
@@ -191,6 +193,27 @@ class TestOpenSSL(object):
         assert name == backend._lib.Cryptography_osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000f,
+        reason="Requires an older OpenSSL. Must be < 1.0.0"
+    )
+    def test_large_key_size_on_old_openssl(self):
+        with pytest.raises(ValueError):
+            dsa.DSAParameters.generate(2048, backend=backend)
+
+        with pytest.raises(ValueError):
+            dsa.DSAParameters.generate(3072, backend=backend)
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
+        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
+    )
+    def test_large_key_size_on_new_openssl(self):
+        parameters = dsa.DSAParameters.generate(2048, backend)
+        assert bit_length(parameters.p) == 2048
+        parameters = dsa.DSAParameters.generate(3072, backend)
+        assert bit_length(parameters.p) == 3072
 
 
 class TestOpenSSLRandomEngine(object):

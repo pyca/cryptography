@@ -14,9 +14,18 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.utils import bit_length
+
+from ...utils import (
+    load_vectors_from_file, load_fips_dsa_key_pair_vectors,
+    raises_unsupported_algorithm
+)
 
 
 def _check_dsa_private_key(skey):
@@ -53,6 +62,7 @@ def _check_dsa_private_key(skey):
     assert skey_parameters.generator == pkey_parameters.generator
 
 
+@pytest.mark.dsa
 class TestDSA(object):
     _parameters_1024 = {
         'p': 'd38311e2cd388c3ed698e82fdf88eb92b5a9a483dc88005d4b725ef341eabb47'
@@ -156,6 +166,35 @@ class TestDSA(object):
         '1e3cb6a3259c3d0da354cce89ea3552c59609db10ee989986527436af21d9485ddf25'
         'f90f7dff6d2bae'
     }
+
+    def test_generate_dsa_parameters(self, backend):
+        parameters = dsa.DSAParameters.generate(1024, backend)
+        assert bit_length(parameters.p) == 1024
+
+    def test_generate_invalid_dsa_parameters(self, backend):
+        with pytest.raises(ValueError):
+            dsa.DSAParameters.generate(1, backend)
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "DSA", "FIPS_186-3", "KeyPair.rsp"),
+            load_fips_dsa_key_pair_vectors
+        )
+    )
+    def test_generate_dsa_keys(self, vector, backend):
+        parameters = dsa.DSAParameters(modulus=vector['p'],
+                                       subgroup_order=vector['q'],
+                                       generator=vector['g'])
+        skey = dsa.DSAPrivateKey.generate(parameters, backend)
+
+        skey_parameters = skey.parameters()
+        assert skey_parameters.p == vector['p']
+        assert skey_parameters.q == vector['q']
+        assert skey_parameters.g == vector['g']
+        assert skey.key_size == bit_length(vector['p'])
+        assert skey.y == pow(skey_parameters.g, skey.x, skey_parameters.p)
 
     def test_invalid_parameters_argument_types(self):
         with pytest.raises(TypeError):
@@ -679,3 +718,14 @@ class TestDSA(object):
                 generator=int(self._parameters_1024['g'], 16),
                 y=None
             )
+
+
+def test_dsa_generate_invalid_backend():
+    pretend_backend = object()
+
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        dsa.DSAParameters.generate(1024, pretend_backend)
+
+    pretend_parameters = object()
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        dsa.DSAPrivateKey.generate(pretend_parameters, pretend_backend)

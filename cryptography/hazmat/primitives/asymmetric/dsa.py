@@ -16,6 +16,8 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.backends.interfaces import DSABackend
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -48,6 +50,16 @@ class DSAParameters(object):
         self._modulus = modulus
         self._subgroup_order = subgroup_order
         self._generator = generator
+
+    @classmethod
+    def generate(cls, key_size, backend):
+        if not isinstance(backend, DSABackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement DSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
+
+        return backend.generate_dsa_parameters(key_size)
 
     @property
     def modulus(self):
@@ -95,6 +107,16 @@ class DSAPrivateKey(object):
         self._generator = generator
         self._x = x
         self._y = y
+
+    @classmethod
+    def generate(cls, parameters, backend):
+        if not isinstance(backend, DSABackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement DSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
+
+        return backend.generate_dsa_private_key(parameters)
 
     @property
     def key_size(self):

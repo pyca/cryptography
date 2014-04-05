@@ -25,11 +25,12 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, PKCS1v15, PSS
 )
@@ -46,6 +47,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 
 @utils.register_interface(CipherBackend)
+@utils.register_interface(DSABackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -414,6 +416,52 @@ class Backend(object):
             return self.hash_supported(algorithm)
         else:
             return isinstance(algorithm, hashes.SHA1)
+
+    def generate_dsa_parameters(self, key_size):
+        if key_size not in (1024, 2048, 3072):
+            raise ValueError(
+                "Key size must be 1024 or 2048 or 3072 bits")
+
+        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
+                key_size > 1024):
+            raise ValueError(
+                "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
+                "support larger key sizes")
+
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, key_size, self._ffi.NULL, 0,
+            self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+
+        assert res == 1
+
+        return dsa.DSAParameters(
+            modulus=self._bn_to_int(ctx.p),
+            subgroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g)
+        )
+
+    def generate_dsa_private_key(self, parameters):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        ctx.p = self._int_to_bn(parameters.p)
+        ctx.q = self._int_to_bn(parameters.q)
+        ctx.g = self._int_to_bn(parameters.g)
+
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(ctx.p),
+            subgroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g),
+            x=self._bn_to_int(ctx.priv_key),
+            y=self._bn_to_int(ctx.pub_key)
+        )
 
 
 class GetCipherByName(object):

@@ -18,7 +18,8 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import hashes, hmac
@@ -95,6 +96,15 @@ class DummyRSABackend(object):
 
     def create_rsa_verification_ctx(self, public_key, signature, padding,
                                     algorithm):
+        pass
+
+
+@utils.register_interface(DSABackend)
+class DummyDSABackend(object):
+    def generate_dsa_parameters(self, key_size):
+        pass
+
+    def generate_dsa_private_key(self, parameters):
         pass
 
 
@@ -193,3 +203,24 @@ class TestMultiBackend(object):
         ):
             backend.create_rsa_verification_ctx(
                 "public_key", "sig", padding.PKCS1v15(), hashes.MD5())
+
+    def test_dsa(self):
+        backend = MultiBackend([
+            DummyDSABackend()
+        ])
+
+        backend.generate_dsa_parameters(key_size=1024)
+
+        parameters = object()
+        backend.generate_dsa_private_key(parameters)
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.generate_dsa_parameters(key_size=1024)
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.generate_dsa_private_key(parameters)
