@@ -42,9 +42,9 @@ RSA
             Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
             doubt you should `use 65537`_.
         :param int key_size: The length of the modulus in bits. For keys
-            generated in 2014 this should be `at least 2048`_. (See page 41.)
-            Must be at least 512. Some backends may have additional
-            limitations.
+            generated in 2014 it is strongly recommended to be
+            `at least 2048`_ (See page 41). It must not be less than 512.
+            Some backends may have additional limitations.
         :param backend: A
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
             provider.
@@ -73,10 +73,8 @@ RSA
             ... )
             >>> signer = private_key.signer(
             ...     padding.PSS(
-            ...         mgf=padding.MGF1(
-            ...             algorithm=hashes.SHA256(),
-            ...             salt_length=padding.MGF1.MAX_LENGTH
-            ...         )
+            ...         mgf=padding.MGF1(hashes.SHA256()),
+            ...         salt_length=padding.PSS.MAX_LENGTH
             ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()
@@ -158,10 +156,8 @@ RSA
             ... )
             >>> signer = private_key.signer(
             ...     padding.PSS(
-            ...         mgf=padding.MGF1(
-            ...             algorithm=hashes.SHA256(),
-            ...             salt_length=padding.MGF1.MAX_LENGTH
-            ...         )
+            ...         mgf=padding.MGF1(hashes.SHA256()),
+            ...         salt_length=padding.PSS.MAX_LENGTH
             ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()
@@ -173,10 +169,8 @@ RSA
             >>> verifier = public_key.verifier(
             ...     signature,
             ...     padding.PSS(
-            ...         mgf=padding.MGF1(
-            ...             algorithm=hashes.SHA256(),
-            ...             salt_length=padding.MGF1.MAX_LENGTH
-            ...         )
+            ...         mgf=padding.MGF1(hashes.SHA256()),
+            ...         salt_length=padding.PSS.MAX_LENGTH
             ...     ),
             ...     hashes.SHA256(),
             ...     default_backend()

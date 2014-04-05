@@ -113,6 +113,21 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
+class DSABackend(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractmethod
+    def generate_dsa_parameters(self, key_size):
+        """
+        Generate a DSAParameters instance with a modulus of key_size bits.
+        """
+
+    @abc.abstractmethod
+    def generate_dsa_private_key(self, parameters):
+        """
+        Generate an DSAPrivateKey instance with parameters as
+        a DSAParameters object.
+        """
+
+
 class OpenSSLSerializationBackend(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def load_openssl_pem_private_key(self, data, password):

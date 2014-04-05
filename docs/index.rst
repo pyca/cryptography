@@ -2,7 +2,9 @@ Welcome to ``cryptography``
 ===========================
 
 ``cryptography`` is a Python library which exposes cryptographic recipes and
-primitives. Our goal is for it to be your "cryptographic standard library".
+primitives. Our goal is for it to be your "cryptographic standard library". If
+you are interested in learning more about the field of cryptography, we
+recommend `Crypto 101, by Laurens Van Houtven`_.
 
 Installation
 ------------
@@ -98,4 +100,4 @@ The ``cryptography`` open source project
     documentation. If you're interested in discussing an audit please
     :doc:`get in touch </community>`.
 
-.. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
+.. _`Crypto 101, by Laurens Van Houtven`: https://www.crypto101.io/

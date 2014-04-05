@@ -25,11 +25,12 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
+    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, PKCS1v15, PSS
 )
@@ -46,6 +47,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 
 @utils.register_interface(CipherBackend)
+@utils.register_interface(DSABackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -415,6 +417,52 @@ class Backend(object):
         else:
             return isinstance(algorithm, hashes.SHA1)
 
+    def generate_dsa_parameters(self, key_size):
+        if key_size not in (1024, 2048, 3072):
+            raise ValueError(
+                "Key size must be 1024 or 2048 or 3072 bits")
+
+        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
+                key_size > 1024):
+            raise ValueError(
+                "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
+                "support larger key sizes")
+
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+
+        res = self._lib.DSA_generate_parameters_ex(
+            ctx, key_size, self._ffi.NULL, 0,
+            self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+
+        assert res == 1
+
+        return dsa.DSAParameters(
+            modulus=self._bn_to_int(ctx.p),
+            subgroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g)
+        )
+
+    def generate_dsa_private_key(self, parameters):
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        ctx.p = self._int_to_bn(parameters.p)
+        ctx.q = self._int_to_bn(parameters.q)
+        ctx.g = self._int_to_bn(parameters.g)
+
+        self._lib.DSA_generate_key(ctx)
+
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(ctx.p),
+            subgroup_order=self._bn_to_int(ctx.q),
+            generator=self._bn_to_int(ctx.g),
+            x=self._bn_to_int(ctx.priv_key),
+            y=self._bn_to_int(ctx.pub_key)
+        )
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
@@ -701,15 +749,20 @@ class _HMACContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
-def _get_rsa_pss_salt_length(mgf, key_size, digest_size):
-    if mgf._salt_length is MGF1.MAX_LENGTH:
+def _get_rsa_pss_salt_length(pss, key_size, digest_size):
+    if pss._mgf._salt_length is not None:
+        salt = pss._mgf._salt_length
+    else:
+        salt = pss._salt_length
+
+    if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
         # bit length - 1 per RFC 3447
         emlen = int(math.ceil((key_size - 1) / 8.0))
         salt_length = emlen - digest_size - 2
         assert salt_length >= 0
         return salt_length
     else:
-        return mgf._salt_length
+        return salt
 
 
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
@@ -803,7 +856,7 @@ class _RSASignatureContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
                 pkey_ctx,
                 _get_rsa_pss_salt_length(
-                    self._padding._mgf,
+                    self._padding,
                     self._private_key.key_size,
                     self._hash_ctx.algorithm.digest_size
                 )
@@ -871,7 +924,7 @@ class _RSASignatureContext(object):
             data_to_sign,
             evp_md,
             _get_rsa_pss_salt_length(
-                self._padding._mgf,
+                self._padding,
                 self._private_key.key_size,
                 len(data_to_sign)
             )
@@ -988,7 +1041,7 @@ class _RSAVerificationContext(object):
             res = self._backend._lib.EVP_PKEY_CTX_set_rsa_pss_saltlen(
                 pkey_ctx,
                 _get_rsa_pss_salt_length(
-                    self._padding._mgf,
+                    self._padding,
                     self._public_key.key_size,
                     self._hash_ctx.algorithm.digest_size
                 )
@@ -1068,7 +1121,7 @@ class _RSAVerificationContext(object):
             evp_md,
             buf,
             _get_rsa_pss_salt_length(
-                self._padding._mgf,
+                self._padding,
                 self._public_key.key_size,
                 len(data_to_verify)
             )
