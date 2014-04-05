@@ -44,6 +44,13 @@ FUNCTIONS = """
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 
+BN_CTX *BN_CTX_new(void);
+void BN_CTX_free(BN_CTX *);
+
+void BN_CTX_start(BN_CTX *);
+BIGNUM *BN_CTX_get(BN_CTX *);
+void BN_CTX_end(BN_CTX *);
+
 BIGNUM *BN_copy(BIGNUM *, const BIGNUM *);
 BIGNUM *BN_dup(const BIGNUM *);
 
@@ -85,6 +92,7 @@ MACROS = """
 int BN_zero(BIGNUM *);
 int BN_one(BIGNUM *);
 int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+BIGNUM *BN_cmp(const BIGNUM *, const BIGNUM *);
 """
 
 CUSTOMIZATIONS = """
