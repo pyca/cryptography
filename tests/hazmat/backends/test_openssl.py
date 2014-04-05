@@ -13,11 +13,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+from pretend import stub
+
 import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.backends.openssl.backend import Backend, backend, _ECDSASignatureContext, _ECDSAVerificationContext
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -173,6 +175,46 @@ class TestOpenSSL(object):
         assert utils.bit_length(parameters.p) == 2048
         parameters = dsa.DSAParameters.generate(3072, backend)
         assert utils.bit_length(parameters.p) == 3072
+
+    def test_supported_curves(self):
+        assert backend._supported_curves()
+
+    @pytest.mark.parametrize(
+        "curve", [
+            curve for curve in backend._supported_curves()
+            if curve not in {"Oakley-EC2N-3", "Oakley-EC2N-4"}
+        ]
+    )
+    @pytest.mark.skipif(
+        not backend.ecdsa_supported(),
+        reason="This backend does not support ECDSA"
+    )
+    def test_ec_key_affine_point(self, curve):
+        @utils.register_interface(interfaces.EllipticCurve)
+        class Curve(object):
+            name = curve
+
+        key = backend.generate_ecdsa_private_key(Curve())
+        assert key
+        assert key.public_key
+        assert key.x and key.y
+        assert key.x == key.public_key().x
+        assert key.y == key.public_key().y
+
+        ctx = backend._ec_key_cdata_from_private_key(key)
+        key2 = backend._ec_key_cdata_to_private_key_args(ctx)
+        assert (key.private_key, key.x, key.y) == key2
+
+        signer = _ECDSASignatureContext(backend, key, hashes.SHA1())
+        signer.update(b"foo")
+        sig = signer.finalize()
+        assert sig
+
+        verifier = _ECDSAVerificationContext(backend, key.public_key(),
+                                             sig,
+                                             hashes.SHA1())
+        verifier.update(b"foo")
+        verifier.verify()
 
 
 class TestOpenSSLRandomEngine(object):

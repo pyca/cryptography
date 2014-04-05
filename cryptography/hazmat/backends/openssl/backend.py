@@ -25,12 +25,12 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend
+    CMACBackend, CipherBackend, DSABackend, ECDSABackend, HMACBackend,
+    HashBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import dsa, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
 )
@@ -49,6 +49,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DSABackend)
+@utils.register_interface(ECDSABackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -655,6 +656,213 @@ class Backend(object):
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
+
+    def ecdsa_supported(self):
+        return self._lib.Cryptography_HAS_EC == 1
+
+    def _raise_if_ecdsa_unsupported(self):
+        if not self.ecdsa_supported():
+            raise UnsupportedAlgorithm(
+                "ECDSA is not not enabled in your version of OpenSSL"
+            )
+        else:
+            return True
+
+    def _supported_curves(self):
+        num_curves = self._lib.EC_get_builtin_curves(self._ffi.NULL, 0)
+        curve_array = self._ffi.new("EC_builtin_curve[]", num_curves)
+        num_curves_assigned = self._lib.EC_get_builtin_curves(
+            curve_array, num_curves)
+        assert num_curves == num_curves_assigned
+
+        return [
+            self._ffi.string(self._lib.OBJ_nid2sn(curve.nid))
+            for curve in curve_array
+        ]
+
+    def generate_ecdsa_private_key(self, curve):
+        """
+        Generate a new private key on the named curve.
+        """
+
+        self._raise_if_ecdsa_unsupported()
+
+        curve_nid = self._elliptic_curve_to_nid(curve)
+
+        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ctx != self._ffi.NULL
+
+        res = self._lib.EC_KEY_generate_key(ctx)
+        assert res == 1
+
+        res = self._lib.EC_KEY_check_key(ctx)
+        assert res == 1
+
+        args = self._ec_key_cdata_to_private_key_args(ctx)
+        return ec.EllipticCurvePrivateKey(args[0], args[1], args[2], curve)
+
+    def _elliptic_curve_to_nid(self, curve):
+        """
+        Get the NID for a curve name.
+        """
+
+        curve_aliases = {
+            "secp192r1": "prime192v1"
+        }
+
+        curve_name = curve_aliases.get(curve.name, curve.name)
+
+        curve_nid = self._lib.OBJ_sn2nid(curve_name.encode())
+        if curve_nid == self._lib.NID_undef:
+            raise UnsupportedAlgorithm(
+                "{0} is not a supported elliptic curve".format(curve.name),
+                _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+            )
+        return curve_nid
+
+    def _ec_key_cdata_to_private_key_args(self, ctx):
+        """
+        Build a private key from an EC_KEY
+        """
+
+        group = self._lib.EC_KEY_get0_group(ctx)
+        assert group != self._ffi.NULL
+
+        point = self._lib.EC_KEY_get0_public_key(ctx)
+        assert point != self._ffi.NULL
+
+        method = self._lib.EC_GROUP_method_of(group)
+        assert method != self._ffi.NULL
+
+        nid = self._lib.EC_METHOD_get_field_type(method)
+        assert nid != self._lib.NID_undef
+
+        nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
+        assert nid_two_field != self._lib.NID_undef
+
+        if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
+            get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
+        else:
+            get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
+
+        assert get_func
+
+        bn_ctx = self._lib.BN_CTX_new()
+        assert bn_ctx != self._ffi.NULL
+        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
+
+        bn_x = self._lib.BN_CTX_get(bn_ctx)
+        bn_y = self._lib.BN_CTX_get(bn_ctx)
+
+        res = get_func(group, point, bn_x, bn_y, bn_ctx)
+        assert res == 1
+
+        private_value = self._lib.EC_KEY_get0_private_key(ctx)
+        assert private_value != self._ffi.NULL
+
+        return (
+            self._bn_to_int(private_value),
+            self._bn_to_int(bn_x),
+            self._bn_to_int(bn_y)
+        )
+
+    def _ec_key_cdata_from_private_key(self, private_key):
+        """
+        Build an EC_KEY from a private key object.
+        """
+
+        curve_nid = self._elliptic_curve_to_nid(private_key.curve)
+
+        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ctx != self._ffi.NULL
+
+        ctx = self._ec_key_set_public_key_affine_coordinates(
+            ctx, private_key.x, private_key.y)
+
+        res = self._lib.EC_KEY_set_private_key(
+            ctx, self._int_to_bn(private_key.private_key))
+        assert res == 1
+
+        return ctx
+
+    def _ec_key_cdata_from_public_key(self, public_key):
+        """
+        Build an EC_KEY from a public key object.
+        """
+
+        curve_nid = self._elliptic_curve_to_nid(public_key.curve)
+
+        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ctx != self._ffi.NULL
+
+        ctx = self._ec_key_set_public_key_affine_coordinates(
+            ctx, public_key.x, public_key.y)
+
+        return ctx
+
+    def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
+        """
+        This is a port of EC_KEY_set_public_key_affine_coordinates
+
+        Sets the public key point in the EC_KEY context to the affine x and y
+        values.
+        """
+
+        assert ctx != self._ffi.NULL
+
+        bn_x = self._int_to_bn(x)
+        bn_y = self._int_to_bn(y)
+
+        nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
+        assert nid_two_field != self._lib.NID_undef
+
+        bn_ctx = self._lib.BN_CTX_new()
+        assert bn_ctx != self._ffi.NULL
+        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
+
+        group = self._lib.EC_KEY_get0_group(ctx)
+        assert group != self._ffi.NULL
+
+        point = self._lib.EC_POINT_new(group)
+        assert point != self._ffi.NULL
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
+
+        method = self._lib.EC_GROUP_method_of(group)
+        assert method != self._ffi.NULL
+
+        nid = self._lib.EC_METHOD_get_field_type(method)
+        assert nid != self._lib.NID_undef
+
+        check_x = self._lib.BN_CTX_get(bn_ctx)
+        check_y = self._lib.BN_CTX_get(bn_ctx)
+
+        if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
+            set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
+            get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
+        else:
+            set_func = self._lib.EC_POINT_set_affine_coordinates_GFp
+            get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
+
+        assert set_func and get_func
+
+        res = set_func(group, point, bn_x, bn_y, bn_ctx)
+        assert res == 1
+
+        res = get_func(group, point, check_x, check_y, bn_ctx)
+        assert res == 1
+
+        assert (
+            self._lib.BN_cmp(bn_x, check_x) == 0 and
+            self._lib.BN_cmp(bn_y, check_y) == 0
+        )
+
+        res = self._lib.EC_KEY_set_public_key(ctx, point)
+        assert res == 1
+
+        res = self._lib.EC_KEY_check_key(ctx)
+        assert res == 1
+
+        return ctx
 
 
 class GetCipherByName(object):
@@ -1482,6 +1690,71 @@ class _CMACContext(object):
         return _CMACContext(
             self._backend, self._algorithm, ctx=copied_ctx
         )
+
+
+@utils.register_interface(interfaces.AsymmetricSignatureContext)
+class _ECDSASignatureContext(object):
+    def __init__(self, backend, private_key, algorithm):
+        self._backend = backend
+        self._private_key = private_key
+        self._ec_key_cdata = self._backend._ec_key_cdata_from_private_key(
+            private_key
+        )
+        self._digest = hashes.Hash(algorithm, backend)
+
+        self._max_size = self._backend._lib.ECDSA_size(self._ec_key_cdata)
+        assert self._max_size >= algorithm.digest_size
+
+    def update(self, data):
+        self._digest.update(data)
+
+    def finalize(self):
+        digest = self._digest.finalize()
+        sigbuf = self._backend._ffi.new("char[]", self._max_size)
+        siglen_ptr = self._backend._ffi.new("unsigned int[]", 1)
+        res = self._backend._lib.ECDSA_sign(
+            0,
+            digest,
+            len(digest),
+            sigbuf,
+            siglen_ptr,
+            self._ec_key_cdata
+        )
+        assert res == 1
+        return self._backend._ffi.buffer(sigbuf)[:siglen_ptr[0]]
+
+
+@utils.register_interface(interfaces.AsymmetricVerificationContext)
+class _ECDSAVerificationContext(object):
+    def __init__(self, backend, public_key, signature, algorithm):
+        self._backend = backend
+        self._public_key = public_key
+        self._ec_key_cdata = self._backend._ec_key_cdata_from_public_key(
+            public_key
+        )
+        self._signature = signature
+        self._digest = hashes.Hash(algorithm, backend)
+
+        self._max_size = self._backend._lib.ECDSA_size(self._ec_key_cdata)
+        assert self._max_size >= algorithm.digest_size
+
+    def update(self, data):
+        self._digest.update(data)
+
+    def verify(self):
+        digest = self._digest.finalize()
+        res = self._backend._lib.ECDSA_verify(
+            0,
+            digest,
+            len(digest),
+            self._signature,
+            len(self._signature),
+            self._ec_key_cdata
+        )
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors
+            raise InvalidSignature
 
 
 backend = Backend()

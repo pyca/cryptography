@@ -195,3 +195,34 @@ class CMACBackend(object):
         """
         Create a CMACContext for calculating a message authentication code.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ECDSABackend(object):
+    @abc.abstractmethod
+    def ecdsa_supported(self):
+        """
+        Does this instance of the backend actually support ECDSA?
+
+        Useful for backends which have features removed on some platforms.
+        """
+
+    @abc.abstractmethod
+    def generate_ecdsa_private_key(self, curve):
+        """
+        Return an object conforming to the ECDSAPrivateKey interface.
+        """
+
+    @abc.abstractmethod
+    def create_ecdsa_signature_ctx(self, private_key, algorithm):
+        """
+        Return an object conforming to the AsymmetricSignatureContext
+        interface.
+        """
+
+    @abc.abstractmethod
+    def create_ecdsa_verification_ctx(self, public_key, signature, algorithm):
+        """
+        Return an object conforming to the AsymmetricVerificationContext
+        interface.
+        """
