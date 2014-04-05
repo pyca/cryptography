@@ -92,6 +92,7 @@ MACROS = """
 int BN_zero(BIGNUM *);
 int BN_one(BIGNUM *);
 int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+BIGNUM *BN_cmp(const BIGNUM *, const BIGNUM *);
 """
 
 CUSTOMIZATIONS = """
