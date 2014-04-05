@@ -16,9 +16,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import (
-    InternalError, _Reasons
-)
+from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.openssl.backend import Backend, backend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
@@ -27,8 +25,6 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ...utils import raises_unsupported_algorithm
-
-from cryptography.utils import bit_length
 
 
 @utils.register_interface(interfaces.Mode)
@@ -211,9 +207,9 @@ class TestOpenSSL(object):
     )
     def test_large_key_size_on_new_openssl(self):
         parameters = dsa.DSAParameters.generate(2048, backend)
-        assert bit_length(parameters.p) == 2048
+        assert utils.bit_length(parameters.p) == 2048
         parameters = dsa.DSAParameters.generate(3072, backend)
-        assert bit_length(parameters.p) == 3072
+        assert utils.bit_length(parameters.p) == 3072
 
 
 class TestOpenSSLRandomEngine(object):
