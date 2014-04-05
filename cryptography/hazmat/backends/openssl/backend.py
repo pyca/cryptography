@@ -897,15 +897,18 @@ class _RSASignatureContext(object):
         if res != 1:
             errors = self._backend._consume_errors()
             assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
-            raise ValueError(
-                {
-                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE:
-                    "Salt length too long for key size. Try using MAX_LENGTH "
-                    "instead.",
-                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY:
-                    "Digest too large for key size. Use a larger key."
-                }[errors[0].reason]
-            )
+            assert (errors[0].reason ==
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE or
+                    errors[0].reason ==
+                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY)
+            if (errors[0].reason ==
+                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE):
+                reason = ("Salt length too long for key size. Try using "
+                          "MAX_LENGTH instead.")
+            if (errors[0].reason ==
+                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY):
+                reason = "Digest too large for key size. Use a larger key."
+            raise ValueError(reason)
 
         return self._backend._ffi.buffer(buf)[:]
 
