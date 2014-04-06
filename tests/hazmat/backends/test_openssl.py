@@ -143,8 +143,8 @@ class TestOpenSSL(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
-    # This test is not in the next class because to check if it's really
-    # default we don't want to run the setup_method before it
+    # This test is not in the TestOpenSSLRandomEngine class because to check
+    # if it's really default we don't want to run the setup_method before it
     def test_osrandom_engine_is_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
@@ -291,3 +291,54 @@ class TestOpenSSLRSA(object):
 
     def test_unsupported_mgf1_hash_algorithm(self):
         assert backend.mgf1_hash_supported(DummyHash()) is False
+
+    def test_unsupported_mgf1_hash_algorithm_decrypt(self):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.decrypt(
+                b"ciphertext",
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                backend
+            )
+
+    def test_unsupported_oaep_hash_algorithm_decrypt(self):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.decrypt(
+                b"ciphertext",
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                ),
+                backend
+            )
+
+    def test_unsupported_oaep_label_decrypt(self):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(ValueError):
+            private_key.decrypt(
+                b"ciphertext",
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=b"label"
+                ),
+                backend
+            )

@@ -118,7 +118,7 @@ class RSABackend(object):
         """
 
     @abc.abstractmethod
-    def rsa_decrypt(self, private_key, ciphertext, padding):
+    def decrypt_rsa(self, private_key, ciphertext, padding):
         """
         Returns decrypted bytes.
         """

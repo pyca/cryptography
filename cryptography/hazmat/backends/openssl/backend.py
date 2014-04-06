@@ -473,14 +473,15 @@ class Backend(object):
             y=self._bn_to_int(ctx.pub_key)
         )
 
-    def rsa_decrypt(self, private_key, ciphertext, padding):
+    def decrypt_rsa(self, private_key, ciphertext, padding):
         if isinstance(padding, PKCS1v15):
             padding_enum = self._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, OAEP):
             padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend"
+                    "Only MGF1 is supported by this backend",
+                    _Reasons.UNSUPPORTED_MGF
                 )
 
             if not isinstance(padding._mgf._algorithm, hashes.SHA1):
@@ -489,6 +490,16 @@ class Backend(object):
                     "using OAEP",
                     _Reasons.UNSUPPORTED_HASH
                 )
+
+            if padding._label is not None and padding._label != b"":
+                raise ValueError("This backend does not support OAEP labels")
+
+            if not isinstance(padding._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend only supports SHA1 when using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
         else:
             raise UnsupportedAlgorithm(
                 "{0} is not supported by this backend".format(
@@ -519,16 +530,17 @@ class Backend(object):
                 ciphertext,
                 len(ciphertext)
             )
-            assert res >= 0
-            if res == 0:
+            if res <= 0:
                 errors = self._consume_errors()
                 assert errors
-                raise SystemError  # TODO
+                raise self._unknown_error(errors[0])  # TODO
 
             return self._ffi.buffer(buf)[:outlen[0]]
         else:
             rsa_cdata = self._rsa_cdata_from_private_key(private_key)
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+            res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+            assert res == 1
             key_size = self._lib.RSA_size(rsa_cdata)
             assert key_size > 0
             buf = self._ffi.new("unsigned char[]", key_size)
@@ -542,7 +554,7 @@ class Backend(object):
             if res < 0:
                 errors = self._consume_errors()
                 assert errors
-                raise SystemError  # TODO
+                raise self._unknown_error(errors[0])  # TODO
 
             return self._ffi.buffer(buf)[:res]
 
