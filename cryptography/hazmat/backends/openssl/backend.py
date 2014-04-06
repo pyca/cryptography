@@ -515,55 +515,55 @@ class Backend(object):
             return self._decrypt_rsa_098(private_key, ciphertext, padding_enum)
 
     def _decrypt_rsa_pkey_ctx(self, private_key, ciphertext, padding_enum):
-            evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
-            pkey_ctx = self._lib.EVP_PKEY_CTX_new(
-                evp_pkey, self._ffi.NULL
-            )
-            assert pkey_ctx != self._ffi.NULL
-            res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
-            assert res == 1
-            res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
-                pkey_ctx, padding_enum)
-            assert res > 0
-            buf_size = self._lib.EVP_PKEY_size(evp_pkey)
-            assert buf_size > 0
-            outlen = self._ffi.new("size_t *", buf_size)
-            buf = self._ffi.new("char[]", buf_size)
-            res = self._lib.Cryptography_EVP_PKEY_decrypt(
-                pkey_ctx,
-                buf,
-                outlen,
-                ciphertext,
-                len(ciphertext)
-            )
-            if res <= 0:
-                errors = self._consume_errors()
-                assert errors
-                raise self._unknown_error(errors[0])  # TODO
+        evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
+        pkey_ctx = self._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._ffi.NULL
+        )
+        assert pkey_ctx != self._ffi.NULL
+        res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
+        assert res == 1
+        res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, padding_enum)
+        assert res > 0
+        buf_size = self._lib.EVP_PKEY_size(evp_pkey)
+        assert buf_size > 0
+        outlen = self._ffi.new("size_t *", buf_size)
+        buf = self._ffi.new("char[]", buf_size)
+        res = self._lib.Cryptography_EVP_PKEY_decrypt(
+            pkey_ctx,
+            buf,
+            outlen,
+            ciphertext,
+            len(ciphertext)
+        )
+        if res <= 0:
+            errors = self._consume_errors()
+            assert errors
+            raise self._unknown_error(errors[0])  # TODO
 
-            return self._ffi.buffer(buf)[:outlen[0]]
+        return self._ffi.buffer(buf)[:outlen[0]]
 
     def _decrypt_rsa_098(self, private_key, ciphertext, padding_enum):
-            rsa_cdata = self._rsa_cdata_from_private_key(private_key)
-            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-            res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
-            assert res == 1
-            key_size = self._lib.RSA_size(rsa_cdata)
-            assert key_size > 0
-            buf = self._ffi.new("unsigned char[]", key_size)
-            res = self._lib.RSA_private_decrypt(
-                len(ciphertext),
-                ciphertext,
-                buf,
-                rsa_cdata,
-                padding_enum
-            )
-            if res < 0:
-                errors = self._consume_errors()
-                assert errors
-                raise self._unknown_error(errors[0])  # TODO
+        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        assert res == 1
+        key_size = self._lib.RSA_size(rsa_cdata)
+        assert key_size > 0
+        buf = self._ffi.new("unsigned char[]", key_size)
+        res = self._lib.RSA_private_decrypt(
+            len(ciphertext),
+            ciphertext,
+            buf,
+            rsa_cdata,
+            padding_enum
+        )
+        if res < 0:
+            errors = self._consume_errors()
+            assert errors
+            raise self._unknown_error(errors[0])  # TODO
 
-            return self._ffi.buffer(buf)[:res]
+        return self._ffi.buffer(buf)[:res]
 
 
 class GetCipherByName(object):
