@@ -58,8 +58,13 @@ class PSS(object):
 class OAEP(object):
     name = "EME-OAEP"
 
-    def __init__(self, mgf):
+    def __init__(self, mgf, algorithm, label):
         self._mgf = mgf
+        if not isinstance(algorithm, interfaces.HashAlgorithm):
+            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+
+        self._algorithm = algorithm
+        self._label = label
 
 
 class MGF1(object):
