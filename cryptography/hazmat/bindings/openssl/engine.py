@@ -34,16 +34,19 @@ typedef ... *ENGINE_DIGESTS_PTR;
 typedef ... ENGINE_CMD_DEFN;
 typedef ... UI_METHOD;
 
-static const unsigned int ENGINE_METHOD_RSA;
-static const unsigned int ENGINE_METHOD_DSA;
-static const unsigned int ENGINE_METHOD_RAND;
-static const unsigned int ENGINE_METHOD_ECDH;
-static const unsigned int ENGINE_METHOD_ECDSA;
-static const unsigned int ENGINE_METHOD_CIPHERS;
-static const unsigned int ENGINE_METHOD_DIGESTS;
-static const unsigned int ENGINE_METHOD_STORE;
-static const unsigned int ENGINE_METHOD_ALL;
-static const unsigned int ENGINE_METHOD_NONE;
+/* These defines are cast to unsigned int in the headers, but cffi's codegen
+   causes warnings on Windows. Since they're all very small it is safe to make
+   them signed long and silence the warning. */
+static const long ENGINE_METHOD_RSA;
+static const long ENGINE_METHOD_DSA;
+static const long ENGINE_METHOD_RAND;
+static const long ENGINE_METHOD_ECDH;
+static const long ENGINE_METHOD_ECDSA;
+static const long ENGINE_METHOD_CIPHERS;
+static const long ENGINE_METHOD_DIGESTS;
+static const long ENGINE_METHOD_STORE;
+static const long ENGINE_METHOD_ALL;
+static const long ENGINE_METHOD_NONE;
 """
 
 FUNCTIONS = """
