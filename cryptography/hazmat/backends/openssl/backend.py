@@ -509,6 +509,12 @@ class Backend(object):
             )
 
         if self._lib.Cryptography_HAS_PKEY_CTX:
+            return self._decrypt_rsa_pkey_ctx(private_key, ciphertext,
+                                              padding_enum)
+        else:
+            return self._decrypt_rsa_098(private_key, ciphertext, padding_enum)
+
+    def _decrypt_rsa_pkey_ctx(self, private_key, ciphertext, padding_enum):
             evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
             pkey_ctx = self._lib.EVP_PKEY_CTX_new(
                 evp_pkey, self._ffi.NULL
@@ -536,7 +542,8 @@ class Backend(object):
                 raise self._unknown_error(errors[0])  # TODO
 
             return self._ffi.buffer(buf)[:outlen[0]]
-        else:
+
+    def _decrypt_rsa_098(self, private_key, ciphertext, padding_enum):
             rsa_cdata = self._rsa_cdata_from_private_key(private_key)
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
             res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
