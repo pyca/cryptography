@@ -68,6 +68,7 @@ BIGNUM *BN_bin2bn(const unsigned char *, int, BIGNUM *);
 
 int BN_num_bits(const BIGNUM *);
 
+int BN_cmp(const BIGNUM *, const BIGNUM *);
 int BN_add(BIGNUM *, const BIGNUM *, const BIGNUM *);
 int BN_sub(BIGNUM *, const BIGNUM *, const BIGNUM *);
 int BN_mul(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
@@ -92,7 +93,6 @@ MACROS = """
 int BN_zero(BIGNUM *);
 int BN_one(BIGNUM *);
 int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
-BIGNUM *BN_cmp(const BIGNUM *, const BIGNUM *);
 """
 
 CUSTOMIZATIONS = """
