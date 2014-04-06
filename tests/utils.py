@@ -21,6 +21,7 @@ import pytest
 import six
 
 from cryptography.exceptions import UnsupportedAlgorithm
+
 import cryptography_vectors
 
 

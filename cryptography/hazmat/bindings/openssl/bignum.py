@@ -44,6 +44,13 @@ FUNCTIONS = """
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
 
+BN_CTX *BN_CTX_new(void);
+void BN_CTX_free(BN_CTX *);
+
+void BN_CTX_start(BN_CTX *);
+BIGNUM *BN_CTX_get(BN_CTX *);
+void BN_CTX_end(BN_CTX *);
+
 BIGNUM *BN_copy(BIGNUM *, const BIGNUM *);
 BIGNUM *BN_dup(const BIGNUM *);
 
@@ -61,6 +68,7 @@ BIGNUM *BN_bin2bn(const unsigned char *, int, BIGNUM *);
 
 int BN_num_bits(const BIGNUM *);
 
+int BN_cmp(const BIGNUM *, const BIGNUM *);
 int BN_add(BIGNUM *, const BIGNUM *, const BIGNUM *);
 int BN_sub(BIGNUM *, const BIGNUM *, const BIGNUM *);
 int BN_mul(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
