@@ -18,7 +18,8 @@ import abc
 import six
 
 
-class CipherBackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class CipherBackend(object):
     @abc.abstractmethod
     def cipher_supported(self, cipher, mode):
         """
@@ -38,7 +39,8 @@ class CipherBackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class HashBackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class HashBackend(object):
     @abc.abstractmethod
     def hash_supported(self, algorithm):
         """
@@ -52,7 +54,8 @@ class HashBackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class HMACBackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class HMACBackend(object):
     @abc.abstractmethod
     def hmac_supported(self, algorithm):
         """
@@ -67,7 +70,8 @@ class HMACBackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class PBKDF2HMACBackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class PBKDF2HMACBackend(object):
     @abc.abstractmethod
     def pbkdf2_hmac_supported(self, algorithm):
         """
@@ -83,7 +87,8 @@ class PBKDF2HMACBackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class RSABackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class RSABackend(object):
     @abc.abstractmethod
     def generate_rsa_private_key(self, public_exponent, key_size):
         """
@@ -113,7 +118,8 @@ class RSABackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class DSABackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class DSABackend(object):
     @abc.abstractmethod
     def generate_dsa_parameters(self, key_size):
         """
@@ -128,7 +134,8 @@ class DSABackend(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class OpenSSLSerializationBackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class OpenSSLSerializationBackend(object):
     @abc.abstractmethod
     def load_openssl_pem_private_key(self, data, password):
         """
