@@ -18,7 +18,8 @@ import abc
 import six
 
 
-class CipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class CipherAlgorithm(object):
     @abc.abstractproperty
     def name(self):
         """
@@ -32,7 +33,8 @@ class CipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class BlockCipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class BlockCipherAlgorithm(object):
     @abc.abstractproperty
     def block_size(self):
         """
@@ -40,7 +42,8 @@ class BlockCipherAlgorithm(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class Mode(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class Mode(object):
     @abc.abstractproperty
     def name(self):
         """
@@ -55,7 +58,8 @@ class Mode(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithInitializationVector(object):
     @abc.abstractproperty
     def initialization_vector(self):
         """
@@ -63,7 +67,8 @@ class ModeWithInitializationVector(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithNonce(object):
     @abc.abstractproperty
     def nonce(self):
         """
@@ -71,7 +76,8 @@ class ModeWithNonce(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class ModeWithAuthenticationTag(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithAuthenticationTag(object):
     @abc.abstractproperty
     def tag(self):
         """
@@ -79,7 +85,8 @@ class ModeWithAuthenticationTag(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class CipherContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class CipherContext(object):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -94,7 +101,8 @@ class CipherContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class AEADCipherContext(object):
     @abc.abstractmethod
     def authenticate_additional_data(self, data):
         """
@@ -102,7 +110,8 @@ class AEADCipherContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AEADEncryptionContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class AEADEncryptionContext(object):
     @abc.abstractproperty
     def tag(self):
         """
@@ -111,7 +120,8 @@ class AEADEncryptionContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class PaddingContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class PaddingContext(object):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -125,7 +135,8 @@ class PaddingContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class HashAlgorithm(object):
     @abc.abstractproperty
     def name(self):
         """
@@ -145,7 +156,8 @@ class HashAlgorithm(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class HashContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class HashContext(object):
     @abc.abstractproperty
     def algorithm(self):
         """
@@ -171,7 +183,8 @@ class HashContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class RSAPrivateKey(object):
     @abc.abstractproperty
     def modulus(self):
         """
@@ -255,7 +268,8 @@ class RSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicKey(object):
     @abc.abstractproperty
     def modulus(self):
         """
@@ -287,7 +301,8 @@ class RSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class DSAParameters(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class DSAParameters(object):
     @abc.abstractproperty
     def modulus(self):
         """
@@ -333,7 +348,8 @@ class DSAParameters(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class DSAPrivateKey(object):
     @abc.abstractproperty
     def key_size(self):
         """
@@ -365,7 +381,8 @@ class DSAPrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class DSAPublicKey(object):
     @abc.abstractproperty
     def key_size(self):
         """
@@ -385,7 +402,8 @@ class DSAPublicKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricSignatureContext(object):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -399,7 +417,8 @@ class AsymmetricSignatureContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AsymmetricVerificationContext(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricVerificationContext(object):
     @abc.abstractmethod
     def update(self, data):
         """
@@ -414,7 +433,8 @@ class AsymmetricVerificationContext(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class AsymmetricPadding(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricPadding(object):
     @abc.abstractproperty
     def name(self):
         """
@@ -422,7 +442,8 @@ class AsymmetricPadding(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class KeyDerivationFunction(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class KeyDerivationFunction(object):
     @abc.abstractmethod
     def derive(self, key_material):
         """
