@@ -37,13 +37,13 @@ DSA
 
         Generate a new ``DSAParameters`` instance using ``backend``.
 
-        :param int key_size: The length of the modulus in bits. It should be 
-            either "1024, 2048 or 3072". For keys generated in 2014 this should 
+        :param int key_size: The length of the modulus in bits. It should be
+            either "1024, 2048 or 3072". For keys generated in 2014 this should
             be `at least 2048`_ (See page 41).
-            Note that some applications (such as SSH) have not yet gained support 
+            Note that some applications (such as SSH) have not yet gained support
             for larger key sizes specified in FIPS 186-3 and are still restricted
             to only the 1024-bit keys specified in FIPS 186-2.
-            
+
         :return: A new instance of ``DSAParameters``
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
@@ -92,7 +92,7 @@ DSA
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
             the provided ``backend`` does not implement
             :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-        
+
         :raises ValueError: This is raised if the key size is not (1024 or 2048 or 3072)
             or if the OpenSSL version is older than 1.0.0 and the key size is larger than 1024
             because older OpenSSL versions don't support a key size larger than 1024.
@@ -115,11 +115,11 @@ DSA
     :raises TypeError: This is raised when the arguments are not all integers.
 
     :raises ValueError: This is raised when the values of ``modulus``,
-                        ``subgroup_order``,``generator``, or ``y`` 
+                        ``subgroup_order``, ``generator``, or ``y``
                         do not match the bounds specified in `FIPS 186-4`_.
 
 
-.. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm 
+.. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
-.. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf 
+.. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
 .. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
