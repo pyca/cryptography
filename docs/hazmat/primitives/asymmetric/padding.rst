@@ -22,8 +22,8 @@ Padding
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
 
-    :param bytes label: A label to apply. This is a rarely used field and many
-        backends do not support it.
+    :param bytes label: A label to apply. This is a rarely used field and
+        should typically be set to ``None`` or ``b""`` (equivalent values).
 
 .. class:: PSS(mgf, salt_length)
 
