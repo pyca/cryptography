@@ -524,6 +524,7 @@ class Backend(object):
             evp_pkey, self._ffi.NULL
         )
         assert pkey_ctx != self._ffi.NULL
+        pkey_ctx = self._ffi.gc(pkey_ctx, self._lib.EVP_PKEY_CTX_free)
         res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
         assert res == 1
         res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
