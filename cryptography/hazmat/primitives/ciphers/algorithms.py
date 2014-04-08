@@ -131,6 +131,7 @@ class IDEA(object):
     def key_size(self):
         return len(self.key) * 8
 
+
 @utils.register_interface(interfaces.BlockCipherAlgorithm)
 @utils.register_interface(interfaces.CipherAlgorithm)
 class SEED(object):
