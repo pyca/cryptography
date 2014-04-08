@@ -240,21 +240,12 @@ void (*EC_GROUP_clear_free)(EC_GROUP *);
 EC_GROUP *(*EC_GROUP_new_curve_GFp)(
     const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 
-EC_GROUP *(*EC_GROUP_new_curve_GF2m)(
-    const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
-
 EC_GROUP *(*EC_GROUP_new_by_curve_name)(int);
 
 int (*EC_GROUP_set_curve_GFp)(
     EC_GROUP *, const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 
 int (*EC_GROUP_get_curve_GFp)(
-    const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
-
-int (*EC_GROUP_set_curve_GF2m)(
-    EC_GROUP *, const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
-
-int (*EC_GROUP_get_curve_GF2m)(
     const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
 
 const EC_METHOD *(*EC_GROUP_method_of)(const EC_GROUP *) = NULL;
@@ -281,15 +272,6 @@ int (*EC_POINT_get_affine_coordinates_GFp)(const EC_GROUP *,
     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *) = NULL;
 
 int (*EC_POINT_set_compressed_coordinates_GFp)(const EC_GROUP *, EC_POINT *,
-    const BIGNUM *, int, BN_CTX *) = NULL;
-
-int (*EC_POINT_set_affine_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
-    const BIGNUM *, const BIGNUM *, BN_CTX *) = NULL;
-
-int (*EC_POINT_get_affine_coordinates_GF2m)(const EC_GROUP *,
-    const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *) = NULL;
-
-int (*EC_POINT_set_compressed_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
     const BIGNUM *, int, BN_CTX *) = NULL;
 
 size_t (*EC_POINT_point2oct)(const EC_GROUP *, const EC_POINT *,
@@ -380,6 +362,24 @@ static const long Cryptography_HAS_EC_NISTP_64_GCC_128 = 1;
 static const long Cryptography_HAS_EC2M = 0;
 
 const EC_METHOD *(*EC_GF2m_simple_method)() = NULL;
+
+int (*EC_POINT_set_affine_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
+    const BIGNUM *, const BIGNUM *, BN_CTX *) = NULL;
+
+int (*EC_POINT_get_affine_coordinates_GF2m)(const EC_GROUP *,
+    const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *) = NULL;
+
+int (*EC_POINT_set_compressed_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
+    const BIGNUM *, int, BN_CTX *) = NULL;
+
+int (*EC_GROUP_set_curve_GF2m)(
+    EC_GROUP *, const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+
+int (*EC_GROUP_get_curve_GF2m)(
+    const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
+
+EC_GROUP *(*EC_GROUP_new_curve_GF2m)(
+    const BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 #else
 static const long Cryptography_HAS_EC2M = 1;
 #endif
@@ -391,12 +391,9 @@ CONDITIONAL_NAMES = {
         "EC_GROUP_free",
         "EC_GROUP_clear_free",
         "EC_GROUP_new_curve_GFp",
-        "EC_GROUP_new_curve_GF2m",
         "EC_GROUP_new_by_curve_name",
         "EC_GROUP_set_curve_GFp",
         "EC_GROUP_get_curve_GFp",
-        "EC_GROUP_set_curve_GF2m",
-        "EC_GROUP_get_curve_GF2m",
         "EC_GROUP_method_of",
         "EC_GROUP_get0_generator",
         "EC_GROUP_get_curve_name",
@@ -431,9 +428,6 @@ CONDITIONAL_NAMES = {
         "EC_POINT_set_affine_coordinates_GFp",
         "EC_POINT_get_affine_coordinates_GFp",
         "EC_POINT_set_compressed_coordinates_GFp",
-        "EC_POINT_set_affine_coordinates_GF2m",
-        "EC_POINT_get_affine_coordinates_GF2m",
-        "EC_POINT_set_compressed_coordinates_GF2m",
         "EC_POINT_point2oct",
         "EC_POINT_oct2point",
         "EC_POINT_point2bn",
@@ -473,5 +467,11 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_EC2M": [
         "EC_GF2m_simple_method",
+        "EC_POINT_set_affine_coordinates_GF2m",
+        "EC_POINT_get_affine_coordinates_GF2m",
+        "EC_POINT_set_compressed_coordinates_GF2m",
+        "EC_GROUP_set_curve_GF2m",
+        "EC_GROUP_get_curve_GF2m",
+        "EC_GROUP_new_curve_GF2m",
     ],
 }
