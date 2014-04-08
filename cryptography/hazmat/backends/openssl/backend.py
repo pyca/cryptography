@@ -346,9 +346,6 @@ class Backend(object):
         evp_pkey = self._new_evp_pkey()
         rsa_cdata = self._rsa_cdata_from_private_key(private_key)
 
-        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
-        assert res == 1
-
         res = self._lib.EVP_PKEY_assign_RSA(evp_pkey, rsa_cdata)
         assert res == 1
 
@@ -357,9 +354,6 @@ class Backend(object):
     def _rsa_public_key_to_evp_pkey(self, public_key):
         evp_pkey = self._new_evp_pkey()
         rsa_cdata = self._rsa_cdata_from_public_key(public_key)
-
-        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
-        assert res == 1
 
         res = self._lib.EVP_PKEY_assign_RSA(evp_pkey, rsa_cdata)
         assert res == 1
@@ -391,6 +385,9 @@ class Backend(object):
         ctx.dmp1 = self._int_to_bn(private_key.dmp1)
         ctx.dmq1 = self._int_to_bn(private_key.dmq1)
         ctx.iqmp = self._int_to_bn(private_key.iqmp)
+        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
+        assert res == 1
+
         return ctx
 
     def _rsa_cdata_from_public_key(self, public_key):
@@ -401,6 +398,9 @@ class Backend(object):
         assert ctx != self._ffi.NULL
         ctx.e = self._int_to_bn(public_key.e)
         ctx.n = self._int_to_bn(public_key.n)
+        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
+        assert res == 1
+
         return ctx
 
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
