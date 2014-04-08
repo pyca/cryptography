@@ -1330,7 +1330,7 @@ class TestRSADecryption(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(exceptions.InternalError):
+        with pytest.raises(exceptions.InvalidDecryption):
             private_key.decrypt(
                 b"\x00" * 64,
                 padding.PKCS1v15(),
