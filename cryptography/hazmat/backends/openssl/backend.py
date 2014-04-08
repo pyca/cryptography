@@ -35,7 +35,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES
+    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES, SEED
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CTR, ECB, GCM, OFB
@@ -166,6 +166,12 @@ class Backend(object):
                 Blowfish,
                 mode_cls,
                 GetCipherByName("bf-{mode.name}")
+            )
+        for mode_cls in [CBC, CFB, OFB, ECB]:
+            self.register_cipher_adapter(
+                SEED,
+                mode_cls,
+                GetCipherByName("seed-{mode.name}")
             )
         for cipher_cls, mode_cls in itertools.product(
             [CAST5, IDEA],
