@@ -1,3 +1,6 @@
+# SEED CFB vectors built for https://github.com/pyca/cryptography
+# Derived from the AESVS MMT test data for CFB128
+# Verified against Botan
 
 COUNT = 0
 KEY = 085b8af6788fa6bc1a0b47dcf50fbd35
