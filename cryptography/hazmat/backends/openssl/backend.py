@@ -21,8 +21,8 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InternalError, InvalidSignature, InvalidTag,
-    UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InternalError, InvalidDecryption, InvalidSignature,
+    InvalidTag, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
@@ -508,6 +508,10 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_PADDING
             )
 
+        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
+        if key_size_bytes < len(ciphertext):
+            raise ValueError("Ciphertext too large for key size")
+
         if self._lib.Cryptography_HAS_PKEY_CTX:
             return self._decrypt_rsa_pkey_ctx(private_key, ciphertext,
                                               padding_enum)
@@ -539,7 +543,7 @@ class Backend(object):
         if res <= 0:
             errors = self._consume_errors()
             assert errors
-            raise self._unknown_error(errors[0])  # TODO
+            raise InvalidDecryption
 
         return self._ffi.buffer(buf)[:outlen[0]]
 
@@ -561,7 +565,7 @@ class Backend(object):
         if res < 0:
             errors = self._consume_errors()
             assert errors
-            raise self._unknown_error(errors[0])  # TODO
+            raise InvalidDecryption
 
         return self._ffi.buffer(buf)[:res]
 

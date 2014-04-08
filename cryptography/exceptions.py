@@ -59,3 +59,7 @@ class InvalidKey(Exception):
 
 class InvalidToken(Exception):
     pass
+
+
+class InvalidDecryption(Exception):
+    pass

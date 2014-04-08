@@ -1336,3 +1336,16 @@ class TestRSADecryption(object):
                 padding.PKCS1v15(),
                 backend
             )
+
+    def test_decrypt_ciphertext_too_large(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(ValueError):
+            private_key.decrypt(
+                b"\x00" * 65,
+                padding.PKCS1v15(),
+                backend
+            )
