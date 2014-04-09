@@ -4,7 +4,7 @@ SEED vector creation
 This page documents the code that was used to generate the SEED CFB and OFB
 test vectors as well as the code used to verify them against another
 implementation. For SEED the vectors were generated using OpenSSL and verified
-with Botan.
+with `Botan`_.
 
 Creation
 --------
