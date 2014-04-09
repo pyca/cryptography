@@ -35,7 +35,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES, SEED
+    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CTR, ECB, GCM, OFB
