@@ -18,7 +18,7 @@ import six
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import DSABackend
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes, interfaces
 
 
 def _check_dsa_parameters(modulus, subgroup_order, generator):
@@ -150,6 +150,23 @@ class DSAPublicKey(object):
         self._subgroup_order = subgroup_order
         self._generator = generator
         self._y = y
+
+    def verifier(self, signature, algorithm, backend):
+        if not isinstance(backend, DSABackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement DSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
+        if not isinstance(algorithm, (hashes.SHA1, hashes.SHA224,
+                          hashes.SHA256, hashes.SHA384, hashes.SHA512)):
+            raise UnsupportedAlgorithm(
+                "Unsupported Hash Algorithm, please use one of these: "
+                "SHA1, SHA224, SHA256, SHA384, SHA512",
+                _Reasons.UNSUPPORTED_HASH
+            )
+
+        return backend.create_dsa_verification_ctx(self, signature,
+                                                   algorithm)
 
     @property
     def key_size(self):
