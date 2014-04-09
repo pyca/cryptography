@@ -3,6 +3,7 @@ backends
 Backends
 Blowfish
 boolean
+Botan
 Changelog
 ciphertext
 committer
