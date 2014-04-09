@@ -216,6 +216,8 @@ static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 
 static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
+static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
+static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
 """
 
 FUNCTIONS = """

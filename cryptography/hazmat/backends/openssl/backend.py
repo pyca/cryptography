@@ -544,6 +544,11 @@ class Backend(object):
         if res <= 0:
             errors = self._consume_errors()
             assert errors
+            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+                    errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02)
             raise InvalidDecryption
 
         return self._ffi.buffer(buf)[:outlen[0]]
@@ -566,6 +571,11 @@ class Backend(object):
         if res < 0:
             errors = self._consume_errors()
             assert errors
+            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+                    errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02)
             raise InvalidDecryption
 
         return self._ffi.buffer(buf)[:res]

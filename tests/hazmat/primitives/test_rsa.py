@@ -1349,3 +1349,20 @@ class TestRSADecryption(object):
                 padding.PKCS1v15(),
                 backend
             )
+
+    def test_decrypt_ciphertext_too_small(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        ct = binascii.unhexlify(
+            b"50b4c14136bd198c2f3c3ed243fce036e168d56517984a263cd66492b80804f1"
+            b"69d210f2b9bdfb48b12f9ea05009c77da257cc600ccefe3a6283789d8ea0"
+        )
+        with pytest.raises(exceptions.InvalidDecryption):
+            private_key.decrypt(
+                ct,
+                padding.PKCS1v15(),
+                backend
+            )
