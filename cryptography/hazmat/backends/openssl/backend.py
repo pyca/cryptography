@@ -843,6 +843,8 @@ class _RSASignatureContext(object):
             evp_pkey, self._backend._ffi.NULL
         )
         assert pkey_ctx != self._backend._ffi.NULL
+        pkey_ctx = self._backend._ffi.gc(pkey_ctx,
+                                         self._backend._lib.EVP_PKEY_CTX_free)
         res = self._backend._lib.EVP_PKEY_sign_init(pkey_ctx)
         assert res == 1
         res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
@@ -1028,6 +1030,8 @@ class _RSAVerificationContext(object):
             evp_pkey, self._backend._ffi.NULL
         )
         assert pkey_ctx != self._backend._ffi.NULL
+        pkey_ctx = self._backend._ffi.gc(pkey_ctx,
+                                         self._backend._lib.EVP_PKEY_CTX_free)
         res = self._backend._lib.EVP_PKEY_verify_init(pkey_ctx)
         assert res == 1
         res = self._backend._lib.EVP_PKEY_CTX_set_signature_md(
