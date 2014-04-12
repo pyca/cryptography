@@ -25,6 +25,7 @@ FUNCTIONS = """
 int CMAC_Init(CMAC_CTX *, const void *, size_t, const EVP_CIPHER *, ENGINE *);
 int CMAC_Update(CMAC_CTX *, const void *, size_t);
 int CMAC_Final(CMAC_CTX *, unsigned char *, size_t *);
+int CMAC_CTX_copy(CMAC_CTX *, const CMAC_CTX *);
 """
 
 MACROS = """

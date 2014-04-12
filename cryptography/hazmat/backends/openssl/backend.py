@@ -1145,9 +1145,18 @@ class _RSAVerificationContext(object):
             assert errors
             raise InvalidSignature
 
-
+@utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
     def __init__(self, key, algorithm):
+        pass
+
+    def update(self, data):
+        pass
+
+    def finalize(self):
+        pass
+
+    def copy(self):
         pass
 
 
