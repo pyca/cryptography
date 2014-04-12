@@ -27,8 +27,9 @@ import cryptography_vectors
 
 from .utils import (
     check_backend_support, check_for_iface, load_cryptrec_vectors,
-    load_fips_dsa_key_pair_vectors, load_hash_vectors, load_nist_vectors,
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    load_fips_dsa_key_pair_vectors, load_fips_ecdsa_key_pair_vectors,
+    load_hash_vectors, load_nist_vectors, load_pkcs1_vectors,
+    load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm, select_backends
 )
 
@@ -1861,3 +1862,124 @@ def test_raises_unsupported_algorithm():
         raise UnsupportedAlgorithm("An error.",
                                    _Reasons.BACKEND_MISSING_INTERFACE)
     assert exc_info.type is UnsupportedAlgorithm
+
+
+def test_load_fips_ecdsa_key_pair_vectors():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.0
+    #  "Key Pair" information
+    #  Curves selected: P-192 K-233 B-571
+    #  Generated on Wed Mar 16 16:16:42 2011
+
+
+    [P-192]
+
+    [B.4.2 Key Pair Generation by Testing Candidates]
+    N = 2
+
+    d = e5ce89a34adddf25ff3bf1ffe6803f57d0220de3118798ea
+    Qx = 8abf7b3ceb2b02438af19543d3e5b1d573fa9ac60085840f
+    Qy = a87f80182dcd56a6a061f81f7da393e7cffd5e0738c6b245
+
+    d = 7d14435714ad13ff23341cb567cc91198ff8617cc39751b2
+    Qx = 39dc723b19527daa1e80425209c56463481b9b47c51f8cbd
+    Qy = 432a3e84f2a16418834fabaf6b7d2341669512951f1672ad
+
+
+    [K-233]
+
+    [B.4.2 Key Pair Generation by Testing Candidates]
+    N = 2
+
+    d = 01da7422b50e3ff051f2aaaed10acea6cbf6110c517da2f4eaca8b5b87
+    Qx = 01c7475da9a161e4b3f7d6b086494063543a979e34b8d7ac44204d47bf9f
+    Qy = 0131cbd433f112871cc175943991b6a1350bf0cdd57ed8c831a2a7710c92
+
+    d = 530951158f7b1586978c196603c12d25607d2cb0557efadb23cd0ce8
+    Qx = d37500a0391d98d3070d493e2b392a2c79dc736c097ed24b7dd5ddec44
+    Qy = 01d996cc79f37d8dba143d4a8ad9a8a60ed7ea760aae1ddba34d883f65d9
+
+
+    [B-571]
+
+    [B.4.2 Key Pair Generation by Testing Candidates]
+    N = 2
+
+    d = 01443e93c7ef6802655f641ecbe95e75f1f15b02d2e172f49a32e22047d5c00ebe1b3f\
+f0456374461360667dbf07bc67f7d6135ee0d1d46a226a530fefe8ebf3b926e9fbad8d57a6
+    Qx = 053e3710d8e7d4138db0a369c97e5332c1be38a20a4a84c36f5e55ea9fd6f34545b86\
+4ea64f319e74b5ee9e4e1fa1b7c5b2db0e52467518f8c45b658824871d5d4025a6320ca06f8
+    Qy = 03a22cfd370c4a449b936ae97ab97aab11c57686cca99d14ef184f9417fad8bedae4d\
+f8357e3710bcda1833b30e297d4bf637938b995d231e557d13f062e81e830af5ab052208ead
+
+    d = 03d2bd44ca9eeee8c860a4873ed55a54bdfdf5dab4060df7292877960b85d1fd496aa3\
+3c587347213d7f6bf208a6ab4b430546e7b6ffbc3135bd12f44a28517867ca3c83a821d6f8
+    Qx = 07a7af10f6617090bade18b2e092d0dfdc87cd616db7f2db133477a82bfe3ea421ebb\
+7d6289980819292a719eb247195529ea60ad62862de0a26c72bfc49ecc81c2f9ed704e3168f
+    Qy = 0721496cf16f988b1aabef3368450441df8439a0ca794170f270ead56203d675b57f5\
+a4090a3a2f602a77ff3bac1417f7e25a683f667b3b91f105016a47afad46a0367b18e2bdf0c
+    """).splitlines()
+
+    expected = [
+        {
+            "curve": "secp192r1",
+            "d": int("e5ce89a34adddf25ff3bf1ffe6803f57d0220de3118798ea", 16),
+            "x": int("8abf7b3ceb2b02438af19543d3e5b1d573fa9ac60085840f", 16),
+            "y": int("a87f80182dcd56a6a061f81f7da393e7cffd5e0738c6b245", 16)
+        },
+
+        {
+            "curve": "secp192r1",
+            "d": int("7d14435714ad13ff23341cb567cc91198ff8617cc39751b2", 16),
+            "x": int("39dc723b19527daa1e80425209c56463481b9b47c51f8cbd", 16),
+            "y": int("432a3e84f2a16418834fabaf6b7d2341669512951f1672ad", 16),
+        },
+
+        {
+            "curve": "sect233k1",
+            "d": int("1da7422b50e3ff051f2aaaed10acea6cbf6110c517da2f4e"
+                     "aca8b5b87", 16),
+            "x": int("1c7475da9a161e4b3f7d6b086494063543a979e34b8d7ac4"
+                     "4204d47bf9f", 16),
+            "y": int("131cbd433f112871cc175943991b6a1350bf0cdd57ed8c83"
+                     "1a2a7710c92", 16),
+        },
+
+        {
+            "curve": "sect233k1",
+            "d": int("530951158f7b1586978c196603c12d25607d2cb0557efadb"
+                     "23cd0ce8", 16),
+            "x": int("d37500a0391d98d3070d493e2b392a2c79dc736c097ed24b"
+                     "7dd5ddec44", 16),
+            "y": int("1d996cc79f37d8dba143d4a8ad9a8a60ed7ea760aae1ddba"
+                     "34d883f65d9", 16),
+        },
+
+        {
+            "curve": "sect571r1",
+            "d": int("1443e93c7ef6802655f641ecbe95e75f1f15b02d2e172f49"
+                     "a32e22047d5c00ebe1b3ff0456374461360667dbf07bc67f"
+                     "7d6135ee0d1d46a226a530fefe8ebf3b926e9fbad8d57a6", 16),
+            "x": int("53e3710d8e7d4138db0a369c97e5332c1be38a20a4a84c36"
+                     "f5e55ea9fd6f34545b864ea64f319e74b5ee9e4e1fa1b7c5"
+                     "b2db0e52467518f8c45b658824871d5d4025a6320ca06f8", 16),
+            "y": int("3a22cfd370c4a449b936ae97ab97aab11c57686cca99d14e"
+                     "f184f9417fad8bedae4df8357e3710bcda1833b30e297d4b"
+                     "f637938b995d231e557d13f062e81e830af5ab052208ead", 16),
+        },
+
+        {
+            "curve": "sect571r1",
+            "d": int("3d2bd44ca9eeee8c860a4873ed55a54bdfdf5dab4060df72"
+                     "92877960b85d1fd496aa33c587347213d7f6bf208a6ab4b4"
+                     "30546e7b6ffbc3135bd12f44a28517867ca3c83a821d6f8", 16),
+            "x": int("7a7af10f6617090bade18b2e092d0dfdc87cd616db7f2db1"
+                     "33477a82bfe3ea421ebb7d6289980819292a719eb2471955"
+                     "29ea60ad62862de0a26c72bfc49ecc81c2f9ed704e3168f", 16),
+            "y": int("721496cf16f988b1aabef3368450441df8439a0ca794170f"
+                     "270ead56203d675b57f5a4090a3a2f602a77ff3bac1417f7"
+                     "e25a683f667b3b91f105016a47afad46a0367b18e2bdf0c", 16),
+        },
+    ]
+
+    assert expected == load_fips_ecdsa_key_pair_vectors(vector_data)

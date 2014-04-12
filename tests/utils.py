@@ -427,3 +427,58 @@ def load_fips_dsa_key_pair_vectors(vector_data):
                 vectors[-1]['y'] = int(line.split("=")[1], 16)
 
     return vectors
+
+
+def load_fips_ecdsa_key_pair_vectors(vector_data):
+    """
+    Loads data out of the FIPS ECDSA KeyPair vector files.
+    """
+    vectors = []
+    key_data = None
+
+    nist_name_map = {
+        "[P-192]": "secp192r1",
+        "[P-224]": "secp224r1",
+        "[P-256]": "secp192r1",
+        "[P-384]": "secp384r1",
+        "[P-521]": "secp521r1",
+        "[K-163]": "sect163k1",
+        "[K-233]": "sect233k1",
+        "[K-283]": "sect233k1",
+        "[K-409]": "sect409k1",
+        "[K-571]": "sect571k1",
+        "[B-163]": "sect163r2",
+        "[B-233]": "sect233r1",
+        "[B-283]": "sect283r1",
+        "[B-409]": "sect409r1",
+        "[B-571]": "sect571r1",
+    }
+
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line in nist_name_map:
+            curve_name = nist_name_map[line]
+
+        elif line.startswith("d = "):
+            if key_data is not None:
+                vectors.append(key_data)
+
+            key_data = {
+                "curve": curve_name,
+                "d": int(line.split("=")[1], 16)
+            }
+
+        elif key_data is not None:
+            if line.startswith("Qx = "):
+                key_data["x"] = int(line.split("=")[1], 16)
+            elif line.startswith("Qy = "):
+                key_data["y"] = int(line.split("=")[1], 16)
+
+    if key_data is not None:
+        vectors.append(key_data)
+
+    return vectors
