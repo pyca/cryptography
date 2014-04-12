@@ -55,6 +55,11 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
     cdef_sources = types + functions + macros
     ffi.cdef("\n".join(cdef_sources))
 
+    compiler_args = []
+    if sys.platform != "win32":
+        compiler_args.append("-Werror")
+    if sys.platform == "darwin":
+        compiler_args.append("-Wno-error=unused-command-line-argument")
     # We include functions here so that if we got any of their definitions
     # wrong, the underlying C compiler will explode. In C you are allowed
     # to re-declare a function if it has the same signature. That is:
@@ -75,6 +80,7 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         modulename=_create_modulename(cdef_sources, source, sys.version),
         libraries=libraries,
         ext_package="cryptography",
+        extra_compile_args=compiler_args,
     )
 
     for name in modules:
