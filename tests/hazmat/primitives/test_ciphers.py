@@ -20,7 +20,7 @@ import pytest
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers.algorithms import (
-    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, TripleDES
+    AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import ECB
 
@@ -125,6 +125,16 @@ class TestIDEA(object):
     def test_invalid_key_size(self):
         with pytest.raises(ValueError):
             IDEA(b"\x00" * 17)
+
+
+class TestSEED(object):
+    def test_key_size(self):
+        cipher = SEED(b"\x00" * 16)
+        assert cipher.key_size == 128
+
+    def test_invalid_key_size(self):
+        with pytest.raises(ValueError):
+            SEED(b"\x00" * 17)
 
 
 def test_invalid_backend():

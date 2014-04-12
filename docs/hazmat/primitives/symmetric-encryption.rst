@@ -130,6 +130,17 @@ Algorithms
     :param bytes key: The secret key, This must be kept secret. 40 to 128 bits
         in length in increments of 8 bits.
 
+.. class:: SEED(key)
+
+    .. versionadded:: 0.4
+
+    SEED is a block cipher developed by the Korea Information Security Agency (
+    KISA). It is defined in :rfc:`4269` and is used broadly throughout South
+    Korean industry, but rarely found elsewhere.
+
+    :param bytes key: The secret key. This must be kept secret. ``128`` bits in
+        length.
+
 Weak ciphers
 ------------
 
@@ -176,7 +187,7 @@ Weak ciphers
     is susceptible to attacks when using weak keys. It is recommended that you
     do not use this cipher for new applications.
 
-    :param bytes key: The secret key This must be kept secret. ``128`` bits in
+    :param bytes key: The secret key. This must be kept secret. ``128`` bits in
         length.
 
 
