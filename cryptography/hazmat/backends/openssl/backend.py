@@ -25,8 +25,8 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    RSABackend
+    CipherBackend, CMACBackend, DSABackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
@@ -47,6 +47,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 
 @utils.register_interface(CipherBackend)
+@utils.register_interface(CMACBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
@@ -468,6 +469,9 @@ class Backend(object):
             x=self._bn_to_int(ctx.priv_key),
             y=self._bn_to_int(ctx.pub_key)
         )
+
+    def create_cmac_ctx(self, key, algorithm):
+        return _CMACContext(self, key, algorithm)
 
 
 class GetCipherByName(object):
@@ -1140,6 +1144,11 @@ class _RSAVerificationContext(object):
             errors = self._backend._consume_errors()
             assert errors
             raise InvalidSignature
+
+
+class _CMACContext(object):
+    def __init__(self, key, algorithm):
+        pass
 
 
 backend = Backend()
