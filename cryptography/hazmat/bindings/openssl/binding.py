@@ -48,6 +48,7 @@ class Binding(object):
         "asn1",
         "bignum",
         "bio",
+        "cmac",
         "conf",
         "crypto",
         "dh",
