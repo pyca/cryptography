@@ -92,11 +92,11 @@ Two factor authentication
 CMAC
 ~~~~
 
-* AES-128 from :rfc:`4493`
+* AES-128 from `NIST SP-800-38B`_
 * AES-192 from `NIST SP-800-38B`_
 * AES-256 from `NIST SP-800-38B`_
 * Three Key 3DES from `NIST SP-800-38B`_
-* Two Key 3DES `NIST SP-800-38B`_
+* Two Key 3DES from `NIST SP-800-38B`_
 
 Creating test vectors
 ---------------------
@@ -147,4 +147,4 @@ header format (substituting the correct information):
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
 .. _`Ed25519 website`: http://ed25519.cr.yp.to/software.html
-.. _`NIST SP-800-38B`: http://csrc.nist.gov/publications/nistpubs/800-38B/SP_800-38B.pdf
+.. _`NIST SP-800-38B`: http://csrc.nist.gov/publications/nistpubs/800-38B/Updated_CMAC_Examples.pdf

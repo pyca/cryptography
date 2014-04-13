@@ -1,5 +1,5 @@
 # AES-128-CMAC Test Vectors
-# RFC 4493
+# NIST SP_800-38B
 
 COUNT = 0
 KEY = 2b7e151628aed2a6abf7158809cf4f3c
