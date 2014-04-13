@@ -1145,16 +1145,41 @@ class _RSAVerificationContext(object):
             assert errors
             raise InvalidSignature
 
+
 @utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
-    def __init__(self, key, algorithm):
-        pass
+    def __init__(self, backend, key, algorithm):
+        self._backend = backend
+        self._key = key
+        self._algorithm = algorithm
+        self._output_length = algorithm.block_size // 8
+
+        cipher_string = "{0}-{1}-CBC".format(algorithm.name, len(key)*8).lower()
+        evp_cipher = self._backend._lib.EVP_get_cipherbyname(
+            cipher_string.encode("ascii")
+        )
+
+        ctx = self._backend._lib.CMAC_CTX_new()
+        self._backend._lib.CMAC_Init(
+            ctx, key, len(key), evp_cipher, self._backend._ffi.NULL
+        )
+
+        self._ctx = ctx
 
     def update(self, data):
-        pass
+        res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
+        assert res == 1
 
     def finalize(self):
-        pass
+        buf = self._backend._ffi.new("unsigned char[]", self._output_length)
+        length = self._backend._ffi.new("size_t *", self._output_length)
+        res = self._backend._lib.CMAC_Final(
+            self._ctx, buf, length
+        )
+        assert res == 1
+
+        self._backend._lib.CMAC_CTX_free(self._ctx)
+        return self._backend._ffi.buffer(buf)[:]
 
     def copy(self):
         pass
