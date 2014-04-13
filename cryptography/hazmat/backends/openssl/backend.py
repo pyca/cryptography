@@ -1760,9 +1760,6 @@ class _ECDSASignatureContext(object):
             siglen_ptr,
             self._ec_key_cdata
         )
-        if res != 1:
-            errors = self._backend._consume_errors()
-            print("SIGN", errors)
         assert res == 1
         return self._backend._ffi.buffer(sigbuf)[:siglen_ptr[0]]
 
@@ -1796,7 +1793,6 @@ class _ECDSAVerificationContext(object):
         )
         if res != 1:
             errors = self._backend._consume_errors()
-            print("VERIFY", errors)
             assert errors
             raise InvalidSignature
 
