@@ -19,8 +19,7 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from ...utils import (
@@ -96,3 +95,13 @@ class TestECDSA(object):
             exceptions._Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         ):
             ec.EllipticCurvePrivateKey.generate(DummyCurve(), backend)
+
+
+class TestECInterfaces(object):
+    def test_invalid_private_key_argument_types(self):
+        with pytest.raises(TypeError):
+            ec.EllipticCurvePrivateKey(None, None, None, None)
+
+    def test_invalid_public_key_argument_types(self):
+        with pytest.raises(TypeError):
+            ec.EllipticCurvePublicKey(None, None, None)
