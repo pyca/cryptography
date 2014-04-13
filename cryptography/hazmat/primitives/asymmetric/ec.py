@@ -53,6 +53,9 @@ class EllipticCurvePublicKey(object):
         self._x = x
         self._curve = curve
 
+    def verifier(self, signature, algorithm, backend):
+        return backend.create_ecdsa_verification_ctx(self, signature, algorithm)
+
     @property
     def key_size(self):
         return self._curve.key_size
@@ -93,7 +96,7 @@ class EllipticCurvePrivateKey(object):
         return backend.generate_ecdsa_private_key(curve)
 
     def signer(self, algorithm, backend):
-        pass
+        return backend.create_ecdsa_signature_ctx(self, algorithm)
 
     @property
     def key_size(self):

@@ -19,18 +19,14 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from ...utils import (
     raises_unsupported_algorithm,
-    load_vectors_from_file, load_fips_ecdsa_key_pair_vectors
+    load_vectors_from_file, load_fips_ecdsa_key_pair_vectors,
+    load_fips_ecdsa_signing_vectors
 )
-
-
-@utils.register_interface(interfaces.EllipticCurve)
-class DummyCurve(object):
-    name = "dummy-curve"
 
 
 @pytest.mark.ecdsa
@@ -38,7 +34,7 @@ class DummyCurve(object):
     only_if=lambda backend: backend.ecdsa_supported(),
     skip_message="This backend does not support ECDSA"
 )
-class TestECDSA(object):
+class TestECDSAVectors(object):
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -91,13 +87,51 @@ class TestECDSA(object):
         assert key
 
     def test_generate_unknown_curve(self, backend):
+        @utils.register_interface(interfaces.EllipticCurve)
+        class DummyCurve(object):
+            name = "dummy-curve"
+
         with raises_unsupported_algorithm(
             exceptions._Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         ):
             ec.EllipticCurvePrivateKey.generate(DummyCurve(), backend)
 
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDSA", "FIPS_186-3", "SigGen.txt"),
+            load_fips_ecdsa_signing_vectors
+        )
+    )
+    def test_signing(self, backend, vector):
+        @utils.register_interface(interfaces.EllipticCurve)
+        class Curve(object):
+            name = vector['curve']
 
-class TestECInterfaces(object):
+        key = ec.ECDSAPublicKey(
+            vector['x'],
+            vector['y'],
+            Curve()
+        )
+
+        hash_map = {
+            "SHA-1": hashes.SHA1,
+            "SHA-224": hashes.SHA224,
+            "SHA-256": hashes.SHA256,
+            "SHA-384": hashes.SHA384,
+            "SHA-512": hashes.SHA512,
+        }
+
+        verifier = key.verifier(
+            hash_map[vector['digest_algorithm']](),
+            backend
+        )
+        verifier.update(vector['message'])
+        assert verifier.verify()
+
+
+class TestEC(object):
     def test_invalid_private_key_argument_types(self):
         with pytest.raises(TypeError):
             ec.EllipticCurvePrivateKey(None, None, None, None)

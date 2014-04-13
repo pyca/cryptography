@@ -669,7 +669,7 @@ class Backend(object):
             return True
 
     def _supported_curves(self):
-        if self._lib.Cryptography_HAS_EC:
+        if self.ecdsa_supported():
             num_curves = self._lib.EC_get_builtin_curves(self._ffi.NULL, 0)
             curve_array = self._ffi.new("EC_builtin_curve[]", num_curves)
             num_curves_assigned = self._lib.EC_get_builtin_curves(
@@ -682,6 +682,13 @@ class Backend(object):
             ]
         else:
             return []
+
+    def create_ecdsa_signature_ctx(self, private_key, algorithm):
+        return _ECDSASignatureContext(self, private_key, algorithm)
+
+    def create_ecdsa_verification_ctx(self, public_key, signature, algorithm):
+        return _ECDSAVerificationContext(self, public_key, signature,
+                                         algorithm)
 
     def generate_ecdsa_private_key(self, curve):
         """
