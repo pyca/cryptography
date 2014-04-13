@@ -177,18 +177,15 @@ class TestOpenSSL(object):
         parameters = dsa.DSAParameters.generate(3072, backend)
         assert utils.bit_length(parameters.p) == 3072
 
-    def test_supported_curves(self):
-        assert backend._supported_curves()
-
-    @pytest.mark.parametrize(
-        "curve", [
-            curve for curve in backend._supported_curves()
-            if curve not in {"Oakley-EC2N-3", "Oakley-EC2N-4"}
-        ]
-    )
     @pytest.mark.skipif(
         not backend.ecdsa_supported(),
         reason="This backend does not support ECDSA"
+    )
+    @pytest.mark.parametrize(
+        "curve", [
+            curve for curve in backend._supported_curves()
+            if curve not in set(("Oakley-EC2N-3", "Oakley-EC2N-4"))
+        ]
     )
     def test_ec_key_affine_point(self, curve):
         @utils.register_interface(interfaces.EllipticCurve)

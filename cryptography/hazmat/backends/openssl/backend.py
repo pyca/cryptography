@@ -669,16 +669,19 @@ class Backend(object):
             return True
 
     def _supported_curves(self):
-        num_curves = self._lib.EC_get_builtin_curves(self._ffi.NULL, 0)
-        curve_array = self._ffi.new("EC_builtin_curve[]", num_curves)
-        num_curves_assigned = self._lib.EC_get_builtin_curves(
-            curve_array, num_curves)
-        assert num_curves == num_curves_assigned
+        if self._lib.Cryptography_HAS_EC:
+            num_curves = self._lib.EC_get_builtin_curves(self._ffi.NULL, 0)
+            curve_array = self._ffi.new("EC_builtin_curve[]", num_curves)
+            num_curves_assigned = self._lib.EC_get_builtin_curves(
+                curve_array, num_curves)
+            assert num_curves == num_curves_assigned
 
-        return [
-            self._ffi.string(self._lib.OBJ_nid2sn(curve.nid)).decode()
-            for curve in curve_array
-        ]
+            return [
+                self._ffi.string(self._lib.OBJ_nid2sn(curve.nid)).decode()
+                for curve in curve_array
+            ]
+        else:
+            return []
 
     def generate_ecdsa_private_key(self, curve):
         """

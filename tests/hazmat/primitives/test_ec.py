@@ -73,14 +73,14 @@ class TestECDSA(object):
 
     @pytest.mark.parametrize(
         "curve",
-        {
+        set(
             key['curve']
             for key in load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "ECDSA", "FIPS_186-3", "KeyPair.rsp"),
                 load_fips_ecdsa_key_pair_vectors
             )
-        }
+        )
     )
     def test_generate_vector_curves(self, backend, curve):
         @utils.register_interface(interfaces.EllipticCurve)
