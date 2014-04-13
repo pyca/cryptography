@@ -2,7 +2,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -148,8 +148,8 @@ class Backend(object):
 
     def _register_default_ciphers(self):
         for cipher_cls, mode_cls in itertools.product(
-            [AES, Camellia],
-            [CBC, CTR, ECB, OFB, CFB],
+                [AES, Camellia],
+                [CBC, CTR, ECB, OFB, CFB],
         ):
             self.register_cipher_adapter(
                 cipher_cls,
@@ -175,8 +175,8 @@ class Backend(object):
                 GetCipherByName("seed-{mode.name}")
             )
         for cipher_cls, mode_cls in itertools.product(
-            [CAST5, IDEA],
-            [CBC, OFB, CFB, ECB],
+                [CAST5, IDEA],
+                [CBC, OFB, CFB, ECB],
         ):
             self.register_cipher_adapter(
                 cipher_cls,
@@ -430,7 +430,7 @@ class Backend(object):
                 "Key size must be 1024 or 2048 or 3072 bits")
 
         if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
-                key_size > 1024):
+                    key_size > 1024):
             raise ValueError(
                 "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
                 "support larger key sizes")
@@ -469,6 +469,9 @@ class Backend(object):
             x=self._bn_to_int(ctx.priv_key),
             y=self._bn_to_int(ctx.pub_key)
         )
+
+    def cmac_supported(self):
+        return backend._lib.Cryptography_HAS_CMAC == 1
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
@@ -604,13 +607,13 @@ class _CipherContext(object):
             assert errors
 
             if errors[0][1:] == (
-                self._backend._lib.ERR_LIB_EVP,
-                self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+                    self._backend._lib.ERR_LIB_EVP,
+                    self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+                    self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
             ) or errors[0][1:] == (
-                self._backend._lib.ERR_LIB_EVP,
-                self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+                    self._backend._lib.ERR_LIB_EVP,
+                    self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                    self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
             ):
                 raise ValueError(
                     "The length of the provided data is not a multiple of "
@@ -620,7 +623,7 @@ class _CipherContext(object):
                 raise self._backend._unknown_error(errors[0])
 
         if (isinstance(self._mode, GCM) and
-           self._operation == self._ENCRYPT):
+                    self._operation == self._ENCRYPT):
             block_byte_size = self._block_size // 8
             tag_buf = self._backend._ffi.new(
                 "unsigned char[]", block_byte_size
@@ -1149,6 +1152,10 @@ class _RSAVerificationContext(object):
 @utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
     def __init__(self, backend, algorithm):
+
+        if backend._lib.Cryptography_HAS_CMAC == 0:
+            raise UnsupportedAlgorithm("This backend does not support CMAC")
+
         self._backend = backend
         self._key = algorithm.key
         self._algorithm = algorithm

@@ -46,6 +46,10 @@ vectors_3des = load_vectors_from_file(
     "CMAC/nist-800-38b-3des.txt", load_nist_vectors)
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cmac_supported(),
+    skip_message="Does not support CMAC."
+)
 @pytest.mark.cmac
 class TestHMAC(object):
     @pytest.mark.parametrize("params", vectors_aes)
