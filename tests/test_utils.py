@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+from binascii import unhexlify
 import os
 import textwrap
 
@@ -28,8 +29,8 @@ import cryptography_vectors
 from .utils import (
     check_backend_support, check_for_iface, load_cryptrec_vectors,
     load_fips_dsa_key_pair_vectors, load_fips_ecdsa_key_pair_vectors,
-    load_hash_vectors, load_nist_vectors, load_pkcs1_vectors,
-    load_rsa_nist_vectors, load_vectors_from_file,
+    load_fips_ecdsa_signing_vectors, load_hash_vectors, load_nist_vectors,
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm, select_backends
 )
 
@@ -1983,3 +1984,161 @@ a4090a3a2f602a77ff3bac1417f7e25a683f667b3b91f105016a47afad46a0367b18e2bdf0c
     ]
 
     assert expected == load_fips_ecdsa_key_pair_vectors(vector_data)
+
+
+def test_load_fips_ecdsa_signing_vectors():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.2
+    #  "SigVer" information for "ecdsa_values"
+    #  Curves/SHAs selected: P-192, B-571,SHA-512
+    #  Generated on Tue Aug 16 15:27:42 2011
+
+    [P-192,SHA-1]
+
+    Msg = ebf748d748ebbca7d29fb473698a6e6b4fb10c865d4af024cc39ae3df3464ba4f1d6\
+d40f32bf9618a91bb5986fa1a2af048a0e14dc51e5267eb05e127d689d0ac6f1a7f156ce066316\
+b971cc7a11d0fd7a2093e27cf2d08727a4e6748cc32fd59c7810c5b9019df21cdcc0bca432c0a3\
+eed0785387508877114359cee4a071cf
+    d = e14f37b3d1374ff8b03f41b9b3fdd2f0ebccf275d660d7f3
+    Qx = 07008ea40b08dbe76432096e80a2494c94982d2d5bcf98e6
+    Qy = 76fab681d00b414ea636ba215de26d98c41bd7f2e4d65477
+    k = cb0abc7043a10783684556fb12c4154d57bc31a289685f25
+    R = 6994d962bdd0d793ffddf855ec5bf2f91a9698b46258a63e
+    S = 02ba6465a234903744ab02bc8521405b73cf5fc00e1a9f41
+
+    Msg = 0dcb3e96d77ee64e9d0a350d31563d525755fc675f0c833504e83fc69c030181b42f\
+e80c378e86274a93922c570d54a7a358c05755ec3ae91928e02236e81b43e596e4ccbf6a910488\
+9c388072bec4e1faeae11fe4eb24fa4f9573560dcf2e3abc703c526d46d502c7a7222583431cc8\
+178354ae7dbb84e3479917707bce0968
+    d = 7a0235bea3d70445f14d56f9b7fb80ec8ff4eb2f76865244
+    Qx = 0ea3c1fa1f124f26530cbfddeb831eecc67df31e08889d1d
+    Qy = 7215a0cce0501b47903bd8fe1179c2dfe07bd076f89f5225
+    k = 3c646b0f03f5575e5fd463d4319817ce8bd3022eaf551cef
+    R = a3ba51c39c43991d87dff0f34d0bec7c883299e04f60f95e
+    S = 8a7f9c59c6d65ad390e4c19636ba92b53be5d0f848b4e1f7
+
+    [B-571,SHA-512]
+
+    Msg = 10d2e00ae57176c79cdfc746c0c887abe799ee445b151b008e3d9f81eb69be40298d\
+df37b5c45a9b6e5ff83785d8c140cf11e6a4c3879a2845796872363da24b10f1f8d9cc48f8af20\
+681dceb60dd62095d6d3b1779a4a805de3d74e38983b24c0748618e2f92ef7cac257ff4bd1f411\
+13f2891eb13c47930e69ddbe91f270fb
+    d = 03e1b03ffca4399d5b439fac8f87a5cb06930f00d304193d7daf83d5947d0c1e293f74\
+aef8e56849f16147133c37a6b3d1b1883e5d61d6b871ea036c5291d9a74541f28878cb986
+    Qx = 3b236fc135d849d50140fdaae1045e6ae35ef61091e98f5059b30eb16acdd0deb2bc0\
+d3544bc3a666e0014e50030134fe5466a9e4d3911ed580e28851f3747c0010888e819d3d1f
+    Qy = 3a8b6627a587d289032bd76374d16771188d7ff281c39542c8977f6872fa932e5daa1\
+4e13792dea9ffe8e9f68d6b525ec99b81a5a60cfb0590cc6f297cfff8d7ba1a8bb81fe2e16
+    k = 2e56a94cfbbcd293e242f0c2a2e9df289a9480e6ba52e0f00fa19bcf2a7769bd155e6b\
+79ddbd6a8646b0e69c8baea27f8034a18796e8eb4fe6e0e2358c383521d9375d2b6b437f9
+    R = 2eb1c5c1fc93cf3c8babed12c031cf1504e094174fd335104cbe4a2abd210b5a14b1c3\
+a455579f1ed0517c31822340e4dd3c1f967e1b4b9d071a1072afc1a199f8c548cd449a634
+    S = 22f97bb48641235826cf4e597fa8de849402d6bd6114ad2d7fbcf53a08247e5ee921f1\
+bd5994dffee36eedff5592bb93b8bb148214da3b7baebffbd96b4f86c55b3f6bbac142442
+
+    Msg = b61a0849a28672cb536fcf61ea2eb389d02ff7a09aa391744cae6597bd56703c40c5\
+0ca2dee5f7ee796acfd47322f03d8dbe4d99dc8eec588b4e5467f123075b2d74b2a0b0bbfd3ac5\
+487a905fad6d6ac1421c2e564c0cf15e1f0f10bc31c249b7b46edd2462a55f85560d99bde9d5b0\
+6b97817d1dbe0a67c701d6e6e7878272
+    d = 2e09ffd8b434bb7f67d1d3ccf482164f1653c6e4ec64dec2517aa21b7a93b2b21ea1ee\
+bb54734882f29303e489f02e3b741a87287e2dcdf3858eb6d2ec668f8b5b26f442ce513a2
+    Qx = 36f1be8738dd7dae4486b86a08fe90424f3673e76b10e739442e15f3bfafaf841842a\
+c98e490521b7e7bb94c127529f6ec6a42cc6f06fc80606f1210fe020ff508148f93301c9d3
+    Qy = 4d39666ebe99fe214336ad440d776c88eb916f2f4a3433548b87d2aebed840b424d15\
+c8341b4a0a657bf6a234d4fe78631c8e07ac1f4dc7474cd6b4545d536b7b17c160db4562d9
+    k = 378e7801566d7b77db7a474717ab2195b02957cc264a9449d4126a7cc574728ed5a476\
+9abd5dde987ca66cfe3d45b5fc52ffd266acb8a8bb3fcb4b60f7febbf48aebe33bd3efbdd
+    R = 3d8105f87fe3166046c08e80a28acc98a80b8b7a729623053c2a9e80afd06756edfe09\
+bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
+    S = 34db9998dc53527114518a7ce3783d674ca8cced823fa05e2942e7a0a20b3cc583dcd9\
+30c43f9b93079c5ee18a1f5a66e7c3527c18610f9b47a4da7e245ef803e0662e4d2ad721c
+    """).splitlines()
+
+    expected = [
+        {
+            "curve": "secp192r1",
+            "digest_algorithm": "SHA-1",
+            "message": unhexlify(
+                b"ebf748d748ebbca7d29fb473698a6e6b4fb10c865d4af024cc39ae3df346"
+                b"4ba4f1d6d40f32bf9618a91bb5986fa1a2af048a0e14dc51e5267eb05e12"
+                b"7d689d0ac6f1a7f156ce066316b971cc7a11d0fd7a2093e27cf2d08727a4"
+                b"e6748cc32fd59c7810c5b9019df21cdcc0bca432c0a3eed0785387508877"
+                b"114359cee4a071cf"
+            ),
+            "d": int("e14f37b3d1374ff8b03f41b9b3fdd2f0ebccf275d660d7f3", 16),
+            "x": int("7008ea40b08dbe76432096e80a2494c94982d2d5bcf98e6", 16),
+            "y": int("76fab681d00b414ea636ba215de26d98c41bd7f2e4d65477", 16),
+            "r": int("6994d962bdd0d793ffddf855ec5bf2f91a9698b46258a63e", 16),
+            "s": int("02ba6465a234903744ab02bc8521405b73cf5fc00e1a9f41", 16)
+        },
+        {
+            "curve": "secp192r1",
+            "digest_algorithm": "SHA-1",
+            "message": unhexlify(
+                b"0dcb3e96d77ee64e9d0a350d31563d525755fc675f0c833504e83fc69c03"
+                b"0181b42fe80c378e86274a93922c570d54a7a358c05755ec3ae91928e022"
+                b"36e81b43e596e4ccbf6a9104889c388072bec4e1faeae11fe4eb24fa4f95"
+                b"73560dcf2e3abc703c526d46d502c7a7222583431cc8178354ae7dbb84e3"
+                b"479917707bce0968"
+            ),
+            "d": int("7a0235bea3d70445f14d56f9b7fb80ec8ff4eb2f76865244", 16),
+            "x": int("ea3c1fa1f124f26530cbfddeb831eecc67df31e08889d1d", 16),
+            "y": int("7215a0cce0501b47903bd8fe1179c2dfe07bd076f89f5225", 16),
+            "r": int("a3ba51c39c43991d87dff0f34d0bec7c883299e04f60f95e", 16),
+            "s": int("8a7f9c59c6d65ad390e4c19636ba92b53be5d0f848b4e1f7", 16)
+        },
+        {
+            "curve": "sect571r1",
+            "digest_algorithm": "SHA-512",
+            "message": unhexlify(
+                b"10d2e00ae57176c79cdfc746c0c887abe799ee445b151b008e3d9f81eb69"
+                b"be40298ddf37b5c45a9b6e5ff83785d8c140cf11e6a4c3879a2845796872"
+                b"363da24b10f1f8d9cc48f8af20681dceb60dd62095d6d3b1779a4a805de3"
+                b"d74e38983b24c0748618e2f92ef7cac257ff4bd1f41113f2891eb13c4793"
+                b"0e69ddbe91f270fb"
+            ),
+            "d": int("3e1b03ffca4399d5b439fac8f87a5cb06930f00d304193d7daf83d59"
+                     "47d0c1e293f74aef8e56849f16147133c37a6b3d1b1883e5d61d6b87"
+                     "1ea036c5291d9a74541f28878cb986", 16),
+            "x": int("3b236fc135d849d50140fdaae1045e6ae35ef61091e98f5059b30eb1"
+                     "6acdd0deb2bc0d3544bc3a666e0014e50030134fe5466a9e4d3911ed"
+                     "580e28851f3747c0010888e819d3d1f", 16),
+            "y": int("3a8b6627a587d289032bd76374d16771188d7ff281c39542c8977f68"
+                     "72fa932e5daa14e13792dea9ffe8e9f68d6b525ec99b81a5a60cfb05"
+                     "90cc6f297cfff8d7ba1a8bb81fe2e16", 16),
+            "r": int("2eb1c5c1fc93cf3c8babed12c031cf1504e094174fd335104cbe4a2a"
+                     "bd210b5a14b1c3a455579f1ed0517c31822340e4dd3c1f967e1b4b9d"
+                     "071a1072afc1a199f8c548cd449a634", 16),
+            "s": int("22f97bb48641235826cf4e597fa8de849402d6bd6114ad2d7fbcf53a"
+                     "08247e5ee921f1bd5994dffee36eedff5592bb93b8bb148214da3b7b"
+                     "aebffbd96b4f86c55b3f6bbac142442", 16)
+        },
+        {
+            "curve": "sect571r1",
+            "digest_algorithm": "SHA-512",
+            "message": unhexlify(
+                b"b61a0849a28672cb536fcf61ea2eb389d02ff7a09aa391744cae6597bd56"
+                b"703c40c50ca2dee5f7ee796acfd47322f03d8dbe4d99dc8eec588b4e5467"
+                b"f123075b2d74b2a0b0bbfd3ac5487a905fad6d6ac1421c2e564c0cf15e1f"
+                b"0f10bc31c249b7b46edd2462a55f85560d99bde9d5b06b97817d1dbe0a67"
+                b"c701d6e6e7878272"
+            ),
+            "d": int("2e09ffd8b434bb7f67d1d3ccf482164f1653c6e4ec64dec2517aa21b"
+                     "7a93b2b21ea1eebb54734882f29303e489f02e3b741a87287e2dcdf3"
+                     "858eb6d2ec668f8b5b26f442ce513a2", 16),
+            "x": int("36f1be8738dd7dae4486b86a08fe90424f3673e76b10e739442e15f3"
+                     "bfafaf841842ac98e490521b7e7bb94c127529f6ec6a42cc6f06fc80"
+                     "606f1210fe020ff508148f93301c9d3", 16),
+            "y": int("4d39666ebe99fe214336ad440d776c88eb916f2f4a3433548b87d2ae"
+                     "bed840b424d15c8341b4a0a657bf6a234d4fe78631c8e07ac1f4dc74"
+                     "74cd6b4545d536b7b17c160db4562d9", 16),
+            "r": int("3d8105f87fe3166046c08e80a28acc98a80b8b7a729623053c2a9e80"
+                     "afd06756edfe09bdcf3035f6829ede041b745955d219dc5d30ddd8b3"
+                     "7f6ba0f6d2857504cdc68a1ed812a10", 16),
+            "s": int("34db9998dc53527114518a7ce3783d674ca8cced823fa05e2942e7a0"
+                     "a20b3cc583dcd930c43f9b93079c5ee18a1f5a66e7c3527c18610f9b"
+                     "47a4da7e245ef803e0662e4d2ad721c", 16)
+        }
+    ]
+
+    assert expected == load_fips_ecdsa_signing_vectors(vector_data)

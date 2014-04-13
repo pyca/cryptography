@@ -13,8 +13,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
 import collections
 from contextlib import contextmanager
+import re
 
 import pytest
 
@@ -429,39 +431,39 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     return vectors
 
 
+_ECDSA_CURVE_NAMES = {
+    "P-192": "secp192r1",
+    "P-224": "secp224r1",
+    "P-256": "secp192r1",
+    "P-384": "secp384r1",
+    "P-521": "secp521r1",
+    "K-163": "sect163k1",
+    "K-233": "sect233k1",
+    "K-283": "sect233k1",
+    "K-409": "sect409k1",
+    "K-571": "sect571k1",
+    "B-163": "sect163r2",
+    "B-233": "sect233r1",
+    "B-283": "sect283r1",
+    "B-409": "sect409r1",
+    "B-571": "sect571r1",
+}
+
+
 def load_fips_ecdsa_key_pair_vectors(vector_data):
     """
     Loads data out of the FIPS ECDSA KeyPair vector files.
     """
     vectors = []
     key_data = None
-
-    nist_name_map = {
-        "[P-192]": "secp192r1",
-        "[P-224]": "secp224r1",
-        "[P-256]": "secp192r1",
-        "[P-384]": "secp384r1",
-        "[P-521]": "secp521r1",
-        "[K-163]": "sect163k1",
-        "[K-233]": "sect233k1",
-        "[K-283]": "sect233k1",
-        "[K-409]": "sect409k1",
-        "[K-571]": "sect571k1",
-        "[B-163]": "sect163r2",
-        "[B-233]": "sect233r1",
-        "[B-283]": "sect283r1",
-        "[B-409]": "sect409r1",
-        "[B-571]": "sect571r1",
-    }
-
     for line in vector_data:
         line = line.strip()
 
         if not line or line.startswith("#"):
             continue
 
-        if line in nist_name_map:
-            curve_name = nist_name_map[line]
+        if line[1:-1] in _ECDSA_CURVE_NAMES:
+            curve_name = _ECDSA_CURVE_NAMES[line[1:-1]]
 
         elif line.startswith("d = "):
             if key_data is not None:
@@ -480,5 +482,57 @@ def load_fips_ecdsa_key_pair_vectors(vector_data):
 
     if key_data is not None:
         vectors.append(key_data)
+
+    return vectors
+
+
+def load_fips_ecdsa_signing_vectors(vector_data):
+    """
+    Loads data out of the FIPS ECDSA SigGen vector files.
+    """
+    vectors = []
+
+    curve_rx = re.compile(
+        r"\[(?P<curve>[PKB]-[0-9]{3}),SHA-(?P<sha>1|224|256|384|512)\]"
+    )
+
+    data = None
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        curve_match = curve_rx.match(line)
+        if curve_match:
+            curve_name = _ECDSA_CURVE_NAMES[curve_match.group("curve")]
+            digest_name = "SHA-{0}".format(curve_match.group("sha"))
+
+        elif line.startswith("Msg = "):
+            if data is not None:
+                vectors.append(data)
+
+            hexmsg = line.split("=")[1].strip().encode("ascii")
+
+            data = {
+                "curve": curve_name,
+                "digest_algorithm": digest_name,
+                "message": binascii.unhexlify(hexmsg)
+            }
+
+        elif data is not None:
+            if line.startswith("Qx = "):
+                data["x"] = int(line.split("=")[1], 16)
+            elif line.startswith("Qy = "):
+                data["y"] = int(line.split("=")[1], 16)
+            elif line.startswith("R = "):
+                data["r"] = int(line.split("=")[1], 16)
+            elif line.startswith("S = "):
+                data["s"] = int(line.split("=")[1], 16)
+            elif line.startswith("d = "):
+                data["d"] = int(line.split("=")[1], 16)
+
+    if data is not None:
+        vectors.append(data)
 
     return vectors
