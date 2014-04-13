@@ -470,8 +470,8 @@ class Backend(object):
             y=self._bn_to_int(ctx.pub_key)
         )
 
-    def create_cmac_ctx(self, key, algorithm):
-        return _CMACContext(self, key, algorithm)
+    def create_cmac_ctx(self, algorithm):
+        return _CMACContext(self, algorithm)
 
 
 class GetCipherByName(object):
@@ -1148,20 +1148,31 @@ class _RSAVerificationContext(object):
 
 @utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
-    def __init__(self, backend, key, algorithm):
+    def __init__(self, backend, algorithm):
         self._backend = backend
-        self._key = key
+        self._key = algorithm.key
         self._algorithm = algorithm
         self._output_length = algorithm.block_size // 8
 
-        cipher_string = "{0}-{1}-CBC".format(algorithm.name, len(key)*8).lower()
-        evp_cipher = self._backend._lib.EVP_get_cipherbyname(
-            cipher_string.encode("ascii")
-        )
+        registry = self._backend._cipher_registry
+        try:
+            adapter = registry[type(algorithm), CBC]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "cipher {0} is not supported by this backend".format(
+                    algorithm.name), _Reasons.UNSUPPORTED_CIPHER
+            )
+
+        evp_cipher = adapter(self._backend, algorithm, CBC)
+        if evp_cipher == self._backend._ffi.NULL:
+            raise UnsupportedAlgorithm(
+                "cipher {0} is not supported by this backend".format(
+                    algorithm.name), _Reasons.UNSUPPORTED_CIPHER
+            )
 
         ctx = self._backend._lib.CMAC_CTX_new()
         self._backend._lib.CMAC_Init(
-            ctx, key, len(key), evp_cipher, self._backend._ffi.NULL
+            ctx, self._key, len(self._key), evp_cipher, self._backend._ffi.NULL
         )
 
         self._ctx = ctx

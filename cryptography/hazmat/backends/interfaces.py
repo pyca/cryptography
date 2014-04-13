@@ -143,6 +143,7 @@ class OpenSSLSerializationBackend(object):
         is encrypted.
         """
 
+
 @six.add_metaclass(abc.ABCMeta)
 class CMACBackend(object):
     @abc.abstractmethod

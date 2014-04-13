@@ -18,30 +18,29 @@ import six
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
-    )
+)
 from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces
 
 
 @utils.register_interface(interfaces.CMACContext)
 class CMAC(object):
-    def __init__(self, key, algorithm, backend, ctx=None):
+    def __init__(self, algorithm, backend, ctx=None):
         if not isinstance(backend, CMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement CMACBackend",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        # if not isinstance(algorithm, interfaces.BlockCipherAlgorithm):
-        #     raise TypeError(
-        #         "Expected instance of interfaces.BlockCipherAlgorithm"
-        #     )
+        if not isinstance(algorithm, interfaces.BlockCipherAlgorithm):
+            raise TypeError(
+                "Expected instance of interfaces.BlockCipherAlgorithm"
+            )
         self.algorithm = algorithm
 
         self._backend = backend
-        self._key = key
         if ctx is None:
-            self._ctx = self._backend.create_cmac_ctx(self._key, self.algorithm)
+            self._ctx = self._backend.create_cmac_ctx(self.algorithm)
         else:
             self._ctx = ctx
 
