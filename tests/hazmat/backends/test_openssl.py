@@ -208,6 +208,10 @@ class TestOpenSSL(object):
         sig = signer.finalize()
         assert sig
 
+        sig_parts = backend._ecdsa_signature_to_components(sig)
+        sig2 = backend._ecdsa_signature_from_components(*sig_parts)
+        assert sig == sig2
+
         verifier = _ECDSAVerificationContext(backend, key.public_key(),
                                              sig,
                                              hashes.SHA1())

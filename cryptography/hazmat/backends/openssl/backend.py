@@ -874,6 +874,36 @@ class Backend(object):
 
         return ctx
 
+    def _ecdsa_signature_to_components(self, signature):
+        sig_ptr = self._ffi.new("unsigned char []", signature)
+        sig_ptrptr = self._ffi.new("unsigned char **", sig_ptr)
+        sig_cdata = self._lib.d2i_ECDSA_SIG(self._ffi.NULL,
+                                            sig_ptrptr, len(signature))
+        assert sig_cdata != self._ffi.NULL
+        sig_cdata = self._ffi.gc(sig_cdata, self._lib.ECDSA_SIG_free)
+        return (
+            self._bn_to_int(sig_cdata.r),
+            self._bn_to_int(sig_cdata.s)
+        )
+
+    def _ecdsa_signature_from_components(self, r, s):
+        sig_cdata = self._lib.ECDSA_SIG_new()
+        assert sig_cdata != self._ffi.NULL
+        sig_cdata = self._ffi.gc(sig_cdata, self._lib.ECDSA_SIG_free)
+
+        sig_cdata.r = self._int_to_bn(r)
+        sig_cdata.s = self._int_to_bn(s)
+
+        sig_len = self._lib.i2d_ECDSA_SIG(sig_cdata, self._ffi.NULL)
+        assert sig_len != 0
+
+        sig_buffer = self._ffi.new("char[]", sig_len)
+        sig_ptrptr = self._ffi.new("unsigned char **", sig_buffer)
+        sig_len = self._lib.i2d_ECDSA_SIG(sig_cdata, sig_ptrptr)
+        assert sig_len != 0
+
+        return self._ffi.buffer(sig_buffer)[:sig_len]
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
