@@ -676,7 +676,7 @@ class Backend(object):
         assert num_curves == num_curves_assigned
 
         return [
-            self._ffi.string(self._lib.OBJ_nid2sn(curve.nid))
+            self._ffi.string(self._lib.OBJ_nid2sn(curve.nid)).decode()
             for curve in curve_array
         ]
 
