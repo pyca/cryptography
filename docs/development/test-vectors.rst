@@ -89,6 +89,11 @@ Two factor authentication
 * TOTP from :rfc:`6238` (Note that an `errata`_ for the test vectors in RFC
   6238 exists)
 
+CMAC
+~~~~
+
+* AES-128, AES-192, AES-256, 3DES from `NIST SP-800-38B`_
+
 Creating test vectors
 ---------------------
 
@@ -138,3 +143,4 @@ header format (substituting the correct information):
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
 .. _`Ed25519 website`: http://ed25519.cr.yp.to/software.html
+.. _`NIST SP-800-38B`: http://csrc.nist.gov/publications/nistpubs/800-38B/Updated_CMAC_Examples.pdf
