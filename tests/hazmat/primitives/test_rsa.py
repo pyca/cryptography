@@ -1366,3 +1366,14 @@ class TestRSADecryption(object):
                 padding.PKCS1v15(),
                 backend
             )
+
+    def test_rsa_decrypt_invalid_backend(self, backend):
+        pretend_backend = object()
+        private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
+
+        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+            private_key.decrypt(
+                b"irrelevant",
+                padding.PKCS1v15(),
+                pretend_backend
+            )
