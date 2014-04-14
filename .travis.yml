@@ -8,9 +8,9 @@ compiler:
 env:
     # this global section can be removed when
     # https://github.com/travis-ci/travis-ci/issues/1844 is fixed
-    global:
-        - CI=true
-        - TRAVIS=true
+    # global:
+    #     - CI=true
+    #     - TRAVIS=true
     matrix:
         - TOX_ENV=py26
         - TOX_ENV=py27
@@ -50,49 +50,6 @@ notifications:
 matrix:
     exclude:
         - os: osx
-          env: TOX_ENV=py26
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py27
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py32
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py33
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py34
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=pypy
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py26 OPENSSL=0.9.8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py27 OPENSSL=0.9.8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py32 OPENSSL=0.9.8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py33 OPENSSL=0.9.8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py34 OPENSSL=0.9.8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=pypy OPENSSL=0.9.8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=docs
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=pep8
-          compiler: gcc
-        - os: osx
-          env: TOX_ENV=py3pep8
           compiler: gcc
         - os: osx
           env: TOX_ENV=pep8
