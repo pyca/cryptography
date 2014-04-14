@@ -92,11 +92,7 @@ Two factor authentication
 CMAC
 ~~~~
 
-* AES-128 from `NIST SP-800-38B`_
-* AES-192 from `NIST SP-800-38B`_
-* AES-256 from `NIST SP-800-38B`_
-* Three Key 3DES from `NIST SP-800-38B`_
-* Two Key 3DES from `NIST SP-800-38B`_
+* AES-128, AES-192, AES-256, 3DES from `NIST SP-800-38B`_
 
 Creating test vectors
 ---------------------
