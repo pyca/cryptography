@@ -486,7 +486,7 @@ class Backend(object):
 
             if not isinstance(padding._mgf._algorithm, hashes.SHA1):
                 raise UnsupportedAlgorithm(
-                    "This backend only supports SHA1 inside MGF1 when "
+                    "This backend supports only SHA1 inside MGF1 when "
                     "using OAEP",
                     _Reasons.UNSUPPORTED_HASH
                 )
