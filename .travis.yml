@@ -6,11 +6,6 @@ compiler:
     - clang
     - gcc
 env:
-    # this global section can be removed when
-    # https://github.com/travis-ci/travis-ci/issues/1844 is fixed
-    # global:
-    #     - CI=true
-    #     - TRAVIS=true
     matrix:
         - TOX_ENV=py26
         - TOX_ENV=py27
