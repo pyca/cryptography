@@ -21,7 +21,7 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_CMAC;
-typedef struct CMAC_CTX_st CMAC_CTX;
+typedef ... CMAC_CTX;
 """
 
 FUNCTIONS = """
@@ -38,9 +38,9 @@ void CMAC_CTX_free(CMAC_CTX *);
 
 CUSTOMIZATIONS = """
 #if OPENSSL_VERSION_NUMBER < 0x10000000L
-typedef struct CMAC_CTX_st CMAC_CTX;
 
 static const long Cryptography_HAS_CMAC = 0;
+typedef void CMAC_CTX;
 CMAC_CTX *(*CMAC_CTX_new)(void) = NULL;
 int (*CMAC_Init)(CMAC_CTX *, const void *, size_t, const EVP_CIPHER *,
     ENGINE *) = NULL;

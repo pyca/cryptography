@@ -1153,7 +1153,7 @@ class _RSAVerificationContext(object):
 class _CMACContext(object):
     def __init__(self, backend, algorithm):
 
-        if backend._lib.Cryptography_HAS_CMAC == 0:
+        if not backend.cmac_supported():
             raise UnsupportedAlgorithm("This backend does not support CMAC")
 
         self._backend = backend
