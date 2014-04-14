@@ -51,7 +51,7 @@ vectors_3des = load_vectors_from_file(
     skip_message="Does not support CMAC."
 )
 @pytest.mark.cmac
-class TestHMAC(object):
+class TestCMAC(object):
     @pytest.mark.parametrize("params", vectors_aes)
     def test_aes_generate(self, backend, params):
         key = params["key"]
@@ -121,13 +121,6 @@ class TestHMAC(object):
         with pytest.raises(TypeError):
             CMAC(ARC4(key), backend)
 
-    def test_invalid_backend(self):
-        key = b"2b7e151628aed2a6abf7158809cf4f3c"
-        pretend_backend = object()
-
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            CMAC(AES(key), pretend_backend)
-
     def test_raises_after_finalize(self, backend):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
         cmac = CMAC(AES(key), backend)
@@ -151,3 +144,11 @@ class TestHMAC(object):
 
         with pytest.raises(TypeError):
             cmac.verify(six.u(''))
+
+
+def test_invalid_backend():
+    key = b"2b7e151628aed2a6abf7158809cf4f3c"
+    pretend_backend = object()
+
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        CMAC(AES(key), pretend_backend)
