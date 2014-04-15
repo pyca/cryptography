@@ -402,6 +402,27 @@ Hash algorithms
         The internal block size of the hash algorithm in bytes.
 
 
+.. class:: HashContext
+
+    .. attribute:: algorithm
+
+        A :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm` that
+        will be used by this context.
+
+    .. method:: update(data)
+
+        :param data bytes: The data you want to hash.
+
+    .. method:: finalize()
+
+        :return: The final digest as bytes.
+
+    .. method:: copy()
+
+        :return: A :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
+             that is a copy of the current context.
+
+
 Key derivation functions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
