@@ -1065,6 +1065,8 @@ class TestRSAPKCS1Verification(object):
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA1(),
@@ -1078,6 +1080,8 @@ class TestRSAPKCS1Verification(object):
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA224(),
@@ -1091,6 +1095,8 @@ class TestRSAPKCS1Verification(object):
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA256(),
@@ -1104,6 +1110,8 @@ class TestRSAPKCS1Verification(object):
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA384(),
@@ -1117,6 +1125,8 @@ class TestRSAPKCS1Verification(object):
         load_rsa_nist_vectors,
         os.path.join("asymmetric", "RSA", "FIPS_186-2"),
         [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
             "SigVer15_186-3.rsp",
         ],
         hashes.SHA512(),
