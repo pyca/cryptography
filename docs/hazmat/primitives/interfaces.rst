@@ -112,6 +112,43 @@ Asymmetric interfaces
 
     An `RSA`_ private key.
 
+    .. classmethod:: generate(public_exponent, key_size, backend)
+
+        Generate a new ``RSAPrivateKey`` instance using ``backend``.
+
+        :param int public_exponent: The public exponent of the new key.
+            Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
+            doubt you should `use 65537`_.
+        :param int key_size: The length of the modulus in bits. For keys
+            generated in 2014 it is strongly recommended to be
+            `at least 2048`_ (See page 41). It must not be less than 512.
+            Some backends may have additional limitations.
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+        :return: A new instance of ``RSAPrivateKey``.
+
+    .. method:: signer(padding, algorithm, backend)
+
+        .. versionadded:: 0.3
+
+        Sign data which can be verified later by others using the public key.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
     .. method:: public_key()
 
         :return: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
@@ -199,6 +236,31 @@ Asymmetric interfaces
     .. versionadded:: 0.2
 
     An `RSA`_ public key.
+
+    .. method:: verifier(signature, padding, algorithm, backend)
+
+        .. versionadded:: 0.3
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
 
     .. attribute:: modulus
 
@@ -470,3 +532,5 @@ Key derivation functions
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+.. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
+.. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
