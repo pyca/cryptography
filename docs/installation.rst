@@ -15,9 +15,10 @@ these operating systems.
 
 * x86-64 CentOS 6.4 and CentOS 5
 * x86-64 FreeBSD 9.2 and FreeBSD 10
-* OS X 10.9 and OS X 10.8
+* OS X 10.9, 10.8, and 10.7
 * x86-64 Ubuntu 12.04 LTS
 * 32-bit Python on 64-bit Windows Server 2008
+* 64-bit Python on 64-bit Windows Server 2012
 
 On Windows
 ----------
@@ -30,8 +31,8 @@ to include the corresponding locations. For example:
 .. code-block:: console
 
     C:\> \path\to\vcvarsall.bat x86_amd64
-    C:\> set LIB=C:\OpenSSL-1.0.1f-64bit\lib;%LIB%
-    C:\> set INCLUDE=C:\OpenSSL-1.0.1f-64bit\include;%INCLUDE%
+    C:\> set LIB=C:\OpenSSL-1.0.1g-64bit\lib;%LIB%
+    C:\> set INCLUDE=C:\OpenSSL-1.0.1g-64bit\include;%INCLUDE%
     C:\> pip install cryptography
 
 Building cryptography on Linux
