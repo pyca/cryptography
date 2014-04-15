@@ -185,6 +185,12 @@ class HashContext(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPrivateKey(object):
+    @abc.abstractmethod
+    def signer(self, padding, algorithm, backend):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
     @abc.abstractproperty
     def modulus(self):
         """
@@ -270,6 +276,12 @@ class RSAPrivateKey(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPublicKey(object):
+    @abc.abstractmethod
+    def verifier(self, signature, padding, algorithm, backend):
+        """
+        Returns an AsymmetricVerificationContext used for verifying signatures.
+        """
+
     @abc.abstractproperty
     def modulus(self):
         """

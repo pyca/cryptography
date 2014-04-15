@@ -112,6 +112,27 @@ Asymmetric interfaces
 
     An `RSA`_ private key.
 
+    .. method:: signer(padding, algorithm, backend)
+
+        .. versionadded:: 0.3
+
+        Sign data which can be verified later by others using the public key.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
     .. method:: public_key()
 
         :return: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
@@ -199,6 +220,31 @@ Asymmetric interfaces
     .. versionadded:: 0.2
 
     An `RSA`_ public key.
+
+    .. method:: verifier(signature, padding, algorithm, backend)
+
+        .. versionadded:: 0.3
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
 
     .. attribute:: modulus
 
