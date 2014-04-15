@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from binascii import unhexlify
+import binascii
 import os
 import textwrap
 
@@ -2058,7 +2058,7 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
         {
             "curve": "secp192r1",
             "digest_algorithm": "SHA-1",
-            "message": unhexlify(
+            "message": binascii.unhexlify(
                 b"ebf748d748ebbca7d29fb473698a6e6b4fb10c865d4af024cc39ae3df346"
                 b"4ba4f1d6d40f32bf9618a91bb5986fa1a2af048a0e14dc51e5267eb05e12"
                 b"7d689d0ac6f1a7f156ce066316b971cc7a11d0fd7a2093e27cf2d08727a4"
@@ -2074,7 +2074,7 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
         {
             "curve": "secp192r1",
             "digest_algorithm": "SHA-1",
-            "message": unhexlify(
+            "message": binascii.unhexlify(
                 b"0dcb3e96d77ee64e9d0a350d31563d525755fc675f0c833504e83fc69c03"
                 b"0181b42fe80c378e86274a93922c570d54a7a358c05755ec3ae91928e022"
                 b"36e81b43e596e4ccbf6a9104889c388072bec4e1faeae11fe4eb24fa4f95"
@@ -2090,7 +2090,7 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
         {
             "curve": "sect571r1",
             "digest_algorithm": "SHA-512",
-            "message": unhexlify(
+            "message": binascii.unhexlify(
                 b"10d2e00ae57176c79cdfc746c0c887abe799ee445b151b008e3d9f81eb69"
                 b"be40298ddf37b5c45a9b6e5ff83785d8c140cf11e6a4c3879a2845796872"
                 b"363da24b10f1f8d9cc48f8af20681dceb60dd62095d6d3b1779a4a805de3"
