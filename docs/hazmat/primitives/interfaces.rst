@@ -112,22 +112,6 @@ Asymmetric interfaces
 
     An `RSA`_ private key.
 
-    .. classmethod:: generate(public_exponent, key_size, backend)
-
-        Generate a new ``RSAPrivateKey`` instance using ``backend``.
-
-        :param int public_exponent: The public exponent of the new key.
-            Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
-            doubt you should `use 65537`_.
-        :param int key_size: The length of the modulus in bits. For keys
-            generated in 2014 it is strongly recommended to be
-            `at least 2048`_ (See page 41). It must not be less than 512.
-            Some backends may have additional limitations.
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
-        :return: A new instance of ``RSAPrivateKey``.
-
     .. method:: signer(padding, algorithm, backend)
 
         .. versionadded:: 0.3
