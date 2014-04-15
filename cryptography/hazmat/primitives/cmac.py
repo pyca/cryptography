@@ -66,4 +66,10 @@ class CMAC(object):
             raise InvalidSignature("Signature did not match digest.")
 
     def copy(self):
-        pass
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized")
+        return CMAC(
+            self.algorithm,
+            backend=self._backend,
+            ctx=self._ctx.copy()
+        )

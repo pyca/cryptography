@@ -1151,7 +1151,7 @@ class _RSAVerificationContext(object):
 
 @utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
-    def __init__(self, backend, algorithm):
+    def __init__(self, backend, algorithm, ctx=None):
 
         if not backend.cmac_supported():
             raise UnsupportedAlgorithm("This backend does not support CMAC")
@@ -1161,26 +1161,28 @@ class _CMACContext(object):
         self._algorithm = algorithm
         self._output_length = algorithm.block_size // 8
 
-        registry = self._backend._cipher_registry
-        try:
-            adapter = registry[type(algorithm), CBC]
-        except KeyError:
-            raise UnsupportedAlgorithm(
-                "cipher {0} is not supported by this backend".format(
-                    algorithm.name), _Reasons.UNSUPPORTED_CIPHER
-            )
+        if ctx is None:
+            registry = self._backend._cipher_registry
+            try:
+                adapter = registry[type(algorithm), CBC]
+            except KeyError:
+                raise UnsupportedAlgorithm(
+                    "cipher {0} is not supported by this backend".format(
+                        algorithm.name), _Reasons.UNSUPPORTED_CIPHER
+                )
 
-        evp_cipher = adapter(self._backend, algorithm, CBC)
-        if evp_cipher == self._backend._ffi.NULL:
-            raise UnsupportedAlgorithm(
-                "cipher {0} is not supported by this backend".format(
-                    algorithm.name), _Reasons.UNSUPPORTED_CIPHER
-            )
+            evp_cipher = adapter(self._backend, algorithm, CBC)
+            if evp_cipher == self._backend._ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "cipher {0} is not supported by this backend".format(
+                        algorithm.name), _Reasons.UNSUPPORTED_CIPHER
+                )
 
-        ctx = self._backend._lib.CMAC_CTX_new()
-        self._backend._lib.CMAC_Init(
-            ctx, self._key, len(self._key), evp_cipher, self._backend._ffi.NULL
-        )
+            ctx = self._backend._lib.CMAC_CTX_new()
+            self._backend._lib.CMAC_Init(
+                ctx, self._key, len(self._key),
+                evp_cipher, self._backend._ffi.NULL
+            )
 
         self._ctx = ctx
 
@@ -1200,7 +1202,18 @@ class _CMACContext(object):
         return self._backend._ffi.buffer(buf)[:]
 
     def copy(self):
-        pass
+        copied_ctx = self._backend._lib.CMAC_CTX_new()
+        self._backend._lib.CMAC_CTX_init(copied_ctx)
+        copied_ctx = self._backend._ffi.gc(
+            copied_ctx, self._backend._lib.CMAC_CTX_free()
+        )
+        res = self._backend._lib.CMAC_CTX_copy(
+            copied_ctx, self._ctx
+        )
+        assert res != 0
+        return _CMACContext(
+            self._backend, self.algorithm, ctx=copied_ctx
+        )
 
 
 backend = Backend()
