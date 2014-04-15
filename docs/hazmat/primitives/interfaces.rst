@@ -516,5 +516,3 @@ Key derivation functions
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
-.. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
-.. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
