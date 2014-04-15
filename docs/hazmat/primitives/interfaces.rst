@@ -447,8 +447,8 @@ Key derivation functions
         stored derived key.
 
 
-CMAC
-~~~~
+`CMAC`_
+~~~~~~~
 
 .. class:: CMACContext
 
@@ -471,3 +471,4 @@ CMAC
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+.. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
