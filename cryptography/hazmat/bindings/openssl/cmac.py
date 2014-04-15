@@ -14,7 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
 #include <openssl/cmac.h>
 #endif
 """
@@ -37,7 +37,7 @@ void CMAC_CTX_free(CMAC_CTX *);
 """
 
 CUSTOMIZATIONS = """
-#if OPENSSL_VERSION_NUMBER < 0x10000000L
+#if OPENSSL_VERSION_NUMBER < 0x10001000L
 
 static const long Cryptography_HAS_CMAC = 0;
 typedef void CMAC_CTX;
