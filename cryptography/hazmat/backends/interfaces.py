@@ -153,7 +153,7 @@ class CMACBackend(object):
         """
 
     @abc.abstractmethod
-    def create_cmac_ctx(self, key, algorithm):
+    def create_cmac_ctx(self, algorithm):
         """
         Create a CMACContext for calculating a message authentication code.
         """
