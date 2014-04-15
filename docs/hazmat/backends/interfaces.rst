@@ -319,3 +319,27 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises ValueError: This is raised if the key size is not (1024 or 2048 or 3072)
             or if the OpenSSL version is older than 1.0.0 and the key size is larger than 1024
             because older OpenSSL versions don't support a key size larger than 1024.
+
+
+.. class:: CMACBackend
+
+    .. versionadded:: 0.4
+
+    A backend with methods for using CMAC
+
+    .. method:: cmac_supported()
+
+        :return: True if CMAC is supported by the backend. False if otherwise.
+
+    .. method:: create_cmac_ctx(algorithm)
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.interfaces.CMACContext` that
+        uses the specified ``algorithm`` to calculate a message authentication code.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
