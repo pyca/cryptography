@@ -576,6 +576,108 @@ class Backend(object):
 
         return self._ffi.buffer(buf)[:res]
 
+    def encrypt_rsa(self, public_key, data, padding):
+        if isinstance(padding, PKCS1v15):
+            padding_enum = self._lib.RSA_PKCS1_PADDING
+        elif isinstance(padding, OAEP):
+            padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
+            if not isinstance(padding._mgf, MGF1):
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend",
+                    _Reasons.UNSUPPORTED_MGF
+                )
+
+            if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend supports only SHA1 inside MGF1 when "
+                    "using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
+            if padding._label is not None and padding._label != b"":
+                raise ValueError("This backend does not support OAEP labels")
+
+            if not isinstance(padding._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend supports only SHA1 when using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
+        else:
+            raise UnsupportedAlgorithm(
+                "{0} is not supported by this backend".format(
+                    padding.name
+                ),
+                _Reasons.UNSUPPORTED_PADDING
+            )
+
+        if self._lib.Cryptography_HAS_PKEY_CTX:
+            return self._encrypt_rsa_pkey_ctx(public_key, data, padding_enum)
+        else:
+            return self._encrypt_rsa_098(public_key, data, padding_enum)
+
+    def _encrypt_rsa_pkey_ctx(self, public_key, data, padding_enum):
+        evp_pkey = self._rsa_public_key_to_evp_pkey(public_key)
+        pkey_ctx = self._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._ffi.NULL
+        )
+        assert pkey_ctx != self._ffi.NULL
+        pkey_ctx = self._ffi.gc(pkey_ctx, self._lib.EVP_PKEY_CTX_free)
+        res = self._lib.EVP_PKEY_encrypt_init(pkey_ctx)
+        assert res == 1
+        res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, padding_enum)
+        assert res > 0
+        buf_size = self._lib.EVP_PKEY_size(evp_pkey)
+        assert buf_size > 0
+        outlen = self._ffi.new("size_t *", buf_size)
+        buf = self._ffi.new("char[]", buf_size)
+        res = self._lib.Cryptography_EVP_PKEY_encrypt(
+            pkey_ctx,
+            buf,
+            outlen,
+            data,
+            len(data)
+        )
+        if res <= 0:
+            errors = self._consume_errors()
+            assert errors
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError(
+                "Data too long for key size. Encrypt less data or use a "
+                "larger key size"
+            )
+
+        return self._ffi.buffer(buf)[:outlen[0]]
+
+    def _encrypt_rsa_098(self, public_key, data, padding_enum):
+        rsa_cdata = self._rsa_cdata_from_public_key(public_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        assert res == 1
+        key_size = self._lib.RSA_size(rsa_cdata)
+        assert key_size > 0
+        buf = self._ffi.new("unsigned char[]", key_size)
+        res = self._lib.RSA_public_encrypt(
+            len(data),
+            data,
+            buf,
+            rsa_cdata,
+            padding_enum
+        )
+        if res < 0:
+            errors = self._consume_errors()
+            assert errors
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError(
+                "Data too long for key size. Encrypt less data or use a "
+                "larger key size"
+            )
+
+        return self._ffi.buffer(buf)[:res]
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
