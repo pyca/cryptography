@@ -116,6 +116,39 @@ RSA
         :raises ValueError: This is raised when the chosen hash algorithm is
             too large for the key size.
 
+    .. method:: decrypt(ciphertext, padding, backend)
+
+        .. versionadded:: 0.4
+
+        Decrypt data that was encrypted via the public key.
+
+        :param bytes ciphertext: The ciphertext to decrypt.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return bytes: Decrypted data.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or if
+            the backend does not support the chosen hash or padding algorithm.
+
+        :raises TypeError: This is raised when the padding is not an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :raises ValueError: This is raised when the chosen hash algorithm is
+            too large for the key size.
+
+        :raises cryptography.exceptions.InvalidDecryption: This is raised if
+            decryption fails due to invalid ciphertext.
+
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
