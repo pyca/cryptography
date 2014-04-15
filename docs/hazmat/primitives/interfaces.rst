@@ -460,7 +460,7 @@ CMAC
 
     .. method:: finalize()
 
-        :return: The final message authentication code.
+        :return: The message authentication code.
 
     .. method:: copy()
 

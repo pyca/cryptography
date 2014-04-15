@@ -469,7 +469,7 @@ class CMACContext(object):
 
     def finalize(self):
         """
-        Returns the results of processing the final block as bytes.
+        Returns the message authentication code as bytes.
         """
 
     @abc.abstractmethod
