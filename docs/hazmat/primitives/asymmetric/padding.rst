@@ -10,21 +10,6 @@ Padding
     correct padding signatures can be forged, messages decrypted, and private
     keys compromised.
 
-.. class:: OAEP(mgf, label)
-
-    .. versionadded:: 0.4
-
-    OAEP (Optimal Asymmetric Encryption Padding) is a padding scheme defined in
-    :rfc:`3447`. It provides probabilistic encryption and is `proven secure`_
-    against several attack types. This is the `recommended padding algorithm`_
-    for RSA encryption. It cannot be used with RSA signing.
-
-    :param mgf: A mask generation function object. At this time the only
-        supported MGF is :class:`MGF1`.
-
-    :param bytes label: A label to apply. This is a rarely used field and
-        should typically be set to ``None`` or ``b""`` (equivalent values).
-
 .. class:: PSS(mgf, salt_length)
 
     .. versionadded:: 0.3
@@ -75,6 +60,5 @@ Mask generation functions
 
 
 .. _`Padding is critical`: http://rdist.root.org/2009/10/06/why-rsa-encryption-padding-is-critical/
-.. _`proven secure`: http://cseweb.ucsd.edu/users/mihir/papers/oae.pdf
 .. _`security proof`: http://eprint.iacr.org/2001/062.pdf
 .. _`recommended padding algorithm`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html

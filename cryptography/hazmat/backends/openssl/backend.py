@@ -32,7 +32,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    MGF1, OAEP, PKCS1v15, PSS
+    MGF1, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
@@ -476,30 +476,6 @@ class Backend(object):
     def decrypt_rsa(self, private_key, ciphertext, padding):
         if isinstance(padding, PKCS1v15):
             padding_enum = self._lib.RSA_PKCS1_PADDING
-        elif isinstance(padding, OAEP):
-            padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
-            if not isinstance(padding._mgf, MGF1):
-                raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend",
-                    _Reasons.UNSUPPORTED_MGF
-                )
-
-            if not isinstance(padding._mgf._algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "This backend supports only SHA1 inside MGF1 when "
-                    "using OAEP",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-
-            if padding._label is not None and padding._label != b"":
-                raise ValueError("This backend does not support OAEP labels")
-
-            if not isinstance(padding._algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "This backend only supports SHA1 when using OAEP",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-
         else:
             raise UnsupportedAlgorithm(
                 "{0} is not supported by this backend".format(
