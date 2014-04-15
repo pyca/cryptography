@@ -446,6 +446,28 @@ Key derivation functions
         something like checking whether a user's password attempt matches the
         stored derived key.
 
+
+CMAC
+~~~~
+
+.. class:: CMACContext
+
+    .. versionadded:: 0.4
+
+    .. method:: update(data)
+
+        :param data bytes: The data you want to authenticate.
+
+    .. method:: finalize()
+
+        :return: The final message authentication code.
+
+    .. method:: copy()
+
+        :return: A :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
+            that is a copy of the current context.
+
+
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
