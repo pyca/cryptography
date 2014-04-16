@@ -213,6 +213,11 @@ int (*Cryptography_EVP_PKEY_encrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
 int (*Cryptography_EVP_PKEY_decrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
                                      const unsigned char *, size_t) = NULL;
 #endif
+#ifdef OPENSSL_NO_EC
+static const int EVP_PKEY_EC = 0;
+int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -238,5 +243,9 @@ CONDITIONAL_NAMES = {
         "Cryptography_EVP_PKEY_decrypt",
         "EVP_PKEY_decrypt_init",
         "EVP_PKEY_CTX_set_signature_md",
+    ],
+    "Cryptography_HAS_EC": [
+        "EVP_PKEY_EC",
+        "EVP_PKEY_assign_EC_KEY",
     ]
 }
