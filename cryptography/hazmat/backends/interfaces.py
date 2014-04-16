@@ -142,3 +142,18 @@ class OpenSSLSerializationBackend(object):
         Load a private key from PEM encoded data, using password if the data
         is encrypted.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CMACBackend(object):
+    @abc.abstractmethod
+    def cmac_supported(self):
+        """
+        Returns True if the backend supports CMAC
+        """
+
+    @abc.abstractmethod
+    def create_cmac_ctx(self, algorithm):
+        """
+        Create a CMACContext for calculating a message authentication code.
+        """
