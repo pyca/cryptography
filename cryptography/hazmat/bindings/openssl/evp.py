@@ -37,6 +37,7 @@ typedef struct evp_pkey_st {
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
+static const int EVP_PKEY_EC;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_GCM_SET_IVLEN;
 static const int EVP_CTRL_GCM_GET_TAG;
@@ -122,6 +123,7 @@ MACROS = """
 void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
+int EVP_PKEY_assign_EC_KEY(EVP_PKEY *, EC_KEY *);
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
@@ -211,6 +213,10 @@ int (*Cryptography_EVP_PKEY_encrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
 int (*Cryptography_EVP_PKEY_decrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
                                      const unsigned char *, size_t) = NULL;
 #endif
+#ifdef OPENSSL_NO_EC
+int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -236,5 +242,8 @@ CONDITIONAL_NAMES = {
         "Cryptography_EVP_PKEY_decrypt",
         "EVP_PKEY_decrypt_init",
         "EVP_PKEY_CTX_set_signature_md",
+    ],
+    "Cryptography_HAS_EC": [
+        "EVP_PKEY_assign_EC_KEY",
     ]
 }
