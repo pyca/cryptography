@@ -263,6 +263,30 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
 
+    .. method:: decrypt_rsa(private_key, ciphertext, padding)
+
+        :param private_key: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :param bytes ciphertext: The ciphertext to decrypt.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+    .. method:: encrypt_rsa(public_key, data, padding)
+
+        :param public_key: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            provider.
+
+        :param bytes data: The data to encrypt.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
 
 .. class:: OpenSSLSerializationBackend
 
@@ -295,10 +319,10 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: generate_dsa_parameters(key_size)
 
-        :param int key_size: The length of the modulus in bits. It should be 
-            either "1024, 2048 or 3072". For keys generated in 2014 this should 
+        :param int key_size: The length of the modulus in bits. It should be
+            either "1024, 2048 or 3072". For keys generated in 2014 this should
             be at least 2048.
-            Note that some applications (such as SSH) have not yet gained support 
+            Note that some applications (such as SSH) have not yet gained support
             for larger key sizes specified in FIPS 186-3 and are still restricted
             to only the 1024-bit keys specified in FIPS 186-2.
 

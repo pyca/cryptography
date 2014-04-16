@@ -117,6 +117,12 @@ class RSABackend(object):
         Return True if the hash algorithm is supported for MGF1 in PSS.
         """
 
+    @abc.abstractmethod
+    def decrypt_rsa(self, private_key, ciphertext, padding):
+        """
+        Returns decrypted bytes.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSABackend(object):

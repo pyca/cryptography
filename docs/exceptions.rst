@@ -43,3 +43,7 @@ Exceptions
 
     This is raised when the verify method of a one time password function's
     computed token does not match the expected token.
+
+.. class:: InvalidDecryption
+
+    This is raised when RSA decryption does not succeed.

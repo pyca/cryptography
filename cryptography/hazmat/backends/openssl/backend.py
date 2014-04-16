@@ -21,8 +21,8 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InternalError, InvalidSignature, InvalidTag,
-    UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InternalError, InvalidDecryption, InvalidSignature,
+    InvalidTag, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
@@ -32,7 +32,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    MGF1, PKCS1v15, PSS
+    MGF1, OAEP, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
@@ -468,6 +468,215 @@ class Backend(object):
             x=self._bn_to_int(ctx.priv_key),
             y=self._bn_to_int(ctx.pub_key)
         )
+
+    def decrypt_rsa(self, private_key, ciphertext, padding):
+        if isinstance(padding, PKCS1v15):
+            padding_enum = self._lib.RSA_PKCS1_PADDING
+        elif isinstance(padding, OAEP):
+            padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
+            if not isinstance(padding._mgf, MGF1):
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend",
+                    _Reasons.UNSUPPORTED_MGF
+                )
+
+            if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend supports only SHA1 inside MGF1 when "
+                    "using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
+            if padding._label is not None and padding._label != b"":
+                raise ValueError("This backend does not support OAEP labels")
+
+            if not isinstance(padding._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend only supports SHA1 when using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
+        else:
+            raise UnsupportedAlgorithm(
+                "{0} is not supported by this backend".format(
+                    padding.name
+                ),
+                _Reasons.UNSUPPORTED_PADDING
+            )
+
+        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
+        if key_size_bytes < len(ciphertext):
+            raise ValueError("Ciphertext too large for key size")
+
+        if self._lib.Cryptography_HAS_PKEY_CTX:
+            return self._decrypt_rsa_pkey_ctx(private_key, ciphertext,
+                                              padding_enum)
+        else:
+            return self._decrypt_rsa_098(private_key, ciphertext, padding_enum)
+
+    def _decrypt_rsa_pkey_ctx(self, private_key, ciphertext, padding_enum):
+        evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
+        pkey_ctx = self._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._ffi.NULL
+        )
+        assert pkey_ctx != self._ffi.NULL
+        pkey_ctx = self._ffi.gc(pkey_ctx, self._lib.EVP_PKEY_CTX_free)
+        res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
+        assert res == 1
+        res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, padding_enum)
+        assert res > 0
+        buf_size = self._lib.EVP_PKEY_size(evp_pkey)
+        assert buf_size > 0
+        outlen = self._ffi.new("size_t *", buf_size)
+        buf = self._ffi.new("char[]", buf_size)
+        res = self._lib.Cryptography_EVP_PKEY_decrypt(
+            pkey_ctx,
+            buf,
+            outlen,
+            ciphertext,
+            len(ciphertext)
+        )
+        if res <= 0:
+            errors = self._consume_errors()
+            assert errors
+            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+                    errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02)
+            raise InvalidDecryption
+
+        return self._ffi.buffer(buf)[:outlen[0]]
+
+    def _decrypt_rsa_098(self, private_key, ciphertext, padding_enum):
+        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        assert res == 1
+        key_size = self._lib.RSA_size(rsa_cdata)
+        assert key_size > 0
+        buf = self._ffi.new("unsigned char[]", key_size)
+        res = self._lib.RSA_private_decrypt(
+            len(ciphertext),
+            ciphertext,
+            buf,
+            rsa_cdata,
+            padding_enum
+        )
+        if res < 0:
+            errors = self._consume_errors()
+            assert errors
+            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+                    errors[0].reason ==
+                    self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02)
+            raise InvalidDecryption
+
+        return self._ffi.buffer(buf)[:res]
+
+    def encrypt_rsa(self, public_key, data, padding):
+        if isinstance(padding, PKCS1v15):
+            padding_enum = self._lib.RSA_PKCS1_PADDING
+        elif isinstance(padding, OAEP):
+            padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
+            if not isinstance(padding._mgf, MGF1):
+                raise UnsupportedAlgorithm(
+                    "Only MGF1 is supported by this backend",
+                    _Reasons.UNSUPPORTED_MGF
+                )
+
+            if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend supports only SHA1 inside MGF1 when "
+                    "using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
+            if padding._label is not None and padding._label != b"":
+                raise ValueError("This backend does not support OAEP labels")
+
+            if not isinstance(padding._algorithm, hashes.SHA1):
+                raise UnsupportedAlgorithm(
+                    "This backend supports only SHA1 when using OAEP",
+                    _Reasons.UNSUPPORTED_HASH
+                )
+
+        else:
+            raise UnsupportedAlgorithm(
+                "{0} is not supported by this backend".format(
+                    padding.name
+                ),
+                _Reasons.UNSUPPORTED_PADDING
+            )
+
+        if self._lib.Cryptography_HAS_PKEY_CTX:
+            return self._encrypt_rsa_pkey_ctx(public_key, data, padding_enum)
+        else:
+            return self._encrypt_rsa_098(public_key, data, padding_enum)
+
+    def _encrypt_rsa_pkey_ctx(self, public_key, data, padding_enum):
+        evp_pkey = self._rsa_public_key_to_evp_pkey(public_key)
+        pkey_ctx = self._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._ffi.NULL
+        )
+        assert pkey_ctx != self._ffi.NULL
+        pkey_ctx = self._ffi.gc(pkey_ctx, self._lib.EVP_PKEY_CTX_free)
+        res = self._lib.EVP_PKEY_encrypt_init(pkey_ctx)
+        assert res == 1
+        res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, padding_enum)
+        assert res > 0
+        buf_size = self._lib.EVP_PKEY_size(evp_pkey)
+        assert buf_size > 0
+        outlen = self._ffi.new("size_t *", buf_size)
+        buf = self._ffi.new("char[]", buf_size)
+        res = self._lib.Cryptography_EVP_PKEY_encrypt(
+            pkey_ctx,
+            buf,
+            outlen,
+            data,
+            len(data)
+        )
+        if res <= 0:
+            errors = self._consume_errors()
+            assert errors
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError(
+                "Data too long for key size. Encrypt less data or use a "
+                "larger key size"
+            )
+
+        return self._ffi.buffer(buf)[:outlen[0]]
+
+    def _encrypt_rsa_098(self, public_key, data, padding_enum):
+        rsa_cdata = self._rsa_cdata_from_public_key(public_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        assert res == 1
+        key_size = self._lib.RSA_size(rsa_cdata)
+        assert key_size > 0
+        buf = self._ffi.new("unsigned char[]", key_size)
+        res = self._lib.RSA_public_encrypt(
+            len(data),
+            data,
+            buf,
+            rsa_cdata,
+            padding_enum
+        )
+        if res < 0:
+            errors = self._consume_errors()
+            assert errors
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError(
+                "Data too long for key size. Encrypt less data or use a "
+                "larger key size"
+            )
+
+        return self._ffi.buffer(buf)[:res]
 
 
 class GetCipherByName(object):
