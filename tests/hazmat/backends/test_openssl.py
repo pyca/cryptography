@@ -143,44 +143,6 @@ class TestOpenSSL(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
-        private_key = rsa.RSAPrivateKey.generate(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            private_key.signer(
-                padding.PSS(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA256(),
-                        salt_length=padding.MGF1.MAX_LENGTH
-                    )
-                ),
-                hashes.SHA1(),
-                backend
-            )
-        public_key = private_key.public_key()
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            public_key.verifier(
-                b"sig",
-                padding.PSS(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA256(),
-                        salt_length=padding.MGF1.MAX_LENGTH
-                    )
-                ),
-                hashes.SHA1(),
-                backend
-            )
-
-    def test_unsupported_mgf1_hash_algorithm(self):
-        assert backend.mgf1_hash_supported(DummyHash()) is False
-
     # This test is not in the next class because to check if it's really
     # default we don't want to run the setup_method before it
     def test_osrandom_engine_is_default(self):
@@ -270,3 +232,43 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_builtin_random()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
+
+
+class TestOpenSSLRSA(object):
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.signer(
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA256(),
+                        salt_length=padding.MGF1.MAX_LENGTH
+                    )
+                ),
+                hashes.SHA1(),
+                backend
+            )
+        public_key = private_key.public_key()
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            public_key.verifier(
+                b"sig",
+                padding.PSS(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA256(),
+                        salt_length=padding.MGF1.MAX_LENGTH
+                    )
+                ),
+                hashes.SHA1(),
+                backend
+            )
+
+    def test_unsupported_mgf1_hash_algorithm(self):
+        assert backend.mgf1_hash_supported(DummyHash()) is False
