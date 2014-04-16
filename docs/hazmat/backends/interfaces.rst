@@ -327,9 +327,12 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     A backend with methods for using CMAC
 
-    .. method:: cmac_supported()
+    .. method:: cmac_algorithm_supported(algorithm)
 
-        :return: True if CMAC is supported by the backend. False if otherwise.
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+            provider.
+        :return: Returns True if the block cipher is supported for CMAC by this backend
 
     .. method:: create_cmac_ctx(algorithm)
 
