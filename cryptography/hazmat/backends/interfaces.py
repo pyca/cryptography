@@ -147,9 +147,9 @@ class OpenSSLSerializationBackend(object):
 @six.add_metaclass(abc.ABCMeta)
 class CMACBackend(object):
     @abc.abstractmethod
-    def cmac_supported(self):
+    def cmac_algorithm_supported(self, algorithm):
         """
-        Returns True if the backend supports CMAC
+        Returns True if the block cipher is supported for CMAC by this backend
         """
 
     @abc.abstractmethod
