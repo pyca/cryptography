@@ -2116,7 +2116,7 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
         {
             "curve": "sect571r1",
             "digest_algorithm": "SHA-512",
-            "message": unhexlify(
+            "message": binascii.unhexlify(
                 b"b61a0849a28672cb536fcf61ea2eb389d02ff7a09aa391744cae6597bd56"
                 b"703c40c50ca2dee5f7ee796acfd47322f03d8dbe4d99dc8eec588b4e5467"
                 b"f123075b2d74b2a0b0bbfd3ac5487a905fad6d6ac1421c2e564c0cf15e1f"
