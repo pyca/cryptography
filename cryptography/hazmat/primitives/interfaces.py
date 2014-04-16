@@ -491,7 +491,8 @@ class CMACContext(object):
         """
 
 
-class EllipticCurve(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurve(object):
     @abc.abstractproperty
     def name(self):
         """
@@ -505,7 +506,8 @@ class EllipticCurve(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class EllipticCurvePrivateKey(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePrivateKey(object):
     @abc.abstractproperty
     def curve(self):
         """
@@ -543,7 +545,8 @@ class EllipticCurvePrivateKey(six.with_metaclass(abc.ABCMeta)):
         """
 
 
-class EllipticCurvePublicKey(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePublicKey(object):
     @abc.abstractproperty
     def curve(self):
         """
