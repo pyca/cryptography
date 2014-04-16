@@ -21,7 +21,7 @@ message but an attacker can create bogus messages and force the application to
 decrypt them.
 
 For this reason it is *strongly* recommended to combine encryption with a
-message authentication code, such as :doc:`HMAC </hazmat/primitives/hmac>`, in
+message authentication code, such as :doc:`HMAC </hazmat/primitives/mac/hmac>`, in
 an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
 .. class:: Cipher(algorithm, mode, backend)
@@ -289,7 +289,7 @@ Modes
     block cipher mode that simultaneously encrypts the message as well as
     authenticating it. Additional unencrypted data may also be authenticated.
     Additional means of verifying integrity such as
-    :doc:`HMAC </hazmat/primitives/hmac>` are not necessary.
+    :doc:`HMAC </hazmat/primitives/mac/hmac>` are not necessary.
 
     **This mode does not require padding.**
 
