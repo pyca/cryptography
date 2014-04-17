@@ -555,8 +555,9 @@ class Backend(object):
 
         return self._ffi.buffer(buf)[:res]
 
-    def cmac_supported(self):
-        return backend._lib.Cryptography_HAS_CMAC == 1
+    def cmac_algorithm_supported(self, algorithm):
+        return backend._lib.Cryptography_HAS_CMAC == 1 \
+            and backend.cipher_supported(algorithm, CBC(0))
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
@@ -1251,7 +1252,7 @@ class _RSAVerificationContext(object):
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
 
-        if not backend.cmac_supported():
+        if not backend.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm("This backend does not support CMAC")
 
         self._backend = backend
