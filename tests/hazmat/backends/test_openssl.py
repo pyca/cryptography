@@ -177,47 +177,6 @@ class TestOpenSSL(object):
         parameters = dsa.DSAParameters.generate(3072, backend)
         assert utils.bit_length(parameters.p) == 3072
 
-    @pytest.mark.skipif(
-        not backend.ecdsa_supported(),
-        reason="This backend does not support ECDSA"
-    )
-    @pytest.mark.parametrize(
-        "curve", [
-            curve for curve in backend._supported_curves()
-            if curve not in set(("Oakley-EC2N-3", "Oakley-EC2N-4"))
-        ]
-    )
-    def test_ec_key_affine_point(self, curve):
-        @utils.register_interface(interfaces.EllipticCurve)
-        class Curve(object):
-            name = curve
-
-        key = backend.generate_ecdsa_private_key(Curve())
-        assert key
-        assert key.public_key
-        assert key.x and key.y
-        assert key.x == key.public_key().x
-        assert key.y == key.public_key().y
-
-        ctx = backend._ec_key_cdata_from_private_key(key)
-        key2 = backend._ec_key_cdata_to_private_key_args(ctx)
-        assert (key.private_key, key.x, key.y) == key2
-
-        signer = _ECDSASignatureContext(backend, key, hashes.SHA1())
-        signer.update(b"foo")
-        sig = signer.finalize()
-        assert sig
-
-        sig_parts = backend._ecdsa_signature_to_components(sig)
-        sig2 = backend._ecdsa_signature_from_components(*sig_parts)
-        assert sig == sig2
-
-        verifier = _ECDSAVerificationContext(backend, key.public_key(),
-                                             sig,
-                                             hashes.SHA1())
-        verifier.update(b"foo")
-        verifier.verify()
-
 
 class TestOpenSSLRandomEngine(object):
     def teardown_method(self, method):
