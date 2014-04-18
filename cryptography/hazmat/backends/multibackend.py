@@ -158,9 +158,9 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("DSA is not supported by the backend",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
-    def cmac_supported(self):
+    def cmac_algorithm_supported(self, algorithm):
         for b in self._filtered_backends(CMACBackend):
-            return b.cmac_supported()
+            return b.cmac_algorithm_supported(algorithm)
 
     def create_cmac_ctx(self, algorithm):
         for b in self._filtered_backends(CMACBackend):
