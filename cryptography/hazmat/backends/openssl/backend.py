@@ -532,8 +532,6 @@ class Backend(object):
     def _decrypt_rsa_098(self, private_key, ciphertext, padding_enum):
         rsa_cdata = self._rsa_cdata_from_private_key(private_key)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
-        assert res == 1
         key_size = self._lib.RSA_size(rsa_cdata)
         assert key_size > 0
         buf = self._ffi.new("unsigned char[]", key_size)
