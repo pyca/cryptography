@@ -556,8 +556,8 @@ class Backend(object):
         return self._ffi.buffer(buf)[:res]
 
     def cmac_algorithm_supported(self, algorithm):
-        return backend._lib.Cryptography_HAS_CMAC == 1 \
-            and backend.cipher_supported(algorithm, CBC(0))
+        return (backend._lib.Cryptography_HAS_CMAC == 1
+                and backend.cipher_supported(algorithm, CBC(0)))
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
@@ -1278,6 +1278,10 @@ class _CMACContext(object):
                 )
 
             ctx = self._backend._lib.CMAC_CTX_new()
+
+            assert ctx != self._backend._ffi.NULL
+            ctx = self._backend._ffi.gc(ctx, self._backend._lib.CMAC_CTX_free)
+
             self._backend._lib.CMAC_Init(
                 ctx, self._key, len(self._key),
                 evp_cipher, self._backend._ffi.NULL
@@ -1297,14 +1301,15 @@ class _CMACContext(object):
         )
         assert res == 1
 
-        self._backend._lib.CMAC_CTX_free(self._ctx)
+        self._ctx = None
+
         return self._backend._ffi.buffer(buf)[:]
 
     def copy(self):
         copied_ctx = self._backend._lib.CMAC_CTX_new()
         self._backend._lib.CMAC_CTX_init(copied_ctx)
         copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.CMAC_CTX_free()
+            copied_ctx, self._backend._lib.CMAC_CTX_free
         )
         res = self._backend._lib.CMAC_CTX_copy(
             copied_ctx, self._ctx

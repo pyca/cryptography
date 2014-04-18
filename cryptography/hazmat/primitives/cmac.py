@@ -36,11 +36,11 @@ class CMAC(object):
             raise TypeError(
                 "Expected instance of interfaces.BlockCipherAlgorithm"
             )
-        self.algorithm = algorithm
+        self._algorithm = algorithm
 
         self._backend = backend
         if ctx is None:
-            self._ctx = self._backend.create_cmac_ctx(self.algorithm)
+            self._ctx = self._backend.create_cmac_ctx(self._algorithm)
         else:
             self._ctx = ctx
 
@@ -69,7 +69,7 @@ class CMAC(object):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
         return CMAC(
-            self.algorithm,
+            self._algorithm,
             backend=self._backend,
             ctx=self._ctx.copy()
         )
