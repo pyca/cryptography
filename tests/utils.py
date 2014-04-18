@@ -434,15 +434,17 @@ def load_fips_dsa_key_pair_vectors(vector_data):
 _ECDSA_CURVE_NAMES = {
     "P-192": "secp192r1",
     "P-224": "secp224r1",
-    "P-256": "secp192r1",
+    "P-256": "secp256r1",
     "P-384": "secp384r1",
     "P-521": "secp521r1",
+
     "K-163": "sect163k1",
     "K-233": "sect233k1",
-    "K-283": "sect233k1",
+    "K-283": "sect283k1",
     "K-409": "sect409k1",
     "K-571": "sect571k1",
-    "B-163": "sect163r2",
+
+    "B-163": "sect163r1",
     "B-233": "sect233r1",
     "B-283": "sect283r1",
     "B-409": "sect409r1",
