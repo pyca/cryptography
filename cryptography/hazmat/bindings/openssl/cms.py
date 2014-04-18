@@ -14,7 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#ifndef OPENSSL_NO_CMS
+#ifndef OPENSSL_NO_CMS && OPENSSL_VERSION_NUMBER >= 0x0090808fL
 #include <openssl/cms.h>
 #endif
 """
@@ -52,7 +52,7 @@ CMS_SignerInfo *CMS_add1_signer(CMS_ContentInfo *, X509 *, EVP_PKEY *,
 """
 
 CUSTOMIZATIONS = """
-#ifndef OPENSSL_NO_CMS
+#ifndef OPENSSL_NO_CMS && OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_CMS = 1;
 #else
 static const long Cryptography_HAS_CMS = 0;
