@@ -483,12 +483,79 @@ Asymmetric interfaces
         The bit length of the curves base point.
 
 
+.. class:: EllipticCurveSignatureAlgorithm
+
+    .. versionadded:: 0.4
+
+    A signature algorithm for use with elliptic curve keys.
+
+    .. method:: signer(private_key, algorithm, backend)
+        
+        Sign data which can be verified later by others using the public key.
+
+        :param private_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+    .. method:: verifier(public_key, algorithm, backend)
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify.
+
+        :param public_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+
 .. class:: EllipticCurvePrivateKey
 
     .. versionadded:: 0.4
 
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
+
+    .. classmethod:: signer(signature_algorithm, digest_algorithm, backend)
+        
+        Sign data which can be verified later by others using the public key.
+
+        :param signature_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
+            provider.
+
+        :param digest_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
     .. attribute:: curve
 
@@ -532,6 +599,26 @@ Asymmetric interfaces
     .. versionadded:: 0.4
 
     An elliptic curve public key.
+
+    .. classmethod:: verifier(signature_algorithm, digest_algorithm, backend)
+        
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param signature_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
+            provider.
+
+        :param digest_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
      .. attribute:: curve
 
