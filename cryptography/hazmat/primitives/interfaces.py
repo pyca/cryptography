@@ -508,7 +508,17 @@ class EllipticCurve(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurveSignatureAlgorithm(object):
-    pass
+    @abc.abstractmethod
+    def signer(self, private_key, algorithm, backend):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
+    @abc.abstractmethod
+    def verifier(self, public_key, algorithm, backend):
+        """
+        Returns an AsymmetricVerificationContext used for signing data.
+        """
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -561,7 +571,7 @@ class EllipticCurvePublicKey(object):
     @abc.abstractmethod
     def verifier(self, signature_algorithm, digest_algorithm, backend):
         """
-        Returns an AsymmetricSignatureContext used for signing data.
+        Returns an AsymmetricVerificationContext used for signing data.
         """
 
     @abc.abstractproperty
