@@ -29,6 +29,35 @@ from ...utils import (
 )
 
 
+_CURVE_TYPES = {
+    "secp192r1": ec.secp192r1,
+    "secp224r1": ec.secp224r1,
+    "secp256r1": ec.secp256r1,
+    "secp384r1": ec.secp384r1,
+    "secp521r1": ec.secp521r1,
+
+    "sect163k1": ec.sect163k1,
+    "sect233k1": ec.sect233k1,
+    "sect283k1": ec.sect283k1,
+    "sect409k1": ec.sect409k1,
+    "sect571k1": ec.sect571k1,
+
+    "sect163r1": ec.sect163r1,
+    "sect233r1": ec.sect233r1,
+    "sect283r1": ec.sect283r1,
+    "sect409r1": ec.sect409r1,
+    "sect571r1": ec.sect571r1,
+}
+
+_HASH_TYPES = {
+    "SHA-1": hashes.SHA1,
+    "SHA-224": hashes.SHA224,
+    "SHA-256": hashes.SHA256,
+    "SHA-384": hashes.SHA384,
+    "SHA-512": hashes.SHA512,
+}
+
+
 @pytest.mark.ecdsa
 @pytest.mark.supported(
     only_if=lambda backend: backend.ecdsa_supported(),
@@ -68,23 +97,42 @@ class TestECDSAVectors(object):
         assert key.curve.name == pkey.curve.name
 
     @pytest.mark.parametrize(
-        "curve",
-        set(
-            key['curve']
-            for key in load_vectors_from_file(
-                os.path.join(
-                    "asymmetric", "ECDSA", "FIPS_186-3", "KeyPair.rsp"),
-                load_fips_ecdsa_key_pair_vectors
-            )
-        )
+        "curve", _CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
-        @utils.register_interface(interfaces.EllipticCurve)
-        class Curve(object):
-            name = curve
-
-        key = ec.EllipticCurvePrivateKey.generate(Curve(), backend)
+        key = ec.EllipticCurvePrivateKey.generate(curve(), backend)
         assert key
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDSA", "FIPS_186-3", "SigGen.txt"),
+            load_fips_ecdsa_signing_vectors
+        )
+    )
+    def test_signatures(self, backend, vector):
+        hash_type = _HASH_TYPES[vector['digest_algorithm']]
+        curve_type = _CURVE_TYPES[vector['curve']]
+
+        key = ec.EllipticCurvePublicKey(
+            vector['x'],
+            vector['y'],
+            curve_type()
+        )
+
+        signature = backend.ecdsa_signature_from_components(
+            vector['r'],
+            vector['s']
+        )
+
+        verifier = key.verifier(
+            signature,
+            ec.ECDSA(hash_type()),
+            backend
+        )
+        verifier.update(vector['message'])
+        assert verifier.verify()
 
     def test_generate_unknown_curve(self, backend):
         @utils.register_interface(interfaces.EllipticCurve)
@@ -96,44 +144,8 @@ class TestECDSAVectors(object):
         ):
             ec.EllipticCurvePrivateKey.generate(DummyCurve(), backend)
 
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "ECDSA", "FIPS_186-3", "SigGen.txt"),
-            load_fips_ecdsa_signing_vectors
-        )
-    )
-    def test_signing(self, backend, vector):
-        return
-        @utils.register_interface(interfaces.EllipticCurve)
-        class Curve(object):
-            name = vector['curve']
 
-        key = ec.ECDSAPublicKey(
-            vector['x'],
-            vector['y'],
-            Curve()
-        )
-
-        hash_map = {
-            "SHA-1": hashes.SHA1,
-            "SHA-224": hashes.SHA224,
-            "SHA-256": hashes.SHA256,
-            "SHA-384": hashes.SHA384,
-            "SHA-512": hashes.SHA512,
-        }
-
-        verifier = key.verifier(
-            None,
-            hash_map[vector['digest_algorithm']](),
-            backend
-        )
-        verifier.update(vector['message'])
-        assert verifier.verify()
-
-
-class TestEC(object):
+class TestECInterfaces(object):
     def test_invalid_private_key_argument_types(self):
         with pytest.raises(TypeError):
             ec.EllipticCurvePrivateKey(None, None, None, None)

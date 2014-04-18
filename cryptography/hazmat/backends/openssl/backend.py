@@ -711,13 +711,31 @@ class Backend(object):
         args = self._ec_key_cdata_to_private_key_args(ctx)
         return ec.EllipticCurvePrivateKey(args[0], args[1], args[2], curve)
 
+    def ecdsa_signature_from_components(self, r, s):
+        sig_cdata = self._lib.ECDSA_SIG_new()
+        assert sig_cdata != self._ffi.NULL
+        sig_cdata = self._ffi.gc(sig_cdata, self._lib.ECDSA_SIG_free)
+
+        self._int_to_bn(r, sig_cdata.r)
+        self._int_to_bn(s, sig_cdata.s)
+
+        sig_len = self._lib.i2d_ECDSA_SIG(sig_cdata, self._ffi.NULL)
+        assert sig_len != 0
+
+        sig_ptr = self._ffi.new("unsigned char []", sig_len)
+        sig_ptrptr = self._ffi.new("unsigned char **", sig_ptr)
+
+        sig_len = self._lib.i2d_ECDSA_SIG(sig_cdata, sig_ptrptr)
+        return self._ffi.buffer(sig_ptr)[:sig_len]
+
     def _elliptic_curve_to_nid(self, curve):
         """
         Get the NID for a curve name.
         """
 
         curve_aliases = {
-            "secp192r1": "prime192v1"
+            "secp192r1": "prime192v1",
+            "secp256r1": "prime256v1"
         }
 
         curve_name = curve_aliases.get(curve.name, curve.name)
@@ -1742,9 +1760,6 @@ class _ECDSASignatureContext(object):
         )
         self._digest = hashes.Hash(algorithm, backend)
 
-        self._max_size = self._backend._lib.ECDSA_size(self._ec_key_cdata)
-        assert self._max_size >= algorithm.digest_size
-
     def update(self, data):
         self._digest.update(data)
 
@@ -1775,9 +1790,6 @@ class _ECDSAVerificationContext(object):
         self._signature = signature
         self._digest = hashes.Hash(algorithm, backend)
 
-        self._max_size = self._backend._lib.ECDSA_size(self._ec_key_cdata)
-        assert self._max_size >= algorithm.digest_size
-
     def update(self, data):
         self._digest.update(data)
 
@@ -1795,6 +1807,7 @@ class _ECDSAVerificationContext(object):
             errors = self._backend._consume_errors()
             assert errors
             raise InvalidSignature
+        return True
 
 
 backend = Backend()

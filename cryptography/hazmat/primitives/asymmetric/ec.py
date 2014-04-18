@@ -20,21 +20,182 @@ from cryptography.hazmat.primitives import interfaces
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class EllipticCurve(object):
-    def __init__(self, name, key_size):
-        self._name = name
-        self._key_size = key_size
-
+class sect571r1(object):
     @property
     def name(self):
-        return self._name
+        return "sect571r1"
 
     @property
     def key_size(self):
-        return self._key_size
+        return 571
 
 
-secp256k1 = EllipticCurve("secp256k1", 256)
+@utils.register_interface(interfaces.EllipticCurve)
+class sect409r1(object):
+    @property
+    def name(self):
+        return "sect409r1"
+
+    @property
+    def key_size(self):
+        return 409
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect283r1(object):
+    @property
+    def name(self):
+        return "sect283r1"
+
+    @property
+    def key_size(self):
+        return 283
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect233r1(object):
+    @property
+    def name(self):
+        return "sect233r1"
+
+    @property
+    def key_size(self):
+        return 233
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect163r1(object):
+    @property
+    def name(self):
+        return "sect163r1"
+
+    @property
+    def key_size(self):
+        return 163
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect571k1(object):
+    @property
+    def name(self):
+        return "sect571k1"
+
+    @property
+    def key_size(self):
+        return 571
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect409k1(object):
+    @property
+    def name(self):
+        return "sect409k1"
+
+    @property
+    def key_size(self):
+        return 409
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect283k1(object):
+    @property
+    def name(self):
+        return "sect283k1"
+
+    @property
+    def key_size(self):
+        return 283
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect233k1(object):
+    @property
+    def name(self):
+        return "sect233k1"
+
+    @property
+    def key_size(self):
+        return 233
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class sect163k1(object):
+    @property
+    def name(self):
+        return "sect163k1"
+
+    @property
+    def key_size(self):
+        return 163
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class secp521r1(object):
+    @property
+    def name(self):
+        return "secp521r1"
+
+    @property
+    def key_size(self):
+        return 521
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class secp384r1(object):
+    @property
+    def name(self):
+        return "secp384r1"
+
+    @property
+    def key_size(self):
+        return 384
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class secp256r1(object):
+    @property
+    def name(self):
+        return "secp256r1"
+
+    @property
+    def key_size(self):
+        return 256
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class secp224r1(object):
+    @property
+    def name(self):
+        return "secp224r1"
+
+    @property
+    def key_size(self):
+        return 224
+
+
+@utils.register_interface(interfaces.EllipticCurve)
+class secp192r1(object):
+    @property
+    def name(self):
+        return "secp192r1"
+
+    @property
+    def key_size(self):
+        return 192
+
+
+@utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
+class ECDSA(object):
+    def __init__(self, algorithm):
+        self._algorithm = algorithm
+
+    @property
+    def algorithm(self):
+        return self._algorithm
+
+    def verifier(self, signature, public_key, backend):
+        return backend.create_ecdsa_verification_ctx(public_key, signature,
+                                                     self.algorithm)
 
 
 @utils.register_interface(interfaces.EllipticCurvePublicKey)
@@ -53,8 +214,8 @@ class EllipticCurvePublicKey(object):
         self._x = x
         self._curve = curve
 
-    def verifier(self, signature, algorithm, backend):
-        return backend.create_ecdsa_verification_ctx(self, signature, algorithm)
+    def verifier(self, signature, signature_algorithm, backend):
+        return signature_algorithm.verifier(signature, self, backend)
 
     @property
     def key_size(self):

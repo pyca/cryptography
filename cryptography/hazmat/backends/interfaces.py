@@ -198,21 +198,23 @@ class CMACBackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class EllipticCurveBackend(object):
+    @abc.abstractmethod
+    def elliptic_curve_supported(self, signature_algorithm, curve):
+        """
+        Returns True if the backend supports the named elliptic curve with the
+        specified signature algorithm.
+        """
+
+    @abc.abstractmethod
+    def generate_elliptic_curve_private_key(self, curve):
+        """
+        Return an object conforming to the EllipticCurvePrivateKey interface.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class ECDSABackend(object):
-    @abc.abstractmethod
-    def ecdsa_supported(self):
-        """
-        Does this instance of the backend actually support ECDSA?
-
-        Useful for backends which have features removed on some platforms.
-        """
-
-    @abc.abstractmethod
-    def generate_ecdsa_private_key(self, curve):
-        """
-        Return an object conforming to the ECDSAPrivateKey interface.
-        """
-
     @abc.abstractmethod
     def create_ecdsa_signature_ctx(self, private_key, algorithm):
         """
@@ -222,6 +224,35 @@ class ECDSABackend(object):
 
     @abc.abstractmethod
     def create_ecdsa_verification_ctx(self, public_key, signature, algorithm):
+        """
+        Return an object conforming to the AsymmetricVerificationContext
+        interface.
+        """
+
+    @abc.abstractmethod
+    def ecdsa_signature_from_components(self, r, s):
+        """
+        Convert a DSA signature pair r and s into a DER byte string.
+        """
+
+    @abc.abstractmethod
+    def ecdsa_signature_to_components(self, signature):
+        """
+        Convert a DER format DSA signature into its r and s component integers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EdDSABackend(object):
+    @abc.abstractmethod
+    def create_eddsa_signature_ctx(self, private_key, algorithm):
+        """
+        Return an object conforming to the AsymmetricSignatureContext
+        interface.
+        """
+
+    @abc.abstractmethod
+    def create_eddsa_verification_ctx(self, public_key, signature, algorithm):
         """
         Return an object conforming to the AsymmetricVerificationContext
         interface.
