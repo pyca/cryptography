@@ -42,19 +42,6 @@ class DummyMGF(object):
     _salt_length = 0
 
 
-def _modinv(e, m):
-    """
-    Modular Multiplicative Inverse.  Returns x such that: (x*e) mod m == 1
-    """
-    x1, y1, x2, y2 = 1, 0, 0, 1
-    a, b = e, m
-    while b > 0:
-        q, r = divmod(a, b)
-        xn, yn = x1 - q * x2, y1 - q * y2
-        a, b, x1, y1, x2, y2 = b, r, x2, y2, xn, yn
-    return x1 % m
-
-
 def _check_rsa_private_key(skey):
     assert skey
     assert skey.modulus
@@ -62,9 +49,9 @@ def _check_rsa_private_key(skey):
     assert skey.private_exponent
     assert skey.p * skey.q == skey.modulus
     assert skey.key_size
-    assert skey.dmp1 == skey.d % (skey.p - 1)
-    assert skey.dmq1 == skey.d % (skey.q - 1)
-    assert skey.iqmp == _modinv(skey.q, skey.p)
+    assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
+    assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
+    assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
 
     pkey = skey.public_key()
     assert pkey
@@ -97,7 +84,7 @@ def test_modular_inverse():
         "b2347cfcd669133088d1c159518531025297c2d67c9da856a12e80222cd03b4c6ec0f"
         "86c957cb7bb8de7a127b645ec9e820aa94581e4762e209f01", 16
     )
-    assert _modinv(q, p) == int(
+    assert rsa._modinv(q, p) == int(
         "0275e06afa722999315f8f322275483e15e2fb46d827b17800f99110b269a6732748f"
         "624a382fa2ed1ec68c99f7fc56fb60e76eea51614881f497ba7034c17dde955f92f15"
         "772f8b2b41f3e56d88b1e096cdd293eba4eae1e82db815e0fadea0c4ec971bc6fd875"

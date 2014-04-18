@@ -73,6 +73,42 @@ class RSAPublicKey(object):
         return self.modulus
 
 
+def _modinv(e, m):
+    """
+    Modular Multiplicative Inverse. Returns x such that: (x*e) mod m == 1
+    """
+    x1, y1, x2, y2 = 1, 0, 0, 1
+    a, b = e, m
+    while b > 0:
+        q, r = divmod(a, b)
+        xn, yn = x1 - q * x2, y1 - q * y2
+        a, b, x1, y1, x2, y2 = b, r, x2, y2, xn, yn
+    return x1 % m
+
+
+def rsa_crt_iqmp(p, q):
+    """
+    Compute the CRT (q ** -1) % p value from RSA primes p and q.
+    """
+    return _modinv(q, p)
+
+
+def rsa_crt_dmp1(private_exponent, p):
+    """
+    Compute the CRT private_exponent % (p - 1) value from the RSA
+    private_exponent and p.
+    """
+    return private_exponent % (p - 1)
+
+
+def rsa_crt_dmq1(private_exponent, q):
+    """
+    Compute the CRT private_exponent % (q - 1) value from the RSA
+    private_exponent and q.
+    """
+    return private_exponent % (q - 1)
+
+
 @utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
