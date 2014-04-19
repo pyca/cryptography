@@ -49,6 +49,7 @@ class Binding(object):
         "bignum",
         "bio",
         "cmac",
+        "cms",
         "conf",
         "crypto",
         "dh",
