@@ -64,10 +64,10 @@ class sect233r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect163r1(object):
+class sect163r2(object):
     @property
     def name(self):
-        return "sect163r1"
+        return "sect163r2"
 
     @property
     def key_size(self):

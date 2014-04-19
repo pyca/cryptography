@@ -43,7 +43,7 @@ _CURVE_TYPES = {
     "sect409k1": ec.sect409k1,
     "sect571k1": ec.sect571k1,
 
-    "sect163r1": ec.sect163r1,
+    "sect163r2": ec.sect163r2,
     "sect233r1": ec.sect233r1,
     "sect283r1": ec.sect283r1,
     "sect409r1": ec.sect409r1,
