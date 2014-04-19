@@ -14,6 +14,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import itertools
 import os
 
 import pytest
@@ -65,23 +66,23 @@ _HASH_TYPES = {
 )
 class TestECDSAVectors(object):
     @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "ECDSA", "FIPS_186-3", "KeyPair.rsp"),
-            load_fips_ecdsa_key_pair_vectors
-        )
+        ("vector", "hash_type"),
+        list(itertools.product(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "ECDSA", "FIPS_186-3", "KeyPair.rsp"),
+                load_fips_ecdsa_key_pair_vectors
+            ),
+            _HASH_TYPES.values()
+        ))
     )
-    def test_load_example_keys(self, backend, vector):
-        @utils.register_interface(interfaces.EllipticCurve)
-        class Curve(object):
-            name = vector['curve']
-
+    def test_signing_with_example_keys(self, backend, vector, hash_type):
+        curve_type = _CURVE_TYPES[vector['curve']]
         key = ec.EllipticCurvePrivateKey(
             vector['d'],
             vector['x'],
             vector['y'],
-            Curve()
+            curve_type()
         )
 
         assert key.private_key
@@ -95,6 +96,14 @@ class TestECDSAVectors(object):
         assert key.x == pkey.x
         assert key.y == pkey.y
         assert key.curve.name == pkey.curve.name
+
+        signer = key.signer(ec.ECDSA(hash_type()), backend)
+        signer.update(b"YELLOW SUBMARINE")
+        signature = signer.finalize()
+
+        verifier = pkey.verifier(signature, ec.ECDSA(hash_type()), backend)
+        verifier.update(b"YELLOW SUBMARINE")
+        verifier.verify()
 
     @pytest.mark.parametrize(
         "curve", _CURVE_TYPES.values()

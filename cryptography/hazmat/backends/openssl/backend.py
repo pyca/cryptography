@@ -1765,7 +1765,11 @@ class _ECDSASignatureContext(object):
 
     def finalize(self):
         digest = self._digest.finalize()
-        sigbuf = self._backend._ffi.new("char[]", self._max_size)
+
+        max_size = self._backend._lib.ECDSA_size(self._ec_key_cdata)
+        assert max_size > 0
+
+        sigbuf = self._backend._ffi.new("char[]", max_size)
         siglen_ptr = self._backend._ffi.new("unsigned int[]", 1)
         res = self._backend._lib.ECDSA_sign(
             0,

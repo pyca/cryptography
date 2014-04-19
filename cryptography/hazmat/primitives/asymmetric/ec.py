@@ -193,9 +193,13 @@ class ECDSA(object):
     def algorithm(self):
         return self._algorithm
 
+    def signer(self, private_key, backend):
+        return backend.create_ecdsa_signature_ctx(
+            private_key, self.algorithm)
+
     def verifier(self, signature, public_key, backend):
-        return backend.create_ecdsa_verification_ctx(public_key, signature,
-                                                     self.algorithm)
+        return backend.create_ecdsa_verification_ctx(
+            public_key, signature, self.algorithm)
 
 
 @utils.register_interface(interfaces.EllipticCurvePublicKey)
@@ -256,8 +260,8 @@ class EllipticCurvePrivateKey(object):
     def generate(cls, curve, backend):
         return backend.generate_ecdsa_private_key(curve)
 
-    def signer(self, algorithm, backend):
-        return backend.create_ecdsa_signature_ctx(self, algorithm)
+    def signer(self, signature_algorithm, backend):
+        return signature_algorithm.signer(self, backend)
 
     @property
     def key_size(self):
