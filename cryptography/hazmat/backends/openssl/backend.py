@@ -897,10 +897,6 @@ class _RSASignatureContext(object):
         if res != 1:
             errors = self._backend._consume_errors()
             assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
-            assert (errors[0].reason ==
-                    self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE or
-                    errors[0].reason ==
-                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY)
             reason = None
             if (errors[0].reason ==
                     self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE):
