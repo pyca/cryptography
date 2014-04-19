@@ -2005,6 +2005,7 @@ eed0785387508877114359cee4a071cf
     k = cb0abc7043a10783684556fb12c4154d57bc31a289685f25
     R = 6994d962bdd0d793ffddf855ec5bf2f91a9698b46258a63e
     S = 02ba6465a234903744ab02bc8521405b73cf5fc00e1a9f41
+    Result = F (3 - S changed)
 
     Msg = 0dcb3e96d77ee64e9d0a350d31563d525755fc675f0c833504e83fc69c030181b42f\
 e80c378e86274a93922c570d54a7a358c05755ec3ae91928e02236e81b43e596e4ccbf6a910488\
@@ -2035,6 +2036,7 @@ d3544bc3a666e0014e50030134fe5466a9e4d3911ed580e28851f3747c0010888e819d3d1f
 a455579f1ed0517c31822340e4dd3c1f967e1b4b9d071a1072afc1a199f8c548cd449a634
     S = 22f97bb48641235826cf4e597fa8de849402d6bd6114ad2d7fbcf53a08247e5ee921f1\
 bd5994dffee36eedff5592bb93b8bb148214da3b7baebffbd96b4f86c55b3f6bbac142442
+    Result = P (0 )
 
     Msg = b61a0849a28672cb536fcf61ea2eb389d02ff7a09aa391744cae6597bd56703c40c5\
 0ca2dee5f7ee796acfd47322f03d8dbe4d99dc8eec588b4e5467f123075b2d74b2a0b0bbfd3ac5\
@@ -2069,7 +2071,8 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
             "x": int("7008ea40b08dbe76432096e80a2494c94982d2d5bcf98e6", 16),
             "y": int("76fab681d00b414ea636ba215de26d98c41bd7f2e4d65477", 16),
             "r": int("6994d962bdd0d793ffddf855ec5bf2f91a9698b46258a63e", 16),
-            "s": int("02ba6465a234903744ab02bc8521405b73cf5fc00e1a9f41", 16)
+            "s": int("02ba6465a234903744ab02bc8521405b73cf5fc00e1a9f41", 16),
+            "fail": True
         },
         {
             "curve": "secp192r1",
@@ -2085,7 +2088,7 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
             "x": int("ea3c1fa1f124f26530cbfddeb831eecc67df31e08889d1d", 16),
             "y": int("7215a0cce0501b47903bd8fe1179c2dfe07bd076f89f5225", 16),
             "r": int("a3ba51c39c43991d87dff0f34d0bec7c883299e04f60f95e", 16),
-            "s": int("8a7f9c59c6d65ad390e4c19636ba92b53be5d0f848b4e1f7", 16)
+            "s": int("8a7f9c59c6d65ad390e4c19636ba92b53be5d0f848b4e1f7", 16),
         },
         {
             "curve": "sect571r1",
@@ -2111,7 +2114,8 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
                      "071a1072afc1a199f8c548cd449a634", 16),
             "s": int("22f97bb48641235826cf4e597fa8de849402d6bd6114ad2d7fbcf53a"
                      "08247e5ee921f1bd5994dffee36eedff5592bb93b8bb148214da3b7b"
-                     "aebffbd96b4f86c55b3f6bbac142442", 16)
+                     "aebffbd96b4f86c55b3f6bbac142442", 16),
+            "fail": False
         },
         {
             "curve": "sect571r1",
@@ -2140,5 +2144,4 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
                      "47a4da7e245ef803e0662e4d2ad721c", 16)
         }
     ]
-
     assert expected == load_fips_ecdsa_signing_vectors(vector_data)
