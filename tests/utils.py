@@ -531,8 +531,9 @@ def load_fips_ecdsa_signing_vectors(vector_data):
                 data["s"] = int(line.split("=")[1], 16)
             elif line.startswith("d = "):
                 data["d"] = int(line.split("=")[1], 16)
+            elif line.startswith("Result = "):
+                data["fail"] = line.split("=")[1].strip()[0] == "F"
 
     if data is not None:
         vectors.append(data)
-
     return vectors
