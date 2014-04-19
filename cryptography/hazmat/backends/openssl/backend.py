@@ -1804,8 +1804,6 @@ class _ECDSAVerificationContext(object):
             self._ec_key_cdata
         )
         if res != 1:
-            errors = self._backend._consume_errors()
-            assert errors
             raise InvalidSignature
         return True
 

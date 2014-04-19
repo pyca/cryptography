@@ -134,6 +134,42 @@ class TestECDSAVectors(object):
         verifier.update(vector['message'])
         assert verifier.verify()
 
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDSA", "FIPS_186-3", "SigVer.rsp"),
+            load_fips_ecdsa_signing_vectors
+        )
+    )
+    def test_signature_failures(self, backend, vector):
+        hash_type = _HASH_TYPES[vector['digest_algorithm']]
+        curve_type = _CURVE_TYPES[vector['curve']]
+
+        key = ec.EllipticCurvePublicKey(
+            vector['x'],
+            vector['y'],
+            curve_type()
+        )
+
+        signature = backend.ecdsa_signature_from_components(
+            vector['r'],
+            vector['s']
+        )
+
+        verifier = key.verifier(
+            signature,
+            ec.ECDSA(hash_type()),
+            backend
+        )
+        verifier.update(vector['message'])
+
+        if vector["fail"] is True:
+            with pytest.raises(exceptions.InvalidSignature):
+                verifier.verify()
+        else:
+            verifier.verify()
+
     def test_generate_unknown_curve(self, backend):
         @utils.register_interface(interfaces.EllipticCurve)
         class DummyCurve(object):
