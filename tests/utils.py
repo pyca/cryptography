@@ -431,6 +431,7 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     return vectors
 
 
+# http://tools.ietf.org/html/rfc4492#appendix-A
 _ECDSA_CURVE_NAMES = {
     "P-192": "secp192r1",
     "P-224": "secp224r1",
@@ -444,7 +445,7 @@ _ECDSA_CURVE_NAMES = {
     "K-409": "sect409k1",
     "K-571": "sect571k1",
 
-    "B-163": "sect163r1",
+    "B-163": "sect163r2",
     "B-233": "sect233r1",
     "B-283": "sect283r1",
     "B-409": "sect409r1",
