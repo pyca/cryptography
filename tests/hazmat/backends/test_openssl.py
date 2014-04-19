@@ -233,6 +233,25 @@ class TestOpenSSLRandomEngine(object):
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
 
+    def test_int_to_bn(self):
+        value = (2 ** 4242) - 4242
+        bn = backend._int_to_bn(value)
+        assert bn != backend._ffi.NULL
+        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+
+        assert bn
+        assert backend._bn_to_int(bn) == value
+
+    def test_int_to_bn_inplace(self):
+        value = (2 ** 4242) - 4242
+        bn_ptr = backend._lib.BN_new()
+        assert bn_ptr != backend._ffi.NULL
+        bn_ptr = backend._ffi.gc(bn_ptr, backend._lib.BN_free)
+        bn = backend._int_to_bn(value, bn_ptr)
+
+        assert bn == bn_ptr
+        assert backend._bn_to_int(bn_ptr) == value
+
 
 class TestOpenSSLRSA(object):
     @pytest.mark.skipif(
