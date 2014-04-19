@@ -21,8 +21,8 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InternalError, InvalidDecryption, InvalidSignature,
-    InvalidTag, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InternalError, InvalidSignature, InvalidTag,
+    UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
@@ -525,7 +525,7 @@ class Backend(object):
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
             )
-            raise InvalidDecryption
+            raise ValueError("Decryption failed")
 
         return self._ffi.buffer(buf)[:outlen[0]]
 
@@ -550,7 +550,7 @@ class Backend(object):
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
             )
-            raise InvalidDecryption
+            raise ValueError("Decryption failed")
 
         return self._ffi.buffer(buf)[:res]
 

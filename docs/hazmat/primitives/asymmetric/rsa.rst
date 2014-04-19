@@ -143,11 +143,8 @@ RSA
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
-        :raises ValueError: This is raised when the chosen hash algorithm is
-            too large for the key size.
-
-        :raises cryptography.exceptions.InvalidDecryption: This is raised if
-            decryption fails due to invalid ciphertext.
+        :raises ValueError: This is raised when decryption fails or the chosen
+            hash algorithm is too large for the key size.
 
 
 .. class:: RSAPublicKey(public_exponent, modulus)

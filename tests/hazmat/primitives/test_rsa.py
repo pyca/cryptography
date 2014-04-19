@@ -1271,7 +1271,7 @@ class TestRSADecryption(object):
             key_size=512,
             backend=backend
         )
-        with pytest.raises(exceptions.InvalidDecryption):
+        with pytest.raises(ValueError):
             private_key.decrypt(
                 b"\x00" * 64,
                 padding.PKCS1v15(),
@@ -1301,7 +1301,7 @@ class TestRSADecryption(object):
             b"50b4c14136bd198c2f3c3ed243fce036e168d56517984a263cd66492b80804f1"
             b"69d210f2b9bdfb48b12f9ea05009c77da257cc600ccefe3a6283789d8ea0"
         )
-        with pytest.raises(exceptions.InvalidDecryption):
+        with pytest.raises(ValueError):
             private_key.decrypt(
                 ct,
                 padding.PKCS1v15(),
