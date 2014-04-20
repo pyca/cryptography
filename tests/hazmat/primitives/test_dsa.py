@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.utils import bit_length
 
 from ...utils import (
-    load_vectors_from_file, load_fips_dsa_key_pair_vectors,
+    load_fips_dsa_key_pair_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
 )
 
