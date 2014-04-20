@@ -103,3 +103,37 @@ class TestOpenSSL(object):
         b = Binding()
         res = b.lib.Cryptography_add_osrandom_engine()
         assert res == 2
+
+    # Test that we're properly handling 32-bit unsigned on all platforms
+    def test_ssl_ctx_options(self):
+        b = Binding()
+        assert b.lib.SSL_OP_ALL > 0
+        ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
+        ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
+        resp = b.lib.SSL_CTX_set_options(ctx, b.lib.SSL_OP_ALL)
+        assert resp == b.lib.SSL_OP_ALL
+        assert b.lib.SSL_OP_ALL == b.lib.SSL_CTX_get_options(ctx)
+
+    # Test that we're properly handling 32-bit unsigned on all platforms
+    def test_ssl_options(self):
+        b = Binding()
+        assert b.lib.SSL_OP_ALL > 0
+        ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
+        ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
+        ssl = b.lib.SSL_new(ctx)
+        ssl = b.ffi.gc(ssl, b.lib.SSL_free)
+        resp = b.lib.SSL_set_options(ssl, b.lib.SSL_OP_ALL)
+        assert resp == b.lib.SSL_OP_ALL
+        assert b.lib.SSL_OP_ALL == b.lib.SSL_get_options(ssl)
+
+    # Test that we're properly handling 32-bit unsigned on all platforms
+    def test_ssl_mode(self):
+        b = Binding()
+        assert b.lib.SSL_OP_ALL > 0
+        ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
+        ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
+        ssl = b.lib.SSL_new(ctx)
+        ssl = b.ffi.gc(ssl, b.lib.SSL_free)
+        resp = b.lib.SSL_set_mode(ssl, b.lib.SSL_OP_ALL)
+        assert resp == b.lib.SSL_OP_ALL
+        assert b.lib.SSL_OP_ALL == b.lib.SSL_get_mode(ssl)
