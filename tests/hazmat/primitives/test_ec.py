@@ -59,11 +59,15 @@ _HASH_TYPES = {
 }
 
 
+def _skip_ecdsa_vector(backend, curve_type, hash_type):
+    if not backend.elliptic_curve_supported(
+        ec.ECDSA(hash_type()),
+        curve_type()
+    ):
+        pytest.skip("ECDSA not supported with this hash and curve")
+
+
 @pytest.mark.ecdsa
-@pytest.mark.supported(
-    only_if=lambda backend: backend.ecdsa_supported(),
-    skip_message="This backend does not support ECDSA"
-)
 class TestECDSAVectors(object):
     @pytest.mark.parametrize(
         ("vector", "hash_type"),
@@ -78,6 +82,9 @@ class TestECDSAVectors(object):
     )
     def test_signing_with_example_keys(self, backend, vector, hash_type):
         curve_type = _CURVE_TYPES[vector['curve']]
+
+        _skip_ecdsa_vector(backend, curve_type, hash_type)
+
         key = ec.EllipticCurvePrivateKey(
             vector['d'],
             vector['x'],
@@ -124,6 +131,8 @@ class TestECDSAVectors(object):
         hash_type = _HASH_TYPES[vector['digest_algorithm']]
         curve_type = _CURVE_TYPES[vector['curve']]
 
+        _skip_ecdsa_vector(backend, curve_type, hash_type)
+
         key = ec.EllipticCurvePublicKey(
             vector['x'],
             vector['y'],
@@ -154,6 +163,8 @@ class TestECDSAVectors(object):
     def test_signature_failures(self, backend, vector):
         hash_type = _HASH_TYPES[vector['digest_algorithm']]
         curve_type = _CURVE_TYPES[vector['curve']]
+
+        _skip_ecdsa_vector(backend, curve_type, hash_type)
 
         key = ec.EllipticCurvePublicKey(
             vector['x'],

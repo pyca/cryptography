@@ -660,16 +660,28 @@ class Backend(object):
     def ecdsa_supported(self):
         return self._lib.Cryptography_HAS_EC == 1
 
-    def _raise_if_ecdsa_unsupported(self):
-        if not self.ecdsa_supported():
-            raise UnsupportedAlgorithm(
-                "ECDSA is not not enabled in your version of OpenSSL"
-            )
-        else:
+    def elliptic_curve_supported(self, signature_algorithm, curve):
+        if self._lib.Cryptography_HAS_EC != 1:
+            return False
+
+        # We only support ECDSA right now.
+        if isinstance(signature_algorithm, ec.ECDSA) is False:
+            return False
+
+        # Before 0.9.8m OpenSSL can't cope with digests longer than the curve.
+        if (
+            self._lib.OPENSSL_VERSION_NUMBER < 0x009080dfL and
+            curve.key_size < signature_algorithm.algorithm.digest_size * 8
+        ):
+            return False
+
+        if curve.name in self._supported_curves():
             return True
+        else:
+            return False
 
     def _supported_curves(self):
-        if self.ecdsa_supported():
+        if self._lib.Cryptography_HAS_EC == 1:
             num_curves = self._lib.EC_get_builtin_curves(self._ffi.NULL, 0)
             curve_array = self._ffi.new("EC_builtin_curve[]", num_curves)
             num_curves_assigned = self._lib.EC_get_builtin_curves(
@@ -694,8 +706,6 @@ class Backend(object):
         """
         Generate a new private key on the named curve.
         """
-
-        self._raise_if_ecdsa_unsupported()
 
         curve_nid = self._elliptic_curve_to_nid(curve)
 
