@@ -293,7 +293,7 @@ class Backend(object):
             self._lib.OPENSSL_free(hex_cdata)
             return int(hex_str, 16)
 
-    def _int_to_bn(self, num):
+    def _int_to_bn(self, num, bn=None):
         """
         Converts a python integer to a BIGNUM. The returned BIGNUM will not
         be garbage collected (to support adding them to structs that take
@@ -301,11 +301,14 @@ class Backend(object):
         be discarded after use.
         """
 
+        if bn is None:
+            bn = self._ffi.NULL
+
         if six.PY3:
             # Python 3 has constant time to_bytes, so use that.
 
             binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
-            bn_ptr = self._lib.BN_bin2bn(binary, len(binary), self._ffi.NULL)
+            bn_ptr = self._lib.BN_bin2bn(binary, len(binary), bn)
             assert bn_ptr != self._ffi.NULL
             return bn_ptr
 
@@ -314,6 +317,7 @@ class Backend(object):
 
             hex_num = hex(num).rstrip("L").lstrip("0x").encode("ascii") or b"0"
             bn_ptr = self._ffi.new("BIGNUM **")
+            bn_ptr[0] = bn
             res = self._lib.BN_hex2bn(bn_ptr, hex_num)
             assert res != 0
             assert bn_ptr[0] != self._ffi.NULL
