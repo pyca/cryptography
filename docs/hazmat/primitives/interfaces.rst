@@ -489,16 +489,18 @@ Asymmetric interfaces
 
     A signature algorithm for use with elliptic curve keys.
 
-    .. method:: signer(private_key, algorithm, backend)
+    .. attribute:: algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+
+        The digest algorithm to be used with the signature scheme.
+
+    .. method:: signer(private_key, backend)
         
         Sign data which can be verified later by others using the public key.
 
         :param private_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
-            provider.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
         :param backend: A
@@ -508,7 +510,7 @@ Asymmetric interfaces
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
-    .. method:: verifier(public_key, algorithm, backend)
+    .. method:: verifier(signature, public_key, backend)
 
         Verify data was signed by the private key associated with this public
         key.
@@ -517,10 +519,6 @@ Asymmetric interfaces
 
         :param public_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
-            provider.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
         :param backend: A
@@ -538,16 +536,12 @@ Asymmetric interfaces
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
 
-    .. classmethod:: signer(signature_algorithm, digest_algorithm, backend)
+    .. classmethod:: signer(signature_algorithm, backend)
         
         Sign data which can be verified later by others using the public key.
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
-            provider.
-
-        :param digest_algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
         :param backend: A
@@ -600,17 +594,15 @@ Asymmetric interfaces
 
     An elliptic curve public key.
 
-    .. classmethod:: verifier(signature_algorithm, digest_algorithm, backend)
+    .. classmethod:: verifier(signer, signature_algorithm, backend)
         
         Verify data was signed by the private key associated with this public
         key.
 
+        :param bytes signature: The signature to verify.
+
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
-            provider.
-
-        :param digest_algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
         :param backend: A
