@@ -655,6 +655,35 @@ class TestRSASignature(object):
             private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1(),
                                backend)
 
+    def test_pkcs1_digest_too_large_for_key_size(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=599,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PKCS1v15(),
+            hashes.SHA512(),
+            backend
+        )
+        signer.update(b"failure coming")
+        with pytest.raises(ValueError):
+            signer.finalize()
+
+    def test_pkcs1_minimum_key_size(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=745,
+            backend=backend
+        )
+        signer = private_key.signer(
+            padding.PKCS1v15(),
+            hashes.SHA512(),
+            backend
+        )
+        signer.update(b"no failure")
+        signer.finalize()
+
 
 @pytest.mark.rsa
 class TestRSAVerification(object):
