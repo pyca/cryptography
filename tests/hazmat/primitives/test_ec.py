@@ -64,7 +64,11 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
         ec.ECDSA(hash_type()),
         curve_type()
     ):
-        pytest.skip("ECDSA not supported with this hash and curve")
+        pytest.skip(
+            "ECDSA not supported with this hash {0} and curve {1}".format(
+                hash_type().name, curve_type().name
+            )
+        )
 
 
 @pytest.mark.ecdsa
@@ -116,8 +120,12 @@ class TestECDSAVectors(object):
         "curve", _CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
-        if not backend.elliptic_curve_supported(curve):
-            pytest.skip("Curve is not supported by this backend")
+        if not backend.elliptic_curve_supported(curve()):
+            pytest.skip(
+                "Curve {0} is not supported by this backend {1}".format(
+                    curve().name, backend
+                )
+            )
 
         key = ec.EllipticCurvePrivateKey.generate(curve(), backend)
         assert key
