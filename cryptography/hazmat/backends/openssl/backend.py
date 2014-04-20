@@ -657,10 +657,15 @@ class Backend(object):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
-    def ecdsa_supported(self):
-        return self._lib.Cryptography_HAS_EC == 1
+    def elliptic_curve_supported(self, curve):
+        if self._lib.Cryptography_HAS_EC != 1:
+            return False
 
-    def elliptic_curve_supported(self, signature_algorithm, curve):
+        return curve.name in self._supported_curves()
+
+    def elliptic_curve_signature_algorithm_supported(
+        self, signature_algorithm, curve
+    ):
         if self._lib.Cryptography_HAS_EC != 1:
             return False
 
@@ -675,10 +680,10 @@ class Backend(object):
         ):
             return False
 
-        if curve.name in self._supported_curves():
-            return True
-        else:
+        if not self.elliptic_curve_supported(curve):
             return False
+        else:
+            return True
 
     def _supported_curves(self):
         if self._lib.Cryptography_HAS_EC == 1:

@@ -60,7 +60,7 @@ _HASH_TYPES = {
 
 
 def _skip_ecdsa_vector(backend, curve_type, hash_type):
-    if not backend.elliptic_curve_supported(
+    if not backend.elliptic_curve_signature_algorithm_supported(
         ec.ECDSA(hash_type()),
         curve_type()
     ):
@@ -116,6 +116,9 @@ class TestECDSAVectors(object):
         "curve", _CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
+        if not backend.elliptic_curve_supported(curve):
+            pytest.skip("Curve is not supported by this backend")
+
         key = ec.EllipticCurvePrivateKey.generate(curve(), backend)
         assert key
 

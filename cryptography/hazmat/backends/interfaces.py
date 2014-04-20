@@ -200,10 +200,18 @@ class CMACBackend(object):
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurveBackend(object):
     @abc.abstractmethod
-    def elliptic_curve_supported(self, signature_algorithm, curve):
+    def elliptic_curve_signature_algorithm_supported(
+        self, signature_algorithm, curve
+    ):
         """
         Returns True if the backend supports the named elliptic curve with the
         specified signature algorithm.
+        """
+
+    @abc.abstractmethod
+    def elliptic_curve_supported(self, curve):
+        """
+        Returns True if the backend supports the named elliptic curve.
         """
 
     @abc.abstractmethod
