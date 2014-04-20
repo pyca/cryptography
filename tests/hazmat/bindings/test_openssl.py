@@ -104,8 +104,8 @@ class TestOpenSSL(object):
         res = b.lib.Cryptography_add_osrandom_engine()
         assert res == 2
 
-    # Test that we're properly handling 32-bit unsigned on all platforms
     def test_ssl_ctx_options(self):
+        # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
@@ -114,8 +114,8 @@ class TestOpenSSL(object):
         assert resp == b.lib.SSL_OP_ALL
         assert b.lib.SSL_OP_ALL == b.lib.SSL_CTX_get_options(ctx)
 
-    # Test that we're properly handling 32-bit unsigned on all platforms
     def test_ssl_options(self):
+        # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
@@ -126,8 +126,8 @@ class TestOpenSSL(object):
         assert resp == b.lib.SSL_OP_ALL
         assert b.lib.SSL_OP_ALL == b.lib.SSL_get_options(ssl)
 
-    # Test that we're properly handling 32-bit unsigned on all platforms
     def test_ssl_mode(self):
+        # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
