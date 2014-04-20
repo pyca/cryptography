@@ -1249,8 +1249,10 @@ class TestRSADecryption(object):
             public_exponent=private["public_exponent"],
             modulus=private["modulus"]
         )
+        ciphertext = binascii.unhexlify(example["encryption"])
+        assert len(ciphertext) == math.ceil(skey.key_size / 8.0)
         message = skey.decrypt(
-            binascii.unhexlify(example["encryption"]),
+            ciphertext,
             padding.PKCS1v15(),
             backend
         )
