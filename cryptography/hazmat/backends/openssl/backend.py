@@ -661,7 +661,8 @@ class Backend(object):
         if self._lib.Cryptography_HAS_EC != 1:
             return False
 
-        return curve.name in self._supported_curves()
+        curves = self._supported_curves()
+        return curve.name.encode("ascii") in curves
 
     def elliptic_curve_signature_algorithm_supported(
         self, signature_algorithm, curve
@@ -693,9 +694,18 @@ class Backend(object):
                 curve_array, num_curves)
             assert num_curves == num_curves_assigned
 
-            return [
+            curves = [
                 self._ffi.string(self._lib.OBJ_nid2sn(curve.nid)).decode()
                 for curve in curve_array
+            ]
+
+            curve_aliases = {
+                "prime192v1": "secp192r1",
+                "prime256v1": "secp256r1"
+            }
+            return [
+                curve_aliases.get(curve, curve)
+                for curve in curves
             ]
         else:
             return []
