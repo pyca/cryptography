@@ -214,7 +214,42 @@ RSA
             too large for the key size.
 
 
+Handling partial RSA private keys
+---------------------------------
+
+If you are trying to load RSA private keys yourself you may find that not all
+parameters required by ``RSAPrivateKey`` are available. In particular the
+`Chinese Remainder Theorem`_ (CRT) values ``dmp1``, ``dmq1``, ``iqmp`` may be
+missing or present in a different form. For example `OpenPGP`_ does not include
+the ``iqmp``, ``dmp1`` or ``dmq1`` parameters. 
+
+The following functions are provided for users who want to work with keys like
+this without having to do the math themselves.
+
+.. function:: rsa_crt_iqmp(p, q)
+
+    .. versionadded:: 0.4
+
+    Generates the ``iqmp`` (also known as ``qInv``) parameter from the RSA
+    primes ``p`` and ``q``.
+
+.. function:: rsa_crt_dmp1(private_exponent, p)
+
+    .. versionadded:: 0.4
+
+    Generates the ``dmp1`` parameter from the RSA private exponent and prime
+    ``p``.
+
+.. function:: rsa_crt_dmq1(private_exponent, q)
+    
+    .. versionadded:: 0.4
+
+    Generates the ``dmq1`` parameter from the RSA private exponent and prime
+    ``q``.
+
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
+.. _`OpenPGP`: https://en.wikipedia.org/wiki/Pretty_Good_Privacy
+.. _`Chinese Remainder Theorem`: http://en.wikipedia.org/wiki/RSA_%28cryptosystem%29#Using_the_Chinese_remainder_algorithm
