@@ -676,7 +676,7 @@ class Backend(object):
 
         # Before 0.9.8m OpenSSL can't cope with digests longer than the curve.
         if (
-            self._lib.OPENSSL_VERSION_NUMBER < 0x009080dfL and
+            self._lib.OPENSSL_VERSION_NUMBER < 0x009080df and
             curve.key_size < signature_algorithm.algorithm.digest_size * 8
         ):
             return False
