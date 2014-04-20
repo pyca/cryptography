@@ -87,12 +87,25 @@ int BN_mod_exp(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
                BN_CTX *);
 int BN_gcd(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 BIGNUM *BN_mod_inverse(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+
+int BN_set_bit(BIGNUM *, int);
+int BN_clear_bit(BIGNUM *, int);
+
+int BN_is_bit_set(const BIGNUM *, int);
+
+int BN_mask_bits(BIGNUM *, int);
 """
 
 MACROS = """
 int BN_zero(BIGNUM *);
 int BN_one(BIGNUM *);
 int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
+
+int BN_lshift(BIGNUM *, const BIGNUM *, int);
+int BN_lshift1(BIGNUM *, BIGNUM *);
+
+int BN_rshift(BIGNUM *, BIGNUM *, int);
+int BN_rshift1(BIGNUM *, BIGNUM *);
 """
 
 CUSTOMIZATIONS = """
