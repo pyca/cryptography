@@ -13,7 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
 import collections
 import itertools
 import math
@@ -1751,6 +1750,42 @@ class _CMACContext(object):
         )
 
 
+def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
+    _lib = backend._lib
+    _ffi = backend._ffi
+
+    digest_len = len(digest)
+
+    group = _lib.EC_KEY_get0_group(ec_key_cdata)
+
+    bn_ctx = _lib.BN_CTX_new()
+    assert bn_ctx != _ffi.NULL
+    bn_ctx = _ffi.gc(bn_ctx, _lib.BN_CTX_free)
+
+    order = _lib.BN_CTX_get(bn_ctx)
+    assert order != _ffi.NULL
+
+    res = _lib.EC_GROUP_get_order(group, order, bn_ctx)
+    assert res == 1
+
+    order_bits = _lib.BN_num_bits(order)
+
+    if 8 * digest_len > order_bits:
+        digest_len = (order_bits + 7) // 8
+        digest = digest[:digest_len]
+
+    if 8 * digest_len > order_bits:
+        rshift = 8 - (order_bits & 0x7)
+        assert rshift > 0 and rshift < 8
+
+        mask = 0xFF >> rshift << rshift
+
+        # Set the bottom rshift bits to 0
+        digest = digest[:-1] + six.int2byte(six.byte2int(digest[-1]) & mask)
+
+    return digest
+
+
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
 class _ECDSASignatureContext(object):
     def __init__(self, backend, private_key, algorithm):
@@ -1761,62 +1796,14 @@ class _ECDSASignatureContext(object):
         )
         self._digest = hashes.Hash(algorithm, backend)
 
-    def _truncate_digest(self, digest):
-        _lib = self._backend._lib
-        _ffi = self._backend._ffi
-
-        digest_len = len(digest)
-
-        group = _lib.EC_KEY_get0_group(self._ec_key_cdata)
-
-        bn_ctx = _lib.BN_CTX_new()
-        assert bn_ctx != _ffi.NULL
-        bn_ctx = _ffi.gc(bn_ctx, _lib.BN_CTX_free)
-
-        order = _lib.BN_CTX_get(bn_ctx)
-        assert order != _ffi.NULL
-
-        res = _lib.EC_GROUP_get_order(group, order, bn_ctx)
-        assert res == 1
-
-        order_bits = _lib.BN_num_bits(order)
-
-        if 8 * digest_len > order_bits:
-            digest_len = (order_bits + 7) // 8
-
-        if 8 * digest_len > order_bits:
-            # Turn the digest into a BN
-            digest_bn = _lib.BN_CTX_get(bn_ctx)
-            assert digest_bn != _ffi.NULL
-
-            res = _lib.BN_bin2bn(digest, digest_len, digest_bn)
-            assert res == digest_bn
-
-            rshift = 8 - (order_bits & 0x7)
-            assert rshift > 0 and rshift < 8
-
-            # Set the bottom rshift bits to 0
-
-            res = _lib.BN_rshift(digest_bn, digest_bn, rshift)
-            assert res == 1
-
-            res = _lib.BN_lshift(digest_bn, digest_bn, rshift)
-            assert res == 1
-
-            # Turn it back into bytes
-            return binascii.unhexlify(
-                hex(backend._bn_to_int(digest_bn))[2:].rstrip("L")
-            )
-        else:
-            return digest[:digest_len]
-
     def update(self, data):
         self._digest.update(data)
 
     def finalize(self):
         digest = self._digest.finalize()
 
-        digest = self._truncate_digest(digest)
+        digest = _truncate_digest_for_ecdsa(
+            self._ec_key_cdata, digest, self._backend)
 
         max_size = self._backend._lib.ECDSA_size(self._ec_key_cdata)
         assert max_size > 0
@@ -1851,6 +1838,10 @@ class _ECDSAVerificationContext(object):
 
     def verify(self):
         digest = self._digest.finalize()
+
+        digest = _truncate_digest_for_ecdsa(
+            self._ec_key_cdata, digest, self._backend)
+
         res = self._backend._lib.ECDSA_verify(
             0,
             digest,
