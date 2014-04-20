@@ -14,9 +14,9 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import subprocess
 import sys
 from distutils.command.build import build
-import subprocess
 
 import pkg_resources
 
