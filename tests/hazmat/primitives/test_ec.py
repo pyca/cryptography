@@ -24,30 +24,29 @@ from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from ...utils import (
-    raises_unsupported_algorithm,
-    load_vectors_from_file, load_fips_ecdsa_key_pair_vectors,
-    load_fips_ecdsa_signing_vectors
+    load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
+    load_vectors_from_file, raises_unsupported_algorithm
 )
 
 
 _CURVE_TYPES = {
-    "secp192r1": ec.secp192r1,
-    "secp224r1": ec.secp224r1,
-    "secp256r1": ec.secp256r1,
-    "secp384r1": ec.secp384r1,
-    "secp521r1": ec.secp521r1,
+    "secp192r1": ec.SECP192R1,
+    "secp224r1": ec.SECP224R1,
+    "secp256r1": ec.SECP256R1,
+    "secp384r1": ec.SECP384R1,
+    "secp521r1": ec.SECP521R1,
 
-    "sect163k1": ec.sect163k1,
-    "sect233k1": ec.sect233k1,
-    "sect283k1": ec.sect283k1,
-    "sect409k1": ec.sect409k1,
-    "sect571k1": ec.sect571k1,
+    "sect163k1": ec.SECT163K1,
+    "sect233k1": ec.SECT233K1,
+    "sect283k1": ec.SECT283K1,
+    "sect409k1": ec.SECT409K1,
+    "sect571k1": ec.SECT571K1,
 
-    "sect163r2": ec.sect163r2,
-    "sect233r1": ec.sect233r1,
-    "sect283r1": ec.sect283r1,
-    "sect409r1": ec.sect409r1,
-    "sect571r1": ec.sect571r1,
+    "sect163r2": ec.SECT163R2,
+    "sect233r1": ec.SECT233R1,
+    "sect283r1": ec.SECT283R1,
+    "sect409r1": ec.SECT409R1,
+    "sect571r1": ec.SECT571R1,
 }
 
 _HASH_TYPES = {

@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import interfaces
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect571r1(object):
+class SECT571R1(object):
     @property
     def name(self):
         return "sect571r1"
@@ -31,7 +31,7 @@ class sect571r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect409r1(object):
+class SECT409R1(object):
     @property
     def name(self):
         return "sect409r1"
@@ -42,7 +42,7 @@ class sect409r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect283r1(object):
+class SECT283R1(object):
     @property
     def name(self):
         return "sect283r1"
@@ -53,7 +53,7 @@ class sect283r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect233r1(object):
+class SECT233R1(object):
     @property
     def name(self):
         return "sect233r1"
@@ -64,7 +64,7 @@ class sect233r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect163r2(object):
+class SECT163R2(object):
     @property
     def name(self):
         return "sect163r2"
@@ -75,7 +75,7 @@ class sect163r2(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect571k1(object):
+class SECT571K1(object):
     @property
     def name(self):
         return "sect571k1"
@@ -86,7 +86,7 @@ class sect571k1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect409k1(object):
+class SECT409K1(object):
     @property
     def name(self):
         return "sect409k1"
@@ -97,7 +97,7 @@ class sect409k1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect283k1(object):
+class SECT283K1(object):
     @property
     def name(self):
         return "sect283k1"
@@ -108,7 +108,7 @@ class sect283k1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect233k1(object):
+class SECT233K1(object):
     @property
     def name(self):
         return "sect233k1"
@@ -119,7 +119,7 @@ class sect233k1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class sect163k1(object):
+class SECT163K1(object):
     @property
     def name(self):
         return "sect163k1"
@@ -130,7 +130,7 @@ class sect163k1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class secp521r1(object):
+class SECP521R1(object):
     @property
     def name(self):
         return "secp521r1"
@@ -141,7 +141,7 @@ class secp521r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class secp384r1(object):
+class SECP384R1(object):
     @property
     def name(self):
         return "secp384r1"
@@ -152,7 +152,7 @@ class secp384r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class secp256r1(object):
+class SECP256R1(object):
     @property
     def name(self):
         return "secp256r1"
@@ -163,7 +163,7 @@ class secp256r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class secp224r1(object):
+class SECP224R1(object):
     @property
     def name(self):
         return "secp224r1"
@@ -174,7 +174,7 @@ class secp224r1(object):
 
 
 @utils.register_interface(interfaces.EllipticCurve)
-class secp192r1(object):
+class SECP192R1(object):
     @property
     def name(self):
         return "secp192r1"
