@@ -20,7 +20,7 @@ of a message.
     CMAC objects take a
     :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm` provider.
 
-    .. doctest::
+    .. code-block:: pycon
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import cmac
