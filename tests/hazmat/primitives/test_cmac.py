@@ -32,7 +32,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.cmac import CMAC
 
 from tests.utils import (
-    load_vectors_from_file, load_nist_vectors, raises_unsupported_algorithm
+    load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
 
 vectors_aes128 = load_vectors_from_file(

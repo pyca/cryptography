@@ -25,7 +25,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, CMACBackend, DSABackend, HMACBackend, HashBackend,
+    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
     PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding

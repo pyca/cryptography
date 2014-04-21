@@ -17,7 +17,7 @@ import pytest
 
 from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, CMACBackend, DSABackend, HMACBackend, HashBackend,
+    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
     PBKDF2HMACBackend, RSABackend
 )
 from .utils import check_backend_support, check_for_iface, select_backends
