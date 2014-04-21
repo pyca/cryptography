@@ -431,6 +431,70 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     return vectors
 
 
+def load_fips_dsa_sig_gen_vectors(vector_data):
+    """
+    Loads data out of the FIPS DSA SigGen vector files.
+    """
+    vectors = []
+    sha_regex = re.compile(
+        r"\[mod = L=...., N=..., SHA-(?P<sha>1|224|256|384|512)\]"
+    )
+    # When reading_key_data is set to True it tells the loader to continue
+    # constructing dictionaries. We set reading_key_data to False during the
+    # blocks of the vectors of N=224 because we don't support it.
+    reading_key_data = True
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        sha_match = sha_regex.match(line)
+        if sha_match:
+            digest_algorithm = "SHA-{0}".format(sha_match.group("sha"))
+
+        elif line.startswith("[mod = L=2048, N=224"):
+            reading_key_data = False
+            continue
+        elif line.startswith("[mod = L=2048, N=256, SHA-1"):
+            reading_key_data = True
+            continue
+
+        if not reading_key_data:
+            continue
+
+        line = line.split("=")
+
+        if line[0].strip() == "P":
+            vectors.append({'p': int(line[1], 16),
+                            'digest_algorithm': digest_algorithm})
+        elif line[0].strip() == "Q":
+            vectors[-1]['q'] = int(line[1], 16)
+        elif line[0].strip() == "G":
+            vectors[-1]['g'] = int(line[1], 16)
+        elif line[0].strip() == "Msg" and 'msg' not in vectors[-1]:
+            hexmsg = line[1].strip().encode("ascii")
+            vectors[-1]['msg'] = binascii.unhexlify(hexmsg)
+        elif line[0].strip() == "Msg" and 'msg' in vectors[-1]:
+            hexmsg = line[1].strip().encode("ascii")
+            vectors.append({'p': vectors[-1]['p'],
+                            'q': vectors[-1]['q'],
+                            'g': vectors[-1]['g'],
+                            'digest_algorithm':
+                            vectors[-1]['digest_algorithm'],
+                            'msg': binascii.unhexlify(hexmsg)})
+        elif line[0].strip() == "X":
+            vectors[-1]['x'] = int(line[1], 16)
+        elif line[0].strip() == "Y":
+            vectors[-1]['y'] = int(line[1], 16)
+        elif line[0].strip() == "R":
+            vectors[-1]['r'] = int(line[1], 16)
+        elif line[0].strip() == "S":
+            vectors[-1]['s'] = int(line[1], 16)
+
+    return vectors
+
+
 # http://tools.ietf.org/html/rfc4492#appendix-A
 _ECDSA_CURVE_NAMES = {
     "P-192": "secp192r1",
