@@ -154,6 +154,22 @@ RSA
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
             it may also be raised for invalid label values.
 
+        .. code-block:: python
+
+            from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import padding
+
+            plaintext = private_key.decrypt(
+                ciphertext,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                default_backend()
+            )
+
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
