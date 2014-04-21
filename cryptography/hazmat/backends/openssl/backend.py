@@ -556,8 +556,11 @@ class Backend(object):
         return self._ffi.buffer(buf)[:res]
 
     def cmac_algorithm_supported(self, algorithm):
-        return (backend._lib.Cryptography_HAS_CMAC == 1
-                and backend.cipher_supported(algorithm, CBC(0)))
+        return (
+            backend._lib.Cryptography_HAS_CMAC == 1
+            and backend.cipher_supported(algorithm, CBC(
+                b"\x00" * algorithm.block_size))
+        )
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)

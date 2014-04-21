@@ -49,7 +49,7 @@ vectors_aes = vectors_aes128 + vectors_aes192 + vectors_aes256
 vectors_3des = load_vectors_from_file(
     "CMAC/nist-800-38b-3des.txt", load_nist_vectors)
 
-fake_key = "AAAAAAAAAAAAAAAA"
+fake_key = b"\x00" * 16
 
 
 @pytest.mark.cmac
