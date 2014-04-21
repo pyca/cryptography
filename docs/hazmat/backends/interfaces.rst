@@ -264,7 +264,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             backend, otherwise ``False``.
 
 
-.. class:: OpenSSLSerializationBackend
+.. class:: TraditionalOpenSSLSerializationBackend
 
     .. versionadded:: 0.3
 
@@ -279,7 +279,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             Should be None if the data is not encrypted.
 
         :return: A new instance of
-            :class:`~cryptography.hazmat.primitives.serialization.OpenSSLPrivateKey`
+            :class:`~cryptography.hazmat.primitives.serialization.TraditionalOpenSSLPrivateKey`
 
         :raises ValueError: If the data could not be deserialized correctly.
 

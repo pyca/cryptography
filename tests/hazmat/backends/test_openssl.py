@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pretend
+
 import pytest
 
 from cryptography import utils
@@ -291,3 +293,14 @@ class TestOpenSSLRSA(object):
 
     def test_unsupported_mgf1_hash_algorithm(self):
         assert backend.mgf1_hash_supported(DummyHash()) is False
+
+
+class TestOpenSSLSerialisationWithOpenSSL(object):
+    def test_password_too_long(self):
+        ffi_cb, cb = backend._pem_password_cb(b"aa")
+        assert cb(None, 1, False, None) == 0
+
+    def test_unsupported_evp_pkey_type(self):
+        key = pretend.stub(type="unsupported")
+        with raises_unsupported_algorithm(None):
+            backend._evp_pkey_to_private_key(key)

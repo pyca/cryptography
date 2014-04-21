@@ -26,7 +26,9 @@ from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from .utils import generate_rsa_verification_test
+from .utils import (
+    _check_rsa_private_key, generate_rsa_verification_test
+)
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
@@ -40,24 +42,6 @@ class DummyPadding(object):
 
 class DummyMGF(object):
     _salt_length = 0
-
-
-def _check_rsa_private_key(skey):
-    assert skey
-    assert skey.modulus
-    assert skey.public_exponent
-    assert skey.private_exponent
-    assert skey.p * skey.q == skey.modulus
-    assert skey.key_size
-    assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
-    assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
-    assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
-
-    pkey = skey.public_key()
-    assert pkey
-    assert skey.modulus == pkey.modulus
-    assert skey.public_exponent == pkey.public_exponent
-    assert skey.key_size == pkey.key_size
 
 
 def _flatten_pkcs1_examples(vectors):
