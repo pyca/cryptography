@@ -133,6 +133,24 @@ Asymmetric interfaces
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
+    .. method:: decrypt(ciphertext, padding, backend)
+
+        .. versionadded:: 0.4
+
+        Decrypt data that was encrypted via the public key.
+
+        :param bytes ciphertext: The ciphertext to decrypt.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return bytes: Decrypted data.
+
     .. method:: public_key()
 
         :return: :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`

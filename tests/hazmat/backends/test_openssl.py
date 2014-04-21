@@ -143,8 +143,8 @@ class TestOpenSSL(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
-    # This test is not in the next class because to check if it's really
-    # default we don't want to run the setup_method before it
+    # This test is not in the TestOpenSSLRandomEngine class because to check
+    # if it's really default we don't want to run the setup_method before it
     def test_osrandom_engine_is_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)

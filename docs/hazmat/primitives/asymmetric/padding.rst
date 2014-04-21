@@ -19,7 +19,8 @@ Padding
 
     PSS (Probabilistic Signature Scheme) is a signature scheme defined in
     :rfc:`3447`. It is more complex than PKCS1 but possesses a `security proof`_.
-    This is the `recommended padding algorithm`_ for RSA signatures.
+    This is the `recommended padding algorithm`_ for RSA signatures. It cannot
+    be used with RSA encryption.
 
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
@@ -37,7 +38,8 @@ Padding
     .. versionadded:: 0.3
 
     PKCS1 v1.5 (also known as simply PKCS1) is a simple padding scheme
-    developed for use with RSA keys. It is defined in :rfc:`3447`.
+    developed for use with RSA keys. It is defined in :rfc:`3447`. This padding
+    can be used for signing and encryption.
 
 Mask generation functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~

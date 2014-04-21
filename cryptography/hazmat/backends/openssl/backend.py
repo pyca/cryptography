@@ -473,6 +473,87 @@ class Backend(object):
             y=self._bn_to_int(ctx.pub_key)
         )
 
+    def decrypt_rsa(self, private_key, ciphertext, padding):
+        if isinstance(padding, PKCS1v15):
+            padding_enum = self._lib.RSA_PKCS1_PADDING
+        else:
+            raise UnsupportedAlgorithm(
+                "{0} is not supported by this backend".format(
+                    padding.name
+                ),
+                _Reasons.UNSUPPORTED_PADDING
+            )
+
+        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
+        if key_size_bytes < len(ciphertext):
+            raise ValueError("Ciphertext too large for key size")
+
+        if self._lib.Cryptography_HAS_PKEY_CTX:
+            return self._decrypt_rsa_pkey_ctx(private_key, ciphertext,
+                                              padding_enum)
+        else:
+            return self._decrypt_rsa_098(private_key, ciphertext, padding_enum)
+
+    def _decrypt_rsa_pkey_ctx(self, private_key, ciphertext, padding_enum):
+        evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
+        pkey_ctx = self._lib.EVP_PKEY_CTX_new(
+            evp_pkey, self._ffi.NULL
+        )
+        assert pkey_ctx != self._ffi.NULL
+        pkey_ctx = self._ffi.gc(pkey_ctx, self._lib.EVP_PKEY_CTX_free)
+        res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
+        assert res == 1
+        res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
+            pkey_ctx, padding_enum)
+        assert res > 0
+        buf_size = self._lib.EVP_PKEY_size(evp_pkey)
+        assert buf_size > 0
+        outlen = self._ffi.new("size_t *", buf_size)
+        buf = self._ffi.new("char[]", buf_size)
+        res = self._lib.Cryptography_EVP_PKEY_decrypt(
+            pkey_ctx,
+            buf,
+            outlen,
+            ciphertext,
+            len(ciphertext)
+        )
+        if res <= 0:
+            errors = self._consume_errors()
+            assert errors
+            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            assert (
+                errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+                errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
+            )
+            raise ValueError("Decryption failed")
+
+        return self._ffi.buffer(buf)[:outlen[0]]
+
+    def _decrypt_rsa_098(self, private_key, ciphertext, padding_enum):
+        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        key_size = self._lib.RSA_size(rsa_cdata)
+        assert key_size > 0
+        buf = self._ffi.new("unsigned char[]", key_size)
+        res = self._lib.RSA_private_decrypt(
+            len(ciphertext),
+            ciphertext,
+            buf,
+            rsa_cdata,
+            padding_enum
+        )
+        if res < 0:
+            errors = self._consume_errors()
+            assert errors
+            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            assert (
+                errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+                errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
+            )
+            raise ValueError("Decryption failed")
+
+        return self._ffi.buffer(buf)[:res]
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):

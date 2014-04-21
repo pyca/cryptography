@@ -116,6 +116,36 @@ RSA
         :raises ValueError: This is raised when the chosen hash algorithm is
             too large for the key size.
 
+    .. method:: decrypt(ciphertext, padding, backend)
+
+        .. versionadded:: 0.4
+
+        Decrypt data that was encrypted with the public key.
+
+        :param bytes ciphertext: The ciphertext to decrypt.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return bytes: Decrypted data.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or if
+            the backend does not support the chosen hash or padding algorithm.
+
+        :raises TypeError: This is raised when the padding is not an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :raises ValueError: This is raised when decryption fails or the chosen
+            hash algorithm is too large for the key size.
+
 
 .. class:: RSAPublicKey(public_exponent, modulus)
 
@@ -221,7 +251,7 @@ If you are trying to load RSA private keys yourself you may find that not all
 parameters required by ``RSAPrivateKey`` are available. In particular the
 `Chinese Remainder Theorem`_ (CRT) values ``dmp1``, ``dmq1``, ``iqmp`` may be
 missing or present in a different form. For example `OpenPGP`_ does not include
-the ``iqmp``, ``dmp1`` or ``dmq1`` parameters. 
+the ``iqmp``, ``dmp1`` or ``dmq1`` parameters.
 
 The following functions are provided for users who want to work with keys like
 this without having to do the math themselves.
@@ -241,7 +271,7 @@ this without having to do the math themselves.
     ``p``.
 
 .. function:: rsa_crt_dmq1(private_exponent, q)
-    
+
     .. versionadded:: 0.4
 
     Generates the ``dmq1`` parameter from the RSA private exponent and prime

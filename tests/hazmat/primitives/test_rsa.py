@@ -1225,3 +1225,98 @@ class TestMGF1(object):
         mgf = padding.MGF1(algorithm, padding.MGF1.MAX_LENGTH)
         assert mgf._algorithm == algorithm
         assert mgf._salt_length == padding.MGF1.MAX_LENGTH
+
+
+@pytest.mark.rsa
+class TestRSADecryption(object):
+    @pytest.mark.parametrize(
+        "vector",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_decrypt_pkcs1v15_vectors(self, vector, backend):
+        private, public, example = vector
+        skey = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        ciphertext = binascii.unhexlify(example["encryption"])
+        assert len(ciphertext) == math.ceil(skey.key_size / 8.0)
+        message = skey.decrypt(
+            ciphertext,
+            padding.PKCS1v15(),
+            backend
+        )
+        assert message == binascii.unhexlify(example["message"])
+
+    def test_unsupported_padding(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
+            private_key.decrypt(b"somedata", DummyPadding(), backend)
+
+    def test_decrypt_invalid_decrypt(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(ValueError):
+            private_key.decrypt(
+                b"\x00" * 64,
+                padding.PKCS1v15(),
+                backend
+            )
+
+    def test_decrypt_ciphertext_too_large(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with pytest.raises(ValueError):
+            private_key.decrypt(
+                b"\x00" * 65,
+                padding.PKCS1v15(),
+                backend
+            )
+
+    def test_decrypt_ciphertext_too_small(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        ct = binascii.unhexlify(
+            b"50b4c14136bd198c2f3c3ed243fce036e168d56517984a263cd66492b80804f1"
+            b"69d210f2b9bdfb48b12f9ea05009c77da257cc600ccefe3a6283789d8ea0"
+        )
+        with pytest.raises(ValueError):
+            private_key.decrypt(
+                ct,
+                padding.PKCS1v15(),
+                backend
+            )
+
+    def test_rsa_decrypt_invalid_backend(self, backend):
+        pretend_backend = object()
+        private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
+
+        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+            private_key.decrypt(
+                b"irrelevant",
+                padding.PKCS1v15(),
+                pretend_backend
+            )
