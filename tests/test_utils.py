@@ -28,9 +28,10 @@ import cryptography_vectors
 
 from .utils import (
     check_backend_support, check_for_iface, load_cryptrec_vectors,
-    load_fips_dsa_key_pair_vectors, load_fips_ecdsa_key_pair_vectors,
-    load_fips_ecdsa_signing_vectors, load_hash_vectors, load_nist_vectors,
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_ver_vectors,
+    load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
+    load_hash_vectors, load_nist_vectors, load_pkcs1_vectors,
+    load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm, select_backends
 )
 
@@ -1824,45 +1825,260 @@ de61329a78d526f65245380ce877e979c5b50de66c9c30d66382c8f254653d25a1eb1d3a4897d7\
     assert expected == load_fips_dsa_key_pair_vectors(vector_data)
 
 
-def test_vector_version():
-    assert cryptography.__version__ == cryptography_vectors.__version__
+def test_load_fips_dsa_sig_ver_vectors():
+    vector_data = textwrap.dedent("""
+    # CAVS 11.0
+    # "SigVer" information
+    # Mod sizes selected: SHA-1 L=1024, N=160,SHA-384 L=2048, N=256
+    # Generated on Fri Apr 01 08:37:15 2011
 
+    [mod = L=1024, N=160, SHA-1]
 
-def test_raises_unsupported_algorithm_wrong_type():
-    # Check that it raises if the wrong type of exception is raised.
-    class TestException(Exception):
-        pass
+    P = dc5bf3a88b2d99e4c95cdd7a0501cc38630d425cf5c390af3429cff1f35147b795cae\
+a923f0d3577158f8a0c89dabd1962c2c453306b5d70cacfb01430aceb54e5a5fa6f93\
+40d3bd2da612fceeb76b0ec1ebfae635a56ab141b108e00dc76eefe2edd0c514c21c4\
+57457c39065dba9d0ecb7569c247172d8438ad2827b60435b
+    Q = e956602b83d195dbe945b3ac702fc61f81571f1d
+    G = d7eb9ca20a3c7a079606bafc4c9261ccaba303a5dc9fe9953f197dfe548c234895baa\
+77f441ee6a2d97b909cbbd26ff7b869d24cae51b5c6edb127a4b5d75cd8b46608bfa1\
+48249dffdb59807c5d7dde3fe3080ca3a2d28312142becb1fa8e24003e21c72871081\
+74b95d5bc711e1c8d9b1076784f5dc37a964a5e51390da713
 
-    with pytest.raises(TestException):
-        with raises_unsupported_algorithm(None):
-            raise TestException
+    Msg = 0fe1bfee500bdb76026099b1d37553f6bdfe48c82094ef98cb309dd777330bedfaa\
+2f94c823ef74ef4074b50d8706041ac0e371c7c22dcf70263b8d60e17a86c7c379c\
+fda8f22469e0df9d49d59439fc99891873628fff25dda5fac5ac794e948babdde96\
+8143ba05f1128f34fdad5875edc4cd71c6c24ba2060ffbd439ce2b3
+    X = 1d93010c29ecfc432188942f46f19f44f0e1bb5d
+    Y = 6240ea0647117c38fe705106d56db578f3e10130928452d4f3587881b8a2bc6873a8b\
+efc3237f20914e2a91c7f07a928ee22adeed23d74ab7f82ea11f70497e578f7a9b4cb\
+d6f10226222b0b4da2ea1e49813d6bb9882fbf675c0846bb80cc891857b89b0ef1beb\
+6cce3378a9aab5d66ad4cb9277cf447dfe1e64434749432fb
+    R = b5af307867fb8b54390013cc67020ddf1f2c0b81
+    S = 620d3b22ab5031440c3e35eab6f481298f9e9f08
+    Result = P
 
+    Msg = 97d50898025d2f9ba633866e968ca75e969d394edba6517204cb3dd537c2ba38778\
+a2dc9dbc685a915e5676fcd43bc3726bc59ce3d7a9fae35565082a069c139fa37c9\
+0d922b126933db3fa6c5ef6b1edf00d174a51887bb76909c6a94fe994ecc7b7fc8f\
+26113b17f30f9d01693df99a125b4f17e184331c6b6e8ca00f54f3a
+    X = 350e13534692a7e0c4b7d58836046c436fbb2322
+    Y = 69974de550fe6bd3099150faea1623ad3fb6d9bf23a07215093f319725ad0877accff\
+d291b6da18eb0cbe51676ceb0977504eb97c27c0b191883f72fb2710a9fbd8bcf13be\
+0bf854410b32f42b33ec89d3cc1cf892bcd536c4195ca9ada302ad600c3408739935d\
+77dc247529ca47f844cc86f5016a2fe962c6e20ca7c4d4e8f
+    R = b5d05faa7005764e8dae0327c5bf1972ff7681b9
+    S = 18ea15bd9f00475b25204cbc23f8c23e01588015
+    Result = F (3 - R changed )
 
-def test_raises_unsupported_algorithm_wrong_reason():
-    # Check that it fails if the wrong reason code is raised.
-    with pytest.raises(AssertionError):
-        with raises_unsupported_algorithm(None):
-            raise UnsupportedAlgorithm("An error.",
-                                       _Reasons.BACKEND_MISSING_INTERFACE)
+    [mod = L=2048, N=256, SHA-384]
 
+    P = e7c1c86125db9ef417da1ced7ea0861bdad629216a3f3c745df42a46b989e59f4d984\
+25ee3c932fa3c2b6f637bdb6545bec526faa037e11f5578a4363b9fca5eba60d6a9cb\
+aa2befd04141d989c7356285132c2eaf74f2d868521cdc0a17ae9a2546ef863027d3f\
+8cc7949631fd0e2971417a912c8b8c5c989730db6ea6e8baee0e667850429038093c8\
+51ccb6fb173bb081e0efe0bd7450e0946888f89f75e443ab93ef2da293a01622cf43c\
+6dd79625d41ba8f9ef7e3086ab39134283d8e96c89249488120fd061e4a87d34af410\
+69c0b4fd3934c31b589cbe85b68b912718d5dab859fda7082511fad1d152044905005\
+546e19b14aa96585a55269bf2b831
+    Q = 8e056ec9d4b7acb580087a6ed9ba3478711bb025d5b8d9c731ef9b38bd43db2f
+    G = dc2bfb9776786ad310c8b0cdcbba3062402613c67e6959a8d8d1b05aab636528b7b1f\
+e9cd33765f853d6dbe13d09f2681f8c7b1ed7886aaed70c7bd76dbe858ffb8bd86235\
+ddf759244678f428c6519af593dc94eeadbd9852ba2b3d61664e8d58c29d2039af3c3\
+d6d16f90988f6a8c824569f3d48050e30896a9e17cd0232ef01ab8790008f6973b84c\
+763a72f4ae8b485abfb7e8efeb86808fa2b281d3e5d65d28f5992a34c077c5aa8026c\
+b2fbc34a45f7e9bd216b10e6f12ecb172e9a6eb8f2e91316905b6add1fd22e83bc2f0\
+89f1d5e6a6e6707c18ff55ddcb7954e8bceaf0efc4e8314910c03b0e51175f344faaf\
+ee476a373ac95743cec712b72cf2e
 
-def test_raises_unsupported_no_exc():
-    # Check that it fails if no exception is raised.
-    with pytest.raises(pytest.fail.Exception):
-        with raises_unsupported_algorithm(
-            _Reasons.BACKEND_MISSING_INTERFACE
-        ):
-            pass
+    Msg = 6cd6ccfd66bcd832189c5f0c77994210e3bf2c43416f0fe77c4e92f31c5369538dc\
+2c003f146c5ac79df43194ccf3c44d470d9f1083bd15b99b5bcf88c32d8a9021f09\
+ea2288d7b3bf345a12aef3949c1e121b9fb371a67c2d1377364206ac839dd784835\
+61426bda0303f285aa12e9c45d3cdfc6beae3549703b187deeb3296
+    X = 56c897b5938ad5b3d437d7e4826da586a6b3be15e893fa1aaa946f20a028b6b3
+    Y = 38ad44489e1a5778b9689f4dcf40e2acf23840fb954e987d6e8cb629106328ac64e1f\
+3c3eba48b21176ad4afe3b733bead382ee1597e1b83e4b43424f2daaba04e5bd79e14\
+36693ac2bddb79a298f026e57e200a252efd1e848a4a2e90be6e78f5242b468b9c0c6\
+d2615047a5a40b9ae7e57a519114db55bf3bed65e580f894b094630ca9c217f6accd0\
+91e72d2f22da620044ff372d7273f9445017fad492959e59600b7494dbe766a03e401\
+25d4e6747c76f68a5b0cdc0e7d7cee12d08c6fb7d0fb049e420a33405075ed4463296\
+345ca695fb7feab7c1b5333ae519fcd4bb6a043f4555378969114743d4face96cad31\
+c0e0089da4e3f61b6d7dabc088ab7
+    R = 3b85b17be240ed658beb3652c9d93e8e9eea160d35ee2459614305802963374e
+    S = 726800a5174a53b56dce86064109c0273cd11fcfa3c92c5cd6aa910260c0e3c7
+    Result = F (1 - Message changed)
 
+    Msg = 3ad6b0884f358dea09c31a9abc40c45a6000611fc2b907b30eac00413fd2819de70\
+15488a411609d46c499b8f7afa1b78b352ac7f8535bd805b8ff2a5eae557098c668\
+f7ccd73af886d6823a6d456c29931ee864ed46d767382785728c2a83fcff5271007\
+d2a67d06fa205fd7b9d1a42ea5d6dc76e5e18a9eb148cd1e8b262ae
+    X = 2faf566a9f057960f1b50c69508f483d9966d6e35743591f3a677a9dc40e1555
+    Y = 926425d617babe87c442b03903e32ba5bbf0cd9d602b59c4df791a4d64a6d4333ca0c\
+0d370552539197d327dcd1bbf8c454f24b03fc7805f862db34c7b066ddfddbb11dbd0\
+10b27123062d028fe041cb56a2e77488348ae0ab6705d87aac4d4e9e6600e9e706326\
+d9979982cffa839beb9eacc3963bcca455a507e80c1c37ad4e765b2c9c0477a075e9b\
+c584feacdf3a35a9391d4711f14e197c54022282bfed9a191213d64127f17a9c5affe\
+c26e0c71f15d3a5b16098fec118c45bf8bb2f3b1560df0949254c1c0aeb0a16d5a95a\
+40fab8521fbe8ea77c51169b587cc3360e5733e6a23b9fded8c40724ea1f9e93614b3\
+a6c9b4f8dbbe915b794497227ba62
+    R = 343ea0a9e66277380f604d5880fca686bffab69ca97bfba015a102a7e23dce0e
+    S = 6258488c770e0f5ad7b9da8bade5023fc0d17c6ec517bd08d53e6dc01ac5c2b3
+    Result = P
+    """).splitlines()
 
-def test_raises_unsupported_algorithm():
-    # Check that it doesnt assert if the right things are raised.
-    with raises_unsupported_algorithm(
-        _Reasons.BACKEND_MISSING_INTERFACE
-    ) as exc_info:
-        raise UnsupportedAlgorithm("An error.",
-                                   _Reasons.BACKEND_MISSING_INTERFACE)
-    assert exc_info.type is UnsupportedAlgorithm
+    expected = [
+        {
+            'p': int('dc5bf3a88b2d99e4c95cdd7a0501cc38630d425cf5c390af3429cff1'
+                     'f35147b795caea923f0d3577158f8a0c89dabd1962c2c453306b5d70'
+                     'cacfb01430aceb54e5a5fa6f9340d3bd2da612fceeb76b0ec1ebfae6'
+                     '35a56ab141b108e00dc76eefe2edd0c514c21c457457c39065dba9d0'
+                     'ecb7569c247172d8438ad2827b60435b', 16),
+            'q': int('e956602b83d195dbe945b3ac702fc61f81571f1d', 16),
+            'g': int('d7eb9ca20a3c7a079606bafc4c9261ccaba303a5dc9fe9953f197dfe'
+                     '548c234895baa77f441ee6a2d97b909cbbd26ff7b869d24cae51b5c6'
+                     'edb127a4b5d75cd8b46608bfa148249dffdb59807c5d7dde3fe3080c'
+                     'a3a2d28312142becb1fa8e24003e21c7287108174b95d5bc711e1c8d'
+                     '9b1076784f5dc37a964a5e51390da713', 16),
+            'digest_algorithm': 'SHA-1',
+            'msg': binascii.unhexlify(
+                b'0fe1bfee500bdb76026099b1d37553f6bdfe48c82094ef98cb309dd77733'
+                b'0bedfaa2f94c823ef74ef4074b50d8706041ac0e371c7c22dcf70263b8d6'
+                b'0e17a86c7c379cfda8f22469e0df9d49d59439fc99891873628fff25dda5'
+                b'fac5ac794e948babdde968143ba05f1128f34fdad5875edc4cd71c6c24ba'
+                b'2060ffbd439ce2b3'),
+            'x': int('1d93010c29ecfc432188942f46f19f44f0e1bb5d', 16),
+            'y': int('6240ea0647117c38fe705106d56db578f3e10130928452d4f3587881'
+                     'b8a2bc6873a8befc3237f20914e2a91c7f07a928ee22adeed23d74ab'
+                     '7f82ea11f70497e578f7a9b4cbd6f10226222b0b4da2ea1e49813d6b'
+                     'b9882fbf675c0846bb80cc891857b89b0ef1beb6cce3378a9aab5d66'
+                     'ad4cb9277cf447dfe1e64434749432fb', 16),
+            'r': int('b5af307867fb8b54390013cc67020ddf1f2c0b81', 16),
+            's': int('620d3b22ab5031440c3e35eab6f481298f9e9f08', 16),
+            'result': 'P'},
+        {
+            'p': int('dc5bf3a88b2d99e4c95cdd7a0501cc38630d425cf5c390af3429cff1'
+                     'f35147b795caea923f0d3577158f8a0c89dabd1962c2c453306b5d70'
+                     'cacfb01430aceb54e5a5fa6f9340d3bd2da612fceeb76b0ec1ebfae6'
+                     '35a56ab141b108e00dc76eefe2edd0c514c21c457457c39065dba9d0'
+                     'ecb7569c247172d8438ad2827b60435b', 16),
+            'q': int('e956602b83d195dbe945b3ac702fc61f81571f1d', 16),
+            'g': int('d7eb9ca20a3c7a079606bafc4c9261ccaba303a5dc9fe9953f197dfe'
+                     '548c234895baa77f441ee6a2d97b909cbbd26ff7b869d24cae51b5c6'
+                     'edb127a4b5d75cd8b46608bfa148249dffdb59807c5d7dde3fe3080c'
+                     'a3a2d28312142becb1fa8e24003e21c7287108174b95d5bc711e1c8d'
+                     '9b1076784f5dc37a964a5e51390da713', 16),
+            'digest_algorithm': 'SHA-1',
+            'msg': binascii.unhexlify(
+                b'97d50898025d2f9ba633866e968ca75e969d394edba6517204cb3dd537c2'
+                b'ba38778a2dc9dbc685a915e5676fcd43bc3726bc59ce3d7a9fae35565082'
+                b'a069c139fa37c90d922b126933db3fa6c5ef6b1edf00d174a51887bb7690'
+                b'9c6a94fe994ecc7b7fc8f26113b17f30f9d01693df99a125b4f17e184331'
+                b'c6b6e8ca00f54f3a'),
+            'x': int('350e13534692a7e0c4b7d58836046c436fbb2322', 16),
+            'y': int('69974de550fe6bd3099150faea1623ad3fb6d9bf23a07215093f3197'
+                     '25ad0877accffd291b6da18eb0cbe51676ceb0977504eb97c27c0b19'
+                     '1883f72fb2710a9fbd8bcf13be0bf854410b32f42b33ec89d3cc1cf8'
+                     '92bcd536c4195ca9ada302ad600c3408739935d77dc247529ca47f84'
+                     '4cc86f5016a2fe962c6e20ca7c4d4e8f', 16),
+            'r': int('b5d05faa7005764e8dae0327c5bf1972ff7681b9', 16),
+            's': int('18ea15bd9f00475b25204cbc23f8c23e01588015', 16),
+            'result': 'F'},
+        {
+            'p': int('e7c1c86125db9ef417da1ced7ea0861bdad629216a3f3c745df42a4'
+                     '6b989e59f4d98425ee3c932fa3c2b6f637bdb6545bec526faa037e1'
+                     '1f5578a4363b9fca5eba60d6a9cbaa2befd04141d989c7356285132'
+                     'c2eaf74f2d868521cdc0a17ae9a2546ef863027d3f8cc7949631fd0'
+                     'e2971417a912c8b8c5c989730db6ea6e8baee0e667850429038093c'
+                     '851ccb6fb173bb081e0efe0bd7450e0946888f89f75e443ab93ef2d'
+                     'a293a01622cf43c6dd79625d41ba8f9ef7e3086ab39134283d8e96c'
+                     '89249488120fd061e4a87d34af41069c0b4fd3934c31b589cbe85b6'
+                     '8b912718d5dab859fda7082511fad1d152044905005546e19b14aa9'
+                     '6585a55269bf2b831', 16),
+            'q': int('8e056ec9d4b7acb580087a6ed9ba3478711bb025d5b8d9c731ef9b3'
+                     '8bd43db2f', 16),
+            'g': int('dc2bfb9776786ad310c8b0cdcbba3062402613c67e6959a8d8d1b05'
+                     'aab636528b7b1fe9cd33765f853d6dbe13d09f2681f8c7b1ed7886a'
+                     'aed70c7bd76dbe858ffb8bd86235ddf759244678f428c6519af593d'
+                     'c94eeadbd9852ba2b3d61664e8d58c29d2039af3c3d6d16f90988f6'
+                     'a8c824569f3d48050e30896a9e17cd0232ef01ab8790008f6973b84'
+                     'c763a72f4ae8b485abfb7e8efeb86808fa2b281d3e5d65d28f5992a'
+                     '34c077c5aa8026cb2fbc34a45f7e9bd216b10e6f12ecb172e9a6eb8'
+                     'f2e91316905b6add1fd22e83bc2f089f1d5e6a6e6707c18ff55ddcb'
+                     '7954e8bceaf0efc4e8314910c03b0e51175f344faafee476a373ac9'
+                     '5743cec712b72cf2e', 16),
+            'digest_algorithm': 'SHA-384',
+            'msg': binascii.unhexlify(
+                b'6cd6ccfd66bcd832189c5f0c77994210e3bf2c43416f0fe77c4e92f31c5'
+                b'369538dc2c003f146c5ac79df43194ccf3c44d470d9f1083bd15b99b5bc'
+                b'f88c32d8a9021f09ea2288d7b3bf345a12aef3949c1e121b9fb371a67c2'
+                b'd1377364206ac839dd78483561426bda0303f285aa12e9c45d3cdfc6bea'
+                b'e3549703b187deeb3296'),
+            'x': int('56c897b5938ad5b3d437d7e4826da586a6b3be15e893fa1aaa946f2'
+                     '0a028b6b3', 16),
+            'y': int('38ad44489e1a5778b9689f4dcf40e2acf23840fb954e987d6e8cb62'
+                     '9106328ac64e1f3c3eba48b21176ad4afe3b733bead382ee1597e1b'
+                     '83e4b43424f2daaba04e5bd79e1436693ac2bddb79a298f026e57e2'
+                     '00a252efd1e848a4a2e90be6e78f5242b468b9c0c6d2615047a5a40'
+                     'b9ae7e57a519114db55bf3bed65e580f894b094630ca9c217f6accd'
+                     '091e72d2f22da620044ff372d7273f9445017fad492959e59600b74'
+                     '94dbe766a03e40125d4e6747c76f68a5b0cdc0e7d7cee12d08c6fb7'
+                     'd0fb049e420a33405075ed4463296345ca695fb7feab7c1b5333ae5'
+                     '19fcd4bb6a043f4555378969114743d4face96cad31c0e0089da4e3'
+                     'f61b6d7dabc088ab7', 16),
+            'r': int('3b85b17be240ed658beb3652c9d93e8e9eea160d35ee24596143058'
+                     '02963374e', 16),
+            's': int('726800a5174a53b56dce86064109c0273cd11fcfa3c92c5cd6aa910'
+                     '260c0e3c7', 16),
+            'result': 'F'},
+        {
+            'p': int('e7c1c86125db9ef417da1ced7ea0861bdad629216a3f3c745df42a4'
+                     '6b989e59f4d98425ee3c932fa3c2b6f637bdb6545bec526faa037e1'
+                     '1f5578a4363b9fca5eba60d6a9cbaa2befd04141d989c7356285132'
+                     'c2eaf74f2d868521cdc0a17ae9a2546ef863027d3f8cc7949631fd0'
+                     'e2971417a912c8b8c5c989730db6ea6e8baee0e667850429038093c'
+                     '851ccb6fb173bb081e0efe0bd7450e0946888f89f75e443ab93ef2d'
+                     'a293a01622cf43c6dd79625d41ba8f9ef7e3086ab39134283d8e96c'
+                     '89249488120fd061e4a87d34af41069c0b4fd3934c31b589cbe85b6'
+                     '8b912718d5dab859fda7082511fad1d152044905005546e19b14aa9'
+                     '6585a55269bf2b831', 16),
+            'q': int('8e056ec9d4b7acb580087a6ed9ba3478711bb025d5b8d9c731ef9b3'
+                     '8bd43db2f', 16),
+            'g': int('dc2bfb9776786ad310c8b0cdcbba3062402613c67e6959a8d8d1b05'
+                     'aab636528b7b1fe9cd33765f853d6dbe13d09f2681f8c7b1ed7886a'
+                     'aed70c7bd76dbe858ffb8bd86235ddf759244678f428c6519af593d'
+                     'c94eeadbd9852ba2b3d61664e8d58c29d2039af3c3d6d16f90988f6'
+                     'a8c824569f3d48050e30896a9e17cd0232ef01ab8790008f6973b84'
+                     'c763a72f4ae8b485abfb7e8efeb86808fa2b281d3e5d65d28f5992a'
+                     '34c077c5aa8026cb2fbc34a45f7e9bd216b10e6f12ecb172e9a6eb8'
+                     'f2e91316905b6add1fd22e83bc2f089f1d5e6a6e6707c18ff55ddcb'
+                     '7954e8bceaf0efc4e8314910c03b0e51175f344faafee476a373ac9'
+                     '5743cec712b72cf2e', 16),
+            'digest_algorithm': 'SHA-384',
+            'msg': binascii.unhexlify(
+                b'3ad6b0884f358dea09c31a9abc40c45a6000611fc2b907b30eac00413fd'
+                b'2819de7015488a411609d46c499b8f7afa1b78b352ac7f8535bd805b8ff'
+                b'2a5eae557098c668f7ccd73af886d6823a6d456c29931ee864ed46d7673'
+                b'82785728c2a83fcff5271007d2a67d06fa205fd7b9d1a42ea5d6dc76e5e'
+                b'18a9eb148cd1e8b262ae'),
+            'x': int('2faf566a9f057960f1b50c69508f483d9966d6e35743591f3a677a9'
+                     'dc40e1555', 16),
+            'y': int('926425d617babe87c442b03903e32ba5bbf0cd9d602b59c4df791a4d'
+                     '64a6d4333ca0c0d370552539197d327dcd1bbf8c454f24b03fc7805f'
+                     '862db34c7b066ddfddbb11dbd010b27123062d028fe041cb56a2e774'
+                     '88348ae0ab6705d87aac4d4e9e6600e9e706326d9979982cffa839be'
+                     'b9eacc3963bcca455a507e80c1c37ad4e765b2c9c0477a075e9bc584'
+                     'feacdf3a35a9391d4711f14e197c54022282bfed9a191213d64127f1'
+                     '7a9c5affec26e0c71f15d3a5b16098fec118c45bf8bb2f3b1560df09'
+                     '49254c1c0aeb0a16d5a95a40fab8521fbe8ea77c51169b587cc3360e'
+                     '5733e6a23b9fded8c40724ea1f9e93614b3a6c9b4f8dbbe915b79449'
+                     '7227ba62', 16),
+            'r': int('343ea0a9e66277380f604d5880fca686bffab69ca97bfba015a102a'
+                     '7e23dce0e', 16),
+            's': int('6258488c770e0f5ad7b9da8bade5023fc0d17c6ec517bd08d53e6dc'
+                     '01ac5c2b3', 16),
+            'result': 'P'}
+    ]
+
+    assert expected == load_fips_dsa_sig_ver_vectors(vector_data)
 
 
 def test_load_fips_ecdsa_key_pair_vectors():
@@ -2145,3 +2361,44 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
         }
     ]
     assert expected == load_fips_ecdsa_signing_vectors(vector_data)
+
+
+def test_vector_version():
+    assert cryptography.__version__ == cryptography_vectors.__version__
+
+
+def test_raises_unsupported_algorithm_wrong_type():
+    # Check that it raises if the wrong type of exception is raised.
+    class TestException(Exception):
+        pass
+
+    with pytest.raises(TestException):
+        with raises_unsupported_algorithm(None):
+            raise TestException
+
+
+def test_raises_unsupported_algorithm_wrong_reason():
+    # Check that it fails if the wrong reason code is raised.
+    with pytest.raises(AssertionError):
+        with raises_unsupported_algorithm(None):
+            raise UnsupportedAlgorithm("An error.",
+                                       _Reasons.BACKEND_MISSING_INTERFACE)
+
+
+def test_raises_unsupported_no_exc():
+    # Check that it fails if no exception is raised.
+    with pytest.raises(pytest.fail.Exception):
+        with raises_unsupported_algorithm(
+            _Reasons.BACKEND_MISSING_INTERFACE
+        ):
+            pass
+
+
+def test_raises_unsupported_algorithm():
+    # Check that it doesnt assert if the right things are raised.
+    with raises_unsupported_algorithm(
+        _Reasons.BACKEND_MISSING_INTERFACE
+    ) as exc_info:
+        raise UnsupportedAlgorithm("An error.",
+                                   _Reasons.BACKEND_MISSING_INTERFACE)
+    assert exc_info.type is UnsupportedAlgorithm
