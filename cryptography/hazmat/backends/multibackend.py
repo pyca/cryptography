@@ -16,8 +16,8 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend
+    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    RSABackend
 )
 
 

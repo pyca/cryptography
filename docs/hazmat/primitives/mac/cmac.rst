@@ -10,7 +10,7 @@ Cipher-based message authentication code
     import binascii
     key = binascii.unhexlify(b"0" * 32)
 
-Cipher-based message authentication codes (or CMACs) are a tool for calculating
+`Cipher-based message authentication codes`_ (or CMACs) are a tool for calculating
 message authentication codes using a block cipher coupled with a
 secret key. You can use an CMAC to verify both the integrity and authenticity
 of a message.
@@ -98,3 +98,6 @@ of a message.
 
         :return bytes: The message authentication code as bytes.
         :raises cryptography.exceptions.AlreadyFinalized:
+
+
+.. _`Cipher-based message authentication codes`: https://en.wikipedia.org/wiki/CMAC
