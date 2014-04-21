@@ -10,15 +10,26 @@ You can install ``cryptography`` with ``pip``:
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 2.6, 2.7, 3.2, 3.3 and PyPy on
-these operating systems.
+Currently we test ``cryptography`` on Python 2.6, 2.7, 3.2, 3.3, 3.4 and PyPy
+on these operating systems.
 
-* x86-64 CentOS 6.4 and CentOS 5
+* x86-64 CentOS 6.4 and CentOS 5.x
 * x86-64 FreeBSD 9.2 and FreeBSD 10
 * OS X 10.9 Mavericks, 10.8 Mountain Lion, and 10.7 Lion
 * x86-64 Ubuntu 12.04 LTS
 * 32-bit Python on 64-bit Windows Server 2008
 * 64-bit Python on 64-bit Windows Server 2012
+
+We test compiling with ``clang`` as well as ``gcc`` and use the following
+OpenSSL releases:
+
+* ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
+* ``OpenSSL 0.9.8y``
+* ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
+* ``OpenSSL 1.0.1``
+* ``OpenSSL 1.0.1e-freebsd``
+* ``OpenSSL 1.0.1g``
+* ``OpenSSL 1.0.2 beta``
 
 On Windows
 ----------
