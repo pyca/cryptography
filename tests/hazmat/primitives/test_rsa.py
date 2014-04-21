@@ -1227,6 +1227,17 @@ class TestMGF1(object):
         assert mgf._salt_length == padding.MGF1.MAX_LENGTH
 
 
+class TestOAEP(object):
+    def test_invalid_algorithm(self):
+        mgf = padding.MGF1(hashes.SHA1())
+        with pytest.raises(TypeError):
+            padding.OAEP(
+                mgf=mgf,
+                algorithm=b"",
+                label=None
+            )
+
+
 @pytest.mark.rsa
 class TestRSADecryption(object):
     @pytest.mark.parametrize(
@@ -1319,4 +1330,52 @@ class TestRSADecryption(object):
                 b"irrelevant",
                 padding.PKCS1v15(),
                 pretend_backend
+            )
+
+    @pytest.mark.parametrize(
+        "vector",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "oaep-vect.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_decrypt_oaep_vectors(self, vector, backend):
+        private, public, example = vector
+        skey = rsa.RSAPrivateKey(
+            p=private["p"],
+            q=private["q"],
+            private_exponent=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_exponent=private["public_exponent"],
+            modulus=private["modulus"]
+        )
+        message = skey.decrypt(
+            binascii.unhexlify(example["encryption"]),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            ),
+            backend
+        )
+        assert message == binascii.unhexlify(example["message"])
+
+    def test_unsupported_oaep_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
+            private_key.decrypt(
+                b"ciphertext",
+                padding.OAEP(
+                    mgf=DummyMGF(),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                backend
             )
