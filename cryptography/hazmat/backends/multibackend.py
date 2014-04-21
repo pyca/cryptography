@@ -16,13 +16,12 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, CMACBackend, DSABackend, HMACBackend, HashBackend,
+    CipherBackend, DSABackend, HMACBackend, HashBackend,
     PBKDF2HMACBackend, RSABackend
 )
 
 
 @utils.register_interface(CipherBackend)
-@utils.register_interface(CMACBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -157,11 +156,3 @@ class MultiBackend(object):
             return b.generate_dsa_private_key(parameters)
         raise UnsupportedAlgorithm("DSA is not supported by the backend",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def cmac_algorithm_supported(self, algorithm):
-        for b in self._filtered_backends(CMACBackend):
-            return b.cmac_algorithm_supported(algorithm)
-
-    def create_cmac_ctx(self, algorithm):
-        for b in self._filtered_backends(CMACBackend):
-            return b.create_cmac_ctx(algorithm)
