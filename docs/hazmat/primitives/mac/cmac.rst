@@ -22,7 +22,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     CMAC objects take a
     :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm` provider.
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import cmac
