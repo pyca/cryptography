@@ -159,9 +159,15 @@ class MultiBackend(object):
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
     def cmac_algorithm_supported(self, algorithm):
-        for b in self._filtered_backends(CMACBackend):
-            return b.cmac_algorithm_supported(algorithm)
+        return any(
+            b.cmac_algorithm_supported(algorithm)
+            for b in self._filtered_backends(CMACBackend)
+        )
 
     def create_cmac_ctx(self, algorithm):
         for b in self._filtered_backends(CMACBackend):
-            return b.create_cmac_ctx(algorithm)
+            try:
+                return b.create_cmac_ctx(algorithm)
+            except UnsupportedAlgorithm:
+                pass
+        raise UnsupportedAlgorithm("This backend does not support CMAC")

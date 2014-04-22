@@ -13,16 +13,18 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    RSABackend
+    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
-from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives import cmac, hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -106,6 +108,19 @@ class DummyDSABackend(object):
 
     def generate_dsa_private_key(self, parameters):
         pass
+
+
+@utils.register_interface(CMACBackend)
+class DummyCMACBackend(object):
+    def __init__(self, supported_algorithms):
+        self._algorithms = supported_algorithms
+
+    def cmac_algorithm_supported(self, algorithm):
+        return type(algorithm) in self._algorithms
+
+    def create_cmac_ctx(self, algorithm):
+        if not self.cmac_algorithm_supported(algorithm):
+            raise UnsupportedAlgorithm("")
 
 
 class TestMultiBackend(object):
@@ -224,3 +239,18 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_dsa_private_key(parameters)
+
+    def test_cmac(self):
+        backend = MultiBackend([
+            DummyCMACBackend([algorithms.AES])
+        ])
+
+        fake_key = b"\x00" * 16
+
+        assert backend.cmac_algorithm_supported(
+            algorithms.AES(fake_key)) is True
+
+        cmac.CMAC(algorithms.AES(fake_key), backend)
+
+        with pytest.raises(UnsupportedAlgorithm):
+            cmac.CMAC(algorithms.TripleDES(fake_key), backend)
