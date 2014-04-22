@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
-
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -120,7 +118,7 @@ class DummyCMACBackend(object):
 
     def create_cmac_ctx(self, algorithm):
         if not self.cmac_algorithm_supported(algorithm):
-            raise UnsupportedAlgorithm("")
+            raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
 
 
 class TestMultiBackend(object):
@@ -252,5 +250,5 @@ class TestMultiBackend(object):
 
         cmac.CMAC(algorithms.AES(fake_key), backend)
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cmac.CMAC(algorithms.TripleDES(fake_key), backend)

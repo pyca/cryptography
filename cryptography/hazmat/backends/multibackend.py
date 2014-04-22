@@ -170,4 +170,5 @@ class MultiBackend(object):
                 return b.create_cmac_ctx(algorithm)
             except UnsupportedAlgorithm:
                 pass
-        raise UnsupportedAlgorithm("This backend does not support CMAC")
+        raise UnsupportedAlgorithm("This backend does not support CMAC",
+                                   _Reasons.UNSUPPORTED_CIPHER)
