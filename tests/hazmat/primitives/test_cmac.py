@@ -181,6 +181,11 @@ class TestCMAC(object):
         with pytest.raises(TypeError):
             cmac.verify(six.u(''))
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cmac_algorithm_supported(
+            AES(fake_key)),
+        skip_message="Does not support CMAC."
+    )
     def test_copy_with_backend(self, backend):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
         cmac = CMAC(AES(key), backend)
