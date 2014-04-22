@@ -431,7 +431,7 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     return vectors
 
 
-def load_fips_dsa_sig_ver_vectors(vector_data):
+def load_fips_dsa_sig_vectors(vector_data):
     """
     Loads data out of the FIPS DSA SigVer vector files.
     """
@@ -443,6 +443,7 @@ def load_fips_dsa_sig_ver_vectors(vector_data):
     # constructing dictionaries. We set reading_key_data to False during the
     # blocks of the vectors of N=224 because we don't support it.
     reading_key_data = True
+
     for line in vector_data:
         line = line.strip()
 
