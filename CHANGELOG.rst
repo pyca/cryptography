@@ -11,6 +11,8 @@ Changelog
   to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. It will be
   removed from ``MGF1`` in two releases per our :doc:`/api-stability` policy.
 
+* Added :class:`~cryptography.hazmat.primitives.cmac.CMAC`.
+
 0.3 - 2014-03-27
 ~~~~~~~~~~~~~~~~
 
