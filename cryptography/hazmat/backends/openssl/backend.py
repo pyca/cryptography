@@ -25,8 +25,8 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, DSABackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    RSABackend
+    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
@@ -47,6 +47,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 
 @utils.register_interface(CipherBackend)
+@utils.register_interface(CMACBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
@@ -553,6 +554,16 @@ class Backend(object):
             raise ValueError("Decryption failed")
 
         return self._ffi.buffer(buf)[:res]
+
+    def cmac_algorithm_supported(self, algorithm):
+        return (
+            backend._lib.Cryptography_HAS_CMAC == 1
+            and backend.cipher_supported(algorithm, CBC(
+                b"\x00" * algorithm.block_size))
+        )
+
+    def create_cmac_ctx(self, algorithm):
+        return _CMACContext(self, algorithm)
 
 
 class GetCipherByName(object):
@@ -1238,6 +1249,76 @@ class _RSAVerificationContext(object):
             errors = self._backend._consume_errors()
             assert errors
             raise InvalidSignature
+
+
+@utils.register_interface(interfaces.CMACContext)
+class _CMACContext(object):
+    def __init__(self, backend, algorithm, ctx=None):
+        if not backend.cmac_algorithm_supported(algorithm):
+            raise UnsupportedAlgorithm("This backend does not support CMAC")
+
+        self._backend = backend
+        self._key = algorithm.key
+        self._algorithm = algorithm
+        self._output_length = algorithm.block_size // 8
+
+        if ctx is None:
+            registry = self._backend._cipher_registry
+            try:
+                adapter = registry[type(algorithm), CBC]
+            except KeyError:
+                raise UnsupportedAlgorithm(
+                    "cipher {0} is not supported by this backend".format(
+                        algorithm.name), _Reasons.UNSUPPORTED_CIPHER
+                )
+
+            evp_cipher = adapter(self._backend, algorithm, CBC)
+            if evp_cipher == self._backend._ffi.NULL:
+                raise UnsupportedAlgorithm(
+                    "cipher {0} is not supported by this backend".format(
+                        algorithm.name), _Reasons.UNSUPPORTED_CIPHER
+                )
+
+            ctx = self._backend._lib.CMAC_CTX_new()
+
+            assert ctx != self._backend._ffi.NULL
+            ctx = self._backend._ffi.gc(ctx, self._backend._lib.CMAC_CTX_free)
+
+            self._backend._lib.CMAC_Init(
+                ctx, self._key, len(self._key),
+                evp_cipher, self._backend._ffi.NULL
+            )
+
+        self._ctx = ctx
+
+    def update(self, data):
+        res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
+        assert res == 1
+
+    def finalize(self):
+        buf = self._backend._ffi.new("unsigned char[]", self._output_length)
+        length = self._backend._ffi.new("size_t *", self._output_length)
+        res = self._backend._lib.CMAC_Final(
+            self._ctx, buf, length
+        )
+        assert res == 1
+
+        self._ctx = None
+
+        return self._backend._ffi.buffer(buf)[:]
+
+    def copy(self):
+        copied_ctx = self._backend._lib.CMAC_CTX_new()
+        copied_ctx = self._backend._ffi.gc(
+            copied_ctx, self._backend._lib.CMAC_CTX_free
+        )
+        res = self._backend._lib.CMAC_CTX_copy(
+            copied_ctx, self._ctx
+        )
+        assert res == 1
+        return _CMACContext(
+            self._backend, self._algorithm, ctx=copied_ctx
+        )
 
 
 backend = Backend()

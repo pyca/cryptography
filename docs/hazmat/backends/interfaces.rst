@@ -9,7 +9,7 @@ Backend interfaces
 Backend implementations may provide a number of interfaces to support operations
 such as :doc:`/hazmat/primitives/symmetric-encryption`,
 :doc:`/hazmat/primitives/cryptographic-hashes`, and
-:doc:`/hazmat/primitives/hmac`.
+:doc:`/hazmat/primitives/mac/hmac`.
 
 A specific ``backend`` may provide one or more of these interfaces.
 

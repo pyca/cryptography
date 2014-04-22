@@ -7,7 +7,7 @@ Primitives
     :maxdepth: 1
 
     cryptographic-hashes
-    hmac
+    mac/index
     symmetric-encryption
     padding
     key-derivation-functions
