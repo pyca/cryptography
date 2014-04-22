@@ -454,10 +454,10 @@ def load_fips_dsa_sig_vectors(vector_data):
         if sha_match:
             digest_algorithm = "SHA-{0}".format(sha_match.group("sha"))
 
-        elif line.startswith("[mod = L=2048, N=224"):
+        if line.startswith("[mod = L=2048, N=224"):
             reading_key_data = False
             continue
-        elif line.startswith("[mod = L=2048, N=256, SHA-1"):
+        elif line.startswith("[mod = L=2048, N=256"):
             reading_key_data = True
             continue
 

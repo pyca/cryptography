@@ -1870,6 +1870,17 @@ d291b6da18eb0cbe51676ceb0977504eb97c27c0b191883f72fb2710a9fbd8bcf13be\
     S = 18ea15bd9f00475b25204cbc23f8c23e01588015
     Result = F (3 - R changed )
 
+    [mod = L=2048, N=224, SHA-1]
+
+    # unsupported so we ignore this
+
+    Msg = f9d01693df99a125b4f17e184331c6b6e8ca00f54f3a
+    X = e0c4b7d58836046c436fbb2322
+    Y = fb6d9bf23a07215093f319725ad0877accff
+    R = 5764e8dae0327c5bf1972ff7681b9
+    S = 475b25204cbc23f8c23e01588015
+    Result = F (3 - R changed )
+
     [mod = L=2048, N=256, SHA-384]
 
     P = e7c1c86125db9ef417da1ced7ea0861bdad629216a3f3c745df42a46b989e59f4d984\
