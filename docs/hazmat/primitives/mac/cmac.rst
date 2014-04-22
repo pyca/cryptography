@@ -19,10 +19,12 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
 
 .. class:: CMAC(algorithm, backend)
 
+    .. versionadded:: 0.4
+
     CMAC objects take a
     :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm` provider.
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import cmac
