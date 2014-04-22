@@ -1254,7 +1254,6 @@ class _RSAVerificationContext(object):
 @utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
-
         if not backend.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm("This backend does not support CMAC")
 
@@ -1317,7 +1316,7 @@ class _CMACContext(object):
         res = self._backend._lib.CMAC_CTX_copy(
             copied_ctx, self._ctx
         )
-        assert res != 0
+        assert res == 0
         return _CMACContext(
             self._backend, self.algorithm, ctx=copied_ctx
         )

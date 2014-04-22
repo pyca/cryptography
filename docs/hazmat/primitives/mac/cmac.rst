@@ -15,6 +15,8 @@ message authentication codes using a block cipher coupled with a
 secret key. You can use an CMAC to verify both the integrity and authenticity
 of a message.
 
+A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
+
 .. class:: CMAC(algorithm, backend)
 
     CMAC objects take a
