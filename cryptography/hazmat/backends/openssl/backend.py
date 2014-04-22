@@ -1309,16 +1309,15 @@ class _CMACContext(object):
 
     def copy(self):
         copied_ctx = self._backend._lib.CMAC_CTX_new()
-        self._backend._lib.CMAC_CTX_init(copied_ctx)
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.CMAC_CTX_free
         )
         res = self._backend._lib.CMAC_CTX_copy(
             copied_ctx, self._ctx
         )
-        assert res == 0
+        assert res == 1
         return _CMACContext(
-            self._backend, self.algorithm, ctx=copied_ctx
+            self._backend, self._algorithm, ctx=copied_ctx
         )
 
 

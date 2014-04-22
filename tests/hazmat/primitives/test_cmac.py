@@ -181,6 +181,13 @@ class TestCMAC(object):
         with pytest.raises(TypeError):
             cmac.verify(six.u(''))
 
+    def test_copy_with_backend(self, backend):
+        key = b"2b7e151628aed2a6abf7158809cf4f3c"
+        cmac = CMAC(AES(key), backend)
+        cmac.update(b"6bc1bee22e409f96e93d7e117393172a")
+        copy_cmac = cmac.copy()
+        assert cmac.finalize() == copy_cmac.finalize()
+
 
 def test_copy():
     @utils.register_interface(CMACBackend)
