@@ -1255,7 +1255,8 @@ class _RSAVerificationContext(object):
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
-            raise UnsupportedAlgorithm("This backend does not support CMAC")
+            raise UnsupportedAlgorithm("This backend does not support CMAC",
+                                       _Reasons.UNSUPPORTED_CIPHER)
 
         self._backend = backend
         self._key = algorithm.key
@@ -1264,20 +1265,9 @@ class _CMACContext(object):
 
         if ctx is None:
             registry = self._backend._cipher_registry
-            try:
-                adapter = registry[type(algorithm), CBC]
-            except KeyError:
-                raise UnsupportedAlgorithm(
-                    "cipher {0} is not supported by this backend".format(
-                        algorithm.name), _Reasons.UNSUPPORTED_CIPHER
-                )
+            adapter = registry[type(algorithm), CBC]
 
             evp_cipher = adapter(self._backend, algorithm, CBC)
-            if evp_cipher == self._backend._ffi.NULL:
-                raise UnsupportedAlgorithm(
-                    "cipher {0} is not supported by this backend".format(
-                        algorithm.name), _Reasons.UNSUPPORTED_CIPHER
-                )
 
             ctx = self._backend._lib.CMAC_CTX_new()
 

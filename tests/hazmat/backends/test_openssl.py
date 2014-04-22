@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
+from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
 from ...utils import raises_unsupported_algorithm
 
@@ -291,3 +292,18 @@ class TestOpenSSLRSA(object):
 
     def test_unsupported_mgf1_hash_algorithm(self):
         assert backend.mgf1_hash_supported(DummyHash()) is False
+
+
+@pytest.mark.skipif(
+    backend._lib.OPENSSL_VERSION_NUMBER <= 0x10001000,
+    reason="Requires an OpenSSL version >= 1.0.1"
+)
+class TestOpenSSLCMAC(object):
+    def test_unsupported_cipher(self):
+        @utils.register_interface(BlockCipherAlgorithm)
+        class FakeAlgorithm(object):
+            def __init__(self):
+                self.block_size = 64
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+            backend.create_cmac_ctx(FakeAlgorithm())
