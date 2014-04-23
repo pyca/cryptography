@@ -138,6 +138,7 @@ static const int EVP_F_RC5_CTRL;
 static const int EVP_R_AES_KEY_SETUP_FAILED;
 static const int EVP_R_ASN1_LIB;
 static const int EVP_R_BAD_BLOCK_LENGTH;
+static const int EVP_R_BAD_DECRYPT;
 static const int EVP_R_BAD_KEY_LENGTH;
 static const int EVP_R_BN_DECODE_ERROR;
 static const int EVP_R_BN_PUBKEY_ERROR;

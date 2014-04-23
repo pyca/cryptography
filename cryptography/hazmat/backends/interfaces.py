@@ -141,9 +141,9 @@ class DSABackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class OpenSSLSerializationBackend(object):
+class TraditionalOpenSSLSerializationBackend(object):
     @abc.abstractmethod
-    def load_openssl_pem_private_key(self, data, password):
+    def load_traditional_openssl_pem_private_key(self, data, password):
         """
         Load a private key from PEM encoded data, using password if the data
         is encrypted.

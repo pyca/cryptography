@@ -25,6 +25,7 @@ interoperable
 introspectability
 invariants
 iOS
+metadata
 pickleable
 plaintext
 pseudorandom

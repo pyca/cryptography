@@ -276,7 +276,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             provider.
 
 
-.. class:: OpenSSLSerializationBackend
+.. class:: TraditionalOpenSSLSerializationBackend
 
     .. versionadded:: 0.3
 
@@ -290,8 +290,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param bytes password: The password to use if this data is encrypted.
             Should be None if the data is not encrypted.
 
-        :return: A new instance of
-            :class:`~cryptography.hazmat.primitives.serialization.OpenSSLPrivateKey`
+        :return: A new instance of the appropriate private key or public key
+            that the serialized data contains.
 
         :raises ValueError: If the data could not be deserialized correctly.
 
