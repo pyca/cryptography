@@ -87,6 +87,8 @@ int EVP_PKEY_type(int);
 int EVP_PKEY_bits(EVP_PKEY *);
 int EVP_PKEY_size(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
+DSA *EVP_PKEY_get1_DSA(EVP_PKEY *);
+DH *EVP_PKEY_get1_DH(EVP_PKEY *);
 
 int EVP_SignInit(EVP_MD_CTX *, const EVP_MD *);
 int EVP_SignUpdate(EVP_MD_CTX *, const void *, size_t);
@@ -104,6 +106,7 @@ int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
 
 int EVP_PKEY_set1_RSA(EVP_PKEY *, struct rsa_st *);
 int EVP_PKEY_set1_DSA(EVP_PKEY *, struct dsa_st *);
+int EVP_PKEY_set1_DH(EVP_PKEY *, DH *);
 
 int EVP_PKEY_get_attr_count(const EVP_PKEY *);
 int EVP_PKEY_get_attr_by_NID(const EVP_PKEY *, int, int);
@@ -123,7 +126,11 @@ MACROS = """
 void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_assign_DSA(EVP_PKEY *, DSA *);
+
 int EVP_PKEY_assign_EC_KEY(EVP_PKEY *, EC_KEY *);
+EC_KEY *EVP_PKEY_get1_EC_KEY(EVP_PKEY *);
+int EVP_PKEY_set1_EC_KEY(EVP_PKEY *, EC_KEY *);
+
 int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
@@ -215,6 +222,8 @@ int (*Cryptography_EVP_PKEY_decrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
 #endif
 #ifdef OPENSSL_NO_EC
 int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
+EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
+int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
 
 """
@@ -245,5 +254,7 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_EC": [
         "EVP_PKEY_assign_EC_KEY",
+        "EVP_PKEY_get1_EC_KEY",
+        "EVP_PKEY_set1_EC_KEY",
     ]
 }
