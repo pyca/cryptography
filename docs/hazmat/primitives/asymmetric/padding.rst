@@ -46,7 +46,7 @@ Padding
         supported MGF is :class:`MGF1`.
 
     :param bytes label: A label to apply. This is a rarely used field and
-        should typically be set to ``None`` or ``b""`` (equivalent values).
+        should typically be set to ``None`` or ``b""``, which are equivalent.
 
 .. class:: PKCS1v15()
 
