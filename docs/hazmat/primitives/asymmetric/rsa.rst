@@ -138,13 +138,37 @@ RSA
             the provided ``backend`` does not implement
             :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or if
             the backend does not support the chosen hash or padding algorithm.
+            If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
+            with the
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+            mask generation function it may also refer to the ``MGF1`` hash
+            algorithm.
 
         :raises TypeError: This is raised when the padding is not an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
-        :raises ValueError: This is raised when decryption fails or the chosen
-            hash algorithm is too large for the key size.
+        :raises ValueError: This is raised when decryption fails or the data
+            is too large for the key size. If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
+            it may also be raised for invalid label values.
+
+        .. code-block:: python
+
+            from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import padding
+
+            plaintext = private_key.decrypt(
+                ciphertext,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                default_backend()
+            )
 
 
 .. class:: RSAPublicKey(public_exponent, modulus)

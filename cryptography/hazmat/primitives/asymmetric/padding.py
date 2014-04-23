@@ -54,6 +54,19 @@ class PSS(object):
         self._salt_length = salt_length
 
 
+@utils.register_interface(interfaces.AsymmetricPadding)
+class OAEP(object):
+    name = "EME-OAEP"
+
+    def __init__(self, mgf, algorithm, label):
+        if not isinstance(algorithm, interfaces.HashAlgorithm):
+            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+
+        self._mgf = mgf
+        self._algorithm = algorithm
+        self._label = label
+
+
 class MGF1(object):
     MAX_LENGTH = object()
 
