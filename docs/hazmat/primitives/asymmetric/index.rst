@@ -9,3 +9,4 @@ Asymmetric algorithms
     dsa
     rsa
     padding
+    serialization
