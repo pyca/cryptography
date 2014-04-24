@@ -328,10 +328,10 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
             provider.
 
-        :raises ValueError: This is raised if the key size is not (1024, 2048,
-            or 3072) or if the OpenSSL version is older than 1.0.0 and the key
-            size is larger than 1024; older OpenSSL versions do not support
-            keys larger than 1024 bits.
+        :raises ValueError: This is raised if the key size is not one of 1024,
+            2048, or 3072. It is also raised when OpenSSL is older than version
+            1.0.0 and the key size is larger than 1024; older OpenSSL versions
+            do not support keys larger than 1024 bits.
 
 
 .. class:: CMACBackend
