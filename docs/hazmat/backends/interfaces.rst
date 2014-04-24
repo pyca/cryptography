@@ -275,6 +275,18 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
+    .. method:: encrypt_rsa(public_key, plaintext, padding)
+
+        :param public_key: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            provider.
+
+        :param bytes plaintext: The plaintext to encrypt.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
 
 .. class:: OpenSSLSerializationBackend
 

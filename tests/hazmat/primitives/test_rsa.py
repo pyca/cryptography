@@ -1379,3 +1379,126 @@ class TestRSADecryption(object):
                 ),
                 backend
             )
+
+
+@pytest.mark.rsa
+class TestRSAEncryption(object):
+    @pytest.mark.parametrize(
+        "key_size,pad",
+        itertools.product(
+            (1024, 1025, 1029, 1031, 1536, 2048),
+            (
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                padding.PKCS1v15()
+            )
+        )
+    )
+    def test_rsa_encrypt(self, key_size, pad, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=key_size,
+            backend=backend
+        )
+        pt = b"encrypt me!"
+        public_key = private_key.public_key()
+        ct = public_key.encrypt(
+            pt,
+            pad,
+            backend
+        )
+        assert ct != pt
+        assert len(ct) == math.ceil(public_key.key_size / 8.0)
+        recovered_pt = private_key.decrypt(
+            ct,
+            pad,
+            backend
+        )
+        assert recovered_pt == pt
+
+    @pytest.mark.parametrize(
+        "key_size,pad",
+        itertools.product(
+            (1024, 1025, 1029, 1031, 1536, 2048),
+            (
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                padding.PKCS1v15()
+            )
+        )
+    )
+    def test_rsa_encrypt_key_too_small(self, key_size, pad, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=key_size,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(ValueError):
+            public_key.encrypt(
+                b"\x00" * (key_size // 8 - 1),
+                pad,
+                backend
+            )
+
+    def test_rsa_encrypt_data_too_large(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+        with pytest.raises(ValueError):
+            public_key.encrypt(
+                b"\x00" * 129,
+                padding.PKCS1v15(),
+                backend
+            )
+
+    def test_rsa_encrypt_invalid_backend(self, backend):
+        pretend_backend = object()
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+
+        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+            public_key.encrypt(
+                b"irrelevant",
+                padding.PKCS1v15(),
+                pretend_backend
+            )
+
+    def test_unsupported_padding(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
+            public_key.encrypt(b"somedata", DummyPadding(), backend)
+
+    def test_unsupported_oaep_mgf(self, backend):
+        private_key = rsa.RSAPrivateKey.generate(
+            public_exponent=65537,
+            key_size=512,
+            backend=backend
+        )
+        public_key = private_key.public_key()
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
+            public_key.encrypt(
+                b"ciphertext",
+                padding.OAEP(
+                    mgf=DummyMGF(),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                backend
+            )

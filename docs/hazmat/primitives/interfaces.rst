@@ -263,6 +263,23 @@ Asymmetric interfaces
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
+    .. method:: encrypt(plaintext, padding, backend)
+
+        .. versionadded:: 0.4
+
+        Encrypt data with the public key.
+
+        :param bytes plaintext: The plaintext to encrypt.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return bytes: Encrypted data.
 
     .. attribute:: modulus
 

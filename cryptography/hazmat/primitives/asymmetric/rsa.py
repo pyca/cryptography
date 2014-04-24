@@ -52,6 +52,15 @@ class RSAPublicKey(object):
         return backend.create_rsa_verification_ctx(self, signature, padding,
                                                    algorithm)
 
+    def encrypt(self, plaintext, padding, backend):
+        if not isinstance(backend, RSABackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement RSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
+
+        return backend.encrypt_rsa(self, plaintext, padding)
+
     @property
     def key_size(self):
         return utils.bit_length(self.modulus)
