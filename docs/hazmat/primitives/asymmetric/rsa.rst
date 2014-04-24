@@ -305,27 +305,27 @@ RSA
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
             it may also be raised for invalid label values.
 
-        .. doctest::
+        .. code-block:: python
 
             from cryptography.hazmat.backends import default_backend
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-            >>> private_key = rsa.RSAPrivateKey.generate(
-            ...     public_exponent=65537,
-            ...     key_size=2048,
-            ...     backend=default_backend()
-            ... )
-            >>> public_key = private_key.public_key()
-            >>> ciphertext = public_key.encrypt(
-            >>>     plaintext,
-            >>>     padding.OAEP(
-            >>>         mgf=padding.MGF1(algorithm=hashes.SHA1()),
-            >>>         algorithm=hashes.SHA1(),
-            >>>         label=None
-            >>>     ),
-            >>>     default_backend()
-            >>> )
+            private_key = rsa.RSAPrivateKey.generate(
+                public_exponent=65537,
+                key_size=2048,
+                backend=default_backend()
+            )
+            public_key = private_key.public_key()
+            ciphertext = public_key.encrypt(
+                plaintext,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                default_backend()
+            )
 
 
 Handling partial RSA private keys
