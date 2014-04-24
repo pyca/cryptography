@@ -95,7 +95,7 @@ def test_modular_inverse():
 @pytest.mark.rsa
 class TestRSA(object):
     @pytest.mark.parametrize(
-        "public_exponent,key_size",
+        ("public_exponent", "key_size"),
         itertools.product(
             (3, 5, 65537),
             (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048)
