@@ -271,7 +271,8 @@ RSA
 
         .. versionadded:: 0.4
 
-        Encrypt data using the public key.
+        Encrypt data using the public key. The resulting ciphertext can only
+        be decrypted with the private key.
 
         :param bytes plaintext: The plaintext to encrypt.
 

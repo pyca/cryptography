@@ -1420,7 +1420,7 @@ class TestRSAEncryption(object):
         assert recovered_pt == pt
 
     @pytest.mark.parametrize(
-        "key_size,pad",
+        ["key_size", "pad"],
         itertools.product(
             (1024, 1025, 1029, 1031, 1536, 2048),
             (
