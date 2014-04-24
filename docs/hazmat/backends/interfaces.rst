@@ -307,12 +307,12 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: generate_dsa_parameters(key_size)
 
-        :param int key_size: The length of the modulus in bits. It should be 
-            either "1024, 2048 or 3072". For keys generated in 2014 this should 
+        :param int key_size: The length of the modulus in bits. It should be
+            either 1024, 2048 or 3072. For keys generated in 2014 this should
             be at least 2048.
-            Note that some applications (such as SSH) have not yet gained support 
-            for larger key sizes specified in FIPS 186-3 and are still restricted
-            to only the 1024-bit keys specified in FIPS 186-2.
+            Note that some applications (such as SSH) have not yet gained
+            support for larger key sizes specified in FIPS 186-3 and are still
+            restricted to only the 1024-bit keys specified in FIPS 186-2.
 
         :return: A new instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
@@ -328,9 +328,10 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
             provider.
 
-        :raises ValueError: This is raised if the key size is not (1024 or 2048 or 3072)
-            or if the OpenSSL version is older than 1.0.0 and the key size is larger than 1024
-            because older OpenSSL versions don't support a key size larger than 1024.
+        :raises ValueError: This is raised if the key size is not one of 1024,
+            2048, or 3072. It is also raised when OpenSSL is older than version
+            1.0.0 and the key size is larger than 1024; older OpenSSL versions
+            do not support keys larger than 1024 bits.
 
 
 .. class:: CMACBackend
