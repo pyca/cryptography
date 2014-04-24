@@ -12,6 +12,8 @@ Changelog
   removed from ``MGF1`` in two releases per our :doc:`/api-stability` policy.
 
 * Added :class:`~cryptography.hazmat.primitives.cmac.CMAC`.
+* Added decryption support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+  and encryption support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
 0.3 - 2014-03-27
 ~~~~~~~~~~~~~~~~
