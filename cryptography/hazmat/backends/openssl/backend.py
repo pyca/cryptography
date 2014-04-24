@@ -475,12 +475,12 @@ class Backend(object):
         )
 
     def decrypt_rsa(self, private_key, ciphertext, padding):
-        return self._enc_dec_rsa(b"DECRYPT", private_key, ciphertext, padding)
+        return self._enc_dec_rsa(private_key, ciphertext, padding)
 
     def encrypt_rsa(self, public_key, plaintext, padding):
-        return self._enc_dec_rsa(b"ENCRYPT", public_key, plaintext, padding)
+        return self._enc_dec_rsa(public_key, plaintext, padding)
 
-    def _enc_dec_rsa(self, enc_dec, key, data, padding):
+    def _enc_dec_rsa(self, key, data, padding):
         if isinstance(padding, PKCS1v15):
             padding_enum = self._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, OAEP):
@@ -519,12 +519,12 @@ class Backend(object):
             raise ValueError("Data too large for key size")
 
         if self._lib.Cryptography_HAS_PKEY_CTX:
-            return self._enc_dec_rsa_pkey_ctx(enc_dec, key, data, padding_enum)
+            return self._enc_dec_rsa_pkey_ctx(key, data, padding_enum)
         else:
-            return self._enc_dec_rsa_098(enc_dec, key, data, padding_enum)
+            return self._enc_dec_rsa_098(key, data, padding_enum)
 
-    def _enc_dec_rsa_pkey_ctx(self, enc_dec, key, data, padding_enum):
-        if enc_dec == b"ENCRYPT":
+    def _enc_dec_rsa_pkey_ctx(self, key, data, padding_enum):
+        if isinstance(key, rsa.RSAPublicKey):
             init = self._lib.EVP_PKEY_encrypt_init
             crypt = self._lib.Cryptography_EVP_PKEY_encrypt
             evp_pkey = self._rsa_public_key_to_evp_pkey(key)
@@ -555,12 +555,12 @@ class Backend(object):
             len(data)
         )
         if res <= 0:
-            self._handle_rsa_enc_dec_error(enc_dec)
+            self._handle_rsa_enc_dec_error(key)
 
         return self._ffi.buffer(buf)[:outlen[0]]
 
-    def _enc_dec_rsa_098(self, enc_dec, key, data, padding_enum):
-        if enc_dec == b"ENCRYPT":
+    def _enc_dec_rsa_098(self, key, data, padding_enum):
+        if isinstance(key, rsa.RSAPublicKey):
             crypt = self._lib.RSA_public_encrypt
             rsa_cdata = self._rsa_cdata_from_public_key(key)
         else:
@@ -579,15 +579,15 @@ class Backend(object):
             padding_enum
         )
         if res < 0:
-            self._handle_rsa_enc_dec_error(enc_dec)
+            self._handle_rsa_enc_dec_error(key)
 
         return self._ffi.buffer(buf)[:res]
 
-    def _handle_rsa_enc_dec_error(self, enc_dec):
+    def _handle_rsa_enc_dec_error(self, key):
         errors = self._consume_errors()
         assert errors
         assert errors[0].lib == self._lib.ERR_LIB_RSA
-        if enc_dec == b"ENCRYPT":
+        if isinstance(key, rsa.RSAPublicKey):
             assert (errors[0].reason ==
                     self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
             raise ValueError(
