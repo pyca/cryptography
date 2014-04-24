@@ -139,6 +139,13 @@ class DSABackend(object):
         a DSAParameters object.
         """
 
+    @abc.abstractmethod
+    def create_dsa_signature_ctx(self, private_key, algorithm):
+        """
+        Returns an object conforming to the AsymmetricSignatureContext
+        interface.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class OpenSSLSerializationBackend(object):
