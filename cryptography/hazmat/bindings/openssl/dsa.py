@@ -47,6 +47,7 @@ DSA_SIG *DSA_SIG_new(void);
 void DSA_SIG_free(DSA_SIG *);
 int i2d_DSA_SIG(const DSA_SIG *, unsigned char **);
 DSA_SIG *d2i_DSA_SIG(DSA_SIG **, const unsigned char **, long);
+int DSA_size(const DSA *);
 """
 
 MACROS = """
