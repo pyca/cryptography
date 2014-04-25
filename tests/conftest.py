@@ -18,7 +18,7 @@ import pytest
 from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend
+    PBKDF2HMACBackend, RSABackend, TraditionalOpenSSLSerializationBackend
 )
 from .utils import check_backend_support, check_for_iface, select_backends
 
@@ -40,6 +40,11 @@ def pytest_runtest_setup(item):
     check_for_iface("pbkdf2hmac", PBKDF2HMACBackend, item)
     check_for_iface("dsa", DSABackend, item)
     check_for_iface("rsa", RSABackend, item)
+    check_for_iface(
+        "traditional_openssl_serialization",
+        TraditionalOpenSSLSerializationBackend,
+        item
+    )
     check_backend_support(item)
 
 
