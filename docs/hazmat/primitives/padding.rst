@@ -5,7 +5,7 @@ Padding
 
 .. currentmodule:: cryptography.hazmat.primitives.padding
 
-Padding is a way to take data that may or may not be be a multiple of the block
+Padding is a way to take data that may or may not be a multiple of the block
 size for a cipher and extend it out so that it is. This is required for many
 block cipher modes as they require the data to be encrypted to be an exact
 multiple of the block size.

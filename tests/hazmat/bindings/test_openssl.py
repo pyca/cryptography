@@ -84,7 +84,7 @@ class TestOpenSSL(object):
         with pytest.raises(RuntimeError):
             b._lock_cb(0, b.lib.CRYPTO_LOCK_SSL, "<test>", 1)
 
-        # errors shouldnt cause locking
+        # errors shouldn't cause locking
         assert lock.acquire(False)
         lock.release()
 

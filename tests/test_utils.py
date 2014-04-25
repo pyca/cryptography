@@ -2638,7 +2638,7 @@ def test_raises_unsupported_no_exc():
 
 
 def test_raises_unsupported_algorithm():
-    # Check that it doesnt assert if the right things are raised.
+    # Check that it doesn't assert if the right things are raised.
     with raises_unsupported_algorithm(
         _Reasons.BACKEND_MISSING_INTERFACE
     ) as exc_info:
