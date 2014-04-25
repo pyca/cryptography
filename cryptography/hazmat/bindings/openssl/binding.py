@@ -97,9 +97,13 @@ class Binding(object):
         else:  # pragma: no cover
             libraries = ["libeay32", "ssleay32", "advapi32"]
 
-        cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
-                                     _OSX_PRE_INCLUDE, _OSX_POST_INCLUDE,
-                                     libraries)
+        cls.ffi, cls.lib = build_ffi(
+            module_prefix=cls._module_prefix,
+            modules=cls._modules,
+            pre_include=_OSX_PRE_INCLUDE,
+            post_include=_OSX_POST_INCLUDE,
+            libraries=libraries,
+        )
         res = cls.lib.Cryptography_add_osrandom_engine()
         assert res != 0
 
