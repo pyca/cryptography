@@ -412,17 +412,37 @@ Asymmetric interfaces
 
         The bit length of the modulus.
 
+    .. attribute:: y
+
+        :type: int
+
+        The public key.
+
     .. method:: parameters()
 
         :return: :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
 
         The DSAParameters object associated with this public key.
 
-    .. attribute:: y
+    .. method:: verifier(signature, algorithm, backend)
 
-        :type: int
+        .. versionadded:: 0.4
 
-        The public key.
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
 
 .. class:: AsymmetricSignatureContext
