@@ -45,11 +45,6 @@ class Binding(object):
         cls.ffi, cls.lib = build_ffi(
             module_prefix=cls._module_prefix,
             modules=cls._modules,
-            pre_include="",
-            post_include="",
-            libraries=[],
-            extra_compile_args=[],
-            extra_link_args=[]
         )
 
     @classmethod

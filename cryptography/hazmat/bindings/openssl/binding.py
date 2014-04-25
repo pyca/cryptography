@@ -103,8 +103,6 @@ class Binding(object):
             pre_include=_OSX_PRE_INCLUDE,
             post_include=_OSX_POST_INCLUDE,
             libraries=libraries,
-            extra_compile_args=[],
-            extra_link_args=[]
         )
         res = cls.lib.Cryptography_add_osrandom_engine()
         assert res != 0
