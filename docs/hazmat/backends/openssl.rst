@@ -14,6 +14,7 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
     It implements the following interfaces:
 
     * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
