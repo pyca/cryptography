@@ -48,6 +48,10 @@ void DSA_SIG_free(DSA_SIG *);
 int i2d_DSA_SIG(const DSA_SIG *, unsigned char **);
 DSA_SIG *d2i_DSA_SIG(DSA_SIG **, const unsigned char **, long);
 int DSA_size(const DSA *);
+int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
+             DSA *);
+int DSA_verify(int, const unsigned char *, int, const unsigned char *, int,
+               DSA *);
 """
 
 MACROS = """
