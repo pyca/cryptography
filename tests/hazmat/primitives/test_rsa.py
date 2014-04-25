@@ -1276,7 +1276,7 @@ class TestRSADecryption(object):
             backend=backend
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(b"somedata", DummyPadding(), backend)
+            private_key.decrypt(b"0" * 64, DummyPadding(), backend)
 
     def test_decrypt_invalid_decrypt(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
@@ -1371,7 +1371,7 @@ class TestRSADecryption(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.decrypt(
-                b"ciphertext",
+                b"0" * 64,
                 padding.OAEP(
                     mgf=DummyMGF(),
                     algorithm=hashes.SHA1(),
@@ -1386,7 +1386,7 @@ class TestRSAEncryption(object):
     @pytest.mark.parametrize(
         ("key_size", "pad"),
         itertools.product(
-            (1024, 1025, 1029, 1031, 1536, 2048),
+            (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048),
             (
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
@@ -1422,7 +1422,7 @@ class TestRSAEncryption(object):
     @pytest.mark.parametrize(
         ("key_size", "pad"),
         itertools.product(
-            (1024, 1025, 1029, 1031, 1536, 2048),
+            (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048),
             (
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
@@ -1440,6 +1440,7 @@ class TestRSAEncryption(object):
             backend=backend
         )
         public_key = private_key.public_key()
+        # Slightly smaller than the key size but not enough for padding.
         with pytest.raises(ValueError):
             public_key.encrypt(
                 b"\x00" * (key_size // 8 - 1),
@@ -1447,17 +1448,11 @@ class TestRSAEncryption(object):
                 backend
             )
 
-    def test_rsa_encrypt_data_too_large(self, backend):
-        private_key = rsa.RSAPrivateKey.generate(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
-        public_key = private_key.public_key()
+        # Larger than the key size.
         with pytest.raises(ValueError):
             public_key.encrypt(
-                b"\x00" * 129,
-                padding.PKCS1v15(),
+                b"\x00" * (key_size // 8 + 5),
+                pad,
                 backend
             )
 

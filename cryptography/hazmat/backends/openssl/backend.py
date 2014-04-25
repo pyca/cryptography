@@ -475,6 +475,10 @@ class Backend(object):
         )
 
     def decrypt_rsa(self, private_key, ciphertext, padding):
+        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
+        if key_size_bytes != len(ciphertext):
+            raise ValueError("Ciphertext length must be equal to key size.")
+
         return self._enc_dec_rsa(private_key, ciphertext, padding)
 
     def encrypt_rsa(self, public_key, plaintext, padding):
@@ -513,10 +517,6 @@ class Backend(object):
                 ),
                 _Reasons.UNSUPPORTED_PADDING
             )
-
-        key_size_bytes = int(math.ceil(key.key_size / 8.0))
-        if key_size_bytes < len(data):
-            raise ValueError("Data too large for key size")
 
         if self._lib.Cryptography_HAS_PKEY_CTX:
             return self._enc_dec_rsa_pkey_ctx(key, data, padding_enum)
