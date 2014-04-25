@@ -183,8 +183,13 @@ const char *X509_get_default_private_dir(void);
 
 int i2d_RSA_PUBKEY(RSA *, unsigned char **);
 RSA *d2i_RSA_PUBKEY(RSA **, const unsigned char **, long);
+RSA *d2i_RSAPublicKey(RSA **, const unsigned char **, long);
+RSA *d2i_RSAPrivateKey(RSA **, const unsigned char **, long);
 int i2d_DSA_PUBKEY(DSA *, unsigned char **);
 DSA *d2i_DSA_PUBKEY(DSA **, const unsigned char **, long);
+DSA *d2i_DSAPublicKey(DSA **, const unsigned char **, long);
+DSA *d2i_DSAPrivateKey(DSA **, const unsigned char **, long);
+
 
 RSA *d2i_RSAPrivateKey_bio(BIO *, RSA **);
 int i2d_RSAPrivateKey_bio(BIO *, RSA *);
@@ -222,6 +227,11 @@ void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
+
+int i2d_RSAPublicKey(RSA *, unsigned char **);
+int i2d_RSAPrivateKey(RSA *, unsigned char **);
+int i2d_DSAPublicKey(DSA *, unsigned char **);
+int i2d_DSAPrivateKey(DSA *, unsigned char **);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
