@@ -20,6 +20,7 @@ import cffi
 import six
 
 from cryptography import utils
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings.utils import _create_modulename
 from cryptography.hazmat.primitives import interfaces
 
@@ -101,7 +102,7 @@ class _PKCS7PaddingContext(object):
 
     def update(self, data):
         if self._buffer is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
 
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before padding")
@@ -117,7 +118,7 @@ class _PKCS7PaddingContext(object):
 
     def finalize(self):
         if self._buffer is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
 
         pad_size = self.block_size // 8 - len(self._buffer)
         result = self._buffer + six.int2byte(pad_size) * pad_size
@@ -134,7 +135,7 @@ class _PKCS7UnpaddingContext(object):
 
     def update(self, data):
         if self._buffer is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
 
         if isinstance(data, six.text_type):
             raise TypeError("Unicode-objects must be encoded before unpadding")
@@ -153,7 +154,7 @@ class _PKCS7UnpaddingContext(object):
 
     def finalize(self):
         if self._buffer is None:
-            raise ValueError("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized")
 
         if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes")
