@@ -32,12 +32,12 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     case "${TOX_ENV}" in
         py26)
-            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            curl -O https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
             sudo python get-pip.py
             sudo pip install virtualenv
             ;;
         py27)
-            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            curl -O https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
             sudo python get-pip.py
             sudo pip install virtualenv
             ;;
@@ -62,7 +62,7 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             pip install virtualenv
             ;;
         docs)
-            curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+            curl -O https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
             sudo python get-pip.py
             sudo pip install virtualenv
             ;;
