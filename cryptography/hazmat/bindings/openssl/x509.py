@@ -183,11 +183,11 @@ const char *X509_get_default_private_dir(void);
 
 int i2d_RSA_PUBKEY(RSA *, unsigned char **);
 RSA *d2i_RSA_PUBKEY(RSA **, const unsigned char **, long);
-RSA * d2i_RSAPublicKey(RSA **, const unsigned char **, long);
+RSA *d2i_RSAPublicKey(RSA **, const unsigned char **, long);
 RSA *d2i_RSAPrivateKey(RSA **, const unsigned char **, long);
 int i2d_DSA_PUBKEY(DSA *, unsigned char **);
 DSA *d2i_DSA_PUBKEY(DSA **, const unsigned char **, long);
-DSA * d2i_DSAPublicKey(DSA **, const unsigned char **, long);
+DSA *d2i_DSAPublicKey(DSA **, const unsigned char **, long);
 DSA *d2i_DSAPrivateKey(DSA **, const unsigned char **, long);
 
 
