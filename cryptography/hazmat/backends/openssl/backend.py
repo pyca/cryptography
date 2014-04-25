@@ -351,7 +351,7 @@ class Backend(object):
     def _new_evp_pkey(self):
         evp_pkey = self._lib.EVP_PKEY_new()
         assert evp_pkey != self._ffi.NULL
-        return self._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
+        return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
     def _rsa_private_key_to_evp_pkey(self, private_key):
         evp_pkey = self._new_evp_pkey()
@@ -580,8 +580,8 @@ class Backend(object):
 
     def cmac_algorithm_supported(self, algorithm):
         return (
-            backend._lib.Cryptography_HAS_CMAC == 1
-            and backend.cipher_supported(algorithm, CBC(
+            self._lib.Cryptography_HAS_CMAC == 1
+            and self.cipher_supported(algorithm, CBC(
                 b"\x00" * algorithm.block_size))
         )
 
