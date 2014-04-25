@@ -66,7 +66,16 @@ multiple of the block size.
 
         :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was padded or unpadded.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
 
     .. method:: finalize()
 
+        Finalize the current context and return the rest of the data.
+
+        After ``finalize`` has been called this object can no longer be used;
+        :meth:`update` and :meth:`finalize` will raise an
+        :class:`~cryptography.exceptions.AlreadyFinalized` exception.
+
         :return bytes: Returns the remainder of the data.
+        :raises ValueError: When trying to remove padding from incorrectly
+                            padded data.
