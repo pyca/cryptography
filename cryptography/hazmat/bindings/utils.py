@@ -20,7 +20,8 @@ import sys
 import cffi
 
 
-def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
+def build_ffi(module_prefix, modules, pre_include, post_include, libraries,
+              extra_compile_args, extra_link_args):
     """
     Modules listed in ``modules`` should have the following attributes:
 
@@ -75,6 +76,8 @@ def build_ffi(module_prefix, modules, pre_include, post_include, libraries):
         modulename=_create_modulename(cdef_sources, source, sys.version),
         libraries=libraries,
         ext_package="cryptography",
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
     )
 
     for name in modules:

@@ -42,8 +42,15 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
-        cls.ffi, cls.lib = build_ffi(cls._module_prefix, cls._modules,
-                                     "", "", [])
+        cls.ffi, cls.lib = build_ffi(
+            module_prefix=cls._module_prefix,
+            modules=cls._modules,
+            pre_include="",
+            post_include="",
+            libraries=[],
+            extra_compile_args=[],
+            extra_link_args=[]
+        )
 
     @classmethod
     def is_available(cls):
