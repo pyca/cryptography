@@ -17,6 +17,7 @@ import pytest
 
 import six
 
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
 
 
@@ -97,15 +98,15 @@ class TestPKCS7(object):
     def test_use_after_finalize(self):
         padder = padding.PKCS7(128).padder()
         b = padder.finalize()
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             padder.update(b"")
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             padder.finalize()
 
         unpadder = padding.PKCS7(128).unpadder()
         unpadder.update(b)
         unpadder.finalize()
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             unpadder.update(b"")
-        with pytest.raises(ValueError):
+        with pytest.raises(AlreadyFinalized):
             unpadder.finalize()
