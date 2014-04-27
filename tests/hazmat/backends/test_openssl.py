@@ -301,7 +301,7 @@ class TestOpenSSLRSA(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.decrypt(
-                b"ciphertext",
+                b"0" * 64,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA256()),
                     algorithm=hashes.SHA1(),
@@ -318,7 +318,7 @@ class TestOpenSSLRSA(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.decrypt(
-                b"ciphertext",
+                b"0" * 64,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA256(),
@@ -335,7 +335,7 @@ class TestOpenSSLRSA(object):
         )
         with pytest.raises(ValueError):
             private_key.decrypt(
-                b"ciphertext",
+                b"0" * 64,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),

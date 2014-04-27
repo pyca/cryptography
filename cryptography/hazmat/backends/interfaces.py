@@ -123,6 +123,12 @@ class RSABackend(object):
         Returns decrypted bytes.
         """
 
+    @abc.abstractmethod
+    def encrypt_rsa(self, public_key, plaintext, padding):
+        """
+        Returns encrypted bytes.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSABackend(object):

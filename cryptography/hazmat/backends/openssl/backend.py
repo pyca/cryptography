@@ -475,6 +475,16 @@ class Backend(object):
         )
 
     def decrypt_rsa(self, private_key, ciphertext, padding):
+        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
+        if key_size_bytes != len(ciphertext):
+            raise ValueError("Ciphertext length must be equal to key size.")
+
+        return self._enc_dec_rsa(private_key, ciphertext, padding)
+
+    def encrypt_rsa(self, public_key, plaintext, padding):
+        return self._enc_dec_rsa(public_key, plaintext, padding)
+
+    def _enc_dec_rsa(self, key, data, padding):
         if isinstance(padding, PKCS1v15):
             padding_enum = self._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, OAEP):
@@ -508,24 +518,27 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_PADDING
             )
 
-        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
-        if key_size_bytes < len(ciphertext):
-            raise ValueError("Ciphertext too large for key size")
-
         if self._lib.Cryptography_HAS_PKEY_CTX:
-            return self._decrypt_rsa_pkey_ctx(private_key, ciphertext,
-                                              padding_enum)
+            return self._enc_dec_rsa_pkey_ctx(key, data, padding_enum)
         else:
-            return self._decrypt_rsa_098(private_key, ciphertext, padding_enum)
+            return self._enc_dec_rsa_098(key, data, padding_enum)
 
-    def _decrypt_rsa_pkey_ctx(self, private_key, ciphertext, padding_enum):
-        evp_pkey = self._rsa_private_key_to_evp_pkey(private_key)
+    def _enc_dec_rsa_pkey_ctx(self, key, data, padding_enum):
+        if isinstance(key, rsa.RSAPublicKey):
+            init = self._lib.EVP_PKEY_encrypt_init
+            crypt = self._lib.Cryptography_EVP_PKEY_encrypt
+            evp_pkey = self._rsa_public_key_to_evp_pkey(key)
+        else:
+            init = self._lib.EVP_PKEY_decrypt_init
+            crypt = self._lib.Cryptography_EVP_PKEY_decrypt
+            evp_pkey = self._rsa_private_key_to_evp_pkey(key)
+
         pkey_ctx = self._lib.EVP_PKEY_CTX_new(
             evp_pkey, self._ffi.NULL
         )
         assert pkey_ctx != self._ffi.NULL
         pkey_ctx = self._ffi.gc(pkey_ctx, self._lib.EVP_PKEY_CTX_free)
-        res = self._lib.EVP_PKEY_decrypt_init(pkey_ctx)
+        res = init(pkey_ctx)
         assert res == 1
         res = self._lib.EVP_PKEY_CTX_set_rsa_padding(
             pkey_ctx, padding_enum)
@@ -534,49 +547,59 @@ class Backend(object):
         assert buf_size > 0
         outlen = self._ffi.new("size_t *", buf_size)
         buf = self._ffi.new("char[]", buf_size)
-        res = self._lib.Cryptography_EVP_PKEY_decrypt(
+        res = crypt(
             pkey_ctx,
             buf,
             outlen,
-            ciphertext,
-            len(ciphertext)
+            data,
+            len(data)
         )
         if res <= 0:
-            errors = self._consume_errors()
-            assert errors
-            assert errors[0].lib == self._lib.ERR_LIB_RSA
-            assert (
-                errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
-                errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
-            )
-            raise ValueError("Decryption failed")
+            self._handle_rsa_enc_dec_error(key)
 
         return self._ffi.buffer(buf)[:outlen[0]]
 
-    def _decrypt_rsa_098(self, private_key, ciphertext, padding_enum):
-        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+    def _enc_dec_rsa_098(self, key, data, padding_enum):
+        if isinstance(key, rsa.RSAPublicKey):
+            crypt = self._lib.RSA_public_encrypt
+            rsa_cdata = self._rsa_cdata_from_public_key(key)
+        else:
+            crypt = self._lib.RSA_private_decrypt
+            rsa_cdata = self._rsa_cdata_from_private_key(key)
+
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key_size = self._lib.RSA_size(rsa_cdata)
         assert key_size > 0
         buf = self._ffi.new("unsigned char[]", key_size)
-        res = self._lib.RSA_private_decrypt(
-            len(ciphertext),
-            ciphertext,
+        res = crypt(
+            len(data),
+            data,
             buf,
             rsa_cdata,
             padding_enum
         )
         if res < 0:
-            errors = self._consume_errors()
-            assert errors
-            assert errors[0].lib == self._lib.ERR_LIB_RSA
+            self._handle_rsa_enc_dec_error(key)
+
+        return self._ffi.buffer(buf)[:res]
+
+    def _handle_rsa_enc_dec_error(self, key):
+        errors = self._consume_errors()
+        assert errors
+        assert errors[0].lib == self._lib.ERR_LIB_RSA
+        if isinstance(key, rsa.RSAPublicKey):
+            assert (errors[0].reason ==
+                    self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+            raise ValueError(
+                "Data too long for key size. Encrypt less data or use a "
+                "larger key size"
+            )
+        else:
             assert (
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
             )
             raise ValueError("Decryption failed")
-
-        return self._ffi.buffer(buf)[:res]
 
     def cmac_algorithm_supported(self, algorithm):
         return (

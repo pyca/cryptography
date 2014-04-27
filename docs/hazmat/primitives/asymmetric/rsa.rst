@@ -267,6 +267,67 @@ RSA
         :raises ValueError: This is raised when the chosen hash algorithm is
             too large for the key size.
 
+    .. method:: encrypt(plaintext, padding, backend)
+
+        .. versionadded:: 0.4
+
+        Encrypt data using the public key. The resulting ciphertext can only
+        be decrypted with the private key.
+
+        :param bytes plaintext: The plaintext to encrypt.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return bytes: Encrypted data.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or if
+            the backend does not support the chosen hash or padding algorithm.
+            If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
+            with the
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+            mask generation function it may also refer to the ``MGF1`` hash
+            algorithm.
+
+        :raises TypeError: This is raised when the padding is not an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :raises ValueError: This is raised if the data is too large for the
+            key size. If the padding is
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
+            it may also be raised for invalid label values.
+
+        .. code-block:: python
+
+            from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric import padding, rsa
+
+            private_key = rsa.RSAPrivateKey.generate(
+                public_exponent=65537,
+                key_size=2048,
+                backend=default_backend()
+            )
+            public_key = private_key.public_key()
+            ciphertext = public_key.encrypt(
+                plaintext,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                ),
+                default_backend()
+            )
+
 
 Handling partial RSA private keys
 ---------------------------------
