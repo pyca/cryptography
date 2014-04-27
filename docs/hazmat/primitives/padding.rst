@@ -38,6 +38,8 @@ multiple of the block size.
 
     :param block_size: The size of the block in bits that the data is being
                        padded to.
+    :raises ValueError: Raised if block size is not a multiple of 8 or is not
+        between 0 and 256.
 
     .. method:: padder()
 
@@ -66,6 +68,7 @@ multiple of the block size.
 
         :param bytes data: The data you wish to pass into the context.
         :return bytes: Returns the data that was padded or unpadded.
+        :raises TypeError: Raised if data is not bytes.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
 
     .. method:: finalize()
@@ -77,5 +80,6 @@ multiple of the block size.
         :class:`~cryptography.exceptions.AlreadyFinalized` exception.
 
         :return bytes: Returns the remainder of the data.
+        :raises TypeError: Raised if data is not bytes.
         :raises ValueError: When trying to remove padding from incorrectly
                             padded data.
