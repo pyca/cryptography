@@ -497,7 +497,7 @@ class Backend(object):
                 not isinstance(algorithm, hashes.SHA1)):
             return False
         else:
-            return True
+            return self.hash_supported(algorithm)
 
     def dsa_parameters_supported(self, p, q):
         if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f
