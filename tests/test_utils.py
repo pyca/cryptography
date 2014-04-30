@@ -27,11 +27,11 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 import cryptography_vectors
 
 from .utils import (
-    check_backend_support, check_for_iface, load_cryptrec_vectors,
-    load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
-    load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
-    load_hash_vectors, load_nist_vectors, load_pkcs1_vectors,
-    load_rsa_nist_vectors, load_vectors_from_file,
+    check_backend_support, check_for_iface, dss_sig_value,
+    load_cryptrec_vectors, load_fips_dsa_key_pair_vectors,
+    load_fips_dsa_sig_vectors, load_fips_ecdsa_key_pair_vectors,
+    load_fips_ecdsa_signing_vectors, load_hash_vectors, load_nist_vectors,
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm, select_backends
 )
 
@@ -123,6 +123,32 @@ def test_check_backend_support_no_backend():
                         funcargs={})
     with pytest.raises(ValueError):
         check_backend_support(item)
+
+
+def test_dss_sig_value():
+    sig = dss_sig_value(1, 1)
+    assert sig == b"0\x06\x02\x01\x01\x02\x01\x01"
+
+    sig2 = dss_sig_value(1037234182290683143945502320610861668562885151617,
+                         559776156650501990899426031439030258256861634312)
+    assert sig2 == (
+        b'0-\x02\x15\x00\xb5\xaf0xg\xfb\x8bT9\x00\x13\xccg\x02\r\xdf\x1f,\x0b'
+        b'\x81\x02\x14b\r;"\xabP1D\x0c>5\xea\xb6\xf4\x81)\x8f\x9e\x9f\x08'
+    )
+
+    sig3 = dss_sig_value(0, 0)
+    assert sig3 == b"0\x06\x02\x01\x00\x02\x01\x00"
+
+
+def test_dss_sig_value_negative():
+    with pytest.raises(ValueError):
+        dss_sig_value(-1, 1)
+
+    with pytest.raises(ValueError):
+        dss_sig_value(1, -1)
+
+    with pytest.raises(ValueError):
+        dss_sig_value(-1, -1)
 
 
 def test_load_nist_vectors():

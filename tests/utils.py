@@ -80,6 +80,33 @@ def raises_unsupported_algorithm(reason):
     assert exc_info.value._reason is reason
 
 
+def _int_to_asn1_int(i):
+    """
+    Used by dss_sig_value to convert python integers to ASN.1 integer bytes.
+    """
+    if i == 0:
+        return b'\x02\x01\x00'
+    if i < 0:
+        raise ValueError("This only supports positive integers right now.")
+    result = []
+    while i:
+        result.append(six.int2byte(i & 0xFF))
+        i >>= 8
+    # ASN.1 integers are stored big endian two's complement, so add a byte if
+    # the ordinal value of the last byte is over 0x7f.
+    if ord(result[-1]) > 127:
+        result.append(b"\x00")
+    result.reverse()
+    packed = b''.join(result)
+    return b"\x02" + chr(len(packed)).encode("ascii") + packed
+
+
+def dss_sig_value(r, s):
+    combined = _int_to_asn1_int(r) + _int_to_asn1_int(s)
+    sig = b"0" + chr(len(combined)).encode("ascii") + combined
+    return sig
+
+
 def load_vectors_from_file(filename, loader):
     with cryptography_vectors.open_vector_file(filename) as vector_file:
         return loader(vector_file)
