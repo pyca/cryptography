@@ -140,17 +140,6 @@ def test_dss_sig_value():
     assert sig3 == b"0\x06\x02\x01\x00\x02\x01\x00"
 
 
-def test_dss_sig_value_negative():
-    with pytest.raises(ValueError):
-        dss_sig_value(-1, 1)
-
-    with pytest.raises(ValueError):
-        dss_sig_value(1, -1)
-
-    with pytest.raises(ValueError):
-        dss_sig_value(-1, -1)
-
-
 def test_load_nist_vectors():
     vector_data = textwrap.dedent("""
     # CAVS 11.1

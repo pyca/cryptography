@@ -44,6 +44,7 @@ requirements = [
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
     "pytest",
+    "pyasn1",
     "pretend",
     "iso8601",
 ]
