@@ -479,24 +479,6 @@ class Backend(object):
         return _DSAVerificationContext(self, public_key, signature,
                                        algorithm)
 
-    def dsa_signature_from_components(self, r, s):
-        dsa_sig = self._lib.DSA_SIG_new()
-        assert dsa_sig != self._ffi.NULL
-        dsa_sig = self._ffi.gc(dsa_sig, self._lib.DSA_SIG_free)
-
-        dsa_sig.r = self._int_to_bn(r)
-        dsa_sig.s = self._int_to_bn(s)
-
-        sig_len = self._lib.i2d_DSA_SIG(dsa_sig, self._ffi.NULL)
-        assert sig_len != 0
-
-        sig_buf = self._ffi.new("unsigned char []", sig_len)
-        sig_bufptr = self._ffi.new("unsigned char **", sig_buf)
-
-        sig_len = self._lib.i2d_DSA_SIG(dsa_sig, sig_bufptr)
-
-        return self._ffi.buffer(sig_buf)[:sig_len]
-
     def _dsa_cdata_from_public_key(self, public_key):
         # Does not GC the DSA cdata. You *must* make sure it's freed
         # correctly yourself!

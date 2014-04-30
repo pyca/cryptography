@@ -153,12 +153,6 @@ class DSABackend(object):
         """
 
     @abc.abstractmethod
-    def dsa_signature_from_components(self, r, s):
-        """
-        Convert a DSA signature pair r and s into a DER byte string.
-        """
-
-    @abc.abstractmethod
     def dsa_hash_supported(self, algorithm):
         """
         Return True if the hash algorithm is supported by the backend for DSA.

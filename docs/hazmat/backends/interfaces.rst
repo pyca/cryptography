@@ -360,16 +360,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
-    .. method:: dsa_signature_from_components(r, s)
-
-        :param int r: The r value which is part of a DSA signature.
-
-        :param int s: The s value which is part of a DSA signature.
-
-        :returns: A DSA signature in DER format.
-
     .. method:: dsa_hash_supported(algorithm):
-        
+
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
