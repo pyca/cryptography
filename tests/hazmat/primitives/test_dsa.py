@@ -746,10 +746,8 @@ class TestDSAVerification(object):
 
         algorithm = algorithms_dict[digest_algorithm]
 
-        if (
-                backend.dsa_parameters_supported(vector['p'], vector['q'])
-                and backend.dsa_hash_supported(algorithm)
-                ):
+        if (backend.dsa_parameters_supported(vector['p'], vector['q'])
+                and backend.dsa_hash_supported(algorithm)):
             sig_buf = backend.dsa_signature_from_components(
                 vector['r'], vector['s'])
 
@@ -790,10 +788,8 @@ class TestDSAVerification(object):
 
         algorithm = algorithms_dict[digest_algorithm]
 
-        if (
-                backend.dsa_parameters_supported(vector['p'], vector['q'])
-                and backend.dsa_hash_supported(algorithm)
-                ):
+        if (backend.dsa_parameters_supported(vector['p'], vector['q'])
+                and backend.dsa_hash_supported(algorithm)):
             sig_buf = backend.dsa_signature_from_components(
                 vector['r'], vector['s'])
 
