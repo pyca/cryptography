@@ -333,8 +333,7 @@ RSA
 
     .. versionadded:: 0.5
 
-    An RSAPublicNumbers instance represents the constituent parts of an
-    RSA Public key as integers.
+    The colleciton of integers that make up an RSA public key.
 
     .. attribute:: n
 
@@ -353,8 +352,15 @@ RSA
 
     .. versionadded:: 0.5
 
-    An RSAPrivateNumbers instance represents the constituent parts of an
-    RSA Private key as integers.
+    The collection of integers that make up an RSA private key.
+
+    .. warning::
+
+        With the exception of the integers contained in the
+        :class:`RSAPublicNumbers` returned by the :meth:`public_numbers`
+        method, all attributes of this class must be kept secret. Revealing
+        them will compromise the security of any cryptographic operations
+        performed with a key derived from them.
 
     .. method:: public_numbers()
 
