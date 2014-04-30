@@ -25,8 +25,9 @@ from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.utils import bit_length
 
 from ...utils import (
-    load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
-    load_vectors_from_file, raises_unsupported_algorithm
+    der_encode_dsa_signature, load_fips_dsa_key_pair_vectors,
+    load_fips_dsa_sig_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
 )
 
 
@@ -724,6 +725,14 @@ class TestDSA(object):
 
 @pytest.mark.dsa
 class TestDSAVerification(object):
+    _algorithms_dict = {
+        'SHA1': hashes.SHA1,
+        'SHA224': hashes.SHA224,
+        'SHA256': hashes.SHA256,
+        'SHA384': hashes.SHA384,
+        'SHA512': hashes.SHA512
+    }
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -733,38 +742,29 @@ class TestDSAVerification(object):
         )
     )
     def test_dsa_verification(self, vector, backend):
-        public_key = dsa.DSAPublicKey(vector['p'], vector['q'], vector['g'],
-                                      vector['y'])
-
         digest_algorithm = vector['digest_algorithm'].replace("-", "")
-        algorithms_dict = {
-            'SHA1': hashes.SHA1,
-            'SHA224': hashes.SHA224,
-            'SHA256': hashes.SHA256,
-            'SHA384': hashes.SHA384,
-            'SHA512': hashes.SHA512}
+        algorithm = self._algorithms_dict[digest_algorithm]
+        if (not backend.dsa_parameters_supported(vector['p'], vector['q'])
+                or not backend.dsa_hash_supported(algorithm)):
+            pytest.skip(
+                "{0} does not support the provided parameters".format(backend)
+            )
 
-        algorithm = algorithms_dict[digest_algorithm]
-
-        if (backend.dsa_parameters_supported(vector['p'], vector['q'])
-                and backend.dsa_hash_supported(algorithm)):
-            sig_buf = backend.dsa_signature_from_components(
-                vector['r'], vector['s'])
-
-            verifier = public_key.verifier(
-                sig_buf, algorithm(), backend)
-
-            verifier.update(vector['msg'])
-
-            if vector['result'] == "F":
-                with pytest.raises(InvalidSignature):
-                    verifier.verify()
-            else:
+        public_key = dsa.DSAPublicKey(
+            vector['p'], vector['q'], vector['g'], vector['y']
+        )
+        sig = der_encode_dsa_signature(vector['r'], vector['s'])
+        verifier = public_key.verifier(sig, algorithm(), backend)
+        verifier.update(vector['msg'])
+        if vector['result'] == "F":
+            with pytest.raises(InvalidSignature):
                 verifier.verify()
-                with pytest.raises(AlreadyFinalized):
-                    verifier.verify()
-                with pytest.raises(AlreadyFinalized):
-                    verifier.update(b"more data")
+        else:
+            verifier.verify()
+            with pytest.raises(AlreadyFinalized):
+                verifier.verify()
+            with pytest.raises(AlreadyFinalized):
+                verifier.update(b"more data")
 
     @pytest.mark.parametrize(
         "vector",
@@ -775,27 +775,21 @@ class TestDSAVerification(object):
         )
     )
     def test_dsa_verifier_invalid_digest_algorithm(self, vector, backend):
-        public_key = dsa.DSAPublicKey(vector['p'], vector['q'], vector['g'],
-                                      vector['y'])
-
         digest_algorithm = vector['digest_algorithm'].replace("-", "")
-        algorithms_dict = {
-            'SHA1': hashes.SHA1,
-            'SHA224': hashes.SHA224,
-            'SHA256': hashes.SHA256,
-            'SHA384': hashes.SHA384,
-            'SHA512': hashes.SHA512}
+        algorithm = self._algorithms_dict[digest_algorithm]
+        if (not backend.dsa_parameters_supported(vector['p'], vector['q'])
+                or not backend.dsa_hash_supported(algorithm)):
+            pytest.skip(
+                "{0} does not support the provided parameters".format(backend)
+            )
 
-        algorithm = algorithms_dict[digest_algorithm]
-
-        if (backend.dsa_parameters_supported(vector['p'], vector['q'])
-                and backend.dsa_hash_supported(algorithm)):
-            sig_buf = backend.dsa_signature_from_components(
-                vector['r'], vector['s'])
-
-            with raises_unsupported_algorithm(
-                    _Reasons.UNSUPPORTED_HASH):
-                public_key.verifier(sig_buf, hashes.MD5(), backend)
+        public_key = dsa.DSAPublicKey(
+            vector['p'], vector['q'], vector['g'], vector['y']
+        )
+        sig = der_encode_dsa_signature(vector['r'], vector['s'])
+        with raises_unsupported_algorithm(
+                _Reasons.UNSUPPORTED_HASH):
+            public_key.verifier(sig, hashes.MD5(), backend)
 
     def test_dsa_verifier_invalid_backend(self, backend):
         pretend_backend = object()
