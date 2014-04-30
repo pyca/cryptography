@@ -90,7 +90,7 @@ class _DSSSigValue(univ.Sequence):
     )
 
 
-def dss_sig_value(r, s):
+def der_encode_dsa_signature(r, s):
     sig = _DSSSigValue()
     sig.setComponentByName('r', r)
     sig.setComponentByName('s', s)
