@@ -369,6 +369,15 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
 
+    .. method:: dsa_parameters_supported(p, q):
+
+        :param int p: The p value of a DSA key.
+
+        :param int q: The q value of a DSA key.
+
+        :returns: ``True`` if the given values of ``p`` and ``q`` are supported
+            by this backend, otherwise ``False``.
+
 
 .. class:: CMACBackend
 
