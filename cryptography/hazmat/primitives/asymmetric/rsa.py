@@ -266,7 +266,7 @@ class RSAPrivateNumbers(object):
         self._q = q
         self._d = d
         self._dmp1 = dmp1
-        self._dmpq1 = dmq1
+        self._dmq1 = dmq1
         self._iqmp = iqmp
         self._public_numbers = public_numbers
 
