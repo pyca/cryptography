@@ -333,7 +333,7 @@ RSA
 
     .. versionadded:: 0.5
 
-    The colleciton of integers that make up an RSA public key.
+    The collection of integers that make up an RSA public key.
 
     .. attribute:: n
 
