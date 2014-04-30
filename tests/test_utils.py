@@ -141,6 +141,9 @@ def test_der_encode_dsa_signature_values():
     sig3 = der_encode_dsa_signature(0, 0)
     assert sig3 == b"0\x06\x02\x01\x00\x02\x01\x00"
 
+    sig4 = der_encode_dsa_signature(-1, 0)
+    assert sig4 == b"0\x06\x02\x01\xFF\x02\x01\x00"
+
 
 def test_load_nist_vectors():
     vector_data = textwrap.dedent("""
