@@ -766,31 +766,6 @@ class TestDSAVerification(object):
             with pytest.raises(AlreadyFinalized):
                 verifier.update(b"more data")
 
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "DSA", "FIPS_186-3", "SigVer.rsp"),
-            load_fips_dsa_sig_vectors
-        )
-    )
-    def test_dsa_verifier_invalid_digest_algorithm(self, vector, backend):
-        digest_algorithm = vector['digest_algorithm'].replace("-", "")
-        algorithm = self._algorithms_dict[digest_algorithm]
-        if (not backend.dsa_parameters_supported(vector['p'], vector['q'])
-                or not backend.dsa_hash_supported(algorithm)):
-            pytest.skip(
-                "{0} does not support the provided parameters".format(backend)
-            )
-
-        public_key = dsa.DSAPublicKey(
-            vector['p'], vector['q'], vector['g'], vector['y']
-        )
-        sig = der_encode_dsa_signature(vector['r'], vector['s'])
-        with raises_unsupported_algorithm(
-                _Reasons.UNSUPPORTED_HASH):
-            public_key.verifier(sig, hashes.MD5(), backend)
-
     def test_dsa_verifier_invalid_backend(self, backend):
         pretend_backend = object()
         params = dsa.DSAParameters.generate(1024, backend)
