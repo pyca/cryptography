@@ -125,8 +125,8 @@ long BIO_callback_ctrl(
 );
 char* BIO_ptr_ctrl(BIO *, int, long);
 long BIO_int_ctrl(BIO *, int, long, int);
-size_t BIO_ctrl_pending(BIO *b);
-size_t BIO_ctrl_wpending(BIO *b);
+size_t BIO_ctrl_pending(BIO *);
+size_t BIO_ctrl_wpending(BIO *);
 int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
