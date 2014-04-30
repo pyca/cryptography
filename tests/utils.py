@@ -83,7 +83,7 @@ def raises_unsupported_algorithm(reason):
     assert exc_info.value._reason is reason
 
 
-class DSSSigValue(univ.Sequence):
+class _DSSSigValue(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('r', univ.Integer()),
         namedtype.NamedType('s', univ.Integer())
@@ -91,7 +91,7 @@ class DSSSigValue(univ.Sequence):
 
 
 def dss_sig_value(r, s):
-    sig = DSSSigValue()
+    sig = _DSSSigValue()
     sig.setComponentByName('r', r)
     sig.setComponentByName('s', s)
     return encoder.encode(sig)
