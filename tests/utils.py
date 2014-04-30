@@ -18,7 +18,7 @@ import collections
 import re
 from contextlib import contextmanager
 
-from pyasn1.codec.ber import encoder
+from pyasn1.codec.der import encoder
 from pyasn1.type import namedtype, univ
 
 import pytest
