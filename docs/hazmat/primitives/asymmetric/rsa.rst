@@ -333,6 +333,9 @@ RSA
 
     .. versionadded:: 0.5
 
+    An RSAPublicNumbers instance represents the constituent parts of an
+    RSA Public key as integers.
+
     .. attribute:: n
 
         :type: int
@@ -350,6 +353,8 @@ RSA
 
     .. versionadded:: 0.5
 
+    An RSAPrivateNumbers instance represents the constituent parts of an
+    RSA Private key as integers.
 
     .. method:: public_numbers()
 
