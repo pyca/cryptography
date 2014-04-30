@@ -257,3 +257,56 @@ class RSAPrivateKey(object):
     @property
     def n(self):
         return self.modulus
+
+
+class RSAPrivateNumbers(object):
+    def __init__(self, p, q, d, dmp1, dmq1, iqmp,
+                 public_numbers):
+        self._p = p
+        self._q = q
+        self._d = d
+        self._dmp1 = dmp1
+        self._dmpq1 = dmq1
+        self._iqmp = iqmp
+        self._public_numbers = public_numbers
+
+    @property
+    def p(self):
+        return self._p
+
+    @property
+    def q(self):
+        return self._q
+
+    @property
+    def d(self):
+        return self._d
+
+    @property
+    def dmp1(self):
+        return self._dmp1
+
+    @property
+    def dmq1(self):
+        return self._dmq1
+
+    @property
+    def iqmp(self):
+        return self._iqmp
+
+    def public_numbers(self):
+        return self._public_numbers
+
+
+class RSAPublicNumbers(object):
+    def __init__(self, e, n):
+        self._e = e
+        self._n = n
+
+    @property
+    def e(self):
+        return self._e
+
+    @property
+    def n(self):
+        return self._n
