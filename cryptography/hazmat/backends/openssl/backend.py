@@ -474,6 +474,58 @@ class Backend(object):
             y=self._bn_to_int(ctx.pub_key)
         )
 
+    def create_dsa_verification_ctx(self, public_key, signature,
+                                    algorithm):
+        return _DSAVerificationContext(self, public_key, signature,
+                                       algorithm)
+
+    def dsa_signature_from_components(self, r, s):
+        dsa_sig = self._lib.DSA_SIG_new()
+        assert dsa_sig != self._ffi.NULL
+        dsa_sig = self._ffi.gc(dsa_sig, self._lib.DSA_SIG_free)
+
+        dsa_sig.r = self._int_to_bn(r)
+        dsa_sig.s = self._int_to_bn(s)
+
+        sig_len = self._lib.i2d_DSA_SIG(dsa_sig, self._ffi.NULL)
+        assert sig_len != 0
+
+        sig_buf = self._ffi.new("unsigned char []", sig_len)
+        sig_bufptr = self._ffi.new("unsigned char **", sig_buf)
+
+        sig_len = self._lib.i2d_DSA_SIG(dsa_sig, sig_bufptr)
+
+        return self._ffi.buffer(sig_buf)[:sig_len]
+
+    def _dsa_cdata_from_public_key(self, public_key):
+        # Does not GC the DSA cdata. You *must* make sure it's freed
+        # correctly yourself!
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        parameters = public_key.parameters()
+        ctx.p = self._int_to_bn(parameters.p)
+        ctx.q = self._int_to_bn(parameters.q)
+        ctx.g = self._int_to_bn(parameters.g)
+        ctx.pub_key = self._int_to_bn(public_key.y)
+        return ctx
+
+    def dsa_hash_supported(self, algorithm):
+        if (
+                self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
+                not isinstance(algorithm, hashes.SHA1)):
+            return False
+        else:
+            return True
+
+    def dsa_parameters_supported(self, p, q):
+        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f
+            and not (
+                utils.bit_length(p) <= 1024
+                and utils.bit_length(q) <= 160)):
+            return False
+        else:
+            return True
+
     def decrypt_rsa(self, private_key, ciphertext, padding):
         key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
         if key_size_bytes != len(ciphertext):
@@ -1291,6 +1343,45 @@ class _RSAVerificationContext(object):
                 len(data_to_verify)
             )
         )
+        if res != 1:
+            errors = self._backend._consume_errors()
+            assert errors
+            raise InvalidSignature
+
+
+@utils.register_interface(interfaces.AsymmetricVerificationContext)
+class _DSAVerificationContext(object):
+    def __init__(
+            self, backend, public_key, signature, algorithm):
+        self._backend = backend
+        self._public_key = public_key
+        self._signature = signature
+        self._algorithm = algorithm
+
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+
+    def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        self._hash_ctx.update(data)
+
+    def verify(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        self._dsa_cdata = self._backend._dsa_cdata_from_public_key(
+            self._public_key)
+        self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
+                                                self._backend._lib.DSA_free)
+
+        data_to_verify = self._hash_ctx.finalize()
+        self._hash_ctx = None
+
+        res = self._backend._lib.DSA_verify(
+            0, data_to_verify, len(data_to_verify), self._signature,
+            len(self._signature), self._dsa_cdata)
+
         if res != 1:
             errors = self._backend._consume_errors()
             assert errors

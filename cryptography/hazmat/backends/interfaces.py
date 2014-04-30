@@ -145,6 +145,31 @@ class DSABackend(object):
         a DSAParameters object.
         """
 
+    @abc.abstractmethod
+    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
+        """
+        Returns an object conforming to the AsymmetricVerificationContext
+        interface.
+        """
+
+    @abc.abstractmethod
+    def dsa_signature_from_components(self, r, s):
+        """
+        Convert a DSA signature pair r and s into a DER byte string.
+        """
+
+    @abc.abstractmethod
+    def dsa_hash_supported(self, algorithm):
+        """
+        Return True if the hash algorithm is supported by the backend for DSA.
+        """
+
+    @abc.abstractmethod
+    def dsa_parameters_supported(self, p, q):
+        """
+        Return True if the parameters are supported by the backend for DSA.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class TraditionalOpenSSLSerializationBackend(object):
