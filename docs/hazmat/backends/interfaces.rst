@@ -344,6 +344,19 @@ A specific ``backend`` may provide one or more of these interfaces.
             2048, or 3072. It is also raised when OpenSSL is older than version
             1.0.0 and the key size is larger than 1024; older OpenSSL versions
             do not support keys larger than 1024 bits.
+    
+    .. method:: create_dsa_signature_ctx(private_key, algorithm)
+
+        :param private_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
 
 .. class:: CMACBackend

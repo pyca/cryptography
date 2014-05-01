@@ -18,13 +18,15 @@ import os
 
 import pytest
 
-from cryptography.exceptions import _Reasons
+from cryptography.exceptions import (
+    _Reasons, AlreadyFinalized, InvalidSignature)
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.utils import bit_length
 
 from ...utils import (
-    load_fips_dsa_key_pair_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
+    load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
+    load_vectors_from_file, raises_unsupported_algorithm
 )
 
 
@@ -720,12 +722,78 @@ class TestDSA(object):
             )
 
 
+@pytest.mark.dsa
+class TestDSASignature(object):
+    _algorithms_dict = {
+        'SHA1': hashes.SHA1,
+        'SHA224': hashes.SHA224,
+        'SHA256': hashes.SHA256,
+        'SHA384': hashes.SHA384,
+        'SHA512': hashes.SHA512}
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "DSA", "FIPS_186-3", "SigVer.rsp"),
+            load_fips_dsa_sig_vectors
+        )
+    )
+    def test_dsa_signing(self, vector, backend):
+        if vector['result'] != 'F':
+            digest_algorithm = vector['digest_algorithm'].replace("-", "")
+            algorithm = self._algorithms_dict[digest_algorithm]
+            if (not backend.dsa_parameters_supported(vector['p'], vector['q'])
+                    or not backend.dsa_hash_supported(algorithm)):
+                pytest.skip(
+                    "{0} does not support the provided parameters".format(
+                        backend)
+                )
+
+            private_key = dsa.DSAPrivateKey(
+                vector['p'], vector['q'], vector['g'], vector['x'],
+                vector['y'])
+
+            signer = private_key.signer(algorithm(), backend)
+            signer.update(vector['msg'])
+            signature = signer.finalize()
+            assert signature
+
+            public_key = private_key.public_key()
+            verifier = public_key.verifier(signature, algorithm(), backend)
+            verifier.update(vector['msg'])
+            verifier.verify()
+
+        def test_use_after_finalize(self, backend):
+            parameters = dsa.DSAParameters.generate(1024, backend)
+            private_key = dsa.DSAPrivateKey.generate(parameters, backend)
+            public_key = private_key.public_key()
+            signer = private_key.signer(hashes.SHA1(), backend)
+            signer.update(b"data")
+            signature = signer.finalize()
+            with pytest.raises(AlreadyFinalized):
+                signer.finalize()
+            with pytest.raises(AlreadyFinalized):
+                signer.update(b"more data")
+
+            verifier = public_key.verifier(signature, hashes.SHA1(), backend)
+            verifier.update(b"irrelevant")
+            with pytest.raises(InvalidSignature):
+                verifier.verify()
+            with pytest.raises(AlreadyFinalized):
+                verifier.verify()
+            with pytest.raises(AlreadyFinalized):
+                verifier.update(b"more data")
+
+
 def test_dsa_generate_invalid_backend():
     pretend_backend = object()
 
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+    with raises_unsupported_algorithm(
+            _Reasons.BACKEND_MISSING_INTERFACE):
         dsa.DSAParameters.generate(1024, pretend_backend)
 
     pretend_parameters = object()
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+    with raises_unsupported_algorithm(
+            _Reasons.BACKEND_MISSING_INTERFACE):
         dsa.DSAPrivateKey.generate(pretend_parameters, pretend_backend)
