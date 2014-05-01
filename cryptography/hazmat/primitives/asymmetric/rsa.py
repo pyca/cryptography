@@ -294,6 +294,7 @@ class RSAPrivateNumbers(object):
     def iqmp(self):
         return self._iqmp
 
+    @property
     def public_numbers(self):
         return self._public_numbers
 

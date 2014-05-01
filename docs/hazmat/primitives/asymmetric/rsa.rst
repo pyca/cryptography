@@ -357,14 +357,16 @@ RSA
     .. warning::
 
         With the exception of the integers contained in the
-        :class:`RSAPublicNumbers` returned by the :meth:`public_numbers`
-        method, all attributes of this class must be kept secret. Revealing
-        them will compromise the security of any cryptographic operations
-        performed with a key derived from them.
+        :class:`RSAPublicNumbers` all attributes of this class must be kept
+        secret. Revealing them will compromise the security of any
+        cryptographic operations performed with a key loaded from them.
 
-    .. method:: public_numbers()
+    .. attribute:: public_numbers
 
-        :return: :class:`~cryptography.hazmat.primitives.rsa.RSAPublicNumbers`
+        :type: :class:`~cryptography.hazmat.primitives.rsa.RSAPublicNumbers`
+
+        The :class:`RSAPublicNumbers` which makes up the RSA public key
+        associated with this RSA private key.
 
     .. attribute:: p
 

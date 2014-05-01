@@ -1509,4 +1509,4 @@ class TestRSANumbers(object):
         assert private_numbers.dmp1 == 1
         assert private_numbers.dmq1 == 1
         assert private_numbers.iqmp == 2
-        assert private_numbers.public_numbers() == public_numbers
+        assert private_numbers.public_numbers == public_numbers
