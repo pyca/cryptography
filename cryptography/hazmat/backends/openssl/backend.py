@@ -1418,11 +1418,7 @@ class _DSASignatureContext(object):
         res = self._backend._lib.DSA_sign(
             0, data_to_sign, len(data_to_sign), sig_buf,
             buflen, self._dsa_cdata)
-
-        if res != 1:
-            errors = self._backend._consume_errors()
-            assert errors
-            raise InvalidSignature
+        assert res == 1
 
         return self._backend._ffi.buffer(sig_buf)[:]
 
