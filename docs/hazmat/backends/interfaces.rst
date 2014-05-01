@@ -351,7 +351,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
             provider.
 
-        :param bytes signature: The signature to verify.
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -369,14 +370,16 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
 
-    .. method:: dsa_parameters_supported(p, q):
+    .. method:: dsa_parameters_supported(p, q, g):
 
         :param int p: The p value of a DSA key.
 
         :param int q: The q value of a DSA key.
 
-        :returns: ``True`` if the given values of ``p`` and ``q`` are supported
-            by this backend, otherwise ``False``.
+        :param int g: The g value of a DSA key.
+
+        :returns: ``True`` if the given values of ``p``, ``q``, and ``g`` are
+            supported by this backend, otherwise ``False``.
 
 
 .. class:: CMACBackend

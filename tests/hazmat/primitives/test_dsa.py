@@ -744,8 +744,11 @@ class TestDSAVerification(object):
     def test_dsa_verification(self, vector, backend):
         digest_algorithm = vector['digest_algorithm'].replace("-", "")
         algorithm = self._algorithms_dict[digest_algorithm]
-        if (not backend.dsa_parameters_supported(vector['p'], vector['q'])
-                or not backend.dsa_hash_supported(algorithm)):
+        if (
+            not backend.dsa_parameters_supported(
+                vector['p'], vector['q'], vector['g']
+            ) or not backend.dsa_hash_supported(algorithm)
+        ):
             pytest.skip(
                 "{0} does not support the provided parameters".format(backend)
             )

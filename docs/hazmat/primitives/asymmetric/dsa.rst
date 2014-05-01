@@ -142,7 +142,7 @@ DSA
             ...     hashes.SHA256(),
             ...     default_backend()
             ... )
-            >>> data= b"this is some data I'd like to sign"
+            >>> data = b"this is some data I'd like to sign"
             >>> signer.update(data)
             >>> signature = signer.finalize()
             >>> public_key = private_key.public_key()
@@ -154,7 +154,7 @@ DSA
             >>> verifier.update(data)
             >>> verifier.verify()
 
-        :param bytes signature: The signature to verify in DER encoding as
+        :param bytes signature: The signature to verify. DER encoded as
             specified in :rfc:`6979`.
 
         :param algorithm: An instance of a

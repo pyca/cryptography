@@ -492,20 +492,14 @@ class Backend(object):
         return ctx
 
     def dsa_hash_supported(self, algorithm):
-        if (
-            self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
-            not isinstance(algorithm, hashes.SHA1)
-        ):
-            return False
+        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
+            return isinstance(algorithm, hashes.SHA1)
         else:
             return self.hash_supported(algorithm)
 
-    def dsa_parameters_supported(self, p, q):
-        if (
-            self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
-            not (utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160)
-        ):
-            return False
+    def dsa_parameters_supported(self, p, q, g):
+        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
+            return (utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160)
         else:
             return True
 
@@ -1334,8 +1328,7 @@ class _RSAVerificationContext(object):
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
 class _DSAVerificationContext(object):
-    def __init__(
-            self, backend, public_key, signature, algorithm):
+    def __init__(self, backend, public_key, signature, algorithm):
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
@@ -1361,6 +1354,8 @@ class _DSAVerificationContext(object):
         data_to_verify = self._hash_ctx.finalize()
         self._hash_ctx = None
 
+        # The first parameter passed to DSA_verify is unused by OpenSSL but
+        # must be an integer.
         res = self._backend._lib.DSA_verify(
             0, data_to_verify, len(data_to_verify), self._signature,
             len(self._signature), self._dsa_cdata)

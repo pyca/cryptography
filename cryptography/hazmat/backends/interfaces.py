@@ -159,7 +159,7 @@ class DSABackend(object):
         """
 
     @abc.abstractmethod
-    def dsa_parameters_supported(self, p, q):
+    def dsa_parameters_supported(self, p, q, g):
         """
         Return True if the parameters are supported by the backend for DSA.
         """
