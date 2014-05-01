@@ -1486,12 +1486,12 @@ class TestRSAEncryption(object):
 
 
 class TestRSANumbers(object):
-    def test_RSAPublicNumbers(self):
+    def test_rsa_public_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
         assert public_numbers.e == 1
         assert public_numbers.n == 15
 
-    def test_RSAPrivateNumbers(self):
+    def test_rsa_private_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
         private_numbers = rsa.RSAPrivateNumbers(
             p=3,
