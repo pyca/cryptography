@@ -158,6 +158,31 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("DSA is not supported by the backend",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
+    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
+        for b in self._filtered_backends(DSABackend):
+            return b.create_dsa_verification_ctx(public_key, signature,
+                                                 algorithm)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def create_dsa_signature_ctx(self, private_key, algorithm):
+        for b in self._filtered_backends(DSABackend):
+            return b.create_dsa_signature_ctx(private_key, algorithm)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def dsa_hash_supported(self, algorithm):
+        for b in self._filtered_backends(DSABackend):
+            return b.dsa_hash_supported(algorithm)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def dsa_parameters_supported(self, p, q, g):
+        for b in self._filtered_backends(DSABackend):
+            return b.dsa_parameters_supported(p, q, g)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
     def cmac_algorithm_supported(self, algorithm):
         return any(
             b.cmac_algorithm_supported(algorithm)
