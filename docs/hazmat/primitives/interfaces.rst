@@ -431,7 +431,8 @@ Asymmetric interfaces
         Verify data was signed by the private key associated with this public
         key.
 
-        :param bytes signature: The signature to verify.
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
