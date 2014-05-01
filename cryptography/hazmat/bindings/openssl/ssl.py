@@ -160,6 +160,7 @@ void SSL_load_error_strings(void);
 int SSL_library_init(void);
 
 /*  SSL */
+const char *SSL_state_string_long(const SSL *);
 SSL_SESSION *SSL_get1_session(SSL *);
 int SSL_set_session(SSL *, SSL_SESSION *);
 int SSL_get_verify_mode(const SSL *);
