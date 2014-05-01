@@ -851,6 +851,15 @@ class TestDSASignature(object):
         with pytest.raises(AlreadyFinalized):
             signer.update(b"more data")
 
+    def test_dsa_signer_invalid_backend(self, backend):
+        pretend_backend = object()
+        params = dsa.DSAParameters.generate(1024, backend)
+        private_key = dsa.DSAPrivateKey.generate(params, backend)
+
+        with raises_unsupported_algorithm(
+                _Reasons.BACKEND_MISSING_INTERFACE):
+            private_key.signer(hashes.SHA1(), pretend_backend)
+
 
 def test_dsa_generate_invalid_backend():
     pretend_backend = object()
