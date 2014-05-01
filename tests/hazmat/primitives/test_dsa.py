@@ -798,6 +798,60 @@ class TestDSAVerification(object):
             public_key.verifier(b"sig", hashes.SHA1(), pretend_backend)
 
 
+@pytest.mark.dsa
+class TestDSASignature(object):
+    _algorithms_dict = {
+        'SHA1': hashes.SHA1,
+        'SHA224': hashes.SHA224,
+        'SHA256': hashes.SHA256,
+        'SHA384': hashes.SHA384,
+        'SHA512': hashes.SHA512}
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "DSA", "FIPS_186-3", "SigGen.txt"),
+            load_fips_dsa_sig_vectors
+        )
+    )
+    def test_dsa_signing(self, vector, backend):
+        digest_algorithm = vector['digest_algorithm'].replace("-", "")
+        algorithm = self._algorithms_dict[digest_algorithm]
+        if (
+            not backend.dsa_parameters_supported(
+                vector['p'], vector['q'], vector['g']
+            ) or not backend.dsa_hash_supported(algorithm)
+        ):
+            pytest.skip(
+                "{0} does not support the provided parameters".format(backend)
+            )
+
+        private_key = dsa.DSAPrivateKey(
+            vector['p'], vector['q'], vector['g'], vector['x'], vector['y']
+        )
+        signer = private_key.signer(algorithm(), backend)
+        signer.update(vector['msg'])
+        signature = signer.finalize()
+        assert signature
+
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, algorithm(), backend)
+        verifier.update(vector['msg'])
+        verifier.verify()
+
+    def test_use_after_finalize(self, backend):
+        parameters = dsa.DSAParameters.generate(1024, backend)
+        private_key = dsa.DSAPrivateKey.generate(parameters, backend)
+        signer = private_key.signer(hashes.SHA1(), backend)
+        signer.update(b"data")
+        signer.finalize()
+        with pytest.raises(AlreadyFinalized):
+            signer.finalize()
+        with pytest.raises(AlreadyFinalized):
+            signer.update(b"more data")
+
+
 def test_dsa_generate_invalid_backend():
     pretend_backend = object()
 

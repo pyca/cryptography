@@ -118,6 +118,15 @@ class DSAPrivateKey(object):
 
         return backend.generate_dsa_private_key(parameters)
 
+    def signer(self, algorithm, backend):
+        if not isinstance(backend, DSABackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement DSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
+
+        return backend.create_dsa_signature_ctx(self, algorithm)
+
     @property
     def key_size(self):
         return utils.bit_length(self._modulus)
