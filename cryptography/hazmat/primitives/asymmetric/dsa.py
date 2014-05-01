@@ -151,6 +151,16 @@ class DSAPublicKey(object):
         self._generator = generator
         self._y = y
 
+    def verifier(self, signature, algorithm, backend):
+        if not isinstance(backend, DSABackend):
+            raise UnsupportedAlgorithm(
+                "Backend object does not implement DSABackend",
+                _Reasons.BACKEND_MISSING_INTERFACE
+            )
+
+        return backend.create_dsa_verification_ctx(self, signature,
+                                                   algorithm)
+
     @property
     def key_size(self):
         return utils.bit_length(self._modulus)

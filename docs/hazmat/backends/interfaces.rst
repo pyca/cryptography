@@ -345,6 +345,42 @@ A specific ``backend`` may provide one or more of these interfaces.
             1.0.0 and the key size is larger than 1024; older OpenSSL versions
             do not support keys larger than 1024 bits.
 
+    .. method:: create_dsa_verification_ctx(public_key, signature, algorithm)
+
+        :param public_key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+            provider.
+
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+    .. method:: dsa_hash_supported(algorithm):
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns: ``True`` if the specified ``algorithm`` is supported by this
+            backend, otherwise ``False``.
+
+    .. method:: dsa_parameters_supported(p, q, g):
+
+        :param int p: The p value of a DSA key.
+
+        :param int q: The q value of a DSA key.
+
+        :param int g: The g value of a DSA key.
+
+        :returns: ``True`` if the given values of ``p``, ``q``, and ``g`` are
+            supported by this backend, otherwise ``False``.
+
 
 .. class:: CMACBackend
 

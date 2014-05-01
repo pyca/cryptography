@@ -118,6 +118,55 @@ DSA
                         ``subgroup_order``, ``generator``, or ``y``
                         do not match the bounds specified in `FIPS 186-4`_.
 
+    .. method:: verifier(signature, algorithm, backend)
+
+        .. versionadded:: 0.4
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        .. code-block:: pycon
+
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import dsa
+            >>> parameters = dsa.DSAParameters.generate(
+            ...     key_size=1024,
+            ...     backend=default_backend()
+            ... )
+            >>> private_key = dsa.DSAPrivateKey.generate(
+            ...     parameters=parameters,
+            ...     backend=default_backend()
+            ... )
+            >>> signer = private_key.signer(
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
+            >>> data = b"this is some data I'd like to sign"
+            >>> signer.update(data)
+            >>> signature = signer.finalize()
+            >>> public_key = private_key.public_key()
+            >>> verifier = public_key.verifier(
+            ...     signature,
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
+            >>> verifier.update(data)
+            >>> verifier.verify()
+
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
