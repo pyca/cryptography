@@ -34,9 +34,21 @@ typedef struct dh_st {
 FUNCTIONS = """
 DH *DH_new(void);
 void DH_free(DH *);
+int DH_size(const DH *);
+DH *DH_generate_parameters(int, int, void (*)(int, int, void *), void *);
+int DH_check(const DH *, int *);
+int DH_generate_key(DH *);
+int DH_compute_key(unsigned char *, BIGNUM *, DH *);
+int DH_set_ex_data(DH *, int, char *);
+char *DH_get_ex_data(DH *, int);
+DH *d2iDHparams(DH **, unsigned char **, long);
+int i2d_DHparams(const DH *, unsigned char **);
+int DHparams_print_fp(FILE *, const DH *);
+int DHparams_print(BIO *, const DH *);
 """
 
 MACROS = """
+int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
 """
 
 CUSTOMIZATIONS = """
