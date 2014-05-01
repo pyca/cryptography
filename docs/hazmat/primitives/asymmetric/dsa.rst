@@ -123,7 +123,6 @@ DSA
             >>> data= b"this is some data I'd like to sign"
             >>> signer.update(data)
             >>> signature = signer.finalize()
-            >>> public_key = private_key.public_key()
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
