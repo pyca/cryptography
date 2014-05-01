@@ -20,6 +20,9 @@ INCLUDES = """
 """
 
 TYPES = """
+static const int Cryptography_HAS_ECDH;
+
+typedef ... ECDH_METHOD;
 """
 
 FUNCTIONS = """
