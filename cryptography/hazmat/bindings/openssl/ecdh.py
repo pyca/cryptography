@@ -41,6 +41,19 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
+#ifdef OPENSSL_NO_ECDH
+static const Cryptography_HAS_ECDH = 0;
+typedef void ECDH_METHOD;
+
+int (*ECDH_compute_key)(void *, size_t, const EC_POINT *, EC_KEY *,
+    void *(*)(const void *, size_t, void *, size_t *)) = NULL;
+
+int (*ECDH_get_ex_new_index)(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+    CRYPTO_EX_free *) = NULL;
+
+int (*ECDH_set_ex_data)(EC_KEY *, int, void *) = NULL;
+
+void *(*ECDH_get_ex_data)(EC_KEY *, int) = NULL;
 """
 
 CONDITIONAL_NAMES = {
