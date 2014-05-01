@@ -1363,6 +1363,9 @@ class _DSAVerificationContext(object):
         if res != 1:
             errors = self._backend._consume_errors()
             assert errors
+            if res == -1:
+                assert errors[0].lib == self._backend._lib.ERR_LIB_ASN1
+
             raise InvalidSignature
 
 
