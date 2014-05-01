@@ -761,10 +761,19 @@ class TestDSAVerification(object):
                 verifier.verify()
         else:
             verifier.verify()
-            with pytest.raises(AlreadyFinalized):
-                verifier.verify()
-            with pytest.raises(AlreadyFinalized):
-                verifier.update(b"more data")
+
+    def test_use_after_finalize(self, backend):
+        parameters = dsa.DSAParameters.generate(1024, backend)
+        private_key = dsa.DSAPrivateKey.generate(parameters, backend)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(b'fakesig', hashes.SHA1(), backend)
+        verifier.update(b'irrelevant')
+        with pytest.raises(InvalidSignature):
+            verifier.verify()
+        with pytest.raises(AlreadyFinalized):
+            verifier.verify()
+        with pytest.raises(AlreadyFinalized):
+            verifier.update(b"more data")
 
     def test_dsa_verifier_invalid_backend(self, backend):
         pretend_backend = object()
