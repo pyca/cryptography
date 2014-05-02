@@ -12,8 +12,10 @@ Changelog
   removed from ``MGF1`` in two releases per our :doc:`/api-stability` policy.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED` support.
 * Added :class:`~cryptography.hazmat.primitives.cmac.CMAC`.
-* Added decryption support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-  and encryption support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
+* Added decryption support to
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+  and encryption support to
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
 0.3 - 2014-03-27
 ~~~~~~~~~~~~~~~~
@@ -21,8 +23,10 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 * Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA` support.
-* Added signature support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-  and verification support to :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
+* Added signature support to
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+  and verification support to
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 * Moved test vectors to the new ``cryptography_vectors`` package.
 
 0.2.2 - 2014-03-03
@@ -33,7 +37,8 @@ Changelog
 0.2.1 - 2014-02-22
 ~~~~~~~~~~~~~~~~~~
 
-* Fix a bug where importing cryptography from multiple paths could cause initialization to fail.
+* Fix a bug where importing cryptography from multiple paths could cause
+  initialization to fail.
 
 0.2 - 2014-02-20
 ~~~~~~~~~~~~~~~~
@@ -49,8 +54,10 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Added :doc:`/hazmat/backends/multibackend`.
-* Set default random for the :doc:`/hazmat/backends/openssl` to the OS random engine.
-* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5` (CAST-128) support.
+* Set default random for the :doc:`/hazmat/backends/openssl` to the OS
+  random engine.
+* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`
+  (CAST-128) support.
 
 0.1 - 2014-01-08
 ~~~~~~~~~~~~~~~~
