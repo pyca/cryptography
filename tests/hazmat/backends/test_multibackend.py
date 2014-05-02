@@ -239,6 +239,11 @@ class TestMultiBackend(object):
         parameters = object()
         backend.generate_dsa_private_key(parameters)
 
+        backend.create_dsa_verification_ctx("public_key", "sig", hashes.SHA1())
+        backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
+        backend.dsa_hash_supported(hashes.SHA1())
+        backend.dsa_parameters_supported(1, 2, 3)
+
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
