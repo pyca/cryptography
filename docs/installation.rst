@@ -135,7 +135,7 @@ will result in an error. This can be resolved by setting the
     $ env DYLD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
 
 You will need to set this variable every time you start Python. For more
-information, consult `Greg Wilson's blog post` on the subject.
+information, consult `Greg Wilson's blog post`_ on the subject.
 
 
 .. _`Homebrew`: http://brew.sh
