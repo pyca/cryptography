@@ -1419,8 +1419,9 @@ class _DSASignatureContext(object):
             0, data_to_sign, len(data_to_sign), sig_buf,
             buflen, self._dsa_cdata)
         assert res == 1
+        assert buflen[0]
 
-        return self._backend._ffi.buffer(sig_buf)[:]
+        return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
 
 
 @utils.register_interface(interfaces.CMACContext)
