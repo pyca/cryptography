@@ -8,6 +8,7 @@ Changelog
 ciphertext
 committer
 committers
+conda
 crypto
 cryptographic
 cryptographically

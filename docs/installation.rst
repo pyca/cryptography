@@ -73,6 +73,7 @@ You should now be able to build and install cryptography with the usual
 
     $ pip install cryptography
 
+
 Using your own OpenSSL on Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -122,6 +123,23 @@ or `MacPorts`_:
     $ sudo port install openssl
     $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" pip install cryptography
 
+Building cryptography with conda
+--------------------------------
+
+Because of a `bug in conda`_, attempting to install cryptography out of the box
+will result in an error. This can be resolved by setting the
+``DYLD_LIBRARY_PATH`` environment variable:
+
+.. code-block:: console
+
+    $ env DYLD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
+
+You will need to set this variable every time you start Python. For more
+information, consult `Greg Wilson's blog post`_ on the subject.
+
+
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: http://www.macports.org
 .. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
+.. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
+.. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
