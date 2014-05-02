@@ -38,6 +38,10 @@ of a message.
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be
     raised.
 
+    If ``algorithm`` isn't a
+    :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm` provider
+    then ``TypeError`` will be raised.
+
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
 
