@@ -134,8 +134,8 @@ Algorithms
 
     .. versionadded:: 0.4
 
-    SEED is a block cipher developed by the Korea Information Security Agency (
-    KISA). It is defined in :rfc:`4269` and is used broadly throughout South
+    SEED is a block cipher developed by the Korea Information Security Agency
+    (KISA). It is defined in :rfc:`4269` and is used broadly throughout South
     Korean industry, but rarely found elsewhere.
 
     :param bytes key: The secret key. This must be kept secret. ``128`` bits in

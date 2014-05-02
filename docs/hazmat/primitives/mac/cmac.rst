@@ -38,9 +38,9 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be
     raised.
 
-    If the `algorithm`` isn't a
-    :class:`~cryptography.primitives.interfaces.BlockCipherAlgorithm` provider,
-    ``TypeError`` will be raised.
+    If ``algorithm`` isn't a
+    :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+    provider then ``TypeError`` will be raised.
 
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:

@@ -38,11 +38,11 @@ DSA
         Generate a new ``DSAParameters`` instance using ``backend``.
 
         :param int key_size: The length of the modulus in bits. It should be
-            either "1024, 2048 or 3072". For keys generated in 2014 this should
-            be `at least 2048`_ (See page 41).
-            Note that some applications (such as SSH) have not yet gained support
-            for larger key sizes specified in FIPS 186-3 and are still restricted
-            to only the 1024-bit keys specified in FIPS 186-2.
+            either 1024, 2048 or 3072. For keys generated in 2014 this should
+            be `at least 2048`_ (See page 41).  Note that some applications
+            (such as SSH) have not yet gained support for larger key sizes
+            specified in FIPS 186-3 and are still restricted to only the
+            1024-bit keys specified in FIPS 186-2.
 
         :return: A new instance of ``DSAParameters``
 
