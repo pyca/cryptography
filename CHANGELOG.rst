@@ -16,6 +16,10 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
   and encryption support to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
+* Added signature support to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
+  and verification support to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 
 0.3 - 2014-03-27
 ~~~~~~~~~~~~~~~~

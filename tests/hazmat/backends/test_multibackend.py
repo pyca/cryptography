@@ -107,6 +107,18 @@ class DummyDSABackend(object):
     def generate_dsa_private_key(self, parameters):
         pass
 
+    def create_dsa_signature_ctx(self, private_key, algorithm):
+        pass
+
+    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
+        pass
+
+    def dsa_hash_supported(self, algorithm):
+        pass
+
+    def dsa_parameters_supported(self, p, q, g):
+        pass
+
 
 @utils.register_interface(CMACBackend)
 class DummyCMACBackend(object):
@@ -227,6 +239,11 @@ class TestMultiBackend(object):
         parameters = object()
         backend.generate_dsa_private_key(parameters)
 
+        backend.create_dsa_verification_ctx("public_key", "sig", hashes.SHA1())
+        backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
+        backend.dsa_hash_supported(hashes.SHA1())
+        backend.dsa_parameters_supported(1, 2, 3)
+
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -237,6 +254,28 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_dsa_private_key(parameters)
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.create_dsa_verification_ctx(
+                "public_key", b"sig", hashes.SHA1()
+            )
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.dsa_hash_supported(hashes.SHA1())
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.dsa_parameters_supported('p', 'q', 'g')
 
     def test_cmac(self):
         backend = MultiBackend([

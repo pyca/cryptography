@@ -103,7 +103,7 @@ DSA
 
         Sign data which can be verified later by others using the public key.
 
-        .. code-block:: pycon
+        .. doctest::
 
             >>> from cryptography.hazmat.backends import default_backend
             >>> from cryptography.hazmat.primitives import hashes
@@ -167,7 +167,7 @@ DSA
         Verify data was signed by the private key associated with this public
         key.
 
-        .. code-block:: pycon
+        .. doctest::
 
             >>> from cryptography.hazmat.backends import default_backend
             >>> from cryptography.hazmat.primitives import hashes
