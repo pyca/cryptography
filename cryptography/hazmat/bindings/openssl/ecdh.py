@@ -24,6 +24,9 @@ static const int Cryptography_HAS_ECDH;
 """
 
 FUNCTIONS = """
+"""
+
+MACROS = """
 int ECDH_compute_key(void *, size_t, const EC_POINT *, EC_KEY *,
                      void *(*)(const void *, size_t, void *, size_t *));
 
@@ -35,13 +38,9 @@ int ECDH_set_ex_data(EC_KEY *, int, void *);
 void *ECDH_get_ex_data(EC_KEY *, int);
 """
 
-MACROS = """
-"""
-
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_ECDH
 static const long Cryptography_HAS_ECDH = 0;
-typedef void ECDH_METHOD;
 
 int (*ECDH_compute_key)(void *, size_t, const EC_POINT *, EC_KEY *,
                         void *(*)(const void *, size_t, void *,
