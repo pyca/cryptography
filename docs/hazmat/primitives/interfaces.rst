@@ -381,6 +381,23 @@ Asymmetric interfaces
 
         The DSAParameters object associated with this private key.
 
+    .. method:: signer(algorithm, backend)
+
+        .. versionadded:: 0.4
+
+        Sign data which can be verified later by others using the public key.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
     .. attribute:: key_size
 
         :type: int

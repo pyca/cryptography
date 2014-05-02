@@ -474,6 +474,9 @@ class Backend(object):
             y=self._bn_to_int(ctx.pub_key)
         )
 
+    def create_dsa_signature_ctx(self, private_key, algorithm):
+        return _DSASignatureContext(self, private_key, algorithm)
+
     def create_dsa_verification_ctx(self, public_key, signature,
                                     algorithm):
         return _DSAVerificationContext(self, public_key, signature,
@@ -489,6 +492,19 @@ class Backend(object):
         ctx.q = self._int_to_bn(parameters.q)
         ctx.g = self._int_to_bn(parameters.g)
         ctx.pub_key = self._int_to_bn(public_key.y)
+        return ctx
+
+    def _dsa_cdata_from_private_key(self, private_key):
+        # Does not GC the DSA cdata. You *must* make sure it's freed
+        # correctly yourself!
+        ctx = self._lib.DSA_new()
+        assert ctx != self._ffi.NULL
+        parameters = private_key.parameters()
+        ctx.p = self._int_to_bn(parameters.p)
+        ctx.q = self._int_to_bn(parameters.q)
+        ctx.g = self._int_to_bn(parameters.g)
+        ctx.priv_key = self._int_to_bn(private_key.x)
+        ctx.pub_key = self._int_to_bn(private_key.y)
         return ctx
 
     def dsa_hash_supported(self, algorithm):
@@ -1367,6 +1383,44 @@ class _DSAVerificationContext(object):
                 assert errors[0].lib == self._backend._lib.ERR_LIB_ASN1
 
             raise InvalidSignature
+
+
+@utils.register_interface(interfaces.AsymmetricSignatureContext)
+class _DSASignatureContext(object):
+    def __init__(self, backend, private_key, algorithm):
+        self._backend = backend
+        self._private_key = private_key
+        self._algorithm = algorithm
+        self._hash_ctx = _HashContext(backend, self._algorithm)
+        self._dsa_cdata = self._backend._dsa_cdata_from_private_key(
+            self._private_key)
+        self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
+                                                self._backend._lib.DSA_free)
+
+    def update(self, data):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        self._hash_ctx.update(data)
+
+    def finalize(self):
+        if self._hash_ctx is None:
+            raise AlreadyFinalized("Context has already been finalized")
+
+        data_to_sign = self._hash_ctx.finalize()
+        self._hash_ctx = None
+        sig_buf_len = self._backend._lib.DSA_size(self._dsa_cdata)
+        sig_buf = self._backend._ffi.new("unsigned char[]", sig_buf_len)
+        buflen = self._backend._ffi.new("unsigned int *")
+
+        # The first parameter passed to DSA_sign is unused by OpenSSL but
+        # must be an integer.
+        res = self._backend._lib.DSA_sign(
+            0, data_to_sign, len(data_to_sign), sig_buf,
+            buflen, self._dsa_cdata)
+        assert res == 1
+
+        return self._backend._ffi.buffer(sig_buf)[:]
 
 
 @utils.register_interface(interfaces.CMACContext)

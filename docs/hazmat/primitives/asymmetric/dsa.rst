@@ -97,6 +97,48 @@ DSA
             or if the OpenSSL version is older than 1.0.0 and the key size is larger than 1024
             because older OpenSSL versions don't support a key size larger than 1024.
 
+    .. method:: signer(algorithm, backend)
+
+        .. versionadded:: 0.4
+
+        Sign data which can be verified later by others using the public key.
+
+        .. code-block:: pycon
+
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import dsa
+            >>> parameters = dsa.DSAParameters.generate(
+            ...     key_size=1024,
+            ...     backend=default_backend()
+            ... )
+            >>> private_key = dsa.DSAPrivateKey.generate(
+            ...     parameters=parameters,
+            ...     backend=default_backend()
+            ... )
+            >>> signer = private_key.signer(
+            ...     hashes.SHA256(),
+            ...     default_backend()
+            ... )
+            >>> data= b"this is some data I'd like to sign"
+            >>> signer.update(data)
+            >>> signature = signer.finalize()
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the provided ``backend`` does not implement
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+
 
 .. class:: DSAPublicKey(modulus, subgroup_order, generator, y)
 
