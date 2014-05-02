@@ -127,11 +127,18 @@ Building cryptography with conda
 --------------------------------
 
 Because of a bug in conda, attempting to install cryptography out of the box
-will result in an error. Both the nature of the issue and the workaround are
-described by `Greg Wilson`_.
+will result in an error. This can be resolved by setting the
+``DYLD_LIBRARY_PATH`` environment variable:
+
+.. code-block:: console
+
+    $ env DYLD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
+
+You will need to set this variable every time you start Python. For more
+information, consult `Greg Wilson's blog post` on the subject.
 
 
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: http://www.macports.org
 .. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
-.. _`Greg Wilson`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
+.. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
