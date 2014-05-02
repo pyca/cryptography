@@ -14,7 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#ifdef OPENSSL_NO_ECDH
+#ifndef OPENSSL_NO_ECDH
 #include <openssl/ecdh.h>
 #endif
 """
