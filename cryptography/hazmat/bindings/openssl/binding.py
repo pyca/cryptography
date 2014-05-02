@@ -55,6 +55,7 @@ class Binding(object):
         "dh",
         "dsa",
         "ec",
+        "ecdh",
         "ecdsa",
         "engine",
         "err",

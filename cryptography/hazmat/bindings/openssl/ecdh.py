@@ -14,15 +14,13 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#ifdef OPENSSL_NO_ECDH
+#ifndef OPENSSL_NO_ECDH
 #include <openssl/ecdh.h>
 #endif
 """
 
 TYPES = """
 static const int Cryptography_HAS_ECDH;
-
-typedef ... ECDH_METHOD;
 """
 
 FUNCTIONS = """
@@ -42,7 +40,7 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_ECDH
-static const Cryptography_HAS_ECDH = 0;
+static const long Cryptography_HAS_ECDH = 0;
 typedef void ECDH_METHOD;
 
 int (*ECDH_compute_key)(void *, size_t, const EC_POINT *, EC_KEY *,
@@ -57,7 +55,7 @@ int (*ECDH_set_ex_data)(EC_KEY *, int, void *) = NULL;
 void *(*ECDH_get_ex_data)(EC_KEY *, int) = NULL;
 
 #else
-static const Cryptography_HAS_ECDH = 1;
+static const long Cryptography_HAS_ECDH = 1;
 #endif
 """
 
