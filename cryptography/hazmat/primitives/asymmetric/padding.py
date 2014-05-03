@@ -38,7 +38,8 @@ class PSS(object):
             warnings.warn(
                 "salt_length is deprecated on MGF1 and should be added via the"
                 " PSS constructor.",
-                utils.DeprecatedIn04
+                utils.DeprecatedIn04,
+                stacklevel=2
             )
         else:
             if (not isinstance(salt_length, six.integer_types) and
@@ -80,7 +81,8 @@ class MGF1(object):
             warnings.warn(
                 "salt_length is deprecated on MGF1 and should be passed to "
                 "the PSS constructor instead.",
-                utils.DeprecatedIn04
+                utils.DeprecatedIn04,
+                stacklevel=2
             )
             if (not isinstance(salt_length, six.integer_types) and
                     salt_length is not self.MAX_LENGTH):
