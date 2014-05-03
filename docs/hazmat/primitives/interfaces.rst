@@ -465,7 +465,7 @@ Asymmetric interfaces
 
 .. class:: EllipticCurve
 
-    .. versionadded:: 0.4
+    .. versionadded:: 0.5
 
     A named elliptic curve.
 
@@ -485,7 +485,7 @@ Asymmetric interfaces
 
 .. class:: EllipticCurveSignatureAlgorithm
 
-    .. versionadded:: 0.4
+    .. versionadded:: 0.5
 
     A signature algorithm for use with elliptic curve keys.
 
@@ -531,7 +531,7 @@ Asymmetric interfaces
 
 .. class:: EllipticCurvePrivateKey
 
-    .. versionadded:: 0.4
+    .. versionadded:: 0.5
 
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
@@ -590,7 +590,7 @@ Asymmetric interfaces
 
 .. class:: EllipticCurvePublicKey
 
-    .. versionadded:: 0.4
+    .. versionadded:: 0.5
 
     An elliptic curve public key.
 
