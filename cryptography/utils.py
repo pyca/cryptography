@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 
-DeprecatedIn04 = PendingDeprecationWarning
+DeprecatedIn04 = DeprecationWarning
 
 
 def register_interface(iface):
