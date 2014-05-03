@@ -22,7 +22,7 @@ __summary__ = ("cryptography is a package which provides cryptographic recipes"
                " and primitives to Python developers.")
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "0.4"
+__version__ = "0.5.dev1"
 
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
