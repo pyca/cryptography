@@ -396,8 +396,22 @@ class Backend(object):
             assert rsa_cdata != self._ffi.NULL
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
             return self._rsa_cdata_to_private_key(rsa_cdata)
+        elif type == self._lib.EVP_PKEY_DSA:
+            dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
+            assert dsa_cdata != self._ffi.NULL
+            dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+            return self._dsa_cdata_to_private_key(dsa_cdata)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
+
+    def _dsa_cdata_to_private_key(self, cdata):
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(cdata.p),
+            subgroup_order=self._bn_to_int(cdata.q),
+            generator=self._bn_to_int(cdata.g),
+            x=self._bn_to_int(cdata.priv_key),
+            y=self._bn_to_int(cdata.pub_key)
+        )
 
     def _rsa_cdata_to_private_key(self, cdata):
         return rsa.RSAPrivateKey(

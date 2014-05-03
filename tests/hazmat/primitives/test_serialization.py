@@ -19,6 +19,7 @@ import textwrap
 
 import pytest
 
+from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.serialization import (
     load_pem_traditional_openssl_private_key
 )
@@ -48,7 +49,28 @@ class TestTraditionalOpenSSLSerialisation(object):
         )
 
         assert key
+        assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_key(key)
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("dsa.1024.pem", None),
+            ("dsa.2048.pem", None),
+            ("dsa.3072.pem", None),
+        ]
+    )
+    def test_load_pem_dsa_private_key(self, key_file, password, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
+            lambda pemfile: load_pem_traditional_openssl_private_key(
+                pemfile.read().encode(), password, backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, dsa.DSAPrivateKey)
 
     def test_key1_pem_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
