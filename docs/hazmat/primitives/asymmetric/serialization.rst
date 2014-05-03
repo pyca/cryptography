@@ -21,7 +21,7 @@ header that mentions the type of the serialized key. e.g.
 
 .. function:: load_pem_traditional_openssl_private_key(data, password, backend)
 
-    .. versionadded:: 0.4
+    .. versionadded:: 0.5
 
     Deserialize a private key from PEM encoded data to one of the supported
     asymmetric private key types.
