@@ -120,7 +120,7 @@ DSA
             ...     hashes.SHA256(),
             ...     default_backend()
             ... )
-            >>> data= b"this is some data I'd like to sign"
+            >>> data = b"this is some data I'd like to sign"
             >>> signer.update(data)
             >>> signature = signer.finalize()
 
