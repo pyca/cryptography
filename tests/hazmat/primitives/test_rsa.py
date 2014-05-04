@@ -944,8 +944,8 @@ class TestRSAVerification(object):
             padding.PSS(
                 mgf=padding.MGF1(
                     algorithm=hashes.SHA1(),
-                    salt_length=1000000
-                )
+                ),
+                salt_length=1000000
             ),
             hashes.SHA1(),
             backend
@@ -972,8 +972,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -992,8 +992,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -1012,8 +1012,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -1032,8 +1032,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -1052,8 +1052,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
