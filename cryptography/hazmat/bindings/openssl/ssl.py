@@ -15,6 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 """
 
 TYPES = """
@@ -153,6 +155,7 @@ typedef struct {
 static const long TLSEXT_NAMETYPE_host_name;
 
 typedef ... SSL_CIPHER;
+typedef ... Cryptography_STACK_OF_SSL_CIPHER;
 """
 
 FUNCTIONS = """
@@ -190,6 +193,7 @@ int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
+Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *ssl);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -351,6 +355,9 @@ int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int);
 void SSL_get0_next_proto_negotiated(const SSL *,
                                     const unsigned char **, unsigned *);
+
+int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
+SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int i);
 """
 
 CUSTOMIZATIONS = """
