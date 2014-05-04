@@ -458,8 +458,10 @@ class TestRSASignature(object):
             backend=backend
         )
         signer = private_key.signer(
-            padding.PSS(
-                mgf=padding.MGF1(
+            pytest.deprecated_call(
+                padding.PSS,
+                mgf=pytest.deprecated_call(
+                    padding.MGF1,
                     algorithm=hashes.SHA1(),
                     salt_length=padding.MGF1.MAX_LENGTH
                 )
@@ -472,8 +474,10 @@ class TestRSASignature(object):
         assert len(signature) == math.ceil(private_key.key_size / 8.0)
         verifier = private_key.public_key().verifier(
             signature,
-            padding.PSS(
-                mgf=padding.MGF1(
+            pytest.deprecated_call(
+                padding.PSS,
+                mgf=pytest.deprecated_call(
+                    padding.MGF1,
                     algorithm=hashes.SHA1(),
                     salt_length=padding.MGF1.MAX_LENGTH
                 )
@@ -944,8 +948,8 @@ class TestRSAVerification(object):
             padding.PSS(
                 mgf=padding.MGF1(
                     algorithm=hashes.SHA1(),
-                    salt_length=1000000
-                )
+                ),
+                salt_length=1000000
             ),
             hashes.SHA1(),
             backend
@@ -972,8 +976,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -992,8 +996,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -1012,8 +1016,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -1032,8 +1036,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
@@ -1052,8 +1056,8 @@ class TestRSAPSSMGF1Verification(object):
         lambda params, hash_alg: padding.PSS(
             mgf=padding.MGF1(
                 algorithm=hash_alg,
-                salt_length=params["salt_length"]
-            )
+            ),
+            salt_length=params["salt_length"]
         )
     ))
 
