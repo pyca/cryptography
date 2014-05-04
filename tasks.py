@@ -62,7 +62,7 @@ def download_artifacts():
         response.raise_for_status()
         for artifact in response.json()["artifacts"]:
             response = requests.get(
-                "{0}artifacts/{1}".format(run["url"], artifact["relativePath"])
+                "{0}artifact/{1}".format(run["url"], artifact["relativePath"])
             )
             out_path = os.path.join(
                 os.path.dirname(__file__),
