@@ -24,6 +24,7 @@ We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
 * ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
+* ``OpenSSL 0.9.8k``
 * ``OpenSSL 0.9.8y``
 * ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
