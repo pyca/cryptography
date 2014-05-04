@@ -292,7 +292,8 @@ class EllipticCurveBackend(object):
         """
 
 
-class ScryptBackend(six.with_metaclass(abc.ABCMeta)):
+@six.add_metaclass(abc.ABCMeta)
+class ScryptBackend(object):
     @abc.abstractmethod
     def derive_scrypt(self, key_material, salt, length, N, r, p):
         """

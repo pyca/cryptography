@@ -14,12 +14,13 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-from cryptography.exceptions import InvalidKey
 
 import pytest
 
+from cryptography.exceptions import InvalidKey
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-from tests.utils import load_vectors_from_file, load_nist_vectors
+
+from tests.utils import load_nist_vectors, load_vectors_from_file
 
 vectors = load_vectors_from_file(
     "KDF/scrypt.txt", load_nist_vectors)

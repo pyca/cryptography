@@ -13,9 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.exceptions import InvalidKey
-from cryptography.hazmat.primitives import interfaces, constant_time
 from cryptography import utils
+from cryptography.exceptions import InvalidKey
+from cryptography.hazmat.primitives import constant_time, interfaces
 
 
 @utils.register_interface(interfaces.KeyDerivationFunction)

@@ -17,11 +17,11 @@ from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.bindings.commoncrypto.binding import (
     Binding as CommonCryptoBinding
 )
-from cryptography.hazmat.bindings.openssl.binding import (
-    Binding as OpenSSLBinding
-)
 from cryptography.hazmat.bindings.libscrypt.binding import (
     Binding as LibscryptBinding
+)
+from cryptography.hazmat.bindings.openssl.binding import (
+    Binding as OpenSSLBinding
 )
 
 _available_backends_list = None

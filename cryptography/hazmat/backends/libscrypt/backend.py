@@ -13,8 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.backends.interfaces import ScryptBackend
 from cryptography import utils
+from cryptography.hazmat.backends.interfaces import ScryptBackend
 from cryptography.hazmat.bindings.libscrypt.binding import Binding
 
 

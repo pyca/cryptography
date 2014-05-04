@@ -21,6 +21,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 
 
+@utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(ScryptBackend)
 @utils.register_interface(HashBackend)
