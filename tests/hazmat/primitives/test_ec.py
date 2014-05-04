@@ -24,8 +24,9 @@ from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from ...utils import (
-    load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
-    load_vectors_from_file, raises_unsupported_algorithm
+    der_encode_dsa_signature, load_fips_ecdsa_key_pair_vectors,
+    load_fips_ecdsa_signing_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
 )
 
 
@@ -148,8 +149,7 @@ class TestECDSAVectors(object):
             vector['y'],
             curve_type()
         )
-
-        signature = backend.ecdsa_signature_from_components(
+        signature = der_encode_dsa_signature(
             vector['r'],
             vector['s']
         )
@@ -181,8 +181,7 @@ class TestECDSAVectors(object):
             vector['y'],
             curve_type()
         )
-
-        signature = backend.ecdsa_signature_from_components(
+        signature = der_encode_dsa_signature(
             vector['r'],
             vector['s']
         )

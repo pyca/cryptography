@@ -237,18 +237,6 @@ class ECDSABackend(object):
         interface.
         """
 
-    @abc.abstractmethod
-    def ecdsa_signature_from_components(self, r, s):
-        """
-        Convert a DSA signature pair r and s into a DER byte string.
-        """
-
-    @abc.abstractmethod
-    def ecdsa_signature_to_components(self, signature):
-        """
-        Convert a DER format DSA signature into its r and s component integers.
-        """
-
 
 @six.add_metaclass(abc.ABCMeta)
 class EdDSABackend(object):
