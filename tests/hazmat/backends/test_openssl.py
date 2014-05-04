@@ -271,7 +271,7 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(
                         algorithm=hashes.SHA256(),
                     ),
-                    salt_length=padding.MGF1.MAX_LENGTH
+                    salt_length=padding.PSS.MAX_LENGTH
                 ),
                 hashes.SHA1(),
                 backend
@@ -284,7 +284,7 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(
                         algorithm=hashes.SHA256(),
                     ),
-                    salt_length=padding.MGF1.MAX_LENGTH
+                    salt_length=padding.PSS.MAX_LENGTH
                 ),
                 hashes.SHA1(),
                 backend
