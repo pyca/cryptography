@@ -52,3 +52,6 @@ Post-release tasks
 * Check for any outstanding code undergoing a deprecation cycle by looking in
   ``cryptography.utils`` for ``DeprecatedIn**`` definitions. If any exist open
   a ticket to increment them for the next release.
+* Send an email to the `mailing list`_ announcing the release.
+
+.. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
