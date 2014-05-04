@@ -86,6 +86,7 @@ static const long SSL_OP_COOKIE_EXCHANGE;
 static const long SSL_OP_NO_TICKET;
 static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
+static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
 static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const long SSL_VERIFY_CLIENT_ONCE;
@@ -252,6 +253,7 @@ int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
 long SSL_total_renegotiations(SSL *);
+long SSL_get_secure_renegotiation_support(SSL *ssl);
 
 /* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
    and Windows defines long as 32-bit. */
