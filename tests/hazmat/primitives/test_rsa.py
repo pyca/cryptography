@@ -458,8 +458,10 @@ class TestRSASignature(object):
             backend=backend
         )
         signer = private_key.signer(
-            padding.PSS(
-                mgf=padding.MGF1(
+            pytest.deprecated_call(
+                padding.PSS,
+                mgf=pytest.deprecated_call(
+                    padding.MGF1,
                     algorithm=hashes.SHA1(),
                     salt_length=padding.MGF1.MAX_LENGTH
                 )
@@ -472,8 +474,10 @@ class TestRSASignature(object):
         assert len(signature) == math.ceil(private_key.key_size / 8.0)
         verifier = private_key.public_key().verifier(
             signature,
-            padding.PSS(
-                mgf=padding.MGF1(
+            pytest.deprecated_call(
+                padding.PSS,
+                mgf=pytest.deprecated_call(
+                    padding.MGF1,
                     algorithm=hashes.SHA1(),
                     salt_length=padding.MGF1.MAX_LENGTH
                 )
