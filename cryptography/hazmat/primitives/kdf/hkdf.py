@@ -100,3 +100,25 @@ class HKDF(object):
     def verify(self, key_material, expected_key):
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey
+
+@utils.register_interface(interfaces.KeyDerivationFunction)
+class HKDFExpandOnly(HKDF):
+    def __init__(self, algorithm, length, info, backend):
+        HKDF.__init__(self, algorithm, length, None, info, backend)
+
+    def derive(self, key_material):
+        if isinstance(key_material, six.text_type):
+            raise TypeError(
+                "Unicode-objects must be encoded before using them as key"
+                "material."
+            )
+
+        if self._used:
+            raise AlreadyFinalized
+
+        self._used = True
+        return self._expand(key_material)
+
+    def verify(self, key_material, expected_key):
+        if not constant_time.bytes_eq(self.derive(key_material), expected_key):
+            raise InvalidKey
