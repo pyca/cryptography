@@ -101,6 +101,7 @@ class HKDF(object):
         if not constant_time.bytes_eq(self.derive(key_material), expected_key):
             raise InvalidKey
 
+
 @utils.register_interface(interfaces.KeyDerivationFunction)
 class HKDFExpandOnly(HKDF):
     def __init__(self, algorithm, length, info, backend):

@@ -161,7 +161,7 @@ class TestHKDFExpandOnly(object):
         )
 
         okm = (b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c"
-        "5bf34007208d5b887185865")
+               b"5bf34007208d5b887185865")
 
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
         hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
@@ -174,7 +174,7 @@ class TestHKDFExpandOnly(object):
         )
 
         okm = (b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c"
-        "5bf34007208d5b887185865")
+               b"5bf34007208d5b887185865")
 
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
         hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
@@ -196,10 +196,10 @@ class TestHKDFExpandOnly(object):
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
         hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
 
-        hkdf.derive("first")
+        hkdf.derive(b"first")
 
         with pytest.raises(AlreadyFinalized):
-            hkdf.derive("second")
+            hkdf.derive(b"second")
 
     def test_unicode_error(self, backend):
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
