@@ -26,7 +26,7 @@ TYPES = """
 static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
-static const long Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -364,11 +364,14 @@ SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 """
 
 CUSTOMIZATIONS = """
-#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-static const long Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 1;
+/* Secure renegotiation is supported in OpenSSL >= 0.9.8m */
+#if OPENSSL_VERSION_NUMBER < 0x009080dfL
+static const long Cryptography_HAS_SECURE_RENEGOTIATION = 0;
+long SSL_get_secure_renegotiation_support(SSL *) = 0;
+static const SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
+static const SSL_OP_LEGACY_SERVER_CONNECT = 0;
 #else
-static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
-static const long Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
+static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 #endif
 #ifdef OPENSSL_NO_SSL2
 static const long Cryptography_HAS_SSL2 = 0;
@@ -569,7 +572,9 @@ CONDITIONAL_NAMES = {
         "SSL_get0_next_proto_negotiated",
     ],
 
-    "Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION": [
+    "Cryptography_HAS_SECURE_RENEGOTIATION": [
         "SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION",
+        "SSL_OP_LEGACY_SERVER_CONNECT",
+        "SSL_get_secure_renegotiation_support",
     ],
 }
