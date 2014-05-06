@@ -88,6 +88,7 @@ static const long SSL_OP_NO_TICKET;
 static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
 static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+static const long SSL_OP_LEGACY_SERVER_CONNECT;
 static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const long SSL_VERIFY_CLIENT_ONCE;
