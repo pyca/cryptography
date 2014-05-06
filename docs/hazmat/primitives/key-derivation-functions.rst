@@ -219,6 +219,92 @@ Different KDFs are suitable for different tasks such as:
         ``key_material`` generates the same key as the ``expected_key``, and
         raises an exception if they do not match.
 
+
+.. class:: HKDFExpandOnly(algorithm, length, info, backend)
+
+    .. versionadded:: 0.5
+
+    HKDF consists of two stages, extract and expand. This class exposes an
+    expand only version of HKDF that is suitable when the key material is
+    already cryptographically strong.
+
+    .. warning::
+
+        HKDFExpandOnly should only be used if the key material is
+        cryptographically strong. You should use
+        :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` if
+        you are unsure.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpandOnly
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> info = b"hkdf-example"
+        >>> key_material = os.urandom(16)
+        >>> hkdf = HKDFExpandOnly(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     info=info,
+        ...     backend=backend
+        ... )
+        >>> key = hkdf.derive(key_material)
+        >>> hkdf = HKDFExpandOnly(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=32,
+        ...     info=info,
+        ...     backend=backend
+        ... )
+        >>> hkdf.verify(key_material, key)
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider.
+
+    :param int length: The desired length of the derived key. Maximum is
+        ``255 * (algorithm.digest_size // 8)``.
+
+    :param bytes info: Application specific context information.  If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: The derived key.
+
+        Derives a new key from the input key material by performing both the
+        extract and expand operations.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param key_material bytes: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param expected_key bytes: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
