@@ -26,6 +26,7 @@ TYPES = """
 static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
+static const long Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -194,7 +195,7 @@ int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
-Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *ssl);
+Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -253,7 +254,7 @@ int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
 long SSL_total_renegotiations(SSL *);
-long SSL_get_secure_renegotiation_support(SSL *ssl);
+long SSL_get_secure_renegotiation_support(SSL *);
 
 /* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
    and Windows defines long as 32-bit. */
@@ -359,10 +360,16 @@ void SSL_get0_next_proto_negotiated(const SSL *,
                                     const unsigned char **, unsigned *);
 
 int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
-SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int i);
+SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 """
 
 CUSTOMIZATIONS = """
+#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+static const long Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 1;
+#else
+static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
+static const long Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
+#endif
 #ifdef OPENSSL_NO_SSL2
 static const long Cryptography_HAS_SSL2 = 0;
 SSL_METHOD* (*SSLv2_method)(void) = NULL;
@@ -560,5 +567,9 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_next_proto_select_cb",
         "SSL_select_next_proto",
         "SSL_get0_next_proto_negotiated",
-    ]
+    ],
+
+    "Cryptography_HAS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION": [
+        "SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION",
+    ],
 }
