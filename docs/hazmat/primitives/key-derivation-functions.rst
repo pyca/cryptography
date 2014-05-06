@@ -194,7 +194,7 @@ Different KDFs are suitable for different tasks such as:
     .. method:: derive(key_material)
 
         :param bytes key_material: The input key material.
-        :retunr bytes: The derived key.
+        :return bytes: The derived key.
 
         Derives a new key from the input key material by performing both the
         extract and expand operations.
