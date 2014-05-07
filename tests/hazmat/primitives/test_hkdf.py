@@ -214,3 +214,6 @@ def test_invalid_backend():
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         HKDF(hashes.SHA256(), 16, None, None, pretend_backend)
+
+    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        HKDFExpand(hashes.SHA256(), 16, None, pretend_backend)
