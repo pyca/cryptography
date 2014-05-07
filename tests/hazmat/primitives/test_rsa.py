@@ -1510,3 +1510,91 @@ class TestRSANumbers(object):
         assert private_numbers.dmq1 == 1
         assert private_numbers.iqmp == 2
         assert private_numbers.public_numbers == public_numbers
+
+    def test_public_numbers_invalid_types(self):
+        with pytest.raises(TypeError):
+            rsa.RSAPublicNumbers(e=None, n=15)
+
+        with pytest.raises(TypeError):
+            rsa.RSAPublicNumbers(e=1, n=None)
+
+    def test_private_numbers_invalid_types(self):
+        public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=None,
+                q=5,
+                d=1,
+                dmp1=1,
+                dmq1=1,
+                iqmp=2,
+                public_numbers=public_numbers
+            )
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=None,
+                d=1,
+                dmp1=1,
+                dmq1=1,
+                iqmp=2,
+                public_numbers=public_numbers
+            )
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=5,
+                d=None,
+                dmp1=1,
+                dmq1=1,
+                iqmp=2,
+                public_numbers=public_numbers
+            )
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=5,
+                d=1,
+                dmp1=None,
+                dmq1=1,
+                iqmp=2,
+                public_numbers=public_numbers
+            )
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=5,
+                d=1,
+                dmp1=1,
+                dmq1=None,
+                iqmp=2,
+                public_numbers=public_numbers
+            )
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=5,
+                d=1,
+                dmp1=1,
+                dmq1=1,
+                iqmp=None,
+                public_numbers=public_numbers
+            )
+
+        with pytest.raises(TypeError):
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=5,
+                d=1,
+                dmp1=1,
+                dmq1=1,
+                iqmp=2,
+                public_numbers=None
+            )
+

@@ -262,6 +262,40 @@ class RSAPrivateKey(object):
 class RSAPrivateNumbers(object):
     def __init__(self, p, q, d, dmp1, dmq1, iqmp,
                  public_numbers):
+        if not isinstance(p, six.integer_types):
+            raise TypeError(
+                "RSAPrivateNumbers' p argument must be an integer."
+            )
+        if not isinstance(q, six.integer_types):
+            raise TypeError(
+                "RSAPrivateNumbers' q argument must be an integer."
+            )
+
+        if not isinstance(d, six.integer_types):
+            raise TypeError(
+                "RSAPrivateNumbers' d argument must be an integer."
+            )
+
+        if not isinstance(dmp1, six.integer_types):
+            raise TypeError(
+                "RSAPrivateNumbers' dmp1 argument must be an integer."
+            )
+        if not isinstance(dmq1, six.integer_types):
+            raise TypeError(
+                "RSAPrivateNumbers' dmq1 argument must be an integer."
+            )
+
+        if not isinstance(iqmp, six.integer_types):
+            raise TypeError(
+                "RSAPrivateNumbers' iqmp argument must be an integer."
+            )
+
+        if not isinstance(public_numbers, RSAPublicNumbers):
+            raise TypeError(
+                "RSAPrivateNumbers' public_numbers must be an RSAPublicNumbers"
+                " instance."
+            )
+
         self._p = p
         self._q = q
         self._d = d
@@ -301,6 +335,12 @@ class RSAPrivateNumbers(object):
 
 class RSAPublicNumbers(object):
     def __init__(self, e, n):
+        if (
+            not isinstance(e, six.integer_types) or
+            not isinstance(n, six.integer_types)
+        ):
+            raise TypeError("RSAPrivateNumbers arguments must be integers.")
+
         self._e = e
         self._n = n
 
