@@ -15,6 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/ssl.h>
+
+typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 """
 
 TYPES = """
@@ -24,6 +26,7 @@ TYPES = """
 static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
+static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -84,6 +87,8 @@ static const long SSL_OP_COOKIE_EXCHANGE;
 static const long SSL_OP_NO_TICKET;
 static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
+static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+static const long SSL_OP_LEGACY_SERVER_CONNECT;
 static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 static const long SSL_VERIFY_CLIENT_ONCE;
@@ -153,6 +158,7 @@ typedef struct {
 static const long TLSEXT_NAMETYPE_host_name;
 
 typedef ... SSL_CIPHER;
+typedef ... Cryptography_STACK_OF_SSL_CIPHER;
 """
 
 FUNCTIONS = """
@@ -190,6 +196,7 @@ int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
+Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -248,6 +255,7 @@ int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
 long SSL_total_renegotiations(SSL *);
+long SSL_get_secure_renegotiation_support(SSL *);
 
 /* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
    and Windows defines long as 32-bit. */
@@ -351,9 +359,23 @@ int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int);
 void SSL_get0_next_proto_negotiated(const SSL *,
                                     const unsigned char **, unsigned *);
+
+int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
+SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 """
 
 CUSTOMIZATIONS = """
+/** Secure renegotiation is supported in OpenSSL >= 0.9.8m
+ *  But some Linux distributions have back ported some features.
+ */
+#ifndef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+static const long Cryptography_HAS_SECURE_RENEGOTIATION = 0;
+long (*SSL_get_secure_renegotiation_support)(SSL *) = NULL;
+const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
+const long SSL_OP_LEGACY_SERVER_CONNECT = 0;
+#else
+static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
+#endif
 #ifdef OPENSSL_NO_SSL2
 static const long Cryptography_HAS_SSL2 = 0;
 SSL_METHOD* (*SSLv2_method)(void) = NULL;
@@ -551,5 +573,11 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_next_proto_select_cb",
         "SSL_select_next_proto",
         "SSL_get0_next_proto_negotiated",
-    ]
+    ],
+
+    "Cryptography_HAS_SECURE_RENEGOTIATION": [
+        "SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION",
+        "SSL_OP_LEGACY_SERVER_CONNECT",
+        "SSL_get_secure_renegotiation_support",
+    ],
 }
