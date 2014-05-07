@@ -324,7 +324,7 @@ class RSAPublicNumbers(object):
             not isinstance(e, six.integer_types) or
             not isinstance(n, six.integer_types)
         ):
-            raise TypeError("RSAPrivateNumbers arguments must be integers.")
+            raise TypeError("RSAPublicNumbers arguments must be integers.")
 
         self._e = e
         self._n = n
