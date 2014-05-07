@@ -136,7 +136,7 @@ On OS X:
 
     $ env DYLD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
 
-And on Linux:
+and on Linux:
 
 .. code-block:: console
 
