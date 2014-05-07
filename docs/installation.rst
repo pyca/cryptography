@@ -128,7 +128,8 @@ Building cryptography with conda
 --------------------------------
 
 Because of a `bug in conda`_, attempting to install cryptography out of the box
-will result in an error. This can be resolved by setting the library path environment variable for your platform.
+will result in an error. This can be resolved by setting the library path
+environment variable for your platform.
 
 On OS X:
 
