@@ -128,12 +128,19 @@ Building cryptography with conda
 --------------------------------
 
 Because of a `bug in conda`_, attempting to install cryptography out of the box
-will result in an error. This can be resolved by setting the
-``DYLD_LIBRARY_PATH`` environment variable:
+will result in an error. This can be resolved by setting the library path environment variable for your platform.
+
+On OS X:
 
 .. code-block:: console
 
     $ env DYLD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
+
+And on Linux:
+
+.. code-block:: console
+
+    $ env LD_LIBRARY_PATH="$HOME/anaconda/lib" pip install cryptography
 
 You will need to set this variable every time you start Python. For more
 information, consult `Greg Wilson's blog post`_ on the subject.
