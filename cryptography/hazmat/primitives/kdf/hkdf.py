@@ -103,7 +103,7 @@ class HKDF(object):
 
 
 @utils.register_interface(interfaces.KeyDerivationFunction)
-class HKDFExpandOnly(HKDF):
+class HKDFExpand(HKDF):
     def __init__(self, algorithm, length, info, backend):
         HKDF.__init__(self, algorithm, length, None, info, backend)
 

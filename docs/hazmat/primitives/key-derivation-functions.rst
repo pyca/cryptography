@@ -220,7 +220,7 @@ Different KDFs are suitable for different tasks such as:
         raises an exception if they do not match.
 
 
-.. class:: HKDFExpandOnly(algorithm, length, info, backend)
+.. class:: HKDFExpand(algorithm, length, info, backend)
 
     .. versionadded:: 0.5
 
@@ -230,7 +230,7 @@ Different KDFs are suitable for different tasks such as:
 
     .. warning::
 
-        HKDFExpandOnly should only be used if the key material is
+        HKDFExpand should only be used if the key material is
         cryptographically strong. You should use
         :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` if
         you are unsure.
@@ -239,19 +239,19 @@ Different KDFs are suitable for different tasks such as:
 
         >>> import os
         >>> from cryptography.hazmat.primitives import hashes
-        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpandOnly
+        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
         >>> info = b"hkdf-example"
         >>> key_material = os.urandom(16)
-        >>> hkdf = HKDFExpandOnly(
+        >>> hkdf = HKDFExpand(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     info=info,
         ...     backend=backend
         ... )
         >>> key = hkdf.derive(key_material)
-        >>> hkdf = HKDFExpandOnly(
+        >>> hkdf = HKDFExpand(
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     info=info,

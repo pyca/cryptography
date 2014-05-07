@@ -23,7 +23,7 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
 )
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpandOnly
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 
 from ...utils import raises_unsupported_algorithm
 
@@ -154,7 +154,7 @@ class TestHKDF(object):
 
 
 @pytest.mark.hmac
-class TestHKDFExpandOnly(object):
+class TestHKDFExpand(object):
     def test_derive(self, backend):
         prk = binascii.unhexlify(
             b"077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5"
@@ -164,7 +164,7 @@ class TestHKDFExpandOnly(object):
                b"5bf34007208d5b887185865")
 
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
-        hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         assert binascii.hexlify(hkdf.derive(prk)) == okm
 
@@ -177,7 +177,7 @@ class TestHKDFExpandOnly(object):
                b"5bf34007208d5b887185865")
 
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
-        hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         assert hkdf.verify(prk, binascii.unhexlify(okm)) is None
 
@@ -187,14 +187,14 @@ class TestHKDFExpandOnly(object):
         )
 
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
-        hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         with pytest.raises(InvalidKey):
             hkdf.verify(prk, b"wrong key")
 
     def test_already_finalized(self, backend):
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
-        hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         hkdf.derive(b"first")
 
@@ -203,7 +203,7 @@ class TestHKDFExpandOnly(object):
 
     def test_unicode_error(self, backend):
         info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
-        hkdf = HKDFExpandOnly(hashes.SHA256(), 42, info, backend)
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         with pytest.raises(TypeError):
             hkdf.derive(six.u("first"))
