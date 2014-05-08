@@ -23,7 +23,7 @@ This error looks something like:
 
     cffi.ffiplatform.VerificationError: importing '<some_path>.pyd': DLL load failed:
 
-It typically occurs on Windows when the user has not installed OpenSSL. Download
+It typically occurs on Windows when you have not installed OpenSSL. Download
 a `pre-compiled binary`_ to resolve this issue.
 
 .. _`NaCl`: http://nacl.cr.yp.to/
