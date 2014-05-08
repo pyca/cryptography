@@ -14,5 +14,18 @@ to NaCl.
 
 If you prefer NaCl's design, we highly recommend `PyNaCl`_.
 
+When I try to use ``cryptography`` on Windows I get a ``cffi.ffiplatform.VerificationError``
+--------------------------------------------------------------------------------------------
+
+This error looks something like:
+
+.. code-block:: console
+
+    cffi.ffiplatform.VerificationError: importing '<some_path>.pyd': DLL load failed:
+
+It typically occurs on Windows when you have not installed OpenSSL. Download
+a `pre-compiled binary`_ to resolve this issue.
+
 .. _`NaCl`: http://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.org
+.. _`pre-compiled binary`: https://www.openssl.org/related/binaries.html
