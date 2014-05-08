@@ -377,6 +377,24 @@ class Backend(object):
         return (public_exponent >= 3 and public_exponent & 1 != 0 and
                 key_size >= 512)
 
+    def load_rsa_numbers(self, numbers):
+        if isinstance(numbers, rsa.RSAPublicNumbers):
+            return rsa.RSAPublicKey(
+                public_exponent=numbers.e,
+                modulus=numbers.n
+            )
+        elif isinstance(numbers, rsa.RSAPrivateNumbers):
+            return rsa.RSAPrivateKey(
+                p=numbers.p,
+                q=numbers.q,
+                private_exponent=numbers.d,
+                dmp1=numbers.dmp1,
+                dmq1=numbers.dmq1,
+                iqmp=numbers.iqmp,
+                public_exponent=numbers.public_numbers.e,
+                modulus=numbers.public_numbers.n
+            )
+
     def _new_evp_pkey(self):
         evp_pkey = self._lib.EVP_PKEY_new()
         assert evp_pkey != self._ffi.NULL
