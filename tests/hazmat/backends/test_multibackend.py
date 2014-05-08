@@ -23,7 +23,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from ...utils import raises_unsupported_algorithm
@@ -111,6 +111,8 @@ class DummyRSABackend(object):
         pass
 
     def encrypt_rsa(self, public_key, plaintext, padding):
+
+    def load_rsa_numbers(self, numbers):
         pass
 
 
@@ -236,6 +238,8 @@ class TestMultiBackend(object):
 
         backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
 
+        backend.load_rsa_numbers(rsa.RSAPublicNumbers(e=3, n=1))
+
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -278,6 +282,11 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_rsa_numbers(rsa.RSAPublicNumbers(e=3, n=1))
 
     def test_dsa(self):
         backend = MultiBackend([
