@@ -20,7 +20,7 @@ provides secrecy but not authenticity. That means an attacker can't see the
 message but an attacker can create bogus messages and force the application to
 decrypt them.
 
-For this reason it is *strongly* recommended to combine encryption with a
+For this reason it is **strongly** recommended to combine encryption with a
 message authentication code, such as :doc:`HMAC </hazmat/primitives/mac/hmac>`, in
 an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
