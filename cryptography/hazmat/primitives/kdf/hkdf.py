@@ -45,8 +45,6 @@ class HKDF(object):
 
         self._backend = backend
 
-        self._used = False
-
         self._hkdf_expand = HKDFExpand(self._algorithm, length, info, backend)
 
     def _extract(self, key_material):
@@ -61,10 +59,6 @@ class HKDF(object):
                 "material."
             )
 
-        if self._used:
-            raise AlreadyFinalized
-
-        self._used = True
         return self._hkdf_expand.derive(self._extract(key_material))
 
     def verify(self, key_material, expected_key):
@@ -73,7 +67,7 @@ class HKDF(object):
 
 
 @utils.register_interface(interfaces.KeyDerivationFunction)
-class HKDFExpand(HKDF):
+class HKDFExpand(object):
     def __init__(self, algorithm, length, info, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
