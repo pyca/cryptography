@@ -26,7 +26,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from ...utils import load_vectors_from_file
@@ -347,15 +347,14 @@ def hkdf_extract_test(backend, algorithm, params):
 
 
 def hkdf_expand_test(backend, algorithm, params):
-    hkdf = HKDF(
+    hkdf = HKDFExpand(
         algorithm,
         int(params["l"]),
-        salt=binascii.unhexlify(params["salt"]) or None,
         info=binascii.unhexlify(params["info"]) or None,
         backend=backend
     )
 
-    okm = hkdf._expand(binascii.unhexlify(params["prk"]))
+    okm = hkdf.derive(binascii.unhexlify(params["prk"]))
 
     assert okm == binascii.unhexlify(params["okm"])
 
