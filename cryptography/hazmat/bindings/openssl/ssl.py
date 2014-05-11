@@ -159,6 +159,7 @@ static const long TLSEXT_NAMETYPE_host_name;
 
 typedef ... SSL_CIPHER;
 typedef ... Cryptography_STACK_OF_SSL_CIPHER;
+typedef ... COMP_METHOD;
 """
 
 FUNCTIONS = """
@@ -197,6 +198,10 @@ int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
+
+const COMP_METHOD *SSL_get_current_compression(SSL *);
+const COMP_METHOD *SSL_get_current_expansion(SSL *);
+const char *SSL_COMP_get_name(const COMP_METHOD *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
