@@ -271,13 +271,13 @@ class RSAPrivateNumbers(object):
             not isinstance(iqmp, six.integer_types)
         ):
             raise TypeError(
-                "RSAPrivateNumbers' p, q, d, dmp1, dmq1, iqmp arguments must"
+                "RSAPrivateNumbers p, q, d, dmp1, dmq1, iqmp arguments must"
                 " all be an integers."
             )
 
         if not isinstance(public_numbers, RSAPublicNumbers):
             raise TypeError(
-                "RSAPrivateNumbers' public_numbers must be an RSAPublicNumbers"
+                "RSAPrivateNumbers public_numbers must be an RSAPublicNumbers"
                 " instance."
             )
 
