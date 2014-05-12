@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :class:`~cryptography.hazmat.primitives.HKDFExpand`.
+
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~
 
