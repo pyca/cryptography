@@ -28,7 +28,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CFB, CTR, ECB, GCM, OFB
+    CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
 
 
@@ -165,6 +165,7 @@ class Backend(object):
             (CBC, self._lib.kCCModeCBC),
             (ECB, self._lib.kCCModeECB),
             (CFB, self._lib.kCCModeCFB),
+            (CFB8, self._lib.kCCModeCFB8),
             (OFB, self._lib.kCCModeOFB),
             (CTR, self._lib.kCCModeCTR),
             (GCM, self._lib.kCCModeGCM),
@@ -178,6 +179,7 @@ class Backend(object):
         for mode_cls, mode_const in [
             (CBC, self._lib.kCCModeCBC),
             (CFB, self._lib.kCCModeCFB),
+            (CFB8, self._lib.kCCModeCFB8),
             (OFB, self._lib.kCCModeOFB),
         ]:
             self._register_cipher_adapter(
@@ -264,7 +266,7 @@ class _CipherContext(object):
         # This bug has been filed as rdar://15589470
         self._bytes_processed = 0
         if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
-                isinstance(mode, (OFB, CFB, CTR))):
+                isinstance(mode, (OFB, CFB, CFB8, CTR))):
             self._byte_block_size = cipher.block_size // 8
         else:
             self._byte_block_size = 1
