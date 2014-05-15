@@ -85,7 +85,10 @@ RSA
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
+            provider. Valid values are
+            :class:~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
+            :class:~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
+            (``PSS`` is recommended for all new applications).
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -254,7 +257,10 @@ RSA
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
+            provider. Valid values are
+            :class:~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
+            :class:~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
+            (``PSS`` is recommended for all new applications).
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
