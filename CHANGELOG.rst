@@ -7,6 +7,10 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * Added :class:`~cryptography.hazmat.primitives.HKDFExpand`.
+* Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
+  for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
+  :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~
