@@ -146,6 +146,24 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("RSA is not supported by the backend",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
+    def mgf1_hash_supported(self, algorithm):
+        for b in self._filtered_backends(RSABackend):
+            return b.mgf1_hash_supported(algorithm)
+        raise UnsupportedAlgorithm("RSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def decrypt_rsa(self, private_key, ciphertext, padding):
+        for b in self._filtered_backends(RSABackend):
+            return b.decrypt_rsa(private_key, ciphertext, padding)
+        raise UnsupportedAlgorithm("RSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def encrypt_rsa(self, public_key, plaintext, padding):
+        for b in self._filtered_backends(RSABackend):
+            return b.encrypt_rsa(public_key, plaintext, padding)
+        raise UnsupportedAlgorithm("RSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
     def generate_dsa_parameters(self, key_size):
         for b in self._filtered_backends(DSABackend):
             return b.generate_dsa_parameters(key_size)

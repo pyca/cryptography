@@ -85,7 +85,10 @@ RSA
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
+            provider. Valid values are
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
+            (``PSS`` is recommended for all new applications).
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -154,21 +157,39 @@ RSA
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
             it may also be raised for invalid label values.
 
-        .. code-block:: python
+        .. doctest::
 
-            from cryptography.hazmat.backends import default_backend
-            from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.asymmetric import padding
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import padding
 
-            plaintext = private_key.decrypt(
-                ciphertext,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=None
-                ),
-                default_backend()
-            )
+            >>> # Generate a key
+            >>> private_key = rsa.RSAPrivateKey.generate(
+            ...     public_exponent=65537,
+            ...     key_size=2048,
+            ...     backend=default_backend()
+            ... )
+            >>> public_key = private_key.public_key()
+            >>> # encrypt some data
+            >>> ciphertext = public_key.encrypt(
+            ...     b"encrypted data",
+            ...     padding.OAEP(
+            ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
+            ...         algorithm=hashes.SHA1(),
+            ...         label=None
+            ...     ),
+            ...     default_backend()
+            ... )
+            >>> # Now do the actual decryption
+            >>> plaintext = private_key.decrypt(
+            ...     ciphertext,
+            ...     padding.OAEP(
+            ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
+            ...         algorithm=hashes.SHA1(),
+            ...         label=None
+            ...     ),
+            ...     default_backend()
+            ... )
 
 
 .. class:: RSAPublicKey(public_exponent, modulus)
@@ -236,7 +257,10 @@ RSA
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
+            provider. Valid values are
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
+            (``PSS`` is recommended for all new applications).
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -306,27 +330,29 @@ RSA
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`
             it may also be raised for invalid label values.
 
-        .. code-block:: python
+        .. doctest::
 
-            from cryptography.hazmat.backends import default_backend
-            from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.asymmetric import padding, rsa
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.asymmetric import padding
 
-            private_key = rsa.RSAPrivateKey.generate(
-                public_exponent=65537,
-                key_size=2048,
-                backend=default_backend()
-            )
-            public_key = private_key.public_key()
-            ciphertext = public_key.encrypt(
-                plaintext,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=None
-                ),
-                default_backend()
-            )
+            >>> # Generate a key
+            >>> private_key = rsa.RSAPrivateKey.generate(
+            ...     public_exponent=65537,
+            ...     key_size=2048,
+            ...     backend=default_backend()
+            ... )
+            >>> public_key = private_key.public_key()
+            >>> # encrypt some data
+            >>> ciphertext = public_key.encrypt(
+            ...     b"encrypted data",
+            ...     padding.OAEP(
+            ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
+            ...         algorithm=hashes.SHA1(),
+            ...         label=None
+            ...     ),
+            ...     default_backend()
+            ... )
 
 
 Handling partial RSA private keys

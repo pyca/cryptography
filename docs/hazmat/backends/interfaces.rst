@@ -275,6 +275,14 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
+        :return bytes: The decrypted data.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If an unsupported
+            MGF, hash function, or padding is chosen.
+
+        :raises ValueError: When decryption fails or key size does not match
+            ciphertext length.
+
     .. method:: encrypt_rsa(public_key, plaintext, padding)
 
         :param public_key: An instance of an
@@ -287,6 +295,12 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
+        :return bytes: The encrypted data.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If an unsupported
+            MGF, hash function, or padding is chosen.
+
+        :raises ValueError: When plaintext is too long for the key size.
 
 .. class:: TraditionalOpenSSLSerializationBackend
 
