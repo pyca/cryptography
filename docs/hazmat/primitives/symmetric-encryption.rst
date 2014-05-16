@@ -275,6 +275,19 @@ Modes
         Must be the same number of bytes as the ``block_size`` of the cipher.
         Do not reuse an ``initialization_vector`` with a given ``key``.
 
+.. class:: CFB8(initialization_vector)
+
+    CFB (Cipher Feedback) is a mode of operation for block ciphers. It
+    transforms a block cipher into a stream cipher. The CFB8 variant uses an
+    8-bit shift register.
+
+    **This mode does not require padding.**
+
+    :param bytes initialization_vector: Must be random bytes. They do not need
+        to be kept secret and they can be included in a transmitted message.
+        Must be the same number of bytes as the ``block_size`` of the cipher.
+        Do not reuse an ``initialization_vector`` with a given ``key``.
+
 .. class:: GCM(initialization_vector, tag=None)
 
     .. danger::

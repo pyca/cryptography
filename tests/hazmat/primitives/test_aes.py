@@ -158,6 +158,39 @@ class TestAESModeCFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 16), modes.CFB8("\x00" * 16)
+    ),
+    skip_message="Does not support AES CFB8",
+)
+@pytest.mark.cipher
+class TestAESModeCFB8(object):
+    test_CFB8 = generate_encrypt_test(
+        load_nist_vectors,
+        os.path.join("ciphers", "AES", "CFB"),
+        [
+            "CFB8GFSbox128.rsp",
+            "CFB8GFSbox192.rsp",
+            "CFB8GFSbox256.rsp",
+            "CFB8KeySbox128.rsp",
+            "CFB8KeySbox192.rsp",
+            "CFB8KeySbox256.rsp",
+            "CFB8VarKey128.rsp",
+            "CFB8VarKey192.rsp",
+            "CFB8VarKey256.rsp",
+            "CFB8VarTxt128.rsp",
+            "CFB8VarTxt192.rsp",
+            "CFB8VarTxt256.rsp",
+            "CFB8MMT128.rsp",
+            "CFB8MMT192.rsp",
+            "CFB8MMT256.rsp",
+        ],
+        lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
+        lambda iv, **kwargs: modes.CFB8(binascii.unhexlify(iv)),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
         algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
     ),
     skip_message="Does not support AES CTR",

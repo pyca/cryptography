@@ -38,7 +38,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
-    CBC, CFB, CTR, ECB, GCM, OFB
+    CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
 
 
@@ -147,16 +147,19 @@ class Backend(object):
         self._cipher_registry[cipher_cls, mode_cls] = adapter
 
     def _register_default_ciphers(self):
-        for cipher_cls, mode_cls in itertools.product(
-            [AES, Camellia],
-            [CBC, CTR, ECB, OFB, CFB],
-        ):
+        for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8]:
             self.register_cipher_adapter(
-                cipher_cls,
+                AES,
                 mode_cls,
                 GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
             )
-        for mode_cls in [CBC, CFB, OFB]:
+        for mode_cls in [CBC, CTR, ECB, OFB, CFB]:
+            self.register_cipher_adapter(
+                Camellia,
+                mode_cls,
+                GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
+            )
+        for mode_cls in [CBC, CFB, CFB8, OFB]:
             self.register_cipher_adapter(
                 TripleDES,
                 mode_cls,

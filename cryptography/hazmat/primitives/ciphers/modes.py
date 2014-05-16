@@ -71,6 +71,21 @@ class CFB(object):
 
 
 @utils.register_interface(interfaces.Mode)
+@utils.register_interface(interfaces.ModeWithInitializationVector)
+class CFB8(object):
+    name = "CFB8"
+
+    def __init__(self, initialization_vector):
+        self.initialization_vector = initialization_vector
+
+    def validate_for_algorithm(self, algorithm):
+        if len(self.initialization_vector) * 8 != algorithm.block_size:
+            raise ValueError("Invalid iv size ({0}) for {1}".format(
+                len(self.initialization_vector), self.name
+            ))
+
+
+@utils.register_interface(interfaces.Mode)
 @utils.register_interface(interfaces.ModeWithNonce)
 class CTR(object):
     name = "CTR"
