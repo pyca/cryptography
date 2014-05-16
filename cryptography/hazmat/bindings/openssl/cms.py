@@ -43,7 +43,6 @@ MACROS = """
 BIO *BIO_new_CMS(BIO *, CMS_ContentInfo *);
 int i2d_CMS_bio_stream(BIO *, CMS_ContentInfo *, BIO *, int);
 int PEM_write_bio_CMS_stream(BIO *, CMS_ContentInfo *, BIO *, int);
-int PEM_write_bio_CMS(BIO *, CMS_ContentInfo *);
 int CMS_final(CMS_ContentInfo *, BIO *, BIO *, unsigned int);
 CMS_ContentInfo *CMS_sign(X509 *, EVP_PKEY *, Cryptography_STACK_OF_X509 *,
                           BIO *, unsigned int);
@@ -72,7 +71,6 @@ typedef void CMS_Receipt;
 BIO *(*BIO_new_CMS)(BIO *, CMS_ContentInfo *) = NULL;
 int (*i2d_CMS_bio_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
 int (*PEM_write_bio_CMS_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
-int (*PEM_write_bio_CMS)(BIO *, CMS_ContentInfo *) = NULL;
 int (*CMS_final)(CMS_ContentInfo *, BIO *, BIO *, unsigned int) = NULL;
 CMS_ContentInfo *(*CMS_sign)(X509 *, EVP_PKEY *, Cryptography_STACK_OF_X509 *,
                              BIO *, unsigned int) = NULL;
@@ -92,7 +90,6 @@ CONDITIONAL_NAMES = {
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",
         "PEM_write_bio_CMS_stream",
-        "PEM_write_bio_CMS",
         "CMS_final",
         "CMS_sign",
         "CMS_verify",
