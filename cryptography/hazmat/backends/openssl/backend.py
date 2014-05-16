@@ -389,6 +389,11 @@ class Backend(object):
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
 
     def _evp_pkey_to_private_key(self, evp_pkey):
+        """
+        Return the appropriate type of PrivateKey given an evp_pkey cdata
+        pointer.
+        """
+
         type = evp_pkey.type
 
         if type == self._lib.EVP_PKEY_RSA:
@@ -427,12 +432,15 @@ class Backend(object):
 
     def _pem_password_cb(self, password):
         """
-        Generate a pem_password_cb that returns password
+        Generate a pem_password_cb function pointer that copied the password to
+        OpenSSL as required and returns the number of bytes copied.
 
         typedef int pem_password_cb(char *buf, int size,
                                     int rwflag, void *userdata);
 
-        suitable for decrypting PKCS8 files and so on
+        Useful for decrypting PKCS8 files and so on.
+
+        Returns a tuple of (cdata function pointer, callback function).
         """
 
         def pem_password_cb(buf, size, writing, userdata):
