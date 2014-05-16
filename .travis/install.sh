@@ -42,8 +42,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             sudo pip install virtualenv
             ;;
         pypy)
-            pyenv install pypy-2.3.0
-            pyenv global pypy-2.3.0
+            pyenv install pypy-2.3
+            pyenv global pypy-2.3
             pip install virtualenv
             ;;
         py32)
