@@ -523,40 +523,16 @@ class EllipticCurvePrivateKey(object):
         Returns an AsymmetricSignatureContext used for signing data.
         """
 
-    @abc.abstractproperty
-    def curve(self):
-        """
-        The EllipticCurve that this key is on.
-        """
-
-    @abc.abstractproperty
-    def private_key(self):
-        """
-        The private value used for signing.
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the base point of the curve.
-        """
-
-    @abc.abstractproperty
-    def x(self):
-        """
-        The affine x component of the public point used for verifying.
-        """
-
-    @abc.abstractproperty
-    def y(self):
-        """
-        The affine y component of the public point used for verifying.
-        """
-
     @abc.abstractmethod
     def public_key(self):
         """
         The EllipticCurvePublicKey for this private key.
+        """
+
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
         """
 
 
@@ -572,22 +548,4 @@ class EllipticCurvePublicKey(object):
     def curve(self):
         """
         The EllipticCurve that this key is on.
-        """
-
-    @abc.abstractproperty
-    def x(self):
-        """
-        The affine x component of the public point used for verifying.
-        """
-
-    @abc.abstractproperty
-    def y(self):
-        """
-        The affine y component of the public point used for verifying.
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the base point of the curve.
         """
