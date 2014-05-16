@@ -495,39 +495,6 @@ Asymmetric interfaces
 
         The digest algorithm to be used with the signature scheme.
 
-    .. method:: signer(private_key, backend)
-        
-        Sign data which can be verified later by others using the public key.
-
-        :param private_key: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
-            provider.
-
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
-
-    .. method:: verifier(signature, public_key, backend)
-
-        Verify data was signed by the private key associated with this public
-        key.
-
-        :param bytes signature: The signature to verify.
-
-        :param public_key: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
-            provider.
-
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
-
 
 .. class:: EllipticCurvePrivateKey
 

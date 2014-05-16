@@ -514,18 +514,6 @@ class EllipticCurveSignatureAlgorithm(object):
         The digest algorithm used with this signature.
         """
 
-    @abc.abstractmethod
-    def signer(self, private_key, backend):
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
-
-    @abc.abstractmethod
-    def verifier(self, signature, public_key, backend):
-        """
-        Returns an AsymmetricVerificationContext used for signing data.
-        """
-
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePrivateKey(object):
