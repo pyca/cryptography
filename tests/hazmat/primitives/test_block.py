@@ -184,6 +184,14 @@ class TestModeValidation(object):
                 backend,
             )
 
+    def test_cfb8(self, backend):
+        with pytest.raises(ValueError):
+            Cipher(
+                algorithms.AES(b"\x00" * 16),
+                modes.CFB8(b"abc"),
+                backend,
+            )
+
     def test_ctr(self, backend):
         with pytest.raises(ValueError):
             Cipher(
