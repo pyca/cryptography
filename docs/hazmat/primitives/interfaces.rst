@@ -524,29 +524,11 @@ Asymmetric interfaces
 
         The elliptic curve for this key.
 
-    .. attribute:: private_key
-
-        :type: int
-
-        The private key.
-
     .. attribute:: key_size
 
         :type: int
 
         The bit length of the curves base point.
-
-    .. attribute:: x
-
-        :type: int
-
-        The affine x component of the public point used for verifying.
-
-    .. attribute:: y
-
-        :type: int
-
-        The affine y component of the public point used for verifying.
 
     .. method:: public_key()
 
@@ -584,18 +566,6 @@ Asymmetric interfaces
         :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
 
         The elliptic curve for this key.
-
-    .. attribute:: x
-
-        :type: int
-
-        The affine x component of the public point used for verifying.
-
-    .. attribute:: y
-
-        :type: int
-
-        The affine y component of the public point used for verifying.
 
     .. attribute:: key_size
 
