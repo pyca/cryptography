@@ -59,9 +59,8 @@ class OFB(object):
 @utils.register_interface(interfaces.ModeWithInitializationVector)
 class CFB(object):
     name = "CFB"
-    NATIVE_SIZE = object()
 
-    def __init__(self, initialization_vector, something=NATIVE_SIZE):
+    def __init__(self, initialization_vector):
         self.initialization_vector = initialization_vector
 
     def validate_for_algorithm(self, algorithm):
