@@ -489,3 +489,112 @@ class CMACContext(object):
         """
         Return a CMACContext that is a copy of the current context.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurve(object):
+    @abc.abstractproperty
+    def name(self):
+        """
+        The name of the curve. e.g. secp256r1.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurveSignatureAlgorithm(object):
+    @abc.abstractmethod
+    def signer(self, private_key, backend):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
+    @abc.abstractmethod
+    def verifier(self, signature, public_key, backend):
+        """
+        Returns an AsymmetricVerificationContext used for signing data.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePrivateKey(object):
+    @abc.abstractmethod
+    def signer(self, signature_algorithm, digest_algorithm, backend):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
+        """
+
+    @abc.abstractproperty
+    def private_key(self):
+        """
+        The private value used for signing.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
+
+    @abc.abstractproperty
+    def x(self):
+        """
+        The affine x component of the public point used for verifying.
+        """
+
+    @abc.abstractproperty
+    def y(self):
+        """
+        The affine y component of the public point used for verifying.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The EllipticCurvePublicKey for this private key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePublicKey(object):
+    @abc.abstractmethod
+    def verifier(self, signature, signature_algorithm, digest_algorithm,
+                 backend):
+        """
+        Returns an AsymmetricVerificationContext used for signing data.
+        """
+
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
+        """
+
+    @abc.abstractproperty
+    def x(self):
+        """
+        The affine x component of the public point used for verifying.
+        """
+
+    @abc.abstractproperty
+    def y(self):
+        """
+        The affine y component of the public point used for verifying.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
