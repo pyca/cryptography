@@ -524,12 +524,6 @@ Asymmetric interfaces
 
         The elliptic curve for this key.
 
-    .. attribute:: key_size
-
-        :type: int
-
-        The bit length of the curves base point.
-
     .. method:: public_key()
 
         :return: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
@@ -566,12 +560,6 @@ Asymmetric interfaces
         :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
 
         The elliptic curve for this key.
-
-    .. attribute:: key_size
-
-        :type: int
-
-        The bit length of the curves base point.
 
 
 .. class:: AsymmetricSignatureContext
