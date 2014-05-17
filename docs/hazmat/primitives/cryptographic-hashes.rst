@@ -54,6 +54,7 @@ Message digests
 
         :param bytes data: The bytes to be hashed.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
 
     .. method:: copy()
 

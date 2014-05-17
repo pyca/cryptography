@@ -68,6 +68,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
 
         :param bytes data: The bytes to hash and authenticate.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
 
     .. method:: copy()
 
@@ -89,6 +90,8 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
         :raises cryptography.exceptions.InvalidSignature: If signature does not
                                                                   match digest
+        :raises TypeError: This exception is raised if ``signature`` is not
+                           ``bytes``.
 
         .. method:: finalize()
 

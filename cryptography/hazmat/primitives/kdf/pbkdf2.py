@@ -41,11 +41,8 @@ class PBKDF2HMAC(object):
         self._used = False
         self._algorithm = algorithm
         self._length = length
-        if isinstance(salt, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as key "
-                "material."
-            )
+        if not isinstance(salt, six.binary_type):
+            raise TypeError("salt must be bytes")
         self._salt = salt
         self._iterations = iterations
         self._backend = backend
@@ -55,11 +52,8 @@ class PBKDF2HMAC(object):
             raise AlreadyFinalized("PBKDF2 instances can only be used once")
         self._used = True
 
-        if isinstance(key_material, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as key "
-                "material."
-            )
+        if not isinstance(key_material, six.binary_type):
+            raise TypeError("key_material must be bytes")
         return self._backend.derive_pbkdf2_hmac(
             self._algorithm,
             self._length,

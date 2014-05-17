@@ -47,8 +47,8 @@ class CMAC(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
-        if isinstance(data, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before hashing")
+        if not isinstance(data, six.binary_type):
+            raise TypeError("data must be bytes")
         self._ctx.update(data)
 
     def finalize(self):
@@ -59,8 +59,8 @@ class CMAC(object):
         return digest
 
     def verify(self, signature):
-        if isinstance(signature, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before verifying")
+        if not isinstance(signature, six.binary_type):
+            raise TypeError("signature must be bytes")
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")

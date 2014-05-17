@@ -34,9 +34,8 @@ class HKDF(object):
 
         self._algorithm = algorithm
 
-        if isinstance(salt, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as a salt.")
+        if not isinstance(salt, six.binary_type) and salt is not None:
+            raise TypeError("salt must be bytes")
 
         if salt is None:
             salt = b"\x00" * (self._algorithm.digest_size // 8)
@@ -53,11 +52,8 @@ class HKDF(object):
         return h.finalize()
 
     def derive(self, key_material):
-        if isinstance(key_material, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as key "
-                "material."
-            )
+        if not isinstance(key_material, six.binary_type):
+            raise TypeError("key_material must be bytes")
 
         return self._hkdf_expand.derive(self._extract(key_material))
 
@@ -89,9 +85,8 @@ class HKDFExpand(object):
 
         self._length = length
 
-        if isinstance(info, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as info.")
+        if not isinstance(info, six.binary_type) and info is not None:
+            raise TypeError("info must be bytes")
 
         if info is None:
             info = b""
@@ -115,11 +110,8 @@ class HKDFExpand(object):
         return b"".join(output)[:self._length]
 
     def derive(self, key_material):
-        if isinstance(key_material, six.text_type):
-            raise TypeError(
-                "Unicode-objects must be encoded before using them as key"
-                "material."
-            )
+        if not isinstance(key_material, six.binary_type):
+            raise TypeError("key_material must be bytes")
 
         if self._used:
             raise AlreadyFinalized
