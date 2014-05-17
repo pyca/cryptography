@@ -60,9 +60,10 @@ class Fernet(object):
         return self._encrypt_from_parts(data, current_time, iv)
 
     def _encrypt_from_parts(self, data, current_time, iv):
-        if isinstance(data, six.text_type):
+        if not isinstance(data, six.binary_type):
             raise TypeError(
-                "Unicode-objects must be encoded before encryption"
+                "data must be binary type. This is str in Python 2 and bytes "
+                "in Python 3"
             )
 
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
@@ -82,9 +83,10 @@ class Fernet(object):
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
     def decrypt(self, token, ttl=None):
-        if isinstance(token, six.text_type):
+        if not isinstance(token, six.binary_type):
             raise TypeError(
-                "Unicode-objects must be encoded before decryption"
+                "token must be binary type. This is str in Python 2 and bytes "
+                "in Python 3"
             )
 
         current_time = int(time.time())

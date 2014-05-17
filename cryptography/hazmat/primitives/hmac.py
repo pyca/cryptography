@@ -46,8 +46,11 @@ class HMAC(object):
     def update(self, msg):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
-        if isinstance(msg, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before hashing")
+        if not isinstance(msg, six.binary_type):
+            raise TypeError(
+                "msg must be binary type. This is str in Python 2 and bytes "
+                "in Python 3"
+            )
         self._ctx.update(msg)
 
     def copy(self):
@@ -68,8 +71,11 @@ class HMAC(object):
         return digest
 
     def verify(self, signature):
-        if isinstance(signature, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before verifying")
+        if not isinstance(signature, six.binary_type):
+            raise TypeError(
+                "signature must be binary type. This is str in Python 2 and "
+                "bytes in Python 3"
+            )
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")

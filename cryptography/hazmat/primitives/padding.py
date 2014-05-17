@@ -104,8 +104,11 @@ class _PKCS7PaddingContext(object):
         if self._buffer is None:
             raise AlreadyFinalized("Context was already finalized")
 
-        if isinstance(data, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before padding")
+        if not isinstance(data, six.binary_type):
+            raise TypeError(
+                "data must be binary type. This is str in Python 2 and bytes "
+                "in Python 3"
+            )
 
         self._buffer += data
 
@@ -137,8 +140,11 @@ class _PKCS7UnpaddingContext(object):
         if self._buffer is None:
             raise AlreadyFinalized("Context was already finalized")
 
-        if isinstance(data, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before unpadding")
+        if not isinstance(data, six.binary_type):
+            raise TypeError(
+                "data must be binary type. This is str in Python 2 and bytes "
+                "in Python 3"
+            )
 
         self._buffer += data
 

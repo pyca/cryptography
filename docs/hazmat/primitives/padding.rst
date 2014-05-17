@@ -70,6 +70,9 @@ multiple of the block size.
         :return bytes: Returns the data that was padded or unpadded.
         :raises TypeError: Raised if data is not bytes.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
+        :raises TypeError: This exception is raised if ``data`` is not a binary
+                           type. This is ``str`` in Python 2 and ``bytes`` in
+                           Python 3.
 
     .. method:: finalize()
 

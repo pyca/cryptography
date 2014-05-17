@@ -57,7 +57,11 @@ _lib = _ffi.verify(
 
 
 def bytes_eq(a, b):
-    if isinstance(a, six.text_type) or isinstance(b, six.text_type):
-        raise TypeError("Unicode-objects must be encoded before comparing")
+    if (not isinstance(a, six.binary_type) or
+            not isinstance(b, six.binary_type)):
+            raise TypeError(
+                "a and b must be binary type. This is str in Python 2 and "
+                "bytes in Python 3"
+            )
 
     return _lib.Cryptography_constant_time_bytes_eq(a, len(a), b, len(b)) == 1

@@ -69,6 +69,9 @@ of a message.
 
         :param bytes msg: The bytes to hash and authenticate.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
+        :raises TypeError: This exception is raised if ``msg`` is not a binary
+                           type. This is ``str`` in Python 2 and ``bytes`` in
+                           Python 3.
 
     .. method:: copy()
 
@@ -90,6 +93,9 @@ of a message.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`
         :raises cryptography.exceptions.InvalidSignature: If signature does not
                                                           match digest
+        :raises TypeError: This exception is raised if ``signature`` is not a
+                           binary type. This is ``str`` in Python 2 and
+                           ``bytes`` in Python 3.
 
     .. method:: finalize()
 

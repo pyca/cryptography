@@ -46,8 +46,11 @@ class Hash(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
-        if isinstance(data, six.text_type):
-            raise TypeError("Unicode-objects must be encoded before hashing")
+        if not isinstance(data, six.binary_type):
+            raise TypeError(
+                "data must be binary type. This is str in Python 2 and bytes "
+                "in Python 3"
+            )
         self._ctx.update(data)
 
     def copy(self):

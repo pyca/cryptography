@@ -34,12 +34,15 @@ symmetric (also known as "secret key") authenticated cryptography.
         they'll also be able forge arbitrary messages that will be
         authenticated and decrypted.
 
-    .. method:: encrypt(plaintext)
+    .. method:: encrypt(data)
 
-        :param bytes plaintext: The message you would like to encrypt.
+        :param bytes data: The message you would like to encrypt.
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
                         referred to as a "Fernet token".
+        :raises TypeError: This exception is raised if ``data`` is not a binary
+                           type. This is ``str`` in Python 2 and ``bytes`` in
+                           Python 3.
 
         .. note::
 
@@ -66,6 +69,9 @@ symmetric (also known as "secret key") authenticated cryptography.
                                                   ``ttl``, it is malformed, or
                                                   it does not have a valid
                                                   signature.
+        :raises TypeError: This exception is raised if ``token`` is not a binary
+                           type. This is ``str`` in Python 2 and ``bytes`` in
+                           Python 3.
 
 
 .. class:: InvalidToken
