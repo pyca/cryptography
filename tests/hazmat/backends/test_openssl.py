@@ -19,7 +19,9 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.backends.openssl.backend import (
+    Backend, backend
+)
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
