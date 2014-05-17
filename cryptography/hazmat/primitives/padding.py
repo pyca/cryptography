@@ -105,10 +105,7 @@ class _PKCS7PaddingContext(object):
             raise AlreadyFinalized("Context was already finalized")
 
         if not isinstance(data, six.binary_type):
-            raise TypeError(
-                "data must be binary type. This is str in Python 2 and bytes "
-                "in Python 3"
-            )
+            raise TypeError("data must be bytes")
 
         self._buffer += data
 
@@ -141,10 +138,7 @@ class _PKCS7UnpaddingContext(object):
             raise AlreadyFinalized("Context was already finalized")
 
         if not isinstance(data, six.binary_type):
-            raise TypeError(
-                "data must be binary type. This is str in Python 2 and bytes "
-                "in Python 3"
-            )
+            raise TypeError("data must be bytes")
 
         self._buffer += data
 

@@ -42,10 +42,7 @@ class PBKDF2HMAC(object):
         self._algorithm = algorithm
         self._length = length
         if not isinstance(salt, six.binary_type):
-            raise TypeError(
-                "salt must be binary type. This is str in Python 2 and bytes "
-                "in Python 3"
-            )
+            raise TypeError("salt must be bytes")
         self._salt = salt
         self._iterations = iterations
         self._backend = backend
@@ -56,10 +53,7 @@ class PBKDF2HMAC(object):
         self._used = True
 
         if not isinstance(key_material, six.binary_type):
-            raise TypeError(
-                "key_material must be binary type. This is str in Python 2 "
-                "and  bytes in Python 3"
-            )
+            raise TypeError("key_material must be bytes")
         return self._backend.derive_pbkdf2_hmac(
             self._algorithm,
             self._length,

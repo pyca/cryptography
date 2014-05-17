@@ -40,9 +40,7 @@ symmetric (also known as "secret key") authenticated cryptography.
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
                         referred to as a "Fernet token".
-        :raises TypeError: This exception is raised if ``data`` is not a binary
-                           type. This is ``str`` in Python 2 and ``bytes`` in
-                           Python 3.
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
 
         .. note::
 
@@ -69,9 +67,7 @@ symmetric (also known as "secret key") authenticated cryptography.
                                                   ``ttl``, it is malformed, or
                                                   it does not have a valid
                                                   signature.
-        :raises TypeError: This exception is raised if ``token`` is not a binary
-                           type. This is ``str`` in Python 2 and ``bytes`` in
-                           Python 3.
+        :raises TypeError: This exception is raised if ``token`` is not ``bytes``.
 
 
 .. class:: InvalidToken

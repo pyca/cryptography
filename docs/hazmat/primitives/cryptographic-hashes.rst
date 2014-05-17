@@ -54,9 +54,7 @@ Message digests
 
         :param bytes data: The bytes to be hashed.
         :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
-        :raises TypeError: This exception is raised if ``data`` is not a binary
-                           type. This is ``str`` in Python 2 and ``bytes`` in
-                           Python 3.
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
 
     .. method:: copy()
 

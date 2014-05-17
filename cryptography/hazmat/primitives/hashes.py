@@ -47,10 +47,7 @@ class Hash(object):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
         if not isinstance(data, six.binary_type):
-            raise TypeError(
-                "data must be binary type. This is str in Python 2 and bytes "
-                "in Python 3"
-            )
+            raise TypeError("data must be bytes")
         self._ctx.update(data)
 
     def copy(self):

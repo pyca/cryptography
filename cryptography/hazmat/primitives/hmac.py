@@ -47,10 +47,7 @@ class HMAC(object):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
         if not isinstance(msg, six.binary_type):
-            raise TypeError(
-                "msg must be binary type. This is str in Python 2 and bytes "
-                "in Python 3"
-            )
+            raise TypeError("msg must be bytes")
         self._ctx.update(msg)
 
     def copy(self):
@@ -72,10 +69,7 @@ class HMAC(object):
 
     def verify(self, signature):
         if not isinstance(signature, six.binary_type):
-            raise TypeError(
-                "signature must be binary type. This is str in Python 2 and "
-                "bytes in Python 3"
-            )
+            raise TypeError("signature must be bytes")
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")

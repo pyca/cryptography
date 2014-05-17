@@ -88,9 +88,7 @@ Different KDFs are suitable for different tasks such as:
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
 
-    :raises TypeError: This exception is raised if ``salt`` is not a binary
-                       type. This is ``str`` in Python 2 and ``bytes`` in
-                       Python 3.
+    :raises TypeError: This exception is raised if ``salt`` is not ``bytes``.
 
     .. method:: derive(key_material)
 
@@ -104,8 +102,7 @@ Different KDFs are suitable for different tasks such as:
                                                           once.
 
         :raises TypeError: This exception is raised if ``key_material`` is not
-                           a binary type. This is ``str`` in Python 2 and
-                           ``bytes`` in Python 3.
+                           ``bytes``.
 
         This generates and returns a new key from the supplied password.
 
@@ -200,16 +197,14 @@ Different KDFs are suitable for different tasks such as:
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
 
     :raises TypeError: This exception is raised if ``salt`` or ``info`` is not
-                       a binary type. This is ``str`` in Python 2 and ``bytes``
-                       in Python 3.
+                       ``bytes``.
 
     .. method:: derive(key_material)
 
         :param bytes key_material: The input key material.
         :return bytes: The derived key.
         :raises TypeError: This exception is raised if ``key_material`` is not
-                           a binary type. This is ``str`` in Python 2 and
-                           ``bytes`` in Python 3.
+                           ``bytes``.
 
         Derives a new key from the input key material by performing both the
         extract and expand operations.
@@ -292,9 +287,7 @@ Different KDFs are suitable for different tasks such as:
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
     :raises TypeError: This is raised if the provided ``info`` is a unicode object
-    :raises TypeError: This exception is raised if ``info`` is not a binary
-                       type. This is ``str`` in Python 2 and ``bytes`` in
-                       Python 3.
+    :raises TypeError: This exception is raised if ``info`` is not ``bytes``.
 
     .. method:: derive(key_material)
 
@@ -304,8 +297,7 @@ Different KDFs are suitable for different tasks such as:
         :raises TypeError: This is raised if the provided ``key_material`` is
             a unicode object
         :raises TypeError: This exception is raised if ``key_material`` is not
-                           a binary type. This is ``str`` in Python 2 and
-                           ``bytes`` in Python 3.
+                           ``bytes``.
 
         Derives a new key from the input key material by performing both the
         extract and expand operations.

@@ -36,9 +36,8 @@ about the timing attacks on KeyCzar and Java's ``MessageDigest.isEqual()``.
     :param bytes b: The right-hand side.
     :returns bool: ``True`` if ``a`` has the same bytes as ``b``, otherwise
                    ``False``.
-    :raises TypeError: This exception is raised if ``a`` or ``b`` is not a
-                       binary type. This is ``str`` in Python 2 and ``bytes``
-                       in Python 3.
+    :raises TypeError: This exception is raised if ``a`` or ``b`` is not
+                       ``bytes``.
 
 
 .. _`Coda Hale's blog post`: http://codahale.com/a-lesson-in-timing-attacks/
