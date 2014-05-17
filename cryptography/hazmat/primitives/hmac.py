@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
@@ -46,7 +44,7 @@ class HMAC(object):
     def update(self, msg):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
-        if not isinstance(msg, six.binary_type):
+        if not isinstance(msg, bytes):
             raise TypeError("msg must be bytes")
         self._ctx.update(msg)
 
@@ -68,7 +66,7 @@ class HMAC(object):
         return digest
 
     def verify(self, signature):
-        if not isinstance(signature, six.binary_type):
+        if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes")
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):

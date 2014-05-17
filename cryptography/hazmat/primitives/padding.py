@@ -104,7 +104,7 @@ class _PKCS7PaddingContext(object):
         if self._buffer is None:
             raise AlreadyFinalized("Context was already finalized")
 
-        if not isinstance(data, six.binary_type):
+        if not isinstance(data, bytes):
             raise TypeError("data must be bytes")
 
         self._buffer += data
@@ -137,7 +137,7 @@ class _PKCS7UnpaddingContext(object):
         if self._buffer is None:
             raise AlreadyFinalized("Context was already finalized")
 
-        if not isinstance(data, six.binary_type):
+        if not isinstance(data, bytes):
             raise TypeError("data must be bytes")
 
         self._buffer += data

@@ -17,8 +17,6 @@ import sys
 
 import cffi
 
-import six
-
 from cryptography.hazmat.bindings.utils import _create_modulename
 
 TYPES = """
@@ -57,8 +55,7 @@ _lib = _ffi.verify(
 
 
 def bytes_eq(a, b):
-    if (not isinstance(a, six.binary_type) or
-            not isinstance(b, six.binary_type)):
+    if not isinstance(a, bytes) or not isinstance(b, bytes):
             raise TypeError("a and b must be bytes")
 
     return _lib.Cryptography_constant_time_bytes_eq(a, len(a), b, len(b)) == 1
