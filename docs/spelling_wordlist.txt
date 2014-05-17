@@ -27,6 +27,7 @@ interoperable
 introspectability
 invariants
 iOS
+Koblitz
 metadata
 pickleable
 plaintext
