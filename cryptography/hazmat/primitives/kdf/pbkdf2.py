@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
@@ -41,7 +39,7 @@ class PBKDF2HMAC(object):
         self._used = False
         self._algorithm = algorithm
         self._length = length
-        if not isinstance(salt, six.binary_type):
+        if not isinstance(salt, bytes):
             raise TypeError("salt must be bytes")
         self._salt = salt
         self._iterations = iterations
@@ -52,7 +50,7 @@ class PBKDF2HMAC(object):
             raise AlreadyFinalized("PBKDF2 instances can only be used once")
         self._used = True
 
-        if not isinstance(key_material, six.binary_type):
+        if not isinstance(key_material, bytes):
             raise TypeError("key_material must be bytes")
         return self._backend.derive_pbkdf2_hmac(
             self._algorithm,

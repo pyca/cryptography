@@ -34,7 +34,7 @@ class HKDF(object):
 
         self._algorithm = algorithm
 
-        if not isinstance(salt, six.binary_type) and salt is not None:
+        if not isinstance(salt, bytes) and salt is not None:
             raise TypeError("salt must be bytes")
 
         if salt is None:
@@ -52,7 +52,7 @@ class HKDF(object):
         return h.finalize()
 
     def derive(self, key_material):
-        if not isinstance(key_material, six.binary_type):
+        if not isinstance(key_material, bytes):
             raise TypeError("key_material must be bytes")
 
         return self._hkdf_expand.derive(self._extract(key_material))
@@ -85,7 +85,7 @@ class HKDFExpand(object):
 
         self._length = length
 
-        if not isinstance(info, six.binary_type) and info is not None:
+        if not isinstance(info, bytes) and info is not None:
             raise TypeError("info must be bytes")
 
         if info is None:
@@ -110,7 +110,7 @@ class HKDFExpand(object):
         return b"".join(output)[:self._length]
 
     def derive(self, key_material):
-        if not isinstance(key_material, six.binary_type):
+        if not isinstance(key_material, bytes):
             raise TypeError("key_material must be bytes")
 
         if self._used:

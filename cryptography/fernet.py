@@ -60,7 +60,7 @@ class Fernet(object):
         return self._encrypt_from_parts(data, current_time, iv)
 
     def _encrypt_from_parts(self, data, current_time, iv):
-        if not isinstance(data, six.binary_type):
+        if not isinstance(data, bytes):
             raise TypeError("data must be bytes")
 
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
@@ -80,7 +80,7 @@ class Fernet(object):
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
     def decrypt(self, token, ttl=None):
-        if not isinstance(token, six.binary_type):
+        if not isinstance(token, bytes):
             raise TypeError("token must be bytes")
 
         current_time = int(time.time())

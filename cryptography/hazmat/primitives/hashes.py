@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, UnsupportedAlgorithm, _Reasons
@@ -46,7 +44,7 @@ class Hash(object):
     def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized")
-        if not isinstance(data, six.binary_type):
+        if not isinstance(data, bytes):
             raise TypeError("data must be bytes")
         self._ctx.update(data)
 
