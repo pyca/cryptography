@@ -6,7 +6,7 @@ Elliptic Curve
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.ec
 
 
-.. class:: EllipticCurvePrivateNumbers
+.. class:: EllipticCurvePrivateNumbers(private_key, public_numbers)
 
     .. versionadded:: 0.5
 
@@ -26,7 +26,7 @@ Elliptic Curve
         The private key.
 
 
-.. class:: EllipticCurvePublicNumbers
+.. class:: EllipticCurvePublicNumbers(x, y, curve)
 
     .. versionadded:: 0.5
 
