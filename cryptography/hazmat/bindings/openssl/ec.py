@@ -27,6 +27,8 @@ static const int Cryptography_HAS_EC_1_0_1;
 static const int Cryptography_HAS_EC_NISTP_64_GCC_128;
 static const int Cryptography_HAS_EC2M;
 
+static const int OPENSSL_EC_NAMED_CURVE;
+
 typedef ... EC_KEY;
 typedef ... EC_GROUP;
 typedef ... EC_POINT;
@@ -200,6 +202,7 @@ int EC_METHOD_get_field_type(const EC_METHOD *);
 CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_EC
 static const long Cryptography_HAS_EC = 0;
+
 typedef void EC_KEY;
 typedef void EC_GROUP;
 typedef void EC_POINT;
@@ -209,6 +212,8 @@ typedef struct {
     const char *comment;
 } EC_builtin_curve;
 typedef long point_conversion_form_t;
+
+static const int OPENSSL_EC_NAMED_CURVE = 0;
 
 void (*EC_KEY_free)(EC_KEY *) = NULL;
 size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
@@ -393,6 +398,7 @@ static const long Cryptography_HAS_EC2M = 1;
 
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC": [
+        "OPENSSL_EC_NAMED_CURVE",
         "EC_GROUP_new",
         "EC_GROUP_free",
         "EC_GROUP_clear_free",
