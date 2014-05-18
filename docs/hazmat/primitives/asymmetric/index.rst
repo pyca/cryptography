@@ -29,6 +29,7 @@ and Elliptic Curve.
     dsa
     ec
     rsa
+    dh
     serialization
     interfaces
     utils
