@@ -46,9 +46,9 @@ where two different processes can return similar or identical keys and
 compromise the security of the system.
 
 The approach this project has chosen to mitigate this vulnerability is to
-include an engine that replaces the OpenSSL default CSPRNG with one that sources
-its entropy from ``/dev/urandom`` on UNIX-like operating systems and uses
-``CryptGenRandom`` on Windows. This method of pulling from the system pool
+include an engine that replaces the OpenSSL default CSPRNG with one that
+sources its entropy from ``/dev/urandom`` on UNIX-like operating systems and
+uses ``CryptGenRandom`` on Windows. This method of pulling from the system pool
 allows us to avoid potential issues with `initializing the RNG`_ as well as
 protecting us from the ``fork()`` weakness.
 
@@ -70,8 +70,8 @@ On Windows the implementation of ``CryptGenRandom`` depends on which version of
 the operation system you are using. See the `Microsoft documentation`_ for more
 details.
 
-Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source seeded
-from the same pool as ``/dev/random``.
+Linux uses its own PRNG design. ``/dev/urandom`` is a non-blocking source
+seeded from the same pool as ``/dev/random``.
 
 
 .. _`OpenSSL`: https://www.openssl.org/
