@@ -50,6 +50,10 @@ matrix:
         - os: osx
           env: TOX_ENV=py3pep8
           compiler: clang
+        - os: osx
+          env: TOX_ENV=doc8
+          compiler: clang
+
         - os: linux
           env: TOX_ENV=docs
           compiler: clang
@@ -58,4 +62,7 @@ matrix:
           compiler: clang
         - os: linux
           env: TOX_ENV=py3pep8
+          compiler: clang
+        - os: linux
+          env: TOX_ENV=doc8
           compiler: clang
