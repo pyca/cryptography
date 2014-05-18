@@ -26,13 +26,13 @@ class CMAC(object):
     def __init__(self, algorithm, backend, ctx=None):
         if not isinstance(backend, CMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement CMACBackend",
+                "Backend object does not implement CMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
         if not isinstance(algorithm, interfaces.BlockCipherAlgorithm):
             raise TypeError(
-                "Expected instance of interfaces.BlockCipherAlgorithm"
+                "Expected instance of interfaces.BlockCipherAlgorithm."
             )
         self._algorithm = algorithm
 
@@ -44,28 +44,28 @@ class CMAC(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         if not isinstance(data, bytes):
-            raise TypeError("data must be bytes")
+            raise TypeError("data must be bytes.")
         self._ctx.update(data)
 
     def finalize(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
 
     def verify(self, signature):
         if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes")
+            raise TypeError("signature must be bytes.")
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")
 
     def copy(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         return CMAC(
             self._algorithm,
             backend=self._backend,

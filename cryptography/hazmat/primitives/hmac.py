@@ -26,7 +26,7 @@ class HMAC(object):
     def __init__(self, key, algorithm, backend, ctx=None):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend",
+                "Backend object does not implement HMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -43,14 +43,14 @@ class HMAC(object):
 
     def update(self, msg):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         if not isinstance(msg, bytes):
-            raise TypeError("msg must be bytes")
+            raise TypeError("msg must be bytes.")
         self._ctx.update(msg)
 
     def copy(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         return HMAC(
             self._key,
             self.algorithm,
@@ -60,14 +60,14 @@ class HMAC(object):
 
     def finalize(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest
 
     def verify(self, signature):
         if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes")
+            raise TypeError("signature must be bytes.")
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")

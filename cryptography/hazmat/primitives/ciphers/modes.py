@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives import interfaces
 
 def _check_iv_length(mode, algorithm):
     if len(mode.initialization_vector) * 8 != algorithm.block_size:
-        raise ValueError("Invalid IV size ({0}) for {1}".format(
+        raise ValueError("Invalid IV size ({0}) for {1}.".format(
             len(mode.initialization_vector), mode.name
         ))
 
@@ -86,7 +86,7 @@ class CTR(object):
 
     def validate_for_algorithm(self, algorithm):
         if len(self.nonce) * 8 != algorithm.block_size:
-            raise ValueError("Invalid nonce size ({0}) for {1}".format(
+            raise ValueError("Invalid nonce size ({0}) for {1}.".format(
                 len(self.nonce), self.name
             ))
 
@@ -103,7 +103,7 @@ class GCM(object):
         # for it
         if tag is not None and len(tag) < 4:
             raise ValueError(
-                "Authentication tag must be 4 bytes or longer"
+                "Authentication tag must be 4 bytes or longer."
             )
 
         self.initialization_vector = initialization_vector

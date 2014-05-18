@@ -29,7 +29,7 @@ class HOTP(object):
     def __init__(self, key, length, algorithm, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend",
+                "Backend object does not implement HMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -37,13 +37,13 @@ class HOTP(object):
             raise ValueError("Key length has to be at least 128 bits.")
 
         if not isinstance(length, six.integer_types):
-            raise TypeError("Length parameter must be an integer type")
+            raise TypeError("Length parameter must be an integer type.")
 
         if length < 6 or length > 8:
             raise ValueError("Length of HOTP has to be between 6 to 8.")
 
         if not isinstance(algorithm, (SHA1, SHA256, SHA512)):
-            raise TypeError("Algorithm must be SHA1, SHA256 or SHA512")
+            raise TypeError("Algorithm must be SHA1, SHA256 or SHA512.")
 
         self._key = key
         self._length = length
@@ -57,7 +57,7 @@ class HOTP(object):
 
     def verify(self, hotp, counter):
         if not constant_time.bytes_eq(self.generate(counter), hotp):
-            raise InvalidToken("Supplied HOTP value does not match")
+            raise InvalidToken("Supplied HOTP value does not match.")
 
     def _dynamic_truncate(self, counter):
         ctx = hmac.HMAC(self._key, self._algorithm, self._backend)

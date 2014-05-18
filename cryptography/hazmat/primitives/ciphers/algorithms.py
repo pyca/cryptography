@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import interfaces
 def _verify_key_size(algorithm, key):
     # Verify that the key size matches the expected key size
     if len(key) * 8 not in algorithm.key_sizes:
-        raise ValueError("Invalid key size ({0}) for {1}".format(
+        raise ValueError("Invalid key size ({0}) for {1}.".format(
             len(key) * 8, algorithm.name
         ))
     return key

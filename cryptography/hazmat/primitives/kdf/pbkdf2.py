@@ -26,13 +26,13 @@ class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
         if not isinstance(backend, PBKDF2HMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement PBKDF2HMACBackend",
+                "Backend object does not implement PBKDF2HMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
         if not backend.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm(
-                "{0} is not supported for PBKDF2 by this backend".format(
+                "{0} is not supported for PBKDF2 by this backend.".format(
                     algorithm.name),
                 _Reasons.UNSUPPORTED_HASH
             )
@@ -40,18 +40,18 @@ class PBKDF2HMAC(object):
         self._algorithm = algorithm
         self._length = length
         if not isinstance(salt, bytes):
-            raise TypeError("salt must be bytes")
+            raise TypeError("salt must be bytes.")
         self._salt = salt
         self._iterations = iterations
         self._backend = backend
 
     def derive(self, key_material):
         if self._used:
-            raise AlreadyFinalized("PBKDF2 instances can only be used once")
+            raise AlreadyFinalized("PBKDF2 instances can only be used once.")
         self._used = True
 
         if not isinstance(key_material, bytes):
-            raise TypeError("key_material must be bytes")
+            raise TypeError("key_material must be bytes.")
         return self._backend.derive_pbkdf2_hmac(
             self._algorithm,
             self._length,
