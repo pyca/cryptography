@@ -22,6 +22,7 @@ env:
         - TOX_ENV=docs
         - TOX_ENV=pep8
         - TOX_ENV=py3pep8
+        - TOX_ENV=doc8
 
 install:
     - ./.travis/install.sh
