@@ -61,6 +61,8 @@ int EC_GROUP_set_curve_GF2m(
 int EC_GROUP_get_curve_GF2m(
     const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
 
+int EC_GROUP_get_degree(const EC_GROUP *);
+
 const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *);
 const EC_POINT *EC_GROUP_get0_generator(const EC_GROUP *);
 int EC_GROUP_get_curve_name(const EC_GROUP *);
@@ -250,6 +252,8 @@ int (*EC_GROUP_set_curve_GFp)(
 int (*EC_GROUP_get_curve_GFp)(
     const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
 
+int (*EC_GROUP_get_degree)(const EC_GROUP *) = NULL;
+
 const EC_METHOD *(*EC_GROUP_method_of)(const EC_GROUP *) = NULL;
 const EC_POINT *(*EC_GROUP_get0_generator)(const EC_GROUP *) = NULL;
 int (*EC_GROUP_get_curve_name)(const EC_GROUP *) = NULL;
@@ -399,6 +403,7 @@ CONDITIONAL_NAMES = {
         "EC_GROUP_method_of",
         "EC_GROUP_get0_generator",
         "EC_GROUP_get_curve_name",
+        "EC_GROUP_get_degree",
         "EC_KEY_free",
         "EC_get_builtin_curves",
         "EC_KEY_new_by_curve_name",
