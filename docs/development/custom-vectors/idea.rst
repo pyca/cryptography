@@ -14,7 +14,8 @@ the following python script was run to generate the vector files.
 
 .. literalinclude:: /development/custom-vectors/idea/generate_idea.py
 
-Download link: :download:`generate_idea.py </development/custom-vectors/idea/generate_idea.py>`
+Download link: :download:`generate_idea.py
+</development/custom-vectors/idea/generate_idea.py>`
 
 
 Verification
@@ -25,6 +26,7 @@ project's Python bindings.
 
 .. literalinclude:: /development/custom-vectors/idea/verify_idea.py
 
-Download link: :download:`verify_idea.py </development/custom-vectors/idea/verify_idea.py>`
+Download link: :download:`verify_idea.py
+</development/custom-vectors/idea/verify_idea.py>`
 
 .. _`Botan`: http://botan.randombit.net

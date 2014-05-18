@@ -15,7 +15,8 @@ the following Python script was run to generate the vector files.
 
 .. literalinclude:: /development/custom-vectors/cast5/generate_cast5.py
 
-Download link: :download:`generate_cast5.py </development/custom-vectors/cast5/generate_cast5.py>`
+Download link: :download:`generate_cast5.py
+</development/custom-vectors/cast5/generate_cast5.py>`
 
 
 Verification
@@ -26,4 +27,5 @@ The following Go code was used to verify the vectors.
 .. literalinclude:: /development/custom-vectors/cast5/verify_cast5.go
     :language: go
 
-Download link: :download:`verify_cast5.go </development/custom-vectors/cast5/verify_cast5.go>`
+Download link: :download:`verify_cast5.go
+</development/custom-vectors/cast5/verify_cast5.go>`

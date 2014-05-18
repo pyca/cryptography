@@ -14,7 +14,8 @@ the following python script was run to generate the vector files.
 
 .. literalinclude:: /development/custom-vectors/seed/generate_seed.py
 
-Download link: :download:`generate_seed.py </development/custom-vectors/seed/generate_seed.py>`
+Download link: :download:`generate_seed.py
+</development/custom-vectors/seed/generate_seed.py>`
 
 
 Verification
@@ -25,6 +26,7 @@ project's Python bindings.
 
 .. literalinclude:: /development/custom-vectors/seed/verify_seed.py
 
-Download link: :download:`verify_seed.py </development/custom-vectors/seed/verify_seed.py>`
+Download link: :download:`verify_seed.py
+</development/custom-vectors/seed/verify_seed.py>`
 
 .. _`Botan`: http://botan.randombit.net
