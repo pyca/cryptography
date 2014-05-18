@@ -108,7 +108,8 @@ Using your own OpenSSL on OS X
 ------------------------------
 
 To link cryptography against a custom version of OpenSSL you'll need to set
-``ARCHFLAGS``, ``LDFLAGS``, and ``CFLAGS``. OpenSSL can be installed via `Homebrew`_ or `MacPorts`_:
+``ARCHFLAGS``, ``LDFLAGS``, and ``CFLAGS``. OpenSSL can be installed via
+`Homebrew`_ or `MacPorts`_:
 
 `Homebrew`_
 
