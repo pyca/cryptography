@@ -47,9 +47,9 @@ class EllipticCurvePublicNumbers(object):
 
 
 class EllipticCurvePrivateNumbers(object):
-    def __init__(self, private_key, public_numbers):
-        if not isinstance(private_key, six.integer_types):
-            raise TypeError("private_key must be an integer.")
+    def __init__(self, private_value, public_numbers):
+        if not isinstance(private_value, six.integer_types):
+            raise TypeError("private_value must be an integer.")
 
         if not isinstance(public_numbers, EllipticCurvePublicNumbers):
             raise TypeError(
@@ -57,12 +57,12 @@ class EllipticCurvePrivateNumbers(object):
                 "instance."
             )
 
-        self._private_key = private_key
+        self._private_value = private_value
         self._public_numbers = public_numbers
 
     @property
-    def private_key(self):
-        return self._private_key
+    def private_value(self):
+        return self._private_value
 
     @property
     def public_numbers(self):

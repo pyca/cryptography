@@ -35,7 +35,7 @@ class TestECC(object):
             )
         )
 
-        assert numbers.private_key == 1
+        assert numbers.private_value == 1
         assert numbers.public_numbers.x == 2
         assert numbers.public_numbers.y == 3
         assert isinstance(numbers.public_numbers.curve, DummyCurve)

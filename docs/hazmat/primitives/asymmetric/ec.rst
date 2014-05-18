@@ -6,7 +6,7 @@ Elliptic Curve
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.ec
 
 
-.. class:: EllipticCurvePrivateNumbers(private_key, public_numbers)
+.. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
 
     .. versionadded:: 0.5
 
@@ -19,11 +19,11 @@ Elliptic Curve
         The :class:`EllipticCurvePublicNumbers` which makes up the EC public
         key associated with this EC private key.
 
-    .. attribute:: private_key
+    .. attribute:: private_value
 
         :type: int
 
-        The private key.
+        The private value.
 
 
 .. class:: EllipticCurvePublicNumbers(x, y, curve)
