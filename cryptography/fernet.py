@@ -43,7 +43,7 @@ class Fernet(object):
         key = base64.urlsafe_b64decode(key)
         if len(key) != 32:
             raise ValueError(
-                "Fernet key must be 32 url-safe base64-encoded bytes"
+                "Fernet key must be 32 url-safe base64-encoded bytes."
             )
 
         self._signing_key = key[:16]
@@ -61,7 +61,7 @@ class Fernet(object):
 
     def _encrypt_from_parts(self, data, current_time, iv):
         if not isinstance(data, bytes):
-            raise TypeError("data must be bytes")
+            raise TypeError("data must be bytes.")
 
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(data) + padder.finalize()
@@ -81,7 +81,7 @@ class Fernet(object):
 
     def decrypt(self, token, ttl=None):
         if not isinstance(token, bytes):
-            raise TypeError("token must be bytes")
+            raise TypeError("token must be bytes.")
 
         current_time = int(time.time())
 

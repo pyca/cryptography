@@ -26,12 +26,14 @@ class Cipher(object):
     def __init__(self, algorithm, mode, backend):
         if not isinstance(backend, CipherBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement CipherBackend",
+                "Backend object does not implement CipherBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
         if not isinstance(algorithm, interfaces.CipherAlgorithm):
-            raise TypeError("Expected interface of interfaces.CipherAlgorithm")
+            raise TypeError(
+                "Expected interface of interfaces.CipherAlgorithm."
+            )
 
         if mode is not None:
             mode.validate_for_algorithm(algorithm)
@@ -44,7 +46,7 @@ class Cipher(object):
         if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
             if self.mode.tag is not None:
                 raise ValueError(
-                    "Authentication tag must be None when encrypting"
+                    "Authentication tag must be None when encrypting."
                 )
         ctx = self._backend.create_symmetric_encryption_ctx(
             self.algorithm, self.mode
@@ -55,7 +57,7 @@ class Cipher(object):
         if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
             if self.mode.tag is None:
                 raise ValueError(
-                    "Authentication tag must be provided when decrypting"
+                    "Authentication tag must be provided when decrypting."
                 )
         ctx = self._backend.create_symmetric_decryption_ctx(
             self.algorithm, self.mode
@@ -79,12 +81,12 @@ class _CipherContext(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         return self._ctx.update(data)
 
     def finalize(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         data = self._ctx.finalize()
         self._ctx = None
         return data
@@ -100,13 +102,13 @@ class _AEADCipherContext(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         self._updated = True
         return self._ctx.update(data)
 
     def finalize(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         data = self._ctx.finalize()
         self._tag = self._ctx.tag
         self._ctx = None
@@ -114,9 +116,9 @@ class _AEADCipherContext(object):
 
     def authenticate_additional_data(self, data):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         if self._updated:
-            raise AlreadyUpdated("Update has been called on this context")
+            raise AlreadyUpdated("Update has been called on this context.")
         self._ctx.authenticate_additional_data(data)
 
 
@@ -126,5 +128,5 @@ class _AEADEncryptionContext(_AEADCipherContext):
     def tag(self):
         if self._ctx is not None:
             raise NotYetFinalized("You must finalize encryption before "
-                                  "getting the tag")
+                                  "getting the tag.")
         return self._tag

@@ -26,7 +26,7 @@ class Hash(object):
     def __init__(self, algorithm, backend, ctx=None):
         if not isinstance(backend, HashBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement HashBackend",
+                "Backend object does not implement HashBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -43,21 +43,21 @@ class Hash(object):
 
     def update(self, data):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         if not isinstance(data, bytes):
-            raise TypeError("data must be bytes")
+            raise TypeError("data must be bytes.")
         self._ctx.update(data)
 
     def copy(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         return Hash(
             self.algorithm, backend=self._backend, ctx=self._ctx.copy()
         )
 
     def finalize(self):
         if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
         digest = self._ctx.finalize()
         self._ctx = None
         return digest

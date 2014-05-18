@@ -56,6 +56,6 @@ _lib = _ffi.verify(
 
 def bytes_eq(a, b):
     if not isinstance(a, bytes) or not isinstance(b, bytes):
-            raise TypeError("a and b must be bytes")
+            raise TypeError("a and b must be bytes.")
 
     return _lib.Cryptography_constant_time_bytes_eq(a, len(a), b, len(b)) == 1

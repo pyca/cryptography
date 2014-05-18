@@ -79,10 +79,10 @@ _lib = _ffi.verify(
 class PKCS7(object):
     def __init__(self, block_size):
         if not (0 <= block_size < 256):
-            raise ValueError("block_size must be in range(0, 256)")
+            raise ValueError("block_size must be in range(0, 256).")
 
         if block_size % 8 != 0:
-            raise ValueError("block_size must be a multiple of 8")
+            raise ValueError("block_size must be a multiple of 8.")
 
         self.block_size = block_size
 
@@ -102,10 +102,10 @@ class _PKCS7PaddingContext(object):
 
     def update(self, data):
         if self._buffer is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
 
         if not isinstance(data, bytes):
-            raise TypeError("data must be bytes")
+            raise TypeError("data must be bytes.")
 
         self._buffer += data
 
@@ -118,7 +118,7 @@ class _PKCS7PaddingContext(object):
 
     def finalize(self):
         if self._buffer is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
 
         pad_size = self.block_size // 8 - len(self._buffer)
         result = self._buffer + six.int2byte(pad_size) * pad_size
@@ -135,10 +135,10 @@ class _PKCS7UnpaddingContext(object):
 
     def update(self, data):
         if self._buffer is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
 
         if not isinstance(data, bytes):
-            raise TypeError("data must be bytes")
+            raise TypeError("data must be bytes.")
 
         self._buffer += data
 
@@ -154,17 +154,17 @@ class _PKCS7UnpaddingContext(object):
 
     def finalize(self):
         if self._buffer is None:
-            raise AlreadyFinalized("Context was already finalized")
+            raise AlreadyFinalized("Context was already finalized.")
 
         if len(self._buffer) != self.block_size // 8:
-            raise ValueError("Invalid padding bytes")
+            raise ValueError("Invalid padding bytes.")
 
         valid = _lib.Cryptography_check_pkcs7_padding(
             self._buffer, self.block_size // 8
         )
 
         if not valid:
-            raise ValueError("Invalid padding bytes")
+            raise ValueError("Invalid padding bytes.")
 
         pad_size = six.indexbytes(self._buffer, -1)
         res = self._buffer[:-pad_size]

@@ -28,14 +28,14 @@ class HKDF(object):
     def __init__(self, algorithm, length, salt, info, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend",
+                "Backend object does not implement HMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
         self._algorithm = algorithm
 
         if not isinstance(salt, bytes) and salt is not None:
-            raise TypeError("salt must be bytes")
+            raise TypeError("salt must be bytes.")
 
         if salt is None:
             salt = b"\x00" * (self._algorithm.digest_size // 8)
@@ -53,7 +53,7 @@ class HKDF(object):
 
     def derive(self, key_material):
         if not isinstance(key_material, bytes):
-            raise TypeError("key_material must be bytes")
+            raise TypeError("key_material must be bytes.")
 
         return self._hkdf_expand.derive(self._extract(key_material))
 
@@ -67,7 +67,7 @@ class HKDFExpand(object):
     def __init__(self, algorithm, length, info, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend",
+                "Backend object does not implement HMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -86,7 +86,7 @@ class HKDFExpand(object):
         self._length = length
 
         if not isinstance(info, bytes) and info is not None:
-            raise TypeError("info must be bytes")
+            raise TypeError("info must be bytes.")
 
         if info is None:
             info = b""
@@ -111,7 +111,7 @@ class HKDFExpand(object):
 
     def derive(self, key_material):
         if not isinstance(key_material, bytes):
-            raise TypeError("key_material must be bytes")
+            raise TypeError("key_material must be bytes.")
 
         if self._used:
             raise AlreadyFinalized
