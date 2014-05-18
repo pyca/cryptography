@@ -28,16 +28,16 @@ class RSAPublicKey(object):
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
         ):
-            raise TypeError("RSAPublicKey arguments must be integers")
+            raise TypeError("RSAPublicKey arguments must be integers.")
 
         if modulus < 3:
-            raise ValueError("modulus must be >= 3")
+            raise ValueError("modulus must be >= 3.")
 
         if public_exponent < 3 or public_exponent >= modulus:
-            raise ValueError("public_exponent must be >= 3 and < modulus")
+            raise ValueError("public_exponent must be >= 3 and < modulus.")
 
         if public_exponent & 1 == 0:
-            raise ValueError("public_exponent must be odd")
+            raise ValueError("public_exponent must be odd.")
 
         self._public_exponent = public_exponent
         self._modulus = modulus
@@ -45,7 +45,7 @@ class RSAPublicKey(object):
     def verifier(self, signature, padding, algorithm, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend",
+                "Backend object does not implement RSABackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -55,7 +55,7 @@ class RSAPublicKey(object):
     def encrypt(self, plaintext, padding, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend",
+                "Backend object does not implement RSABackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -132,43 +132,43 @@ class RSAPrivateKey(object):
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
         ):
-            raise TypeError("RSAPrivateKey arguments must be integers")
+            raise TypeError("RSAPrivateKey arguments must be integers.")
 
         if modulus < 3:
-            raise ValueError("modulus must be >= 3")
+            raise ValueError("modulus must be >= 3.")
 
         if p >= modulus:
-            raise ValueError("p must be < modulus")
+            raise ValueError("p must be < modulus.")
 
         if q >= modulus:
-            raise ValueError("q must be < modulus")
+            raise ValueError("q must be < modulus.")
 
         if dmp1 >= modulus:
-            raise ValueError("dmp1 must be < modulus")
+            raise ValueError("dmp1 must be < modulus.")
 
         if dmq1 >= modulus:
-            raise ValueError("dmq1 must be < modulus")
+            raise ValueError("dmq1 must be < modulus.")
 
         if iqmp >= modulus:
-            raise ValueError("iqmp must be < modulus")
+            raise ValueError("iqmp must be < modulus.")
 
         if private_exponent >= modulus:
-            raise ValueError("private_exponent must be < modulus")
+            raise ValueError("private_exponent must be < modulus.")
 
         if public_exponent < 3 or public_exponent >= modulus:
-            raise ValueError("public_exponent must be >= 3 and < modulus")
+            raise ValueError("public_exponent must be >= 3 and < modulus.")
 
         if public_exponent & 1 == 0:
-            raise ValueError("public_exponent must be odd")
+            raise ValueError("public_exponent must be odd.")
 
         if dmp1 & 1 == 0:
-            raise ValueError("dmp1 must be odd")
+            raise ValueError("dmp1 must be odd.")
 
         if dmq1 & 1 == 0:
-            raise ValueError("dmq1 must be odd")
+            raise ValueError("dmq1 must be odd.")
 
         if p * q != modulus:
-            raise ValueError("p*q must equal modulus")
+            raise ValueError("p*q must equal modulus.")
 
         self._p = p
         self._q = q
@@ -183,7 +183,7 @@ class RSAPrivateKey(object):
     def generate(cls, public_exponent, key_size, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend",
+                "Backend object does not implement RSABackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -192,7 +192,7 @@ class RSAPrivateKey(object):
     def signer(self, padding, algorithm, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend",
+                "Backend object does not implement RSABackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -201,7 +201,7 @@ class RSAPrivateKey(object):
     def decrypt(self, ciphertext, padding, backend):
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend",
+                "Backend object does not implement RSABackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 

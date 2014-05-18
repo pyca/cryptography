@@ -44,13 +44,13 @@ class PSS(object):
         else:
             if (not isinstance(salt_length, six.integer_types) and
                     salt_length is not self.MAX_LENGTH):
-                raise TypeError("salt_length must be an integer")
+                raise TypeError("salt_length must be an integer.")
 
             if salt_length is not self.MAX_LENGTH and salt_length < 0:
-                raise ValueError("salt_length must be zero or greater")
+                raise ValueError("salt_length must be zero or greater.")
 
         if salt_length is None and self._mgf._salt_length is None:
-            raise ValueError("You must supply salt_length")
+            raise ValueError("You must supply salt_length.")
 
         self._salt_length = salt_length
 
@@ -86,9 +86,9 @@ class MGF1(object):
             )
             if (not isinstance(salt_length, six.integer_types) and
                     salt_length is not self.MAX_LENGTH):
-                raise TypeError("salt_length must be an integer")
+                raise TypeError("salt_length must be an integer.")
 
             if salt_length is not self.MAX_LENGTH and salt_length < 0:
-                raise ValueError("salt_length must be zero or greater")
+                raise ValueError("salt_length must be zero or greater.")
 
         self._salt_length = salt_length

@@ -154,7 +154,7 @@ class Backend(object):
     def _register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
                                  mode_const):
         if (cipher_cls, mode_cls) in self._cipher_registry:
-            raise ValueError("Duplicate registration for: {0} {1}".format(
+            raise ValueError("Duplicate registration for: {0} {1}.".format(
                 cipher_cls, mode_cls)
             )
         self._cipher_registry[cipher_cls, mode_cls] = (cipher_const,
@@ -228,7 +228,7 @@ class Backend(object):
             # rdar://15589470
             raise ValueError(
                 "The length of the provided data is not a multiple of "
-                "the block length"
+                "the block length."
             )
         else:
             raise InternalError(
@@ -277,7 +277,7 @@ class _CipherContext(object):
         except KeyError:
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
-                "by this backend".format(
+                "by this backend.".format(
                     cipher.name, mode.name if mode else mode),
                 _Reasons.UNSUPPORTED_CIPHER
             )
@@ -324,7 +324,7 @@ class _CipherContext(object):
         if self._bytes_processed % self._byte_block_size:
             raise ValueError(
                 "The length of the provided data is not a multiple of "
-                "the block length"
+                "the block length."
             )
         buf = self._backend._ffi.new("unsigned char[]", self._byte_block_size)
         outlen = self._backend._ffi.new("size_t *")
@@ -351,7 +351,7 @@ class _GCMCipherContext(object):
         except KeyError:
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
-                "by this backend".format(
+                "by this backend.".format(
                     cipher.name, mode.name if mode else mode),
                 _Reasons.UNSUPPORTED_CIPHER
             )
@@ -425,7 +425,7 @@ class _HashContext(object):
                 methods = self._backend._hash_mapping[self.algorithm.name]
             except KeyError:
                 raise UnsupportedAlgorithm(
-                    "{0} is not a supported hash on this backend".format(
+                    "{0} is not a supported hash on this backend.".format(
                         algorithm.name),
                     _Reasons.UNSUPPORTED_HASH
                 )
@@ -469,7 +469,7 @@ class _HMACContext(object):
                 alg = self._backend._supported_hmac_algorithms[algorithm.name]
             except KeyError:
                 raise UnsupportedAlgorithm(
-                    "{0} is not a supported HMAC hash on this backend".format(
+                    "{0} is not a supported HMAC hash on this backend.".format(
                         algorithm.name),
                     _Reasons.UNSUPPORTED_HASH
                 )

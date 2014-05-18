@@ -141,7 +141,7 @@ class Backend(object):
 
     def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
         if (cipher_cls, mode_cls) in self._cipher_registry:
-            raise ValueError("Duplicate registration for: {0} {1}".format(
+            raise ValueError("Duplicate registration for: {0} {1}.".format(
                 cipher_cls, mode_cls)
             )
         self._cipher_registry[cipher_cls, mode_cls] = adapter
@@ -234,7 +234,7 @@ class Backend(object):
             if not isinstance(algorithm, hashes.SHA1):
                 raise UnsupportedAlgorithm(
                     "This version of OpenSSL only supports PBKDF2HMAC with "
-                    "SHA1",
+                    "SHA1.",
                     _Reasons.UNSUPPORTED_HASH
                 )
             res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
@@ -272,7 +272,7 @@ class Backend(object):
     def _unknown_error(self, error):
         return InternalError(
             "Unknown error code {0} from OpenSSL, "
-            "you should probably file a bug. {1}".format(
+            "you should probably file a bug. {1}.".format(
                 error.code, self._err_string(error.code)
             )
         )
@@ -329,13 +329,13 @@ class Backend(object):
 
     def generate_rsa_private_key(self, public_exponent, key_size):
         if public_exponent < 3:
-            raise ValueError("public_exponent must be >= 3")
+            raise ValueError("public_exponent must be >= 3.")
 
         if public_exponent & 1 == 0:
-            raise ValueError("public_exponent must be odd")
+            raise ValueError("public_exponent must be odd.")
 
         if key_size < 512:
-            raise ValueError("key_size must be at least 512-bits")
+            raise ValueError("key_size must be at least 512-bits.")
 
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
@@ -434,13 +434,13 @@ class Backend(object):
     def generate_dsa_parameters(self, key_size):
         if key_size not in (1024, 2048, 3072):
             raise ValueError(
-                "Key size must be 1024 or 2048 or 3072 bits")
+                "Key size must be 1024 or 2048 or 3072 bits.")
 
         if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
                 key_size > 1024):
             raise ValueError(
                 "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
-                "support larger key sizes")
+                "support larger key sizes.")
 
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
@@ -539,28 +539,28 @@ class Backend(object):
             padding_enum = self._lib.RSA_PKCS1_OAEP_PADDING
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend",
+                    "Only MGF1 is supported by this backend.",
                     _Reasons.UNSUPPORTED_MGF
                 )
 
             if not isinstance(padding._mgf._algorithm, hashes.SHA1):
                 raise UnsupportedAlgorithm(
                     "This backend supports only SHA1 inside MGF1 when "
-                    "using OAEP",
+                    "using OAEP.",
                     _Reasons.UNSUPPORTED_HASH
                 )
 
             if padding._label is not None and padding._label != b"":
-                raise ValueError("This backend does not support OAEP labels")
+                raise ValueError("This backend does not support OAEP labels.")
 
             if not isinstance(padding._algorithm, hashes.SHA1):
                 raise UnsupportedAlgorithm(
-                    "This backend only supports SHA1 when using OAEP",
+                    "This backend only supports SHA1 when using OAEP.",
                     _Reasons.UNSUPPORTED_HASH
                 )
         else:
             raise UnsupportedAlgorithm(
-                "{0} is not supported by this backend".format(
+                "{0} is not supported by this backend.".format(
                     padding.name
                 ),
                 _Reasons.UNSUPPORTED_PADDING
@@ -640,14 +640,14 @@ class Backend(object):
                     self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
             raise ValueError(
                 "Data too long for key size. Encrypt less data or use a "
-                "larger key size"
+                "larger key size."
             )
         else:
             assert (
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
                 errors[0].reason == self._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
             )
-            raise ValueError("Decryption failed")
+            raise ValueError("Decryption failed.")
 
     def cmac_algorithm_supported(self, algorithm):
         return (
@@ -699,7 +699,7 @@ class _CipherContext(object):
         except KeyError:
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
-                "by this backend".format(
+                "by this backend.".format(
                     cipher.name, mode.name if mode else mode),
                 _Reasons.UNSUPPORTED_CIPHER
             )
@@ -708,7 +708,7 @@ class _CipherContext(object):
         if evp_cipher == self._backend._ffi.NULL:
             raise UnsupportedAlgorithm(
                 "cipher {0} in {1} mode is not supported "
-                "by this backend".format(
+                "by this backend.".format(
                     cipher.name, mode.name if mode else mode),
                 _Reasons.UNSUPPORTED_CIPHER
             )
@@ -849,7 +849,7 @@ class _HashContext(object):
                 algorithm.name.encode("ascii"))
             if evp_md == self._backend._ffi.NULL:
                 raise UnsupportedAlgorithm(
-                    "{0} is not a supported hash on this backend".format(
+                    "{0} is not a supported hash on this backend.".format(
                         algorithm.name),
                     _Reasons.UNSUPPORTED_HASH
                 )
@@ -900,7 +900,7 @@ class _HMACContext(object):
                 algorithm.name.encode('ascii'))
             if evp_md == self._backend._ffi.NULL:
                 raise UnsupportedAlgorithm(
-                    "{0} is not a supported hash on this backend".format(
+                    "{0} is not a supported hash on this backend.".format(
                         algorithm.name),
                     _Reasons.UNSUPPORTED_HASH
                 )
@@ -969,7 +969,7 @@ class _RSASignatureContext(object):
 
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
-                "Expected provider of interfaces.AsymmetricPadding")
+                "Expected provider of interfaces.AsymmetricPadding.")
 
         if isinstance(padding, PKCS1v15):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
@@ -980,7 +980,7 @@ class _RSASignatureContext(object):
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend",
+                    "Only MGF1 is supported by this backend.",
                     _Reasons.UNSUPPORTED_MGF
                 )
 
@@ -1005,7 +1005,7 @@ class _RSASignatureContext(object):
                 self._finalize_method = self._finalize_pss
         else:
             raise UnsupportedAlgorithm(
-                "{0} is not supported by this backend".format(padding.name),
+                "{0} is not supported by this backend.".format(padding.name),
                 _Reasons.UNSUPPORTED_PADDING
             )
 
@@ -1015,13 +1015,13 @@ class _RSASignatureContext(object):
 
     def update(self, data):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         self._hash_ctx.update(data)
 
     def finalize(self):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         evp_pkey = self._backend._rsa_private_key_to_evp_pkey(
             self._private_key)
@@ -1169,7 +1169,7 @@ class _RSAVerificationContext(object):
 
         if not isinstance(padding, interfaces.AsymmetricPadding):
             raise TypeError(
-                "Expected provider of interfaces.AsymmetricPadding")
+                "Expected provider of interfaces.AsymmetricPadding.")
 
         if isinstance(padding, PKCS1v15):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
@@ -1180,7 +1180,7 @@ class _RSAVerificationContext(object):
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
-                    "Only MGF1 is supported by this backend",
+                    "Only MGF1 is supported by this backend.",
                     _Reasons.UNSUPPORTED_MGF
                 )
 
@@ -1207,7 +1207,7 @@ class _RSAVerificationContext(object):
                 self._verify_method = self._verify_pss
         else:
             raise UnsupportedAlgorithm(
-                "{0} is not supported by this backend".format(padding.name),
+                "{0} is not supported by this backend.".format(padding.name),
                 _Reasons.UNSUPPORTED_PADDING
             )
 
@@ -1217,13 +1217,13 @@ class _RSAVerificationContext(object):
 
     def update(self, data):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         self._hash_ctx.update(data)
 
     def verify(self):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         evp_pkey = self._backend._rsa_public_key_to_evp_pkey(
             self._public_key)
@@ -1357,13 +1357,13 @@ class _DSAVerificationContext(object):
 
     def update(self, data):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         self._hash_ctx.update(data)
 
     def verify(self):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         self._dsa_cdata = self._backend._dsa_cdata_from_public_key(
             self._public_key)
@@ -1402,13 +1402,13 @@ class _DSASignatureContext(object):
 
     def update(self, data):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         self._hash_ctx.update(data)
 
     def finalize(self):
         if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized")
+            raise AlreadyFinalized("Context has already been finalized.")
 
         data_to_sign = self._hash_ctx.finalize()
         self._hash_ctx = None
@@ -1431,7 +1431,7 @@ class _DSASignatureContext(object):
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
-            raise UnsupportedAlgorithm("This backend does not support CMAC",
+            raise UnsupportedAlgorithm("This backend does not support CMAC.",
                                        _Reasons.UNSUPPORTED_CIPHER)
 
         self._backend = backend

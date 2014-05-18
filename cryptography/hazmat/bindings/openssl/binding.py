@@ -149,7 +149,7 @@ class Binding(object):
             lock.release()
         else:
             raise RuntimeError(
-                "Unknown lock mode {0}: lock={1}, file={2}, line={3}".format(
+                "Unknown lock mode {0}: lock={1}, file={2}, line={3}.".format(
                     mode, n, file, line
                 )
             )

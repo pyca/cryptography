@@ -25,7 +25,7 @@ class TOTP(object):
     def __init__(self, key, length, algorithm, time_step, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
-                "Backend object does not implement HMACBackend",
+                "Backend object does not implement HMACBackend.",
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
@@ -38,4 +38,4 @@ class TOTP(object):
 
     def verify(self, totp, time):
         if not constant_time.bytes_eq(self.generate(time), totp):
-            raise InvalidToken("Supplied TOTP value does not match")
+            raise InvalidToken("Supplied TOTP value does not match.")
