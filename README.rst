@@ -1,6 +1,10 @@
 Cryptography
 ============
 
+.. image:: https://pypip.in/version/cryptography/badge.svg
+    :target: https://pypi.python.org/pypi/cryptography/
+    :alt: Latest Version
+
 .. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
