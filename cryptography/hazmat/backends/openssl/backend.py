@@ -862,7 +862,7 @@ class _AESCTRCipherContext(object):
         )
         assert res == 0
         self._ecount = self._backend._ffi.new("char[]", 16)
-        self._nonce = self._backend._ffi.new("char[]", mode.nonce)
+        self._nonce = self._backend._ffi.new("char[16]", mode.nonce)
         self._num = self._backend._ffi.new("unsigned int *", 0)
 
     def update(self, data):
