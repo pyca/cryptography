@@ -208,6 +208,9 @@ class Backend(object):
     def create_symmetric_encryption_ctx(self, cipher, mode):
         if (isinstance(mode, CTR) and isinstance(cipher, AES)
                 and not self._cipher_supported(cipher, mode)):
+            # This is needed to provide support for AES CTR mode in OpenSSL
+            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
+            # extended life ends 2020).
             return _AESCTRCipherContext(self, cipher, mode)
         else:
             return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
@@ -215,6 +218,9 @@ class Backend(object):
     def create_symmetric_decryption_ctx(self, cipher, mode):
         if (isinstance(mode, CTR) and isinstance(cipher, AES)
                 and not self._cipher_supported(cipher, mode)):
+            # This is needed to provide support for AES CTR mode in OpenSSL
+            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
+            # extended life ends 2020).
             return _AESCTRCipherContext(self, cipher, mode)
         else:
             return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
@@ -850,6 +856,8 @@ class _CipherContext(object):
         return self._tag
 
 
+# This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
+# be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
 @utils.register_interface(interfaces.CipherContext)
 class _AESCTRCipherContext(object):
     def __init__(self, backend, cipher, mode):
