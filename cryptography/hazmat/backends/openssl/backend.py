@@ -132,6 +132,14 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
+        if self._evp_cipher_supported(cipher, mode):
+            return True
+        elif isinstance(mode, CTR) and isinstance(cipher, AES):
+            return True
+        else:
+            return False
+
+    def _evp_cipher_supported(self, cipher, mode):
         try:
             adapter = self._cipher_registry[type(cipher), type(mode)]
         except KeyError:
@@ -198,10 +206,24 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        if (isinstance(mode, CTR) and isinstance(cipher, AES)
+                and not self._evp_cipher_supported(cipher, mode)):
+            # This is needed to provide support for AES CTR mode in OpenSSL
+            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
+            # extended life ends 2020).
+            return _AESCTRCipherContext(self, cipher, mode)
+        else:
+            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        if (isinstance(mode, CTR) and isinstance(cipher, AES)
+                and not self._evp_cipher_supported(cipher, mode)):
+            # This is needed to provide support for AES CTR mode in OpenSSL
+            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
+            # extended life ends 2020).
+            return _AESCTRCipherContext(self, cipher, mode)
+        else:
+            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
         if self._lib.Cryptography_HAS_PBKDF2_HMAC:
@@ -832,6 +854,41 @@ class _CipherContext(object):
     @property
     def tag(self):
         return self._tag
+
+
+@utils.register_interface(interfaces.CipherContext)
+class _AESCTRCipherContext(object):
+    """
+    This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
+    be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
+    """
+    def __init__(self, backend, cipher, mode):
+        self._backend = backend
+
+        self._key = self._backend._ffi.new("AES_KEY *")
+        assert self._key != self._backend._ffi.NULL
+        res = self._backend._lib.AES_set_encrypt_key(
+            cipher.key, len(cipher.key) * 8, self._key
+        )
+        assert res == 0
+        self._ecount = self._backend._ffi.new("char[]", 16)
+        self._nonce = self._backend._ffi.new("char[16]", mode.nonce)
+        self._num = self._backend._ffi.new("unsigned int *", 0)
+
+    def update(self, data):
+        buf = self._backend._ffi.new("unsigned char[]", len(data))
+        self._backend._lib.AES_ctr128_encrypt(
+            data, buf, len(data), self._key, self._nonce,
+            self._ecount, self._num
+        )
+        return self._backend._ffi.buffer(buf)[:]
+
+    def finalize(self):
+        self._key = None
+        self._ecount = None
+        self._nonce = None
+        self._num = None
+        return b""
 
 
 @utils.register_interface(interfaces.HashContext)

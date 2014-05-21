@@ -11,6 +11,8 @@ Changelog
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
+* Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
+  support to the OpenSSL backend when linked against 0.9.8.
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~
