@@ -18,6 +18,8 @@ INCLUDES = """
 """
 
 TYPES = """
+/* Note that these will be resolved when cryptography is compiled and are NOT
+   guaranteed to be the version that it actually loads. */
 static const int OPENSSL_VERSION_NUMBER;
 static const char *const OPENSSL_VERSION_TEXT;
 """

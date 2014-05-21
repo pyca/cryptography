@@ -112,11 +112,14 @@ class Backend(object):
 
     def openssl_version_text(self):
         """
-        Friendly string name of linked OpenSSL.
+        Friendly string name of the loaded OpenSSL library. This is not
+        necessarily the same version as it was compiled against.
 
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """
-        return self._ffi.string(self._lib.OPENSSL_VERSION_TEXT).decode("ascii")
+        return self._ffi.string(
+            self._lib.SSLeay_version(self._lib.SSLEAY_VERSION)
+        ).decode("ascii")
 
     def create_hmac_ctx(self, key, algorithm):
         return _HMACContext(self, key, algorithm)
