@@ -20,13 +20,14 @@ import cffi
 from cryptography.hazmat.bindings.utils import _create_modulename
 
 TYPES = """
-uint8_t Cryptography_constant_time_bytes_eq(uint8_t *, size_t, uint8_t *,
-                                            size_t);
+uint8_t Cryptography_constant_time_bytes_eq(volatile uint8_t *, size_t,
+                                            volatile uint8_t *, size_t);
 """
 
 FUNCTIONS = """
-uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
-                                            uint8_t *b, size_t len_b) {
+uint8_t Cryptography_constant_time_bytes_eq(volatile uint8_t *a, size_t len_a,
+                                            volatile uint8_t *b,
+                                            size_t len_b) {
     size_t i = 0;
     uint8_t mismatch = 0;
     if (len_a != len_b) {
