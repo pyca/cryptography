@@ -132,14 +132,14 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        if self._cipher_supported(cipher, mode):
+        if self._evp_cipher_supported(cipher, mode):
             return True
         elif isinstance(mode, CTR) and isinstance(cipher, AES):
             return True
         else:
             return False
 
-    def _cipher_supported(self, cipher, mode):
+    def _evp_cipher_supported(self, cipher, mode):
         try:
             adapter = self._cipher_registry[type(cipher), type(mode)]
         except KeyError:
@@ -856,10 +856,12 @@ class _CipherContext(object):
         return self._tag
 
 
-# This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
-# be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
 @utils.register_interface(interfaces.CipherContext)
 class _AESCTRCipherContext(object):
+    """
+    This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
+    be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
+    """
     def __init__(self, backend, cipher, mode):
         self._backend = backend
 
