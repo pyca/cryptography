@@ -18,3 +18,9 @@ def load_pem_traditional_openssl_private_key(data, password, backend):
     return backend.load_traditional_openssl_pem_private_key(
         data, password
     )
+
+
+def load_pem_pkcs8_private_key(data, password, backend):
+    return backend.load_pkcs8_pem_private_key(
+        data, password
+    )

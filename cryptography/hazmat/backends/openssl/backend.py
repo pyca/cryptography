@@ -26,7 +26,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend, TraditionalOpenSSLSerializationBackend
+    PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+    TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
@@ -55,6 +56,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(PBKDF2HMACBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
+@utils.register_interface(PKCS8SerializationBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -777,6 +779,12 @@ class Backend(object):
         return _CMACContext(self, algorithm)
 
     def load_traditional_openssl_pem_private_key(self, data, password):
+        # OpenSSLs API for loading PKCS#8 certs can also load the traditional
+        # format so we just use that for both of them.
+
+        return self.load_pkcs8_pem_private_key(data, password)
+
+    def load_pkcs8_pem_private_key(self, data, password):
         mem_bio = self._bytes_to_bio(data)
 
         password_callback, password_func = self._pem_password_cb(password)
@@ -793,10 +801,18 @@ class Backend(object):
             if not errors:
                 raise ValueError("Could not unserialize key data.")
 
-            if errors[0][1:] == (
-                self._lib.ERR_LIB_PEM,
-                self._lib.PEM_F_PEM_DO_HEADER,
-                self._lib.PEM_R_BAD_PASSWORD_READ
+            if (
+                errors[0][1:] == (
+                    self._lib.ERR_LIB_PEM,
+                    self._lib.PEM_F_PEM_DO_HEADER,
+                    self._lib.PEM_R_BAD_PASSWORD_READ
+                )
+            ) or (
+                errors[0][1:] == (
+                    self._lib.ERR_LIB_PEM,
+                    self._lib.PEM_F_PEM_READ_BIO_PRIVATEKEY,
+                    self._lib.PEM_R_BAD_PASSWORD_READ
+                )
             ):
                 assert not password
                 raise TypeError(
