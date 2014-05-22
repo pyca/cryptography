@@ -26,7 +26,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend
+    PBKDF2HMACBackend, RSABackend, TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, interfaces
@@ -42,6 +42,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 )
 
 
+_MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 _OpenSSLError = collections.namedtuple("_OpenSSLError",
                                        ["code", "lib", "func", "reason"])
 
@@ -53,6 +54,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
 @utils.register_interface(RSABackend)
+@utils.register_interface(TraditionalOpenSSLSerializationBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -399,6 +401,51 @@ class Backend(object):
 
         return evp_pkey
 
+    def _bytes_to_bio(self, data):
+        """
+        Return a _MemoryBIO namedtuple of (BIO, char*).
+
+        The char* is the storage for the BIO and it must stay alive until the
+        BIO is finished with.
+        """
+        data_char_p = backend._ffi.new("char[]", data)
+        bio = backend._lib.BIO_new_mem_buf(
+            data_char_p, len(data)
+        )
+        assert bio != self._ffi.NULL
+
+        return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
+
+    def _evp_pkey_to_private_key(self, evp_pkey):
+        """
+        Return the appropriate type of PrivateKey given an evp_pkey cdata
+        pointer.
+        """
+
+        type = evp_pkey.type
+
+        if type == self._lib.EVP_PKEY_RSA:
+            rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
+            assert rsa_cdata != self._ffi.NULL
+            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+            return self._rsa_cdata_to_private_key(rsa_cdata)
+        elif type == self._lib.EVP_PKEY_DSA:
+            dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
+            assert dsa_cdata != self._ffi.NULL
+            dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+            return self._dsa_cdata_to_private_key(dsa_cdata)
+        else:
+            raise UnsupportedAlgorithm("Unsupported key type.")
+
+    def _dsa_cdata_to_private_key(self, cdata):
+        return dsa.DSAPrivateKey(
+            modulus=self._bn_to_int(cdata.p),
+            subgroup_order=self._bn_to_int(cdata.q),
+            generator=self._bn_to_int(cdata.g),
+            x=self._bn_to_int(cdata.priv_key),
+            y=self._bn_to_int(cdata.pub_key)
+        )
+
     def _rsa_cdata_to_private_key(self, cdata):
         return rsa.RSAPrivateKey(
             p=self._bn_to_int(cdata.p),
@@ -409,6 +456,37 @@ class Backend(object):
             private_exponent=self._bn_to_int(cdata.d),
             public_exponent=self._bn_to_int(cdata.e),
             modulus=self._bn_to_int(cdata.n),
+        )
+
+    def _pem_password_cb(self, password):
+        """
+        Generate a pem_password_cb function pointer that copied the password to
+        OpenSSL as required and returns the number of bytes copied.
+
+        typedef int pem_password_cb(char *buf, int size,
+                                    int rwflag, void *userdata);
+
+        Useful for decrypting PKCS8 files and so on.
+
+        Returns a tuple of (cdata function pointer, callback function).
+        """
+
+        def pem_password_cb(buf, size, writing, userdata):
+            pem_password_cb.called += 1
+
+            if not password or len(password) >= size:
+                return 0
+            else:
+                pw_buf = self._ffi.buffer(buf, size)
+                pw_buf[:len(password)] = password
+                return len(password)
+
+        pem_password_cb.called = 0
+
+        return (
+            self._ffi.callback("int (char *, int, int, void *)",
+                               pem_password_cb),
+            pem_password_cb
         )
 
     def _rsa_cdata_from_private_key(self, private_key):
@@ -683,6 +761,70 @@ class Backend(object):
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
+
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        mem_bio = self._bytes_to_bio(data)
+
+        password_callback, password_func = self._pem_password_cb(password)
+
+        evp_pkey = self._lib.PEM_read_bio_PrivateKey(
+            mem_bio.bio,
+            self._ffi.NULL,
+            password_callback,
+            self._ffi.NULL
+        )
+
+        if evp_pkey == self._ffi.NULL:
+            errors = self._consume_errors()
+            if not errors:
+                raise ValueError("Could not unserialize key data.")
+
+            if errors[0][1:] == (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_DO_HEADER,
+                self._lib.PEM_R_BAD_PASSWORD_READ
+            ):
+                assert not password
+                raise TypeError(
+                    "Password was not given but private key is encrypted.")
+
+            elif errors[0][1:] == (
+                self._lib.ERR_LIB_EVP,
+                self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                self._lib.EVP_R_BAD_DECRYPT
+            ):
+                raise ValueError(
+                    "Bad decrypt. Incorrect password?"
+                )
+
+            elif errors[0][1:] == (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
+                self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
+            ):
+                raise UnsupportedAlgorithm(
+                    "PEM data is encrypted with an unsupported cipher")
+
+            else:
+                assert errors[0][1] in (
+                    self._lib.ERR_LIB_EVP,
+                    self._lib.ERR_LIB_PEM,
+                    self._lib.ERR_LIB_ASN1,
+                )
+                raise ValueError("Could not unserialize key data.")
+
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        if password is not None and password_func.called == 0:
+            raise TypeError(
+                "Password was given but private key is not encrypted.")
+
+        assert (
+            (password is not None and password_func.called == 1) or
+            password is None
+        )
+
+        return self._evp_pkey_to_private_key(evp_pkey)
 
 
 class GetCipherByName(object):
