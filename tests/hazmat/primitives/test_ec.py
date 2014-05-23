@@ -71,3 +71,9 @@ class TestECC(object):
                     2, 3, None
                 )
             )
+
+        with pytest.raises(TypeError):
+            ec.EllipticCurvePrivateNumbers(
+                1,
+                None
+            )
