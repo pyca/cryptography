@@ -249,7 +249,7 @@ class TestTraditionalOpenSSLSerialisation(object):
             )
 
 
-@pytest.mark.traditional_openssl_serialization
+@pytest.mark.pkcs8_serialization
 class TestPKCS8Serialisation(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
