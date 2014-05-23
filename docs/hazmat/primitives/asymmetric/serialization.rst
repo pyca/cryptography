@@ -98,6 +98,3 @@ header that mentions the type of the serialized key. e.g.
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
-
-
-.. _`X.501`: en.wikipedia.org/wiki/X.500
