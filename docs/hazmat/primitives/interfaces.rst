@@ -503,16 +503,12 @@ Asymmetric interfaces
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
 
-    .. classmethod:: signer(signature_algorithm, backend)
+    .. classmethod:: signer(signature_algorithm)
         
         Sign data which can be verified later by others using the public key.
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
-            provider.
-
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
             provider.
 
         :returns:
@@ -537,7 +533,7 @@ Asymmetric interfaces
 
     An elliptic curve public key.
 
-    .. classmethod:: verifier(signer, signature_algorithm, backend)
+    .. classmethod:: verifier(signer, signature_algorithm)
         
         Verify data was signed by the private key associated with this public
         key.
@@ -546,10 +542,6 @@ Asymmetric interfaces
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
-            provider.
-
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
             provider.
 
         :returns:
