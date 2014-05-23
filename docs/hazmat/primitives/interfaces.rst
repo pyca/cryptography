@@ -474,7 +474,7 @@ Asymmetric interfaces
         :type: string
 
         The name of the curve. Usually the name used for the ASN.1 OID such as
-        "secp256k1".
+        ``secp256k1``.
 
     .. attribute:: key_size
 
