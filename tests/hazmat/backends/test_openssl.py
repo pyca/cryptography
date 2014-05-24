@@ -43,9 +43,18 @@ class DummyCipher(object):
     name = "dummy-cipher"
 
 
+@utils.register_interface(interfaces.AsymmetricPadding)
+class DummyPadding(object):
+    name = "dummy-cipher"
+
+
 @utils.register_interface(interfaces.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
+
+
+class DummyMGF(object):
+    _salt_length = 0
 
 
 class TestOpenSSL(object):
@@ -299,6 +308,44 @@ class TestOpenSSLRSA(object):
 
     def test_unsupported_mgf1_hash_algorithm(self):
         assert backend.mgf1_hash_supported(DummyHash()) is False
+
+    def test_rsa_padding_unsupported_pss_mgf1_hash(self):
+        assert backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(DummyHash()), salt_length=0)
+        ) is False
+
+    def test_rsa_padding_unsupported(self):
+        assert backend.rsa_padding_supported(DummyPadding()) is False
+
+    def test_rsa_padding_supported_pkcs1v15(self):
+        assert backend.rsa_padding_supported(padding.PKCS1v15()) is True
+
+    def test_rsa_padding_supported_pss(self):
+        assert backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ) is True
+
+    def test_rsa_padding_supported_oaep(self):
+        assert backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            ),
+        ) is True
+
+    def test_rsa_padding_unsupported_mgf(self):
+        assert backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=DummyMGF(),
+                algorithm=hashes.SHA1(),
+                label=None
+            ),
+        ) is False
+
+        assert backend.rsa_padding_supported(
+            padding.PSS(mgf=DummyMGF(), salt_length=0)
+        ) is False
 
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
         private_key = rsa.RSAPrivateKey.generate(

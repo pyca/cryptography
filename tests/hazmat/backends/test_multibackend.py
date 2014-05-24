@@ -101,6 +101,9 @@ class DummyRSABackend(object):
     def mgf1_hash_supported(self, algorithm):
         pass
 
+    def rsa_padding_supported(self, padding):
+        pass
+
     def decrypt_rsa(self, private_key, ciphertext, padding):
         pass
 
@@ -222,6 +225,8 @@ class TestMultiBackend(object):
 
         backend.mgf1_hash_supported(hashes.MD5())
 
+        backend.rsa_padding_supported(padding.PKCS1v15())
+
         backend.encrypt_rsa("public_key", "encryptme", padding.PKCS1v15())
 
         backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
@@ -248,6 +253,11 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.mgf1_hash_supported(hashes.MD5())
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.rsa_padding_supported(padding.PKCS1v15())
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM

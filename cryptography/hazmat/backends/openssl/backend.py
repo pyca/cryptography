@@ -534,6 +534,16 @@ class Backend(object):
         else:
             return isinstance(algorithm, hashes.SHA1)
 
+    def rsa_padding_supported(self, padding):
+        if isinstance(padding, PKCS1v15):
+            return True
+        elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
+            return self.mgf1_hash_supported(padding._mgf._algorithm)
+        elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
+            return isinstance(padding._mgf._algorithm, hashes.SHA1)
+        else:
+            return False
+
     def generate_dsa_parameters(self, key_size):
         if key_size not in (1024, 2048, 3072):
             raise ValueError(
