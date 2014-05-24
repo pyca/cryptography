@@ -151,15 +151,6 @@ class TestOpenSSL(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
-    # This test is not in the TestOpenSSLRandomEngine class because to check
-    # if it's really default we don't want to run the setup_method before it
-    def test_osrandom_engine_is_default(self):
-        e = backend._lib.ENGINE_get_default_RAND()
-        name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
-        res = backend._lib.ENGINE_free(e)
-        assert res == 1
-
     @pytest.mark.skipif(
         backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000f,
         reason="Requires an older OpenSSL. Must be < 1.0.0"
@@ -181,6 +172,25 @@ class TestOpenSSL(object):
         parameters = dsa.DSAParameters.generate(3072, backend)
         assert utils.bit_length(parameters.p) == 3072
 
+    def test_int_to_bn(self):
+        value = (2 ** 4242) - 4242
+        bn = backend._int_to_bn(value)
+        assert bn != backend._ffi.NULL
+        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+
+        assert bn
+        assert backend._bn_to_int(bn) == value
+
+    def test_int_to_bn_inplace(self):
+        value = (2 ** 4242) - 4242
+        bn_ptr = backend._lib.BN_new()
+        assert bn_ptr != backend._ffi.NULL
+        bn_ptr = backend._ffi.gc(bn_ptr, backend._lib.BN_free)
+        bn = backend._int_to_bn(value, bn_ptr)
+
+        assert bn == bn_ptr
+        assert backend._bn_to_int(bn_ptr) == value
+
 
 class TestOpenSSLRandomEngine(object):
     def teardown_method(self, method):
@@ -190,6 +200,15 @@ class TestOpenSSLRandomEngine(object):
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
+
+    # This must be the first test in the class so that the teardown method
+    # has not (potentially) altered the default engine.
+    def test_osrandom_engine_is_default(self):
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
@@ -240,25 +259,6 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_builtin_random()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
-
-    def test_int_to_bn(self):
-        value = (2 ** 4242) - 4242
-        bn = backend._int_to_bn(value)
-        assert bn != backend._ffi.NULL
-        bn = backend._ffi.gc(bn, backend._lib.BN_free)
-
-        assert bn
-        assert backend._bn_to_int(bn) == value
-
-    def test_int_to_bn_inplace(self):
-        value = (2 ** 4242) - 4242
-        bn_ptr = backend._lib.BN_new()
-        assert bn_ptr != backend._ffi.NULL
-        bn_ptr = backend._ffi.gc(bn_ptr, backend._lib.BN_free)
-        bn = backend._int_to_bn(value, bn_ptr)
-
-        assert bn == bn_ptr
-        assert backend._bn_to_int(bn_ptr) == value
 
 
 class TestOpenSSLRSA(object):
