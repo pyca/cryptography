@@ -129,6 +129,12 @@ class RSABackend(object):
         Returns encrypted bytes.
         """
 
+    @abc.abstractmethod
+    def rsa_padding_supported(self, padding):
+        """
+        Returns True if the backend supports the given padding options.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSABackend(object):

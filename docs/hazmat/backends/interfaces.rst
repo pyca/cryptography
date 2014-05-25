@@ -263,6 +263,17 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
 
+    .. method:: rsa_padding_supported(padding)
+
+        Check if the specified ``padding`` is supported by the backend.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :returns: ``True`` if the specified ``padding`` is supported by this
+            backend, otherwise ``False``.
+
     .. method:: decrypt_rsa(private_key, ciphertext, padding)
 
         :param private_key: An instance of an
