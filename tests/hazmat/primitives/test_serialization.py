@@ -458,3 +458,21 @@ class TestPKCS8Serialisation(object):
             "bdb55af2f062cc4a3b077434e6fffad5faa29a2b5dba2bed3e4621e478c0"
             "97ccfe7f", 16
         )
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("unenc-dsa-pkcs8.pem", None),
+        ]
+    )
+    def test_load_pem_dsa_private_key(self, key_file, password, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", key_file),
+            lambda pemfile: load_pem_traditional_openssl_private_key(
+                pemfile.read().encode(), password, backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, dsa.DSAPrivateKey)
