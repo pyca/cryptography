@@ -279,9 +279,9 @@ A specific ``backend`` may provide one or more of these interfaces.
         Check if the specified parameters are supported for key generation by
         the backend.
 
-        :param int public_exponent: The public exponent desired.
+        :param int public_exponent: The public exponent.
 
-        :param int key_size: The length in bits of the modulus desired.
+        :param int key_size: The bit length of the generated modulus.
 
     .. method:: decrypt_rsa(private_key, ciphertext, padding)
 
