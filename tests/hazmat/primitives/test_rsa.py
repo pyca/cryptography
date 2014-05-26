@@ -553,7 +553,15 @@ class TestRSASignature(object):
         verifier.verify()
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
+        only_if=lambda backend: (
+            backend.hash_supported(hashes.SHA512()) and
+            backend.rsa_padding_supported(
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA1()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                )
+            )
+        ),
         skip_message="Does not support SHA512."
     )
     def test_pss_minimum_key_size_for_digest(self, backend):
@@ -675,6 +683,12 @@ class TestRSASignature(object):
             private_key.signer(
                 padding.PKCS1v15(), hashes.SHA256, pretend_backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ),
+        skip_message="Does not support PSS."
+    )
     def test_unsupported_pss_mgf(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
@@ -1018,6 +1032,12 @@ class TestRSAVerification(object):
             public_key.verifier(
                 b"foo", padding.PKCS1v15(), hashes.SHA256(), pretend_backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+        ),
+        skip_message="Does not support PSS."
+    )
     def test_unsupported_pss_mgf(self, backend):
         private_key = rsa.RSAPrivateKey.generate(
             public_exponent=65537,
