@@ -378,6 +378,10 @@ class Backend(object):
 
         return self._rsa_cdata_to_private_key(ctx)
 
+    def generate_rsa_parameters_supported(self, public_exponent, key_size):
+        return (public_exponent >= 3 and public_exponent & 1 != 0 and
+                key_size >= 512)
+
     def _new_evp_pkey(self):
         evp_pkey = self._lib.EVP_PKEY_new()
         assert evp_pkey != self._ffi.NULL

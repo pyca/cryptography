@@ -135,6 +135,13 @@ class RSABackend(object):
         Returns True if the backend supports the given padding options.
         """
 
+    @abc.abstractmethod
+    def generate_rsa_parameters_supported(self, public_exponent, key_size):
+        """
+        Returns True if the backend supports the given parameters for key
+        generation.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSABackend(object):
