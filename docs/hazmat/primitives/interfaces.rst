@@ -480,7 +480,7 @@ Asymmetric interfaces
 
         :type: int
 
-        The bit length of the curves base point.
+        The bit length of the curve's base point.
 
 
 .. class:: EllipticCurveSignatureAlgorithm
