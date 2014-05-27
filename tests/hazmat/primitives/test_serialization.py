@@ -19,6 +19,7 @@ import textwrap
 
 import pytest
 
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key,
@@ -243,7 +244,7 @@ class TestTraditionalOpenSSLSerialisation(object):
 
         password = b"password"
 
-        with raises_unsupported_algorithm(None):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             load_pem_traditional_openssl_private_key(
                 key_data, password, backend
             )
@@ -484,7 +485,7 @@ class TestPKCS8Serialisation(object):
         ]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(None):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
@@ -500,7 +501,7 @@ class TestPKCS8Serialisation(object):
         ]
     )
     def test_load_bad_encryption_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(None):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
