@@ -476,3 +476,19 @@ class TestPKCS8Serialisation(object):
 
         assert key
         assert isinstance(key, dsa.DSAPrivateKey)
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("bad-oid-dsa-key.pem", None),
+        ]
+    )
+    def test_load_bad_oid_key(self, key_file, password, backend):
+        with pytest.raises(ValueError):
+            key = load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "PKCS8", key_file),
+                lambda pemfile: load_pem_traditional_openssl_private_key(
+                    pemfile.read().encode(), password, backend
+                )
+            )

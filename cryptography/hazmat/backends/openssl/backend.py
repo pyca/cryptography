@@ -835,6 +835,13 @@ class Backend(object):
                 raise UnsupportedAlgorithm(
                     "PEM data is encrypted with an unsupported cipher")
 
+            elif errors[0][1:] == (
+                self._lib.ERR_LIB_EVP,
+                self._lib.EVP_F_EVP_PKCS82PKEY,
+                self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
+            ):
+                raise ValueError("Unsupported private key algorithm.")
+
             else:
                 assert errors[0][1] in (
                     self._lib.ERR_LIB_EVP,
