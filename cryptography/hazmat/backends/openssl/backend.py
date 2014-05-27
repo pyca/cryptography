@@ -845,10 +845,13 @@ class Backend(object):
                     _Reasons.UNSUPPORTED_CIPHER
                 )
 
-            elif errors[0][1:] == (
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_PKCS82PKEY,
-                self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
+            elif any(
+                error[1:] == (
+                    self._lib.ERR_LIB_EVP,
+                    self._lib.EVP_F_EVP_PKCS82PKEY,
+                    self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
+                )
+                for error in errors
             ):
                 raise UnsupportedAlgorithm(
                     "Unsupported public key algorithm.",
