@@ -484,8 +484,24 @@ class TestPKCS8Serialisation(object):
         ]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with pytest.raises(ValueError):
-            key = load_vectors_from_file(
+        with raises_unsupported_algorithm(None):
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "PKCS8", key_file),
+                lambda pemfile: load_pem_traditional_openssl_private_key(
+                    pemfile.read().encode(), password, backend
+                )
+            )
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("bad-encryption-oid.pem", b"password"),
+        ]
+    )
+    def test_load_bad_encryption_oid_key(self, key_file, password, backend):
+        with raises_unsupported_algorithm(None):
+            load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
                 lambda pemfile: load_pem_traditional_openssl_private_key(

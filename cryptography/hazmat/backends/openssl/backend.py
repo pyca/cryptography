@@ -827,20 +827,33 @@ class Backend(object):
                     "Bad decrypt. Incorrect password?"
                 )
 
-            elif errors[0][1:] == (
-                self._lib.ERR_LIB_PEM,
-                self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
-                self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
+            elif errors[0][1:] in (
+                (
+                    self._lib.ERR_LIB_PEM,
+                    self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
+                    self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
+                ),
+
+                (
+                    self._lib.ERR_LIB_EVP,
+                    self._lib.EVP_F_EVP_PBE_CIPHERINIT,
+                    self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+                )
             ):
                 raise UnsupportedAlgorithm(
-                    "PEM data is encrypted with an unsupported cipher")
+                    "PEM data is encrypted with an unsupported cipher",
+                    _Reasons.UNSUPPORTED_CIPHER
+                )
 
             elif errors[0][1:] == (
                 self._lib.ERR_LIB_EVP,
                 self._lib.EVP_F_EVP_PKCS82PKEY,
                 self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
             ):
-                raise ValueError("Unsupported private key algorithm.")
+                raise UnsupportedAlgorithm(
+                    "Unsupported public key algorithm.",
+                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+                )
 
             else:
                 assert errors[0][1] in (
