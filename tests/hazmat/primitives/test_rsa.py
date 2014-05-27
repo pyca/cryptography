@@ -88,12 +88,24 @@ def test_modular_inverse():
 class TestRSA(object):
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
-        itertools.product(
-            (3, 5, 65537),
-            (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048)
+        itertools.chain(
+            itertools.product(
+                (3, 5, 65537),
+                (1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1536, 2048)
+            ),
+            # 4 is added to guarantee that we get coverage on the skip
+            # below since 4 is not a valid public exponent.
+            [(4, 512)]
         )
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
+        if not backend.generate_rsa_parameters_supported(public_exponent,
+                                                         key_size):
+            pytest.skip(
+                "RSA parameters not supported by {0}. Public exponent: {1} "
+                "Key size: {2}".format(backend, public_exponent, key_size)
+            )
+
         skey = rsa.RSAPrivateKey.generate(public_exponent, key_size, backend)
         _check_rsa_private_key(skey)
         assert skey.key_size == key_size
