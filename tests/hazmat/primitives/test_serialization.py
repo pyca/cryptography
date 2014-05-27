@@ -474,9 +474,42 @@ class TestPKCS8Serialisation(object):
                 pemfile.read().encode(), password, backend
             )
         )
-
         assert key
         assert isinstance(key, dsa.DSAPrivateKey)
+
+        params = key.parameters()
+        assert isinstance(params, dsa.DSAParameters)
+
+        assert key.x == int("00a535a8e1d0d91beafc8bee1d9b2a3a8de3311203", 16)
+        assert key.y == int(
+            "2b260ea97dc6a12ae932c640e7df3d8ff04a8a05a0324f8d5f1b23f15fa1"
+            "70ff3f42061124eff2586cb11b49a82dcdc1b90fc6a84fb10109cb67db5d"
+            "2da971aeaf17be5e37284563e4c64d9e5fc8480258b319f0de29d54d8350"
+            "70d9e287914d77df81491f4423b62da984eb3f45eb2a29fcea5dae525ac6"
+            "ab6bcce04bfdf5b6",
+            16
+        )
+
+        assert params.p == int(
+            "00aa0930cc145825221caffa28ac2894196a27833de5ec21270791689420"
+            "7774a2e7b238b0d36f1b2499a2c2585083eb01432924418d867faa212dd1"
+            "071d4dceb2782794ad393cc08a4d4ada7f68d6e839a5fcd34b4e402d82cb"
+            "8a8cb40fec31911bf9bd360b034caacb4c5e947992573c9e90099c1b0f05"
+            "940cabe5d2de49a167",
+            16
+        )
+
+        assert params.q == int("00adc0e869b36f0ac013a681fdf4d4899d69820451",
+                               16)
+
+        assert params.g == int(
+            "008c6b4589afa53a4d1048bfc346d1f386ca75521ccf72ddaa251286880e"
+            "e13201ff48890bbfc33d79bacaec71e7a778507bd5f1a66422e39415be03"
+            "e71141ba324f5b93131929182c88a9fa4062836066cebe74b5c6690c7d10"
+            "1106c240ab7ebd54e4e3301fd086ce6adac922fb2713a2b0887cba13b9bc"
+            "68ce5cfff241cd3246",
+            16
+        )
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -485,7 +518,9 @@ class TestPKCS8Serialisation(object):
         ]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM):
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
