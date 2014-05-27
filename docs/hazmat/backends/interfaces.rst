@@ -274,6 +274,15 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``padding`` is supported by this
             backend, otherwise ``False``.
 
+    .. method:: generate_rsa_parameters_supported(public_exponent, key_size)
+
+        Check if the specified parameters are supported for key generation by
+        the backend.
+
+        :param int public_exponent: The public exponent.
+
+        :param int key_size: The bit length of the generated modulus.
+
     .. method:: decrypt_rsa(private_key, ciphertext, padding)
 
         :param private_key: An instance of an

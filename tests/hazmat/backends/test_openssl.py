@@ -271,6 +271,12 @@ class TestOpenSSLRandomEngine(object):
 
 
 class TestOpenSSLRSA(object):
+    def test_generate_rsa_parameters_supported(self):
+        assert backend.generate_rsa_parameters_supported(1, 1024) is False
+        assert backend.generate_rsa_parameters_supported(4, 1024) is False
+        assert backend.generate_rsa_parameters_supported(3, 1024) is True
+        assert backend.generate_rsa_parameters_supported(3, 511) is False
+
     @pytest.mark.skipif(
         backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
         reason="Requires an older OpenSSL. Must be < 1.0.1"

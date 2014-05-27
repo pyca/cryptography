@@ -99,7 +99,7 @@ class TestRSA(object):
         assert skey.key_size == key_size
         assert skey.public_exponent == public_exponent
 
-    def test_generate_bad_rsa_key(self, backend):
+    def test_generate_bad_public_exponent(self, backend):
         with pytest.raises(ValueError):
             rsa.RSAPrivateKey.generate(public_exponent=1,
                                        key_size=2048,
