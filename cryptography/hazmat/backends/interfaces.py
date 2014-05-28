@@ -196,6 +196,16 @@ class TraditionalOpenSSLSerializationBackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class PKCS8SerializationBackend(object):
+    @abc.abstractmethod
+    def load_pkcs8_pem_private_key(self, data, password):
+        """
+        Load a private key from PEM encoded data, using password if the data
+        is encrypted.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class CMACBackend(object):
     @abc.abstractmethod
     def cmac_algorithm_supported(self, algorithm):
