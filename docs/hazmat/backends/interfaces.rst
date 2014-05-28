@@ -315,14 +315,13 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
-<<<<<<< HEAD
         :return bytes: The encrypted data.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: If an unsupported
             MGF, hash function, or padding is chosen.
 
         :raises ValueError: When plaintext is too long for the key size.
-=======
+
     .. method:: load_rsa_numbers(numbers):
 
         :param numbers: An instance of
@@ -336,7 +335,6 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers` or
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`.
 
->>>>>>> 70cf9ba... Document the backend interface.
 
 .. class:: TraditionalOpenSSLSerializationBackend
 
