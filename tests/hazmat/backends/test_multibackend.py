@@ -111,7 +111,8 @@ class DummyRSABackend(object):
         pass
 
     def encrypt_rsa(self, public_key, plaintext, padding):
-
+        pass
+        
     def load_rsa_numbers(self, numbers):
         pass
 
