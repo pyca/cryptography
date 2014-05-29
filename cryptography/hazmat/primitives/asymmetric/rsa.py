@@ -21,6 +21,17 @@ from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import interfaces
 
 
+def _verify_rsa_parameters(public_exponent, key_size):
+    if public_exponent < 3:
+        raise ValueError("public_exponent must be >= 3.")
+
+    if public_exponent & 1 == 0:
+        raise ValueError("public_exponent must be odd.")
+
+    if key_size < 512:
+        raise ValueError("key_size must be at least 512-bits.")
+
+
 @utils.register_interface(interfaces.RSAPublicKey)
 class RSAPublicKey(object):
     def __init__(self, public_exponent, modulus):
@@ -187,15 +198,7 @@ class RSAPrivateKey(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        if public_exponent < 3:
-            raise ValueError("public_exponent must be >= 3.")
-
-        if public_exponent & 1 == 0:
-            raise ValueError("public_exponent must be odd.")
-
-        if key_size < 512:
-            raise ValueError("key_size must be at least 512-bits.")
-
+        _verify_rsa_parameters(public_exponent, key_size)
         return backend.generate_rsa_private_key(public_exponent, key_size)
 
     def signer(self, padding, algorithm, backend):

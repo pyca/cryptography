@@ -355,14 +355,7 @@ class Backend(object):
             return bn_ptr[0]
 
     def generate_rsa_private_key(self, public_exponent, key_size):
-        if public_exponent < 3:
-            raise ValueError("public_exponent must be >= 3.")
-
-        if public_exponent & 1 == 0:
-            raise ValueError("public_exponent must be odd.")
-
-        if key_size < 512:
-            raise ValueError("key_size must be at least 512-bits.")
+        rsa._verify_rsa_parameters(public_exponent, key_size)
 
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
