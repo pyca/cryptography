@@ -138,10 +138,14 @@ class _PaddedCipher(object):
         self._padder = padder
 
     def encryptor(self):
-        return _PaddedEncryptor(self._cipher.encryptor(), self._padder.padder())
+        return _PaddedEncryptor(
+            self._cipher.encryptor(), self._padder.padder()
+        )
 
     def decryptor(self):
-        return _PaddedDecryptor(self._cipher.decryptor(), self._padder.unpadder())
+        return _PaddedDecryptor(
+            self._cipher.decryptor(), self._padder.unpadder()
+        )
 
 
 class _PaddedEncryptor(object):
