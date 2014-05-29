@@ -13,9 +13,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.primitives.ciphers.base import Cipher
+from cryptography.hazmat.primitives.ciphers.base import Cipher, _PaddedCipher
 
 
 __all__ = [
     "Cipher",
+    "_PaddedCipher",
 ]

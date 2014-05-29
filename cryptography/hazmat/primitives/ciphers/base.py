@@ -130,3 +130,41 @@ class _AEADEncryptionContext(_AEADCipherContext):
             raise NotYetFinalized("You must finalize encryption before "
                                   "getting the tag.")
         return self._tag
+
+
+class _PaddedCipher(object):
+    def __init__(self, cipher, padder):
+        self._cipher = cipher
+        self._padder = padder
+
+    def encryptor(self):
+        return _PaddedEncryptor(self._cipher.encryptor(), self._padder.padder())
+
+    def decryptor(self):
+        return _PaddedDecryptor(self._cipher.decryptor(), self._padder.unpadder())
+
+
+class _PaddedEncryptor(object):
+    def __init__(self, encryptor, padder):
+        self._encryptor = encryptor
+        self._padder = padder
+
+    def update(self, plaintext):
+        return self._encryptor.update(self._padder.update(plaintext))
+
+    def finalize(self):
+        result = self._encryptor.update(self._padder.finalize())
+        return result + self._encryptor.finalize()
+
+
+class _PaddedDecryptor(object):
+    def __init__(self, decryptor, unpadder):
+        self._decryptor = decryptor
+        self._unpadder = unpadder
+
+    def update(self, ciphertext):
+        return self._unpadder.update(self._decryptor.update(ciphertext))
+
+    def finalize(self):
+        result = self._unpadder.update(self._decryptor.finalize())
+        return result + self._unpadder.finalize()
