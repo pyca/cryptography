@@ -463,6 +463,97 @@ Asymmetric interfaces
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
 
+.. class:: EllipticCurve
+
+    .. versionadded:: 0.5
+
+    A named elliptic curve.
+
+    .. attribute:: name
+
+        :type: string
+
+        The name of the curve. Usually the name used for the ASN.1 OID such as
+        ``secp256k1``.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the curve's base point.
+
+
+.. class:: EllipticCurveSignatureAlgorithm
+
+    .. versionadded:: 0.5
+
+    A signature algorithm for use with elliptic curve keys.
+
+    .. attribute:: algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+
+        The digest algorithm to be used with the signature scheme.
+
+
+.. class:: EllipticCurvePrivateKey
+
+    .. versionadded:: 0.5
+
+    An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
+    `EdDSA`_.
+
+    .. classmethod:: signer(signature_algorithm)
+
+        Sign data which can be verified later by others using the public key.
+
+        :param signature_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+    .. attribute:: curve
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+
+        The elliptic curve for this key.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+
+        The EllipticCurvePublicKey object for this private key.
+
+
+.. class:: EllipticCurvePublicKey
+
+    .. versionadded:: 0.5
+
+    An elliptic curve public key.
+
+    .. classmethod:: verifier(signer, signature_algorithm)
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify.
+
+        :param signature_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+     .. attribute:: curve
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+
+        The elliptic curve for this key.
+
+
 .. class:: AsymmetricSignatureContext
 
     .. versionadded:: 0.2
@@ -612,3 +703,5 @@ Key derivation functions
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
+.. _`ECDSA`: http://en.wikipedia.org/wiki/ECDSA
+.. _`EdDSA`: http://en.wikipedia.org/wiki/EdDSA
