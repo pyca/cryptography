@@ -1787,19 +1787,19 @@ class TestRSANumbers(object):
         # Test a modulus < 3.
 
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(rsa.RSAPublicNumbers(e=7, n=2))
+            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=7, n=2))
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(rsa.RSAPublicNumbers(e=1, n=15))
+            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=1, n=15))
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(rsa.RSAPublicNumbers(e=17, n=15))
+            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=17, n=15))
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(rsa.RSAPublicNumbers(e=16, n=15))
+            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=16, n=15))
 
     def test_invalid_private_numbers_argument_values(self, backend):
         # Start with p=3, q=11, private_exponent=3, public_exponent=7,
@@ -1808,7 +1808,7 @@ class TestRSANumbers(object):
 
         # Test a modulus < 3.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1825,7 +1825,7 @@ class TestRSANumbers(object):
 
         # Test a modulus != p * q.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1842,7 +1842,7 @@ class TestRSANumbers(object):
 
         # Test a p > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=37,
                     q=11,
@@ -1859,7 +1859,7 @@ class TestRSANumbers(object):
 
         # Test a q > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=37,
@@ -1876,7 +1876,7 @@ class TestRSANumbers(object):
 
         # Test a dmp1 > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1893,7 +1893,7 @@ class TestRSANumbers(object):
 
         # Test a dmq1 > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1910,7 +1910,7 @@ class TestRSANumbers(object):
 
         # Test an iqmp > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1927,7 +1927,7 @@ class TestRSANumbers(object):
 
         # Test a private_exponent > modulus
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1944,7 +1944,7 @@ class TestRSANumbers(object):
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1961,7 +1961,7 @@ class TestRSANumbers(object):
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1978,7 +1978,7 @@ class TestRSANumbers(object):
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -1995,7 +1995,7 @@ class TestRSANumbers(object):
 
         # Test a dmp1 that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,
@@ -2012,7 +2012,7 @@ class TestRSANumbers(object):
 
         # Test a dmq1 that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_numbers(
+            backend.load_rsa_private_numbers(
                 rsa.RSAPrivateNumbers(
                     p=3,
                     q=11,

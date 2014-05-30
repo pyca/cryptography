@@ -322,18 +322,21 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :raises ValueError: When plaintext is too long for the key size.
 
-    .. method:: load_rsa_numbers(numbers):
+    .. method:: load_rsa_private_numbers(numbers):
 
         :param numbers: An instance of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
 
         :returns: A provider of
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey` or
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-            depending on if it's input was an
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`.
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
+
+    .. method:: load_rsa_public_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`.
 
 
 .. class:: TraditionalOpenSSLSerializationBackend
