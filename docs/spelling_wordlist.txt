@@ -33,6 +33,7 @@ plaintext
 pseudorandom
 Schneier
 scrypt
+secp
 testability
 unencrypted
 unpadded
