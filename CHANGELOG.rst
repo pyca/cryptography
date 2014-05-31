@@ -13,6 +13,12 @@ Changelog
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
 * Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
   support to the OpenSSL backend when linked against 0.9.8.
+* Added
+  :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
+  and
+  :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
+  support to the :doc:`/hazmat/backends/openssl`.
+
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~
