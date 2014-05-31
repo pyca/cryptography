@@ -141,6 +141,9 @@ ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
 
 /* These isn't a macro the arg is const on openssl 1.0.2+ */
 int ASN1_GENERALIZEDTIME_check(ASN1_GENERALIZEDTIME *);
+
+/* Not a macro, const on openssl 1.0 */
+int ASN1_STRING_set_default_mask_asc(char *);
 """
 
 CUSTOMIZATIONS = """
