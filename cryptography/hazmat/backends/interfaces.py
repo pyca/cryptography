@@ -218,3 +218,39 @@ class CMACBackend(object):
         """
         Create a CMACContext for calculating a message authentication code.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurveBackend(object):
+    @abc.abstractmethod
+    def elliptic_curve_signature_algorithm_supported(
+        self, signature_algorithm, curve
+    ):
+        """
+        Returns True if the backend supports the named elliptic curve with the
+        specified signature algorithm.
+        """
+
+    @abc.abstractmethod
+    def elliptic_curve_supported(self, curve):
+        """
+        Returns True if the backend supports the named elliptic curve.
+        """
+
+    @abc.abstractmethod
+    def generate_elliptic_curve_private_key(self, curve):
+        """
+        Return an object conforming to the EllipticCurvePrivateKey interface.
+        """
+
+    @abc.abstractmethod
+    def elliptic_curve_public_key_from_numbers(self, numbers):
+        """
+        Return an EllipticCurvePublicKey provider using the given numbers.
+        """
+
+    @abc.abstractmethod
+    def elliptic_curve_private_key_from_numbers(self, numbers):
+        """
+        Return an EllipticCurvePublicKey provider using the given numbers.
+        """

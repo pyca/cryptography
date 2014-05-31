@@ -476,3 +476,54 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
             encrypted with an unsupported algorithm.
+
+
+.. class:: EllipticCurveBackend
+
+    .. versionadded:: 0.5
+
+    .. method:: elliptic_curve_supported(curve)
+
+        :param curve: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+            provider.
+
+        :returns: True if the elliptic curve is supported by this backend.
+
+    .. method:: elliptic_curve_signature_algorithm_supported(signature_algorithm, curve)
+
+        :param signature_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
+            provider.
+
+        :param curve: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+            provider.
+
+        :returns: True if the signature algorithm and curve are supported by this backend.
+
+    .. method:: generate_elliptic_curve_private_key(curve)
+
+        :param curve: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+            provider.
+
+    .. method:: elliptic_curve_private_key_from_numbers(numbers)
+
+        :param numbers: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateNumbers`
+            provider.
+
+        :returns: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
+            provider.
+
+    .. method:: elliptic_curve_public_key_from_numbers(numbers)
+
+        :param numbers: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicNumbers`
+            provider.
+
+        :returns: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+            provider.
