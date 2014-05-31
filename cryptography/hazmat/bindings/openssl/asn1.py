@@ -85,6 +85,7 @@ unsigned char *ASN1_STRING_data(ASN1_STRING *);
 int ASN1_STRING_set(ASN1_STRING *, const void *, int);
 int ASN1_STRING_type(ASN1_STRING *);
 int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
+int ASN1_STRING_set_default_mask_asc(const char *);
 
 /*  ASN1 OCTET STRING */
 ASN1_OCTET_STRING *ASN1_OCTET_STRING_new(void);
