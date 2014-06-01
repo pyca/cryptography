@@ -1344,7 +1344,7 @@ class _RSASignatureContext(object):
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
         sig_len = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_SignFinal(
-            self._hash_ctx._ctx,
+            self._hash_ctx._ctx._ctx,
             sig_buf,
             sig_len,
             evp_pkey
