@@ -35,7 +35,7 @@ enum {
 };
 
 
-typedef uint32_t SecExternalFormat; // SecImportExport.h
+typedef uint32_t SecExternalFormat;
 enum {
     kSecFormatUnknown = 0,
     kSecFormatOpenSSL,
