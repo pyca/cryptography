@@ -30,7 +30,11 @@ class Binding(object):
         "common_hmac",
         "common_key_derivation",
         "common_cryptor",
-        "security",
+        "secimport",
+        "secitem",
+        "seckey",
+        "seckeychain",
+        "sectransform",
     ]
 
     ffi = None

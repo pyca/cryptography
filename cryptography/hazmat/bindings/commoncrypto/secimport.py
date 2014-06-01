@@ -14,28 +14,15 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#include <Security/Security.h>
-#include <Security/SecKey.h>
-#include <Security/SecEncryptTransform.h>
+#include <Security/SecImportExport.h>
 """
 
 TYPES = """
-typedef ... *SecKeyRef;
-typedef ... *SecKeychainRef;
 typedef ... *SecAccessRef;
-typedef ... *SecTransformRef;
-typedef uint32_t SecPadding;
 
 CFStringRef kSecImportExportPassphrase;
 CFStringRef kSecImportExportKeychain;
 CFStringRef kSecImportExportAccess;
-
-enum {
-    kSecPaddingNone = 0,
-    kSecPaddingPKCS1 = 1,
-    /* The following perform ASN.1 + PKCS1 padding */
-    kSecPaddingPKCS1SHA1 = 0x8002,
-};
 
 typedef uint32_t SecExternalItemType;
 enum {
@@ -89,48 +76,6 @@ typedef struct {
 
     CFArrayRef               keyAttributes;
 } SecItemImportExportKeyParameters;
-
-CFStringRef kSecEncryptionMode;
-CFStringRef kSecEncryptKey;
-CFStringRef kSecIVKey;
-CFStringRef kSecModeCBCKey;
-CFStringRef kSecModeCFBKey;
-CFStringRef kSecModeECBKey;
-CFStringRef kSecModeNoneKey;
-CFStringRef kSecModeOFBKey;
-CFStringRef kSecOAEPEncodingParametersAttributeName;
-CFStringRef kSecPaddingKey;
-CFStringRef kSecPaddingNoneKey;
-CFStringRef kSecPaddingOAEPKey;
-CFStringRef kSecPaddingPKCS1Key;
-CFStringRef kSecPaddingPKCS5Key;
-CFStringRef kSecPaddingPKCS7Key;
-
-const CFStringRef kSecTransformInputAttributeName;
-const CFStringRef kSecTransformOutputAttributeName;
-const CFStringRef kSecTransformDebugAttributeName;
-const CFStringRef kSecTransformTransformName;
-const CFStringRef kSecTransformAbortAttributeName;
-
-CFStringRef kSecInputIsAttributeName;
-CFStringRef kSecInputIsPlainText;
-CFStringRef kSecInputIsDigest;
-CFStringRef kSecInputIsRaw;
-
-const CFStringRef kSecDigestTypeAttribute;
-const CFStringRef kSecDigestLengthAttribute;
-const CFStringRef kSecDigestMD5;
-const CFStringRef kSecDigestSHA1;
-const CFStringRef kSecDigestSHA2;
-
-const CFTypeRef kSecAttrKeyType;
-const CFTypeRef kSecAttrKeySizeInBits;
-const CFTypeRef kSecAttrIsPermanent;
-const CFTypeRef kSecAttrKeyTypeRSA;
-const CFTypeRef kSecAttrKeyTypeDSA;
-const CFTypeRef kSecAttrKeyTypeEC;
-const CFTypeRef kSecAttrKeyTypeEC;
-const CFTypeRef kSecUseKeychain;
 """
 
 FUNCTIONS = """
@@ -139,18 +84,6 @@ OSStatus SecItemImport(CFDataRef, CFStringRef, SecExternalFormat *,
                        const SecItemImportExportKeyParameters *,
                        SecKeychainRef, CFArrayRef *);
 OSStatus SecPKCS12Import(CFDataRef, CFDictionaryRef, CFArrayRef *);
-
-Boolean SecTransformSetAttribute(SecTransformRef, CFStringRef, CFTypeRef,
-                                 CFErrorRef *);
-SecTransformRef SecDecryptTransformCreate(SecKeyRef, CFErrorRef *);
-SecTransformRef SecEncryptTransformCreate(SecKeyRef, CFErrorRef *);
-SecTransformRef SecVerifyTransformCreate(SecKeyRef, CFDataRef, CFErrorRef *);
-SecTransformRef SecSignTransformCreate(SecKeyRef, CFErrorRef *) ;
-CFTypeRef SecTransformExecute(SecTransformRef, CFErrorRef *);
-OSStatus SecKeychainCreate(const char *, UInt32, const void *, Boolean,
-                           SecAccessRef, SecKeychainRef *);
-OSStatus SecKeychainDelete(SecKeychainRef);
-OSStatus SecKeyGeneratePair(CFDictionaryRef, SecKeyRef *, SecKeyRef *);
 """
 
 MACROS = """
