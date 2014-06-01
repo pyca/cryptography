@@ -25,10 +25,16 @@ class Binding(object):
     """
     _module_prefix = "cryptography.hazmat.bindings.commoncrypto."
     _modules = [
+        "cf",
         "common_digest",
         "common_hmac",
         "common_key_derivation",
         "common_cryptor",
+        "secimport",
+        "secitem",
+        "seckey",
+        "seckeychain",
+        "sectransform",
     ]
 
     ffi = None
@@ -45,6 +51,7 @@ class Binding(object):
         cls.ffi, cls.lib = build_ffi(
             module_prefix=cls._module_prefix,
             modules=cls._modules,
+            extra_link_args=["-framework", "Security"]
         )
 
     @classmethod
