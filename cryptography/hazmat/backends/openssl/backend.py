@@ -1259,18 +1259,12 @@ class _RSASignatureContext(object):
 
         self._padding = padding
         self._algorithm = algorithm
-        self._hash_ctx = _HashContext(backend, self._algorithm)
+        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
 
     def update(self, data):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         self._hash_ctx.update(data)
 
     def finalize(self):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         evp_pkey = self._backend._rsa_private_key_to_evp_pkey(
             self._private_key)
 
@@ -1319,7 +1313,6 @@ class _RSASignatureContext(object):
                 )
                 assert res > 0
         data_to_sign = self._hash_ctx.finalize()
-        self._hash_ctx = None
         buflen = self._backend._ffi.new("size_t *")
         res = self._backend._lib.EVP_PKEY_sign(
             pkey_ctx,
@@ -1349,16 +1342,18 @@ class _RSASignatureContext(object):
         return self._backend._ffi.buffer(buf)[:]
 
     def _finalize_pkcs1(self, evp_pkey, pkey_size, evp_md):
+        if self._hash_ctx._ctx is None:
+            raise AlreadyFinalized("Context has already been finalized.")
+
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
         sig_len = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_SignFinal(
-            self._hash_ctx._ctx,
+            self._hash_ctx._ctx._ctx,
             sig_buf,
             sig_len,
             evp_pkey
         )
         self._hash_ctx.finalize()
-        self._hash_ctx = None
         if res == 0:
             errors = self._backend._consume_errors()
             assert errors[0].lib == self._backend._lib.ERR_LIB_RSA
@@ -1371,7 +1366,6 @@ class _RSASignatureContext(object):
 
     def _finalize_pss(self, evp_pkey, pkey_size, evp_md):
         data_to_sign = self._hash_ctx.finalize()
-        self._hash_ctx = None
         padded = self._backend._ffi.new("unsigned char[]", pkey_size)
         rsa_cdata = self._backend._lib.EVP_PKEY_get1_RSA(evp_pkey)
         assert rsa_cdata != self._backend._ffi.NULL
@@ -1461,18 +1455,12 @@ class _RSAVerificationContext(object):
 
         self._padding = padding
         self._algorithm = algorithm
-        self._hash_ctx = _HashContext(backend, self._algorithm)
+        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
 
     def update(self, data):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         self._hash_ctx.update(data)
 
     def verify(self):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         evp_pkey = self._backend._rsa_public_key_to_evp_pkey(
             self._public_key)
 
@@ -1519,7 +1507,6 @@ class _RSAVerificationContext(object):
                 assert res > 0
 
         data_to_verify = self._hash_ctx.finalize()
-        self._hash_ctx = None
         res = self._backend._lib.EVP_PKEY_verify(
             pkey_ctx,
             self._signature,
@@ -1537,14 +1524,16 @@ class _RSAVerificationContext(object):
             raise InvalidSignature
 
     def _verify_pkcs1(self, evp_pkey, evp_md):
+        if self._hash_ctx._ctx is None:
+            raise AlreadyFinalized("Context has already been finalized.")
+
         res = self._backend._lib.EVP_VerifyFinal(
-            self._hash_ctx._ctx,
+            self._hash_ctx._ctx._ctx,
             self._signature,
             len(self._signature),
             evp_pkey
         )
         self._hash_ctx.finalize()
-        self._hash_ctx = None
         # The previous call can return negative numbers in the event of an
         # error. This is not a signature failure but we need to fail if it
         # occurs.
@@ -1575,7 +1564,6 @@ class _RSAVerificationContext(object):
             raise InvalidSignature
 
         data_to_verify = self._hash_ctx.finalize()
-        self._hash_ctx = None
         res = self._backend._lib.RSA_verify_PKCS1_PSS(
             rsa_cdata,
             data_to_verify,
@@ -1601,25 +1589,18 @@ class _DSAVerificationContext(object):
         self._signature = signature
         self._algorithm = algorithm
 
-        self._hash_ctx = _HashContext(backend, self._algorithm)
+        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
 
     def update(self, data):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         self._hash_ctx.update(data)
 
     def verify(self):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         self._dsa_cdata = self._backend._dsa_cdata_from_public_key(
             self._public_key)
         self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
                                                 self._backend._lib.DSA_free)
 
         data_to_verify = self._hash_ctx.finalize()
-        self._hash_ctx = None
 
         # The first parameter passed to DSA_verify is unused by OpenSSL but
         # must be an integer.
@@ -1642,24 +1623,17 @@ class _DSASignatureContext(object):
         self._backend = backend
         self._private_key = private_key
         self._algorithm = algorithm
-        self._hash_ctx = _HashContext(backend, self._algorithm)
+        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
         self._dsa_cdata = self._backend._dsa_cdata_from_private_key(
             self._private_key)
         self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
                                                 self._backend._lib.DSA_free)
 
     def update(self, data):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         self._hash_ctx.update(data)
 
     def finalize(self):
-        if self._hash_ctx is None:
-            raise AlreadyFinalized("Context has already been finalized.")
-
         data_to_sign = self._hash_ctx.finalize()
-        self._hash_ctx = None
         sig_buf_len = self._backend._lib.DSA_size(self._dsa_cdata)
         sig_buf = self._backend._ffi.new("unsigned char[]", sig_buf_len)
         buflen = self._backend._ffi.new("unsigned int *")
