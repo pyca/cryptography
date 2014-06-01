@@ -25,10 +25,12 @@ class Binding(object):
     """
     _module_prefix = "cryptography.hazmat.bindings.commoncrypto."
     _modules = [
+        "cf",
         "common_digest",
         "common_hmac",
         "common_key_derivation",
         "common_cryptor",
+        "security",
     ]
 
     ffi = None
