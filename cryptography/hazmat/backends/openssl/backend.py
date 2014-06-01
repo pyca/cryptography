@@ -21,7 +21,8 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InternalError, InvalidSignature, InvalidTag, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InternalError, InvalidSignature, InvalidTag,
+    UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
@@ -1341,6 +1342,9 @@ class _RSASignatureContext(object):
         return self._backend._ffi.buffer(buf)[:]
 
     def _finalize_pkcs1(self, evp_pkey, pkey_size, evp_md):
+        if self._hash_ctx._ctx is None:
+            raise AlreadyFinalized("Context has already been finalized.")
+
         sig_buf = self._backend._ffi.new("char[]", pkey_size)
         sig_len = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_SignFinal(
@@ -1520,6 +1524,9 @@ class _RSAVerificationContext(object):
             raise InvalidSignature
 
     def _verify_pkcs1(self, evp_pkey, evp_md):
+        if self._hash_ctx._ctx is None:
+            raise AlreadyFinalized("Context has already been finalized.")
+
         res = self._backend._lib.EVP_VerifyFinal(
             self._hash_ctx._ctx._ctx,
             self._signature,
