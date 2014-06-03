@@ -355,6 +355,85 @@ RSA
             ... )
 
 
+.. class:: RSAPublicNumbers(e, n)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up an RSA public key.
+
+    .. attribute:: n
+
+        :type: int
+
+        The public modulus.
+
+    .. attribute:: e
+
+        :type: int
+
+        The public exponent.
+
+
+.. class:: RSAPrivateNumbers(p, q, d, dmp1, dmq1, iqmp, public_numbers)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up an RSA private key.
+
+    .. warning::
+
+        With the exception of the integers contained in the
+        :class:`RSAPublicNumbers` all attributes of this class must be kept
+        secret. Revealing them will compromise the security of any
+        cryptographic operations performed with a key loaded from them.
+
+    .. attribute:: public_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.rsa.RSAPublicNumbers`
+
+        The :class:`RSAPublicNumbers` which makes up the RSA public key
+        associated with this RSA private key.
+
+    .. attribute:: p
+
+        :type: int
+
+        ``p``, one of the two primes composing the :attr:`modulus`.
+
+    .. attribute:: q
+
+        :type: int
+
+        ``q``, one of the two primes composing the :attr:`modulus`.
+
+    .. attribute:: d
+
+        :type: int
+
+        The private exponent. Alias for :attr:`private_exponent`.
+
+    .. attribute:: dmp1
+
+        :type: int
+
+        A `Chinese remainder theorem`_ coefficient used to speed up RSA
+        operations. Calculated as: d mod (p-1)
+
+    .. attribute:: dmq1
+
+        :type: int
+
+        A `Chinese remainder theorem`_ coefficient used to speed up RSA
+        operations. Calculated as: d mod (q-1)
+
+    .. attribute:: iqmp
+
+        :type: int
+
+        A `Chinese remainder theorem`_ coefficient used to speed up RSA
+        operations. Calculated as: q\ :sup:`-1` mod p
+
+
 Handling partial RSA private keys
 ---------------------------------
 
