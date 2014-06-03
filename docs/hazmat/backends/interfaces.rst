@@ -330,6 +330,10 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A provider of
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
 
+        :raises ValueError: This is raised when the values of ``p``, ``q``,
+            ``private_exponent``, ``public_exponent``, or ``modulus`` do not
+            match the bounds specified in :rfc:`3447`.
+
     .. method:: load_rsa_public_numbers(numbers):
 
         :param numbers: An instance of
@@ -337,6 +341,10 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: A provider of
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`.
+
+        :raises ValueError: This is raised when the values of
+            ``public_exponent`` or ``modulus`` do not match the bounds
+            specified in :rfc:`3447`.
 
 
 .. class:: TraditionalOpenSSLSerializationBackend
