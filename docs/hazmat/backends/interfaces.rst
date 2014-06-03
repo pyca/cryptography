@@ -334,6 +334,9 @@ A specific ``backend`` may provide one or more of these interfaces.
             ``private_exponent``, ``public_exponent``, or ``modulus`` do not
             match the bounds specified in :rfc:`3447`.
 
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
     .. method:: load_rsa_public_numbers(numbers):
 
         :param numbers: An instance of
@@ -345,6 +348,9 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises ValueError: This is raised when the values of
             ``public_exponent`` or ``modulus`` do not match the bounds
             specified in :rfc:`3447`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
 
 
 .. class:: TraditionalOpenSSLSerializationBackend
