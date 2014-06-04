@@ -142,6 +142,18 @@ class RSABackend(object):
         generation.
         """
 
+    @abc.abstractmethod
+    def load_rsa_private_numbers(self, numbers):
+        """
+        Returns an RSAPrivateKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_rsa_public_numbers(self, numbers):
+        """
+        Returns an RSAPublicKey provider.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSABackend(object):

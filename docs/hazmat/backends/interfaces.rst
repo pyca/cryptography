@@ -322,6 +322,37 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :raises ValueError: When plaintext is too long for the key size.
 
+    .. method:: load_rsa_private_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
+
+        :raises ValueError: This is raised when the values of ``p``, ``q``,
+            ``private_exponent``, ``public_exponent``, or ``modulus`` do not
+            match the bounds specified in :rfc:`3447`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+    .. method:: load_rsa_public_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`.
+
+        :raises ValueError: This is raised when the values of
+            ``public_exponent`` or ``modulus`` do not match the bounds
+            specified in :rfc:`3447`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+
 .. class:: TraditionalOpenSSLSerializationBackend
 
     .. versionadded:: 0.3

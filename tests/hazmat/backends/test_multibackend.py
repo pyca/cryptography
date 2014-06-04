@@ -113,6 +113,12 @@ class DummyRSABackend(object):
     def encrypt_rsa(self, public_key, plaintext, padding):
         pass
 
+    def load_rsa_private_numbers(self, numbers):
+        pass
+
+    def load_rsa_public_numbers(self, numbers):
+        pass
+
 
 @utils.register_interface(DSABackend)
 class DummyDSABackend(object):
@@ -236,6 +242,10 @@ class TestMultiBackend(object):
 
         backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
 
+        backend.load_rsa_private_numbers("private_numbers")
+
+        backend.load_rsa_public_numbers("public_numbers")
+
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -278,6 +288,16 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_rsa_private_numbers("private_numbers")
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_rsa_public_numbers("public_numbers")
 
     def test_dsa(self):
         backend = MultiBackend([

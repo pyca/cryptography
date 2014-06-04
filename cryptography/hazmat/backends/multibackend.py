@@ -178,6 +178,20 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("RSA is not supported by the backend.",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
+    def load_rsa_private_numbers(self, numbers):
+        for b in self._filtered_backends(RSABackend):
+            return b.load_rsa_private_numbers(numbers)
+
+        raise UnsupportedAlgorithm("RSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def load_rsa_public_numbers(self, numbers):
+        for b in self._filtered_backends(RSABackend):
+            return b.load_rsa_public_numbers(numbers)
+
+        raise UnsupportedAlgorithm("RSA is not supported by the backend",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
     def generate_dsa_parameters(self, key_size):
         for b in self._filtered_backends(DSABackend):
             return b.generate_dsa_parameters(key_size)
