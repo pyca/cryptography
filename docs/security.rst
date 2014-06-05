@@ -44,7 +44,7 @@ containing:
 * The steps we will be taking to remedy the issue.
 * The patches, if any, that will be applied to ``cryptography``.
 * The date on which the ``cryptography`` team will apply these patches, issue
-  new releases and publicly disclose the issue.
+  new releases, and publicly disclose the issue.
 
 Simultaneously, the reporter of the issue will receive notification of the date
 on which we plan to take the issue public.
