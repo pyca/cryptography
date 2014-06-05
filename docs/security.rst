@@ -36,7 +36,8 @@ disclosure involves multiple steps.
 Approximately one week before full public disclosure, we will send advance
 notification of the issue to a list of people and organizations, primarily
 composed of operating-system vendors and other distributors of
-``cryptography``.  This notification will consist of an email message,
+``cryptography``.  This notification will consist of an email message
+containing:
 
 * A full description of the issue and the affected versions of
   ``cryptography``.
