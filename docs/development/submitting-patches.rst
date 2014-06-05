@@ -153,7 +153,8 @@ details.
 Documentation
 -------------
 
-All features should be documented with prose in the ``docs`` section.
+All features should be documented with prose in the ``docs`` section. To ensure
+it builds and passes `doc8`_ style checks you can run ``tox -e docs``.
 
 Because of the inherent challenges in implementing correct cryptographic
 systems, we want to make our documentation point people in the right directions
@@ -201,3 +202,4 @@ So, specifically:
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
 .. _`Studies have shown`: http://www.ibm.com/developerworks/rational/library/11-proven-practices-for-peer-review/
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
+.. _`doc8`: https://github.com/stackforge/doc8
