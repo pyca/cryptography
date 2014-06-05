@@ -7,7 +7,6 @@ boolean
 Botan
 Changelog
 ciphertext
-codebase
 committer
 committers
 conda

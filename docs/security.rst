@@ -41,7 +41,7 @@ composed of operating-system vendors and other distributors of
 * A full description of the issue and the affected versions of
   ``cryptography``.
 * The steps we will be taking to remedy the issue.
-* The patch(es), if any, that will be applied to ``cryptography``.
+* The patches, if any, that will be applied to ``cryptography``.
 * The date on which the ``cryptography`` team will apply these patches, issue
   new releases and publicly disclose the issue.
 
@@ -50,11 +50,11 @@ on which we plan to take the issue public.
 
 On the day of disclosure, we will take the following steps:
 
-* Apply the relevant patch(es) to the ``cryptography`` codebase. The commit
+* Apply the relevant patches to the ``cryptography`` repository. The commit
   messages for these patches will indicate that they are for security issues,
   but will not describe the issue in any detail; instead, they will warn of
   upcoming disclosure.
-* Issue the relevant release(s).
+* Issue the relevant releases.
 * Post a notice to the cryptography mailing list that describes the issue in
   detail, point to the new release and crediting the reporter of the issue.
 
