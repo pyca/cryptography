@@ -374,33 +374,30 @@ class TestRSA(object):
 
     def test_deprecated_rsa_private_key_construction(self):
         pytest.deprecated_call(
-            rsa.RSAPrivateKey(
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
+            rsa.RSAPrivateKey,
+            p=3,
+            q=11,
+            private_exponent=3,
+            dmp1=1,
+            dmq1=3,
+            iqmp=2,
+            public_exponent=7,
+            modulus=33
         )
 
     def test_deprecated_rsa_public_key_construction(self):
         pytest.deprecated_call(
-            rsa.RSAPublicKey(
-                public_exponent=7,
-                modulus=33
-            )
+            rsa.RSAPublicKey,
+            public_exponent=7,
+            modulus=33
         )
 
     def test_deprecated_rsa_private_key_generation(self, backend):
         pytest.deprecated_call(
-            rsa.RSAPrivateKey.generate(
-                public_exponent=65537,
-                key_size=1024,
-                backend=backend
-            )
+            rsa.RSAPrivateKey.generate,
+            public_exponent=65537,
+            key_size=1024,
+            backend=backend
         )
 
 
