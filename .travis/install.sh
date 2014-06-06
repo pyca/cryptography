@@ -3,7 +3,7 @@
 set -e
 set -x
 
-if [[ "$(uname -s)" == 'Dawin' ]]; then
+if [[ "$(uname -s)" == 'Darwin' ]]; then
     DARWIN=true
 else
     DARWIN=false
