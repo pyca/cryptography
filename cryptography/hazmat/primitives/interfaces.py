@@ -192,24 +192,6 @@ class RSAPrivateKey(object):
         """
 
     @abc.abstractproperty
-    def modulus(self):
-        """
-        The public modulus of the RSA key.
-        """
-
-    @abc.abstractproperty
-    def public_exponent(self):
-        """
-        The public exponent of the RSA key.
-        """
-
-    @abc.abstractproperty
-    def private_exponent(self):
-        """
-        The private exponent of the RSA key.
-        """
-
-    @abc.abstractproperty
     def key_size(self):
         """
         The bit length of the public modulus.
@@ -219,58 +201,6 @@ class RSAPrivateKey(object):
     def public_key(self):
         """
         The RSAPublicKey associated with this private key.
-        """
-
-    @abc.abstractproperty
-    def n(self):
-        """
-        The public modulus of the RSA key. Alias for modulus.
-        """
-
-    @abc.abstractproperty
-    def p(self):
-        """
-        One of the two primes used to generate d.
-        """
-
-    @abc.abstractproperty
-    def q(self):
-        """
-        One of the two primes used to generate d.
-        """
-
-    @abc.abstractproperty
-    def d(self):
-        """
-        The private exponent. This can be calculated using p and q. Alias for
-        private_exponent.
-        """
-
-    @abc.abstractproperty
-    def dmp1(self):
-        """
-        A Chinese remainder theorem coefficient used to speed up RSA
-        calculations.  Calculated as: d mod (p-1)
-        """
-
-    @abc.abstractproperty
-    def dmq1(self):
-        """
-        A Chinese remainder theorem coefficient used to speed up RSA
-        calculations.  Calculated as: d mod (q-1)
-        """
-
-    @abc.abstractproperty
-    def iqmp(self):
-        """
-        A Chinese remainder theorem coefficient used to speed up RSA
-        calculations. The modular inverse of q modulo p
-        """
-
-    @abc.abstractproperty
-    def e(self):
-        """
-        The public exponent of the RSA key. Alias for public_exponent.
         """
 
 
@@ -283,33 +213,9 @@ class RSAPublicKey(object):
         """
 
     @abc.abstractproperty
-    def modulus(self):
-        """
-        The public modulus of the RSA key.
-        """
-
-    @abc.abstractproperty
-    def public_exponent(self):
-        """
-        The public exponent of the RSA key.
-        """
-
-    @abc.abstractproperty
     def key_size(self):
         """
         The bit length of the public modulus.
-        """
-
-    @abc.abstractproperty
-    def n(self):
-        """
-        The public modulus of the RSA key. Alias for modulus.
-        """
-
-    @abc.abstractproperty
-    def e(self):
-        """
-        The public exponent of the RSA key. Alias for public_exponent.
         """
 
 

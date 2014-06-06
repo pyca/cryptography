@@ -157,80 +157,11 @@ Asymmetric interfaces
 
         An RSA public key object corresponding to the values of the private key.
 
-    .. attribute:: modulus
-
-        :type: int
-
-        The public modulus.
-
-    .. attribute:: public_exponent
-
-        :type: int
-
-        The public exponent.
-
-    .. attribute:: private_exponent
-
-        :type: int
-
-        The private exponent.
-
     .. attribute:: key_size
 
         :type: int
 
         The bit length of the modulus.
-
-    .. attribute:: p
-
-        :type: int
-
-        ``p``, one of the two primes composing the :attr:`modulus`.
-
-    .. attribute:: q
-
-        :type: int
-
-        ``q``, one of the two primes composing the :attr:`modulus`.
-
-    .. attribute:: d
-
-        :type: int
-
-        The private exponent. Alias for :attr:`private_exponent`.
-
-    .. attribute:: dmp1
-
-        :type: int
-
-        A `Chinese remainder theorem`_ coefficient used to speed up RSA
-        operations. Calculated as: d mod (p-1)
-
-    .. attribute:: dmq1
-
-        :type: int
-
-        A `Chinese remainder theorem`_ coefficient used to speed up RSA
-        operations. Calculated as: d mod (q-1)
-
-    .. attribute:: iqmp
-
-        :type: int
-
-        A `Chinese remainder theorem`_ coefficient used to speed up RSA
-        operations. Calculated as: q\ :sup:`-1` mod p
-
-    .. attribute:: n
-
-        :type: int
-
-        The public modulus. Alias for :attr:`modulus`.
-
-    .. attribute:: e
-
-        :type: int
-
-        The public exponent. Alias for :attr:`public_exponent`.
 
 
 .. class:: RSAPublicKey
@@ -281,35 +212,11 @@ Asymmetric interfaces
 
         :return bytes: Encrypted data.
 
-    .. attribute:: modulus
-
-        :type: int
-
-        The public modulus.
-
     .. attribute:: key_size
 
         :type: int
 
         The bit length of the modulus.
-
-    .. attribute:: public_exponent
-
-        :type: int
-
-        The public exponent.
-
-    .. attribute:: n
-
-        :type: int
-
-        The public modulus. Alias for :attr:`modulus`.
-
-    .. attribute:: e
-
-        :type: int
-
-        The public exponent. Alias for :attr:`public_exponent`.
 
 
 .. class:: DSAParameters
