@@ -372,6 +372,28 @@ class TestRSA(object):
         with pytest.raises(ValueError):
             rsa.RSAPublicKey(public_exponent=6, modulus=15)
 
+    def test_deprecated_rsa_private_key_construction(self):
+        pytest.deprecated_call(
+            rsa.RSAPrivateKey(
+                p=3,
+                q=11,
+                private_exponent=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_exponent=7,
+                modulus=33
+            )
+        )
+
+    def test_deprecated_rsa_public_key_construction(self):
+        pytest.deprecated_call(
+            rsa.RSAPublicKey(
+                public_exponent=7,
+                modulus=33
+            )
+        )
+
 
 def test_rsa_generate_invalid_backend():
     pretend_backend = object()
