@@ -21,6 +21,17 @@ from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import interfaces
 
 
+def generate_rsa_private_key(public_exponent, key_size, backend):
+    if not isinstance(backend, RSABackend):
+        raise UnsupportedAlgorithm(
+            "Backend object does not implement RSABackend.",
+            _Reasons.BACKEND_MISSING_INTERFACE
+        )
+
+    _verify_rsa_parameters(public_exponent, key_size)
+    return backend.generate_rsa_private_key(public_exponent, key_size)
+
+
 def _verify_rsa_parameters(public_exponent, key_size):
     if public_exponent < 3:
         raise ValueError("public_exponent must be >= 3.")
