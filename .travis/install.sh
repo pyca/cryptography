@@ -3,21 +3,27 @@
 set -e
 set -x
 
+if [[ "$(uname -s)" == 'Dawin' ]]; then
+    DARWIN=true
+else
+    DARWIN=false
+fi
+
 if [[ "${OPENSSL}" == "0.9.8" ]]; then
-    if [[ "$(uname -s)" != "Darwin" ]]; then
-        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
-        sudo apt-get -y update
-        sudo apt-get install -y --force-yes libssl-dev/lucid
-    else
+    if [[ "$DARIN" = true ]]; then
         # travis has openssl installed via brew already, but let's be sure
         if [[ "$(brew list | grep openssl)" != "openssl" ]]; then
             brew install openssl
         fi
+    else
+        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
+        sudo apt-get -y update
+        sudo apt-get install -y --force-yes libssl-dev/lucid
     fi
 fi
 
 if [[ "${TOX_ENV}" == "docs" ]]; then
-    if [[ "$(uname -s)" == "Darwin" ]]; then
+    if [[ "$DARWIN" = true ]]; then
         brew update
         brew install enchant
     else
@@ -26,7 +32,7 @@ if [[ "${TOX_ENV}" == "docs" ]]; then
     fi
 fi
 
-if [[ "$(uname -s)" == "Darwin" ]]; then
+if [[ "$DARWIN" = true ]]; then
     brew update
     brew install pyenv
     if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
@@ -102,6 +108,6 @@ virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox coveralls
 
-if [[ "$(uname -s)" == "Darwin" ]]; then
+if [[ "$DARWIN" = true ]]; then
     pyenv rehash
 fi
