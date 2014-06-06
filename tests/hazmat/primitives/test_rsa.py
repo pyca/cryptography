@@ -394,6 +394,15 @@ class TestRSA(object):
             )
         )
 
+    def test_deprecated_rsa_private_key_generation(self, backend):
+        pytest.deprecated_call(
+            rsa.RSAPrivateKey.generate(
+                public_exponent=65537,
+                key_size=1024,
+                backend=backend
+            )
+        )
+
 
 def test_rsa_generate_invalid_backend():
     pretend_backend = object()

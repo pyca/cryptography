@@ -206,6 +206,12 @@ class RSAPrivateKey(object):
 
     @classmethod
     def generate(cls, public_exponent, key_size, backend):
+        warnings.warn(
+            "The RSAPrivateKey class is deprecated and will be removed in a "
+            "future verison.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement RSABackend.",
