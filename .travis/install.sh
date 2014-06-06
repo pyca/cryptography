@@ -10,7 +10,7 @@ else
 fi
 
 if [[ "${OPENSSL}" == "0.9.8" ]]; then
-    if [[ "$DARIN" = true ]]; then
+    if [[ "$DARWIN" = true ]]; then
         # travis has openssl installed via brew already, but let's be sure
         if [[ "$(brew list | grep openssl)" != "openssl" ]]; then
             brew install openssl
