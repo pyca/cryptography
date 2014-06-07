@@ -552,25 +552,11 @@ class TestPKCS8Serialisation(object):
 @pytest.mark.rsa
 class TestLoadRSANumbers(object):
     def test_load_private_numbers(self, backend):
-        numbers = rsa.RSAPrivateNumbers(
-            p=RSA_KEY_1024["p"],
-            q=RSA_KEY_1024["q"],
-            d=RSA_KEY_1024["private_exponent"],
-            dmp1=RSA_KEY_1024["dmp1"],
-            dmq1=RSA_KEY_1024["dmq1"],
-            iqmp=RSA_KEY_1024["iqmp"],
-            public_numbers=rsa.RSAPublicNumbers(
-                n=RSA_KEY_1024["modulus"],
-                e=RSA_KEY_1024["public_exponent"]
-            )
-        )
-        private_key = load_rsa_private_numbers(numbers, backend)
+        private_key = load_rsa_private_numbers(RSA_KEY_1024, backend)
         assert private_key
 
     def test_load_public_numbers(self, backend):
-        numbers = rsa.RSAPublicNumbers(
-            n=RSA_KEY_1024["modulus"],
-            e=RSA_KEY_1024["public_exponent"]
+        public_key = load_rsa_public_numbers(
+            RSA_KEY_1024.public_numbers, backend
         )
-        public_key = load_rsa_public_numbers(numbers, backend)
         assert public_key
