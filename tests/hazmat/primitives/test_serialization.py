@@ -20,7 +20,8 @@ import textwrap
 import pytest
 
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.primitives.asymmetric import dsa, rsa
+from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key,
     load_pem_traditional_openssl_private_key,
@@ -29,7 +30,7 @@ from cryptography.hazmat.primitives.serialization import (
 )
 
 from .fixtures_rsa import RSA_KEY_1024
-from .utils import _check_rsa_private_key, load_vectors_from_file
+from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
 
@@ -54,8 +55,9 @@ class TestTraditionalOpenSSLSerialisation(object):
         )
 
         assert key
-        assert isinstance(key, rsa.RSAPrivateKey)
-        _check_rsa_private_key(key)
+        assert isinstance(key, interfaces.RSAPrivateKey)
+        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+            _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -87,33 +89,37 @@ class TestTraditionalOpenSSLSerialisation(object):
         )
         assert pkey
 
-        assert pkey.p == int(
+        if not isinstance(pkey, interfaces.RSAPrivateKeyWithNumbers):
+            pytest.skip("Does not support numbers")
+
+        numbers = pkey.private_numbers()
+        assert numbers.p == int(
             "fb7d316fc51531b36d93adaefaf52db6ad5beb793d37c4cf9dfc1ddd17cfbafb",
             16
         )
-        assert pkey.q == int(
+        assert numbers.q == int(
             "df98264e646de9a0fbeab094e31caad5bc7adceaaae3c800ca0275dd4bb307f5",
             16
         )
-        assert pkey.private_exponent == int(
+        assert numbers.d == int(
             "db4848c36f478dd5d38f35ae519643b6b810d404bcb76c00e44015e56ca1cab0"
             "7bb7ae91f6b4b43fcfc82a47d7ed55b8c575152116994c2ce5325ec24313b911",
             16
         )
-        assert pkey.dmp1 == int(
+        assert numbers.dmp1 == int(
             "ce997f967192c2bcc3853186f1559fd355c190c58ddc15cbf5de9b6df954c727",
             16
         )
-        assert pkey.dmq1 == int(
+        assert numbers.dmq1 == int(
             "b018a57ab20ffaa3862435445d863369b852cf70a67c55058213e3fe10e3848d",
             16
         )
-        assert pkey.iqmp == int(
+        assert numbers.iqmp == int(
             "6a8d830616924f5cf2d1bc1973f97fde6b63e052222ac7be06aa2532d10bac76",
             16
         )
-        assert pkey.public_exponent == 65537
-        assert pkey.modulus == int(
+        assert numbers.public_numbers.e == 65537
+        assert numbers.public_numbers.n == int(
             "dba786074f2f0350ce1d99f5aed5b520cfe0deb5429ec8f2a88563763f566e77"
             "9814b7c310e5326edae31198eed439b845dd2db99eaa60f5c16a43f4be6bcf37",
             16
@@ -283,8 +289,9 @@ class TestPKCS8Serialisation(object):
         )
 
         assert key
-        assert isinstance(key, rsa.RSAPrivateKey)
-        _check_rsa_private_key(key)
+        assert isinstance(key, interfaces.RSAPrivateKey)
+        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+            _check_rsa_private_numbers(key.private_numbers())
 
     def test_unused_password(self, backend):
         key_file = os.path.join(
@@ -415,7 +422,12 @@ class TestPKCS8Serialisation(object):
         )
         assert pkey
 
-        assert pkey.modulus == int(
+        if not isinstance(pkey, interfaces.RSAPrivateKeyWithNumbers):
+            pytest.skip("Does not support numbers")
+
+        numbers = pkey.private_numbers()
+
+        assert numbers.public_numbers.n == int(
             "00beec64d6db5760ac2fd4c971145641b9bd7f5c56558ece608795c79807"
             "376a7fe5b19f95b35ca358ea5c8abd7ae051d49cd2f1e45969a1ae945460"
             "3c14b278664a0e414ebc8913acb6203626985525e17a600611b028542dd0"
@@ -423,9 +435,9 @@ class TestPKCS8Serialisation(object):
             "dd68480567c99b1a57", 16
         )
 
-        assert pkey.public_exponent == 65537
+        assert numbers.public_numbers.e == 65537
 
-        assert pkey.private_exponent == int(
+        assert numbers.d == int(
             "0cfe316e9dc6b8817f4fcfd5ae38a0886f68f773b8a6db4c9e6d8703c599"
             "f3d9785c3a2c09e4c8090909fb3721e19a3009ec21221523a729265707a5"
             "8f13063671c42a4096cad378ef2510cb59e23071489d8893ac4934dd149f"
@@ -433,31 +445,31 @@ class TestPKCS8Serialisation(object):
             "cf7d995688c86c81", 16
         )
 
-        assert pkey.p == int(
+        assert numbers.p == int(
             "00db122ac857b2c0437d7616daa98e597bb75ca9ad3a47a70bec10c10036"
             "03328794b225c8e3eee6ffd3fd6d2253d28e071fe27d629ab072faa14377"
             "ce6118cb67", 16
         )
 
-        assert pkey.q == int(
+        assert numbers.q == int(
             "00df1b8aa8506fcbbbb9d00257f2975e38b33d2698fd0f37e82d7ef38c56"
             "f21b6ced63c825383782a7115cfcc093300987dbd2853b518d1c8f26382a"
             "2d2586d391", 16
         )
 
-        assert pkey.dmp1 == int(
+        assert numbers.dmp1 == int(
             "00be18aca13e60712fdf5daa85421eb10d86d654b269e1255656194fb0c4"
             "2dd01a1070ea12c19f5c39e09587af02f7b1a1030d016a9ffabf3b36d699"
             "ceaf38d9bf", 16
         )
 
-        assert pkey.dmq1 == int(
+        assert numbers.dmq1 == int(
             "71aa8978f90a0c050744b77cf1263725b203ac9f730606d8ae1d289dce4a"
             "28b8d534e9ea347aeb808c73107e583eb80c546d2bddadcdb3c82693a4c1"
             "3d863451", 16
         )
 
-        assert pkey.iqmp == int(
+        assert numbers.iqmp == int(
             "136b7b1afac6e6279f71b24217b7083485a5e827d156024609dae39d48a6"
             "bdb55af2f062cc4a3b077434e6fffad5faa29a2b5dba2bed3e4621e478c0"
             "97ccfe7f", 16

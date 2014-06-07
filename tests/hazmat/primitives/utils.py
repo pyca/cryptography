@@ -28,6 +28,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.serialization import (
+    load_rsa_public_numbers
+)
 
 from ...utils import load_vectors_from_file
 
@@ -388,16 +391,16 @@ def generate_rsa_verification_test(param_loader, path, file_names, hash_alg,
 
 
 def rsa_verification_test(backend, params, hash_alg, pad_factory):
-    public_key = rsa.RSAPublicKey(
-        public_exponent=params["public_exponent"],
-        modulus=params["modulus"]
+    public_numbers = rsa.RSAPublicNumbers(
+        e=params["public_exponent"],
+        n=params["modulus"]
     )
+    public_key = load_rsa_public_numbers(public_numbers, backend)
     pad = pad_factory(params, hash_alg)
     verifier = public_key.verifier(
         binascii.unhexlify(params["s"]),
         pad,
-        hash_alg,
-        backend
+        hash_alg
     )
     verifier.update(binascii.unhexlify(params["msg"]))
     if params["fail"]:
@@ -407,19 +410,14 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
         verifier.verify()
 
 
-def _check_rsa_private_key(skey):
+def _check_rsa_private_numbers(skey):
     assert skey
-    assert skey.modulus
-    assert skey.public_exponent
-    assert skey.private_exponent
-    assert skey.p * skey.q == skey.modulus
-    assert skey.key_size
+    pkey = skey.public_numbers
+    assert pkey
+    assert pkey.e
+    assert pkey.n
+    assert skey.d
+    assert skey.p * skey.q == pkey.n
     assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
     assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
     assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
-
-    pkey = skey.public_key()
-    assert pkey
-    assert skey.modulus == pkey.modulus
-    assert skey.public_exponent == pkey.public_exponent
-    assert skey.key_size == pkey.key_size

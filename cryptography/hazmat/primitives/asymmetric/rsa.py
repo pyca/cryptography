@@ -29,7 +29,7 @@ def generate_private_key(public_exponent, key_size, backend):
         )
 
     _verify_rsa_parameters(public_exponent, key_size)
-    return backend.generate_rsa_private_key(public_exponent, key_size)
+    return backend._generate_rsa_private_key(public_exponent, key_size)
 
 
 def _verify_rsa_parameters(public_exponent, key_size):
