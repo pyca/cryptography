@@ -374,7 +374,7 @@ SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
  */
 int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char*, unsigned);
 int SSL_set_alpn_protos(SSL *, const unsigned char*, unsigned);
-void SSL_CTX_set_alpn_select_cb(SSL_CTX*,
+void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
                                 int (*) (SSL *,
                                          const unsigned char **,
                                          unsigned char *,
@@ -538,7 +538,7 @@ int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
                                const unsigned char*,
                                unsigned) = NULL;
 int (*SSL_set_alpn_protos)(SSL *, const unsigned char*, unsigned) = NULL;
-void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX*,
+void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX *,
                                    int (*) (SSL *,
                                             const unsigned char **,
                                             unsigned char *,
