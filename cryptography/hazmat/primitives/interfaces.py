@@ -455,3 +455,19 @@ class EllipticCurvePublicKey(object):
         """
         The EllipticCurve that this key is on.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPrivateNumbersSerialization(object):
+    def rsa_private_numbers(self):
+        """
+        Returns an RSAPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicNumbersSerialization(object):
+    def rsa_public_numbers(self):
+        """
+        Returns an RSAPublicNumbers
+        """

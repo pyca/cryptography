@@ -491,6 +491,40 @@ Asymmetric interfaces
 
     .. attribute:: name
 
+
+Key Serialization
+-----------------
+
+.. class:: RSAPrivateNumbersSerialziation
+
+    .. versionadded:: 0.5
+
+    .. method:: rsa_private_numbers()
+
+        Serialize to an
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+        representation.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+            instance.
+
+
+.. class:: RSAPublicNumberSerialization
+
+    .. versionadded:: 0.5
+
+    .. method:: rsa_public_numbers()
+
+        Serialize to an
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+        representation.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+            instance.
+
+
 Hash algorithms
 ~~~~~~~~~~~~~~~
 
