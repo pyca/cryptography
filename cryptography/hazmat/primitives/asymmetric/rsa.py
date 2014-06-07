@@ -21,7 +21,7 @@ from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import interfaces
 
 
-def generate_rsa_private_key(public_exponent, key_size, backend):
+def generate_private_key(public_exponent, key_size, backend):
     if not isinstance(backend, RSABackend):
         raise UnsupportedAlgorithm(
             "Backend object does not implement RSABackend.",
