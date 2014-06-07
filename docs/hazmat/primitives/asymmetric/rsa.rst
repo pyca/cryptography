@@ -7,13 +7,37 @@ RSA
 
 `RSA`_ is a `public-key`_ algorithm for encrypting and signing messages.
 
+
+.. function:: generate_private_key(public_exponent, key_size, backend)
+
+    .. versionadded:: 0.5
+
+    Generate an RSA private key using the provided ``backend``.
+
+    :param int public_exponent: The public exponent of the new key.
+        Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
+        doubt you should `use 65537`_.
+    :param int key_size: The length of the modulus in bits. For keys
+        generated in 2014 it is strongly recommended to be
+        `at least 2048`_ (See page 41). It must not be less than 512.
+        Some backends may have additional limitations.
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+        provider.
+    :return: A :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+
 .. class:: RSAPrivateKey(p, q, private_exponent, dmp1, dmq1, iqmp, public_exponent, modulus)
 
     .. versionadded:: 0.2
 
     An RSA private key is required for decryption and signing of messages.
 
-    You should use :meth:`~generate` to generate new keys.
+    You should use :func:`generate_private_key` to generate new keys.
 
     .. warning::
         This method only checks a limited set of properties of its arguments.
