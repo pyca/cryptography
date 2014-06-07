@@ -18,7 +18,7 @@ Changelog
   and
   :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
   support to the :doc:`/hazmat/backends/openssl`.
-
+* Added :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~

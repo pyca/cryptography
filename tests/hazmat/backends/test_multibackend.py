@@ -18,12 +18,12 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend
+    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
+    HashBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from ...utils import raises_unsupported_algorithm
@@ -152,6 +152,41 @@ class DummyCMACBackend(object):
     def create_cmac_ctx(self, algorithm):
         if not self.cmac_algorithm_supported(algorithm):
             raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
+
+
+@utils.register_interface(EllipticCurveBackend)
+class DummyEllipticCurveBackend(object):
+    def __init__(self, supported_curves):
+        self._curves = supported_curves
+
+    def elliptic_curve_supported(self, curve):
+        return any(
+            isinstance(curve, curve_type)
+            for curve_type in self._curves
+        )
+
+    def elliptic_curve_signature_algorithm_supported(
+        self, signature_algorithm, curve
+    ):
+        return (
+            isinstance(signature_algorithm, ec.ECDSA) and
+            any(
+                isinstance(curve, curve_type)
+                for curve_type in self._curves
+            )
+        )
+
+    def generate_elliptic_curve_private_key(self, curve):
+        if not self.elliptic_curve_supported(curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def elliptic_curve_private_key_from_numbers(self, numbers):
+        if not self.elliptic_curve_supported(numbers.public_numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def elliptic_curve_public_key_from_numbers(self, numbers):
+        if not self.elliptic_curve_supported(numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
 
 class TestMultiBackend(object):
@@ -361,3 +396,69 @@ class TestMultiBackend(object):
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cmac.CMAC(algorithms.TripleDES(fake_key), backend)
+
+    def test_elliptic_curve(self):
+        backend = MultiBackend([
+            DummyEllipticCurveBackend([
+                ec.SECT283K1
+            ])
+        ])
+
+        assert backend.elliptic_curve_supported(ec.SECT283K1()) is True
+
+        assert backend.elliptic_curve_signature_algorithm_supported(
+            ec.ECDSA(hashes.SHA256()),
+            ec.SECT283K1()
+        ) is True
+
+        backend.generate_elliptic_curve_private_key(ec.SECT283K1())
+
+        backend.elliptic_curve_private_key_from_numbers(
+            ec.EllipticCurvePrivateNumbers(
+                1,
+                ec.EllipticCurvePublicNumbers(
+                    2,
+                    3,
+                    ec.SECT283K1()
+                )
+            )
+        )
+
+        backend.elliptic_curve_public_key_from_numbers(
+            ec.EllipticCurvePublicNumbers(
+                2,
+                3,
+                ec.SECT283K1()
+            )
+        )
+
+        assert backend.elliptic_curve_supported(ec.SECT163K1()) is False
+
+        assert backend.elliptic_curve_signature_algorithm_supported(
+            ec.ECDSA(hashes.SHA256()),
+            ec.SECT163K1()
+        ) is False
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.generate_elliptic_curve_private_key(ec.SECT163K1())
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.elliptic_curve_private_key_from_numbers(
+                ec.EllipticCurvePrivateNumbers(
+                    1,
+                    ec.EllipticCurvePublicNumbers(
+                        2,
+                        3,
+                        ec.SECT163K1()
+                    )
+                )
+            )
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.elliptic_curve_public_key_from_numbers(
+                ec.EllipticCurvePublicNumbers(
+                    2,
+                    3,
+                    ec.SECT163K1()
+                )
+            )
