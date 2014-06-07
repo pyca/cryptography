@@ -12,9 +12,24 @@ RSA
 
     .. versionadded:: 0.5
 
-    Generate a provider of
-    :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-    using ``backend``.
+    Generate an RSA private key using the provided ``backend``.
+
+    :param int public_exponent: The public exponent of the new key.
+        Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
+        doubt you should `use 65537`_.
+    :param int key_size: The length of the modulus in bits. For keys
+        generated in 2014 it is strongly recommended to be
+        `at least 2048`_ (See page 41). It must not be less than 512.
+        Some backends may have additional limitations.
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+        provider.
+    :return: A :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
 .. class:: RSAPrivateKey(p, q, private_exponent, dmp1, dmq1, iqmp, public_exponent, modulus)
 
