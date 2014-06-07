@@ -458,16 +458,16 @@ class EllipticCurvePublicKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class RSAPrivateNumbersSerialization(object):
-    def rsa_private_numbers(self):
+class RSAPrivateNumbersAvailable(object):
+    def private_numbers(self):
         """
         Returns an RSAPrivateNumbers.
         """
 
 
 @six.add_metaclass(abc.ABCMeta)
-class RSAPublicNumbersSerialization(object):
-    def rsa_public_numbers(self):
+class RSAPublicNumbersAvailable(object):
+    def public_numbers(self):
         """
         Returns an RSAPublicNumbers
         """

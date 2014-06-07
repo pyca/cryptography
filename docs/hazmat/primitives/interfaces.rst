@@ -492,33 +492,33 @@ Asymmetric interfaces
     .. attribute:: name
 
 
-Key Serialization
------------------
+Raw Numbers
+~~~~~~~~~~~
 
-.. class:: RSAPrivateNumbersSerialziation
+.. class:: RSAPrivateNumbersAvailable
 
     .. versionadded:: 0.5
 
-    .. method:: rsa_private_numbers()
+    .. method:: private_numbers()
 
-        Serialize to an
+        Create a
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-        representation.
+        object.
 
         :returns: An
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
 
 
-.. class:: RSAPublicNumberSerialization
+.. class:: RSAPublicNumbersAvailable
 
     .. versionadded:: 0.5
 
-    .. method:: rsa_public_numbers()
+    .. method:: public_numbers()
 
-        Serialize to an
+        Create a
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-        representation.
+        object.
 
         :returns: An
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
