@@ -109,7 +109,7 @@ Elliptic Curve Signature Algorithms
         :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
         provider.
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import hashes

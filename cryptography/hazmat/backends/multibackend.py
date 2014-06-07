@@ -16,8 +16,8 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, HMACBackend, HashBackend,
-    PBKDF2HMACBackend, RSABackend
+    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
+    HashBackend, PBKDF2HMACBackend, RSABackend
 )
 
 
@@ -28,6 +28,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(PBKDF2HMACBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(DSABackend)
+@utils.register_interface(EllipticCurveBackend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -243,3 +244,55 @@ class MultiBackend(object):
                 pass
         raise UnsupportedAlgorithm("This backend does not support CMAC.",
                                    _Reasons.UNSUPPORTED_CIPHER)
+
+    def elliptic_curve_supported(self, curve):
+        return any(
+            b.elliptic_curve_supported(curve)
+            for b in self._filtered_backends(EllipticCurveBackend)
+        )
+
+    def elliptic_curve_signature_algorithm_supported(
+        self, signature_algorithm, curve
+    ):
+        return any(
+            b.elliptic_curve_signature_algorithm_supported(
+                signature_algorithm, curve
+            )
+            for b in self._filtered_backends(EllipticCurveBackend)
+        )
+
+    def generate_elliptic_curve_private_key(self, curve):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.generate_elliptic_curve_private_key(curve)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
+    def elliptic_curve_private_key_from_numbers(self, numbers):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.elliptic_curve_private_key_from_numbers(numbers)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
+    def elliptic_curve_public_key_from_numbers(self, numbers):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.elliptic_curve_public_key_from_numbers(numbers)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
