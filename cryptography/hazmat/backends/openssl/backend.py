@@ -905,7 +905,7 @@ class Backend(object):
             return False
 
         # We only support ECDSA right now.
-        if isinstance(signature_algorithm, ec.ECDSA) is False:
+        if not isinstance(signature_algorithm, ec.ECDSA):
             return False
 
         # Before 0.9.8m OpenSSL can't cope with digests longer than the curve.
