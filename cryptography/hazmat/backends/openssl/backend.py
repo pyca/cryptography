@@ -915,10 +915,7 @@ class Backend(object):
         ):
             return False
 
-        if not self.elliptic_curve_supported(curve):
-            return False
-        else:
-            return True
+        return self.elliptic_curve_supported(curve)
 
     def _supported_curves(self):
         if self._lib.Cryptography_HAS_EC != 1:
