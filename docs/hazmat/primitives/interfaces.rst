@@ -163,6 +163,22 @@ Asymmetric interfaces
 
         The bit length of the modulus.
 
+.. class:: RSAPrivateKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`RSAPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+            instance.
+
 
 .. class:: RSAPublicKey
 
@@ -217,6 +233,23 @@ Asymmetric interfaces
         :type: int
 
         The bit length of the modulus.
+
+
+.. class:: RSAPublicKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`RSAPublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+            instance.
 
 
 .. class:: DSAParameters
@@ -490,39 +523,6 @@ Asymmetric interfaces
     .. versionadded:: 0.2
 
     .. attribute:: name
-
-
-Raw Numbers
-~~~~~~~~~~~
-
-.. class:: RSAPrivateNumbersAvailable
-
-    .. versionadded:: 0.5
-
-    .. method:: private_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-            instance.
-
-
-.. class:: RSAPublicNumbersAvailable
-
-    .. versionadded:: 0.5
-
-    .. method:: public_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-            instance.
 
 
 Hash algorithms
