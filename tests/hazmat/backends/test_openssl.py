@@ -19,7 +19,9 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.openssl.backend import Backend, backend
+from cryptography.hazmat.backends.openssl.backend import (
+    Backend, backend
+)
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -445,3 +447,22 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
         key = pretend.stub(type="unsupported")
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_private_key(key)
+
+
+class TestOpenSSLNoEllipticCurve(object):
+    def test_elliptic_curve_supported(self, monkeypatch):
+        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+
+        assert backend.elliptic_curve_supported(None) is False
+
+    def test_elliptic_curve_signature_algorithm_supported(self, monkeypatch):
+        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+
+        assert backend.elliptic_curve_signature_algorithm_supported(
+            None, None
+        ) is False
+
+    def test_supported_curves(self, monkeypatch):
+        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+
+        assert backend._supported_curves() == []
