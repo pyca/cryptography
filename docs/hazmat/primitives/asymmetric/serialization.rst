@@ -98,3 +98,41 @@ header that mentions the type of the serialized key. e.g.
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
+
+
+RSA Numbers
+~~~~~~~~~~~
+
+.. function:: load_rsa_private_numbers(numbers, backend)
+
+    .. versionadded:: 0.5
+
+    Create a private key instance using the given backend and numbers.
+
+    :param numbers: An instance of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend` provider.
+
+    :returns: A new instance of a private key.
+
+    :raises UnsupportedAlgorithm: If the given backend does not support loading
+        numbers.
+
+.. function:: load_rsa_public_numbers(numbers, backend)
+
+    .. versionadded:: 0.5
+
+    Create a public key instance using the given backend and numbers.
+
+    :param numbers: An instance of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend` provider.
+
+    :returns: A new instance of a public key.
+
+    :raises UnsupportedAlgorithm: If the given backend does not support loading
+        numbers.
