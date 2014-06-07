@@ -46,6 +46,7 @@ static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_NETBSD_D1_METH;
 static const long Cryptography_HAS_NEXTPROTONEG;
+static const long Cryptography_HAS_ALPN;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -367,6 +368,21 @@ void SSL_get0_next_proto_negotiated(const SSL *,
 
 int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
 SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
+
+/* ALPN APIs were introduced in OpenSSL 1.0.2.  To continue to support earlier
+ * versions some special handling of these is necessary.
+ */
+int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char*, unsigned);
+int SSL_set_alpn_protos(SSL *, const unsigned char*, unsigned);
+void SSL_CTX_set_alpn_select_cb(SSL_CTX*,
+                                int (*) (SSL *,
+                                         const unsigned char **,
+                                         unsigned char *,
+                                         const unsigned char *,
+                                         unsigned int,
+                                         void *),
+                                void *);
+void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
 """
 
 CUSTOMIZATIONS = """
@@ -515,6 +531,28 @@ void (*SSL_get0_next_proto_negotiated)(const SSL *,
 #else
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
 #endif
+
+// ALPN was added in OpenSSL 1.0.2.
+#if OPENSSL_VERSION_NUMBER < 0x10002001L
+int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
+                               const unsigned char*,
+                               unsigned) = NULL;
+int (*SSL_set_alpn_protos)(SSL *, const unsigned char*, unsigned) = NULL;
+void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX*,
+                                   int (*) (SSL *,
+                                            const unsigned char **,
+                                            unsigned char *,
+                                            const unsigned char *,
+                                            unsigned int,
+                                            void *),
+                                   void *) = NULL;
+void (*SSL_get0_alpn_selected)(const SSL *,
+                               const unsigned char **,
+                               unsigned *) = NULL;
+static const long Cryptography_HAS_ALPN = 0;
+#else
+static const long Cryptography_HAS_ALPN = 1;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -585,4 +623,11 @@ CONDITIONAL_NAMES = {
         "SSL_OP_LEGACY_SERVER_CONNECT",
         "SSL_get_secure_renegotiation_support",
     ],
+
+    "Cryptography_HAS_ALPN": [
+        "SSL_CTX_set_alpn_protos",
+        "SSL_set_alpn_protos",
+        "SSL_CTX_set_alpn_select_cb",
+        "SSL_get0_alpn_selected",
+    ]
 }
