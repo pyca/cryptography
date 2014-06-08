@@ -211,7 +211,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
             provider.
 
-        :raises ValueError: If the public_exponent is not valid.
+        :raises ValueError: If the ``public_exponent`` is not valid.
 
     .. method:: generate_opaque_rsa_private_key(public_exponent, key_size)
 
@@ -235,7 +235,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
             provider.
 
-        :raises ValueError: If the public_exponent is not valid.
+        :raises ValueError: If the ``public_exponent`` is not valid.
 
     .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
 
