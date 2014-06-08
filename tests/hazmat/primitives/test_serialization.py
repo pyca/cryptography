@@ -560,9 +560,11 @@ class TestLoadRSANumbers(object):
     def test_load_private_numbers(self, backend):
         private_key = load_rsa_private_numbers(RSA_KEY_1024, backend)
         assert private_key
+        assert private_key.private_numbers()
 
     def test_load_public_numbers(self, backend):
         public_key = load_rsa_public_numbers(
             RSA_KEY_1024.public_numbers, backend
         )
         assert public_key
+        assert public_key.public_numbers()
