@@ -89,9 +89,6 @@ class TestTraditionalOpenSSLSerialisation(object):
         )
         assert pkey
 
-        if not isinstance(pkey, interfaces.RSAPrivateKeyWithNumbers):
-            pytest.skip("Does not support numbers")
-
         numbers = pkey.private_numbers()
         assert numbers.p == int(
             "fb7d316fc51531b36d93adaefaf52db6ad5beb793d37c4cf9dfc1ddd17cfbafb",
@@ -421,9 +418,6 @@ class TestPKCS8Serialisation(object):
             )
         )
         assert pkey
-
-        if not isinstance(pkey, interfaces.RSAPrivateKeyWithNumbers):
-            pytest.skip("Does not support numbers")
 
         numbers = pkey.private_numbers()
 
