@@ -97,6 +97,13 @@ class RSABackend(object):
         """
 
     @abc.abstractmethod
+    def generate_opaque_rsa_private_key(self, public_exponent, key_size):
+        """
+        Generate an RSAPrivateKey instance with public_exponent and a modulus
+        of key_size bits.
+        """
+
+    @abc.abstractmethod
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         """
         Returns an object conforming to the AsymmetricSignatureContext
