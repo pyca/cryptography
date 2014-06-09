@@ -211,7 +211,31 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
             provider.
 
-        :raises ValueError: If the public_exponent is not valid.
+        :raises ValueError: If the ``public_exponent`` is not valid.
+
+    .. method:: generate_opaque_rsa_private_key(public_exponent, key_size)
+
+        .. versionadded:: 0.5
+
+        .. deprecated:: 0.5
+
+        This is a temporary additional backend method that returns a backend
+        specific :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+        instance. It will be removed in favor of changing
+        :meth:`generate_rsa_private_key` after the ``RSANumbers`` deprecation
+        cycle is complete.
+
+        :param int public_exponent: The public exponent of the new key.
+            Often one of the small Fermat primes 3, 5, 17, 257 or 65537.
+
+        :param int key_size: The length in bits of the modulus. Should be
+            at least 2048.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :raises ValueError: If the ``public_exponent`` is not valid.
 
     .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
 
