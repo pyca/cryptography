@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 import six
 
 from cryptography import utils
@@ -46,6 +48,12 @@ def _verify_rsa_parameters(public_exponent, key_size):
 @utils.register_interface(interfaces.RSAPublicKey)
 class RSAPublicKey(object):
     def __init__(self, public_exponent, modulus):
+        warnings.warn(
+            "The RSAPublicKey class is deprecated and will be removed in a "
+            "future verison.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if (
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
@@ -144,6 +152,12 @@ def rsa_crt_dmq1(private_exponent, q):
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
                  public_exponent, modulus):
+        warnings.warn(
+            "The RSAPrivateKey class is deprecated and will be removed in a "
+            "future verison.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if (
             not isinstance(p, six.integer_types) or
             not isinstance(q, six.integer_types) or
@@ -203,6 +217,12 @@ class RSAPrivateKey(object):
 
     @classmethod
     def generate(cls, public_exponent, key_size, backend):
+        warnings.warn(
+            "The RSAPrivateKey class is deprecated and will be removed in a "
+            "future verison.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement RSABackend.",
