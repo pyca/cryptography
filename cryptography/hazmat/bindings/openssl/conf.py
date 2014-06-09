@@ -22,6 +22,8 @@ typedef ... CONF;
 """
 
 FUNCTIONS = """
+void OPENSSL_config(const char*);
+void OPENSSL_no_config(void);
 """
 
 MACROS = """
