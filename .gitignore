@@ -11,3 +11,4 @@ cryptography/_Cryptography_cffi_*
 *.egg-info/
 *.egg
 *.py[co]
+.idea/
