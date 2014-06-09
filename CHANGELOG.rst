@@ -6,8 +6,6 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* Added OPENSSL_config and OPENSSL_no_conf declarations
-  for the openssl binding.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
