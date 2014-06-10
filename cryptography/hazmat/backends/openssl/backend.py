@@ -363,23 +363,6 @@ class Backend(object):
     def generate_rsa_private_key(self, public_exponent, key_size):
         rsa._verify_rsa_parameters(public_exponent, key_size)
 
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-
-        bn = self._int_to_bn(public_exponent)
-        bn = self._ffi.gc(bn, self._lib.BN_free)
-
-        res = self._lib.RSA_generate_key_ex(
-            ctx, key_size, bn, self._ffi.NULL
-        )
-        assert res == 1
-
-        return self._rsa_cdata_to_private_key(ctx)
-
-    def _generate_rsa_private_key(self, public_exponent, key_size):
-        rsa._verify_rsa_parameters(public_exponent, key_size)
-
         rsa_cdata = self._lib.RSA_new()
         assert rsa_cdata != self._ffi.NULL
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)

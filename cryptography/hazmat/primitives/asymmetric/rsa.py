@@ -29,7 +29,7 @@ def generate_private_key(public_exponent, key_size, backend):
         )
 
     _verify_rsa_parameters(public_exponent, key_size)
-    return backend._generate_rsa_private_key(public_exponent, key_size)
+    return backend.generate_rsa_private_key(public_exponent, key_size)
 
 
 def _verify_rsa_parameters(public_exponent, key_size):
@@ -220,7 +220,18 @@ class RSAPrivateKey(object):
             )
 
         _verify_rsa_parameters(public_exponent, key_size)
-        return backend.generate_rsa_private_key(public_exponent, key_size)
+        key = backend.generate_rsa_private_key(public_exponent, key_size)
+        private_numbers = key.private_numbers()
+        return RSAPrivateKey(
+            p=private_numbers.p,
+            q=private_numbers.q,
+            dmp1=private_numbers.dmp1,
+            dmq1=private_numbers.dmq1,
+            iqmp=private_numbers.iqmp,
+            private_exponent=private_numbers.d,
+            public_exponent=private_numbers.public_numbers.e,
+            modulus=private_numbers.public_numbers.n
+        )
 
     def signer(self, padding, algorithm, backend):
         if not isinstance(backend, RSABackend):
