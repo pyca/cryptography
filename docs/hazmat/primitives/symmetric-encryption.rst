@@ -337,7 +337,7 @@ Modes
             # Generate a random 96-bit IV.
             iv = os.urandom(12)
 
-            # Construct a AES-GCM Cipher object with the given key and a
+            # Construct an AES-GCM Cipher object with the given key and a
             # randomly generated IV.
             encryptor = Cipher(
                 algorithms.AES(key),

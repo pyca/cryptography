@@ -10,7 +10,7 @@ keys to bytes. They generally support encryption of private keys and additional
 key metadata.
 
 Many serialization formats support multiple different types of asymmetric keys
-and will return an an instance of the appropriate type. You should check that
+and will return an instance of the appropriate type. You should check that
 the returned key matches the type your application expects when using these
 methods.
 
