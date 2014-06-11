@@ -456,18 +456,6 @@ class Backend(object):
             y=self._bn_to_int(cdata.pub_key)
         )
 
-    def _rsa_cdata_to_private_key(self, cdata):
-        return rsa.RSAPrivateKey(
-            p=self._bn_to_int(cdata.p),
-            q=self._bn_to_int(cdata.q),
-            dmp1=self._bn_to_int(cdata.dmp1),
-            dmq1=self._bn_to_int(cdata.dmq1),
-            iqmp=self._bn_to_int(cdata.iqmp),
-            private_exponent=self._bn_to_int(cdata.d),
-            public_exponent=self._bn_to_int(cdata.e),
-            modulus=self._bn_to_int(cdata.n),
-        )
-
     def _pem_password_cb(self, password):
         """
         Generate a pem_password_cb function pointer that copied the password to
