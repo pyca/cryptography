@@ -1496,7 +1496,7 @@ class _RSASignatureContext(object):
             raise TypeError(
                 "Expected provider of interfaces.AsymmetricPadding.")
 
-        self.pkey_size = self._backend._lib.EVP_PKEY_size(
+        self._pkey_size = self._backend._lib.EVP_PKEY_size(
             self._private_key._evp_pkey
         )
 
@@ -1515,8 +1515,8 @@ class _RSASignatureContext(object):
 
             # Size of key in bytes - 2 is the maximum
             # PSS signature length (salt length is checked later)
-            assert self.pkey_size > 0
-            if self.pkey_size - algorithm.digest_size - 2 < 0:
+            assert self._pkey_size > 0
+            if self._pkey_size - algorithm.digest_size - 2 < 0:
                 raise ValueError("Digest too large for key size. Use a larger "
                                  "key.")
 
@@ -1621,7 +1621,7 @@ class _RSASignatureContext(object):
         if self._hash_ctx._ctx is None:
             raise AlreadyFinalized("Context has already been finalized.")
 
-        sig_buf = self._backend._ffi.new("char[]", self.pkey_size)
+        sig_buf = self._backend._ffi.new("char[]", self._pkey_size)
         sig_len = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_SignFinal(
             self._hash_ctx._ctx._ctx,
@@ -1642,7 +1642,7 @@ class _RSASignatureContext(object):
 
     def _finalize_pss(self, evp_md):
         data_to_sign = self._hash_ctx.finalize()
-        padded = self._backend._ffi.new("unsigned char[]", self.pkey_size)
+        padded = self._backend._ffi.new("unsigned char[]", self._pkey_size)
         res = self._backend._lib.RSA_padding_add_PKCS1_PSS(
             self._private_key._rsa_cdata,
             padded,
@@ -1662,9 +1662,9 @@ class _RSASignatureContext(object):
             raise ValueError("Salt length too long for key size. Try using "
                              "MAX_LENGTH instead.")
 
-        sig_buf = self._backend._ffi.new("char[]", self.pkey_size)
+        sig_buf = self._backend._ffi.new("char[]", self._pkey_size)
         sig_len = self._backend._lib.RSA_private_encrypt(
-            self.pkey_size,
+            self._pkey_size,
             padded,
             sig_buf,
             self._private_key._rsa_cdata,
@@ -1685,7 +1685,7 @@ class _RSAVerificationContext(object):
             raise TypeError(
                 "Expected provider of interfaces.AsymmetricPadding.")
 
-        self.pkey_size = self._backend._lib.EVP_PKEY_size(
+        self._pkey_size = self._backend._lib.EVP_PKEY_size(
             self._public_key._evp_pkey
         )
 
@@ -1704,8 +1704,8 @@ class _RSAVerificationContext(object):
 
             # Size of key in bytes - 2 is the maximum
             # PSS signature length (salt length is checked later)
-            assert self.pkey_size > 0
-            if self.pkey_size - algorithm.digest_size - 2 < 0:
+            assert self._pkey_size > 0
+            if self._pkey_size - algorithm.digest_size - 2 < 0:
                 raise ValueError(
                     "Digest too large for key size. Check that you have the "
                     "correct key and digest algorithm."
@@ -1817,7 +1817,7 @@ class _RSAVerificationContext(object):
             raise InvalidSignature
 
     def _verify_pss(self, evp_md):
-        buf = self._backend._ffi.new("unsigned char[]", self.pkey_size)
+        buf = self._backend._ffi.new("unsigned char[]", self._pkey_size)
         res = self._backend._lib.RSA_public_decrypt(
             len(self._signature),
             self._signature,
@@ -1825,7 +1825,7 @@ class _RSAVerificationContext(object):
             self._public_key._rsa_cdata,
             self._backend._lib.RSA_NO_PADDING
         )
-        if res != self.pkey_size:
+        if res != self._pkey_size:
             errors = self._backend._consume_errors()
             assert errors
             raise InvalidSignature
