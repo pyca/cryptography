@@ -438,6 +438,7 @@ class Backend(object):
         if type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             assert rsa_cdata != self._ffi.NULL
+            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
             return _RSAPrivateKey(self, rsa_cdata)
         elif type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
@@ -519,10 +520,9 @@ class Backend(object):
         return ctx
 
     def _rsa_cdata_from_private_numbers(self, private_numbers):
-        # Does not GC the RSA cdata. You *must* make sure it's freed
-        # correctly yourself!
         ctx = self._lib.RSA_new()
         assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
         ctx.p = self._int_to_bn(private_numbers.p)
         ctx.q = self._int_to_bn(private_numbers.q)
         ctx.d = self._int_to_bn(private_numbers.d)
@@ -551,12 +551,14 @@ class Backend(object):
 
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
         rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key = _RSAPrivateKey(self, rsa_cdata)
         return _RSASignatureContext(self, key, padding, algorithm)
 
     def create_rsa_verification_ctx(self, public_key, signature, padding,
                                     algorithm):
         rsa_cdata = self._rsa_cdata_from_public_key(public_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key = _RSAPublicKey(self, rsa_cdata)
         return _RSAVerificationContext(self, key, signature, padding,
                                        algorithm)
@@ -2130,9 +2132,7 @@ class _EllipticCurvePublicKey(object):
 class _RSAPrivateKey(object):
     def __init__(self, backend, rsa_cdata):
         self._backend = backend
-        self._rsa_cdata = self._backend._ffi.gc(
-            rsa_cdata, self._backend._lib.RSA_free
-        )
+        self._rsa_cdata = rsa_cdata
 
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
@@ -2154,6 +2154,7 @@ class _RSAPrivateKey(object):
     def public_key(self):
         ctx = self._backend._lib.RSA_new()
         assert ctx != self._backend._ffi.NULL
+        ctx = self._backend._ffi.gc(ctx, self._backend._lib.RSA_free)
         ctx.e = self._backend._lib.BN_dup(self._rsa_cdata.e)
         ctx.n = self._backend._lib.BN_dup(self._rsa_cdata.n)
         res = self._backend._lib.RSA_blinding_on(ctx, self._backend._ffi.NULL)
@@ -2179,9 +2180,7 @@ class _RSAPrivateKey(object):
 class _RSAPublicKey(object):
     def __init__(self, backend, rsa_cdata):
         self._backend = backend
-        self._rsa_cdata = self._backend._ffi.gc(
-            rsa_cdata, self._backend._lib.RSA_free
-        )
+        self._rsa_cdata = rsa_cdata
 
         evp_pkey = self._backend._lib.EVP_PKEY_new()
         assert evp_pkey != self._backend._ffi.NULL
