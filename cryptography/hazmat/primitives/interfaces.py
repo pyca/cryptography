@@ -205,6 +205,14 @@ class RSAPrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+    def private_numbers(self):
+        """
+        Returns an RSAPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class RSAPublicKey(object):
     @abc.abstractmethod
     def verifier(self, signature, padding, algorithm, backend):
@@ -216,6 +224,14 @@ class RSAPublicKey(object):
     def key_size(self):
         """
         The bit length of the public modulus.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicKeyWithNumbers(RSAPublicKey):
+    def public_numbers(self):
+        """
+        Returns an RSAPublicNumbers
         """
 
 
