@@ -382,6 +382,16 @@ class Backend(object):
                 key_size >= 512)
 
     def load_rsa_private_numbers(self, numbers):
+        rsa._check_private_key_components(
+            numbers.p,
+            numbers.q,
+            numbers.d,
+            numbers.dmp1,
+            numbers.dmq1,
+            numbers.iqmp,
+            numbers.public_numbers.e,
+            numbers.public_numbers.n
+        )
         rsa_cdata = self._lib.RSA_new()
         assert rsa_cdata != self._ffi.NULL
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
@@ -399,7 +409,15 @@ class Backend(object):
         return _RSAPrivateKey(self, rsa_cdata)
 
     def load_rsa_public_numbers(self, numbers):
-        rsa_cdata = self._rsa_cdata_from_public_numbers(numbers)
+        rsa._check_public_key_components(numbers.e, numbers.n)
+        rsa_cdata = self._lib.RSA_new()
+        assert rsa_cdata != self._ffi.NULL
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        rsa_cdata.e = self._int_to_bn(numbers.e)
+        rsa_cdata.n = self._int_to_bn(numbers.n)
+        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        assert res == 1
+
         return _RSAPublicKey(self, rsa_cdata)
 
     def _new_evp_pkey(self):
@@ -527,19 +545,6 @@ class Backend(object):
         assert ctx != self._ffi.NULL
         ctx.e = self._int_to_bn(public_key.e)
         ctx.n = self._int_to_bn(public_key.n)
-        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
-        assert res == 1
-
-        return ctx
-
-    def _rsa_cdata_from_public_numbers(self, public_numbers):
-        # Does not GC the RSA cdata. You *must* make sure it's freed
-        # correctly yourself!
-
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx.e = self._int_to_bn(public_numbers.e)
-        ctx.n = self._int_to_bn(public_numbers.n)
         res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
         assert res == 1
 
