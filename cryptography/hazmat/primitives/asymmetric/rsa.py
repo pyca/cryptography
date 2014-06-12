@@ -83,14 +83,14 @@ def _check_private_key_components(p, q, private_exponent, dmp1, dmq1, iqmp,
 
 
 def _check_public_key_components(e, n):
-        if n < 3:
-            raise ValueError("n must be >= 3.")
+    if n < 3:
+        raise ValueError("n must be >= 3.")
 
-        if e < 3 or e >= n:
-            raise ValueError("e must be >= 3 and < n.")
+    if e < 3 or e >= n:
+        raise ValueError("e must be >= 3 and < n.")
 
-        if e & 1 == 0:
-            raise ValueError("e must be odd.")
+    if e & 1 == 0:
+        raise ValueError("e must be odd.")
 
 
 @utils.register_interface(interfaces.RSAPublicKey)
