@@ -2,9 +2,10 @@ Getting started
 ===============
 
 Working on ``cryptography`` requires the installation of a small number of
-development dependencies. These are listed in ``dev-requirements.txt`` and they
-can be installed in a `virtualenv`_ using `pip`_. Once you've installed the
-dependencies, install ``cryptography`` in ``editable`` mode. For example:
+development dependencies in addtion to the depedencies for `installation`_.
+These are listed in ``dev-requirements.txt`` and they can be installed in a
+`virtualenv`_ using `pip`_. Once you've installed the dependencies, install
+``cryptography`` in ``editable`` mode. For example:
 
 .. code-block:: console
 
@@ -87,3 +88,4 @@ The HTML documentation index can now be found at
 .. _`pip`: https://pypi.python.org/pypi/pip
 .. _`sphinx`: https://pypi.python.org/pypi/Sphinx
 .. _`reStructured Text`: http://sphinx-doc.org/rest.html
+.. _`installation`: https://cryptography.io/en/latest/installation/
