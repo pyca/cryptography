@@ -1681,12 +1681,12 @@ class TestRSAEncryption(object):
 @pytest.mark.rsa
 class TestRSANumbers(object):
     def test_rsa_public_numbers(self):
-        public_numbers = rsa.RSAPublicNumbers(e=3, n=15)
-        assert public_numbers.e == 3
+        public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
+        assert public_numbers.e == 1
         assert public_numbers.n == 15
 
     def test_rsa_private_numbers(self):
-        public_numbers = rsa.RSAPublicNumbers(e=3, n=15)
+        public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
         private_numbers = rsa.RSAPrivateNumbers(
             p=3,
             q=5,
@@ -1713,7 +1713,7 @@ class TestRSANumbers(object):
             rsa.RSAPublicNumbers(e=1, n=None)
 
     def test_private_numbers_invalid_types(self):
-        public_numbers = rsa.RSAPublicNumbers(e=3, n=15)
+        public_numbers = rsa.RSAPublicNumbers(e=1, n=15)
 
         with pytest.raises(TypeError):
             rsa.RSAPrivateNumbers(

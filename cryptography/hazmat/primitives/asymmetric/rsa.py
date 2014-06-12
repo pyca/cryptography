@@ -314,8 +314,6 @@ class RSAPrivateNumbers(object):
                 " instance."
             )
 
-        _check_private_key_components(p, q, d, dmp1, dmq1, iqmp,
-                                      public_numbers.e, public_numbers.n)
         self._p = p
         self._q = q
         self._d = d
@@ -360,8 +358,6 @@ class RSAPublicNumbers(object):
             not isinstance(n, six.integer_types)
         ):
             raise TypeError("RSAPublicNumbers arguments must be integers.")
-
-        _check_public_key_components(e, n)
 
         self._e = e
         self._n = n
