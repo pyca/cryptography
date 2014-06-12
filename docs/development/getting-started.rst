@@ -2,7 +2,7 @@ Getting started
 ===============
 
 Working on ``cryptography`` requires the installation of a small number of
-development dependencies in addtion to the depedencies for `installation`_.
+development dependencies in addition to the depedencies for `installation`_.
 These are listed in ``dev-requirements.txt`` and they can be installed in a
 `virtualenv`_ using `pip`_. Once you've installed the dependencies, install
 ``cryptography`` in ``editable`` mode. For example:
