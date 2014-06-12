@@ -420,29 +420,6 @@ class Backend(object):
 
         return _RSAPublicKey(self, rsa_cdata)
 
-    def _new_evp_pkey(self):
-        evp_pkey = self._lib.EVP_PKEY_new()
-        assert evp_pkey != self._ffi.NULL
-        return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-    def _rsa_private_key_to_evp_pkey(self, private_key):
-        evp_pkey = self._new_evp_pkey()
-        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
-
-        res = self._lib.EVP_PKEY_assign_RSA(evp_pkey, rsa_cdata)
-        assert res == 1
-
-        return evp_pkey
-
-    def _rsa_public_key_to_evp_pkey(self, public_key):
-        evp_pkey = self._new_evp_pkey()
-        rsa_cdata = self._rsa_cdata_from_public_key(public_key)
-
-        res = self._lib.EVP_PKEY_assign_RSA(evp_pkey, rsa_cdata)
-        assert res == 1
-
-        return evp_pkey
-
     def _bytes_to_bio(self, data):
         """
         Return a _MemoryBIO namedtuple of (BIO, char*).
@@ -672,14 +649,16 @@ class Backend(object):
             return True
 
     def decrypt_rsa(self, private_key, ciphertext, padding):
-        key_size_bytes = int(math.ceil(private_key.key_size / 8.0))
-        if key_size_bytes != len(ciphertext):
-            raise ValueError("Ciphertext length must be equal to key size.")
-
-        return self._enc_dec_rsa(private_key, ciphertext, padding)
+        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        key = _RSAPrivateKey(self, rsa_cdata)
+        return key.decrypt(ciphertext, padding)
 
     def encrypt_rsa(self, public_key, plaintext, padding):
-        return self._enc_dec_rsa(public_key, plaintext, padding)
+        rsa_cdata = self._rsa_cdata_from_public_key(public_key)
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        key = _RSAPublicKey(self, rsa_cdata)
+        return key.encrypt(plaintext, padding)
 
     def _enc_dec_rsa(self, key, data, padding):
         if isinstance(padding, PKCS1v15):
@@ -721,14 +700,9 @@ class Backend(object):
             return self._enc_dec_rsa_098(key, data, padding_enum)
 
     def _enc_dec_rsa_pkey_ctx(self, key, data, padding_enum):
-        if isinstance(key, rsa.RSAPublicKey):
-            evp_pkey = self._rsa_public_key_to_evp_pkey(key)
-        elif isinstance(key, rsa.RSAPrivateKey):
-            evp_pkey = self._rsa_private_key_to_evp_pkey(key)
-        else:
-            evp_pkey = key._evp_pkey
+        evp_pkey = key._evp_pkey
 
-        if isinstance(key, (rsa.RSAPublicKey, _RSAPublicKey)):
+        if isinstance(key, _RSAPublicKey):
             init = self._lib.EVP_PKEY_encrypt_init
             crypt = self._lib.Cryptography_EVP_PKEY_encrypt
         else:
@@ -762,16 +736,9 @@ class Backend(object):
         return self._ffi.buffer(buf)[:outlen[0]]
 
     def _enc_dec_rsa_098(self, key, data, padding_enum):
-        if isinstance(key, rsa.RSAPublicKey):
-            rsa_cdata = self._rsa_cdata_from_public_key(key)
-            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        elif isinstance(key, rsa.RSAPrivateKey):
-            rsa_cdata = self._rsa_cdata_from_private_key(key)
-            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        else:
-            rsa_cdata = key._rsa_cdata
+        rsa_cdata = key._rsa_cdata
 
-        if isinstance(key, (rsa.RSAPublicKey, _RSAPublicKey)):
+        if isinstance(key, _RSAPublicKey):
             crypt = self._lib.RSA_public_encrypt
         else:
             crypt = self._lib.RSA_private_decrypt
@@ -795,7 +762,7 @@ class Backend(object):
         errors = self._consume_errors()
         assert errors
         assert errors[0].lib == self._lib.ERR_LIB_RSA
-        if isinstance(key, (_RSAPublicKey, rsa.RSAPublicKey)):
+        if isinstance(key, _RSAPublicKey):
             assert (errors[0].reason ==
                     self._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
             raise ValueError(
@@ -2150,7 +2117,11 @@ class _RSAPrivateKey(object):
         return _RSASignatureContext(self._backend, self, padding, algorithm)
 
     def decrypt(self, ciphertext, padding):
-        return self._backend.decrypt_rsa(self, ciphertext, padding)
+        key_size_bytes = int(math.ceil(self.key_size / 8.0))
+        if key_size_bytes != len(ciphertext):
+            raise ValueError("Ciphertext length must be equal to key size.")
+
+        return self._backend._enc_dec_rsa(self, ciphertext, padding)
 
     def public_key(self):
         ctx = self._backend._lib.RSA_new()
@@ -2200,7 +2171,7 @@ class _RSAPublicKey(object):
         )
 
     def encrypt(self, plaintext, padding):
-        return self._backend.encrypt_rsa(self, plaintext, padding)
+        return self._backend._enc_dec_rsa(self, plaintext, padding)
 
     def public_numbers(self):
         return rsa.RSAPublicNumbers(
