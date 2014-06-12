@@ -382,7 +382,20 @@ class Backend(object):
                 key_size >= 512)
 
     def load_rsa_private_numbers(self, numbers):
-        rsa_cdata = self._rsa_cdata_from_private_numbers(numbers)
+        rsa_cdata = self._lib.RSA_new()
+        assert rsa_cdata != self._ffi.NULL
+        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+        rsa_cdata.p = self._int_to_bn(numbers.p)
+        rsa_cdata.q = self._int_to_bn(numbers.q)
+        rsa_cdata.d = self._int_to_bn(numbers.d)
+        rsa_cdata.dmp1 = self._int_to_bn(numbers.dmp1)
+        rsa_cdata.dmq1 = self._int_to_bn(numbers.dmq1)
+        rsa_cdata.iqmp = self._int_to_bn(numbers.iqmp)
+        rsa_cdata.e = self._int_to_bn(numbers.public_numbers.e)
+        rsa_cdata.n = self._int_to_bn(numbers.public_numbers.n)
+        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        assert res == 1
+
         return _RSAPrivateKey(self, rsa_cdata)
 
     def load_rsa_public_numbers(self, numbers):
@@ -514,23 +527,6 @@ class Backend(object):
         assert ctx != self._ffi.NULL
         ctx.e = self._int_to_bn(public_key.e)
         ctx.n = self._int_to_bn(public_key.n)
-        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
-        assert res == 1
-
-        return ctx
-
-    def _rsa_cdata_from_private_numbers(self, private_numbers):
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-        ctx.p = self._int_to_bn(private_numbers.p)
-        ctx.q = self._int_to_bn(private_numbers.q)
-        ctx.d = self._int_to_bn(private_numbers.d)
-        ctx.dmp1 = self._int_to_bn(private_numbers.dmp1)
-        ctx.dmq1 = self._int_to_bn(private_numbers.dmq1)
-        ctx.iqmp = self._int_to_bn(private_numbers.iqmp)
-        ctx.e = self._int_to_bn(private_numbers.public_numbers.e)
-        ctx.n = self._int_to_bn(private_numbers.public_numbers.n)
         res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
         assert res == 1
 
