@@ -100,6 +100,7 @@ Elliptic Curve Signature Algorithms
 -----------------------------------
 
 .. class:: ECDSA(algorithm)
+
     .. versionadded:: 0.5
 
     The ECDSA signature algorithm first standardized in NIST publication
@@ -134,90 +135,105 @@ generation process.
 
 
 .. class:: SECT571K1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect571k1``. Also called NIST K-571.
 
 
 .. class:: SECT409K1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect409k1``. Also called NIST K-409.
 
 
 .. class:: SECT283K1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect283k1``. Also called NIST K-283.
 
 
 .. class:: SECT233K1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect233k1``. Also called NIST K-233.
 
 
 .. class:: SECT163K1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect163k1``. Also called NIST K-163.
 
 
 .. class:: SECT571R1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect571r1``. Also called NIST B-571.
 
 
 .. class:: SECT409R1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect409r1``. Also called NIST B-409.
 
 
 .. class:: SECT283R1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect283r1``. Also called NIST B-283.
 
 
 .. class:: SECT233R1
+
     .. versionadded:: 0.5
 
     SECG curve ``sect233r1``. Also called NIST B-233.
 
 
 .. class:: SECT163R2
+
     .. versionadded:: 0.5
 
     SECG curve ``sect163r2``. Also called NIST B-163.
 
 
 .. class:: SECP521R1
+
     .. versionadded:: 0.5
 
     SECG curve ``secp521r1``. Also called NIST P-521.
 
 
 .. class:: SECP384R1
+
     .. versionadded:: 0.5
 
     SECG curve ``secp384r1``. Also called NIST P-384.
 
 
 .. class:: SECP256R1
+
     .. versionadded:: 0.5
 
     SECG curve ``secp256r1``. Also called NIST P-256.
 
 
 .. class:: SECT224R1
+
     .. versionadded:: 0.5
 
     SECG curve ``secp224r1``. Also called NIST P-224.
 
 
 .. class:: SECP192R1
+
     .. versionadded:: 0.5
 
     SECG curve ``secp192r1``. Also called NIST P-192.
