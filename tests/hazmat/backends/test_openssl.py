@@ -13,8 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import sys
 import subprocess
+import sys
 import textwrap
 
 import pretend
@@ -219,22 +219,21 @@ class TestOpenSSLRandomEngine(object):
     # This must be the first test in the class so that the teardown method
     # has not (potentially) altered the default engine.
     def test_osrandom_engine_is_default(self):
-        engine_name = subprocess.check_output(
-            [sys.executable,
-             "-c",
-             textwrap.dedent(
-                """
-                import sys
-                from cryptography.hazmat.backends.openssl.backend import backend
+        engine_printer = textwrap.dedent(
+            """
+            import sys
+            from cryptography.hazmat.backends.openssl.backend import backend
 
-                e = backend._lib.ENGINE_get_default_RAND()
-                name = backend._lib.ENGINE_get_name(e)
-                sys.stdout.write(backend._ffi.string(name))
-                res = backend._lib.ENGINE_free(e)
-                assert res == 1
-                """
-             )
-            ]
+            e = backend._lib.ENGINE_get_default_RAND()
+            name = backend._lib.ENGINE_get_name(e)
+            sys.stdout.write(backend._ffi.string(name))
+            res = backend._lib.ENGINE_free(e)
+            assert res == 1
+            """
+        )
+
+        engine_name = subprocess.check_output(
+            [sys.executable, "-c", engine_printer]
         )
 
         osrandom_engine_name = backend._ffi.string(
