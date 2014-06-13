@@ -216,8 +216,6 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
-    # This must be the first test in the class so that the teardown method
-    # has not (potentially) altered the default engine.
     def test_osrandom_engine_is_default(self):
         engine_printer = textwrap.dedent(
             """
