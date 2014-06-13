@@ -178,6 +178,7 @@ class Backend(object):
             )
         for mode_cls, mode_const in [
             (CBC, self._lib.kCCModeCBC),
+            (ECB, self._lib.kCCModeECB),
             (CFB, self._lib.kCCModeCFB),
             (CFB8, self._lib.kCCModeCFB8),
             (OFB, self._lib.kCCModeOFB),
