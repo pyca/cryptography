@@ -216,7 +216,7 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
-    def test_osrandom_engine_is_default(self):
+    def test_osrandom_engine_is_default(self, tmpdir):
         engine_printer = textwrap.dedent(
             """
             import sys
@@ -224,21 +224,24 @@ class TestOpenSSLRandomEngine(object):
 
             e = backend._lib.ENGINE_get_default_RAND()
             name = backend._lib.ENGINE_get_name(e)
-            sys.stdout.write(backend._ffi.string(name))
+            sys.stdout.write(backend._ffi.string(name).decode('ascii'))
             res = backend._lib.ENGINE_free(e)
             assert res == 1
             """
         )
+        engine_name = tmpdir.join('engine_name')
 
-        engine_name = subprocess.check_output(
-            [sys.executable, "-c", engine_printer]
-        )
+        with engine_name.open('w') as out:
+            subprocess.check_call(
+                [sys.executable, "-c", engine_printer],
+                stdout=out
+            )
 
         osrandom_engine_name = backend._ffi.string(
             backend._lib.Cryptography_osrandom_engine_name
         )
 
-        assert engine_name == osrandom_engine_name
+        assert engine_name.read().encode('ascii') == osrandom_engine_name
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
