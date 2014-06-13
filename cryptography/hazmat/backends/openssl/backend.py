@@ -181,6 +181,11 @@ class Backend(object):
                 mode_cls,
                 GetCipherByName("des-ede3-{mode.name}")
             )
+        self.register_cipher_adapter(
+            TripleDES,
+            ECB,
+            GetCipherByName("des-ede3")
+        )
         for mode_cls in [CBC, CFB, OFB, ECB]:
             self.register_cipher_adapter(
                 Blowfish,
