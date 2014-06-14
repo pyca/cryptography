@@ -258,50 +258,6 @@ Asymmetric interfaces
 
     `DSA`_ parameters.
 
-    .. attribute:: modulus
-
-        :type: int
-
-        The prime modulus that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes.
-
-    .. attribute:: subgroup_order
-
-        :type: int
-
-        The subgroup order that is used in generating the DSA key pair
-        by the generator and used in the DSA signing and verification
-        processes.
-
-    .. attribute:: generator
-
-        :type: int
-
-        The generator that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes.
-
-    .. attribute:: p
-
-        :type: int
-
-        The prime modulus that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes. Alias for :attr:`modulus`.
-
-    .. attribute:: q
-
-        :type: int
-
-        The subgroup order that is used in generating the DSA key pair
-        by the generator and used in the DSA signing and verification
-        processes. Alias for :attr:`subgroup_order`.
-
-    .. attribute:: g
-
-        :type: int
-
-        The generator that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes. Alias for :attr:`generator`.
-
 
 .. class:: DSAPrivateKey
 
@@ -344,18 +300,6 @@ Asymmetric interfaces
 
         The bit length of the modulus.
 
-    .. attribute:: x
-
-        :type: int
-
-        The private key.
-
-    .. attribute:: y
-
-        :type: int
-
-        The public key.
-
 
 .. class:: DSAPublicKey
 
@@ -368,12 +312,6 @@ Asymmetric interfaces
         :type: int
 
         The bit length of the modulus.
-
-    .. attribute:: y
-
-        :type: int
-
-        The public key.
 
     .. method:: parameters()
 
