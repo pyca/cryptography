@@ -13,6 +13,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import subprocess
+import sys
+import textwrap
+
 import pretend
 
 import pytest
@@ -212,14 +216,32 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
-    # This must be the first test in the class so that the teardown method
-    # has not (potentially) altered the default engine.
-    def test_osrandom_engine_is_default(self):
-        e = backend._lib.ENGINE_get_default_RAND()
-        name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
-        res = backend._lib.ENGINE_free(e)
-        assert res == 1
+    def test_osrandom_engine_is_default(self, tmpdir):
+        engine_printer = textwrap.dedent(
+            """
+            import sys
+            from cryptography.hazmat.backends.openssl.backend import backend
+
+            e = backend._lib.ENGINE_get_default_RAND()
+            name = backend._lib.ENGINE_get_name(e)
+            sys.stdout.write(backend._ffi.string(name).decode('ascii'))
+            res = backend._lib.ENGINE_free(e)
+            assert res == 1
+            """
+        )
+        engine_name = tmpdir.join('engine_name')
+
+        with engine_name.open('w') as out:
+            subprocess.check_call(
+                [sys.executable, "-c", engine_printer],
+                stdout=out
+            )
+
+        osrandom_engine_name = backend._ffi.string(
+            backend._lib.Cryptography_osrandom_engine_name
+        )
+
+        assert engine_name.read().encode('ascii') == osrandom_engine_name
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
