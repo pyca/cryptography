@@ -366,7 +366,6 @@ static const long Cryptography_HAS_101_ERROR_CODES = 1;
 static const long Cryptography_HAS_101_ERROR_CODES = 0;
 static const long X509_V_ERR_DIFFERENT_CRL_SCOPE = 0;
 static const long X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE = 0;
-static const long X509_V_ERR_UNNESTED_RESOURCE = 0;
 static const long X509_V_ERR_PERMITTED_VIOLATION = 0;
 static const long X509_V_ERR_EXCLUDED_VIOLATION = 0;
 static const long X509_V_ERR_SUBTREE_MINMAX = 0;
