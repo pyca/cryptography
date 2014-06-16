@@ -43,7 +43,7 @@ int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
    this in 1.0.0+. It is defined in macros because the function signature
    changed after 0.9.8 */
 void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
-                        const unsigned size_t, const AES_KEY *,
+                        const size_t, const AES_KEY *,
                         unsigned char[], unsigned char[], unsigned int *);
 
 """
