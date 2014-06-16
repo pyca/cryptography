@@ -128,8 +128,6 @@ static const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const long SSL_MODE_AUTO_RETRY;
 static const long SSL3_RANDOM_SIZE;
 typedef ... X509_STORE_CTX;
-static const long X509_V_OK;
-static const long X509_V_ERR_APPLICATION_VERIFICATION;
 typedef ... SSL_METHOD;
 typedef struct ssl_st {
     int version;
