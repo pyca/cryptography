@@ -190,7 +190,6 @@ DSA *d2i_DSA_PUBKEY(DSA **, const unsigned char **, long);
 DSA *d2i_DSAPublicKey(DSA **, const unsigned char **, long);
 DSA *d2i_DSAPrivateKey(DSA **, const unsigned char **, long);
 
-
 RSA *d2i_RSAPrivateKey_bio(BIO *, RSA **);
 int i2d_RSAPrivateKey_bio(BIO *, RSA *);
 RSA *d2i_RSAPublicKey_bio(BIO *, RSA **);
@@ -237,7 +236,7 @@ int i2d_DSAPrivateKey(DSA *, unsigned char **);
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 
-/* these use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
+/* These use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
    RHEL/CentOS 5 we should move these back to FUNCTIONS. */
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
