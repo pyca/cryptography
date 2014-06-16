@@ -32,7 +32,7 @@ int AES_set_decrypt_key(const unsigned char *, const int, AES_KEY *);
 /* The ctr128_encrypt function is only useful in 0.9.8. You should use EVP for
    this in 1.0.0+. */
 void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
-                        const unsigned long, const AES_KEY *,
+                        const unsigned size_t, const AES_KEY *,
                         unsigned char[], unsigned char[], unsigned int *);
 
 """
