@@ -19,7 +19,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_102_ERROR_CODES;
-static const long Cryptography_HAS_101_ERROR_CODES;
+static const long Cryptography_HAS_100_ERROR_CODES;
 static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
@@ -359,11 +359,11 @@ static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
-// OpenSSL 1.0.1+
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-static const long Cryptography_HAS_101_ERROR_CODES = 1;
+// OpenSSL 1.0.0+
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+static const long Cryptography_HAS_100_ERROR_CODES = 1;
 #else
-static const long Cryptography_HAS_101_ERROR_CODES = 0;
+static const long Cryptography_HAS_100_ERROR_CODES = 0;
 static const long X509_V_ERR_DIFFERENT_CRL_SCOPE = 0;
 static const long X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE = 0;
 static const long X509_V_ERR_PERMITTED_VIOLATION = 0;
@@ -375,7 +375,6 @@ static const long X509_V_ERR_UNSUPPORTED_NAME_SYNTAX = 0;
 static const long X509_V_ERR_CRL_PATH_VALIDATION_ERROR = 0;
 #endif
 
-// OpenSSL 1.0.0+
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 static const long Cryptography_HAS_REMOVE_THREAD_STATE = 1;
 #else
@@ -421,7 +420,7 @@ CONDITIONAL_NAMES = {
         'X509_V_ERR_EMAIL_MISMATCH',
         'X509_V_ERR_IP_ADDRESS_MISMATCH'
     ],
-    "Cryptography_HAS_101_ERROR_CODES": [
+    "Cryptography_HAS_100_ERROR_CODES": [
         'X509_V_ERR_DIFFERENT_CRL_SCOPE',
         'X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE',
         'X509_V_ERR_UNNESTED_RESOURCE',
