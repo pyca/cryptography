@@ -13,6 +13,7 @@ conda
 crypto
 cryptographic
 cryptographically
+Debian
 decrypt
 decrypted
 decrypting
@@ -35,6 +36,7 @@ pseudorandom
 Schneier
 scrypt
 testability
+Ubuntu
 unencrypted
 unpadded
 unpadding
