@@ -29,12 +29,6 @@ typedef struct aes_key_st AES_KEY;
 FUNCTIONS = """
 int AES_set_encrypt_key(const unsigned char *, const int, AES_KEY *);
 int AES_set_decrypt_key(const unsigned char *, const int, AES_KEY *);
-/* The ctr128_encrypt function is only useful in 0.9.8. You should use EVP for
-   this in 1.0.0+. */
-void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
-                        const unsigned size_t, const AES_KEY *,
-                        unsigned char[], unsigned char[], unsigned int *);
-
 """
 
 MACROS = """
@@ -44,6 +38,14 @@ int AES_wrap_key(AES_KEY *, const unsigned char *, unsigned char *,
                  const unsigned char *, unsigned int);
 int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
                    const unsigned char *, unsigned int);
+
+/* The ctr128_encrypt function is only useful in 0.9.8. You should use EVP for
+   this in 1.0.0+. It is defined in macros because the function signature changed
+   after 0.9.8 */
+void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
+                        const unsigned size_t, const AES_KEY *,
+                        unsigned char[], unsigned char[], unsigned int *);
+
 """
 
 CUSTOMIZATIONS = """
