@@ -30,6 +30,7 @@ TYPES = """
 static const long Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
+static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 typedef ... X509_VERIFY_PARAM;
@@ -122,6 +123,13 @@ static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 1;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 0;
 static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT = 0;
 static const long X509_V_FLAG_USE_DELTAS = 0;
+#endif
+
+// OpenSSL 0.9.8recent+
+#ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
+static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 1;
+#else
+static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 static const long X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 #endif
 """
@@ -146,6 +154,8 @@ CONDITIONAL_NAMES = {
         "Cryptography_HAS_100_VERIFICATION_PARAMS",
         "X509_V_FLAG_EXTENDED_CRL_SUPPORT",
         "X509_V_FLAG_USE_DELTAS",
+    ],
+    "Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE": [
         "X509_V_FLAG_CHECK_SS_SIGNATURE",
     ]
 }
