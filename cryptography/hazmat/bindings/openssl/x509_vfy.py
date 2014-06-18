@@ -29,6 +29,7 @@ typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
 TYPES = """
 static const long Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
+static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
@@ -101,7 +102,7 @@ void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
-static const long X509_V_FLAG_TRUSTED_FIRST = 0;
+// X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2, but added separately below
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
@@ -114,6 +115,14 @@ int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const unsigned char *,
 int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
                                  size_t) = NULL;
 int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
+#endif
+
+// OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e...
+#ifdef X509_V_FLAG_TRUSTED_FIRST
+static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
+#else
+static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
+static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
 // OpenSSL 1.0.0+
@@ -139,7 +148,6 @@ CONDITIONAL_NAMES = {
         "X509_VERIFY_PARAM_set_hostflags",
     ],
     "Cryptography_HAS_102_VERIFICATION_PARAMS": [
-        "X509_V_FLAG_TRUSTED_FIRST",
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
         "X509_V_FLAG_SUITEB_128_LOS",
@@ -149,6 +157,9 @@ CONDITIONAL_NAMES = {
         "X509_VERIFY_PARAM_set1_email",
         "X509_VERIFY_PARAM_set1_ip",
         "X509_VERIFY_PARAM_set1_ip_asc",
+    ],
+    "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": [
+        "X509_V_FLAG_TRUSTED_FIRST",
     ],
     "Cryptography_HAS_100_VERIFICATION_PARAMS": [
         "Cryptography_HAS_100_VERIFICATION_PARAMS",
