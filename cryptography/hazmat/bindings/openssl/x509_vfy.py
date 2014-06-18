@@ -117,7 +117,7 @@ int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
 int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
 #endif
 
-// Ope/nSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e...
+// OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e...
 #ifdef X509_V_FLAG_TRUSTED_FIRST
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
 #else
