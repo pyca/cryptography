@@ -103,7 +103,6 @@ static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
 // X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2, but added separately below
-static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
