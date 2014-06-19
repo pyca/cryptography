@@ -191,6 +191,12 @@ class RSAPrivateKey(object):
         Returns an AsymmetricSignatureContext used for signing data.
         """
 
+    @abc.abstractmethod
+    def decrypt(self, ciphertext, padding):
+        """
+        Decrypts the provided ciphertext.
+        """
+
     @abc.abstractproperty
     def key_size(self):
         """
@@ -218,6 +224,12 @@ class RSAPublicKey(object):
     def verifier(self, signature, padding, algorithm, backend):
         """
         Returns an AsymmetricVerificationContext used for verifying signatures.
+        """
+
+    @abc.abstractmethod
+    def encrypt(self, plaintext, padding):
+        """
+        Encrypts the given plaintext.
         """
 
     @abc.abstractproperty
