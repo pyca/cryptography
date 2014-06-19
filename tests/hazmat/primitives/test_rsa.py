@@ -104,7 +104,12 @@ class TestRSA(object):
             _check_rsa_private_numbers(skey.private_numbers())
 
     def test_generate_rsa_key_class_method(self, backend):
-        skey = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        skey = pytest.deprecated_call(
+            rsa.RSAPrivateKey.generate,
+            65537,
+            512,
+            backend
+        )
         assert skey.key_size == 512
         assert skey.public_exponent == 65537
 
@@ -169,11 +174,21 @@ class TestRSA(object):
 
     def test_invalid_private_key_argument_types(self):
         with pytest.raises(TypeError):
-            rsa.RSAPrivateKey(None, None, None, None, None, None, None, None)
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None
+            )
 
     def test_invalid_public_key_argument_types(self):
         with pytest.raises(TypeError):
-            rsa.RSAPublicKey(None, None)
+            pytest.deprecated_call(rsa.RSAPublicKey, None, None)
 
     def test_invalid_private_key_argument_values(self):
         # Start with p=3, q=11, private_exponent=3, public_exponent=7,
@@ -182,7 +197,8 @@ class TestRSA(object):
 
         # Test a modulus < 3.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -195,7 +211,8 @@ class TestRSA(object):
 
         # Test a modulus != p * q.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -208,7 +225,8 @@ class TestRSA(object):
 
         # Test a p > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=37,
                 q=11,
                 private_exponent=3,
@@ -221,7 +239,8 @@ class TestRSA(object):
 
         # Test a q > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=37,
                 private_exponent=3,
@@ -234,7 +253,8 @@ class TestRSA(object):
 
         # Test a dmp1 > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -247,7 +267,8 @@ class TestRSA(object):
 
         # Test a dmq1 > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -260,7 +281,8 @@ class TestRSA(object):
 
         # Test an iqmp > modulus.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -273,7 +295,8 @@ class TestRSA(object):
 
         # Test a private_exponent > modulus
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=37,
@@ -286,7 +309,8 @@ class TestRSA(object):
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -299,7 +323,8 @@ class TestRSA(object):
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -312,7 +337,8 @@ class TestRSA(object):
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -325,7 +351,8 @@ class TestRSA(object):
 
         # Test a dmp1 that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -338,7 +365,8 @@ class TestRSA(object):
 
         # Test a dmq1 that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPrivateKey(
+            pytest.deprecated_call(
+                rsa.RSAPrivateKey,
                 p=3,
                 q=11,
                 private_exponent=3,
@@ -355,19 +383,27 @@ class TestRSA(object):
 
         # Test a modulus < 3.
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(public_exponent=7, modulus=2)
+            pytest.deprecated_call(
+                rsa.RSAPublicKey, public_exponent=7, modulus=2
+            )
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(public_exponent=1, modulus=15)
+            pytest.deprecated_call(
+                rsa.RSAPublicKey, public_exponent=1, modulus=15
+            )
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(public_exponent=17, modulus=15)
+            pytest.deprecated_call(
+                rsa.RSAPublicKey, public_exponent=17, modulus=15
+            )
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPublicKey(public_exponent=6, modulus=15)
+            pytest.deprecated_call(
+                rsa.RSAPublicKey, public_exponent=6, modulus=15
+            )
 
 
 def test_rsa_generate_invalid_backend():
@@ -377,7 +413,9 @@ def test_rsa_generate_invalid_backend():
         rsa.generate_private_key(65537, 2048, pretend_backend)
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        rsa.RSAPrivateKey.generate(65537, 2048, pretend_backend)
+        pytest.deprecated_call(
+            rsa.RSAPrivateKey.generate, 65537, 2048, pretend_backend
+        )
 
 
 @pytest.mark.rsa
@@ -398,7 +436,8 @@ class TestRSASignature(object):
     )
     def test_pkcs1v15_signing(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        private_key = rsa.RSAPrivateKey(
+        private_key = pytest.deprecated_call(
+            rsa.RSAPrivateKey,
             p=private["p"],
             q=private["q"],
             private_exponent=private["private_exponent"],
@@ -432,7 +471,8 @@ class TestRSASignature(object):
     )
     def test_pss_signing(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        private_key = rsa.RSAPrivateKey(
+        private_key = pytest.deprecated_call(
+            rsa.RSAPrivateKey,
             p=private["p"],
             q=private["q"],
             private_exponent=private["private_exponent"],
@@ -637,7 +677,8 @@ class TestRSASignature(object):
 
     def test_rsa_signer_invalid_backend(self, backend):
         pretend_backend = object()
-        private_key = rsa.RSAPrivateKey(
+        private_key = pytest.deprecated_call(
+            rsa.RSAPrivateKey,
             p=RSA_KEY_512.p,
             q=RSA_KEY_512.q,
             private_exponent=RSA_KEY_512.d,
@@ -952,7 +993,12 @@ class TestRSAVerification(object):
 
     def test_rsa_verifier_invalid_backend(self, backend):
         pretend_backend = object()
-        private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
+        private_key = pytest.deprecated_call(
+            rsa.RSAPrivateKey.generate,
+            65537,
+            2048,
+            backend
+        )
         public_key = private_key.public_key()
 
         with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
@@ -1439,7 +1485,9 @@ class TestRSADecryption(object):
 
     def test_rsa_decrypt_invalid_backend(self, backend):
         pretend_backend = object()
-        private_key = rsa.RSAPrivateKey.generate(65537, 2048, backend)
+        private_key = pytest.deprecated_call(
+            rsa.RSAPrivateKey.generate, 65537, 2048, backend
+        )
 
         with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
             private_key.decrypt(
@@ -1468,7 +1516,8 @@ class TestRSADecryption(object):
     )
     def test_decrypt_oaep_vectors(self, vector, backend):
         private, public, example = vector
-        skey = rsa.RSAPrivateKey(
+        skey = pytest.deprecated_call(
+            rsa.RSAPrivateKey,
             p=private["p"],
             q=private["q"],
             private_exponent=private["private_exponent"],
@@ -1608,7 +1657,9 @@ class TestRSAEncryption(object):
 
     def test_rsa_encrypt_invalid_backend(self, backend):
         pretend_backend = object()
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        private_key = pytest.deprecated_call(
+            rsa.RSAPrivateKey.generate, 65537, 512, backend
+        )
         public_key = private_key.public_key()
 
         with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):

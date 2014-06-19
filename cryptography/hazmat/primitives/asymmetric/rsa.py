@@ -13,12 +13,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 import six
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
-from cryptography.hazmat.primitives import interfaces
 
 
 def generate_private_key(public_exponent, key_size, backend):
@@ -93,9 +94,14 @@ def _check_public_key_components(e, n):
         raise ValueError("e must be odd.")
 
 
-@utils.register_interface(interfaces.RSAPublicKey)
 class RSAPublicKey(object):
     def __init__(self, public_exponent, modulus):
+        warnings.warn(
+            "The RSAPublicKey class is deprecated and will be removed in a "
+            "future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if (
             not isinstance(public_exponent, six.integer_types) or
             not isinstance(modulus, six.integer_types)
@@ -183,10 +189,15 @@ def rsa_crt_dmq1(private_exponent, q):
     return private_exponent % (q - 1)
 
 
-@utils.register_interface(interfaces.RSAPrivateKey)
 class RSAPrivateKey(object):
     def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
                  public_exponent, modulus):
+        warnings.warn(
+            "The RSAPrivateKey class is deprecated and will be removed in a "
+            "future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if (
             not isinstance(p, six.integer_types) or
             not isinstance(q, six.integer_types) or
@@ -213,6 +224,11 @@ class RSAPrivateKey(object):
 
     @classmethod
     def generate(cls, public_exponent, key_size, backend):
+        warnings.warn(
+            "generate is deprecated and will be removed in a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if not isinstance(backend, RSABackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement RSABackend.",

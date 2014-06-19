@@ -112,7 +112,7 @@ Asymmetric interfaces
 
     An `RSA`_ private key.
 
-    .. method:: signer(padding, algorithm, backend)
+    .. method:: signer(padding, algorithm)
 
         .. versionadded:: 0.3
 
@@ -126,14 +126,10 @@ Asymmetric interfaces
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
-
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
-    .. method:: decrypt(ciphertext, padding, backend)
+    .. method:: decrypt(ciphertext, padding)
 
         .. versionadded:: 0.4
 
@@ -143,10 +139,6 @@ Asymmetric interfaces
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
-
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
             provider.
 
         :return bytes: Decrypted data.
@@ -186,7 +178,7 @@ Asymmetric interfaces
 
     An `RSA`_ public key.
 
-    .. method:: verifier(signature, padding, algorithm, backend)
+    .. method:: verifier(signature, padding, algorithm)
 
         .. versionadded:: 0.3
 
@@ -203,14 +195,10 @@ Asymmetric interfaces
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
-
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
-    .. method:: encrypt(plaintext, padding, backend)
+    .. method:: encrypt(plaintext, padding)
 
         .. versionadded:: 0.4
 
@@ -220,10 +208,6 @@ Asymmetric interfaces
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
-
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
             provider.
 
         :return bytes: Encrypted data.
