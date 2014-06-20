@@ -287,6 +287,11 @@ this without having to do the math themselves.
 Deprecated Concrete Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+These classes were deprecated in version 0.5 in favor of backend specific
+providers of the
+:class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey` and
+:class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` interfaces.
+
 .. class:: RSAPrivateKey(p, q, private_exponent, dmp1, dmq1, iqmp, public_exponent, modulus)
 
     .. versionadded:: 0.2
