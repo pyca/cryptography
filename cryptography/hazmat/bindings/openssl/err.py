@@ -18,8 +18,8 @@ INCLUDES = """
 """
 
 TYPES = """
-static const long Cryptography_HAS_102_ERROR_CODES;
-static const long Cryptography_HAS_100_ERROR_CODES;
+static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
+static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
 static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
@@ -345,9 +345,9 @@ static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 CUSTOMIZATIONS = """
 // OpenSSL 1.0.2+
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-static const long Cryptography_HAS_102_ERROR_CODES = 1;
+static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 #else
-static const long Cryptography_HAS_102_ERROR_CODES = 0;
+static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_VERSION = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_ALGORITHM = 0;
 static const long X509_V_ERR_SUITE_B_INVALID_CURVE = 0;
@@ -361,9 +361,9 @@ static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 
 // OpenSSL 1.0.0+
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
-static const long Cryptography_HAS_100_ERROR_CODES = 1;
+static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 1;
 #else
-static const long Cryptography_HAS_100_ERROR_CODES = 0;
+static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 0;
 static const long X509_V_ERR_DIFFERENT_CRL_SCOPE = 0;
 static const long X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE = 0;
 static const long X509_V_ERR_PERMITTED_VIOLATION = 0;
@@ -409,7 +409,7 @@ static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED = 0;
 """
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_102_ERROR_CODES": [
+    "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
         'X509_V_ERR_SUITE_B_INVALID_CURVE',
@@ -420,7 +420,7 @@ CONDITIONAL_NAMES = {
         'X509_V_ERR_EMAIL_MISMATCH',
         'X509_V_ERR_IP_ADDRESS_MISMATCH'
     ],
-    "Cryptography_HAS_100_ERROR_CODES": [
+    "Cryptography_HAS_100_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_DIFFERENT_CRL_SCOPE',
         'X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE',
         'X509_V_ERR_UNNESTED_RESOURCE',
