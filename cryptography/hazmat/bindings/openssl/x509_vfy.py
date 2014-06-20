@@ -36,6 +36,8 @@ static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
+
+typedef ... X509_STORE;
 typedef ... X509_STORE_CTX;
 typedef ... X509_VERIFY_PARAM;
 
@@ -132,6 +134,13 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 """
 
 FUNCTIONS = """
+int X509_verify_cert(X509_STORE_CTX *);
+
+/* X509_STORE */
+X509_STORE *X509_STORE_new(void);
+void X509_STORE_free(X509_STORE *);
+int X509_STORE_add_cert(X509_STORE *, X509 *);
+
 /*  X509_STORE_CTX */
 int X509_STORE_CTX_get_error(X509_STORE_CTX *);
 void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
