@@ -28,7 +28,6 @@ struct ERR_string_data_st {
 };
 typedef struct ERR_string_data_st ERR_STRING_DATA;
 
-
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
