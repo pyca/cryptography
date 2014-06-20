@@ -76,7 +76,6 @@ typedef struct {
     ...;
 } X509;
 
-typedef ... X509_STORE;
 typedef ... NETSCAPE_SPKI;
 """
 
@@ -165,12 +164,6 @@ EVP_PKEY *d2i_PUBKEY_bio(BIO *, EVP_PKEY **);
 
 ASN1_INTEGER *X509_get_serialNumber(X509 *);
 int X509_set_serialNumber(X509 *, ASN1_INTEGER *);
-
-/*  X509_STORE */
-X509_STORE *X509_STORE_new(void);
-void X509_STORE_free(X509_STORE *);
-int X509_STORE_add_cert(X509_STORE *, X509 *);
-int X509_verify_cert(X509_STORE_CTX *);
 
 const char *X509_verify_cert_error_string(long);
 

@@ -127,7 +127,6 @@ static const long SSL_MODE_ENABLE_PARTIAL_WRITE;
 static const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const long SSL_MODE_AUTO_RETRY;
 static const long SSL3_RANDOM_SIZE;
-typedef ... X509_STORE_CTX;
 typedef ... SSL_METHOD;
 typedef struct ssl_st {
     int version;
@@ -225,16 +224,6 @@ X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
-
-
-/*  X509_STORE_CTX */
-int X509_STORE_CTX_get_error(X509_STORE_CTX *);
-void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
-int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
-X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
-int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
-void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
-
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
