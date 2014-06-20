@@ -385,6 +385,18 @@ RSA
 
     The collection of integers that make up an RSA public key.
 
+    .. method:: public_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return: A :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            provider.
+
+        :raises UnsupportedAlgorithm: If the given backend does not support
+            loading numbers.
+
     .. attribute:: n
 
         :type: int
@@ -410,6 +422,18 @@ RSA
         :class:`RSAPublicNumbers` all attributes of this class must be kept
         secret. Revealing them will compromise the security of any
         cryptographic operations performed with a key loaded from them.
+
+    .. method:: private_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :return: A :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
+
+        :raises UnsupportedAlgorithm: If the given backend does not support
+            loading numbers.
 
     .. attribute:: public_numbers
 

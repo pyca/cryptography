@@ -28,9 +28,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives.serialization import (
-    load_rsa_public_numbers
-)
 
 from ...utils import load_vectors_from_file
 
@@ -395,7 +392,7 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
         e=params["public_exponent"],
         n=params["modulus"]
     )
-    public_key = load_rsa_public_numbers(public_numbers, backend)
+    public_key = public_numbers.public_key(backend)
     pad = pad_factory(params, hash_alg)
     verifier = public_key.verifier(
         binascii.unhexlify(params["s"]),

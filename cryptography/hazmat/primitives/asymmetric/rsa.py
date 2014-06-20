@@ -377,6 +377,9 @@ class RSAPrivateNumbers(object):
     def public_numbers(self):
         return self._public_numbers
 
+    def private_key(self, backend):
+        return backend.load_rsa_private_numbers(self)
+
 
 class RSAPublicNumbers(object):
     def __init__(self, e, n):
@@ -396,3 +399,6 @@ class RSAPublicNumbers(object):
     @property
     def n(self):
         return self._n
+
+    def public_key(self, backend):
+        return backend.load_rsa_public_numbers(self)

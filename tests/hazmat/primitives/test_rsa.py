@@ -27,9 +27,6 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.serialization import (
-    load_rsa_private_numbers
-)
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -522,7 +519,7 @@ class TestRSASignature(object):
         skip_message="Does not support PSS."
     )
     def test_deprecated_pss_mgf1_salt_length(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         signer = private_key.signer(
             pytest.deprecated_call(
                 padding.PSS,
@@ -566,7 +563,7 @@ class TestRSASignature(object):
             pytest.skip(
                 "Does not support {0} in MGF1 using PSS.".format(hash_alg.name)
             )
-        private_key = load_rsa_private_numbers(RSA_KEY_768, backend)
+        private_key = RSA_KEY_768.private_key(backend)
         public_key = private_key.public_key()
         pss = padding.PSS(
             mgf=padding.MGF1(hash_alg),
@@ -592,7 +589,7 @@ class TestRSASignature(object):
         skip_message="Does not support SHA512."
     )
     def test_pss_minimum_key_size_for_digest(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_522, backend)
+        private_key = RSA_KEY_522.private_key(backend)
         signer = private_key.signer(
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA1()),
@@ -617,7 +614,7 @@ class TestRSASignature(object):
         skip_message="Does not support SHA512."
     )
     def test_pss_signing_digest_too_large_for_key_size(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(ValueError):
             private_key.signer(
                 padding.PSS(
@@ -637,7 +634,7 @@ class TestRSASignature(object):
         skip_message="Does not support PSS."
     )
     def test_pss_signing_salt_length_too_long(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         signer = private_key.signer(
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA1()),
@@ -656,7 +653,7 @@ class TestRSASignature(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_use_after_finalize(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(b"sign me")
         signer.finalize()
@@ -666,12 +663,12 @@ class TestRSASignature(object):
             signer.update(b"more data")
 
     def test_unsupported_padding(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.signer(DummyPadding(), hashes.SHA1())
 
     def test_padding_incorrect_type(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1())
 
@@ -700,7 +697,7 @@ class TestRSASignature(object):
         skip_message="Does not support PSS."
     )
     def test_unsupported_pss_mgf(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1())
 
@@ -711,7 +708,7 @@ class TestRSASignature(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_pkcs1_digest_too_large_for_key_size(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_599, backend)
+        private_key = RSA_KEY_599.private_key(backend)
         signer = private_key.signer(
             padding.PKCS1v15(),
             hashes.SHA512()
@@ -727,7 +724,7 @@ class TestRSASignature(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_pkcs1_minimum_key_size(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_745, backend)
+        private_key = RSA_KEY_745.private_key(backend)
         signer = private_key.signer(
             padding.PKCS1v15(),
             hashes.SHA512()
@@ -774,7 +771,7 @@ class TestRSAVerification(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_invalid_pkcs1v15_signature_wrong_data(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(b"sign me")
@@ -795,8 +792,8 @@ class TestRSAVerification(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_invalid_pkcs1v15_signature_wrong_key(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
-        private_key2 = load_rsa_private_numbers(RSA_KEY_512_ALT, backend)
+        private_key = RSA_KEY_512.private_key(backend)
+        private_key2 = RSA_KEY_512_ALT.private_key(backend)
         public_key = private_key2.public_key()
         signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(b"sign me")
@@ -961,7 +958,7 @@ class TestRSAVerification(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_use_after_finalize(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(b"sign me")
@@ -980,13 +977,13 @@ class TestRSAVerification(object):
             verifier.update(b"more data")
 
     def test_unsupported_padding(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.verifier(b"sig", DummyPadding(), hashes.SHA1())
 
     def test_padding_incorrect_type(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", "notpadding", hashes.SHA1())
@@ -1012,7 +1009,7 @@ class TestRSAVerification(object):
         skip_message="Does not support PSS."
     )
     def test_unsupported_pss_mgf(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
@@ -1032,7 +1029,7 @@ class TestRSAVerification(object):
         skip_message="Does not support SHA512."
     )
     def test_pss_verify_digest_too_large_for_key_size(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         signature = binascii.unhexlify(
             b"8b9a3ae9fb3b64158f3476dd8d8a1f1425444e98940e0926378baa9944d219d8"
             b"534c050ef6b19b1bdc6eb4da422e89161106a6f5b5cc16135b11eb6439b646bd"
@@ -1433,7 +1430,7 @@ class TestRSADecryption(object):
         assert message == binascii.unhexlify(example["message"])
 
     def test_unsupported_padding(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(b"0" * 64, DummyPadding())
 
@@ -1444,7 +1441,7 @@ class TestRSADecryption(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_decrypt_invalid_decrypt(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(ValueError):
             private_key.decrypt(
                 b"\x00" * 64,
@@ -1458,7 +1455,7 @@ class TestRSADecryption(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_decrypt_ciphertext_too_large(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(ValueError):
             private_key.decrypt(
                 b"\x00" * 65,
@@ -1472,7 +1469,7 @@ class TestRSADecryption(object):
         skip_message="Does not support PKCS1v1.5."
     )
     def test_decrypt_ciphertext_too_small(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         ct = binascii.unhexlify(
             b"50b4c14136bd198c2f3c3ed243fce036e168d56517984a263cd66492b80804f1"
             b"69d210f2b9bdfb48b12f9ea05009c77da257cc600ccefe3a6283789d8ea0"
@@ -1539,7 +1536,7 @@ class TestRSADecryption(object):
         assert message == binascii.unhexlify(example["message"])
 
     def test_unsupported_oaep_mgf(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.decrypt(
                 b"0" * 64,
@@ -1613,7 +1610,7 @@ class TestRSAEncryption(object):
         )
     )
     def test_rsa_encrypt_pkcs1v15(self, key_data, pad, backend):
-        private_key = load_rsa_private_numbers(key_data, backend)
+        private_key = key_data.private_key(backend)
         pt = b"encrypt me!"
         public_key = private_key.public_key()
         ct = public_key.encrypt(pt, pad)
@@ -1639,7 +1636,7 @@ class TestRSAEncryption(object):
         )
     )
     def test_rsa_encrypt_key_too_small(self, key_data, pad, backend):
-        private_key = load_rsa_private_numbers(key_data, backend)
+        private_key = key_data.private_key(backend)
         public_key = private_key.public_key()
         # Slightly smaller than the key size but not enough for padding.
         with pytest.raises(ValueError):
@@ -1670,14 +1667,14 @@ class TestRSAEncryption(object):
             )
 
     def test_unsupported_padding(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.encrypt(b"somedata", DummyPadding())
 
     def test_unsupported_oaep_mgf(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_512, backend)
+        private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
@@ -1717,6 +1714,14 @@ class TestRSANumbers(object):
         assert private_numbers.dmq1 == 1
         assert private_numbers.iqmp == 2
         assert private_numbers.public_numbers == public_numbers
+
+    def test_rsa_private_numbers_create_key(self, backend):
+        private_key = RSA_KEY_1024.private_key(backend)
+        assert private_key
+
+    def test_rsa_public_numbers_create_key(self, backend):
+        public_key = RSA_KEY_1024.public_numbers.public_key(backend)
+        assert public_key
 
     def test_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
@@ -1812,19 +1817,19 @@ class TestRSANumbers(object):
         # Test a modulus < 3.
 
         with pytest.raises(ValueError):
-            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=7, n=2))
+            rsa.RSAPublicNumbers(e=7, n=2).public_key(backend)
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=1, n=15))
+            rsa.RSAPublicNumbers(e=1, n=15).public_key(backend)
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=17, n=15))
+            rsa.RSAPublicNumbers(e=17, n=15).public_key(backend)
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_public_numbers(rsa.RSAPublicNumbers(e=16, n=15))
+            rsa.RSAPublicNumbers(e=16, n=15).public_key(backend)
 
     def test_invalid_private_numbers_argument_values(self, backend):
         # Start with p=3, q=11, private_exponent=3, public_exponent=7,
@@ -1833,221 +1838,195 @@ class TestRSANumbers(object):
 
         # Test a modulus < 3.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=2
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=2
                 )
-            )
+            ).private_key(backend)
 
         # Test a modulus != p * q.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=35
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=35
                 )
-            )
+            ).private_key(backend)
 
         # Test a p > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=37,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=37,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a q > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=37,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=37,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a dmp1 > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=35,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=35,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a dmq1 > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=35,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=35,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test an iqmp > modulus.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=35,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=35,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a private_exponent > modulus
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=37,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=37,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a public_exponent < 3
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=1,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=1,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a public_exponent > modulus
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=35,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=65537,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=35,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=65537,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=6,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=6,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a dmp1 that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=2,
-                    dmq1=3,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=2,
+                dmq1=3,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
 
         # Test a dmq1 that is not odd.
         with pytest.raises(ValueError):
-            backend.load_rsa_private_numbers(
-                rsa.RSAPrivateNumbers(
-                    p=3,
-                    q=11,
-                    d=3,
-                    dmp1=1,
-                    dmq1=4,
-                    iqmp=2,
-                    public_numbers=rsa.RSAPublicNumbers(
-                        e=7,
-                        n=33
-                    )
+            rsa.RSAPrivateNumbers(
+                p=3,
+                q=11,
+                d=3,
+                dmp1=1,
+                dmq1=4,
+                iqmp=2,
+                public_numbers=rsa.RSAPublicNumbers(
+                    e=7,
+                    n=33
                 )
-            )
+            ).private_key(backend)
