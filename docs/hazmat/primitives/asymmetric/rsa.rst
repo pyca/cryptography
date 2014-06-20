@@ -69,24 +69,6 @@ provider.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import rsa, padding
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
-    >>> signer = private_key.signer(
-    ...     padding.PSS(
-    ...         mgf=padding.MGF1(hashes.SHA256()),
-    ...         salt_length=padding.PSS.MAX_LENGTH
-    ...     ),
-    ...     hashes.SHA256()
-    ... )
-    >>> data = b"this is some data I'd like to sign"
-    >>> signer.update(data)
-    >>> signature = signer.finalize()
     >>> public_key = private_key.public_key()
     >>> verifier = public_key.verifier(
     ...     signature,
@@ -96,6 +78,7 @@ provider.
     ...     ),
     ...     hashes.SHA256()
     ... )
+    >>> data = b"this is some data I'd like to sign"
     >>> verifier.update(data)
     >>> verifier.verify()
 
@@ -136,27 +119,6 @@ provider.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import padding
-
-    >>> # Generate a key
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
-    >>> public_key = private_key.public_key()
-    >>> # encrypt some data
-    >>> ciphertext = public_key.encrypt(
-    ...     b"encrypted data",
-    ...     padding.OAEP(
-    ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
-    ...         algorithm=hashes.SHA1(),
-    ...         label=None
-    ...     )
-    ... )
-    >>> # Now do the actual decryption
     >>> plaintext = private_key.decrypt(
     ...     ciphertext,
     ...     padding.OAEP(
