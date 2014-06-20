@@ -136,12 +136,12 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 FUNCTIONS = """
 int X509_verify_cert(X509_STORE_CTX *);
 
-/* X509_STORE */
+// X509_STORE
 X509_STORE *X509_STORE_new(void);
 void X509_STORE_free(X509_STORE *);
 int X509_STORE_add_cert(X509_STORE *, X509 *);
 
-/*  X509_STORE_CTX */
+// X509_STORE_CTX
 int X509_STORE_CTX_get_error(X509_STORE_CTX *);
 void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
 int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
@@ -149,7 +149,7 @@ X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
 
-/* X509_VERIFY_PARAM */
+// X509_VERIFY_PARAM
 X509_VERIFY_PARAM *X509_VERIFY_PARAM_new(void);
 int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *, unsigned long);
 int X509_VERIFY_PARAM_clear_flags(X509_VERIFY_PARAM *, unsigned long);
