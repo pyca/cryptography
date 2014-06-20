@@ -22,6 +22,15 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
+* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+  in favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey` interface.
+* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+  in favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` interface.
+* Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
+  ``create_rsa_verification_ctx`` on
+  :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~

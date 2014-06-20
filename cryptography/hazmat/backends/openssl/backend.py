@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import itertools
 import math
+import warnings
 
 import six
 
@@ -533,6 +534,12 @@ class Backend(object):
         return ctx
 
     def create_rsa_signature_ctx(self, private_key, padding, algorithm):
+        warnings.warn(
+            "create_rsa_signature_ctx is deprecated and will be removed in a "
+            "future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         rsa_cdata = self._rsa_cdata_from_private_key(private_key)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key = _RSAPrivateKey(self, rsa_cdata)
@@ -540,6 +547,12 @@ class Backend(object):
 
     def create_rsa_verification_ctx(self, public_key, signature, padding,
                                     algorithm):
+        warnings.warn(
+            "create_rsa_verification_ctx is deprecated and will be removed in "
+            "a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         rsa_cdata = self._rsa_cdata_from_public_key(public_key)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key = _RSAPublicKey(self, rsa_cdata)
@@ -654,12 +667,24 @@ class Backend(object):
             return True
 
     def decrypt_rsa(self, private_key, ciphertext, padding):
+        warnings.warn(
+            "decrypt_rsa is deprecated and will be removed in a future "
+            "version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         rsa_cdata = self._rsa_cdata_from_private_key(private_key)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key = _RSAPrivateKey(self, rsa_cdata)
         return key.decrypt(ciphertext, padding)
 
     def encrypt_rsa(self, public_key, plaintext, padding):
+        warnings.warn(
+            "encrypt_rsa is deprecated and will be removed in a future "
+            "version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         rsa_cdata = self._rsa_cdata_from_public_key(public_key)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
         key = _RSAPublicKey(self, rsa_cdata)

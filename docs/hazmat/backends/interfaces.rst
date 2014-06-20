@@ -215,6 +215,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
 
+        .. deprecated:: 0.5
+
         :param private_key: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
             provider.
@@ -231,6 +233,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
     .. method:: create_rsa_verification_ctx(public_key, signature, padding, algorithm)
+
+        .. deprecated:: 0.5
 
         :param public_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
@@ -285,6 +289,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: decrypt_rsa(private_key, ciphertext, padding)
 
+        .. deprecated:: 0.5
+
         :param private_key: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
             provider.
@@ -304,6 +310,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             ciphertext length.
 
     .. method:: encrypt_rsa(public_key, plaintext, padding)
+
+        .. deprecated:: 0.5
 
         :param public_key: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`

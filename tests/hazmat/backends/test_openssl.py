@@ -488,3 +488,41 @@ class TestOpenSSLNoEllipticCurve(object):
         monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
 
         assert backend._supported_curves() == []
+
+
+class TestDeprecatedRSABackendMethods(object):
+    def test_create_rsa_signature_ctx(self):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        pytest.deprecated_call(
+            backend.create_rsa_signature_ctx,
+            private_key,
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
+
+    def test_create_rsa_verification_ctx(self):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        pytest.deprecated_call(
+            backend.create_rsa_verification_ctx,
+            public_key,
+            b"\x00" * 64,
+            padding.PKCS1v15(),
+            hashes.SHA1()
+        )
+
+    def test_encrypt_decrypt_rsa(self):
+        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
+        public_key = private_key.public_key()
+        ct = pytest.deprecated_call(
+            backend.encrypt_rsa,
+            public_key,
+            b"\x00" * 32,
+            padding.PKCS1v15()
+        )
+        pytest.deprecated_call(
+            backend.decrypt_rsa,
+            private_key,
+            ct,
+            padding.PKCS1v15()
+        )
