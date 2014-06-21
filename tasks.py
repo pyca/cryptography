@@ -91,11 +91,14 @@ def release(version):
         "vectors/dist/cryptography_vectors-{0}*".format(version)
     )
 
+    username = getpass.getpass("Input the GitHub/Jenkins username: ")
     token = getpass.getpass("Input the Jenkins token: ")
     response = requests.post(
         "{0}/build".format(JENKINS_URL),
+        auth=requests.auth.HTTPBasicAuth(
+            username, token
+        ),
         params={
-            "token": token,
             "cause": "Building wheels for {0}".format(version)
         }
     )
