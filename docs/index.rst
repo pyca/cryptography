@@ -73,8 +73,8 @@ Topic guides
 .. toctree::
     :maxdepth: 2
 
-    random-numbers
-    asymetric-intro
+    topic-guides/random-numbers
+    topic-guides/asymmetric-intro
 
 The hazardous materials layer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

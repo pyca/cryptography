@@ -199,3 +199,5 @@ encrypted with:
 
 
 .. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure
+.. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
+.. _`specific mathematical properties`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Key_generation
