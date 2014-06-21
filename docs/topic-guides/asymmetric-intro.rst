@@ -74,7 +74,7 @@ Here is an example of loading an RSA key in the popular PKCS #8 format:
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
     >>> with open("path/to/key.pem", "rb") as key_file:
-    ...     private_key = serialization.load_pkcs8_private_key(
+    ...     private_key = serialization.load_pem_pkcs8_private_key(
     ...         key_file.read(),
     ...         password=None,
     ...         backend=default_backend()
