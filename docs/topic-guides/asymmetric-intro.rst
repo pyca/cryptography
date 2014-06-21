@@ -9,7 +9,7 @@ be kept secret (just like the key in symmetric cryptography).
 Asymmetric cryptography has two primary use cases: authentication and
 confidentiality. Using asymmetric cryptography, messages can be signed with a
 private key, and then anyone with the public key is able to verify that the
-message was created by someone posessing the corresponding private key. This
+message was created by someone possessing the corresponding private key. This
 can be combined with a `proof of identity`_ system to know what entity (person
 or group) actually owns that private key, providing authentication.
 
@@ -118,14 +118,14 @@ Signature Verification
 The previous section describes what to do if you have a private key and want to
 sign something. If you have a public key, a message, and a signature, you can
 check that the public key genuinely was used to sign that specific message. You
-also need to know which signing algorithm was used, usually these are pre-
-arranged for a given protocol, though it's also possible to include this
+also need to know which signing algorithm was used, usually these are
+prearranged for a given protocol, though it's also possible to include this
 metadata with the message:
 
 .. doctest::
 
     >>> verifier = public_key.verifier(
-    ...     signature
+    ...     signature,
     ...     padding.PSS(
     ...         mgf=padding.MGF1(hashes.SHA256()),
     ...         salt_length=padding.PSS.MAX_LENGTH
