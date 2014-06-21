@@ -930,14 +930,17 @@ class Backend(object):
 
         if ctx == self._ffi.NULL:
             errors = self._consume_errors()
-            if curve_nid != self._lib.NID_undef:
-                assert errors[0] == (
+            assert (
+                curve_nid == self._lib.NID_undef or
+                errors[0] == (
                     self._lib.ERR_LIB_EC,
                     self._lib.EC_F_EC_GROUP_NEW_BY_CURVE_NAME,
                     self._lib.EC_R_UNKNOWN_GROUP
                 )
+            )
             return False
         else:
+            assert curve_nid != self._lib.NID_undef
             self._lib.EC_GROUP_free(ctx)
             return True
 
