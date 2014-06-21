@@ -63,10 +63,18 @@ The recipes layer
     :maxdepth: 2
 
     fernet
-    random-numbers
     exceptions
     faq
     glossary
+
+Topic guides
+~~~~~~~~~~~~
+
+.. toctree::
+    :maxdepth: 2
+
+    random-numbers
+    asymetric-intro
 
 The hazardous materials layer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
