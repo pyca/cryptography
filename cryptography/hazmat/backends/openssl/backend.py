@@ -932,7 +932,7 @@ class Backend(object):
             errors = self._consume_errors()
             assert (
                 curve_nid == self._lib.NID_undef or
-                errors[0] == (
+                errors[0][1:] == (
                     self._lib.ERR_LIB_EC,
                     self._lib.EC_F_EC_GROUP_NEW_BY_CURVE_NAME,
                     self._lib.EC_R_UNKNOWN_GROUP
