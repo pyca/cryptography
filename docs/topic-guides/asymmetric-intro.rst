@@ -105,6 +105,7 @@ secure hash function and mode:
     ...     ),
     ...     hashes.SHA256()
     ... )
+    >>> message = b"A message I want to sign"
     >>> signer.update(message)
     >>> signature = signer.finalize()
     >>> signature
@@ -153,6 +154,7 @@ a specific mode and padding to use.
 
 .. doctest::
 
+    >>> message = b"Something I want to encrypt"
     >>> ciphertext = public_key.encrypt(
     ...     message,
     ...     padding.OAEP(
