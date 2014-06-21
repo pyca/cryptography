@@ -106,7 +106,7 @@ secure hash function and mode:
     ...     hashes.SHA256()
     ... )
     >>> signer.update(message)
-    >>> siganture = signer.finalize()
+    >>> signature = signer.finalize()
     >>> signature
     '...'
 
@@ -181,7 +181,7 @@ Decryption
 ----------
 
 Finally, if we have an encrypted message, we can decrypt it using our private
-key. Like sigantures, we need to know the mode and algorithm that a message was
+key. Like signatures, we need to know the mode and algorithm that a message was
 encrypted with:
 
 .. doctest::
