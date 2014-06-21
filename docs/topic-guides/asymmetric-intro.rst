@@ -169,9 +169,9 @@ a specific mode and padding to use.
 RSA encryption also has the property that you cannot encrypt a message which is
 longer than the ``key_size`` of your key. As a result, RSA is often combined
 with symmetric encryption to create a `hybrid cryptosystem`, utilizing both
-asymmetric and symmetric algorithms, an example of such a system is PGP.
+asymmetric and symmetric algorithms. An example of such a system is PGP.
 
-In protocols where both parties have a PGP key, encryption typically used
+In protocols where both parties have a PGP key, encryption is typically used
 alongside signatures. For example, if I wanted to send you a message, I would
 encrypt a message for your public key, and then sign that encrypted blob using
 my private key. That way you're able to both read the message, and verify that
