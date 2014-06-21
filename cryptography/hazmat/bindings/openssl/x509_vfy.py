@@ -33,7 +33,6 @@ static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
-static const long Cryptography_HAS_X509_STORE_CTX_SET0_CRLS;
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
@@ -148,15 +147,15 @@ void X509_STORE_CTX_cleanup(X509_STORE_CTX *);
 void X509_STORE_CTX_free(X509_STORE_CTX *);
 int X509_STORE_CTX_init(X509_STORE_CTX *, X509_STORE *, X509 *,
                         Cryptography_STACK_OF_X509 *);
-void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *, Cryptography_STACK_OF_X509 *);
+void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *,
+                                  Cryptography_STACK_OF_X509 *);
 void X509_STORE_CTX_set_cert(X509_STORE_CTX *, X509 *);
 void X509_STORE_CTX_set_chain(X509_STORE_CTX *,Cryptography_STACK_OF_X509 *);
-// X509_STORE_CTX_set0_crls is defined below: not always available.
 X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(X509_STORE_CTX *);
 void X509_STORE_CTX_set0_param(X509_STORE_CTX *, X509_VERIFY_PARAM *);
 int X509_STORE_CTX_set_default(X509_STORE_CTX *, const char *);
 void X509_STORE_CTX_set_verify_cb(X509_STORE_CTX *,
-                                  int (*)(int, X509_STORE_CTX *))
+                                  int (*)(int, X509_STORE_CTX *));
 Cryptography_STACK_OF_X509 *X509_STORE_CTX_get_chain(X509_STORE_CTX *);
 Cryptography_STACK_OF_X509 *X509_STORE_CTX_get1_chain(X509_STORE_CTX *);
 int X509_STORE_CTX_get_error(X509_STORE_CTX *);
@@ -274,15 +273,6 @@ static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 1;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 0;
 static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT = 0;
 static const long X509_V_FLAG_USE_DELTAS = 0;
-#endif
-
-// X509_STORE_CTX_set0_crls was allegedly introduced in OpenSSL 1.0.0+
-#ifdef X509_STORE_CTX_set0_crls
-static const long Cryptography_HAS_X509_STORE_CTX_SET0_CRLS = 1;
-#else
-static const long Cryptography_HAS_X509_STORE_CTX_SET0_CRLS = 0;
-void (*X509_STORE_CTX_set0_crls)(X509_STORE_CTX *,
-                                 _Cryptography_STACK_OF_X509_CRL *) = NULL;
 #endif
 
 // OpenSSL 0.9.8recent+
