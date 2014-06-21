@@ -353,7 +353,10 @@ class TestOpenSSLRSA(object):
             )
 
     def test_unsupported_mgf1_hash_algorithm(self):
-        assert backend.mgf1_hash_supported(DummyHash()) is False
+        assert pytest.deprecated_call(
+            backend.mgf1_hash_supported,
+            DummyHash()
+        ) is False
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(

@@ -255,10 +255,13 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: mgf1_hash_supported(algorithm)
 
+        ..deprecated:: 0.5
+
         Check if the specified ``algorithm`` is supported for use with
         :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
         inside :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
-        padding.
+        padding. This method is deprecated in favor of
+        ``rsa_padding_supported``.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
