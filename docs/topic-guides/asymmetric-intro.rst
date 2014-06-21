@@ -8,8 +8,10 @@ be kept secret (just like the key in symmetric cryptography).
 
 Asymmetric cryptography has two primary use cases: authentication and
 confidentiality. Using asymmetric cryptography, messages can be signed with a
-private key, and then anyone with the public key is able to verify who created
-the message, providing authentication.
+private key, and then anyone with the public key is able to verify that the
+message was created by someone posessing the corresponding private key. This
+can be combined with a `proof of identity`_ system to know what entity (person
+or group) actually owns that private key, providing authentication.
 
 Encryption with asymmetric cryptography works in a slightly different way.
 Someone with the public key is able to encrypt a message, providing
@@ -194,3 +196,6 @@ encrypted with:
     ... )
     >>> plaintext == message
     True
+
+
+.. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure
