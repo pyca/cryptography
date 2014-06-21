@@ -560,6 +560,15 @@ class Backend(object):
                                        algorithm)
 
     def mgf1_hash_supported(self, algorithm):
+        warnings.warn(
+            "mgf1_hash_supported is deprecated and will be removed in "
+            "a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
+        return self._mgf1_hash_supported(algorithm)
+
+    def _mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
             return self.hash_supported(algorithm)
         else:
@@ -569,7 +578,7 @@ class Backend(object):
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
-            return self.mgf1_hash_supported(padding._mgf._algorithm)
+            return self._mgf1_hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
             return isinstance(padding._mgf._algorithm, hashes.SHA1)
         else:
@@ -1518,7 +1527,7 @@ class _RSASignatureContext(object):
                 raise ValueError("Digest too large for key size. Use a larger "
                                  "key.")
 
-            if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
+            if not self._backend._mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1.",
@@ -1709,7 +1718,7 @@ class _RSAVerificationContext(object):
                     "correct key and digest algorithm."
                 )
 
-            if not self._backend.mgf1_hash_supported(padding._mgf._algorithm):
+            if not self._backend._mgf1_hash_supported(padding._mgf._algorithm):
                 raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1.",
