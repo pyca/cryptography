@@ -24,11 +24,3 @@ def load_pem_pkcs8_private_key(data, password, backend):
     return backend.load_pkcs8_pem_private_key(
         data, password
     )
-
-
-def load_rsa_private_numbers(numbers, backend):
-    return backend.load_rsa_private_numbers(numbers)
-
-
-def load_rsa_public_numbers(numbers, backend):
-    return backend.load_rsa_public_numbers(numbers)

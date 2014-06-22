@@ -23,13 +23,9 @@ from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key,
-    load_pem_traditional_openssl_private_key,
-    load_rsa_private_numbers,
-    load_rsa_public_numbers
+    load_pem_pkcs8_private_key, load_pem_traditional_openssl_private_key
 )
 
-from .fixtures_rsa import RSA_KEY_1024
 from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
@@ -553,18 +549,3 @@ class TestPKCS8Serialisation(object):
                     pemfile.read().encode(), password, backend
                 )
             )
-
-
-@pytest.mark.rsa
-class TestLoadRSANumbers(object):
-    def test_load_private_numbers(self, backend):
-        private_key = load_rsa_private_numbers(RSA_KEY_1024, backend)
-        assert private_key
-        assert private_key.private_numbers()
-
-    def test_load_public_numbers(self, backend):
-        public_key = load_rsa_public_numbers(
-            RSA_KEY_1024.public_numbers, backend
-        )
-        assert public_key
-        assert public_key.public_numbers()
