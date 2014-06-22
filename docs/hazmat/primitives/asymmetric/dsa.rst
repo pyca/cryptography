@@ -210,6 +210,80 @@ DSA
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
+.. class:: DSAParameterNumbers(p, q, g)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up a set of DSA parameters.
+
+    .. attribute:: p
+
+        :type: int
+
+        The public modulus.
+
+    .. attribute:: q
+
+        :type: int
+
+        The sub group order.
+
+    .. attribute:: g
+
+        :type: int
+
+        The generator.
+
+.. class:: DSAPublicNumbers(y, parameter_numbers)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up a DSA public key.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public value ``y``.
+
+    .. attribute:: parameter_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+
+        The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+        associated with the public key.
+
+.. class:: DSAPrivateNumbers(x, public_numbers, parameter_numbers)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up a DSA private key.
+
+    .. warning::
+
+        Revealing the value of ``x`` will compromise the security of any
+        cryptographic operations performed.
+
+    .. attribute:: x
+
+        :type: int
+
+        The private value ``x``.
+
+    .. attribute:: public_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
+
+        The :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
+        associated with the private key.
+
+    .. attribute:: parameter_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+
+        The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+        associated with the public key.
+
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf

@@ -181,3 +181,84 @@ class DSAPublicKey(object):
     def parameters(self):
         return DSAParameters(self._modulus, self._subgroup_order,
                              self._generator)
+
+
+class DSAParameterNumbers(object):
+    def __init__(self, p, q, g):
+        if (
+            not isinstance(p, six.integer_types) or
+            not isinstance(q, six.integer_types) or
+            not isinstance(g, six.integer_types)
+        ):
+            raise TypeError(
+                "DSAParameterNumbers p, q, q arguments must be an integers."
+            )
+
+        self._p = p
+        self._q = q
+        self._g = g
+
+    @property
+    def p(self):
+        return self._p
+
+    @property
+    def q(self):
+        return self._q
+
+    @property
+    def g(self):
+        return self._g
+
+
+class DSAPublicNumbers(object):
+    def __init__(self, y, parameter_numbers):
+        if not isinstance(y, six.integer_types):
+            raise TypeError("DSAPublicNumbers y argument must be an integer.")
+
+        if not isinstance(parameter_numbers, DSAParameterNumbers):
+            raise TypeError(
+                "parameter_numbers must be a DSAParameterNumbers instance."
+            )
+
+        self._y = y
+        self._parameter_numbers = parameter_numbers
+
+    @property
+    def y(self):
+        return self._y
+
+    @property
+    def parameter_numbers(self):
+        return self._parameter_numbers
+
+
+class DSAPrivateNumbers(object):
+    def __init__(self, x, public_numbers, parameter_numbers):
+        if not isinstance(x, six.integer_types):
+            raise TypeError("DSAPrivateNumbers x argument must be an integer.")
+
+        if not isinstance(parameter_numbers, DSAParameterNumbers):
+            raise TypeError(
+                "parameter_numbers must be a DSAParameterNumbers instance."
+            )
+
+        if not isinstance(public_numbers, DSAPublicNumbers):
+            raise TypeError(
+                "public_numbers must be a DSAPublicNumbers instance."
+            )
+        self._parameter_numbers = parameter_numbers
+        self._public_numbers = public_numbers
+        self._x = x
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def parameter_numbers(self):
+        return self._parameter_numbers
+
+    @property
+    def public_numbers(self):
+        return self._public_numbers
