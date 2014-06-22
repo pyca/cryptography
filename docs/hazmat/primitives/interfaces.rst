@@ -287,6 +287,23 @@ Asymmetric interfaces
         in the DSA signing and verification processes. Alias for :attr:`generator`.
 
 
+.. class:: DSAParametersWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAParameters`.
+
+    .. method:: parameter_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+            instance.
+
+
 .. class:: DSAPrivateKey
 
     .. versionadded:: 0.3
@@ -341,6 +358,23 @@ Asymmetric interfaces
         The public key.
 
 
+.. class:: DSAPrivateKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+            instance.
+
+
 .. class:: DSAPublicKey
 
     .. versionadded:: 0.3
@@ -385,6 +419,23 @@ Asymmetric interfaces
 
         :returns:
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+
+.. class:: DSAPublicKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAPublicKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+            instance.
 
 
 .. class:: EllipticCurve
