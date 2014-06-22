@@ -159,7 +159,7 @@ a specific mode and padding to use.
     ...     message,
     ...     padding.OAEP(
     ...         mgf=padding.MGF1(hashes.SHA1()),
-    ...         algorithm=hashes.SHA256(),
+    ...         algorithm=hashes.SHA1(),
     ...         label=None
     ...     )
     ... )
@@ -192,7 +192,7 @@ encrypted with:
     ...     ciphertext,
     ...     padding.OAEP(
     ...         mgf=padding.MGF1(hashes.SHA1()),
-    ...         algorithm=hashes.SHA256(),
+    ...         algorithm=hashes.SHA1(),
     ...         label=None
     ...     )
     ... )
