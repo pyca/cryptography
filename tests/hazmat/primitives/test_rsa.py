@@ -99,6 +99,8 @@ class TestRSA(object):
 
         if isinstance(skey, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(skey.private_numbers())
+            pkey = skey.public_key()
+            assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
 
     def test_generate_rsa_key_class_method(self, backend):
         skey = pytest.deprecated_call(
