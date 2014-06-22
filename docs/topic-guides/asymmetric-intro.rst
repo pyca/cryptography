@@ -158,7 +158,7 @@ a specific mode and padding to use.
     >>> ciphertext = public_key.encrypt(
     ...     message,
     ...     padding.OAEP(
-    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         mgf=padding.MGF1(hashes.SHA1()),
     ...         algorithm=hashes.SHA256(),
     ...         label=None
     ...     )
@@ -191,7 +191,7 @@ encrypted with:
     >>> plaintext = private_key.decrypt(
     ...     ciphertext,
     ...     padding.OAEP(
-    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         mgf=padding.MGF1(hashes.SHA1()),
     ...         algorithm=hashes.SHA256(),
     ...         label=None
     ...     )
