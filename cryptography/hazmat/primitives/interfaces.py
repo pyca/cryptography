@@ -212,6 +212,7 @@ class RSAPrivateKey(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+    @abc.abstractmethod
     def private_numbers(self):
         """
         Returns an RSAPrivateNumbers.
@@ -241,6 +242,7 @@ class RSAPublicKey(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPublicKeyWithNumbers(RSAPublicKey):
+    @abc.abstractmethod
     def public_numbers(self):
         """
         Returns an RSAPublicNumbers
