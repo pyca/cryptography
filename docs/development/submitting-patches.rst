@@ -75,6 +75,9 @@ specifying a different backend.
 C bindings
 ~~~~~~~~~~
 
+More information on C bindings can be found in :doc:`the dedicated
+section of the documentation <c-bindings>`.
+
 When binding C code with ``cffi`` we have our own style guide, it's pretty
 simple.
 
