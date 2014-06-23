@@ -487,11 +487,6 @@ class TestOpenSSLNoEllipticCurve(object):
             None, None
         ) is False
 
-    def test_supported_curves(self, monkeypatch):
-        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
-
-        assert backend._supported_curves() == []
-
 
 class TestDeprecatedRSABackendMethods(object):
     def test_create_rsa_signature_ctx(self):

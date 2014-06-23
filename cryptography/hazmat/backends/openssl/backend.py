@@ -930,8 +930,28 @@ class Backend(object):
         if self._lib.Cryptography_HAS_EC != 1:
             return False
 
-        curves = self._supported_curves()
-        return curve.name.encode("ascii") in curves
+        try:
+            curve_nid = self._elliptic_curve_to_nid(curve)
+        except UnsupportedAlgorithm:
+            curve_nid = self._lib.NID_undef
+
+        ctx = self._lib.EC_GROUP_new_by_curve_name(curve_nid)
+
+        if ctx == self._ffi.NULL:
+            errors = self._consume_errors()
+            assert (
+                curve_nid == self._lib.NID_undef or
+                errors[0][1:] == (
+                    self._lib.ERR_LIB_EC,
+                    self._lib.EC_F_EC_GROUP_NEW_BY_CURVE_NAME,
+                    self._lib.EC_R_UNKNOWN_GROUP
+                )
+            )
+            return False
+        else:
+            assert curve_nid != self._lib.NID_undef
+            self._lib.EC_GROUP_free(ctx)
+            return True
 
     def elliptic_curve_signature_algorithm_supported(
         self, signature_algorithm, curve
@@ -951,30 +971,6 @@ class Backend(object):
             return False
 
         return self.elliptic_curve_supported(curve)
-
-    def _supported_curves(self):
-        if self._lib.Cryptography_HAS_EC != 1:
-            return []
-
-        num_curves = self._lib.EC_get_builtin_curves(self._ffi.NULL, 0)
-        curve_array = self._ffi.new("EC_builtin_curve[]", num_curves)
-        num_curves_assigned = self._lib.EC_get_builtin_curves(
-            curve_array, num_curves)
-        assert num_curves == num_curves_assigned
-
-        curves = [
-            self._ffi.string(self._lib.OBJ_nid2sn(curve.nid)).decode()
-            for curve in curve_array
-        ]
-
-        curve_aliases = {
-            "prime192v1": "secp192r1",
-            "prime256v1": "secp256r1"
-        }
-        return [
-            curve_aliases.get(curve, curve)
-            for curve in curves
-        ]
 
     def _create_ecdsa_signature_ctx(self, private_key, ecdsa):
         return _ECDSASignatureContext(self, private_key, ecdsa.algorithm)
@@ -2014,7 +2010,7 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
         mask = 0xFF >> rshift << rshift
 
         # Set the bottom rshift bits to 0
-        digest = digest[:-1] + six.int2byte(six.byte2int(digest[-1]) & mask)
+        digest = digest[:-1] + six.int2byte(six.indexbytes(digest, -1) & mask)
 
     return digest
 

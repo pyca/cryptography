@@ -21,6 +21,7 @@ TYPES = """
 static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
+static const int Cryptography_HAS_EC_CODES;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -29,6 +30,7 @@ struct ERR_string_data_st {
 typedef struct ERR_string_data_st ERR_STRING_DATA;
 
 static const int ERR_LIB_EVP;
+static const int ERR_LIB_EC;
 static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_RSA;
@@ -172,6 +174,10 @@ static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int EVP_R_WRONG_FINAL_BLOCK_LENGTH;
 static const int EVP_R_WRONG_PUBLIC_KEY_TYPE;
 
+static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME;
+
+static const int EC_R_UNKNOWN_GROUP;
+
 static const int PEM_F_D2I_PKCS8PRIVATEKEY_BIO;
 static const int PEM_F_D2I_PKCS8PRIVATEKEY_FP;
 static const int PEM_F_DO_PK8PKEY;
@@ -306,6 +312,15 @@ static const long Cryptography_HAS_098C_CAMELLIA_CODES = 0;
 static const int EVP_F_CAMELLIA_INIT_KEY = 0;
 static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED = 0;
 #endif
+
+// OpenSSL without EC. e.g. RHEL
+#ifndef OPENSSL_NO_EC
+static const long Cryptography_HAS_EC_CODES = 1;
+#else
+static const long Cryptography_HAS_EC_CODES = 0;
+static const int EC_R_UNKNOWN_GROUP = 0;
+static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -324,5 +339,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_098C_CAMELLIA_CODES": [
         "EVP_F_CAMELLIA_INIT_KEY",
         "EVP_R_CAMELLIA_KEY_SETUP_FAILED"
+    ],
+    "Cryptography_HAS_EC_CODES": [
+        "EC_R_UNKNOWN_GROUP",
+        "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
     ]
 }
