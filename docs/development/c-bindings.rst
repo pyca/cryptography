@@ -183,7 +183,7 @@ version. For example, to check for OpenSSL 1.0.0 or newer::
 
     #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 
-Sometimes, the version of a libray on a particular platform will have
+Sometimes, the version of a library on a particular platform will have
 features that you thought it wouldn't, based on its version.
 Occasionally, packagers appear to ship arbitrary VCS checkouts. As a
 result, sometimes you may have to add separate ``#ifdef`` statements
