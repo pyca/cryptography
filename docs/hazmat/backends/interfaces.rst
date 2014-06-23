@@ -470,6 +470,40 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the given values of ``p``, ``q``, and ``g`` are
             supported by this backend, otherwise ``False``.
 
+    .. method:: load_dsa_parameter_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+    .. method:: load_dsa_private_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+    .. method:: load_dsa_public_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+
 
 .. class:: CMACBackend
 

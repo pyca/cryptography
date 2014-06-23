@@ -196,6 +196,24 @@ class DSABackend(object):
         Return True if the parameters are supported by the backend for DSA.
         """
 
+    @abc.abstractmethod
+    def load_dsa_private_numbers(self, numbers):
+        """
+        Returns a DSAPrivateKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dsa_public_numbers(self, numbers):
+        """
+        Returns a DSAPublicKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dsa_parameter_numbers(self, numbers):
+        """
+        Returns a DSAParameters provider.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class TraditionalOpenSSLSerializationBackend(object):
