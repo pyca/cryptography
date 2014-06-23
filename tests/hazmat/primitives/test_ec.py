@@ -70,6 +70,15 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
         )
 
 
+def _skip_curve_unsupported(backend, curve):
+    if not backend.elliptic_curve_supported(curve):
+        pytest.skip(
+            "Curve {0} is not supported by this backend {1}".format(
+                curve.name, backend
+            )
+        )
+
+
 @utils.register_interface(interfaces.EllipticCurve)
 class DummyCurve(object):
     name = "dummy-curve"
@@ -79,6 +88,12 @@ class DummyCurve(object):
 @utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
 class DummySignatureAlgorithm(object):
     pass
+
+
+@pytest.mark.elliptic
+def test_skip_curve_unsupported(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_curve_unsupported(backend, DummyCurve())
 
 
 def test_ec_numbers():
@@ -176,12 +191,7 @@ class TestECDSAVectors(object):
         "curve", _CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
-        if not backend.elliptic_curve_supported(curve()):
-            pytest.skip(
-                "Curve {0} is not supported by this backend {1}".format(
-                    curve().name, backend
-                )
-            )
+        _skip_curve_unsupported(backend, curve())
 
         key = ec.generate_private_key(curve(), backend)
         assert key
@@ -205,12 +215,7 @@ class TestECDSAVectors(object):
         ) is False
 
     def test_unknown_signature_algoritm(self, backend):
-        if not backend.elliptic_curve_supported(ec.SECP192R1()):
-            pytest.skip(
-                "Curve secp192r1 is not supported by this backend {0}".format(
-                    backend
-                )
-            )
+        _skip_curve_unsupported(backend, ec.SECP192R1())
 
         key = ec.generate_private_key(ec.SECP192R1(), backend)
 
