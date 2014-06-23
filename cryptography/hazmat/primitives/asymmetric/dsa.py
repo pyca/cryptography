@@ -21,31 +21,38 @@ from cryptography.hazmat.backends.interfaces import DSABackend
 from cryptography.hazmat.primitives import interfaces
 
 
-def _check_dsa_parameters(modulus, subgroup_order, generator):
-    if (
-        not isinstance(modulus, six.integer_types) or
-        not isinstance(subgroup_order, six.integer_types) or
-        not isinstance(generator, six.integer_types)
-    ):
-        raise TypeError("DSA parameters must be integers.")
+def generate_parameters(key_size, backend):
+    return backend.generate_dsa_parameters(key_size)
 
-    if (utils.bit_length(modulus),
-        utils.bit_length(subgroup_order)) not in (
+
+def generate_private_key(parameters):
+    return parameters._backend.generate_dsa_private_key(parameters)
+
+
+def _check_dsa_parameters(parameters):
+    if (utils.bit_length(parameters.p),
+        utils.bit_length(parameters.q)) not in (
             (1024, 160),
             (2048, 256),
             (3072, 256)):
-        raise ValueError("modulus and subgroup_order lengths must be "
+        raise ValueError("p and q lengths must be "
                          "one of these pairs (1024, 160) or (2048, 256) "
                          "or (3072, 256).")
 
-    if generator <= 1 or generator >= modulus:
-        raise ValueError("generator must be > 1 and < modulus.")
+    if parameters.g <= 1 or parameters.g >= parameters.p:
+        raise ValueError("g must be > 1 and < p.")
 
 
 @utils.register_interface(interfaces.DSAParameters)
 class DSAParameters(object):
     def __init__(self, modulus, subgroup_order, generator):
-        _check_dsa_parameters(modulus, subgroup_order, generator)
+        _check_dsa_parameters(
+            DSAParameterNumbers(
+                p=modulus,
+                q=subgroup_order,
+                g=generator
+            )
+        )
 
         self._modulus = modulus
         self._subgroup_order = subgroup_order
@@ -59,7 +66,13 @@ class DSAParameters(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        return backend.generate_dsa_parameters(key_size)
+        parameters = backend.generate_dsa_parameters(key_size)
+        numbers = parameters.parameter_numbers()
+        return cls(
+            modulus=numbers.p,
+            subgroup_order=numbers.q,
+            generator=numbers.g
+        )
 
     @property
     def modulus(self):
@@ -89,7 +102,13 @@ class DSAParameters(object):
 @utils.register_interface(interfaces.DSAPrivateKey)
 class DSAPrivateKey(object):
     def __init__(self, modulus, subgroup_order, generator, x, y):
-        _check_dsa_parameters(modulus, subgroup_order, generator)
+        _check_dsa_parameters(
+            DSAParameterNumbers(
+                p=modulus,
+                q=subgroup_order,
+                g=generator
+            )
+        )
         if (
             not isinstance(x, six.integer_types) or
             not isinstance(y, six.integer_types)
@@ -116,7 +135,15 @@ class DSAPrivateKey(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        return backend.generate_dsa_private_key(parameters)
+        key = backend.generate_dsa_private_key(parameters)
+        private_numbers = key.private_numbers()
+        return cls(
+            modulus=private_numbers.public_numbers.parameter_numbers.p,
+            subgroup_order=private_numbers.public_numbers.parameter_numbers.q,
+            generator=private_numbers.public_numbers.parameter_numbers.g,
+            x=private_numbers.x,
+            y=private_numbers.public_numbers.y
+        )
 
     def signer(self, algorithm, backend):
         if not isinstance(backend, DSABackend):
@@ -151,7 +178,13 @@ class DSAPrivateKey(object):
 @utils.register_interface(interfaces.DSAPublicKey)
 class DSAPublicKey(object):
     def __init__(self, modulus, subgroup_order, generator, y):
-        _check_dsa_parameters(modulus, subgroup_order, generator)
+        _check_dsa_parameters(
+            DSAParameterNumbers(
+                p=modulus,
+                q=subgroup_order,
+                g=generator
+            )
+        )
         if not isinstance(y, six.integer_types):
             raise TypeError("y must be an integer.")
 
@@ -210,6 +243,9 @@ class DSAParameterNumbers(object):
     def g(self):
         return self._g
 
+    def parameters(self, backend):
+        return backend.load_dsa_parameter_numbers(self)
+
 
 class DSAPublicNumbers(object):
     def __init__(self, y, parameter_numbers):
@@ -232,6 +268,9 @@ class DSAPublicNumbers(object):
     def parameter_numbers(self):
         return self._parameter_numbers
 
+    def public_key(self, backend):
+        return backend.load_dsa_public_numbers(self)
+
 
 class DSAPrivateNumbers(object):
     def __init__(self, x, public_numbers):
@@ -252,3 +291,6 @@ class DSAPrivateNumbers(object):
     @property
     def public_numbers(self):
         return self._public_numbers
+
+    def private_key(self, backend):
+        return backend.load_dsa_private_numbers(self)

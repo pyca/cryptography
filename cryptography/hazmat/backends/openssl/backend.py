@@ -32,6 +32,7 @@ from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
 )
 from cryptography.hazmat.backends.openssl.dsa import (
+    _DSAParameters, _DSAPrivateKey, _DSAPublicKey,
     _DSASignatureContext, _DSAVerificationContext
 )
 from cryptography.hazmat.backends.openssl.ec import (
@@ -467,18 +468,9 @@ class Backend(object):
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
-            return self._dsa_cdata_to_private_key(dsa_cdata)
+            return _DSAPrivateKey(self, dsa_cdata)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
-
-    def _dsa_cdata_to_private_key(self, cdata):
-        return dsa.DSAPrivateKey(
-            modulus=self._bn_to_int(cdata.p),
-            subgroup_order=self._bn_to_int(cdata.q),
-            generator=self._bn_to_int(cdata.g),
-            x=self._bn_to_int(cdata.priv_key),
-            y=self._bn_to_int(cdata.pub_key)
-        )
 
     def _pem_password_cb(self, password):
         """
@@ -615,37 +607,79 @@ class Backend(object):
 
         assert res == 1
 
-        return dsa.DSAParameters(
-            modulus=self._bn_to_int(ctx.p),
-            subgroup_order=self._bn_to_int(ctx.q),
-            generator=self._bn_to_int(ctx.g)
-        )
+        return _DSAParameters(self, ctx)
 
     def generate_dsa_private_key(self, parameters):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        ctx.p = self._int_to_bn(parameters.p)
-        ctx.q = self._int_to_bn(parameters.q)
-        ctx.g = self._int_to_bn(parameters.g)
+        if isinstance(parameters, dsa.DSAParameters):
+            ctx.p = self._int_to_bn(parameters.p)
+            ctx.q = self._int_to_bn(parameters.q)
+            ctx.g = self._int_to_bn(parameters.g)
+        else:
+            ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
+            ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
+            ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
 
         self._lib.DSA_generate_key(ctx)
 
-        return dsa.DSAPrivateKey(
-            modulus=self._bn_to_int(ctx.p),
-            subgroup_order=self._bn_to_int(ctx.q),
-            generator=self._bn_to_int(ctx.g),
-            x=self._bn_to_int(ctx.priv_key),
-            y=self._bn_to_int(ctx.pub_key)
-        )
+        return _DSAPrivateKey(self, ctx)
 
     def create_dsa_signature_ctx(self, private_key, algorithm):
-        return _DSASignatureContext(self, private_key, algorithm)
+        dsa_cdata = self._dsa_cdata_from_private_key(private_key)
+        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+        key = _DSAPrivateKey(self, dsa_cdata)
+        return _DSASignatureContext(self, key, algorithm)
 
     def create_dsa_verification_ctx(self, public_key, signature,
                                     algorithm):
-        return _DSAVerificationContext(self, public_key, signature,
-                                       algorithm)
+        dsa_cdata = self._dsa_cdata_from_public_key(public_key)
+        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+        key = _DSAPublicKey(self, dsa_cdata)
+        return _DSAVerificationContext(self, key, signature, algorithm)
+
+    def load_dsa_private_numbers(self, numbers):
+        parameter_numbers = numbers.public_numbers.parameter_numbers
+        dsa._check_dsa_parameters(parameter_numbers)
+        dsa_cdata = self._lib.DSA_new()
+        assert dsa_cdata != self._ffi.NULL
+        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+
+        dsa_cdata.p = self._int_to_bn(parameter_numbers.p)
+        dsa_cdata.q = self._int_to_bn(parameter_numbers.q)
+        dsa_cdata.g = self._int_to_bn(parameter_numbers.g)
+        dsa_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
+        dsa_cdata.priv_key = self._int_to_bn(numbers.x)
+
+        return _DSAPrivateKey(self, dsa_cdata)
+
+    def load_dsa_public_numbers(self, numbers):
+        dsa._check_dsa_parameters(numbers.parameter_numbers)
+        # TODO check more
+        dsa_cdata = self._lib.DSA_new()
+        assert dsa_cdata != self._ffi.NULL
+        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+
+        dsa_cdata.p = self._int_to_bn(numbers.parameter_numbers.p)
+        dsa_cdata.q = self._int_to_bn(numbers.parameter_numbers.q)
+        dsa_cdata.g = self._int_to_bn(numbers.parameter_numbers.g)
+        dsa_cdata.pub_key = self._int_to_bn(numbers.y)
+
+        return _DSAPublicKey(self, dsa_cdata)
+
+    def load_dsa_parameter_numbers(self, numbers):
+        dsa._check_dsa_parameters(numbers)
+        # TODO check more
+        dsa_cdata = self._lib.DSA_new()
+        assert dsa_cdata != self._ffi.NULL
+        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+
+        dsa_cdata.p = self._int_to_bn(numbers.p)
+        dsa_cdata.q = self._int_to_bn(numbers.q)
+        dsa_cdata.g = self._int_to_bn(numbers.g)
+
+        return _DSAParameters(self, dsa_cdata)
 
     def _dsa_cdata_from_public_key(self, public_key):
         # Does not GC the DSA cdata. You *must* make sure it's freed

@@ -20,7 +20,7 @@ import pytest
 
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons)
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.utils import bit_length
 
@@ -70,9 +70,14 @@ def _check_dsa_private_key(skey):
 
 @pytest.mark.dsa
 class TestDSA(object):
-    def test_generate_dsa_parameters(self, backend):
+    def test_generate_dsa_parameters_class_method(self, backend):
         parameters = dsa.DSAParameters.generate(1024, backend)
         assert bit_length(parameters.p) == 1024
+
+    def test_generate_dsa_parameters(self, backend):
+        parameters = dsa.generate_parameters(1024, backend)
+        assert isinstance(parameters, interfaces.DSAParameters)
+        # TODO: withnumbers check like RSA
 
     def test_generate_invalid_dsa_parameters(self, backend):
         with pytest.raises(ValueError):
@@ -87,17 +92,31 @@ class TestDSA(object):
         )
     )
     def test_generate_dsa_keys(self, vector, backend):
-        parameters = dsa.DSAParameters(modulus=vector['p'],
-                                       subgroup_order=vector['q'],
-                                       generator=vector['g'])
-        skey = dsa.DSAPrivateKey.generate(parameters, backend)
-
-        skey_parameters = skey.parameters()
-        assert skey_parameters.p == vector['p']
-        assert skey_parameters.q == vector['q']
-        assert skey_parameters.g == vector['g']
-        assert skey.key_size == bit_length(vector['p'])
-        assert skey.y == pow(skey_parameters.g, skey.x, skey_parameters.p)
+        parameters = dsa.DSAParameterNumbers(
+            p=vector['p'],
+            q=vector['q'],
+            g=vector['g']
+        ).parameters(backend)
+        skey = dsa.generate_private_key(parameters)
+        if isinstance(skey, interfaces.DSAPrivateKeyWithNumbers):
+            numbers = skey.private_numbers()
+            skey_parameters = numbers.public_numbers.parameter_numbers
+            pkey = skey.public_key()
+            parameters = pkey.parameters()
+            parameter_numbers = parameters.parameter_numbers()
+            assert parameter_numbers.p == skey_parameters.p
+            assert parameter_numbers.q == skey_parameters.q
+            assert parameter_numbers.g == skey_parameters.g
+            assert skey_parameters.p == vector['p']
+            assert skey_parameters.q == vector['q']
+            assert skey_parameters.g == vector['g']
+            assert skey.key_size == bit_length(vector['p'])
+            assert pkey.key_size == skey.key_size
+            public_numbers = pkey.public_numbers()
+            assert numbers.public_numbers.y == public_numbers.y
+            assert numbers.public_numbers.y == pow(
+                skey_parameters.g, numbers.x, skey_parameters.p
+            )
 
     def test_invalid_parameters_argument_types(self):
         with pytest.raises(TypeError):
@@ -654,11 +673,14 @@ class TestDSAVerification(object):
                 "{0} does not support the provided parameters".format(backend)
             )
 
-        public_key = dsa.DSAPublicKey(
-            vector['p'], vector['q'], vector['g'], vector['y']
-        )
+        public_key = dsa.DSAPublicNumbers(
+            parameter_numbers=dsa.DSAParameterNumbers(
+                vector['p'], vector['q'], vector['g']
+            ),
+            y=vector['y']
+        ).public_key(backend)
         sig = der_encode_dsa_signature(vector['r'], vector['s'])
-        verifier = public_key.verifier(sig, algorithm(), backend)
+        verifier = public_key.verifier(sig, algorithm())
         verifier.update(vector['msg'])
         if vector['result'] == "F":
             with pytest.raises(InvalidSignature):
@@ -728,16 +750,22 @@ class TestDSASignature(object):
                 "{0} does not support the provided parameters".format(backend)
             )
 
-        private_key = dsa.DSAPrivateKey(
-            vector['p'], vector['q'], vector['g'], vector['x'], vector['y']
-        )
-        signer = private_key.signer(algorithm(), backend)
+        private_key = dsa.DSAPrivateNumbers(
+            public_numbers=dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    vector['p'], vector['q'], vector['g']
+                ),
+                y=vector['y']
+            ),
+            x=vector['x']
+        ).private_key(backend)
+        signer = private_key.signer(algorithm())
         signer.update(vector['msg'])
         signature = signer.finalize()
         assert signature
 
         public_key = private_key.public_key()
-        verifier = public_key.verifier(signature, algorithm(), backend)
+        verifier = public_key.verifier(signature, algorithm())
         verifier.update(vector['msg'])
         verifier.verify()
 
