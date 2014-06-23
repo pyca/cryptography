@@ -170,7 +170,7 @@ a specific mode and padding to use.
 
 RSA encryption also has the property that you cannot encrypt a message which is
 longer than the ``key_size`` of your key. As a result, RSA is often combined
-with symmetric encryption to create a `hybrid cryptosystem`, utilizing both
+with symmetric encryption to create a `hybrid cryptosystem`_, utilizing both
 asymmetric and symmetric algorithms. An example of such a system is PGP.
 
 In protocols where both parties have a PGP key, encryption is typically used
@@ -203,3 +203,4 @@ encrypted with:
 .. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`specific mathematical properties`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Key_generation
+.. _`hybrid cryptosystem`: https://en.wikipedia.org/wiki/Hybrid_cryptosystem
