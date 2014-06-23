@@ -101,7 +101,7 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
-// Not defined in the public header
+/* Not defined in the public header */
 enum {
     kCCModeGCM = 11
 };
