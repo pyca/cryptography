@@ -14,6 +14,7 @@ bug check out `what to put in your bug report`_.
     submitting-patches
     reviewing-patches
     test-vectors
+    c-bindings
 
 .. _`GitHub`: https://github.com/pyca/cryptography
 .. _`what to put in your bug report`: http://www.contribution-guide.org/#what-to-put-in-your-bug-report
