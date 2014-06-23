@@ -456,7 +456,7 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET = 0;
 const long SSL_OP_NO_TICKET = 0;
 #endif
 
-// OpenSSL 0.9.8f+
+/* OpenSSL 0.9.8f+ */
 #if OPENSSL_VERSION_NUMBER >= 0x00908070L
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 #else
@@ -483,7 +483,7 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
 
-// Workaround for #794 caused by cffi const** bug.
+/* Workaround for #794 caused by cffi const** bug. */
 const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX* ctx) {
     return ctx->method;
 }
@@ -519,7 +519,7 @@ void (*SSL_get0_next_proto_negotiated)(const SSL *,
 static const long Cryptography_HAS_NEXTPROTONEG = 1;
 #endif
 
-// ALPN was added in OpenSSL 1.0.2.
+/* ALPN was added in OpenSSL 1.0.2. */
 #if OPENSSL_VERSION_NUMBER < 0x10002001L
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
                                const unsigned char*,
