@@ -139,7 +139,7 @@ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
-// not macros but must be in this section since they're not available in 0.9.8
+/* not macros but must be in this section since they're not available in 0.9.8 */
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
 EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
 EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
