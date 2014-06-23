@@ -13,7 +13,7 @@ to document argument and return types.
 
 
 Symmetric ciphers
-~~~~~~~~~~~~~~~~~
+-----------------
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
 
@@ -48,7 +48,7 @@ Symmetric ciphers
 
 
 Cipher modes
-------------
+~~~~~~~~~~~~
 
 Interfaces used by the symmetric cipher modes described in
 :ref:`Symmetric Encryption Modes <symmetric-encryption-modes>`.
@@ -104,7 +104,44 @@ Interfaces used by the symmetric cipher modes described in
         individual modes.
 
 Asymmetric interfaces
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
+
+.. class:: AsymmetricSignatureContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you want to sign.
+
+    .. method:: finalize()
+
+        :return bytes signature: The signature.
+
+
+.. class:: AsymmetricVerificationContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you wish to verify using the signature.
+
+    .. method:: verify()
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
+
+
+.. class:: AsymmetricPadding
+
+    .. versionadded:: 0.2
+
+    .. attribute:: name
+
+
+RSA
+~~~
 
 .. class:: RSAPrivateKey
 
@@ -235,6 +272,9 @@ Asymmetric interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
             instance.
 
+
+DSA
+~~~
 
 .. class:: DSAParameters
 
@@ -407,6 +447,9 @@ Asymmetric interfaces
         The bit length of the curve's base point.
 
 
+Elliptic Curve
+~~~~~~~~~~~~~~
+
 .. class:: EllipticCurveSignatureAlgorithm
 
     .. versionadded:: 0.5
@@ -475,42 +518,8 @@ Asymmetric interfaces
         The elliptic curve for this key.
 
 
-.. class:: AsymmetricSignatureContext
-
-    .. versionadded:: 0.2
-
-    .. method:: update(data)
-
-        :param bytes data: The data you want to sign.
-
-    .. method:: finalize()
-
-        :return bytes signature: The signature.
-
-
-.. class:: AsymmetricVerificationContext
-
-    .. versionadded:: 0.2
-
-    .. method:: update(data)
-
-        :param bytes data: The data you wish to verify using the signature.
-
-    .. method:: verify()
-
-        :raises cryptography.exceptions.InvalidSignature: If the signature does
-            not validate.
-
-
-.. class:: AsymmetricPadding
-
-    .. versionadded:: 0.2
-
-    .. attribute:: name
-
-
 Hash algorithms
-~~~~~~~~~~~~~~~
+---------------
 
 .. class:: HashAlgorithm
 
@@ -556,7 +565,7 @@ Hash algorithms
 
 
 Key derivation functions
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 .. class:: KeyDerivationFunction
 
@@ -601,7 +610,7 @@ Key derivation functions
 
 
 `CMAC`_
-~~~~~~~
+-------
 
 .. class:: CMACContext
 
