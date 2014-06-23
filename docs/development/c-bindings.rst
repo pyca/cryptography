@@ -144,8 +144,8 @@ Otherwise, we set that flag to 0::
     #else
     static const long Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION = 0;
 
-Then, in that ``#else`` block, we define a number of fallbacks. For an
-integer constant, just define it as 0::
+Then, in that ``#else`` block, we define the names that aren't
+available as dummy values. For an integer constant, use 0::
 
     static const int QM_TRANSMOGRIFICATION_ALIGNMENT_LEFT = 0;
     static const int QM_TRANSMOGRIFICATION_ALIGNMENT_RIGHT = 0;
