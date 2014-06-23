@@ -142,11 +142,11 @@ If the signature does not match, ``verify()`` will raise an
 Encrypt
 -------
 
-As stated earlier, asymmetric encryption has the interesting property that you
-can encrypt a message without knowing any secrets, encryption requires only the
-public key. Once a message is encrypted though, only someone with the private
-key is able to decrypt it, even the person who just encrypted the message isn't
-able to!
+:doc:`As stated earlier </topic-guides/asymmetric-intro>`, asymmetric
+encryption has the interesting property that you can encrypt a message without
+knowing any secrets, encryption requires only the public key. Once a message is
+encrypted though, only someone with the private key is able to decrypt it, even
+the person who just encrypted the message isn't able to!
 
 This property means that you can distribute a public key, and then anyone is
 able to send you an encrypted message. Like signatures, RSA encryption requires
