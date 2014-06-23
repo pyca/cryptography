@@ -82,9 +82,9 @@ Don't name parameters:
 
 .. code-block:: c
 
-    // Good
+    /* Good */
     long f(long);
-    // Bad
+    /* Bad */
     long f(long x);
 
 ...unless they're inside a struct:
@@ -101,16 +101,16 @@ Include ``void`` if the function takes no arguments:
 
 .. code-block:: c
 
-    // Good
+    /* Good */
     long f(void);
-    // Bad
+    /* Bad */
     long f();
 
 Wrap lines at 80 characters like so:
 
 .. code-block:: c
 
-    // Pretend this went to 80 characters
+    /* Pretend this went to 80 characters */
     long f(long, long,
            int *)
 
@@ -118,9 +118,9 @@ Include a space after commas between parameters:
 
 .. code-block:: c
 
-    // Good
+    /* Good */
     long f(int, char *)
-    // Bad
+    /* Bad */
     long f(int,char *)
 
 Values set by ``#define`` should be assigned the appropriate type. If you see
