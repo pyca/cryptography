@@ -253,7 +253,7 @@ DSA
         The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
         associated with the public key.
 
-.. class:: DSAPrivateNumbers(x, public_numbers, parameter_numbers)
+.. class:: DSAPrivateNumbers(x, public_numbers)
 
     .. versionadded:: 0.5
 
@@ -276,13 +276,6 @@ DSA
 
         The :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
         associated with the private key.
-
-    .. attribute:: parameter_numbers
-
-        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
-
-        The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
-        associated with the public key.
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography

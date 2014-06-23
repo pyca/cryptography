@@ -916,12 +916,10 @@ class TestDSANumbers(object):
         )
         private_numbers = dsa.DSAPrivateNumbers(
             x=5,
-            public_numbers=public_numbers,
-            parameter_numbers=parameter_numbers
+            public_numbers=public_numbers
         )
         assert private_numbers.x == 5
         assert private_numbers.public_numbers == public_numbers
-        assert private_numbers.parameter_numbers == parameter_numbers
 
     def test_dsa_private_numbers_invalid_types(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -930,22 +928,7 @@ class TestDSANumbers(object):
             parameter_numbers=parameter_numbers
         )
         with pytest.raises(TypeError):
-            dsa.DSAPrivateNumbers(
-                x=4,
-                public_numbers=public_numbers,
-                parameter_numbers=None
-            )
+            dsa.DSAPrivateNumbers(x=4, public_numbers=None)
 
         with pytest.raises(TypeError):
-            dsa.DSAPrivateNumbers(
-                x=4,
-                public_numbers=None,
-                parameter_numbers=parameter_numbers
-            )
-
-        with pytest.raises(TypeError):
-            dsa.DSAPrivateNumbers(
-                x=None,
-                public_numbers=public_numbers,
-                parameter_numbers=parameter_numbers
-            )
+            dsa.DSAPrivateNumbers(x=None, public_numbers=public_numbers)

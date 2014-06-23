@@ -234,30 +234,20 @@ class DSAPublicNumbers(object):
 
 
 class DSAPrivateNumbers(object):
-    def __init__(self, x, public_numbers, parameter_numbers):
+    def __init__(self, x, public_numbers):
         if not isinstance(x, six.integer_types):
             raise TypeError("DSAPrivateNumbers x argument must be an integer.")
-
-        if not isinstance(parameter_numbers, DSAParameterNumbers):
-            raise TypeError(
-                "parameter_numbers must be a DSAParameterNumbers instance."
-            )
 
         if not isinstance(public_numbers, DSAPublicNumbers):
             raise TypeError(
                 "public_numbers must be a DSAPublicNumbers instance."
             )
-        self._parameter_numbers = parameter_numbers
         self._public_numbers = public_numbers
         self._x = x
 
     @property
     def x(self):
         return self._x
-
-    @property
-    def parameter_numbers(self):
-        return self._parameter_numbers
 
     @property
     def public_numbers(self):
