@@ -30,8 +30,12 @@ invariants
 iOS
 Koblitz
 metadata
+namespace
+namespaces
 pickleable
 plaintext
+preprocessor
+preprocessors
 pseudorandom
 Schneier
 scrypt
