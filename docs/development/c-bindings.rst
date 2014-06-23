@@ -84,7 +84,7 @@ Adding constant, types, functions...
 
 You can create bindings for any name that exists in some version of
 the library you're binding against. However, the project also has to
-keep supporting older versions of the library. In order to acchieve
+keep supporting older versions of the library. In order to achieve
 this, binding modules have ``CUSTOMIZATIONS`` and
 ``CONDITIONAL_NAMES`` constants.
 
