@@ -284,7 +284,7 @@ typedef uint32_t CRYPTO_THREADID;
 void (*ERR_remove_thread_state)(const CRYPTO_THREADID *) = NULL;
 #endif
 
-// OpenSSL 0.9.8h+
+/* OpenSSL 0.9.8h+ */
 #if OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_098H_ERROR_CODES = 1;
 #else
@@ -298,7 +298,7 @@ static const int ASN1_R_NO_MULTIPART_BODY_FAILURE = 0;
 static const int ASN1_R_NO_MULTIPART_BOUNDARY = 0;
 #endif
 
-// OpenSSL 0.9.8c+
+/* OpenSSL 0.9.8c+ */
 #ifdef EVP_F_CAMELLIA_INIT_KEY
 static const long Cryptography_HAS_098C_CAMELLIA_CODES = 1;
 #else
