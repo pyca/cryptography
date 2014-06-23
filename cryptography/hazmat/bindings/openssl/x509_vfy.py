@@ -45,7 +45,7 @@ typedef ... X509_VERIFY_PARAM;
    as longs, just in case they ever grow to large, such as what we saw
    with OP_ALL. */
 
-// Verification error codes
+/* Verification error codes */
 static const int X509_V_OK;
 static const int X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT;
 static const int X509_V_ERR_UNABLE_TO_GET_CRL;
@@ -110,7 +110,7 @@ static const int X509_V_ERR_EMAIL_MISMATCH;
 static const int X509_V_ERR_IP_ADDRESS_MISMATCH;
 static const int X509_V_ERR_APPLICATION_VERIFICATION;
 
-// Verification parameters
+/* Verification parameters */
 static const long X509_V_FLAG_CB_ISSUER_CHECK;
 static const long X509_V_FLAG_USE_CHECK_TIME;
 static const long X509_V_FLAG_CRL_CHECK;
@@ -136,12 +136,12 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 FUNCTIONS = """
 int X509_verify_cert(X509_STORE_CTX *);
 
-// X509_STORE
+/* X509_STORE */
 X509_STORE *X509_STORE_new(void);
 void X509_STORE_free(X509_STORE *);
 int X509_STORE_add_cert(X509_STORE *, X509 *);
 
-// X509_STORE_CTX
+/* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
 void X509_STORE_CTX_cleanup(X509_STORE_CTX *);
 void X509_STORE_CTX_free(X509_STORE_CTX *);
@@ -165,7 +165,7 @@ X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
 
-// X509_VERIFY_PARAM
+/* X509_VERIFY_PARAM */
 X509_VERIFY_PARAM *X509_VERIFY_PARAM_new(void);
 int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *, unsigned long);
 int X509_VERIFY_PARAM_clear_flags(X509_VERIFY_PARAM *, unsigned long);
@@ -181,11 +181,11 @@ int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 """
 
 MACROS = """
-// X509_STORE_CTX
+/* X509_STORE_CTX */
 void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
                               Cryptography_STACK_OF_X509_CRL *);
 
-// X509_VERIFY_PARAM
+/* X509_VERIFY_PARAM */
 int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const unsigned char *,
                                 size_t);
 void X509_VERIFY_PARAM_set_hostflags(X509_VERIFY_PARAM *, unsigned int);
@@ -197,7 +197,7 @@ int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL 1.0.2+, but only some very new releases
+/* OpenSSL 1.0.2+, but only some very new releases */
 #ifdef X509_VERIFY_PARAM_set_hostflags
 static const long Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS = 1;
 #else
@@ -206,7 +206,7 @@ void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
                                         unsigned int) = NULL;
 #endif
 
-// OpenSSL 1.0.2+ verification error codes
+/* OpenSSL 1.0.2+ verification error codes */
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 #else
@@ -222,12 +222,13 @@ static const long X509_V_ERR_EMAIL_MISMATCH = 0;
 static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
-// OpenSSL 1.0.2+ verification parameters
+/* OpenSSL 1.0.2+ verification parameters */
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
-// X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2, but added separately below
+/* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
+   below because it shows up in some earlier 3rd party OpenSSL packages. */
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
@@ -242,7 +243,7 @@ int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
 int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
 #endif
 
-// OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e...
+/* OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e... */
 #ifdef X509_V_FLAG_TRUSTED_FIRST
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
 #else
@@ -250,7 +251,7 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
 
-// OpenSSL 1.0.0+ verification error codes
+/* OpenSSL 1.0.0+ verification error codes */
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 1;
 #else
@@ -266,7 +267,7 @@ static const long X509_V_ERR_UNSUPPORTED_NAME_SYNTAX = 0;
 static const long X509_V_ERR_CRL_PATH_VALIDATION_ERROR = 0;
 #endif
 
-// OpenSSL 1.0.0+ verification parameters
+/* OpenSSL 1.0.0+ verification parameters */
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 1;
 #else
@@ -275,7 +276,7 @@ static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT = 0;
 static const long X509_V_FLAG_USE_DELTAS = 0;
 #endif
 
-// OpenSSL 0.9.8recent+
+/* OpenSSL 0.9.8recent+ */
 #ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 1;
 #else
