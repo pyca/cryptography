@@ -15,8 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER >= 0x0090808fL
-// The next define should really be in the OpenSSL header, but it is missing.
-// Failing to include this on Windows causes compilation failures.
+/* The next define should really be in the OpenSSL header, but it is missing.
+   Failing to include this on Windows causes compilation failures. */
 #if defined(OPENSSL_SYS_WINDOWS)
 #include <windows.h>
 #endif

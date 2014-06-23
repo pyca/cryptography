@@ -245,7 +245,7 @@ int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL 0.9.8e does not have this definition
+/* OpenSSL 0.9.8e does not have this definition. */
 #if OPENSSL_VERSION_NUMBER <= 0x0090805fL
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
 #endif
