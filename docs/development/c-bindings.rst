@@ -83,7 +83,7 @@ pointer of the appropriate type to be NULL::
 
     int (*QM_transmogrify)(QM_TRANSMOGRIFICATION_CTX *, int) = NULL;
 
-(That is, copy the signature, put a ``*`` in front of the function
+(To do that, copy the signature, put a ``*`` in front of the function
 name and wrap it in parens, and then put ``= NULL`` at the end).
 
 Note how types don't need to be conditionally defined, as long as all
