@@ -226,7 +226,7 @@ DSA
 
         :type: int
 
-        The sub group order.
+        The sub-group order.
 
     .. attribute:: g
 

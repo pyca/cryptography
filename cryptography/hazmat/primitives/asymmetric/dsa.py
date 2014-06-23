@@ -191,7 +191,7 @@ class DSAParameterNumbers(object):
             not isinstance(g, six.integer_types)
         ):
             raise TypeError(
-                "DSAParameterNumbers p, q, q arguments must be an integers."
+                "DSAParameterNumbers p, q, and g arguments must be integers."
             )
 
         self._p = p
