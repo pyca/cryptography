@@ -6,3 +6,115 @@ C bindings are bindings to C libraries, using cffi_ whenever possible.
 .. _cffi:: http://cffi.readthedocs.org
 
 Bindings live in :py:mod:`cryptography.hazmat.bindings`.
+
+Adding constant, types, functions...
+------------------------------------
+
+You can create bindings for any name that exists in some version of
+the library you're binding against. However, the project also has to
+keep supporting older versions of the library. In order to acchieve
+this, binding modules have ``CUSTOMIZATIONS`` and
+``CONDITIONAL_NAMES`` constants.
+
+Let's say you want to enable quantum transmogrification. The upstream
+library implements this as the following API::
+
+    static const int QM_TRANSMOGRIFICATION_ALIGNMENT_LEFT;
+    static const int QM_TRANSMOGRIFICATION_ALIGNMENT_RIGHT;
+    typedef ... QM_TRANSMOGRIFICATION_CTX;
+    int QM_transmogrify(QM_TRANSMOGRIFICATION_CTX *, int);
+
+To start, create a new constant that defines if the *actual* library
+has the feature you want, and add it to ``TYPES``::
+
+    static const long Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION;
+
+This should start with ``Cryptography_``, since we're adding it in
+this library. This prevents namespace collisions.
+
+Then, define the actual features (constants, types, functions...) you
+want to expose. If it's a constant, just add it to ``TYPES``::
+
+    static const int QM_TRANSMOGRIFICATION_ALIGNMENT_LEFT;
+    static const int QM_TRANSMOGRIFICATION_ALIGNMENT_RIGHT;
+
+If it's a struct, add it to ``TYPES`` as well. The following is an
+opaque struct::
+
+    typedef ... QM_TRANSMOGRIFICATION_CTX;
+
+... but you can also make some or all items in the struct accessible::
+
+    typedef struct {
+        /* Fundamental constant k for your particular universe */
+        BIGNUM *k;
+        ...;
+    } QM_TRANSMOGRIFICATION_CTX;
+
+Confusingly, functions that aren't always available on all supported
+versions of the library, should be defined in ``MACROS`` and *not* in
+``FUNCTIONS``. Fortunately, you just have to copy the signature::
+
+    int QM_transmogrify(QM_TRANSMOGRIFICATION_CTX *, int);
+
+Then, we define the ``CUSTOMIZATIONS`` entry. To do that, we have to
+come up with a C preprocessor expression that decides whether or not a
+feature exists in the library. For example::
+
+    #ifdef QM_transmogrify
+
+Then, we set the flag that signifies the feature exists::
+
+    static const long Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION = 1;
+
+Otherwise, we set that flag to 0::
+
+    #else
+    static const long Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION = 0;
+
+Then, in that ``#else`` block, we define a number of fallbacks. For an
+integer constant, just define it as 0::
+
+    static const int QM_TRANSMOGRIFICATION_ALIGNMENT_LEFT = 0;
+    static const int QM_TRANSMOGRIFICATION_ALIGNMENT_RIGHT = 0;
+
+For a function, it's a bit trickier. You have to define a function
+pointer of the appropriate type to be NULL::
+
+    int (*QM_transmogrify)(QM_TRANSMOGRIFICATION_CTX *, int) = NULL;
+
+(That is, copy the signature, put a ``*`` in front of the function
+name and wrap it in parens, and then put ``= NULL`` at the end).
+
+Note how types don't need to be conditionally defined, as long as all
+the necessarily typedefs are in place.
+
+Finally, add an entry to ``CONDITIONAL_NAMES`` with all of the things
+you want to conditionally export::
+
+    CONDITIONAL_NAMES = {
+        ...
+        "Cryptography_HAS_QUANTUM_TRANSMOGRIFICATION": [
+            "QM_TRANSMOGRIFICATION_ALIGNMENT_LEFT",
+            "QM_TRANSMOGRIFICATION_ALIGNMENT_RIGHT",
+            "QM_transmogrify"
+        ]
+    }
+
+Caveats
+~~~~~~~
+
+Sometimes, a set of loosely related features are added in the same
+version, and it's impractical to create ``#ifdef`` statements for each
+one. In that case, it may make sense to either check for a particular
+version. For example, to check for OpenSSL 1.0.0 or newer:
+
+    #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+
+Sometimes, the version of a libray on a particular platform will have
+features that you thought it wouldn't, based on its version.
+Occasionally, packagers appear to ship arbitrary VCS checkouts. As a
+result, sometimes you may have to add separate ``#ifdef`` statements
+for particular features. This kind of issue is typically only caught
+by running the tests on a wide variety of systems, which is the job of
+our continuous integration infrastructure.
