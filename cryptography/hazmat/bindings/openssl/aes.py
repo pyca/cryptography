@@ -49,7 +49,7 @@ void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL 0.9.8h+
+/* OpenSSL 0.9.8h+ */
 #if OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_AES_WRAP = 1;
 #else
