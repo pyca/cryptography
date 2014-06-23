@@ -159,7 +159,7 @@ pointer of the appropriate type to be NULL::
 name and wrap it in parentheses, and then put ``= NULL`` at the end).
 
 Note how types don't need to be conditionally defined, as long as all
-the necessarily typedefs are in place.
+the necessarily type definitions are in place.
 
 Finally, add an entry to ``CONDITIONAL_NAMES`` with all of the things
 you want to conditionally export::
