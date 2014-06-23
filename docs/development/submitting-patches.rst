@@ -123,6 +123,13 @@ Include a space after commas between parameters:
     /* Bad */
     long f(int,char *)
 
+Use C-style ``/* */`` comments instead of C++-style ``//``:
+
+.. code-block:: c
+
+    // Bad
+    /* Good */
+
 Values set by ``#define`` should be assigned the appropriate type. If you see
 this:
 
