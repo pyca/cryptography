@@ -30,6 +30,8 @@ invariants
 iOS
 Koblitz
 metadata
+namespace
+namespaces
 pickleable
 plaintext
 pseudorandom
