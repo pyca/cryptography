@@ -116,7 +116,7 @@ Elliptic Curve Signature Algorithms
         >>> from cryptography.hazmat.primitives import hashes
         >>> from cryptography.hazmat.primitives.asymmetric import ec
         >>> private_key = ec.generate_private_key(
-        ...     ec.SECT283K1(), default_backend()
+        ...     ec.SECP384R1(), default_backend()
         ... )
         >>> signer = private_key.signer(ec.ECDSA(hashes.SHA256()))
         >>> signer.update(b"this is some data I'd like")
