@@ -251,49 +251,7 @@ class RSAPublicKeyWithNumbers(RSAPublicKey):
 
 @six.add_metaclass(abc.ABCMeta)
 class DSAParameters(object):
-    @abc.abstractproperty
-    def modulus(self):
-        """
-        The prime modulus that's used in generating the DSA keypair and used
-        in the DSA signing and verification processes.
-        """
-
-    @abc.abstractproperty
-    def subgroup_order(self):
-        """
-        The subgroup order that's used in generating the DSA keypair
-        by the generator and used in the DSA signing and verification
-        processes.
-        """
-
-    @abc.abstractproperty
-    def generator(self):
-        """
-        The generator that is used in generating the DSA keypair and used
-        in the DSA signing and verification processes.
-        """
-
-    @abc.abstractproperty
-    def p(self):
-        """
-        The prime modulus that's used in generating the DSA keypair and used
-        in the DSA signing and verification processes. Alias for modulus.
-        """
-
-    @abc.abstractproperty
-    def q(self):
-        """
-        The subgroup order that's used in generating the DSA keypair
-        by the generator and used in the DSA signing and verification
-        processes. Alias for subgroup_order.
-        """
-
-    @abc.abstractproperty
-    def g(self):
-        """
-        The generator that is used in generating the DSA keypair and used
-        in the DSA signing and verification processes. Alias for generator.
-        """
+    pass
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -319,18 +277,6 @@ class DSAPrivateKey(object):
         The DSAPublicKey associated with this private key.
         """
 
-    @abc.abstractproperty
-    def x(self):
-        """
-        The private key "x" in the DSA structure.
-        """
-
-    @abc.abstractproperty
-    def y(self):
-        """
-        The public key.
-        """
-
     @abc.abstractmethod
     def parameters(self):
         """
@@ -353,12 +299,6 @@ class DSAPublicKey(object):
     def key_size(self):
         """
         The bit length of the prime modulus.
-        """
-
-    @abc.abstractproperty
-    def y(self):
-        """
-        The public key.
         """
 
     @abc.abstractmethod
