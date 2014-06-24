@@ -872,3 +872,63 @@ def test_dsa_generate_invalid_backend():
     with raises_unsupported_algorithm(
             _Reasons.BACKEND_MISSING_INTERFACE):
         dsa.DSAPrivateKey.generate(pretend_parameters, pretend_backend)
+
+
+class TestDSANumbers(object):
+    def test_dsa_parameter_numbers(self):
+        parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        assert parameter_numbers.p == 1
+        assert parameter_numbers.q == 2
+        assert parameter_numbers.g == 3
+
+    def test_dsa_parameter_numbers_invalid_types(self):
+        with pytest.raises(TypeError):
+            dsa.DSAParameterNumbers(p=None, q=2, g=3)
+
+        with pytest.raises(TypeError):
+            dsa.DSAParameterNumbers(p=1, q=None, g=3)
+
+        with pytest.raises(TypeError):
+            dsa.DSAParameterNumbers(p=1, q=2, g=None)
+
+    def test_dsa_public_numbers(self):
+        parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        public_numbers = dsa.DSAPublicNumbers(
+            y=4,
+            parameter_numbers=parameter_numbers
+        )
+        assert public_numbers.y == 4
+        assert public_numbers.parameter_numbers == parameter_numbers
+
+    def test_dsa_public_numbers_invalid_types(self):
+        with pytest.raises(TypeError):
+            dsa.DSAPublicNumbers(y=4, parameter_numbers=None)
+
+        with pytest.raises(TypeError):
+            parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+            dsa.DSAPublicNumbers(y=None, parameter_numbers=parameter_numbers)
+
+    def test_dsa_private_numbers(self):
+        parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        public_numbers = dsa.DSAPublicNumbers(
+            y=4,
+            parameter_numbers=parameter_numbers
+        )
+        private_numbers = dsa.DSAPrivateNumbers(
+            x=5,
+            public_numbers=public_numbers
+        )
+        assert private_numbers.x == 5
+        assert private_numbers.public_numbers == public_numbers
+
+    def test_dsa_private_numbers_invalid_types(self):
+        parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        public_numbers = dsa.DSAPublicNumbers(
+            y=4,
+            parameter_numbers=parameter_numbers
+        )
+        with pytest.raises(TypeError):
+            dsa.DSAPrivateNumbers(x=4, public_numbers=None)
+
+        with pytest.raises(TypeError):
+            dsa.DSAPrivateNumbers(x=None, public_numbers=public_numbers)
