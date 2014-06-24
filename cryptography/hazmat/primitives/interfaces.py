@@ -297,6 +297,15 @@ class DSAParameters(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class DSAParametersWithNumbers(DSAParameters):
+    @abc.abstractmethod
+    def parameter_numbers(self):
+        """
+        Returns a DSAParameterNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class DSAPrivateKey(object):
     @abc.abstractproperty
     def key_size(self):
@@ -330,6 +339,15 @@ class DSAPrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class DSAPrivateKeyWithNumbers(DSAPrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns a DSAPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class DSAPublicKey(object):
     @abc.abstractproperty
     def key_size(self):
@@ -347,6 +365,15 @@ class DSAPublicKey(object):
     def parameters(self):
         """
         The DSAParameters object associated with this public key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DSAPublicKeyWithNumbers(DSAPublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns a DSAPublicNumbers.
         """
 
 
