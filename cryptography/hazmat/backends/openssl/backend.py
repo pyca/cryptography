@@ -31,6 +31,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
 )
+from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSASignatureContext, _DSAVerificationContext
 )
@@ -38,6 +39,7 @@ from cryptography.hazmat.backends.openssl.ec import (
     _ECDSASignatureContext, _ECDSAVerificationContext,
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
 )
+from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey, _RSASignatureContext,
     _RSAVerificationContext
@@ -1219,127 +1221,6 @@ class _HashContext(object):
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
         assert res == 1
         return self._backend._ffi.buffer(buf)[:outlen[0]]
-
-
-@utils.register_interface(interfaces.HashContext)
-class _HMACContext(object):
-    def __init__(self, backend, key, algorithm, ctx=None):
-        self.algorithm = algorithm
-        self._backend = backend
-
-        if ctx is None:
-            ctx = self._backend._ffi.new("HMAC_CTX *")
-            self._backend._lib.HMAC_CTX_init(ctx)
-            ctx = self._backend._ffi.gc(
-                ctx, self._backend._lib.HMAC_CTX_cleanup
-            )
-            evp_md = self._backend._lib.EVP_get_digestbyname(
-                algorithm.name.encode('ascii'))
-            if evp_md == self._backend._ffi.NULL:
-                raise UnsupportedAlgorithm(
-                    "{0} is not a supported hash on this backend.".format(
-                        algorithm.name),
-                    _Reasons.UNSUPPORTED_HASH
-                )
-            res = self._backend._lib.Cryptography_HMAC_Init_ex(
-                ctx, key, len(key), evp_md, self._backend._ffi.NULL
-            )
-            assert res != 0
-
-        self._ctx = ctx
-        self._key = key
-
-    def copy(self):
-        copied_ctx = self._backend._ffi.new("HMAC_CTX *")
-        self._backend._lib.HMAC_CTX_init(copied_ctx)
-        copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.HMAC_CTX_cleanup
-        )
-        res = self._backend._lib.Cryptography_HMAC_CTX_copy(
-            copied_ctx, self._ctx
-        )
-        assert res != 0
-        return _HMACContext(
-            self._backend, self._key, self.algorithm, ctx=copied_ctx
-        )
-
-    def update(self, data):
-        res = self._backend._lib.Cryptography_HMAC_Update(
-            self._ctx, data, len(data)
-        )
-        assert res != 0
-
-    def finalize(self):
-        buf = self._backend._ffi.new("unsigned char[]",
-                                     self._backend._lib.EVP_MAX_MD_SIZE)
-        outlen = self._backend._ffi.new("unsigned int *")
-        res = self._backend._lib.Cryptography_HMAC_Final(
-            self._ctx, buf, outlen
-        )
-        assert res != 0
-        assert outlen[0] == self.algorithm.digest_size
-        self._backend._lib.HMAC_CTX_cleanup(self._ctx)
-        return self._backend._ffi.buffer(buf)[:outlen[0]]
-
-
-@utils.register_interface(interfaces.CMACContext)
-class _CMACContext(object):
-    def __init__(self, backend, algorithm, ctx=None):
-        if not backend.cmac_algorithm_supported(algorithm):
-            raise UnsupportedAlgorithm("This backend does not support CMAC.",
-                                       _Reasons.UNSUPPORTED_CIPHER)
-
-        self._backend = backend
-        self._key = algorithm.key
-        self._algorithm = algorithm
-        self._output_length = algorithm.block_size // 8
-
-        if ctx is None:
-            registry = self._backend._cipher_registry
-            adapter = registry[type(algorithm), CBC]
-
-            evp_cipher = adapter(self._backend, algorithm, CBC)
-
-            ctx = self._backend._lib.CMAC_CTX_new()
-
-            assert ctx != self._backend._ffi.NULL
-            ctx = self._backend._ffi.gc(ctx, self._backend._lib.CMAC_CTX_free)
-
-            self._backend._lib.CMAC_Init(
-                ctx, self._key, len(self._key),
-                evp_cipher, self._backend._ffi.NULL
-            )
-
-        self._ctx = ctx
-
-    def update(self, data):
-        res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
-        assert res == 1
-
-    def finalize(self):
-        buf = self._backend._ffi.new("unsigned char[]", self._output_length)
-        length = self._backend._ffi.new("size_t *", self._output_length)
-        res = self._backend._lib.CMAC_Final(
-            self._ctx, buf, length
-        )
-        assert res == 1
-
-        self._ctx = None
-
-        return self._backend._ffi.buffer(buf)[:]
-
-    def copy(self):
-        copied_ctx = self._backend._lib.CMAC_CTX_new()
-        copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.CMAC_CTX_free
-        )
-        res = self._backend._lib.CMAC_CTX_copy(
-            copied_ctx, self._ctx
-        )
-        assert res == 1
-        return _CMACContext(
-            self._backend, self._algorithm, ctx=copied_ctx
-        )
 
 
 backend = Backend()
