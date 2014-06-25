@@ -995,19 +995,25 @@ class Backend(object):
         Generate a new private key on the named curve.
         """
 
-        curve_nid = self._elliptic_curve_to_nid(curve)
+        if backend.elliptic_curve_supported(curve):
+            curve_nid = self._elliptic_curve_to_nid(curve)
 
-        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
+            ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+            assert ctx != self._ffi.NULL
+            ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
 
-        res = self._lib.EC_KEY_generate_key(ctx)
-        assert res == 1
+            res = self._lib.EC_KEY_generate_key(ctx)
+            assert res == 1
 
-        res = self._lib.EC_KEY_check_key(ctx)
-        assert res == 1
+            res = self._lib.EC_KEY_check_key(ctx)
+            assert res == 1
 
-        return _EllipticCurvePrivateKey(self, ctx, curve)
+            return _EllipticCurvePrivateKey(self, ctx, curve)
+        else:
+            raise UnsupportedAlgorithm(
+                "Backend object does not support {0}.".format(curve.name),
+                _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+            )
 
     def elliptic_curve_private_key_from_numbers(self, numbers):
         ec_key = self._ec_key_cdata_from_private_numbers(numbers)
