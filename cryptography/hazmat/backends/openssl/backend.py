@@ -21,12 +21,15 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import (
-    InternalError, InvalidSignature, InvalidTag, UnsupportedAlgorithm, _Reasons
+    InternalError, InvalidTag, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
     TraditionalOpenSSLSerializationBackend
+)
+from cryptography.hazmat.backends.openssl.dsa import (
+    _DSASignatureContext, _DSAVerificationContext
 )
 from cryptography.hazmat.backends.openssl.ec import (
     _ECDSASignatureContext, _ECDSAVerificationContext,
@@ -1474,74 +1477,6 @@ class _HMACContext(object):
         assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
-
-
-@utils.register_interface(interfaces.AsymmetricVerificationContext)
-class _DSAVerificationContext(object):
-    def __init__(self, backend, public_key, signature, algorithm):
-        self._backend = backend
-        self._public_key = public_key
-        self._signature = signature
-        self._algorithm = algorithm
-
-        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-
-    def update(self, data):
-        self._hash_ctx.update(data)
-
-    def verify(self):
-        self._dsa_cdata = self._backend._dsa_cdata_from_public_key(
-            self._public_key)
-        self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
-                                                self._backend._lib.DSA_free)
-
-        data_to_verify = self._hash_ctx.finalize()
-
-        # The first parameter passed to DSA_verify is unused by OpenSSL but
-        # must be an integer.
-        res = self._backend._lib.DSA_verify(
-            0, data_to_verify, len(data_to_verify), self._signature,
-            len(self._signature), self._dsa_cdata)
-
-        if res != 1:
-            errors = self._backend._consume_errors()
-            assert errors
-            if res == -1:
-                assert errors[0].lib == self._backend._lib.ERR_LIB_ASN1
-
-            raise InvalidSignature
-
-
-@utils.register_interface(interfaces.AsymmetricSignatureContext)
-class _DSASignatureContext(object):
-    def __init__(self, backend, private_key, algorithm):
-        self._backend = backend
-        self._private_key = private_key
-        self._algorithm = algorithm
-        self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-        self._dsa_cdata = self._backend._dsa_cdata_from_private_key(
-            self._private_key)
-        self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
-                                                self._backend._lib.DSA_free)
-
-    def update(self, data):
-        self._hash_ctx.update(data)
-
-    def finalize(self):
-        data_to_sign = self._hash_ctx.finalize()
-        sig_buf_len = self._backend._lib.DSA_size(self._dsa_cdata)
-        sig_buf = self._backend._ffi.new("unsigned char[]", sig_buf_len)
-        buflen = self._backend._ffi.new("unsigned int *")
-
-        # The first parameter passed to DSA_sign is unused by OpenSSL but
-        # must be an integer.
-        res = self._backend._lib.DSA_sign(
-            0, data_to_sign, len(data_to_sign), sig_buf,
-            buflen, self._dsa_cdata)
-        assert res == 1
-        assert buflen[0]
-
-        return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
 
 
 @utils.register_interface(interfaces.CMACContext)
