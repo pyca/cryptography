@@ -7,6 +7,43 @@ DSA
 
 `DSA`_ is a `public-key`_ algorithm for signing messages.
 
+.. function:: generate_parameters(key_size, backend)
+
+    .. versionadded:: 0.5
+
+    Generate DSA parameters using the provided ``backend``.
+
+    :param int key_size: The length of the modulus in bits. It should be
+        either 1024, 2048 or 3072. For keys generated in 2014 this should
+        be `at least 2048`_ (See page 41).  Note that some applications
+        (such as SSH) have not yet gained support for larger key sizes
+        specified in FIPS 186-3 and are still restricted to only the
+        1024-bit keys specified in FIPS 186-2.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+        provider.
+
+    :return: A :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+
+.. function:: generate_private_key(parameters)
+
+    .. versionadded:: 0.5
+
+    Generate an DSA private key using the provided parameters.
+
+    :param parameters: A
+        :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+        provider.
+
+    :return: A :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+        provider.
+
 .. class:: DSAParameters(modulus, subgroup_order, generator)
 
     .. versionadded:: 0.4
