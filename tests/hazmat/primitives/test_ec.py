@@ -302,13 +302,3 @@ class TestECDSAVectors(object):
                 verifier.verify()
         else:
             verifier.verify()
-
-
-@pytest.mark.elliptic
-def test_generate_elliptic_curve_private_key(backend):
-    with raises_unsupported_algorithm(
-        exceptions._Reasons.UNSUPPORTED_ELLIPTIC_CURVE
-    ):
-        ec.generate_private_key(
-            DummyCurve(), backend
-        )
