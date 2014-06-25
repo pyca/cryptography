@@ -430,9 +430,9 @@ Interfaces
     make a message the correct size. ``CipherContext`` will not automatically
     apply any padding; you'll need to add your own. For block ciphers the
     recommended padding is
-    :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you are using a
+    :class:`~cryptography.hazmat.primitives.padding.PKCS7`. If you are using a
     stream cipher mode (such as
-    :class:`cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
+    :class:`~cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
     about this.
 
     .. method:: update(data)
@@ -443,7 +443,7 @@ Interfaces
 
         When the ``Cipher`` was constructed in a mode that turns it into a
         stream cipher (e.g.
-        :class:`cryptography.hazmat.primitives.ciphers.modes.CTR`), this will
+        :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`), this will
         return bytes immediately, however in other modes it will return chunks
         whose size is determined by the cipher's block size.
 
