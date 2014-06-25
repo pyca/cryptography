@@ -28,7 +28,7 @@ from cryptography.hazmat.backends.interfaces import (
     HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
     TraditionalOpenSSLSerializationBackend
 )
-from cryptography.hazmat.backends.openssl.cipher import (
+from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
 )
 from cryptography.hazmat.backends.openssl.dsa import (
