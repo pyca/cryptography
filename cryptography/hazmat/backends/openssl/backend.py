@@ -628,20 +628,19 @@ class Backend(object):
 
     def create_dsa_signature_ctx(self, private_key, algorithm):
         dsa_cdata = self._dsa_cdata_from_private_key(private_key)
-        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
         key = _DSAPrivateKey(self, dsa_cdata)
         return _DSASignatureContext(self, key, algorithm)
 
     def create_dsa_verification_ctx(self, public_key, signature,
                                     algorithm):
         dsa_cdata = self._dsa_cdata_from_public_key(public_key)
-        dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
         key = _DSAPublicKey(self, dsa_cdata)
         return _DSAVerificationContext(self, key, signature, algorithm)
 
     def load_dsa_private_numbers(self, numbers):
+        dsa._check_dsa_private_numbers(numbers)
         parameter_numbers = numbers.public_numbers.parameter_numbers
-        dsa._check_dsa_parameters(parameter_numbers)
+
         dsa_cdata = self._lib.DSA_new()
         assert dsa_cdata != self._ffi.NULL
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
@@ -656,7 +655,6 @@ class Backend(object):
 
     def load_dsa_public_numbers(self, numbers):
         dsa._check_dsa_parameters(numbers.parameter_numbers)
-        # TODO check more
         dsa_cdata = self._lib.DSA_new()
         assert dsa_cdata != self._ffi.NULL
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
@@ -670,7 +668,6 @@ class Backend(object):
 
     def load_dsa_parameter_numbers(self, numbers):
         dsa._check_dsa_parameters(numbers)
-        # TODO check more
         dsa_cdata = self._lib.DSA_new()
         assert dsa_cdata != self._ffi.NULL
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
@@ -682,10 +679,9 @@ class Backend(object):
         return _DSAParameters(self, dsa_cdata)
 
     def _dsa_cdata_from_public_key(self, public_key):
-        # Does not GC the DSA cdata. You *must* make sure it's freed
-        # correctly yourself!
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
         parameters = public_key.parameters()
         ctx.p = self._int_to_bn(parameters.p)
         ctx.q = self._int_to_bn(parameters.q)
@@ -694,10 +690,9 @@ class Backend(object):
         return ctx
 
     def _dsa_cdata_from_private_key(self, private_key):
-        # Does not GC the DSA cdata. You *must* make sure it's freed
-        # correctly yourself!
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
         parameters = private_key.parameters()
         ctx.p = self._int_to_bn(parameters.p)
         ctx.q = self._int_to_bn(parameters.q)

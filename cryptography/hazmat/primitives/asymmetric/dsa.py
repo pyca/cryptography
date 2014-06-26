@@ -39,8 +39,18 @@ def _check_dsa_parameters(parameters):
                          "one of these pairs (1024, 160) or (2048, 256) "
                          "or (3072, 256).")
 
-    if parameters.g <= 1 or parameters.g >= parameters.p:
-        raise ValueError("g must be > 1 and < p.")
+    if not (1 < parameters.g < parameters.p):
+        raise ValueError("g, p don't satisfy 1 < g < p.")
+
+
+def _check_dsa_private_numbers(numbers):
+    parameters = numbers.public_numbers.parameter_numbers
+    _check_dsa_parameters(parameters)
+    if numbers.x <= 0 or numbers.x >= parameters.q:
+        raise ValueError("x must be > 0 and < q.")
+
+    if numbers.public_numbers.y != pow(parameters.g, numbers.x, parameters.p):
+        raise ValueError("y must be equal to (g ** x % p).")
 
 
 @utils.register_interface(interfaces.DSAParameters)
@@ -102,24 +112,25 @@ class DSAParameters(object):
 @utils.register_interface(interfaces.DSAPrivateKey)
 class DSAPrivateKey(object):
     def __init__(self, modulus, subgroup_order, generator, x, y):
-        _check_dsa_parameters(
-            DSAParameterNumbers(
-                p=modulus,
-                q=subgroup_order,
-                g=generator
-            )
-        )
         if (
             not isinstance(x, six.integer_types) or
             not isinstance(y, six.integer_types)
         ):
             raise TypeError("DSAPrivateKey arguments must be integers.")
 
-        if x <= 0 or x >= subgroup_order:
-            raise ValueError("x must be > 0 and < subgroup_order.")
-
-        if y != pow(generator, x, modulus):
-            raise ValueError("y must be equal to (generator ** x % modulus).")
+        _check_dsa_private_numbers(
+            DSAPrivateNumbers(
+                public_numbers=DSAPublicNumbers(
+                    parameter_numbers=DSAParameterNumbers(
+                        p=modulus,
+                        q=subgroup_order,
+                        g=generator
+                    ),
+                    y=y
+                ),
+                x=x
+            )
+        )
 
         self._modulus = modulus
         self._subgroup_order = subgroup_order
