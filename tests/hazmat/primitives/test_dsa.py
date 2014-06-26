@@ -698,9 +698,17 @@ class TestDSAVerification(object):
             verifier.verify()
 
     def test_dsa_verify_invalid_asn1(self, backend):
-        parameters = dsa.DSAParameters.generate(1024, backend)
-        private_key = dsa.DSAPrivateKey.generate(parameters, backend)
-        public_key = private_key.public_key()
+        parameters = pytest.deprecated_call(
+            dsa.DSAParameters.generate,
+            1024,
+            backend
+        )
+        private_key = pytest.deprecated_call(
+            dsa.DSAPrivateKey.generate,
+            parameters,
+            backend
+        )
+        public_key = pytest.deprecated_call(private_key.public_key)
         verifier = public_key.verifier(b'fakesig', hashes.SHA1(), backend)
         verifier.update(b'fakesig')
         with pytest.raises(InvalidSignature):

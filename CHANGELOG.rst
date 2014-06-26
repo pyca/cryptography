@@ -28,6 +28,15 @@ Changelog
 * Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
   in favor of backend specific providers of the
   :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` interface.
+* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
+  in favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey` interface.
+* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
+  in favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` interface.
+* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
+  in favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters` interface.
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
   ``create_rsa_verification_ctx`` on
   :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
