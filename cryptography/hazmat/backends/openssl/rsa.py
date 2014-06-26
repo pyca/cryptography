@@ -422,7 +422,11 @@ class _RSAPrivateKey(object):
         assert res == 1
         self._evp_pkey = evp_pkey
 
-        self.key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
+        self._key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
+
+    @property
+    def key_size(self):
+        return self._key_size
 
     def signer(self, padding, algorithm):
         return _RSASignatureContext(self._backend, self, padding, algorithm)
@@ -474,7 +478,11 @@ class _RSAPublicKey(object):
         assert res == 1
         self._evp_pkey = evp_pkey
 
-        self.key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
+        self._key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
+
+    @property
+    def key_size(self):
+        return self._key_size
 
     def verifier(self, signature, padding, algorithm):
         return _RSAVerificationContext(
