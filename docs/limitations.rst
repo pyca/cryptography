@@ -12,8 +12,8 @@ uninitialized memory.
 Python exposes no API for us to implement this reliably and as such almost all
 software in Python is potentially vulnerable to this attack. The
 `CERT secure coding guidelines`_ assesses this issue as "Severity: medium,
-Likelihood: unlikely, Remediation Cost: expensive to repair" and we do not consider this a high risk for most
-users.
+Likelihood: unlikely, Remediation Cost: expensive to repair" and we do not
+consider this a high risk for most users.
 
 .. _`Memory wiping`:  http://blogs.msdn.com/b/oldnewthing/archive/2013/05/29/10421912.aspx
 .. _`CERT secure coding guidelines`: https://www.securecoding.cert.org/confluence/display/seccode/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
