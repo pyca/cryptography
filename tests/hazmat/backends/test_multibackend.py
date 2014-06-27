@@ -128,6 +128,9 @@ class DummyDSABackend(object):
     def generate_dsa_private_key(self, parameters):
         pass
 
+    def generate_dsa_private_key_and_parameters(self, key_size):
+        pass
+
     def create_dsa_signature_ctx(self, private_key, algorithm):
         pass
 
@@ -343,6 +346,7 @@ class TestMultiBackend(object):
 
         parameters = object()
         backend.generate_dsa_private_key(parameters)
+        backend.generate_dsa_private_key_and_parameters(key_size=1024)
 
         backend.create_dsa_verification_ctx("public_key", "sig", hashes.SHA1())
         backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
@@ -359,6 +363,11 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_dsa_private_key(parameters)
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.generate_dsa_private_key_and_parameters(key_size=1024)
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
