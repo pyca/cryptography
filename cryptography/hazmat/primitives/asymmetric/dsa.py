@@ -26,7 +26,7 @@ def generate_parameters(key_size, backend):
 
 
 def generate_private_key(key_size, backend):
-    return backend.generate_dsa_private_key_with_key_size(key_size)
+    return backend.generate_dsa_private_key_and_parameters(key_size)
 
 
 def _check_dsa_parameters(parameters):

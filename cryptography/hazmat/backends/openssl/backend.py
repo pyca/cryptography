@@ -626,7 +626,7 @@ class Backend(object):
 
         return _DSAPrivateKey(self, ctx)
 
-    def generate_dsa_private_key_with_key_size(self, key_size):
+    def generate_dsa_private_key_and_parameters(self, key_size):
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
 
