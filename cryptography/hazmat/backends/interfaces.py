@@ -171,6 +171,12 @@ class DSABackend(object):
         """
 
     @abc.abstractmethod
+    def generate_dsa_private_key_with_key_size(self, key_size):
+        """
+        Generate an DSAPrivateKey instance using key size only.
+        """
+
+    @abc.abstractmethod
     def create_dsa_signature_ctx(self, private_key, algorithm):
         """
         Returns an object conforming to the AsymmetricSignatureContext

@@ -77,7 +77,6 @@ class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(1024, backend)
         assert isinstance(parameters, interfaces.DSAParameters)
-        # TODO: withnumbers check like RSA
 
     def test_generate_invalid_dsa_parameters(self, backend):
         with pytest.raises(ValueError):
@@ -97,7 +96,7 @@ class TestDSA(object):
             q=vector['q'],
             g=vector['g']
         ).parameters(backend)
-        skey = dsa.generate_private_key(parameters)
+        skey = parameters.generate_private_key()
         if isinstance(skey, interfaces.DSAPrivateKeyWithNumbers):
             numbers = skey.private_numbers()
             skey_parameters = numbers.public_numbers.parameter_numbers
@@ -114,6 +113,16 @@ class TestDSA(object):
             assert pkey.key_size == skey.key_size
             public_numbers = pkey.public_numbers()
             assert numbers.public_numbers.y == public_numbers.y
+            assert numbers.public_numbers.y == pow(
+                skey_parameters.g, numbers.x, skey_parameters.p
+            )
+
+    def test_generate_dsa_private_key_and_parameters(self, backend):
+        skey = dsa.generate_private_key(1024, backend)
+        assert skey
+        if isinstance(skey, interfaces.DSAPrivateKeyWithNumbers):
+            numbers = skey.private_numbers()
+            skey_parameters = numbers.public_numbers.parameter_numbers
             assert numbers.public_numbers.y == pow(
                 skey_parameters.g, numbers.x, skey_parameters.p
             )

@@ -97,6 +97,9 @@ class _DSAParameters(object):
             g=self._backend._bn_to_int(self._dsa_cdata.g)
         )
 
+    def generate_private_key(self):
+        return self._backend.generate_dsa_private_key(self)
+
 
 @utils.register_interface(DSAPrivateKeyWithNumbers)
 class _DSAPrivateKey(object):
