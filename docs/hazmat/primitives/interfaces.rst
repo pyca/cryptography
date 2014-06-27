@@ -282,6 +282,17 @@ DSA
 
     `DSA`_ parameters.
 
+    .. method:: generate_private_key()
+
+        .. versionadded:: 0.5
+
+        Generate a DSA private key. This method can be used to generate many
+        new private keys from a single set of parameters.
+
+        :return: A
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            provider.
+
 
 .. class:: DSAParametersWithNumbers
 

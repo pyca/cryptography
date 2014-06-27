@@ -251,7 +251,11 @@ class RSAPublicKeyWithNumbers(RSAPublicKey):
 
 @six.add_metaclass(abc.ABCMeta)
 class DSAParameters(object):
-    pass
+    @abc.abstractmethod
+    def generate_private_key(self):
+        """
+        Generates and returns a DSAPrivateKey.
+        """
 
 
 @six.add_metaclass(abc.ABCMeta)

@@ -16,6 +16,10 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.hazmat.primitives.interfaces import (
+    DSAParametersWithNumbers, DSAPrivateKeyWithNumbers, DSAPublicKeyWithNumbers
+)
 
 
 @utils.register_interface(interfaces.AsymmetricVerificationContext)
@@ -32,9 +36,7 @@ class _DSAVerificationContext(object):
         self._hash_ctx.update(data)
 
     def verify(self):
-        self._dsa_cdata = self._backend._dsa_cdata_from_public_key(
-            self._public_key)
-        self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
+        self._dsa_cdata = self._backend._ffi.gc(self._public_key._dsa_cdata,
                                                 self._backend._lib.DSA_free)
 
         data_to_verify = self._hash_ctx.finalize()
@@ -43,7 +45,7 @@ class _DSAVerificationContext(object):
         # must be an integer.
         res = self._backend._lib.DSA_verify(
             0, data_to_verify, len(data_to_verify), self._signature,
-            len(self._signature), self._dsa_cdata)
+            len(self._signature), self._public_key._dsa_cdata)
 
         if res != 1:
             errors = self._backend._consume_errors()
@@ -61,17 +63,13 @@ class _DSASignatureContext(object):
         self._private_key = private_key
         self._algorithm = algorithm
         self._hash_ctx = hashes.Hash(self._algorithm, self._backend)
-        self._dsa_cdata = self._backend._dsa_cdata_from_private_key(
-            self._private_key)
-        self._dsa_cdata = self._backend._ffi.gc(self._dsa_cdata,
-                                                self._backend._lib.DSA_free)
 
     def update(self, data):
         self._hash_ctx.update(data)
 
     def finalize(self):
         data_to_sign = self._hash_ctx.finalize()
-        sig_buf_len = self._backend._lib.DSA_size(self._dsa_cdata)
+        sig_buf_len = self._backend._lib.DSA_size(self._private_key._dsa_cdata)
         sig_buf = self._backend._ffi.new("unsigned char[]", sig_buf_len)
         buflen = self._backend._ffi.new("unsigned int *")
 
@@ -79,8 +77,114 @@ class _DSASignatureContext(object):
         # must be an integer.
         res = self._backend._lib.DSA_sign(
             0, data_to_sign, len(data_to_sign), sig_buf,
-            buflen, self._dsa_cdata)
+            buflen, self._private_key._dsa_cdata)
         assert res == 1
         assert buflen[0]
 
         return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
+
+
+@utils.register_interface(DSAParametersWithNumbers)
+class _DSAParameters(object):
+    def __init__(self, backend, dsa_cdata):
+        self._backend = backend
+        self._dsa_cdata = dsa_cdata
+
+    def parameter_numbers(self):
+        return dsa.DSAParameterNumbers(
+            p=self._backend._bn_to_int(self._dsa_cdata.p),
+            q=self._backend._bn_to_int(self._dsa_cdata.q),
+            g=self._backend._bn_to_int(self._dsa_cdata.g)
+        )
+
+    def generate_private_key(self):
+        return self._backend.generate_dsa_private_key(self)
+
+
+@utils.register_interface(DSAPrivateKeyWithNumbers)
+class _DSAPrivateKey(object):
+    def __init__(self, backend, dsa_cdata):
+        self._backend = backend
+        self._dsa_cdata = dsa_cdata
+        self._key_size = self._backend._lib.BN_num_bits(self._dsa_cdata.p)
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+    def signer(self, algorithm):
+        return _DSASignatureContext(self._backend, self, algorithm)
+
+    def private_numbers(self):
+        return dsa.DSAPrivateNumbers(
+            public_numbers=dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=self._backend._bn_to_int(self._dsa_cdata.p),
+                    q=self._backend._bn_to_int(self._dsa_cdata.q),
+                    g=self._backend._bn_to_int(self._dsa_cdata.g)
+                ),
+                y=self._backend._bn_to_int(self._dsa_cdata.pub_key)
+            ),
+            x=self._backend._bn_to_int(self._dsa_cdata.priv_key)
+        )
+
+    def public_key(self):
+        dsa_cdata = self._backend._lib.DSA_new()
+        assert dsa_cdata != self._backend._ffi.NULL
+        dsa_cdata = self._backend._ffi.gc(
+            dsa_cdata, self._backend._lib.DSA_free
+        )
+        dsa_cdata.p = self._backend._lib.BN_dup(self._dsa_cdata.p)
+        dsa_cdata.q = self._backend._lib.BN_dup(self._dsa_cdata.q)
+        dsa_cdata.g = self._backend._lib.BN_dup(self._dsa_cdata.g)
+        dsa_cdata.pub_key = self._backend._lib.BN_dup(self._dsa_cdata.pub_key)
+        return _DSAPublicKey(self._backend, dsa_cdata)
+
+    def parameters(self):
+        dsa_cdata = self._backend._lib.DSA_new()
+        assert dsa_cdata != self._backend._ffi.NULL
+        dsa_cdata = self._backend._ffi.gc(
+            dsa_cdata, self._backend._lib.DSA_free
+        )
+        dsa_cdata.p = self._backend._lib.BN_dup(self._dsa_cdata.p)
+        dsa_cdata.q = self._backend._lib.BN_dup(self._dsa_cdata.q)
+        dsa_cdata.g = self._backend._lib.BN_dup(self._dsa_cdata.g)
+        return _DSAParameters(self._backend, dsa_cdata)
+
+
+@utils.register_interface(DSAPublicKeyWithNumbers)
+class _DSAPublicKey(object):
+    def __init__(self, backend, dsa_cdata):
+        self._backend = backend
+        self._dsa_cdata = dsa_cdata
+        self._key_size = self._backend._lib.BN_num_bits(self._dsa_cdata.p)
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+    def verifier(self, signature, algorithm):
+        return _DSAVerificationContext(
+            self._backend, self, signature, algorithm
+        )
+
+    def public_numbers(self):
+        return dsa.DSAPublicNumbers(
+            parameter_numbers=dsa.DSAParameterNumbers(
+                p=self._backend._bn_to_int(self._dsa_cdata.p),
+                q=self._backend._bn_to_int(self._dsa_cdata.q),
+                g=self._backend._bn_to_int(self._dsa_cdata.g)
+            ),
+            y=self._backend._bn_to_int(self._dsa_cdata.pub_key)
+        )
+
+    def parameters(self):
+        dsa_cdata = self._backend._lib.DSA_new()
+        assert dsa_cdata != self._backend._ffi.NULL
+        dsa_cdata = self._backend._ffi.gc(
+            dsa_cdata, self._backend._lib.DSA_free
+        )
+        dsa_cdata.p = self._backend._lib.BN_dup(self._dsa_cdata.p)
+        dsa_cdata.q = self._backend._lib.BN_dup(self._dsa_cdata.q)
+        dsa_cdata.g = self._backend._lib.BN_dup(self._dsa_cdata.g)
+        return _DSAParameters(self._backend, dsa_cdata)
