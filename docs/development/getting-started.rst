@@ -13,6 +13,9 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
     $ pip install --requirement dev-requirements.txt
     $ pip install --editable .
 
+You will also need to install ``enchant`` using your system's package manager
+to check spelling in the documentation.
+
 You are now ready to run the tests and build the documentation.
 
 Running tests
