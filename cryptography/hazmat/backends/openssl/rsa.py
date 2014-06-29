@@ -22,7 +22,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    MGF1, PKCS1v15, PSS
+    MGF1, OAEP, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.interfaces import (
     RSAPrivateKeyWithNumbers, RSAPublicKeyWithNumbers
@@ -43,6 +43,110 @@ def _get_rsa_pss_salt_length(pss, key_size, digest_size):
         return salt_length
     else:
         return salt
+
+
+def _enc_dec_rsa(backend, key, data, padding):
+    if isinstance(padding, PKCS1v15):
+        padding_enum = backend._lib.RSA_PKCS1_PADDING
+    elif isinstance(padding, OAEP):
+        padding_enum = backend._lib.RSA_PKCS1_OAEP_PADDING
+        if not isinstance(padding._mgf, MGF1):
+            raise UnsupportedAlgorithm(
+                "Only MGF1 is supported by this backend.",
+                _Reasons.UNSUPPORTED_MGF
+            )
+
+        if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+            raise UnsupportedAlgorithm(
+                "This backend supports only SHA1 inside MGF1 when "
+                "using OAEP.",
+                _Reasons.UNSUPPORTED_HASH
+            )
+
+        if padding._label is not None and padding._label != b"":
+            raise ValueError("This backend does not support OAEP labels.")
+
+        if not isinstance(padding._algorithm, hashes.SHA1):
+            raise UnsupportedAlgorithm(
+                "This backend only supports SHA1 when using OAEP.",
+                _Reasons.UNSUPPORTED_HASH
+            )
+    else:
+        raise UnsupportedAlgorithm(
+            "{0} is not supported by this backend.".format(
+                padding.name
+            ),
+            _Reasons.UNSUPPORTED_PADDING
+        )
+
+    if backend._lib.Cryptography_HAS_PKEY_CTX:
+        return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum)
+    else:
+        return _enc_dec_rsa_098(backend, key, data, padding_enum)
+
+
+def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum):
+    if isinstance(key, _RSAPublicKey):
+        init = backend._lib.EVP_PKEY_encrypt_init
+        crypt = backend._lib.Cryptography_EVP_PKEY_encrypt
+    else:
+        init = backend._lib.EVP_PKEY_decrypt_init
+        crypt = backend._lib.Cryptography_EVP_PKEY_decrypt
+
+    pkey_ctx = backend._lib.EVP_PKEY_CTX_new(
+        key._evp_pkey, backend._ffi.NULL
+    )
+    assert pkey_ctx != backend._ffi.NULL
+    pkey_ctx = backend._ffi.gc(pkey_ctx, backend._lib.EVP_PKEY_CTX_free)
+    res = init(pkey_ctx)
+    assert res == 1
+    res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(
+        pkey_ctx, padding_enum)
+    assert res > 0
+    buf_size = backend._lib.EVP_PKEY_size(key._evp_pkey)
+    assert buf_size > 0
+    outlen = backend._ffi.new("size_t *", buf_size)
+    buf = backend._ffi.new("char[]", buf_size)
+    res = crypt(pkey_ctx, buf, outlen, data, len(data))
+    if res <= 0:
+        _handle_rsa_enc_dec_error(backend, key)
+
+    return backend._ffi.buffer(buf)[:outlen[0]]
+
+
+def _enc_dec_rsa_098(backend, key, data, padding_enum):
+    if isinstance(key, _RSAPublicKey):
+        crypt = backend._lib.RSA_public_encrypt
+    else:
+        crypt = backend._lib.RSA_private_decrypt
+
+    key_size = backend._lib.RSA_size(key._rsa_cdata)
+    assert key_size > 0
+    buf = backend._ffi.new("unsigned char[]", key_size)
+    res = crypt(len(data), data, buf, key._rsa_cdata, padding_enum)
+    if res < 0:
+        _handle_rsa_enc_dec_error(backend, key)
+
+    return backend._ffi.buffer(buf)[:res]
+
+
+def _handle_rsa_enc_dec_error(backend, key):
+    errors = backend._consume_errors()
+    assert errors
+    assert errors[0].lib == backend._lib.ERR_LIB_RSA
+    if isinstance(key, _RSAPublicKey):
+        assert (errors[0].reason ==
+                backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE)
+        raise ValueError(
+            "Data too long for key size. Encrypt less data or use a "
+            "larger key size."
+        )
+    else:
+        assert (
+            errors[0].reason == backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
+            errors[0].reason == backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
+        )
+        raise ValueError("Decryption failed.")
 
 
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
@@ -436,7 +540,7 @@ class _RSAPrivateKey(object):
         if key_size_bytes != len(ciphertext):
             raise ValueError("Ciphertext length must be equal to key size.")
 
-        return self._backend._enc_dec_rsa(self, ciphertext, padding)
+        return _enc_dec_rsa(self._backend, self, ciphertext, padding)
 
     def public_key(self):
         ctx = self._backend._lib.RSA_new()
@@ -490,7 +594,7 @@ class _RSAPublicKey(object):
         )
 
     def encrypt(self, plaintext, padding):
-        return self._backend._enc_dec_rsa(self, plaintext, padding)
+        return _enc_dec_rsa(self._backend, self, plaintext, padding)
 
     def public_numbers(self):
         return rsa.RSAPublicNumbers(
