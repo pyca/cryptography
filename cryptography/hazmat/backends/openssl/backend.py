@@ -37,7 +37,6 @@ from cryptography.hazmat.backends.openssl.dsa import (
     _DSASignatureContext, _DSAVerificationContext
 )
 from cryptography.hazmat.backends.openssl.ec import (
-    _ECDSASignatureContext, _ECDSAVerificationContext,
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
@@ -913,13 +912,6 @@ class Backend(object):
 
         return self.elliptic_curve_supported(curve)
 
-    def _create_ecdsa_signature_ctx(self, private_key, ecdsa):
-        return _ECDSASignatureContext(self, private_key, ecdsa.algorithm)
-
-    def _create_ecdsa_verification_ctx(self, public_key, signature, ecdsa):
-        return _ECDSAVerificationContext(self, public_key, signature,
-                                         ecdsa.algorithm)
-
     def generate_elliptic_curve_private_key(self, curve):
         """
         Generate a new private key on the named curve.
@@ -946,13 +938,35 @@ class Backend(object):
             )
 
     def elliptic_curve_private_key_from_numbers(self, numbers):
-        ec_key = self._ec_key_cdata_from_private_numbers(numbers)
-        return _EllipticCurvePrivateKey(self, ec_key,
+        public = numbers.public_numbers
+
+        curve_nid = self._elliptic_curve_to_nid(public.curve)
+
+        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
+
+        ctx = self._ec_key_set_public_key_affine_coordinates(
+            ctx, public.x, public.y)
+
+        res = self._lib.EC_KEY_set_private_key(
+            ctx, self._int_to_bn(numbers.private_value))
+        assert res == 1
+
+        return _EllipticCurvePrivateKey(self, ctx,
                                         numbers.public_numbers.curve)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
-        ec_key = self._ec_key_cdata_from_public_numbers(numbers)
-        return _EllipticCurvePublicKey(self, ec_key, numbers.curve)
+        curve_nid = self._elliptic_curve_to_nid(numbers.curve)
+
+        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ctx != self._ffi.NULL
+        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
+
+        ctx = self._ec_key_set_public_key_affine_coordinates(
+            ctx, numbers.x, numbers.y)
+
+        return _EllipticCurvePublicKey(self, ctx, numbers.curve)
 
     def _elliptic_curve_to_nid(self, curve):
         """
@@ -973,66 +987,6 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
         return curve_nid
-
-    def _ec_key_cdata_from_private_numbers(self, numbers):
-        """
-        Build an EC_KEY from a private key object.
-        """
-
-        public = numbers.public_numbers
-
-        curve_nid = self._elliptic_curve_to_nid(public.curve)
-
-        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
-
-        ctx = self._ec_key_set_public_key_affine_coordinates(
-            ctx, public.x, public.y)
-
-        res = self._lib.EC_KEY_set_private_key(
-            ctx, self._int_to_bn(numbers.private_value))
-        assert res == 1
-
-        return ctx
-
-    def _ec_key_cdata_from_public_numbers(self, numbers):
-        """
-        Build an EC_KEY from a public key object.
-        """
-
-        curve_nid = self._elliptic_curve_to_nid(numbers.curve)
-
-        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
-
-        ctx = self._ec_key_set_public_key_affine_coordinates(
-            ctx, numbers.x, numbers.y)
-
-        return ctx
-
-    def _public_ec_key_from_private_ec_key(self, private_key_cdata):
-        """
-        Copy the public portions out of one EC key into a new one.
-        """
-
-        group = self._lib.EC_KEY_get0_group(private_key_cdata)
-        assert group != self._ffi.NULL
-
-        curve_nid = self._lib.EC_GROUP_get_curve_name(group)
-
-        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
-
-        point = self._lib.EC_KEY_get0_public_key(private_key_cdata)
-        assert point != self._ffi.NULL
-
-        res = self._lib.EC_KEY_set_public_key(ctx, point)
-        assert res == 1
-
-        return ctx
 
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """

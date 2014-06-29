@@ -138,20 +138,35 @@ class _EllipticCurvePrivateKey(object):
 
     def signer(self, signature_algorithm):
         if isinstance(signature_algorithm, ec.ECDSA):
-            return self._backend._create_ecdsa_signature_ctx(
-                self, signature_algorithm)
+            return _ECDSASignatureContext(
+                self._backend, self, signature_algorithm.algorithm
+            )
         else:
             raise UnsupportedAlgorithm(
                 "Unsupported elliptic curve signature algorithm.",
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
     def public_key(self):
-        public_ec_key = self._backend._public_ec_key_from_private_ec_key(
-            self._ec_key
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        assert group != self._backend._ffi.NULL
+
+        curve_nid = self._backend._lib.EC_GROUP_get_curve_name(group)
+
+        public_ec_key = self._backend._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert public_ec_key != self._backend._ffi.NULL
+        public_ec_key = self._backend._ffi.gc(
+            public_ec_key, self._backend._lib.EC_KEY_free
         )
 
+        point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        assert point != self._backend._ffi.NULL
+
+        res = self._backend._lib.EC_KEY_set_public_key(public_ec_key, point)
+        assert res == 1
+
         return _EllipticCurvePublicKey(
-            self._backend, public_ec_key, self._curve)
+            self._backend, public_ec_key, self._curve
+        )
 
 
 @utils.register_interface(interfaces.EllipticCurvePublicKey)
@@ -167,8 +182,9 @@ class _EllipticCurvePublicKey(object):
 
     def verifier(self, signature, signature_algorithm):
         if isinstance(signature_algorithm, ec.ECDSA):
-            return self._backend._create_ecdsa_verification_ctx(
-                self, signature, signature_algorithm)
+            return _ECDSAVerificationContext(
+                self._backend, self, signature, signature_algorithm.algorithm
+            )
         else:
             raise UnsupportedAlgorithm(
                 "Unsupported elliptic curve signature algorithm.",
