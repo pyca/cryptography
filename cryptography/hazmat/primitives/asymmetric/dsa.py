@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 import six
 
 from cryptography import utils
@@ -56,6 +58,12 @@ def _check_dsa_private_numbers(numbers):
 @utils.register_interface(interfaces.DSAParameters)
 class DSAParameters(object):
     def __init__(self, modulus, subgroup_order, generator):
+        warnings.warn(
+            "The DSAParameters class is deprecated and will be removed in a "
+            "future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         _check_dsa_parameters(
             DSAParameterNumbers(
                 p=modulus,
@@ -70,6 +78,11 @@ class DSAParameters(object):
 
     @classmethod
     def generate(cls, key_size, backend):
+        warnings.warn(
+            "generate is deprecated and will be removed in a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if not isinstance(backend, DSABackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement DSABackend.",
@@ -112,6 +125,12 @@ class DSAParameters(object):
 @utils.register_interface(interfaces.DSAPrivateKey)
 class DSAPrivateKey(object):
     def __init__(self, modulus, subgroup_order, generator, x, y):
+        warnings.warn(
+            "The DSAPrivateKey class is deprecated and will be removed in a "
+            "future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if (
             not isinstance(x, six.integer_types) or
             not isinstance(y, six.integer_types)
@@ -140,6 +159,11 @@ class DSAPrivateKey(object):
 
     @classmethod
     def generate(cls, parameters, backend):
+        warnings.warn(
+            "generate is deprecated and will be removed in a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         if not isinstance(backend, DSABackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement DSABackend.",
@@ -189,6 +213,12 @@ class DSAPrivateKey(object):
 @utils.register_interface(interfaces.DSAPublicKey)
 class DSAPublicKey(object):
     def __init__(self, modulus, subgroup_order, generator, y):
+        warnings.warn(
+            "The DSAPublicKey class is deprecated and will be removed in a "
+            "future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         _check_dsa_parameters(
             DSAParameterNumbers(
                 p=modulus,
