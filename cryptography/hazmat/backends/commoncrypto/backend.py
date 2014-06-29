@@ -238,7 +238,7 @@ class Backend(object):
             )
 
 
-def _release_cipher_ctx(ctx):
+def _release_cipher_ctx(backend, ctx):
     """
     Called by the garbage collector and used to safely dereference and
     release the context.
@@ -358,7 +358,8 @@ class _GCMCipherContext(object):
             )
 
         ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx = self._backend._ffi.gc(ctx, _release_cipher_ctx)
+        ctx = self._backend._ffi.gc(
+            ctx, lambda ctx: _release_cipher_ctx(self._backend, ctx))
 
         self._ctx = ctx
 
@@ -393,9 +394,10 @@ class _GCMCipherContext(object):
         tag_size = self._cipher.block_size // 8
         tag_buf = self._backend._ffi.new("unsigned char[]", tag_size)
         tag_len = self._backend._ffi.new("size_t *", tag_size)
-        res = backend._lib.CCCryptorGCMFinal(self._ctx[0], tag_buf, tag_len)
+        res = self.backend._lib.CCCryptorGCMFinal(
+            self._ctx[0], tag_buf, tag_len)
         self._backend._check_response(res)
-        _release_cipher_ctx(self._ctx)
+        _release_cipher_ctx(self.backend, self._ctx)
         self._tag = self._backend._ffi.buffer(tag_buf)[:]
         if (self._operation == self._backend._lib.kCCDecrypt and
                 not constant_time.bytes_eq(
