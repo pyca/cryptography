@@ -237,16 +237,15 @@ class Backend(object):
                 " Code: {0}.".format(response)
             )
 
-
-def _release_cipher_ctx(backend, ctx):
-    """
-    Called by the garbage collector and used to safely dereference and
-    release the context.
-    """
-    if ctx[0] != backend._ffi.NULL:
-        res = backend._lib.CCCryptorRelease(ctx[0])
-        backend._check_response(res)
-        ctx[0] = backend._ffi.NULL
+    def _release_cipher_ctx(self, ctx):
+        """
+        Called by the garbage collector and used to safely dereference and
+        release the context.
+        """
+        if ctx[0] != self._ffi.NULL:
+            res = self._lib.CCCryptorRelease(ctx[0])
+            self._check_response(res)
+            ctx[0] = self._ffi.NULL
 
 
 @utils.register_interface(interfaces.CipherContext)
@@ -284,7 +283,7 @@ class _CipherContext(object):
             )
 
         ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx = self._backend._ffi.gc(ctx, _release_cipher_ctx)
+        ctx = self._backend._ffi.gc(ctx, self._backend._release_cipher_ctx)
 
         if isinstance(mode, interfaces.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
@@ -332,7 +331,7 @@ class _CipherContext(object):
         res = self._backend._lib.CCCryptorFinal(
             self._ctx[0], buf, len(buf), outlen)
         self._backend._check_response(res)
-        _release_cipher_ctx(self._ctx)
+        self._backend._release_cipher_ctx(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
@@ -358,8 +357,7 @@ class _GCMCipherContext(object):
             )
 
         ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx = self._backend._ffi.gc(
-            ctx, lambda ctx: _release_cipher_ctx(self._backend, ctx))
+        ctx = self._backend._ffi.gc(ctx, self._backend._release_cipher_ctx)
 
         self._ctx = ctx
 
@@ -394,10 +392,10 @@ class _GCMCipherContext(object):
         tag_size = self._cipher.block_size // 8
         tag_buf = self._backend._ffi.new("unsigned char[]", tag_size)
         tag_len = self._backend._ffi.new("size_t *", tag_size)
-        res = self.backend._lib.CCCryptorGCMFinal(
+        res = self._backend._lib.CCCryptorGCMFinal(
             self._ctx[0], tag_buf, tag_len)
         self._backend._check_response(res)
-        _release_cipher_ctx(self.backend, self._ctx)
+        self._backend._release_cipher_ctx(self._ctx)
         self._tag = self._backend._ffi.buffer(tag_buf)[:]
         if (self._operation == self._backend._lib.kCCDecrypt and
                 not constant_time.bytes_eq(
