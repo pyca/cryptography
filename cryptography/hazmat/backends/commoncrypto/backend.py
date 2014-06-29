@@ -20,6 +20,7 @@ from cryptography.exceptions import (
     InternalError, InvalidTag, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.commoncrypto.hashes import _HashContext
+from cryptography.hazmat.backends.commoncrypto.hmac import _HMACContext
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
 )
@@ -414,46 +415,6 @@ class _GCMCipherContext(object):
     @property
     def tag(self):
         return self._tag
-
-
-@utils.register_interface(interfaces.HashContext)
-class _HMACContext(object):
-    def __init__(self, backend, key, algorithm, ctx=None):
-        self.algorithm = algorithm
-        self._backend = backend
-        if ctx is None:
-            ctx = self._backend._ffi.new("CCHmacContext *")
-            try:
-                alg = self._backend._supported_hmac_algorithms[algorithm.name]
-            except KeyError:
-                raise UnsupportedAlgorithm(
-                    "{0} is not a supported HMAC hash on this backend.".format(
-                        algorithm.name),
-                    _Reasons.UNSUPPORTED_HASH
-                )
-
-            self._backend._lib.CCHmacInit(ctx, alg, key, len(key))
-
-        self._ctx = ctx
-        self._key = key
-
-    def copy(self):
-        copied_ctx = self._backend._ffi.new("CCHmacContext *")
-        # CommonCrypto has no APIs for copying HMACs, so we have to copy the
-        # underlying struct.
-        copied_ctx[0] = self._ctx[0]
-        return _HMACContext(
-            self._backend, self._key, self.algorithm, ctx=copied_ctx
-        )
-
-    def update(self, data):
-        self._backend._lib.CCHmacUpdate(self._ctx, data, len(data))
-
-    def finalize(self):
-        buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
-        self._backend._lib.CCHmacFinal(self._ctx, buf)
-        return self._backend._ffi.buffer(buf)[:]
 
 
 backend = Backend()
