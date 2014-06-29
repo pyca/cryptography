@@ -912,7 +912,7 @@ class Backend(object):
         Generate a new private key on the named curve.
         """
 
-        if backend.elliptic_curve_supported(curve):
+        if self.elliptic_curve_supported(curve):
             curve_nid = self._elliptic_curve_to_nid(curve)
 
             ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
