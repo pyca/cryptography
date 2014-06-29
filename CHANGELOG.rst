@@ -40,6 +40,8 @@ Changelog
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
   ``create_rsa_verification_ctx`` on
   :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+* Deprecated ``create_dsa_signature_ctx`` and ``create_dsa_verification_ctx``
+  on :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~

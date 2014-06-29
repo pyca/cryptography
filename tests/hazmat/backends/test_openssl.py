@@ -524,3 +524,25 @@ class TestDeprecatedRSABackendMethods(object):
             ct,
             padding.PKCS1v15()
         )
+
+
+class TestDeprecatedDSABackendMethods(object):
+    def test_create_dsa_signature_ctx(self):
+        params = dsa.DSAParameters.generate(1024, backend)
+        key = dsa.DSAPrivateKey.generate(params, backend)
+        pytest.deprecated_call(
+            backend.create_dsa_signature_ctx,
+            key,
+            hashes.SHA1()
+        )
+
+    def test_create_dsa_verification_ctx(self):
+        params = dsa.DSAParameters.generate(1024, backend)
+        key = dsa.DSAPrivateKey.generate(params, backend)
+        public_key = key.public_key()
+        pytest.deprecated_call(
+            backend.create_dsa_verification_ctx,
+            public_key,
+            b"\x00" * 128,
+            hashes.SHA1()
+        )

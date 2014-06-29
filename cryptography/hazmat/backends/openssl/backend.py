@@ -634,12 +634,24 @@ class Backend(object):
         return self.generate_dsa_private_key(parameters)
 
     def create_dsa_signature_ctx(self, private_key, algorithm):
+        warnings.warn(
+            "create_dsa_signature_ctx is deprecated and will be removed in "
+            "a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         dsa_cdata = self._dsa_cdata_from_private_key(private_key)
         key = _DSAPrivateKey(self, dsa_cdata)
         return _DSASignatureContext(self, key, algorithm)
 
     def create_dsa_verification_ctx(self, public_key, signature,
                                     algorithm):
+        warnings.warn(
+            "create_dsa_verification_ctx is deprecated and will be removed in "
+            "a future version.",
+            utils.DeprecatedIn05,
+            stacklevel=2
+        )
         dsa_cdata = self._dsa_cdata_from_public_key(public_key)
         key = _DSAPublicKey(self, dsa_cdata)
         return _DSAVerificationContext(self, key, signature, algorithm)

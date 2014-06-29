@@ -439,6 +439,8 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: create_dsa_signature_ctx(private_key, algorithm)
 
+        .. deprecated:: 0.5
+
         :param private_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
             provider.
@@ -451,6 +453,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
     .. method:: create_dsa_verification_ctx(public_key, signature, algorithm)
+
+        .. deprecated:: 0.5
 
         :param public_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
