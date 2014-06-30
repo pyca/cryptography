@@ -149,7 +149,7 @@ class Backend(object):
             buf,
             length
         )
-        self._check_response(res)
+        self._check_cipher_response(res)
 
         return self._ffi.buffer(buf)[:]
 
@@ -223,7 +223,7 @@ class Backend(object):
             self._lib.kCCModeRC4
         )
 
-    def _check_response(self, response):
+    def _check_cipher_response(self, response):
         if response == self._lib.kCCSuccess:
             return
         elif response == self._lib.kCCAlignmentError:
@@ -246,7 +246,7 @@ class Backend(object):
         """
         if ctx[0] != self._ffi.NULL:
             res = self._lib.CCCryptorRelease(ctx[0])
-            self._check_response(res)
+            self._check_cipher_response(res)
             ctx[0] = self._ffi.NULL
 
 
