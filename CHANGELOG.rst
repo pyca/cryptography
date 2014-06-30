@@ -6,6 +6,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:**
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` no longer allows
+  truncation of tags by default. Previous versions of ``cryptography`` allowed
+  tags to be truncated by default, applications wishing to preserve this
+  behavior (not reccomended) can pass the ``min_tag_length`` argument.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
