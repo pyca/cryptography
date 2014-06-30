@@ -288,7 +288,7 @@ Modes
         Must be the same number of bytes as the ``block_size`` of the cipher.
         Do not reuse an ``initialization_vector`` with a given ``key``.
 
-.. class:: GCM(initialization_vector, tag=None)
+.. class:: GCM(initialization_vector, tag=None, min_tag_length=16)
 
     .. danger::
 
@@ -317,21 +317,23 @@ Modes
         Cryptography will generate a 128-bit tag when finalizing encryption.
         You can shorten a tag by truncating it to the desired length but this
         is **not recommended** as it lowers the security margins of the
-        authentication (`NIST SP-800-38D`_ recommends 96-bits or greater). If
-        you must shorten the tag the minimum allowed length is 4 bytes
-        (32-bits). Applications wishing to allow truncation must pass the
+        authentication (`NIST SP-800-38D`_ recommends 96-bits or greater).
+        Applications wishing to allow truncation must pass the
         ``min_tag_length`` parameter.
 
         .. versionchanged:: 0.5
 
             The ``min_tag_length`` parameter was added in ``0.5``, previously
-            truncation up to ``4`` bytes was always allowed.
+            truncation down to ``4`` bytes was always allowed.
 
     :param bytes tag: The tag bytes to verify during decryption. When
         encrypting this must be ``None``.
 
     :param bytes min_tag_length: The minimum length ``tag`` must be. By default
-        this is ``16``, meaning tag truncation is not allowed.
+        this is ``16``, meaning tag truncation is not allowed. Allowing tag
+        truncation is strongly discouraged for most applications.
+
+    :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
 
     .. testcode::
 
