@@ -101,6 +101,8 @@ class GCM(object):
         # len(initialization_vector) must in [1, 2 ** 64), but it's impossible
         # to actually construct a bytes object that large, so we don't check
         # for it
+        if min_tag_length < 4:
+            raise ValueError("min_tag_length must be >= 4")
         if tag is not None and len(tag) < min_tag_length:
             raise ValueError(
                 "Authentication tag must be {0} bytes or longer.".format(

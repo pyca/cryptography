@@ -225,6 +225,6 @@ class TestAESModeGCM(object):
             "gcmEncryptExtIV192.rsp",
             "gcmEncryptExtIV256.rsp",
         ],
-        lambda key: algorithms.AES(key),
-        lambda iv, tag, min_tag_length=16: modes.GCM(iv, tag, min_tag_length),
+        algorithms.AES,
+        modes.GCM,
     )
