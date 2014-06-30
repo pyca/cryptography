@@ -98,6 +98,10 @@ class Binding(object):
             libraries = ["crypto", "ssl"]
         else:  # pragma: no cover
             libraries = ["libeay32", "ssleay32", "advapi32"]
+            libraries = [
+                "libeay32mt", "ssleay32mt", "advapi32",
+                "crypt32", "gdi32", "user32", "ws2_32"
+            ]
 
         cls.ffi, cls.lib = build_ffi(
             module_prefix=cls._module_prefix,
