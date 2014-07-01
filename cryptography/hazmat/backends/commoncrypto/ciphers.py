@@ -78,7 +78,7 @@ class _CipherContext(object):
             self._backend._lib.ccNoPadding, iv_nonce,
             cipher.key, len(cipher.key),
             self._backend._ffi.NULL, 0, 0, mode_option, ctx)
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
 
         self._ctx = ctx
 
@@ -91,7 +91,7 @@ class _CipherContext(object):
         res = self._backend._lib.CCCryptorUpdate(
             self._ctx[0], data, len(data), buf,
             len(data) + self._byte_block_size - 1, outlen)
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
@@ -105,7 +105,7 @@ class _CipherContext(object):
         outlen = self._backend._ffi.new("size_t *")
         res = self._backend._lib.CCCryptorFinal(
             self._ctx[0], buf, len(buf), outlen)
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
         self._backend._release_cipher_ctx(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
@@ -143,14 +143,14 @@ class _GCMCipherContext(object):
             self._backend._ffi.NULL,
             cipher.key, len(cipher.key),
             self._backend._ffi.NULL, 0, 0, 0, self._ctx)
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
 
         res = self._backend._lib.CCCryptorGCMAddIV(
             self._ctx[0],
             mode.initialization_vector,
             len(mode.initialization_vector)
         )
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
 
     def update(self, data):
         buf = self._backend._ffi.new("unsigned char[]", len(data))
@@ -160,7 +160,7 @@ class _GCMCipherContext(object):
         else:
             res = self._backend._lib.CCCryptorGCMDecrypt(*args)
 
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
         return self._backend._ffi.buffer(buf)[:]
 
     def finalize(self):
@@ -170,7 +170,7 @@ class _GCMCipherContext(object):
         res = self._backend._lib.CCCryptorGCMFinal(
             self._ctx[0], tag_buf, tag_len
         )
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
         self._backend._release_cipher_ctx(self._ctx)
         self._tag = self._backend._ffi.buffer(tag_buf)[:]
         if (self._operation == self._backend._lib.kCCDecrypt and
@@ -184,7 +184,7 @@ class _GCMCipherContext(object):
         res = self._backend._lib.CCCryptorGCMAddAAD(
             self._ctx[0], data, len(data)
         )
-        self._backend._check_response(res)
+        self._backend._check_cipher_response(res)
 
     @property
     def tag(self):
