@@ -23,6 +23,7 @@ typedef ... *SecKeyRef;
 
 FUNCTIONS = """
 OSStatus SecKeyGeneratePair(CFDictionaryRef, SecKeyRef *, SecKeyRef *);
+size_t SecKeyGetBlockSize(SecKeyRef);
 """
 
 MACROS = """
