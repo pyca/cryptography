@@ -15,7 +15,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.binding import Binding
+from cryptography.hazmat.bindings.openssl.binding import (
+    Binding, _get_windows_libraries
+)
 
 
 class TestOpenSSL(object):
@@ -137,3 +139,11 @@ class TestOpenSSL(object):
         resp = b.lib.SSL_set_mode(ssl, b.lib.SSL_OP_ALL)
         assert resp == b.lib.SSL_OP_ALL
         assert b.lib.SSL_OP_ALL == b.lib.SSL_get_mode(ssl)
+
+    def test_windows_static_dynamic_libraries(self):
+        assert len(_get_windows_libraries("static")) == 7
+
+        assert len(_get_windows_libraries("dynamic")) == 3
+
+        with pytest.raises(ValueError):
+            _get_windows_libraries("notvalid")

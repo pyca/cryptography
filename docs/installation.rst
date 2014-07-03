@@ -45,13 +45,25 @@ dependencies are included. Just run
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 There are `pre-compiled binaries`_ available. If your installation is in an
 unusual location set the ``LIB`` and ``INCLUDE`` environment variables to
-include the corresponding locations. For example:
+include the corresponding locations.For example:
 
 .. code-block:: console
 
     C:\> \path\to\vcvarsall.bat x86_amd64
-    C:\> set LIB=C:\OpenSSL-1.0.1h-64bit\lib\VC\static;%LIB%
-    C:\> set INCLUDE=C:\OpenSSL-1.0.1h-64bit\include;%INCLUDE%
+    C:\> set LIB=C:\OpenSSL\lib\VC\static;C:\OpenSSL\lib;%LIB%
+    C:\> set INCLUDE=C:\OpenSSL\include;%INCLUDE%
+    C:\> pip install cryptography
+
+You can also choose to build statically or dynamically using the
+``PYCA_OPENSSL_INSTALL`` variable. Allowed values are ``static`` (default) and
+``dynamic``.
+
+.. code-block:: console
+
+    C:\> \path\to\vcvarsall.bat x86_amd64
+    C:\> set LIB=C:\OpenSSL\lib\VC\static;C:\OpenSSL\lib;%LIB%
+    C:\> set INCLUDE=C:\OpenSSL\include;%INCLUDE%
+    C:\> set PYCA_OPENSSL_INSTALL=dynamic
     C:\> pip install cryptography
 
 Building cryptography on Linux
