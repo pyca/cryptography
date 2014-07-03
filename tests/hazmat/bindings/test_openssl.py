@@ -141,9 +141,9 @@ class TestOpenSSL(object):
         assert b.lib.SSL_OP_ALL == b.lib.SSL_get_mode(ssl)
 
     def test_windows_static_dynamic_libraries(self):
-        assert len(_get_windows_libraries("static")) == 7
+        assert "ssleay32mt" in _get_windows_libraries("static")
 
-        assert len(_get_windows_libraries("dynamic")) == 3
+        assert "ssleay32" in _get_windows_libraries("dynamic")
 
         with pytest.raises(ValueError):
             _get_windows_libraries("notvalid")
