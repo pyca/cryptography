@@ -23,7 +23,8 @@ Changelog
   and
   :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
   support to the :doc:`/hazmat/backends/openssl`.
-* Added :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+* Added :doc:`/hazmat/primitives/asymmetric/ec` and
+  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
