@@ -13,7 +13,7 @@ Elliptic curve cryptography
     Generate a new private key on ``curve`` for use with ``backend``.
 
     :param backend: A
-        :class:`~cryptography.hazmat.primtives.interfaces.EllipticCurve`
+        :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
         provider.
 
     :param backend: A
@@ -21,8 +21,36 @@ Elliptic curve cryptography
         provider.
 
     :returns: A new instance of a
-        :class:`~cryptography.hazmat.primtivies.interfaces.EllipticCurvePrivateKey`
+        :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
         provider.
+
+
+Elliptic Curve Signature Algorithms
+-----------------------------------
+
+.. class:: ECDSA(algorithm)
+
+    .. versionadded:: 0.5
+
+    The ECDSA signature algorithm first standardized in NIST publication
+    `FIPS 186-3`_, and later in `FIPS 186-4`_.
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> private_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> signer = private_key.signer(ec.ECDSA(hashes.SHA256()))
+        >>> signer.update(b"this is some data I'd like")
+        >>> signer.update(b" to sign")
+        >>> signature = signer.finalize()
 
 
 .. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
@@ -33,7 +61,7 @@ Elliptic curve cryptography
 
     .. attribute:: public_numbers
 
-        :type: :class:`~cryptography.hazmat.primitives.ec.EllipticCurvePublicNumbers`
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
 
         The :class:`EllipticCurvePublicNumbers` which makes up the EC public
         key associated with this EC private key.
@@ -54,7 +82,7 @@ Elliptic curve cryptography
             provider.
 
         :returns: A new instance of a
-            :class:`~cryptography.hazmat.primtivies.interfaces.EllipticCurvePrivateKey`
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
             provider.
 
 
@@ -92,36 +120,8 @@ Elliptic curve cryptography
             provider.
 
         :returns: A new instance of a
-            :class:`~cryptography.hazmat.primtivies.interfaces.EllipticCurvePublicKey`
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
             provider.
-
-
-Elliptic Curve Signature Algorithms
------------------------------------
-
-.. class:: ECDSA(algorithm)
-
-    .. versionadded:: 0.5
-
-    The ECDSA signature algorithm first standardized in NIST publication
-    `FIPS 186-3`_, and later in `FIPS 186-4`_.
-
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-        provider.
-
-    .. doctest::
-
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives import hashes
-        >>> from cryptography.hazmat.primitives.asymmetric import ec
-        >>> private_key = ec.generate_private_key(
-        ...     ec.SECP384R1(), default_backend()
-        ... )
-        >>> signer = private_key.signer(ec.ECDSA(hashes.SHA256()))
-        >>> signer.update(b"this is some data I'd like")
-        >>> signer.update(b" to sign")
-        >>> signature = signer.finalize()
 
 Elliptic Curves
 ---------------
@@ -142,8 +142,9 @@ Prime fields also `minimize the number of security concerns for elliptic-curve
 cryptography`_. However there is `some concern`_ that both the prime field and
 binary field ("B") NIST curves may have been weakened during their generation.
 
-Currently `cryptograhy` only supports NIST curves, none of which are considered
-"safe" by the `SafeCurves`_ project run by Daniel J. Bernstein and Tanja Lange.
+Currently `cryptography` only supports NIST curves, none of which are
+considered "safe" by the `SafeCurves`_ project run by Daniel J. Bernstein and
+Tanja Lange.
 
 All named curves are providers of
 :class:`~cryptography.hazmat.primtives.interfaces.EllipticCurve`.
