@@ -1,12 +1,19 @@
 Doing a release
 ===============
 
-Doing a release of ``cryptography`` is a two part process.
+Doing a release of ``cryptography`` requires a few steps.
+
+Verifying OpenSSL version
+-------------------------
+
+The release process uses a static build for Windows wheels. Check that the
+Windows Jenkins builders are on the latest version of OpenSSL before performing
+the release.
 
 Bumping the version number
 --------------------------
 
-The first step in doing a release is bumping the version number in the
+The next step in doing a release is bumping the version number in the
 software.
 
 * Update the version number in ``cryptography/__about__.py``.
