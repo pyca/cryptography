@@ -143,6 +143,8 @@ class TestOpenSSL(object):
     def test_windows_static_dynamic_libraries(self):
         assert "ssleay32mt" in _get_windows_libraries("static")
 
+        assert "ssleay32mt" in _get_windows_libraries("")
+
         assert "ssleay32" in _get_windows_libraries("dynamic")
 
         with pytest.raises(ValueError):

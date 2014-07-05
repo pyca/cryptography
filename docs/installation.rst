@@ -55,15 +55,15 @@ include the corresponding locations.For example:
     C:\> pip install cryptography
 
 You can also choose to build statically or dynamically using the
-``PYCA_OPENSSL_INSTALL`` variable. Allowed values are ``static`` (default) and
-``dynamic``.
+``PYCA_WINDOWS_LINK_TYPE`` variable. Allowed values are ``static`` (default)
+and ``dynamic``.
 
 .. code-block:: console
 
     C:\> \path\to\vcvarsall.bat x86_amd64
     C:\> set LIB=C:\OpenSSL\lib\VC\static;C:\OpenSSL\lib;%LIB%
     C:\> set INCLUDE=C:\OpenSSL\include;%INCLUDE%
-    C:\> set PYCA_OPENSSL_INSTALL=dynamic
+    C:\> set PYCA_WINDOWS_LINK_TYPE=dynamic
     C:\> pip install cryptography
 
 Building cryptography on Linux
