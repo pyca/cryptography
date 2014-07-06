@@ -7,8 +7,8 @@ Verifying OpenSSL version
 -------------------------
 
 The release process uses a static build for Windows wheels. Check that the
-Windows Jenkins builders are on the latest version of OpenSSL before performing
-the release.
+Windows Jenkins builders have the latest version of OpenSSL installed
+before performing the release.
 
 Bumping the version number
 --------------------------
@@ -33,8 +33,12 @@ key in order to do a release. Once this has happened:
 * Run ``invoke release {version}``.
 
 The release should now be available on PyPI and a tag should be available in
-the repository. You should verify that ``pip install cryptography`` works
-correctly:
+the repository.
+
+Verifying the release
+---------------------
+
+You should verify that ``pip install cryptography`` works correctly:
 
 .. code-block:: pycon
 
@@ -46,6 +50,10 @@ correctly:
     '...'
 
 Verify that this is the version you just released.
+
+For the Windows wheels check the builds for the ``cryptography-wheel-builder``
+job and verify that the final output for each build shows it loaded and linked
+the expected OpenSSL version.
 
 Post-release tasks
 ------------------
