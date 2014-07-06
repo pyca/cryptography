@@ -11,7 +11,7 @@ Changelog
   truncation of tags by default. Previous versions of ``cryptography`` allowed
   tags to be truncated by default, applications wishing to preserve this
   behavior (not recommended) can pass the ``min_tag_length`` argument.
-* Windows builds are now linked statically by default. When installing a
+* Windows builds now statically link OpenSSL by default. When installing a
   wheel on Windows you no longer need to install OpenSSL separately. Windows
   users can switch between static and dynamic linking with an environment
   variable. See :doc:`/installation` for more details.
