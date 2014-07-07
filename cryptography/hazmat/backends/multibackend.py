@@ -306,10 +306,7 @@ class MultiBackend(object):
 
     def load_pkcs8_pem_private_key(self, data, password):
         for b in self._filtered_backends(PKCS8SerializationBackend):
-            try:
-                return b.load_pkcs8_pem_private_key(data, password)
-            except UnsupportedAlgorithm:
-                continue
+            return b.load_pkcs8_pem_private_key(data, password)
 
         raise UnsupportedAlgorithm(
             "This backend does not support this key serialization.",
