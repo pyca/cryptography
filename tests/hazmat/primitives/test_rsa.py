@@ -511,46 +511,6 @@ class TestRSASignature(object):
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH
-            )
-        ),
-        skip_message="Does not support PSS."
-    )
-    def test_deprecated_pss_mgf1_salt_length(self, backend):
-        private_key = RSA_KEY_512.private_key(backend)
-        signer = private_key.signer(
-            pytest.deprecated_call(
-                padding.PSS,
-                mgf=pytest.deprecated_call(
-                    padding.MGF1,
-                    algorithm=hashes.SHA1(),
-                    salt_length=padding.MGF1.MAX_LENGTH
-                )
-            ),
-            hashes.SHA1()
-        )
-        signer.update(b"so deprecated")
-        signature = signer.finalize()
-        assert len(signature) == math.ceil(private_key.key_size / 8.0)
-        verifier = private_key.public_key().verifier(
-            signature,
-            pytest.deprecated_call(
-                padding.PSS,
-                mgf=pytest.deprecated_call(
-                    padding.MGF1,
-                    algorithm=hashes.SHA1(),
-                    salt_length=padding.MGF1.MAX_LENGTH
-                )
-            ),
-            hashes.SHA1()
-        )
-        verifier.update(b"so deprecated")
-        verifier.verify()
-
     @pytest.mark.parametrize(
         "hash_alg",
         [hashes.SHA224(), hashes.SHA256(), hashes.SHA384(), hashes.SHA512()]
@@ -701,7 +661,13 @@ class TestRSASignature(object):
     def test_unsupported_pss_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
-            private_key.signer(padding.PSS(mgf=DummyMGF()), hashes.SHA1())
+            private_key.signer(
+                padding.PSS(
+                    mgf=DummyMGF(),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1014,8 +980,14 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
-            public_key.verifier(b"sig", padding.PSS(mgf=DummyMGF()),
-                                hashes.SHA1())
+            public_key.verifier(
+                b"sig",
+                padding.PSS(
+                    mgf=DummyMGF(),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1307,12 +1279,6 @@ class TestRSAPKCS1Verification(object):
 
 
 class TestPSS(object):
-    def test_deprecation_warning(self):
-        pytest.deprecated_call(
-            padding.PSS,
-            mgf=padding.MGF1(hashes.SHA1(), 20)
-        )
-
     def test_invalid_salt_length_not_integer(self):
         with pytest.raises(TypeError):
             padding.PSS(
@@ -1331,10 +1297,6 @@ class TestPSS(object):
                 salt_length=-1
             )
 
-    def test_no_salt_length_supplied_pss_or_mgf1(self):
-        with pytest.raises(ValueError):
-            padding.PSS(mgf=padding.MGF1(hashes.SHA1()))
-
     def test_valid_pss_parameters(self):
         algorithm = hashes.SHA1()
         salt_length = algorithm.digest_size
@@ -1349,38 +1311,6 @@ class TestPSS(object):
         pss = padding.PSS(mgf=mgf, salt_length=padding.PSS.MAX_LENGTH)
         assert pss._mgf == mgf
         assert pss._salt_length == padding.PSS.MAX_LENGTH
-
-
-class TestMGF1(object):
-    def test_deprecation_warning(self):
-        pytest.deprecated_call(
-            padding.MGF1, algorithm=hashes.SHA1(), salt_length=20
-        )
-
-    def test_invalid_hash_algorithm(self):
-        with pytest.raises(TypeError):
-            padding.MGF1(b"not_a_hash", 0)
-
-    def test_invalid_salt_length_not_integer(self):
-        with pytest.raises(TypeError):
-            padding.MGF1(hashes.SHA1(), b"not_a_length")
-
-    def test_invalid_salt_length_negative_integer(self):
-        with pytest.raises(ValueError):
-            padding.MGF1(hashes.SHA1(), -1)
-
-    def test_valid_mgf1_parameters(self):
-        algorithm = hashes.SHA1()
-        salt_length = algorithm.digest_size
-        mgf = padding.MGF1(algorithm, salt_length)
-        assert mgf._algorithm == algorithm
-        assert mgf._salt_length == salt_length
-
-    def test_valid_mgf1_parameters_maximum(self):
-        algorithm = hashes.SHA1()
-        mgf = padding.MGF1(algorithm, padding.MGF1.MAX_LENGTH)
-        assert mgf._algorithm == algorithm
-        assert mgf._salt_length == padding.MGF1.MAX_LENGTH
 
 
 class TestOAEP(object):
