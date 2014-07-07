@@ -19,7 +19,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -190,6 +190,12 @@ class DummyEllipticCurveBackend(object):
     def elliptic_curve_public_key_from_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+
+@utils.register_interface(PKCS8SerializationBackend)
+class DummyPKCS8SerializationBackend(object):
+    def load_pkcs8_pem_private_key(self, data, password):
+        pass
 
 
 class TestMultiBackend(object):
@@ -471,3 +477,12 @@ class TestMultiBackend(object):
                     ec.SECT163K1()
                 )
             )
+
+    def test_pkcs8_serialization_backend(self):
+        backend = MultiBackend([DummyPKCS8SerializationBackend()])
+
+        backend.load_pkcs8_pem_private_key(b"keydata", None)
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_pkcs8_pem_private_key(b"keydata", None)
