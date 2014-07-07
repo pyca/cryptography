@@ -35,6 +35,7 @@ fi
 if [[ "$DARWIN" = true ]]; then
     brew update
     brew install pyenv
+    brew install libscrypt
     if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     case "${TOX_ENV}" in
         py26)
@@ -77,7 +78,11 @@ if [[ "$DARWIN" = true ]]; then
 else
     # add mega-python ppa
     sudo add-apt-repository -y ppa:fkrull/deadsnakes
+
+    sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ trusty universe"
     sudo apt-get -y update
+
+    sudo apt-get install -y libscrypt-dev
 
     case "${TOX_ENV}" in
         py26)
