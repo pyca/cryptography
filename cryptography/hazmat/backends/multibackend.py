@@ -17,7 +17,7 @@ from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend
 )
 
 
@@ -26,6 +26,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
+@utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
@@ -301,4 +302,16 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm(
             "This backend does not support this elliptic curve.",
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
+    def load_pkcs8_pem_private_key(self, data, password):
+        for b in self._filtered_backends(PKCS8SerializationBackend):
+            try:
+                return b.load_pkcs8_pem_private_key(data, password)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this key format.",
+            _Reasons.UNSUPPORTED_KEY_FORMAT
         )
