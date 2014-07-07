@@ -484,5 +484,5 @@ class TestMultiBackend(object):
         backend.load_pkcs8_pem_private_key(b"keydata", None)
 
         backend = MultiBackend([])
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_KEY_FORMAT):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pkcs8_pem_private_key(b"keydata", None)

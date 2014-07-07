@@ -312,6 +312,6 @@ class MultiBackend(object):
                 continue
 
         raise UnsupportedAlgorithm(
-            "This backend does not support this key format.",
-            _Reasons.UNSUPPORTED_KEY_FORMAT
+            "This backend does not support this key serialization.",
+            _Reasons.UNSUPPORTED_SERIALIZATION
         )
