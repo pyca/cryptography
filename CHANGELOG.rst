@@ -1,10 +1,8 @@
 Changelog
 =========
 
-0.5 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+0.5 - 2014-07-07
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:**
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` no longer allows
