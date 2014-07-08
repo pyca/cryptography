@@ -1313,6 +1313,17 @@ class TestPSS(object):
         assert pss._salt_length == padding.PSS.MAX_LENGTH
 
 
+class TestMGF1(object):
+    def test_invalid_hash_algorithm(self):
+        with pytest.raises(TypeError):
+            padding.MGF1(b"not_a_hash")
+
+    def test_valid_mgf1_parameters(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        assert mgf._algorithm == algorithm
+
+
 class TestOAEP(object):
     def test_invalid_algorithm(self):
         mgf = padding.MGF1(hashes.SHA1())
