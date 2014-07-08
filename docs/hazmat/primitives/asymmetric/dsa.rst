@@ -170,7 +170,6 @@ providers of the
 :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`,
 :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`, and
 :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` interfaces.
->>>>>>> deprecate concrete DSA classes and update DSA docs
 
 .. class:: DSAParameters(modulus, subgroup_order, generator)
 
