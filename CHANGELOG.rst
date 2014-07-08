@@ -1,6 +1,18 @@
 Changelog
 =========
 
+0.6 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
+0.5.1 - 2014-07-07
+~~~~~~~~~~~~~~~~~~
+
+* Add
+  :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
+  support to :doc:`/hazmat/backends/multibackend`.
+
 0.5 - 2014-07-07
 ~~~~~~~~~~~~~~~~
 

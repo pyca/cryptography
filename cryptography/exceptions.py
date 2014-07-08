@@ -22,6 +22,7 @@ class _Reasons(object):
     UNSUPPORTED_MGF = object()
     UNSUPPORTED_PUBLIC_KEY_ALGORITHM = object()
     UNSUPPORTED_ELLIPTIC_CURVE = object()
+    UNSUPPORTED_SERIALIZATION = object()
 
 
 class UnsupportedAlgorithm(Exception):

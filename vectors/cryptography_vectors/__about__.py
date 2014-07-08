@@ -22,7 +22,7 @@ __summary__ = "Test vectors for the cryptography package."
 
 __uri__ = "https://github.com/pyca/cryptography"
 
-__version__ = "0.5"
+__version__ = "0.6.dev1"
 
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
