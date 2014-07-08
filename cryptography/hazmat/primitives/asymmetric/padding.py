@@ -39,9 +39,6 @@ class PSS(object):
         if salt_length is not self.MAX_LENGTH and salt_length < 0:
             raise ValueError("salt_length must be zero or greater.")
 
-        if salt_length is None and self._mgf._salt_length is None:
-            raise ValueError("You must supply salt_length.")
-
         self._salt_length = salt_length
 
 
