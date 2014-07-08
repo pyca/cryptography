@@ -312,3 +312,12 @@ class MultiBackend(object):
             "This backend does not support this key serialization.",
             _Reasons.UNSUPPORTED_SERIALIZATION
         )
+
+    def load_pkcs8_pem_public_key(self, data, password):
+        for b in self._filtered_backends(PKCS8SerializationBackend):
+            return b.load_pkcs8_pem_public_key(data, password)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this key serialization.",
+            _Reasons.UNSUPPORTED_SERIALIZATION
+        )

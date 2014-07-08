@@ -240,6 +240,13 @@ class PKCS8SerializationBackend(object):
         is encrypted.
         """
 
+    @abc.abstractmethod
+    def load_pkcs8_pem_public_key(self, data, password):
+        """
+        Load a public key from PEM encoded data, using password if the data is
+        encrypted.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CMACBackend(object):
