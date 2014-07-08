@@ -6,6 +6,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Removed the, deprecated in 0.4, support for the ``salt_length`` argument to
+  the :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+  constructor. The ``salt_length`` should be passed to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
+
 0.5.1 - 2014-07-07
 ~~~~~~~~~~~~~~~~~~
 
