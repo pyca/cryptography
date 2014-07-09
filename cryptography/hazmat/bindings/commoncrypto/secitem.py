@@ -23,8 +23,6 @@ const CFTypeRef kSecAttrKeySizeInBits;
 const CFTypeRef kSecAttrIsPermanent;
 const CFTypeRef kSecAttrKeyTypeRSA;
 const CFTypeRef kSecAttrKeyTypeDSA;
-const CFTypeRef kSecAttrKeyTypeEC;
-const CFTypeRef kSecAttrKeyTypeEC;
 const CFTypeRef kSecUseKeychain;
 """
 
