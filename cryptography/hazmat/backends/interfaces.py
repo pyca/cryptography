@@ -17,6 +17,25 @@ import abc
 
 import six
 
+from zope.interface import Interface
+
+
+class ICipherBackend(Interface):
+    def cipher_supported(cipher, mode):
+        """
+        Return True if the given cipher and mode are supported.
+        """
+
+    def create_symmetric_encryption_ctx(cipher, mode):
+        """
+        Get a CipherContext that can be used for encryption.
+        """
+
+    def create_symmetric_decryption_ctx(cipher, mode):
+        """
+        Get a CipherContext that can be used for decryption.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CipherBackend(object):

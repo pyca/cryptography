@@ -13,13 +13,17 @@
 
 from __future__ import absolute_import, division, print_function
 
+from zope.interface.verify import verifyClass
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+
+    ICipherBackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -199,6 +203,9 @@ class DummyPKCS8SerializationBackend(object):
 
 
 class TestMultiBackend(object):
+    def test_verifyClass(self):
+        verifyClass(ICipherBackend, MultiBackend)
+
     def test_ciphers(self):
         backend = MultiBackend([
             DummyHashBackend([]),

@@ -15,13 +15,19 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+from zope.interface import implementer
+
 
 DeprecatedIn05 = DeprecationWarning
 
 
-def register_interface(iface):
+def register_interface(iface, interface=None):
     def register_decorator(klass):
         iface.register(klass)
+        # XXX: Maybe a deprecation warning goes here?
+
+        if interface is not None:
+            klass = implementer(interface)(klass)
         return klass
     return register_decorator
 

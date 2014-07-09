@@ -13,16 +13,20 @@
 
 from __future__ import absolute_import, division, print_function
 
+
+
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+
+    ICipherBackend
 )
 
 
 @utils.register_interface(CMACBackend)
-@utils.register_interface(CipherBackend)
+@utils.register_interface(CipherBackend, ICipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -36,19 +40,24 @@ class MultiBackend(object):
     def __init__(self, backends):
         self._backends = backends
 
-    def _filtered_backends(self, interface):
+    def _filtered_backends(self, abc, interface=None):
         for b in self._backends:
-            if isinstance(b, interface):
+            if interface is not None:
+                if interface.providedBy(b):
+                    yield b
+
+            if isinstance(b, abc):
+                # XXX: Maybe a deprecation warning goes here?
                 yield b
 
     def cipher_supported(self, algorithm, mode):
         return any(
             b.cipher_supported(algorithm, mode)
-            for b in self._filtered_backends(CipherBackend)
+            for b in self._filtered_backends(CipherBackend, ICipherBackend)
         )
 
     def create_symmetric_encryption_ctx(self, algorithm, mode):
-        for b in self._filtered_backends(CipherBackend):
+        for b in self._filtered_backends(CipherBackend, ICipherBackend):
             try:
                 return b.create_symmetric_encryption_ctx(algorithm, mode)
             except UnsupportedAlgorithm:
@@ -60,7 +69,7 @@ class MultiBackend(object):
         )
 
     def create_symmetric_decryption_ctx(self, algorithm, mode):
-        for b in self._filtered_backends(CipherBackend):
+        for b in self._filtered_backends(CipherBackend, ICipherBackend):
             try:
                 return b.create_symmetric_decryption_ctx(algorithm, mode)
             except UnsupportedAlgorithm:
