@@ -476,7 +476,8 @@ class Backend(object):
 
     def _evp_pkey_to_public_key(self, evp_pkey):
         """
-        Return the approrpiate type of PublicKey given an evp_pkey cdata pointer.
+        Return the approrpiate type of PublicKey given an evp_pkey cdata
+        pointer.
         """
         type = evp_pkey.type
 
