@@ -763,7 +763,6 @@ class Backend(object):
     def load_traditional_openssl_pem_private_key(self, data, password):
         # OpenSSLs API for loading PKCS#8 certs can also load the traditional
         # format so we just use that for both of them.
-
         return self.load_pkcs8_pem_private_key(data, password)
 
     def load_pkcs8_pem_private_key(self, data, password):
@@ -779,74 +778,7 @@ class Backend(object):
         )
 
         if evp_pkey == self._ffi.NULL:
-            errors = self._consume_errors()
-            if not errors:
-                raise ValueError("Could not unserialize key data.")
-
-            if (
-                errors[0][1:] == (
-                    self._lib.ERR_LIB_PEM,
-                    self._lib.PEM_F_PEM_DO_HEADER,
-                    self._lib.PEM_R_BAD_PASSWORD_READ
-                )
-            ) or (
-                errors[0][1:] == (
-                    self._lib.ERR_LIB_PEM,
-                    self._lib.PEM_F_PEM_READ_BIO_PRIVATEKEY,
-                    self._lib.PEM_R_BAD_PASSWORD_READ
-                )
-            ):
-                assert not password
-                raise TypeError(
-                    "Password was not given but private key is encrypted.")
-
-            elif errors[0][1:] == (
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                self._lib.EVP_R_BAD_DECRYPT
-            ):
-                raise ValueError(
-                    "Bad decrypt. Incorrect password?"
-                )
-
-            elif errors[0][1:] in (
-                (
-                    self._lib.ERR_LIB_PEM,
-                    self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
-                    self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
-                ),
-
-                (
-                    self._lib.ERR_LIB_EVP,
-                    self._lib.EVP_F_EVP_PBE_CIPHERINIT,
-                    self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
-                )
-            ):
-                raise UnsupportedAlgorithm(
-                    "PEM data is encrypted with an unsupported cipher",
-                    _Reasons.UNSUPPORTED_CIPHER
-                )
-
-            elif any(
-                error[1:] == (
-                    self._lib.ERR_LIB_EVP,
-                    self._lib.EVP_F_EVP_PKCS82PKEY,
-                    self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
-                )
-                for error in errors
-            ):
-                raise UnsupportedAlgorithm(
-                    "Unsupported public key algorithm.",
-                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-                )
-
-            else:
-                assert errors[0][1] in (
-                    self._lib.ERR_LIB_EVP,
-                    self._lib.ERR_LIB_PEM,
-                    self._lib.ERR_LIB_ASN1,
-                )
-                raise ValueError("Could not unserialize key data.")
+            self._handle_key_loading_error(password)
 
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
@@ -860,6 +792,74 @@ class Backend(object):
         )
 
         return self._evp_pkey_to_private_key(evp_pkey)
+
+    def _handle_key_loading_error(self, password):
+        errors = self._consume_errors()
+        if not errors:
+            raise ValueError("Could not unserialize key data.")
+
+        if (
+            errors[0][1:] == (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_DO_HEADER,
+                self._lib.PEM_R_BAD_PASSWORD_READ
+            )
+        ) or (
+            errors[0][1:] == (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_READ_BIO_PRIVATEKEY,
+                self._lib.PEM_R_BAD_PASSWORD_READ
+            )
+        ):
+            assert not password
+            raise TypeError(
+                "Password was not given but private key is encrypted.")
+
+        elif errors[0][1:] == (
+            self._lib.ERR_LIB_EVP,
+            self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+            self._lib.EVP_R_BAD_DECRYPT
+        ):
+            raise ValueError("Bad decrypt. Incorrect password?")
+
+        elif errors[0][1:] in (
+            (
+                self._lib.ERR_LIB_PEM,
+                self._lib.PEM_F_PEM_GET_EVP_CIPHER_INFO,
+                self._lib.PEM_R_UNSUPPORTED_ENCRYPTION
+            ),
+
+            (
+                self._lib.ERR_LIB_EVP,
+                self._lib.EVP_F_EVP_PBE_CIPHERINIT,
+                self._lib.EVP_R_UNKNOWN_PBE_ALGORITHM
+            )
+        ):
+            raise UnsupportedAlgorithm(
+                "PEM data is encrypted with an unsupported cipher",
+                _Reasons.UNSUPPORTED_CIPHER
+            )
+
+        elif any(
+            error[1:] == (
+                self._lib.ERR_LIB_EVP,
+                self._lib.EVP_F_EVP_PKCS82PKEY,
+                self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM
+            )
+            for error in errors
+        ):
+            raise UnsupportedAlgorithm(
+                "Unsupported public key algorithm.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+            )
+
+        else:
+            assert errors[0][1] in (
+                self._lib.ERR_LIB_EVP,
+                self._lib.ERR_LIB_PEM,
+                self._lib.ERR_LIB_ASN1,
+            )
+            raise ValueError("Could not unserialize key data.")
 
     def elliptic_curve_supported(self, curve):
         if self._lib.Cryptography_HAS_EC != 1:
