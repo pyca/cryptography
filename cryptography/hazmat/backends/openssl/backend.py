@@ -812,6 +812,34 @@ class Backend(object):
 
         return self._evp_pkey_to_private_key(evp_pkey)
 
+    def load_pkcs8_pem_public_key(self, data, password):
+        mem_bio = self._bytes_to_bio(data)
+
+        password_callback, password_func = self._pem_password_cb(password)
+
+        evp_pkey = self._lib.PEM_read_bio_PUBKEY(
+            mem_bio.bio,
+            self._ffi.NULL,
+            password_callback,
+            self._ffi.NULL
+        )
+
+        if evp_pkey == self._ffi.NULL:
+            self._handle_key_loading_error()
+
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+
+        if password is not None and password_func.called == 0:
+            raise TypeError(
+                "Password was given but private key is not encrypted.")
+
+        assert (
+            (password is not None and password_func.called == 1) or
+            password is None
+        )
+
+        return self._evp_pkey_to_public_key(evp_pkey)
+
     def _handle_key_loading_error(self, password):
         errors = self._consume_errors()
         if not errors:
@@ -839,9 +867,7 @@ class Backend(object):
             self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
             self._lib.EVP_R_BAD_DECRYPT
         ):
-            raise ValueError(
-                "Bad decrypt. Incorrect password?"
-            )
+            raise ValueError("Bad decrypt. Incorrect password?")
 
         elif errors[0][1:] in (
             (
@@ -881,35 +907,6 @@ class Backend(object):
                 self._lib.ERR_LIB_ASN1,
             )
             raise ValueError("Could not unserialize key data.")
-
-
-    def load_pkcs8_pem_public_key(self, data, password):
-        mem_bio = self._bytes_to_bio(data)
-
-        password_callback, password_func = self._pem_password_cb(password)
-
-        evp_pkey = self._lib.PEM_read_bio_PUBKEY(
-            mem_bio.bio,
-            self._ffi.NULL,
-            password_callback,
-            self._ffi.NULL
-        )
-
-        if evp_pkey == self._ffi.NULL:
-            self._handle_key_loading_error()
-
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-        if password is not None and password_func.called == 0:
-            raise TypeError(
-                "Password was given but private key is not encrypted.")
-
-        assert (
-            (password is not None and password_func.called == 1) or
-            password is None
-        )
-
-        return self._evp_pkey_to_public_key(evp_pkey)
 
     def elliptic_curve_supported(self, curve):
         if self._lib.Cryptography_HAS_EC != 1:
