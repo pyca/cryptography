@@ -766,11 +766,19 @@ class Backend(object):
         return self.load_pkcs8_pem_private_key(data, password)
 
     def load_pkcs8_pem_private_key(self, data, password):
+        return self._load_key(
+            self._lib.PEM_read_bio_PrivateKey,
+            self._evp_pkey_to_private_key,
+            data,
+            password,
+        )
+
+    def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
         password_callback, password_func = self._pem_password_cb(password)
 
-        evp_pkey = self._lib.PEM_read_bio_PrivateKey(
+        evp_pkey = openssl_read_func(
             mem_bio.bio,
             self._ffi.NULL,
             password_callback,
@@ -791,7 +799,7 @@ class Backend(object):
             password is None
         )
 
-        return self._evp_pkey_to_private_key(evp_pkey)
+        return convert_func(evp_pkey)
 
     def _handle_key_loading_error(self, password):
         errors = self._consume_errors()
