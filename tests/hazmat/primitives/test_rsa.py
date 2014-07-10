@@ -27,6 +27,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -1973,3 +1974,7 @@ class TestRSANumbers(object):
                     n=33
                 )
             ).private_key(backend)
+
+    def test_public_number_repr(self):
+        num = RSAPublicNumbers(1, 1)
+        assert repr(num) == "<RSAPublicNumbers(e=1, n=1)>"
