@@ -83,7 +83,8 @@ Here is an example of loading an RSA key in the popular PKCS #8 format:
     ...     )
 
 PKCS #8 optionally supports encrypting keys on disk using a password. In this
-example we loaded an unencrypted key, and there we did not provide a password.
+example we loaded an unencrypted key, and therefore we did not provide a
+password.
 
 Signing
 -------
@@ -111,7 +112,19 @@ secure hash function and mode:
     >>> signature
     '...'
 
-.. more words go here about wtf all that means
+There's a few things that are going on here:
+
+First we create a signer. This takes a few different options, we use ``PSS``
+(Probabalistic Signature Scheme) mode, and configure that with a strong hash
+function, and the maxmimum sized salt. We also specify that our signature uses
+SHA256. When you sign something with RSA, what you're actually signing is a
+hash of the data.
+
+Next we provide the data we want signed to the signer. You can call
+``update()`` as many times as you need, which can be useful if you're signing a
+large payload.
+
+Finally we call ``finalize()`` to get the signature bytes back.
 
 Signature Verification
 ----------------------
@@ -166,7 +179,9 @@ a specific mode and padding to use.
     >>> ciphertext
     '...'
 
-.. more words about some of this nonsense, what even /is/ an MGF
+Just like with RSA signatures, RSA encryption has a few different modes. Here
+we use the OAEP (Optimal Assymetric Encryption Padding) mode, and configure it
+with the necessary options.
 
 RSA encryption also has the property that you cannot encrypt a message which is
 longer than the ``key_size`` of your key. As a result, RSA is often combined
