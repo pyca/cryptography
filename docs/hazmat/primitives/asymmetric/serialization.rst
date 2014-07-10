@@ -28,9 +28,11 @@ methods.
 PKCS #8 Format
 ~~~~~~~~~~~~~~
 
-PKCS #8 is a serialization format originally standardized by RSA and
-currently maintained by the IETF in :rfc:`5208`. It supports password based
-encryption and additional key metadata attributes.
+PKCS #8 is a serialization format originally standardized by RSA and currently
+maintained by the IETF in :rfc:`5208`. It supports password based encryption
+and additional key metadata attributes. These keys are recognizable because
+they all begin with ``-----BEGIN PRIVATE KEY-----`` or with ``-----BEGIN
+ENCRYPTED PRIVATE KEY-----`` if they have a password.
 
 
 .. function:: load_pkcs8_private_key(data, password, backend)
@@ -44,6 +46,7 @@ encryption and additional key metadata attributes.
 
     :param bytes password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
+
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
         provider.
@@ -65,11 +68,11 @@ encryption and additional key metadata attributes.
 Traditional OpenSSL Format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The "traditional" PKCS #1 based serialization format used by OpenSSL.
-It supports password based symmetric key encryption. Commonly found in
-OpenSSL based TLS applications. It is usually found in PEM format with a
-header that mentions the type of the serialized key. e.g.
-``-----BEGIN RSA PRIVATE KEY-----``.
+The "traditional" PKCS #1 based serialization format used by OpenSSL. It
+supports password based symmetric key encryption. Commonly found in OpenSSL
+based TLS applications. It is usually found in PEM format with a header that
+mentions the type of the serialized key. e.g. ``-----BEGIN RSA PRIVATE
+KEY-----`` or ``-----BEGIN DSA PRIVATE KEY-----``.
 
 .. function:: load_pem_traditional_openssl_private_key(data, password, backend)
 
@@ -82,6 +85,7 @@ header that mentions the type of the serialized key. e.g.
 
     :param bytes password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
+
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
         provider.
