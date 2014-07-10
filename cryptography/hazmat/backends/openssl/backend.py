@@ -490,14 +490,24 @@ class Backend(object):
         def pem_password_cb(buf, size, writing, userdata):
             pem_password_cb.called += 1
 
-            if not password or len(password) >= size:
+            if not password:
+                pem_password_cb.exception = TypeError(
+                    "Password was not given but private key is encrypted."
+                )
                 return 0
-            else:
+            elif len(password) < size:
                 pw_buf = self._ffi.buffer(buf, size)
                 pw_buf[:len(password)] = password
                 return len(password)
+            else:
+                pem_password_cb.exception = ValueError(
+                    "Passwords longer than {0} bytes are not supported "
+                    "by this backend.".format(size - 1)
+                )
+                return 0
 
         pem_password_cb.called = 0
+        pem_password_cb.exception = None
 
         return (
             self._ffi.callback("int (char *, int, int, void *)",
@@ -786,7 +796,12 @@ class Backend(object):
         )
 
         if evp_pkey == self._ffi.NULL:
-            self._handle_key_loading_error(password)
+            if password_func.exception is not None:
+                errors = self._consume_errors()
+                assert errors
+                raise password_func.exception
+            else:
+                self._handle_key_loading_error()
 
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
@@ -801,27 +816,11 @@ class Backend(object):
 
         return convert_func(evp_pkey)
 
-    def _handle_key_loading_error(self, password):
+    def _handle_key_loading_error(self):
         errors = self._consume_errors()
+
         if not errors:
             raise ValueError("Could not unserialize key data.")
-
-        if (
-            errors[0][1:] == (
-                self._lib.ERR_LIB_PEM,
-                self._lib.PEM_F_PEM_DO_HEADER,
-                self._lib.PEM_R_BAD_PASSWORD_READ
-            )
-        ) or (
-            errors[0][1:] == (
-                self._lib.ERR_LIB_PEM,
-                self._lib.PEM_F_PEM_READ_BIO_PRIVATEKEY,
-                self._lib.PEM_R_BAD_PASSWORD_READ
-            )
-        ):
-            assert not password
-            raise TypeError(
-                "Password was not given but private key is encrypted.")
 
         elif errors[0][1:] == (
             self._lib.ERR_LIB_EVP,
