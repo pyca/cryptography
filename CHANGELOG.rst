@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.5.2 - 2014-07-09
+~~~~~~~~~~~~~~~~~~
+
+* Add
+  :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
+  support to :doc:`/hazmat/backends/multibackend`.
+* Fix compilation error on OS X 10.8 (Mountain Lion).
+
 0.5.1 - 2014-07-07
 ~~~~~~~~~~~~~~~~~~
 
