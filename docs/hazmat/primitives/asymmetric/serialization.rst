@@ -17,7 +17,8 @@ methods.
     .. code-block:: pycon
 
         >>> from cryptography.hazmat.primitives import interfaces
-        >>> key = load_pkcs8_private_key(pem_data, None, backend)
+        >>> from cryptography.hazmat.primitives.serialization import load_pem_pkcs8_private_key
+        >>> key = load_pem_pkcs8_private_key(pem_data, password=None, backend=backend)
         >>> if isinstance(key, interfaces.RSAPrivateKey):
         >>>     signature = sign_with_rsa_key(key, message)
         >>> elif isinstance(key, interfaces.DSAPrivateKey):
@@ -36,7 +37,7 @@ recognizable because they all begin with ``-----BEGIN PRIVATE KEY-----`` or
 with ``-----BEGIN ENCRYPTED PRIVATE KEY-----`` if they have a password.
 
 
-.. function:: load_pkcs8_private_key(data, password, backend)
+.. function:: load_pem_pkcs8_private_key(data, password, backend)
 
     .. versionadded:: 0.5
 
