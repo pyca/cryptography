@@ -122,6 +122,37 @@ class PyTest(test):
         sys.exit(errno)
 
 
+def keywords_with_side_effects():
+    """
+    Get a dictionary with setup keywords that (can) have side effects.
+
+    This setup.py script uses the setuptools 'setup_requires' feature because
+    this is required by the cffi package to compile extension modules. The
+    purpose of ``keywords_with_side_effects()`` is to avoid triggering the cffi
+    build process as a result of any of the following ``setup.py`` invocations:
+
+    - ``python setup.py --help-commands``
+    - ``python setup.py --help``
+    - ``python setup.py --version``
+    - ``python setup.py clean``
+    - ``python setup.py egg_info``
+
+    This function is based on the `setup.py script of SciPy`_ (see also the
+    discussion in `pip issue #25`_).
+
+    .. _pip issue #25: https://github.com/pypa/pip/issues/25
+    .. _setup.py script of SciPy: https://github.com/scipy/scipy/blob/master/setup.py
+    """
+    if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
+            sys.argv[1] in ('--help-commands', '--version', 'clean', 'egg_info')):
+        return {}
+    else:
+        return dict(setup_requires=requirements,
+                    cmdclass=dict(build=CFFIBuild,
+                                  install=CFFIInstall,
+                                  test=PyTest))
+
+
 with open(os.path.join(base_dir, "README.rst")) as f:
     long_description = f.read()
 
@@ -163,15 +194,11 @@ setup(
     packages=find_packages(exclude=["tests", "tests.*"]),
 
     install_requires=requirements,
-    setup_requires=requirements,
     tests_require=test_requirements,
 
     # for cffi
     zip_safe=False,
     ext_package="cryptography",
-    cmdclass={
-        "build": CFFIBuild,
-        "install": CFFIInstall,
-        "test": PyTest,
-    }
+
+    **keywords_with_side_effects()
 )
