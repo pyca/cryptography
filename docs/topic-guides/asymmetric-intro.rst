@@ -109,6 +109,9 @@ secure hash function and mode:
     >>> message = b"A message I want to sign"
     >>> signer.update(message)
     >>> signature = signer.finalize()
+
+.. code-block:: pycon
+
     >>> signature
     '...'
 
@@ -176,6 +179,9 @@ a specific mode and padding to use.
     ...         label=None
     ...     )
     ... )
+
+.. code-block:: pycon
+
     >>> ciphertext
     '...'
 
