@@ -140,9 +140,12 @@ class PyTest(test):
         sys.exit(errno)
 
 
-def keywords_with_side_effects():
+def keywords_with_side_effects(argv):
     """
     Get a dictionary with setup keywords that (can) have side effects.
+
+    :param argv: A list of strings with command line arguments.
+    :returns: A dictionary with keyword arguments for the ``setup()`` function.
 
     This setup.py script uses the setuptools 'setup_requires' feature because
     this is required by the cffi package to compile extension modules. The
@@ -161,8 +164,8 @@ def keywords_with_side_effects():
     .. _pip issue #25: https://github.com/pypa/pip/issues/25
     .. _setup.py script of SciPy: https://github.com/scipy/scipy/blob/master/setup.py
     """
-    if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
-            sys.argv[1] in ('--help-commands', '--version', 'clean', 'egg_info')):
+    if len(argv) >= 2 and ('--help' in argv[1:] or
+            argv[1] in ('--help-commands', '--version', 'clean', 'egg_info')):
         return {}
     else:
         return dict(setup_requires=requirements,
@@ -221,5 +224,5 @@ setup(
     entry_points={
         "cryptography.backends": backends,
     },
-    **keywords_with_side_effects()
+    **keywords_with_side_effects(sys.argv)
 )
