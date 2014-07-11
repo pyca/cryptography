@@ -158,14 +158,15 @@ def keywords_with_side_effects(argv):
     - ``python setup.py clean``
     - ``python setup.py egg_info``
 
-    This function is based on the `setup.py script of SciPy`_ (see also the
+    This function is based on the `setup.py script`_ of SciPy (see also the
     discussion in `pip issue #25`_).
 
     .. _pip issue #25: https://github.com/pypa/pip/issues/25
-    .. _setup.py script of SciPy: https://github.com/scipy/scipy/blob/master/setup.py
+    .. _setup.py script: https://github.com/scipy/scipy/blob/master/setup.py
     """
     if len(argv) >= 2 and ('--help' in argv[1:] or
-            argv[1] in ('--help-commands', '--version', 'clean', 'egg_info')):
+                           argv[1] in ('--help-commands', '--version',
+                                       'clean', 'egg_info')):
         return {}
     else:
         return {
