@@ -115,8 +115,8 @@ secure hash function and mode:
 There's a few things that are going on here:
 
 First we create a signer. This takes a few different options, we use ``PSS``
-(Probabalistic Signature Scheme) mode, and configure that with a strong hash
-function, and the maxmimum sized salt. We also specify that our signature uses
+(Probabilistic Signature Scheme) mode, and configure that with a strong hash
+function, and the maximum sized salt. We also specify that our signature uses
 SHA256. When you sign something with RSA, what you're actually signing is a
 hash of the data.
 
@@ -180,7 +180,7 @@ a specific mode and padding to use.
     '...'
 
 Just like with RSA signatures, RSA encryption has a few different modes. Here
-we use the OAEP (Optimal Assymetric Encryption Padding) mode, and configure it
+we use the OAEP (Optimal Asymmetric Encryption Padding) mode, and configure it
 with the necessary options.
 
 RSA encryption also has the property that you cannot encrypt a message which is
