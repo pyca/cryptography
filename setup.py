@@ -168,10 +168,14 @@ def keywords_with_side_effects(argv):
             argv[1] in ('--help-commands', '--version', 'clean', 'egg_info')):
         return {}
     else:
-        return dict(setup_requires=requirements,
-                    cmdclass=dict(build=CFFIBuild,
-                                  install=CFFIInstall,
-                                  test=PyTest))
+        return {
+            "setup_requires": requirements,
+            "cmdclass": {
+                "build": CFFIBuild,
+                "install": CFFIInstall,
+                "test": PyTest,
+            }
+        }
 
 
 with open(os.path.join(base_dir, "README.rst")) as f:
