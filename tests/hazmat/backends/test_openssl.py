@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import subprocess
 import sys
 import textwrap
@@ -33,7 +34,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
-from ...utils import raises_unsupported_algorithm
+from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.Mode)
@@ -464,7 +465,7 @@ class TestOpenSSLCMAC(object):
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):
-    def test_password_too_long(self):
+    def test_pem_password_cb_buffer_too_small(self):
         ffi_cb, cb = backend._pem_password_cb(b"aa")
         assert cb(None, 1, False, None) == 0
 
@@ -472,6 +473,22 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
         key = pretend.stub(type="unsupported")
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_private_key(key)
+
+    def test_very_long_pem_serialization_password(self):
+        password = "x" * 1024
+
+        with pytest.raises(ValueError):
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "Traditional_OpenSSL_Serialization",
+                    "key1.pem"
+                ),
+                lambda pemfile: (
+                    backend.load_traditional_openssl_pem_private_key(
+                        pemfile.read().encode(), password
+                    )
+                )
+            )
 
 
 class TestOpenSSLNoEllipticCurve(object):
