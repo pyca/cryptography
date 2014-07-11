@@ -16,10 +16,11 @@ methods.
 
     .. code-block:: pycon
 
+        >>> from cryptography.hazmat.primitives import interfaces
         >>> key = load_pkcs8_private_key(pem_data, None, backend)
-        >>> if isinstance(key, rsa.RSAPrivateKey):
+        >>> if isinstance(key, interfaces.RSAPrivateKey):
         >>>     signature = sign_with_rsa_key(key, message)
-        >>> elif isinstance(key, dsa.DSAPrivateKey):
+        >>> elif isinstance(key, interfaces.DSAPrivateKey):
         >>>     signature = sign_with_dsa_key(key, message)
         >>> else:
         >>>     raise TypeError
