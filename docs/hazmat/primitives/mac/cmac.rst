@@ -31,7 +31,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
         >>> from cryptography.hazmat.primitives.ciphers import algorithms
         >>> c = cmac.CMAC(algorithms.AES(key), backend=default_backend())
         >>> c.update(b"message to authenticate")
-        >>> c.finalize()
+        >>> c.copy().finalize()
         'CT\x1d\xc8\x0e\x15\xbe4e\xdb\xb6\x84\xca\xd9Xk'
 
     If the backend doesn't support the requested ``algorithm`` an
@@ -45,7 +45,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> c.verify(b"an incorrect signature")
         Traceback (most recent call last):

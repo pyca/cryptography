@@ -13,7 +13,7 @@ provided random number generator`_, which is available as ``os.urandom()``. For
 example, if you need 16 bytes of random data for an initialization vector, you
 can obtain them with:
 
-.. code-block:: pycon
+.. doctest::
 
     >>> import os
     >>> os.urandom(16)

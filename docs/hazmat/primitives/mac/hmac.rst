@@ -31,7 +31,7 @@ of a message.
         >>> from cryptography.hazmat.primitives import hashes, hmac
         >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
         >>> h.update(b"message to hash")
-        >>> h.finalize()
+        >>> h.copy().finalize()
         '#F\xdaI\x8b"e\xc4\xf1\xbb\x9a\x8fc\xff\xf5\xdex.\xbc\xcd/+\x8a\x86\x1d\x84\'\xc3\xa6\x1d\xd8J'
 
     If the backend doesn't support the requested ``algorithm`` an
@@ -45,7 +45,7 @@ of a message.
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
 
-    .. code-block:: pycon
+    .. doctest::
 
         >>> h.verify(b"an incorrect signature")
         Traceback (most recent call last):
