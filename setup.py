@@ -167,7 +167,13 @@ def keywords_with_side_effects(argv):
     if len(argv) >= 2 and ('--help' in argv[1:] or
                            argv[1] in ('--help-commands', '--version',
                                        'clean', 'egg_info')):
-        return {}
+        return {
+            "cmdclass": {
+                "build": DummyCFFIBuild,
+                "install": DummyCFFIInstall,
+                "test": DummyPyTest,
+            }
+        }
     else:
         return {
             "setup_requires": requirements,
@@ -177,6 +183,47 @@ def keywords_with_side_effects(argv):
                 "test": PyTest,
             }
         }
+
+
+setup_requires_error = ("Requested setup command that needs 'setup_requires' "
+                        "while command line arguments implied a side effect "
+                        "free command or option.")
+
+
+class DummyCFFIBuild(CFFIBuild):
+    """
+    This class makes it very obvious when ``keywords_with_side_effects()`` has
+    incorrectly interpreted the command line arguments to ``setup.py build`` as
+    one of the 'side effect free' commands or options.
+    """
+
+    def finalize_options(self):
+        raise RuntimeError(setup_requires_error)
+
+
+class DummyCFFIInstall(CFFIInstall):
+    """
+    This class makes it very obvious when ``keywords_with_side_effects()`` has
+    incorrectly interpreted the command line arguments to ``setup.py install``
+    as one of the 'side effect free' commands or options.
+    """
+
+    def finalize_options(self):
+        raise RuntimeError(setup_requires_error)
+
+
+class DummyPyTest(PyTest):
+    """
+    This class makes it very obvious when ``keywords_with_side_effects()`` has
+    incorrectly interpreted the command line arguments to ``setup.py test`` as
+    one of the 'side effect free' commands or options.
+    """
+
+    def finalize_options(self):
+        raise RuntimeError(setup_requires_error)
+
+    def run_tests(self):
+        raise RuntimeError(setup_requires_error)
 
 
 with open(os.path.join(base_dir, "README.rst")) as f:
