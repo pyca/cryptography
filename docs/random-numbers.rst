@@ -17,6 +17,6 @@ can obtain them with:
 
     >>> import os
     >>> os.urandom(16)
-    '...'
+    ...
 
 .. _`always use your operating system's provided random number generator`: http://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
