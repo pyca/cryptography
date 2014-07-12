@@ -150,23 +150,57 @@ def keywords_with_side_effects(argv):
     This setup.py script uses the setuptools 'setup_requires' feature because
     this is required by the cffi package to compile extension modules. The
     purpose of ``keywords_with_side_effects()`` is to avoid triggering the cffi
-    build process as a result of any of the following ``setup.py`` invocations:
+    build process as a result of setup.py invocations that don't need the cffi
+    module to be built (setup.py serves the dual purpose of exposing package
+    metadata).
 
-    - ``python setup.py --help-commands``
-    - ``python setup.py --help``
-    - ``python setup.py --version``
-    - ``python setup.py clean``
-    - ``python setup.py egg_info``
+    All of the options listed by ``python setup.py --help`` that print
+    information should be recognized here. The commands ``clean``,
+    ``egg_info``, ``register``, ``sdist`` and ``upload`` are also recognized.
+    Any combination of these options and commands is also supported.
 
-    This function is based on the `setup.py script`_ of SciPy (see also the
-    discussion in `pip issue #25`_).
+    This function was originally based on the `setup.py script`_ of SciPy (see
+    also the discussion in `pip issue #25`_).
 
     .. _pip issue #25: https://github.com/pypa/pip/issues/25
     .. _setup.py script: https://github.com/scipy/scipy/blob/master/setup.py
     """
-    if len(argv) >= 2 and ('--help' in argv[1:] or
-                           argv[1] in ('--help-commands', '--version',
-                                       'clean', 'egg_info')):
+    no_setup_requires_arguments = (
+        '-h', '--help',
+        '-n', '--dry-run',
+        '-q', '--quiet',
+        '-v', '--verbose',
+        '-V', '--version',
+        '--author',
+        '--author-email',
+        '--classifiers',
+        '--contact',
+        '--contact-email',
+        '--description',
+        '--fullname',
+        '--help-commands',
+        '--keywords',
+        '--licence',
+        '--license',
+        '--long-description',
+        '--maintainer',
+        '--maintainer-email',
+        '--name',
+        '--no-user-cfg',
+        '--obsoletes',
+        '--platforms',
+        '--provides',
+        '--requires',
+        '--url',
+        'clean',
+        'egg_info',
+        'register',
+        'sdist',
+        'upload',
+    )
+    if all((arg in no_setup_requires_arguments) or
+           all(('-' + char) in no_setup_requires_arguments for char in arg[1:])
+           for arg in argv[1:]):
         return {
             "cmdclass": {
                 "build": DummyCFFIBuild,
