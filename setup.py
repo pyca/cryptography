@@ -180,6 +180,9 @@ class DummyCFFIBuild(CFFIBuild):
     """
 
     def finalize_options(self):
+        build.finalize_options(self)
+
+    def run(self):
         raise RuntimeError(setup_requires_error)
 
 
@@ -191,6 +194,9 @@ class DummyCFFIInstall(CFFIInstall):
     """
 
     def finalize_options(self):
+        install.finalize_options(self)
+
+    def run(self):
         raise RuntimeError(setup_requires_error)
 
 
@@ -202,7 +208,7 @@ class DummyPyTest(PyTest):
     """
 
     def finalize_options(self):
-        raise RuntimeError(setup_requires_error)
+        test.finalize_options(self)
 
     def run_tests(self):
         raise RuntimeError(setup_requires_error)
