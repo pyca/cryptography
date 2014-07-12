@@ -109,11 +109,9 @@ secure hash function and mode:
     >>> message = b"A message I want to sign"
     >>> signer.update(message)
     >>> signature = signer.finalize()
-
-.. code-block:: pycon
-
     >>> signature
-    '...'
+    ...
+
 
 There's a few things that are going on here:
 
@@ -179,11 +177,9 @@ a specific mode and padding to use.
     ...         label=None
     ...     )
     ... )
-
-.. code-block:: pycon
-
     >>> ciphertext
-    '...'
+    ...
+
 
 Just like with RSA signatures, RSA encryption has a few different modes. Here
 we use the OAEP (Optimal Asymmetric Encryption Padding) mode, and configure it
