@@ -288,7 +288,7 @@ Modes
         Must be the same number of bytes as the ``block_size`` of the cipher.
         Do not reuse an ``initialization_vector`` with a given ``key``.
 
-.. class:: GCM(initialization_vector, tag=None)
+.. class:: GCM(initialization_vector, tag=None, min_tag_length=16)
 
     .. danger::
 
@@ -318,12 +318,22 @@ Modes
         You can shorten a tag by truncating it to the desired length but this
         is **not recommended** as it lowers the security margins of the
         authentication (`NIST SP-800-38D`_ recommends 96-bits or greater).
-        If you must shorten the tag the minimum allowed length is 4 bytes
-        (32-bits). Applications **must** verify the tag is the expected length
-        to guarantee the expected security margin.
+        Applications wishing to allow truncation must pass the
+        ``min_tag_length`` parameter.
+
+        .. versionchanged:: 0.5
+
+            The ``min_tag_length`` parameter was added in ``0.5``, previously
+            truncation down to ``4`` bytes was always allowed.
 
     :param bytes tag: The tag bytes to verify during decryption. When
         encrypting this must be ``None``.
+
+    :param bytes min_tag_length: The minimum length ``tag`` must be. By default
+        this is ``16``, meaning tag truncation is not allowed. Allowing tag
+        truncation is strongly discouraged for most applications.
+
+    :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
 
     .. testcode::
 
@@ -356,11 +366,6 @@ Modes
             return (iv, ciphertext, encryptor.tag)
 
         def decrypt(key, associated_data, iv, ciphertext, tag):
-            if len(tag) != 16:
-                raise ValueError(
-                    "tag must be 16 bytes -- truncation not supported"
-                )
-
             # Construct a Cipher object, with the key, iv, and additionally the
             # GCM tag used for authenticating the message.
             decryptor = Cipher(
@@ -430,9 +435,9 @@ Interfaces
     make a message the correct size. ``CipherContext`` will not automatically
     apply any padding; you'll need to add your own. For block ciphers the
     recommended padding is
-    :class:`cryptography.hazmat.primitives.padding.PKCS7`. If you are using a
+    :class:`~cryptography.hazmat.primitives.padding.PKCS7`. If you are using a
     stream cipher mode (such as
-    :class:`cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
+    :class:`~cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
     about this.
 
     .. method:: update(data)
@@ -443,7 +448,7 @@ Interfaces
 
         When the ``Cipher`` was constructed in a mode that turns it into a
         stream cipher (e.g.
-        :class:`cryptography.hazmat.primitives.ciphers.modes.CTR`), this will
+        :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`), this will
         return bytes immediately, however in other modes it will return chunks
         whose size is determined by the cipher's block size.
 

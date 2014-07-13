@@ -1,11 +1,43 @@
 Changelog
 =========
 
-0.5 - `master`_
+0.6 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
+* Removed the, deprecated in 0.4, support for the ``salt_length`` argument to
+  the :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
+  constructor. The ``salt_length`` should be passed to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
+
+0.5.2 - 2014-07-09
+~~~~~~~~~~~~~~~~~~
+
+* Add
+  :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
+  support to :doc:`/hazmat/backends/multibackend`.
+* Fix compilation error on OS X 10.8 (Mountain Lion).
+
+0.5.1 - 2014-07-07
+~~~~~~~~~~~~~~~~~~
+
+* Add
+  :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
+  support to :doc:`/hazmat/backends/multibackend`.
+
+0.5 - 2014-07-07
+~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:**
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` no longer allows
+  truncation of tags by default. Previous versions of ``cryptography`` allowed
+  tags to be truncated by default, applications wishing to preserve this
+  behavior (not recommended) can pass the ``min_tag_length`` argument.
+* Windows builds now statically link OpenSSL by default. When installing a
+  wheel on Windows you no longer need to install OpenSSL separately. Windows
+  users can switch between static and dynamic linking with an environment
+  variable. See :doc:`/installation` for more details.
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.CFB8` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` and
@@ -18,28 +50,47 @@ Changelog
   and
   :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
   support to the :doc:`/hazmat/backends/openssl`.
-* Added :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+* Added :doc:`/hazmat/primitives/asymmetric/ec` and
+  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
-* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-  in favor of backend specific providers of the
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` in
+  favor of backend specific providers of the
   :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey` interface.
-* Deprecated :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
-  in favor of backend specific providers of the
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` in favor
+  of backend specific providers of the
   :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` interface.
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` in
+  favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey` interface.
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` in favor
+  of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` interface.
+* Deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters` in
+  favor of backend specific providers of the
+  :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters` interface.
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
   ``create_rsa_verification_ctx`` on
   :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+* Deprecated ``create_dsa_signature_ctx`` and ``create_dsa_verification_ctx``
+  on :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
 0.4 - 2014-05-03
 ~~~~~~~~~~~~~~~~
 
 * Deprecated ``salt_length`` on
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1` and added it
-  to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. It will be
-  removed from ``MGF1`` in two releases per our :doc:`/api-stability` policy.
-* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED` support.
+  to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. It will
+  be removed from ``MGF1`` in two releases per our :doc:`/api-stability`
+  policy.
+* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`
+  support.
 * Added :class:`~cryptography.hazmat.primitives.cmac.CMAC`.
 * Added decryption support to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
@@ -55,7 +106,8 @@ Changelog
 
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 * Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
-* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA` support.
+* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`
+  support.
 * Added signature support to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
   and verification support to
@@ -65,7 +117,8 @@ Changelog
 0.2.2 - 2014-03-03
 ~~~~~~~~~~~~~~~~~~
 
-* Removed a constant definition that was causing compilation problems with specific versions of OpenSSL.
+* Removed a constant definition that was causing compilation problems with
+  specific versions of OpenSSL.
 
 0.2.1 - 2014-02-22
 ~~~~~~~~~~~~~~~~~~

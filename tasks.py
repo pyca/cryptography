@@ -10,6 +10,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from __future__ import absolute_import, division, print_function
 
 import getpass
@@ -80,7 +81,7 @@ def release(version):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
-    invoke.run("git tag -s {0}".format(version))
+    invoke.run("git tag -s {0} -m '{0} release'".format(version))
     invoke.run("git push --tags")
 
     invoke.run("python setup.py sdist")
@@ -91,11 +92,14 @@ def release(version):
         "vectors/dist/cryptography_vectors-{0}*".format(version)
     )
 
+    username = getpass.getpass("Input the GitHub/Jenkins username: ")
     token = getpass.getpass("Input the Jenkins token: ")
     response = requests.post(
         "{0}/build".format(JENKINS_URL),
+        auth=requests.auth.HTTPBasicAuth(
+            username, token
+        ),
         params={
-            "token": token,
             "cause": "Building wheels for {0}".format(version)
         }
     )

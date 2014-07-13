@@ -63,8 +63,8 @@ Mask generation functions
 
     .. versionadded:: 0.3
 
-    .. versionchanged:: 0.4
-        Deprecated the ``salt_length`` parameter.
+    .. versionchanged:: 0.6
+        Removed the deprecated ``salt_length`` parameter.
 
     MGF1 (Mask Generation Function 1) is used as the mask generation function
     in :class:`PSS` padding. It takes a hash algorithm and a salt length.

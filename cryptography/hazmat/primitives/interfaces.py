@@ -191,6 +191,12 @@ class RSAPrivateKey(object):
         Returns an AsymmetricSignatureContext used for signing data.
         """
 
+    @abc.abstractmethod
+    def decrypt(self, ciphertext, padding):
+        """
+        Decrypts the provided ciphertext.
+        """
+
     @abc.abstractproperty
     def key_size(self):
         """
@@ -206,6 +212,7 @@ class RSAPrivateKey(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+    @abc.abstractmethod
     def private_numbers(self):
         """
         Returns an RSAPrivateNumbers.
@@ -220,6 +227,12 @@ class RSAPublicKey(object):
         Returns an AsymmetricVerificationContext used for verifying signatures.
         """
 
+    @abc.abstractmethod
+    def encrypt(self, plaintext, padding):
+        """
+        Encrypts the given plaintext.
+        """
+
     @abc.abstractproperty
     def key_size(self):
         """
@@ -229,6 +242,7 @@ class RSAPublicKey(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPublicKeyWithNumbers(RSAPublicKey):
+    @abc.abstractmethod
     def public_numbers(self):
         """
         Returns an RSAPublicNumbers
@@ -237,48 +251,19 @@ class RSAPublicKeyWithNumbers(RSAPublicKey):
 
 @six.add_metaclass(abc.ABCMeta)
 class DSAParameters(object):
-    @abc.abstractproperty
-    def modulus(self):
+    @abc.abstractmethod
+    def generate_private_key(self):
         """
-        The prime modulus that's used in generating the DSA keypair and used
-        in the DSA signing and verification processes.
-        """
-
-    @abc.abstractproperty
-    def subgroup_order(self):
-        """
-        The subgroup order that's used in generating the DSA keypair
-        by the generator and used in the DSA signing and verification
-        processes.
+        Generates and returns a DSAPrivateKey.
         """
 
-    @abc.abstractproperty
-    def generator(self):
-        """
-        The generator that is used in generating the DSA keypair and used
-        in the DSA signing and verification processes.
-        """
 
-    @abc.abstractproperty
-    def p(self):
+@six.add_metaclass(abc.ABCMeta)
+class DSAParametersWithNumbers(DSAParameters):
+    @abc.abstractmethod
+    def parameter_numbers(self):
         """
-        The prime modulus that's used in generating the DSA keypair and used
-        in the DSA signing and verification processes. Alias for modulus.
-        """
-
-    @abc.abstractproperty
-    def q(self):
-        """
-        The subgroup order that's used in generating the DSA keypair
-        by the generator and used in the DSA signing and verification
-        processes. Alias for subgroup_order.
-        """
-
-    @abc.abstractproperty
-    def g(self):
-        """
-        The generator that is used in generating the DSA keypair and used
-        in the DSA signing and verification processes. Alias for generator.
+        Returns a DSAParameterNumbers.
         """
 
 
@@ -296,22 +281,19 @@ class DSAPrivateKey(object):
         The DSAPublicKey associated with this private key.
         """
 
-    @abc.abstractproperty
-    def x(self):
-        """
-        The private key "x" in the DSA structure.
-        """
-
-    @abc.abstractproperty
-    def y(self):
-        """
-        The public key.
-        """
-
     @abc.abstractmethod
     def parameters(self):
         """
         The DSAParameters object associated with this private key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DSAPrivateKeyWithNumbers(DSAPrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns a DSAPrivateNumbers.
         """
 
 
@@ -323,16 +305,19 @@ class DSAPublicKey(object):
         The bit length of the prime modulus.
         """
 
-    @abc.abstractproperty
-    def y(self):
-        """
-        The public key.
-        """
-
     @abc.abstractmethod
     def parameters(self):
         """
         The DSAParameters object associated with this public key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DSAPublicKeyWithNumbers(DSAPublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns a DSAPublicNumbers.
         """
 
 

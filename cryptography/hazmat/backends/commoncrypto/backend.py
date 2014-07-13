@@ -16,14 +16,16 @@ from __future__ import absolute_import, division, print_function
 from collections import namedtuple
 
 from cryptography import utils
-from cryptography.exceptions import (
-    InternalError, InvalidTag, UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import InternalError
+from cryptography.hazmat.backends.commoncrypto.ciphers import (
+    _CipherContext, _GCMCipherContext
 )
+from cryptography.hazmat.backends.commoncrypto.hashes import _HashContext
+from cryptography.hazmat.backends.commoncrypto.hmac import _HMACContext
 from cryptography.hazmat.backends.interfaces import (
     CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
-from cryptography.hazmat.primitives import constant_time, interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, TripleDES
 )
@@ -147,7 +149,7 @@ class Backend(object):
             buf,
             length
         )
-        self._check_response(res)
+        self._check_cipher_response(res)
 
         return self._ffi.buffer(buf)[:]
 
@@ -221,7 +223,7 @@ class Backend(object):
             self._lib.kCCModeRC4
         )
 
-    def _check_response(self, response):
+    def _check_cipher_response(self, response):
         if response == self._lib.kCCSuccess:
             return
         elif response == self._lib.kCCAlignmentError:
@@ -237,266 +239,15 @@ class Backend(object):
                 " Code: {0}.".format(response)
             )
 
-
-def _release_cipher_ctx(ctx):
-    """
-    Called by the garbage collector and used to safely dereference and
-    release the context.
-    """
-    if ctx[0] != backend._ffi.NULL:
-        res = backend._lib.CCCryptorRelease(ctx[0])
-        backend._check_response(res)
-        ctx[0] = backend._ffi.NULL
-
-
-@utils.register_interface(interfaces.CipherContext)
-class _CipherContext(object):
-    def __init__(self, backend, cipher, mode, operation):
-        self._backend = backend
-        self._cipher = cipher
-        self._mode = mode
-        self._operation = operation
-        # There is a bug in CommonCrypto where block ciphers do not raise
-        # kCCAlignmentError when finalizing if you supply non-block aligned
-        # data. To work around this we need to keep track of the block
-        # alignment ourselves, but only for alg+mode combos that require
-        # block alignment. OFB, CFB, and CTR make a block cipher algorithm
-        # into a stream cipher so we don't need to track them (and thus their
-        # block size is effectively 1 byte just like OpenSSL/CommonCrypto
-        # treat RC4 and other stream cipher block sizes).
-        # This bug has been filed as rdar://15589470
-        self._bytes_processed = 0
-        if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
-                isinstance(mode, (OFB, CFB, CFB8, CTR))):
-            self._byte_block_size = cipher.block_size // 8
-        else:
-            self._byte_block_size = 1
-
-        registry = self._backend._cipher_registry
-        try:
-            cipher_enum, mode_enum = registry[type(cipher), type(mode)]
-        except KeyError:
-            raise UnsupportedAlgorithm(
-                "cipher {0} in {1} mode is not supported "
-                "by this backend.".format(
-                    cipher.name, mode.name if mode else mode),
-                _Reasons.UNSUPPORTED_CIPHER
-            )
-
-        ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx = self._backend._ffi.gc(ctx, _release_cipher_ctx)
-
-        if isinstance(mode, interfaces.ModeWithInitializationVector):
-            iv_nonce = mode.initialization_vector
-        elif isinstance(mode, interfaces.ModeWithNonce):
-            iv_nonce = mode.nonce
-        else:
-            iv_nonce = self._backend._ffi.NULL
-
-        if isinstance(mode, CTR):
-            mode_option = self._backend._lib.kCCModeOptionCTR_BE
-        else:
-            mode_option = 0
-
-        res = self._backend._lib.CCCryptorCreateWithMode(
-            operation,
-            mode_enum, cipher_enum,
-            self._backend._lib.ccNoPadding, iv_nonce,
-            cipher.key, len(cipher.key),
-            self._backend._ffi.NULL, 0, 0, mode_option, ctx)
-        self._backend._check_response(res)
-
-        self._ctx = ctx
-
-    def update(self, data):
-        # Count bytes processed to handle block alignment.
-        self._bytes_processed += len(data)
-        buf = self._backend._ffi.new(
-            "unsigned char[]", len(data) + self._byte_block_size - 1)
-        outlen = self._backend._ffi.new("size_t *")
-        res = self._backend._lib.CCCryptorUpdate(
-            self._ctx[0], data, len(data), buf,
-            len(data) + self._byte_block_size - 1, outlen)
-        self._backend._check_response(res)
-        return self._backend._ffi.buffer(buf)[:outlen[0]]
-
-    def finalize(self):
-        # Raise error if block alignment is wrong.
-        if self._bytes_processed % self._byte_block_size:
-            raise ValueError(
-                "The length of the provided data is not a multiple of "
-                "the block length."
-            )
-        buf = self._backend._ffi.new("unsigned char[]", self._byte_block_size)
-        outlen = self._backend._ffi.new("size_t *")
-        res = self._backend._lib.CCCryptorFinal(
-            self._ctx[0], buf, len(buf), outlen)
-        self._backend._check_response(res)
-        _release_cipher_ctx(self._ctx)
-        return self._backend._ffi.buffer(buf)[:outlen[0]]
-
-
-@utils.register_interface(interfaces.AEADCipherContext)
-@utils.register_interface(interfaces.AEADEncryptionContext)
-class _GCMCipherContext(object):
-    def __init__(self, backend, cipher, mode, operation):
-        self._backend = backend
-        self._cipher = cipher
-        self._mode = mode
-        self._operation = operation
-        self._tag = None
-
-        registry = self._backend._cipher_registry
-        try:
-            cipher_enum, mode_enum = registry[type(cipher), type(mode)]
-        except KeyError:
-            raise UnsupportedAlgorithm(
-                "cipher {0} in {1} mode is not supported "
-                "by this backend.".format(
-                    cipher.name, mode.name if mode else mode),
-                _Reasons.UNSUPPORTED_CIPHER
-            )
-
-        ctx = self._backend._ffi.new("CCCryptorRef *")
-        ctx = self._backend._ffi.gc(ctx, _release_cipher_ctx)
-
-        self._ctx = ctx
-
-        res = self._backend._lib.CCCryptorCreateWithMode(
-            operation,
-            mode_enum, cipher_enum,
-            self._backend._lib.ccNoPadding,
-            self._backend._ffi.NULL,
-            cipher.key, len(cipher.key),
-            self._backend._ffi.NULL, 0, 0, 0, self._ctx)
-        self._backend._check_response(res)
-
-        res = self._backend._lib.CCCryptorGCMAddIV(
-            self._ctx[0],
-            mode.initialization_vector,
-            len(mode.initialization_vector)
-        )
-        self._backend._check_response(res)
-
-    def update(self, data):
-        buf = self._backend._ffi.new("unsigned char[]", len(data))
-        args = (self._ctx[0], data, len(data), buf)
-        if self._operation == self._backend._lib.kCCEncrypt:
-            res = self._backend._lib.CCCryptorGCMEncrypt(*args)
-        else:
-            res = self._backend._lib.CCCryptorGCMDecrypt(*args)
-
-        self._backend._check_response(res)
-        return self._backend._ffi.buffer(buf)[:]
-
-    def finalize(self):
-        tag_size = self._cipher.block_size // 8
-        tag_buf = self._backend._ffi.new("unsigned char[]", tag_size)
-        tag_len = self._backend._ffi.new("size_t *", tag_size)
-        res = backend._lib.CCCryptorGCMFinal(self._ctx[0], tag_buf, tag_len)
-        self._backend._check_response(res)
-        _release_cipher_ctx(self._ctx)
-        self._tag = self._backend._ffi.buffer(tag_buf)[:]
-        if (self._operation == self._backend._lib.kCCDecrypt and
-                not constant_time.bytes_eq(
-                    self._tag[:len(self._mode.tag)], self._mode.tag
-                )):
-            raise InvalidTag
-        return b""
-
-    def authenticate_additional_data(self, data):
-        res = self._backend._lib.CCCryptorGCMAddAAD(
-            self._ctx[0], data, len(data)
-        )
-        self._backend._check_response(res)
-
-    @property
-    def tag(self):
-        return self._tag
-
-
-@utils.register_interface(interfaces.HashContext)
-class _HashContext(object):
-    def __init__(self, backend, algorithm, ctx=None):
-        self.algorithm = algorithm
-        self._backend = backend
-
-        if ctx is None:
-            try:
-                methods = self._backend._hash_mapping[self.algorithm.name]
-            except KeyError:
-                raise UnsupportedAlgorithm(
-                    "{0} is not a supported hash on this backend.".format(
-                        algorithm.name),
-                    _Reasons.UNSUPPORTED_HASH
-                )
-            ctx = self._backend._ffi.new(methods.ctx)
-            res = methods.hash_init(ctx)
-            assert res == 1
-
-        self._ctx = ctx
-
-    def copy(self):
-        methods = self._backend._hash_mapping[self.algorithm.name]
-        new_ctx = self._backend._ffi.new(methods.ctx)
-        # CommonCrypto has no APIs for copying hashes, so we have to copy the
-        # underlying struct.
-        new_ctx[0] = self._ctx[0]
-
-        return _HashContext(self._backend, self.algorithm, ctx=new_ctx)
-
-    def update(self, data):
-        methods = self._backend._hash_mapping[self.algorithm.name]
-        res = methods.hash_update(self._ctx, data, len(data))
-        assert res == 1
-
-    def finalize(self):
-        methods = self._backend._hash_mapping[self.algorithm.name]
-        buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
-        res = methods.hash_final(buf, self._ctx)
-        assert res == 1
-        return self._backend._ffi.buffer(buf)[:]
-
-
-@utils.register_interface(interfaces.HashContext)
-class _HMACContext(object):
-    def __init__(self, backend, key, algorithm, ctx=None):
-        self.algorithm = algorithm
-        self._backend = backend
-        if ctx is None:
-            ctx = self._backend._ffi.new("CCHmacContext *")
-            try:
-                alg = self._backend._supported_hmac_algorithms[algorithm.name]
-            except KeyError:
-                raise UnsupportedAlgorithm(
-                    "{0} is not a supported HMAC hash on this backend.".format(
-                        algorithm.name),
-                    _Reasons.UNSUPPORTED_HASH
-                )
-
-            self._backend._lib.CCHmacInit(ctx, alg, key, len(key))
-
-        self._ctx = ctx
-        self._key = key
-
-    def copy(self):
-        copied_ctx = self._backend._ffi.new("CCHmacContext *")
-        # CommonCrypto has no APIs for copying HMACs, so we have to copy the
-        # underlying struct.
-        copied_ctx[0] = self._ctx[0]
-        return _HMACContext(
-            self._backend, self._key, self.algorithm, ctx=copied_ctx
-        )
-
-    def update(self, data):
-        self._backend._lib.CCHmacUpdate(self._ctx, data, len(data))
-
-    def finalize(self):
-        buf = self._backend._ffi.new("unsigned char[]",
-                                     self.algorithm.digest_size)
-        self._backend._lib.CCHmacFinal(self._ctx, buf)
-        return self._backend._ffi.buffer(buf)[:]
+    def _release_cipher_ctx(self, ctx):
+        """
+        Called by the garbage collector and used to safely dereference and
+        release the context.
+        """
+        if ctx[0] != self._ffi.NULL:
+            res = self._lib.CCCryptorRelease(ctx[0])
+            self._check_cipher_response(res)
+            ctx[0] = self._ffi.NULL
 
 
 backend = Backend()

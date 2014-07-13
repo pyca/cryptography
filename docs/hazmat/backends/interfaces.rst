@@ -255,10 +255,13 @@ A specific ``backend`` may provide one or more of these interfaces.
 
     .. method:: mgf1_hash_supported(algorithm)
 
+        ..deprecated:: 0.5
+
         Check if the specified ``algorithm`` is supported for use with
         :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
         inside :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
-        padding.
+        padding. This method is deprecated in favor of
+        ``rsa_padding_supported``.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -418,7 +421,25 @@ A specific ``backend`` may provide one or more of these interfaces.
             1.0.0 and the key size is larger than 1024; older OpenSSL versions
             do not support keys larger than 1024 bits.
 
+    .. method:: generate_dsa_private_key_and_parameters(key_size)
+
+        :param int key_size: The length of the modulus in bits. It should be
+            either 1024, 2048 or 3072. For keys generated in 2014 this should
+            be at least 2048.
+            Note that some applications (such as SSH) have not yet gained
+            support for larger key sizes specified in FIPS 186-3 and are still
+            restricted to only the 1024-bit keys specified in FIPS 186-2.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            provider.
+
+        :raises ValueError: This is raised if the key size is not supported
+            by the backend.
+
     .. method:: create_dsa_signature_ctx(private_key, algorithm)
+
+        .. deprecated:: 0.5
 
         :param private_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
@@ -432,6 +453,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
 
     .. method:: create_dsa_verification_ctx(public_key, signature, algorithm)
+
+        .. deprecated:: 0.5
 
         :param public_key: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
@@ -466,6 +489,40 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: ``True`` if the given values of ``p``, ``q``, and ``g`` are
             supported by this backend, otherwise ``False``.
+
+    .. method:: load_dsa_parameter_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+    .. method:: load_dsa_private_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
+    .. method:: load_dsa_public_numbers(numbers):
+
+        :param numbers: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`.
+
+        :returns: A provider of
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
+            any backend specific criteria are not met.
+
 
 
 .. class:: CMACBackend

@@ -28,9 +28,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives.serialization import (
-    load_rsa_public_numbers
-)
 
 from ...utils import load_vectors_from_file
 
@@ -93,7 +90,8 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
             mode_factory(binascii.unhexlify(params["iv"]),
-                         binascii.unhexlify(params["tag"])),
+                         binascii.unhexlify(params["tag"]),
+                         len(binascii.unhexlify(params["tag"]))),
             backend
         )
         decryptor = cipher.decryptor()
@@ -111,12 +109,13 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         encryptor.authenticate_additional_data(binascii.unhexlify(aad))
         actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
         actual_ciphertext += encryptor.finalize()
-        tag_len = len(params["tag"])
-        assert binascii.hexlify(encryptor.tag)[:tag_len] == params["tag"]
+        tag_len = len(binascii.unhexlify(params["tag"]))
+        assert binascii.hexlify(encryptor.tag[:tag_len]) == params["tag"]
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
             mode_factory(binascii.unhexlify(params["iv"]),
-                         binascii.unhexlify(params["tag"])),
+                         binascii.unhexlify(params["tag"]),
+                         min_tag_length=tag_len),
             backend
         )
         decryptor = cipher.decryptor()
@@ -312,6 +311,9 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
     with pytest.raises(ValueError):
         mode_factory(binascii.unhexlify(b"0" * 24), b"000")
 
+    with pytest.raises(ValueError):
+        mode_factory(binascii.unhexlify(b"0" * 24), b"000000", 2)
+
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
         mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
@@ -395,7 +397,7 @@ def rsa_verification_test(backend, params, hash_alg, pad_factory):
         e=params["public_exponent"],
         n=params["modulus"]
     )
-    public_key = load_rsa_public_numbers(public_numbers, backend)
+    public_key = public_numbers.public_key(backend)
     pad = pad_factory(params, hash_alg)
     verifier = public_key.verifier(
         binascii.unhexlify(params["s"]),

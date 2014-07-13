@@ -166,8 +166,14 @@ class DSABackend(object):
     @abc.abstractmethod
     def generate_dsa_private_key(self, parameters):
         """
-        Generate an DSAPrivateKey instance with parameters as
-        a DSAParameters object.
+        Generate a DSAPrivateKey instance with parameters as a DSAParameters
+        object.
+        """
+
+    @abc.abstractmethod
+    def generate_dsa_private_key_and_parameters(self, key_size):
+        """
+        Generate a DSAPrivateKey instance using key size only.
         """
 
     @abc.abstractmethod
@@ -194,6 +200,24 @@ class DSABackend(object):
     def dsa_parameters_supported(self, p, q, g):
         """
         Return True if the parameters are supported by the backend for DSA.
+        """
+
+    @abc.abstractmethod
+    def load_dsa_private_numbers(self, numbers):
+        """
+        Returns a DSAPrivateKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dsa_public_numbers(self, numbers):
+        """
+        Returns a DSAPublicKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dsa_parameter_numbers(self, numbers):
+        """
+        Returns a DSAParameters provider.
         """
 
 

@@ -24,11 +24,13 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
+typedef STACK_OF(X509_CRL) Cryptography_STACK_OF_X509_CRL;
 typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
 """
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_X509;
+typedef ... Cryptography_STACK_OF_X509_CRL;
 typedef ... Cryptography_STACK_OF_X509_REVOKED;
 
 typedef struct {
@@ -243,7 +245,7 @@ int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL 0.9.8e does not have this definition
+/* OpenSSL 0.9.8e does not have this definition. */
 #if OPENSSL_VERSION_NUMBER <= 0x0090805fL
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
 #endif

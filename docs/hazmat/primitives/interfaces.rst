@@ -13,7 +13,7 @@ to document argument and return types.
 
 
 Symmetric ciphers
-~~~~~~~~~~~~~~~~~
+-----------------
 
 .. currentmodule:: cryptography.hazmat.primitives.interfaces
 
@@ -48,7 +48,7 @@ Symmetric ciphers
 
 
 Cipher modes
-------------
+~~~~~~~~~~~~
 
 Interfaces used by the symmetric cipher modes described in
 :ref:`Symmetric Encryption Modes <symmetric-encryption-modes>`.
@@ -104,7 +104,44 @@ Interfaces used by the symmetric cipher modes described in
         individual modes.
 
 Asymmetric interfaces
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
+
+.. class:: AsymmetricSignatureContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you want to sign.
+
+    .. method:: finalize()
+
+        :return bytes signature: The signature.
+
+
+.. class:: AsymmetricVerificationContext
+
+    .. versionadded:: 0.2
+
+    .. method:: update(data)
+
+        :param bytes data: The data you wish to verify using the signature.
+
+    .. method:: verify()
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
+
+
+.. class:: AsymmetricPadding
+
+    .. versionadded:: 0.2
+
+    .. attribute:: name
+
+
+RSA
+~~~
 
 .. class:: RSAPrivateKey
 
@@ -236,55 +273,42 @@ Asymmetric interfaces
             instance.
 
 
+DSA
+~~~
+
 .. class:: DSAParameters
 
     .. versionadded:: 0.3
 
     `DSA`_ parameters.
 
-    .. attribute:: modulus
+    .. method:: generate_private_key()
 
-        :type: int
+        .. versionadded:: 0.5
 
-        The prime modulus that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes.
+        Generate a DSA private key. This method can be used to generate many
+        new private keys from a single set of parameters.
 
-    .. attribute:: subgroup_order
+        :return: A
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            provider.
 
-        :type: int
 
-        The subgroup order that is used in generating the DSA key pair
-        by the generator and used in the DSA signing and verification
-        processes.
+.. class:: DSAParametersWithNumbers
 
-    .. attribute:: generator
+    .. versionadded:: 0.5
 
-        :type: int
+    Extends :class:`DSAParameters`.
 
-        The generator that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes.
+    .. method:: parameter_numbers()
 
-    .. attribute:: p
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+        object.
 
-        :type: int
-
-        The prime modulus that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes. Alias for :attr:`modulus`.
-
-    .. attribute:: q
-
-        :type: int
-
-        The subgroup order that is used in generating the DSA key pair
-        by the generator and used in the DSA signing and verification
-        processes. Alias for :attr:`subgroup_order`.
-
-    .. attribute:: g
-
-        :type: int
-
-        The generator that is used in generating the DSA key pair and used
-        in the DSA signing and verification processes. Alias for :attr:`generator`.
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+            instance.
 
 
 .. class:: DSAPrivateKey
@@ -328,17 +352,22 @@ Asymmetric interfaces
 
         The bit length of the modulus.
 
-    .. attribute:: x
 
-        :type: int
+.. class:: DSAPrivateKeyWithNumbers
 
-        The private key.
+    .. versionadded:: 0.5
 
-    .. attribute:: y
+    Extends :class:`DSAPrivateKey`.
 
-        :type: int
+    .. method:: private_numbers()
 
-        The public key.
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+            instance.
 
 
 .. class:: DSAPublicKey
@@ -352,12 +381,6 @@ Asymmetric interfaces
         :type: int
 
         The bit length of the modulus.
-
-    .. attribute:: y
-
-        :type: int
-
-        The public key.
 
     .. method:: parameters()
 
@@ -387,6 +410,23 @@ Asymmetric interfaces
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
 
 
+.. class:: DSAPublicKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAPublicKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+            instance.
+
+
 .. class:: EllipticCurve
 
     .. versionadded:: 0.5
@@ -406,6 +446,9 @@ Asymmetric interfaces
 
         The bit length of the curve's base point.
 
+
+Elliptic Curve
+~~~~~~~~~~~~~~
 
 .. class:: EllipticCurveSignatureAlgorithm
 
@@ -475,42 +518,8 @@ Asymmetric interfaces
         The elliptic curve for this key.
 
 
-.. class:: AsymmetricSignatureContext
-
-    .. versionadded:: 0.2
-
-    .. method:: update(data)
-
-        :param bytes data: The data you want to sign.
-
-    .. method:: finalize()
-
-        :return bytes signature: The signature.
-
-
-.. class:: AsymmetricVerificationContext
-
-    .. versionadded:: 0.2
-
-    .. method:: update(data)
-
-        :param bytes data: The data you wish to verify using the signature.
-
-    .. method:: verify()
-
-        :raises cryptography.exceptions.InvalidSignature: If the signature does
-            not validate.
-
-
-.. class:: AsymmetricPadding
-
-    .. versionadded:: 0.2
-
-    .. attribute:: name
-
-
 Hash algorithms
-~~~~~~~~~~~~~~~
+---------------
 
 .. class:: HashAlgorithm
 
@@ -556,7 +565,7 @@ Hash algorithms
 
 
 Key derivation functions
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 .. class:: KeyDerivationFunction
 
@@ -601,7 +610,7 @@ Key derivation functions
 
 
 `CMAC`_
-~~~~~~~
+-------
 
 .. class:: CMACContext
 

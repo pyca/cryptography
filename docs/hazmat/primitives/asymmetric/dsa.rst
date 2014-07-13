@@ -7,9 +7,205 @@ DSA
 
 `DSA`_ is a `public-key`_ algorithm for signing messages.
 
+Generation
+~~~~~~~~~~
+
+.. function:: generate_private_key(key_size, backend)
+
+    .. versionadded:: 0.5
+
+    Generate a DSA private key from the given key size. This function will
+    generate a new set of parameters and key in one step.
+
+    :param int key_size: The length of the modulus in bits. It should be
+        either 1024, 2048 or 3072. For keys generated in 2014 this should
+        be `at least 2048`_ (See page 41).  Note that some applications
+        (such as SSH) have not yet gained support for larger key sizes
+        specified in FIPS 186-3 and are still restricted to only the
+        1024-bit keys specified in FIPS 186-2.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+        provider.
+
+    :return: A :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+
+.. function:: generate_parameters(key_size, backend)
+
+    .. versionadded:: 0.5
+
+    Generate DSA parameters using the provided ``backend``.
+
+    :param int key_size: The length of the modulus in bits. It should be
+        either 1024, 2048 or 3072. For keys generated in 2014 this should
+        be `at least 2048`_ (See page 41).  Note that some applications
+        (such as SSH) have not yet gained support for larger key sizes
+        specified in FIPS 186-3 and are still restricted to only the
+        1024-bit keys specified in FIPS 186-2.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+        provider.
+
+    :return: A :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+        the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+
+Signing
+~~~~~~~
+
+Using a :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+provider.
+
+.. doctest::
+
+    >>> from cryptography.hazmat.backends import default_backend
+    >>> from cryptography.hazmat.primitives import hashes
+    >>> from cryptography.hazmat.primitives.asymmetric import dsa
+    >>> private_key = dsa.generate_private_key(
+    ...     key_size=1024,
+    ...     backend=default_backend()
+    ... )
+    >>> signer = private_key.signer(hashes.SHA256())
+    >>> data = b"this is some data I'd like to sign"
+    >>> signer.update(data)
+    >>> signature = signer.finalize()
+
+Verification
+~~~~~~~~~~~~
+
+Using a :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+provider.
+
+.. doctest::
+
+    >>> public_key = private_key.public_key()
+    >>> verifier = public_key.verifier(signature, hashes.SHA256())
+    >>> verifier.update(data)
+    >>> verifier.verify()
+
+Numbers
+~~~~~~~
+
+.. class:: DSAParameterNumbers(p, q, g)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up a set of DSA parameters.
+
+    .. attribute:: p
+
+        :type: int
+
+        The public modulus.
+
+    .. attribute:: q
+
+        :type: int
+
+        The sub-group order.
+
+    .. attribute:: g
+
+        :type: int
+
+        The generator.
+
+    .. method:: parameters(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+            provider.
+
+.. class:: DSAPublicNumbers(y, parameter_numbers)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up a DSA public key.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public value ``y``.
+
+    .. attribute:: parameter_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+
+        The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+        associated with the public key.
+
+    .. method:: public_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+            provider.
+
+.. class:: DSAPrivateNumbers(x, public_numbers)
+
+    .. versionadded:: 0.5
+
+    The collection of integers that make up a DSA private key.
+
+    .. warning::
+
+        Revealing the value of ``x`` will compromise the security of any
+        cryptographic operations performed.
+
+    .. attribute:: x
+
+        :type: int
+
+        The private value ``x``.
+
+    .. attribute:: public_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
+
+        The :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
+        associated with the private key.
+
+    .. method:: private_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            provider.
+
+Deprecated Concrete Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These classes were deprecated in version 0.5 in favor of backend specific
+providers of the
+:class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`,
+:class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`, and
+:class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` interfaces.
+
 .. class:: DSAParameters(modulus, subgroup_order, generator)
 
     .. versionadded:: 0.4
+
+    .. deprecated:: 0.5
 
     DSA Parameters are required for generating a DSA private key.
 
@@ -54,6 +250,8 @@ DSA
 .. class:: DSAPrivateKey(modulus, subgroup_order, generator, x, y)
 
     .. versionadded:: 0.4
+
+    .. deprecated:: 0.5
 
     A DSA private key is required for signing messages.
 
@@ -103,27 +301,6 @@ DSA
 
         Sign data which can be verified later by others using the public key.
 
-        .. doctest::
-
-            >>> from cryptography.hazmat.backends import default_backend
-            >>> from cryptography.hazmat.primitives import hashes
-            >>> from cryptography.hazmat.primitives.asymmetric import dsa
-            >>> parameters = dsa.DSAParameters.generate(
-            ...     key_size=1024,
-            ...     backend=default_backend()
-            ... )
-            >>> private_key = dsa.DSAPrivateKey.generate(
-            ...     parameters=parameters,
-            ...     backend=default_backend()
-            ... )
-            >>> signer = private_key.signer(
-            ...     hashes.SHA256(),
-            ...     default_backend()
-            ... )
-            >>> data = b"this is some data I'd like to sign"
-            >>> signer.update(data)
-            >>> signature = signer.finalize()
-
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             provider.
@@ -143,6 +320,8 @@ DSA
 .. class:: DSAPublicKey(modulus, subgroup_order, generator, y)
 
     .. versionadded:: 0.4
+
+    .. deprecated:: 0.5
 
     A DSA public key is required for verifying messages.
 
@@ -166,35 +345,6 @@ DSA
 
         Verify data was signed by the private key associated with this public
         key.
-
-        .. doctest::
-
-            >>> from cryptography.hazmat.backends import default_backend
-            >>> from cryptography.hazmat.primitives import hashes
-            >>> from cryptography.hazmat.primitives.asymmetric import dsa
-            >>> parameters = dsa.DSAParameters.generate(
-            ...     key_size=1024,
-            ...     backend=default_backend()
-            ... )
-            >>> private_key = dsa.DSAPrivateKey.generate(
-            ...     parameters=parameters,
-            ...     backend=default_backend()
-            ... )
-            >>> signer = private_key.signer(
-            ...     hashes.SHA256(),
-            ...     default_backend()
-            ... )
-            >>> data = b"this is some data I'd like to sign"
-            >>> signer.update(data)
-            >>> signature = signer.finalize()
-            >>> public_key = private_key.public_key()
-            >>> verifier = public_key.verifier(
-            ...     signature,
-            ...     hashes.SHA256(),
-            ...     default_backend()
-            ... )
-            >>> verifier.update(data)
-            >>> verifier.verify()
 
         :param bytes signature: The signature to verify. DER encoded as
             specified in :rfc:`6979`.

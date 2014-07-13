@@ -19,7 +19,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+    TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -128,6 +129,9 @@ class DummyDSABackend(object):
     def generate_dsa_private_key(self, parameters):
         pass
 
+    def generate_dsa_private_key_and_parameters(self, key_size):
+        pass
+
     def create_dsa_signature_ctx(self, private_key, algorithm):
         pass
 
@@ -187,6 +191,18 @@ class DummyEllipticCurveBackend(object):
     def elliptic_curve_public_key_from_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+
+@utils.register_interface(PKCS8SerializationBackend)
+class DummyPKCS8SerializationBackend(object):
+    def load_pkcs8_pem_private_key(self, data, password):
+        pass
+
+
+@utils.register_interface(TraditionalOpenSSLSerializationBackend)
+class DummyTraditionalOpenSSLSerializationBackend(object):
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        pass
 
 
 class TestMultiBackend(object):
@@ -343,6 +359,7 @@ class TestMultiBackend(object):
 
         parameters = object()
         backend.generate_dsa_private_key(parameters)
+        backend.generate_dsa_private_key_and_parameters(key_size=1024)
 
         backend.create_dsa_verification_ctx("public_key", "sig", hashes.SHA1())
         backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
@@ -359,6 +376,11 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_dsa_private_key(parameters)
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.generate_dsa_private_key_and_parameters(key_size=1024)
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -462,3 +484,21 @@ class TestMultiBackend(object):
                     ec.SECT163K1()
                 )
             )
+
+    def test_pkcs8_serialization_backend(self):
+        backend = MultiBackend([DummyPKCS8SerializationBackend()])
+
+        backend.load_pkcs8_pem_private_key(b"keydata", None)
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_pkcs8_pem_private_key(b"keydata", None)
+
+    def test_traditional_openssl_serialization_backend(self):
+        backend = MultiBackend([DummyTraditionalOpenSSLSerializationBackend()])
+
+        backend.load_traditional_openssl_pem_private_key(b"keydata", None)
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_traditional_openssl_pem_private_key(b"keydata", None)

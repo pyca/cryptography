@@ -193,7 +193,7 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
-// OpenSSL 0.9.8g+
+/* OpenSSL 0.9.8g+ */
 #if OPENSSL_VERSION_NUMBER >= 0x0090807fL
 static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 1;
 #else

@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 import threading
 
@@ -97,7 +98,8 @@ class Binding(object):
         if sys.platform != "win32":
             libraries = ["crypto", "ssl"]
         else:  # pragma: no cover
-            libraries = ["libeay32", "ssleay32", "advapi32"]
+            link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
+            libraries = _get_windows_libraries(link_type)
 
         cls.ffi, cls.lib = build_ffi(
             module_prefix=cls._module_prefix,
@@ -154,3 +156,15 @@ class Binding(object):
                     mode, n, file, line
                 )
             )
+
+
+def _get_windows_libraries(link_type):
+    if link_type == "dynamic":
+        return ["libeay32", "ssleay32", "advapi32"]
+    elif link_type == "static" or link_type == "":
+        return ["libeay32mt", "ssleay32mt", "advapi32",
+                "crypt32", "gdi32", "user32", "ws2_32"]
+    else:
+        raise ValueError(
+            "PYCA_WINDOWS_LINK_TYPE must be 'static' or 'dynamic'"
+        )

@@ -13,8 +13,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 import six
 
 from cryptography import utils
@@ -31,26 +29,15 @@ class PSS(object):
     MAX_LENGTH = object()
     name = "EMSA-PSS"
 
-    def __init__(self, mgf, salt_length=None):
+    def __init__(self, mgf, salt_length):
         self._mgf = mgf
 
-        if salt_length is None:
-            warnings.warn(
-                "salt_length is deprecated on MGF1 and should be added via the"
-                " PSS constructor.",
-                utils.DeprecatedIn04,
-                stacklevel=2
-            )
-        else:
-            if (not isinstance(salt_length, six.integer_types) and
-                    salt_length is not self.MAX_LENGTH):
-                raise TypeError("salt_length must be an integer.")
+        if (not isinstance(salt_length, six.integer_types) and
+                salt_length is not self.MAX_LENGTH):
+            raise TypeError("salt_length must be an integer.")
 
-            if salt_length is not self.MAX_LENGTH and salt_length < 0:
-                raise ValueError("salt_length must be zero or greater.")
-
-        if salt_length is None and self._mgf._salt_length is None:
-            raise ValueError("You must supply salt_length.")
+        if salt_length is not self.MAX_LENGTH and salt_length < 0:
+            raise ValueError("salt_length must be zero or greater.")
 
         self._salt_length = salt_length
 
@@ -71,24 +58,8 @@ class OAEP(object):
 class MGF1(object):
     MAX_LENGTH = object()
 
-    def __init__(self, algorithm, salt_length=None):
+    def __init__(self, algorithm):
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
 
         self._algorithm = algorithm
-
-        if salt_length is not None:
-            warnings.warn(
-                "salt_length is deprecated on MGF1 and should be passed to "
-                "the PSS constructor instead.",
-                utils.DeprecatedIn04,
-                stacklevel=2
-            )
-            if (not isinstance(salt_length, six.integer_types) and
-                    salt_length is not self.MAX_LENGTH):
-                raise TypeError("salt_length must be an integer.")
-
-            if salt_length is not self.MAX_LENGTH and salt_length < 0:
-                raise ValueError("salt_length must be zero or greater.")
-
-        self._salt_length = salt_length

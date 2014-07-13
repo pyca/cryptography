@@ -19,13 +19,13 @@ INCLUDES = """
 
 TYPES = """
 typedef struct dh_st {
-    // prime number (shared)
+    /* Prime number (shared) */
     BIGNUM *p;
-    // generator of Z_p (shared)
+    /* Generator of Z_p (shared) */
     BIGNUM *g;
-    // private DH value x
+    /* Private DH value x */
     BIGNUM *priv_key;
-    // public DH value g^x
+    /* Public DH value g^x */
     BIGNUM *pub_key;
     ...;
 } DH;

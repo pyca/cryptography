@@ -51,13 +51,13 @@ class TestCommonCrypto(object):
         from cryptography.hazmat.backends.commoncrypto.backend import backend
 
         with pytest.raises(ValueError):
-            backend._check_response(backend._lib.kCCAlignmentError)
+            backend._check_cipher_response(backend._lib.kCCAlignmentError)
 
         with pytest.raises(InternalError):
-            backend._check_response(backend._lib.kCCMemoryFailure)
+            backend._check_cipher_response(backend._lib.kCCMemoryFailure)
 
         with pytest.raises(InternalError):
-            backend._check_response(backend._lib.kCCDecodeError)
+            backend._check_cipher_response(backend._lib.kCCDecodeError)
 
     def test_nonexistent_aead_cipher(self):
         from cryptography.hazmat.backends.commoncrypto.backend import Backend

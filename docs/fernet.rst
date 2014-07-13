@@ -83,7 +83,7 @@ Specifically it uses:
 * :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` in
   :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode with a
   128-bit key for encryption; using
-  :class:`~cryptography.hazmat.primitives.ciphers.PKCS7` padding.
+  :class:`~cryptography.hazmat.primitives.padding.PKCS7` padding.
 * :class:`~cryptography.hazmat.primitives.hmac.HMAC` using
   :class:`~cryptography.hazmat.primitives.hashes.SHA256` for authentication.
 * Initialization vectors are generated using ``os.urandom()``.

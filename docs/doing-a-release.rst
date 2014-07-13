@@ -1,12 +1,19 @@
 Doing a release
 ===============
 
-Doing a release of ``cryptography`` is a two part process.
+Doing a release of ``cryptography`` requires a few steps.
+
+Verifying OpenSSL version
+-------------------------
+
+The release process uses a static build for Windows wheels. Check that the
+Windows Jenkins builders have the latest version of OpenSSL installed
+before performing the release.
 
 Bumping the version number
 --------------------------
 
-The first step in doing a release is bumping the version number in the
+The next step in doing a release is bumping the version number in the
 software.
 
 * Update the version number in ``cryptography/__about__.py``.
@@ -26,8 +33,12 @@ key in order to do a release. Once this has happened:
 * Run ``invoke release {version}``.
 
 The release should now be available on PyPI and a tag should be available in
-the repository. You should verify that ``pip install cryptography`` works
-correctly:
+the repository.
+
+Verifying the release
+---------------------
+
+You should verify that ``pip install cryptography`` works correctly:
 
 .. code-block:: pycon
 
@@ -39,6 +50,10 @@ correctly:
     '...'
 
 Verify that this is the version you just released.
+
+For the Windows wheels check the builds for the ``cryptography-wheel-builder``
+job and verify that the final output for each build shows it loaded and linked
+the expected OpenSSL version.
 
 Post-release tasks
 ------------------
