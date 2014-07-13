@@ -16,7 +16,6 @@ can obtain them with:
 .. doctest::
 
     >>> import os
-    >>> os.urandom(16)
-    '...'
+    >>> iv = os.urandom(16)
 
 .. _`always use your operating system's provided random number generator`: http://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
