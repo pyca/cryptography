@@ -224,43 +224,34 @@ setup_requires_error = ("Requested setup command that needs 'setup_requires' "
                         "free command or option.")
 
 
-class DummyCFFIBuild(CFFIBuild):
+class DummyCFFIBuild(build):
     """
     This class makes it very obvious when ``keywords_with_side_effects()`` has
     incorrectly interpreted the command line arguments to ``setup.py build`` as
     one of the 'side effect free' commands or options.
     """
 
-    def finalize_options(self):
-        build.finalize_options(self)
-
     def run(self):
         raise RuntimeError(setup_requires_error)
 
 
-class DummyCFFIInstall(CFFIInstall):
+class DummyCFFIInstall(install):
     """
     This class makes it very obvious when ``keywords_with_side_effects()`` has
     incorrectly interpreted the command line arguments to ``setup.py install``
     as one of the 'side effect free' commands or options.
     """
 
-    def finalize_options(self):
-        install.finalize_options(self)
-
     def run(self):
         raise RuntimeError(setup_requires_error)
 
 
-class DummyPyTest(PyTest):
+class DummyPyTest(test):
     """
     This class makes it very obvious when ``keywords_with_side_effects()`` has
     incorrectly interpreted the command line arguments to ``setup.py test`` as
     one of the 'side effect free' commands or options.
     """
-
-    def finalize_options(self):
-        test.finalize_options(self)
 
     def run_tests(self):
         raise RuntimeError(setup_requires_error)
