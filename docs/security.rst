@@ -27,6 +27,16 @@ Supported Versions
 At any given time, we will provide security support for the `master`_ branch
 as well as the 2 most recent releases.
 
+New releases for OpenSSL updates
+--------------------------------
+
+As of version 0.5, ``cryptography`` statically links OpenSSL on Windows to ease
+installation. Due to this, ``cryptography`` will release a new version whenever
+OpenSSL has a security or bug fix release to avoid shipping insecure software.
+
+Like all our other releases, this will be announced on the mailing list and we
+strongly recommend that you upgrade as soon as possible.
+
 Disclosure Process
 ------------------
 

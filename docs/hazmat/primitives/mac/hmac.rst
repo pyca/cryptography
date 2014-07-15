@@ -45,8 +45,10 @@ of a message.
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
 
-    .. code-block:: pycon
+    .. doctest::
 
+        >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+        >>> h.update(b"message to hash")
         >>> h.verify(b"an incorrect signature")
         Traceback (most recent call last):
         ...

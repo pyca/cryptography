@@ -29,6 +29,7 @@ introspectability
 invariants
 iOS
 Koblitz
+Lange
 metadata
 namespace
 namespaces
@@ -39,6 +40,7 @@ preprocessors
 pseudorandom
 Schneier
 scrypt
+Tanja
 testability
 Ubuntu
 unencrypted

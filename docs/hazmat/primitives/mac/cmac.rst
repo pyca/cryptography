@@ -45,8 +45,10 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
 
-    .. code-block:: pycon
+    .. doctest::
 
+        >>> c = cmac.CMAC(algorithms.AES(key), backend=default_backend())
+        >>> c.update(b"message to authenticate")
         >>> c.verify(b"an incorrect signature")
         Traceback (most recent call last):
         ...

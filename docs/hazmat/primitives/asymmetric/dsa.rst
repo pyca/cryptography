@@ -119,6 +119,16 @@ Numbers
 
         The generator.
 
+    .. method:: parameters(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+            provider.
+
 .. class:: DSAPublicNumbers(y, parameter_numbers)
 
     .. versionadded:: 0.5
@@ -137,6 +147,16 @@ Numbers
 
         The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
         associated with the public key.
+
+    .. method:: public_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+            provider.
 
 .. class:: DSAPrivateNumbers(x, public_numbers)
 
@@ -162,6 +182,16 @@ Numbers
         The :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
         associated with the private key.
 
+    .. method:: private_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            provider.
+
 Deprecated Concrete Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -170,7 +200,6 @@ providers of the
 :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`,
 :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`, and
 :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` interfaces.
->>>>>>> deprecate concrete DSA classes and update DSA docs
 
 .. class:: DSAParameters(modulus, subgroup_order, generator)
 

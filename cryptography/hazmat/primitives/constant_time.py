@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import hmac
 import sys
 
 import cffi
@@ -53,9 +54,18 @@ _lib = _ffi.verify(
     ext_package="cryptography",
 )
 
-
-def bytes_eq(a, b):
-    if not isinstance(a, bytes) or not isinstance(b, bytes):
+if hasattr(hmac, "compare_digest"):
+    def bytes_eq(a, b):
+        if not isinstance(a, bytes) or not isinstance(b, bytes):
             raise TypeError("a and b must be bytes.")
 
-    return _lib.Cryptography_constant_time_bytes_eq(a, len(a), b, len(b)) == 1
+        return hmac.compare_digest(a, b)
+
+else:
+    def bytes_eq(a, b):
+        if not isinstance(a, bytes) or not isinstance(b, bytes):
+            raise TypeError("a and b must be bytes.")
+
+        return _lib.Cryptography_constant_time_bytes_eq(
+            a, len(a), b, len(b)
+        ) == 1

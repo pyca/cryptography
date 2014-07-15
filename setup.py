@@ -110,8 +110,9 @@ class PyTest(test):
         # This means there's a vectors/ folder with the package in here.
         # cd into it, install the vectors package and then refresh sys.path
         if VECTORS_DEPENDENCY not in test_requirements:
-            subprocess.Popen([sys.executable, "setup.py", "install"],
-                             cwd="vectors").communicate()
+            subprocess.check_call(
+                [sys.executable, "setup.py", "install"], cwd="vectors"
+            )
             pkg_resources.get_distribution("cryptography_vectors").activate()
 
     def run_tests(self):

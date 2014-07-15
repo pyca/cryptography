@@ -30,10 +30,7 @@ from cryptography.hazmat.primitives.interfaces import (
 
 
 def _get_rsa_pss_salt_length(pss, key_size, digest_size):
-    if pss._mgf._salt_length is not None:
-        salt = pss._mgf._salt_length
-    else:
-        salt = pss._salt_length
+    salt = pss._salt_length
 
     if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
         # bit length - 1 per RFC 3447
