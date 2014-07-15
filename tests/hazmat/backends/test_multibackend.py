@@ -21,9 +21,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
-
-    ICipherBackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -204,7 +202,7 @@ class DummyPKCS8SerializationBackend(object):
 
 class TestMultiBackend(object):
     def test_verifyClass(self):
-        verifyClass(ICipherBackend, MultiBackend)
+        verifyClass(CipherBackend, MultiBackend)
 
     def test_ciphers(self):
         backend = MultiBackend([
