@@ -71,6 +71,21 @@ class HMACBackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class CMACBackend(object):
+    @abc.abstractmethod
+    def cmac_algorithm_supported(self, algorithm):
+        """
+        Returns True if the block cipher is supported for CMAC by this backend
+        """
+
+    @abc.abstractmethod
+    def create_cmac_ctx(self, algorithm):
+        """
+        Create a CMACContext for calculating a message authentication code.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class PBKDF2HMACBackend(object):
     @abc.abstractmethod
     def pbkdf2_hmac_supported(self, algorithm):
@@ -222,41 +237,6 @@ class DSABackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class TraditionalOpenSSLSerializationBackend(object):
-    @abc.abstractmethod
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        """
-        Load a private key from PEM encoded data, using password if the data
-        is encrypted.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class PKCS8SerializationBackend(object):
-    @abc.abstractmethod
-    def load_pkcs8_pem_private_key(self, data, password):
-        """
-        Load a private key from PEM encoded data, using password if the data
-        is encrypted.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class CMACBackend(object):
-    @abc.abstractmethod
-    def cmac_algorithm_supported(self, algorithm):
-        """
-        Returns True if the block cipher is supported for CMAC by this backend
-        """
-
-    @abc.abstractmethod
-    def create_cmac_ctx(self, algorithm):
-        """
-        Create a CMACContext for calculating a message authentication code.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
 class EllipticCurveBackend(object):
     @abc.abstractmethod
     def elliptic_curve_signature_algorithm_supported(
@@ -289,4 +269,24 @@ class EllipticCurveBackend(object):
     def elliptic_curve_private_key_from_numbers(self, numbers):
         """
         Return an EllipticCurvePublicKey provider using the given numbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class TraditionalOpenSSLSerializationBackend(object):
+    @abc.abstractmethod
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        """
+        Load a private key from PEM encoded data, using password if the data
+        is encrypted.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class PKCS8SerializationBackend(object):
+    @abc.abstractmethod
+    def load_pkcs8_pem_private_key(self, data, password):
+        """
+        Load a private key from PEM encoded data, using password if the data
+        is encrypted.
         """
