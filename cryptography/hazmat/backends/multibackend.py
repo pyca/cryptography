@@ -239,6 +239,18 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("DSA is not supported by the backend.",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
+    def load_dsa_public_numbers(self, numbers):
+        for b in self._filtered_backends(DSABackend):
+            return b.load_dsa_public_numbers(numbers)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def load_dsa_private_numbers(self, numbers):
+        for b in self._filtered_backends(DSABackend):
+            return b.load_dsa_private_numbers(numbers)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
     def cmac_algorithm_supported(self, algorithm):
         return any(
             b.cmac_algorithm_supported(algorithm)
