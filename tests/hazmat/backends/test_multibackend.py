@@ -144,6 +144,12 @@ class DummyDSABackend(object):
     def dsa_parameters_supported(self, p, q, g):
         pass
 
+    def load_dsa_private_numbers(self, numbers):
+        pass
+
+    def load_dsa_public_numbers(self, numbers):
+        pass
+
 
 @utils.register_interface(CMACBackend)
 class DummyCMACBackend(object):
@@ -365,6 +371,8 @@ class TestMultiBackend(object):
         backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
         backend.dsa_hash_supported(hashes.SHA1())
         backend.dsa_parameters_supported(1, 2, 3)
+        backend.load_dsa_private_numbers("numbers")
+        backend.load_dsa_public_numbers("numbers")
 
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
@@ -403,6 +411,16 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.dsa_parameters_supported('p', 'q', 'g')
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_dsa_private_numbers("numbers")
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_dsa_public_numbers("numbers")
 
     def test_cmac(self):
         backend = MultiBackend([
