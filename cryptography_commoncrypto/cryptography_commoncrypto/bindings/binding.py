@@ -23,7 +23,7 @@ class Binding(object):
     """
     CommonCrypto API wrapper.
     """
-    _module_prefix = "cryptography.hazmat.bindings.commoncrypto."
+    _module_prefix = "cryptography_openssl.bindings."
     _modules = [
         "cf",
         "common_digest",

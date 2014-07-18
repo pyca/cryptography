@@ -17,7 +17,7 @@ __all__ = [
     "__email__", "__license__", "__copyright__",
 ]
 
-__title__ = "cryptography"
+__title__ = "cryptography_core"
 __summary__ = ("cryptography is a package which provides cryptographic recipes"
                " and primitives to Python developers.")
 __uri__ = "https://github.com/pyca/cryptography"

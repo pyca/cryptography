@@ -43,7 +43,7 @@ class Binding(object):
     """
     OpenSSL API wrapper.
     """
-    _module_prefix = "cryptography.hazmat.bindings.openssl."
+    _module_prefix = "cryptography_openssl.bindings."
     _modules = [
         "aes",
         "asn1",

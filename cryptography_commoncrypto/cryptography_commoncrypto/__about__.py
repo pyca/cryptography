@@ -10,10 +10,22 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import absolute_import, division, print_function
 
-from cryptography_openssl.backend.backend import backend
+__all__ = [
+    "__title__", "__summary__", "__uri__", "__version__", "__author__",
+    "__email__", "__license__", "__copyright__",
+]
 
+__title__ = "cryptography_commoncrypto"
+__summary__ = ("cryptography is a package which provides cryptographic recipes"
+               " and primitives to Python developers.")
+__uri__ = "https://github.com/pyca/cryptography"
 
-__all__ = ["backend"]
+__version__ = "0.6.dev1"
+
+__author__ = "The cryptography developers"
+__email__ = "cryptography-dev@python.org"
+
+__license__ = "Apache License, Version 2.0"
+__copyright__ = "Copyright 2013-2014 {0}".format(__author__)
