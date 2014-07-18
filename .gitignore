@@ -5,6 +5,9 @@ dist/
 htmlcov/
 cryptography/_cffi__*
 cryptography/_Cryptography_cffi_*
+cryptography_core/cryptography/_Cryptography_cffi_*
+cryptography_commoncrypto/_Cryptography_cffi_*
+cryptography_openssl/_Cryptography_cffi_*
 .tox/
 .cache/
 .coverage
