@@ -64,4 +64,11 @@ setup(
     include_package_data=True,
 
     install_requires="cryptography_core",
+    entry_points = {
+        "cryptography.hazmat.backends":
+        "commoncrypto = cryptography_commoncrypto.backend:backend",
+
+        "cryptography.hazmat.bindings":
+        "commoncrypto = cryptography_commoncrypto.bindings.binding:Binding"
+    }
 )

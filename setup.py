@@ -27,18 +27,18 @@ from setuptools.command.test import test
 
 base_dir = os.path.dirname(__file__)
 
-about = {}
-with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
-    exec(f.read(), about)
+# about = {}
+# with open(os.path.join(base_dir, "__about__.py")) as f:
+#     exec(f.read(), about)
 
 
 CFFI_DEPENDENCY = "cffi>=0.8"
 SIX_DEPENDENCY = "six>=1.4.1"
-VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
+VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format("0.6.dev1")
 
 requirements = [
     CFFI_DEPENDENCY,
-    SIX_DEPENDENCY
+    SIX_DEPENDENCY,
 ]
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
@@ -55,71 +55,71 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
-def get_ext_modules():
-    from cryptography.hazmat.bindings.commoncrypto.binding import (
-        Binding as CommonCryptoBinding
-    )
-    from cryptography.hazmat.bindings.openssl.binding import (
-        Binding as OpenSSLBinding
-    )
-    from cryptography.hazmat.primitives import constant_time, padding
+# def get_ext_modules():
+#     from cryptography.hazmat.bindings.commoncrypto.binding import (
+#         Binding as CommonCryptoBinding
+#     )
+#     from cryptography.hazmat.bindings.openssl.binding import (
+#         Binding as OpenSSLBinding
+#     )
+#     from cryptography.hazmat.primitives import constant_time, padding
 
-    ext_modules = [
-        OpenSSLBinding().ffi.verifier.get_extension(),
-        constant_time._ffi.verifier.get_extension(),
-        padding._ffi.verifier.get_extension()
-    ]
-    if CommonCryptoBinding.is_available():
-        ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
-    return ext_modules
-
-
-class CFFIBuild(build):
-    """
-    This class exists, instead of just providing ``ext_modules=[...]`` directly
-    in ``setup()`` because importing cryptography requires we have several
-    packages installed first.
-
-    By doing the imports here we ensure that packages listed in
-    ``setup_requires`` are already installed.
-    """
-
-    def finalize_options(self):
-        self.distribution.ext_modules = get_ext_modules()
-        build.finalize_options(self)
+#     ext_modules = [
+#         OpenSSLBinding().ffi.verifier.get_extension(),
+#         constant_time._ffi.verifier.get_extension(),
+#         padding._ffi.verifier.get_extension()
+#     ]
+#     if CommonCryptoBinding.is_available():
+#         ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
+#     return ext_modules
 
 
-class CFFIInstall(install):
-    """
-    As a consequence of CFFIBuild and it's late addition of ext_modules, we
-    need the equivalent for the ``install`` command to install into platlib
-    install-dir rather than purelib.
-    """
+# class CFFIBuild(build):
+#     """
+#     This class exists, instead of just providing ``ext_modules=[...]`` directly
+#     in ``setup()`` because importing cryptography requires we have several
+#     packages installed first.
 
-    def finalize_options(self):
-        self.distribution.ext_modules = get_ext_modules()
-        install.finalize_options(self)
+#     By doing the imports here we ensure that packages listed in
+#     ``setup_requires`` are already installed.
+#     """
+
+#     def finalize_options(self):
+#         self.distribution.ext_modules = get_ext_modules()
+#         build.finalize_options(self)
 
 
-class PyTest(test):
-    def finalize_options(self):
-        test.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
+# class CFFIInstall(install):
+#     """
+#     As a consequence of CFFIBuild and it's late addition of ext_modules, we
+#     need the equivalent for the ``install`` command to install into platlib
+#     install-dir rather than purelib.
+#     """
 
-        # This means there's a vectors/ folder with the package in here.
-        # cd into it, install the vectors package and then refresh sys.path
-        if VECTORS_DEPENDENCY not in test_requirements:
-            subprocess.check_call(
-                [sys.executable, "setup.py", "install"], cwd="vectors"
-            )
-            pkg_resources.get_distribution("cryptography_vectors").activate()
+#     def finalize_options(self):
+#         self.distribution.ext_modules = get_ext_modules()
+#         install.finalize_options(self)
 
-    def run_tests(self):
-        # Import here because in module scope the eggs are not loaded.
-        import pytest
-        errno = pytest.main(self.test_args)
-        sys.exit(errno)
+
+# class PyTest(test):
+#     def finalize_options(self):
+#         test.finalize_options(self)
+#         self.test_args = []
+#         self.test_suite = True
+
+#         # This means there's a vectors/ folder with the package in here.
+#         # cd into it, install the vectors package and then refresh sys.path
+#         if VECTORS_DEPENDENCY not in test_requirements:
+#             subprocess.check_call(
+#                 [sys.executable, "setup.py", "install"], cwd="vectors"
+#             )
+#             pkg_resources.get_distribution("cryptography_vectors").activate()
+
+#     def run_tests(self):
+#         # Import here because in module scope the eggs are not loaded.
+#         import pytest
+#         errno = pytest.main(self.test_args)
+#         sys.exit(errno)
 
 
 with open(os.path.join(base_dir, "README.rst")) as f:
@@ -127,16 +127,16 @@ with open(os.path.join(base_dir, "README.rst")) as f:
 
 
 setup(
-    name=about["__title__"],
-    version=about["__version__"],
+    name="cryptography",
+    version="0.6.dev1",
 
-    description=about["__summary__"],
-    long_description=long_description,
-    license=about["__license__"],
-    url=about["__uri__"],
+    # description=about["__summary__"],
+    # long_description=long_description,
+    # license=about["__license__"],
+    # url=about["__uri__"],
 
-    author=about["__author__"],
-    author_email=about["__email__"],
+    # author=about["__author__"],
+    # author_email=about["__email__"],
 
     classifiers=[
         "Intended Audience :: Developers",
@@ -168,10 +168,10 @@ setup(
 
     # for cffi
     zip_safe=False,
-    ext_package="cryptography",
-    cmdclass={
-        "build": CFFIBuild,
-        "install": CFFIInstall,
-        "test": PyTest,
-    }
+#     ext_package="cryptography",
+#     cmdclass={
+#         "build": CFFIBuild,
+#         "install": CFFIInstall,
+#         "test": PyTest,
+#     }
 )

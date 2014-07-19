@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.backends.commoncrypto.backend import backend
+from cryptography_commoncrypto.backend.backend import backend
 
 
 __all__ = ["backend"]
