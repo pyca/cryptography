@@ -62,4 +62,11 @@ setup(
     include_package_data=True,
 
     install_requires="cryptography_core",
+    entry_points = {
+        "cryptography.hazmat.backends":
+        "openssl = cryptography_openssl.backend:backend",
+
+        "cryptography.hazmat.bindings":
+        "openssl = cryptography_openssl.bindings.binding:Binding"
+    }
 )
