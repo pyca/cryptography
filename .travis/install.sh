@@ -33,8 +33,6 @@ if [[ "${TOX_ENV}" == "docs" ]]; then
 fi
 
 if [[ "$DARWIN" = true ]]; then
-    brew update
-    brew install pyenv
     if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     case "${TOX_ENV}" in
         py26)
@@ -48,8 +46,8 @@ if [[ "$DARWIN" = true ]]; then
             sudo pip install virtualenv
             ;;
         pypy)
-            pyenv install pypy-2.3
-            pyenv global pypy-2.3
+            pyenv install pypy-2.3.1
+            pyenv global pypy-2.3.1
             pip install virtualenv
             ;;
         py32)
@@ -63,8 +61,8 @@ if [[ "$DARWIN" = true ]]; then
             pip install virtualenv
             ;;
         py34)
-            pyenv install 3.4.0
-            pyenv global 3.4.0
+            pyenv install 3.4.1
+            pyenv global 3.4.1
             pip install virtualenv
             ;;
         docs)

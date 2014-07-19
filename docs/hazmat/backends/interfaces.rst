@@ -148,6 +148,33 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
 
 
+.. class:: CMACBackend
+
+    .. versionadded:: 0.4
+
+    A backend with methods for using CMAC
+
+    .. method:: cmac_algorithm_supported(algorithm)
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+            provider.
+        :return: Returns True if the block cipher is supported for CMAC by this backend
+
+    .. method:: create_cmac_ctx(algorithm)
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.interfaces.CMACContext` that
+        uses the specified ``algorithm`` to calculate a message authentication code.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
+
+
 .. class:: PBKDF2HMACBackend
 
     .. versionadded:: 0.2
@@ -364,29 +391,6 @@ A specific ``backend`` may provide one or more of these interfaces.
             any backend specific criteria are not met.
 
 
-.. class:: TraditionalOpenSSLSerializationBackend
-
-    .. versionadded:: 0.3
-
-    A backend with methods for working with OpenSSL's "traditional" PKCS #1
-    style key serialization.
-
-    .. method:: load_openssl_pem_private_key(data, password)
-
-        :param bytes data: PEM data to deserialize.
-
-        :param bytes password: The password to use if this data is encrypted.
-            Should be None if the data is not encrypted.
-
-        :return: A new instance of the appropriate private key or public key
-            that the serialized data contains.
-
-        :raises ValueError: If the data could not be deserialized correctly.
-
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
-            encrypted with an unsupported algorithm.
-
-
 .. class:: DSABackend
 
     .. versionadded:: 0.4
@@ -524,56 +528,6 @@ A specific ``backend`` may provide one or more of these interfaces.
             any backend specific criteria are not met.
 
 
-
-.. class:: CMACBackend
-
-    .. versionadded:: 0.4
-
-    A backend with methods for using CMAC
-
-    .. method:: cmac_algorithm_supported(algorithm)
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
-            provider.
-        :return: Returns True if the block cipher is supported for CMAC by this backend
-
-    .. method:: create_cmac_ctx(algorithm)
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.interfaces.CMACContext` that
-        uses the specified ``algorithm`` to calculate a message authentication code.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
-
-
-.. class:: PKCS8SerializationBackend
-
-    .. versionadded:: 0.5
-
-    A backend with methods for working with PKCS #8 key serialization.
-
-    .. method:: load_pkcs8_pem_private_key(data, password)
-
-        :param bytes data: PEM data to deserialize.
-
-        :param bytes password: The password to use if this data is encrypted.
-            Should be None if the data is not encrypted.
-
-        :return: A new instance of the appropriate private key or public key
-            that the serialized data contains.
-
-        :raises ValueError: If the data could not be deserialized correctly.
-
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
-            encrypted with an unsupported algorithm.
-
-
 .. class:: EllipticCurveBackend
 
     .. versionadded:: 0.5
@@ -623,3 +577,48 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
             provider.
+
+.. class:: TraditionalOpenSSLSerializationBackend
+
+    .. versionadded:: 0.3
+
+    A backend with methods for working with OpenSSL's "traditional" PKCS #1
+    style key serialization.
+
+    .. method:: load_openssl_pem_private_key(data, password)
+
+        :param bytes data: PEM data to deserialize.
+
+        :param bytes password: The password to use if this data is encrypted.
+            Should be None if the data is not encrypted.
+
+        :return: A new instance of the appropriate private key or public key
+            that the serialized data contains.
+
+        :raises ValueError: If the data could not be deserialized correctly.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
+            encrypted with an unsupported algorithm.
+
+
+.. class:: PKCS8SerializationBackend
+
+    .. versionadded:: 0.5
+
+    A backend with methods for working with PKCS #8 key serialization.
+
+    .. method:: load_pkcs8_pem_private_key(data, password)
+
+        :param bytes data: PEM data to deserialize.
+
+        :param bytes password: The password to use if this data is encrypted.
+            Should be None if the data is not encrypted.
+
+        :return: A new instance of the appropriate private key or public key
+            that the serialized data contains.
+
+        :raises ValueError: If the data could not be deserialized correctly.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
+            encrypted with an unsupported algorithm.
+
