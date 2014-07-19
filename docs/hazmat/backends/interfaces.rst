@@ -578,6 +578,23 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
             provider.
 
+.. class:: PEMSerializationBackend
+
+    .. versionadded:: 0.6
+
+    A backend with methods for working with any PEM encoded keys.
+
+    .. method:: load_pem_private_key(data, password)
+
+        :param bytes data: PEM data to load.
+        :param bytes password: The password to use if the data is encrypted.
+            Should be ``None`` is the data is not encrypted.
+        :return: A new instance of the appropriate type of private key that the
+            serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
+            encrypted with an unsupported algorithm.
+
 .. class:: TraditionalOpenSSLSerializationBackend
 
     .. versionadded:: 0.3
@@ -592,8 +609,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param bytes password: The password to use if this data is encrypted.
             Should be None if the data is not encrypted.
 
-        :return: A new instance of the appropriate private key or public key
-            that the serialized data contains.
+        :return: A new instance of the appropriate type of private key that the
+            serialized data contains.
 
         :raises ValueError: If the data could not be deserialized correctly.
 
