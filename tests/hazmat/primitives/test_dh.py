@@ -86,5 +86,9 @@ def test_dh_numbers():
 @pytest.mark.dh
 class TestDH(object):
     def test_generate_dh_parameters(self, backend):
-        parameters = dh.generate_parameters(1024, backend)
+        parameters = dh.generate_parameters(2, 512, backend)
         assert isinstance(parameters, interfaces.DHParameters)
+
+        key = parameters.generate_private_key()
+        assert isinstance(key, interfaces.DHPrivateKey)
+        assert key.key_size == 512
