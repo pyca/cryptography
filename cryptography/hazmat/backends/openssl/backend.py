@@ -33,7 +33,7 @@ from cryptography.hazmat.backends.openssl.ciphers import (
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
-    _DHParameters, _DHPrivateKey, _DHPublicKey, _DHKeyAgreementContext
+    _DHParameters, _DHPrivateKey, _DHPublicKey, _DHKeyExchangeContext
 )
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey,

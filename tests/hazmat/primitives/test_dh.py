@@ -52,7 +52,7 @@ def test_dh_numbers():
         params, 1
     )
 
-    assert public.parameters is params
+    assert public.parameter_numbers is params
     assert public.public_value == 1
 
     with pytest.raises(TypeError):
@@ -85,10 +85,29 @@ def test_dh_numbers():
 
 @pytest.mark.dh
 class TestDH(object):
-    def test_generate_dh_parameters(self, backend):
+    def test_generate_dh(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         assert isinstance(parameters, interfaces.DHParameters)
 
         key = parameters.generate_private_key()
         assert isinstance(key, interfaces.DHPrivateKey)
         assert key.key_size == 512
+
+        public = key.public_key()
+        assert isinstance(public, interfaces.DHPublicKey)
+        assert public.key_size == 512
+
+    def test_exchange(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        assert isinstance(parameters, interfaces.DHParameters)
+
+        key1 = parameters.generate_private_key()
+        key2 = parameters.generate_private_key()
+
+        exch = key1.exchange()
+        symkey1 = exch.agree(key2.public_key().public_numbers.public_value)
+        assert symkey1
+
+        exch = key2.exchange()
+        symkey2 = exch.agree(key1.public_key().public_numbers.public_value)
+        assert symkey1 == symkey2

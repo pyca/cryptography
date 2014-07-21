@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import six
+
 
 def generate_parameters(generator, key_size, backend):
     return backend.generate_dh_parameters(generator, key_size)
@@ -44,15 +46,15 @@ class DHPrivateNumbers(object):
 
 
 class DHPublicNumbers(object):
-    def __init__(self, parameters, public_value):
-        if not isinstance(parameters, DHParameterNumbers):
+    def __init__(self, parameter_numbers, public_value):
+        if not isinstance(parameter_numbers, DHParameterNumbers):
             raise TypeError(
                 "parameters must be an instance of DHParameterNumbers.")
 
-        if not isinstance(public_value, int):
+        if not isinstance(public_value, six.integer_types):
             raise TypeError("public_value must be an integer.")
 
-        self._parameters = parameters
+        self._parameters = parameter_numbers
         self._public_value = public_value
 
     @property
@@ -60,15 +62,15 @@ class DHPublicNumbers(object):
         return self._public_value
 
     @property
-    def parameters(self):
+    def parameter_numbers(self):
         return self._parameters
 
 
 class DHParameterNumbers(object):
     def __init__(self, modulus, generator):
         if (
-            not isinstance(modulus, int) or
-            not isinstance(generator, int)
+            not isinstance(modulus, six.integer_types) or
+            not isinstance(generator, six.integer_types)
         ):
             raise TypeError("modulus and generator must be integers")
 
