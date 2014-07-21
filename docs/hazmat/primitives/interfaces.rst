@@ -696,6 +696,115 @@ Key derivation functions
             the provided signature does not match the expected signature.
 
 
+Diffie-Hellman key exchange
+---------------------------
+
+.. class:: DHParameters
+
+    .. versionadded:: 0.8
+
+
+.. class:: DHParametersWithNumbers
+
+    .. versionadded:: 0.8
+
+    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+
+    .. method:: parameter_numbers()
+
+        Return the numbers that make up this set of parameters.
+
+        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+
+
+.. class:: DHPrivateKey
+
+    .. versionadded:: 0.8
+
+    .. attribute:: key_size()
+
+        The bit length of the prime modulus.
+
+    .. method:: public_key()
+
+        Return the public key associated with this private key.
+
+        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
+
+    .. method:: parameters()
+
+        Return the parameters associated with this private key.
+
+        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+
+    .. method:: exchange(exchange_algorithm)
+
+        :param exchange_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.DHExchangeAlgorithm`
+            provider.
+
+        :returns: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.KeyExchangeContext`
+            provider.
+
+
+.. class:: DHPrivateKeyWithNumbers
+
+    .. versionadded:: 0.8
+
+    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Return the numbers that make up this private key.
+
+        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
+
+
+.. class:: DHPublicKey
+
+    .. versionadded:: 0.8
+
+    .. attribute:: key_size()
+
+        The bit length of the prime modulus.
+
+    .. method:: parameters()
+
+        Return the parameters associated with this private key.
+
+        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+
+
+.. class:: DHPublicKeyWithNumbers
+
+    .. versionadded:: 0.8
+
+    Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
+
+    .. method:: public_numbers()
+
+        Return the numbers that make up this public key.
+
+        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+
+
+.. class:: DHExchangeAlgorithm
+
+    .. versionadded:: 0.8
+
+    A DH algorithm variant.
+
+
+.. class:: KeyExchangeContext
+
+    .. versionadded:: 0.8
+
+    .. method:: agree(public_value)
+
+        :return bytes: The agreed key.
+
+
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm

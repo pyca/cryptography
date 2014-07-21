@@ -527,3 +527,84 @@ class X509Certificate(object):
         """
         Not after time (represented as UTC datetime)
         """
+
+
+class DHParameters(object):
+    pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHParametersWithNumbers(DHParameters):
+    @abc.abstractmethod
+    def parameter_numbers(self):
+        """
+        Returns a DHParameterNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPrivateKey(object):
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the prime modulus.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The DHPublicKey associated with this private key.
+        """
+
+    @abc.abstractmethod
+    def parameters(self):
+        """
+        The DHParameters object associated with this private key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPrivateKeyWithNumbers(DHPrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns a DHPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPublicKey(object):
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the prime modulus.
+        """
+
+    @abc.abstractmethod
+    def parameters(self):
+        """
+        The DHParameters object associated with this public key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPublicKeyWithNumbers(DHPublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns a DHPublicNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHExchangeAlgorithm(object):
+    pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class KeyExchangeContext(object):
+    @abc.abstractmethod
+    def agree(self, public_value):
+        """
+        Returns the agreed key.
+        """
