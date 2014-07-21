@@ -32,6 +32,9 @@ from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
+from cryptography.hazmat.backends.openssl.dh import (
+    _DHParameters, _DHPrivateKey, _DHPublicKey, _DHKeyAgreementContext
+)
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey,
     _DSASignatureContext, _DSAVerificationContext
