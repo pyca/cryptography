@@ -35,3 +35,66 @@ class _DHKeyAgreementContext(object):
         )
         assert res != -1
         return ffi.buffer(buf)[:key_size]
+
+
+class _DHParameters(object):
+    def __init__(self, backend, dh_cdata):
+        self._backend = backend
+        self._dh_cdata = dh_cdata
+
+    def parameter_numbers(self):
+        return dh.DHParameterNumbers(
+            modulus=self._backend._bn_to_int(self._dh_cdata.p),
+            generator=self._backend._bn_to_int(self._dh_cdata.g)
+        )
+
+    def generate_private_key(self):
+        return self._backend.generate_dh_private_key(self)
+
+
+class _DHPrivateKey(object):
+    def __init__(self, backend, dh_cdata):
+        self._backend = backend
+        self._dh_cdata = dh_cdata
+        self._key_size = self._backend._lib.DH_key_size(dh_cdata)
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+    def private_numbers(self):
+        return dh.DHPrivateNumbers(
+            public_numbers=dh.DHPublicNumbers(
+                parameter_numbers=dh.DHParameterNumbers(
+                    modulus=self._backend._bn_to_int(self._dh_cdata.p),
+                    generator=self._backend._bn_to_int(self._dh_cdata.g)
+                ),
+                public_value=self._backend._bn_to_int(self._dh_cdata.pub_key)
+            ),
+            private_value=self._backend._bn_to_int(self._dh_cdata.priv_key)
+        )
+
+    def public_key(self):
+        dh_cdata = self._backend._lib.DH_new()
+        assert dh_cdata != self._backend._ffi.NULL
+        dh_cdata = self._backend._ffi.gc(
+            dh_cdata, self._backend._lib.DH_free
+        )
+        dh_cdata.p = self._backend._lib.BN_dup(self._dh_cdata.p)
+        dh_cdata.g = self._backend._lib.BN_dup(self._dh_cdata.g)
+        dh_cdata.pub_key = self._backend._lib.BN_dup(self._dh_cdata.pub_key)
+        return _DSAPublicKey(self._backend, dh_cdata)
+
+    def parameters(self):
+        dh_cdata = self._backend._lib.DH_new()
+        assert dh_cdata != self._backend._ffi.NULL
+        dh_cdata = self._backend._ffi.gc(
+            dh_cdata, self._backend._lib.DH_free
+        )
+        dh_cdata.p = self._backend._lib.BN_dup(self._dh_cdata.p)
+        dh_cdata.g = self._backend._lib.BN_dup(self._dh_cdata.g)
+        return _DHParameters(self._backend, dh_cdata)
+
+
+class _DHPublicKey(object):
+    pass
