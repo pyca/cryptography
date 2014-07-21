@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import dh
 
 
@@ -37,6 +38,7 @@ class _DHKeyAgreementContext(object):
         return ffi.buffer(buf)[:key_size]
 
 
+@utils.register_interface(interfaces.DHParameters)
 class _DHParameters(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
@@ -52,11 +54,12 @@ class _DHParameters(object):
         return self._backend.generate_dh_private_key(self)
 
 
+@utils.register_interface(interfaces.DHPrivateKeyWithNumbers)
 class _DHPrivateKey(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
-        self._key_size = self._backend._lib.DH_key_size(dh_cdata)
+        self._key_size = self._backend._lib.DH_size(dh_cdata) * 8
 
     @property
     def key_size(self):
@@ -96,5 +99,32 @@ class _DHPrivateKey(object):
         return _DHParameters(self._backend, dh_cdata)
 
 
+@utils.register_interface(interfaces.DHPublicKeyWithNumbers)
 class _DHPublicKey(object):
-    pass
+    def __init__(self, backend, dsa_cdata):
+        self._backend = backend
+        self._dsa_cdata = dsa_cdata
+        self._key_size = self._backend._lib.DH_size(dh_cdata) * 8
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+    def public_numbers(self):
+        return dsa.DHPublicNumbers(
+            parameter_numbers=dsa.DHParameterNumbers(
+                modulus=self._backend._bn_to_int(self._dsa_cdata.p),
+                generator=self._backend._bn_to_int(self._dsa_cdata.g)
+            ),
+            public_value=self._backend._bn_to_int(self._dsa_cdata.pub_key)
+        )
+
+    def parameters(self):
+        dh_cdata = self._backend._lib.DH_new()
+        assert dh_cdata != self._backend._ffi.NULL
+        dh_cdata = self._backend._ffi.gc(
+            dh_cdata, self._backend._lib.DH_free
+        )
+        dh_cdata.p = self._backend._lib.BN_dup(self._dh_cdata.p)
+        dh_cdata.g = self._backend._lib.BN_dup(self._dh_cdata.g)
+        return _DHParameters(self._backend, dh_cdata)

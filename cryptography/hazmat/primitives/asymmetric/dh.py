@@ -14,12 +14,12 @@
 from __future__ import absolute_import, division, print_function
 
 
-def generate_parameters(key_size, backend):
-    return backend.generate_dh_parameters(2, key_size)
+def generate_parameters(generator, key_size, backend):
+    return backend.generate_dh_parameters(generator, key_size)
 
 
-def generate_private_key(key_size, backend):
-    return backend.generate_dh_private_key_and_parameters(2, key_size)
+def generate_private_key(generator, key_size, backend):
+    return backend.generate_dh_private_key_and_parameters(generator, key_size)
 
 
 class DHPrivateNumbers(object):
