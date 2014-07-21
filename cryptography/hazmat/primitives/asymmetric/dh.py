@@ -55,7 +55,7 @@ class DHPublicNumbers(object):
         return self._parameters
 
 
-class DHParameters(object):
+class DHParameterNumbers(object):
     def __init__(self, modulus, generator):
         if (
             not isinstance(modulus, int) or

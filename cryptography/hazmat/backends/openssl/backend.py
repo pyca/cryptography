@@ -1058,6 +1058,41 @@ class Backend(object):
 
         return ctx
 
+    def generate_dh_parameters(self, generator, key_size):
+        if key_size < 512:
+            raise ValueError("DH key_size must be at least 512 bits")
+
+        dh_param_cdata = self._lib.DH_new()
+        assert dh_param_cdata != self._ffi.NULL
+        dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
+
+        res = self._lib.DH_generate_parameters_ex(
+            dh_param_cdata
+            key_size,
+            generator,
+            self._ffi.NULL
+        )
+        assert res == 1
+
+        return _DHParameters(self, dh_param_cdata)
+
+    def generate_dh_private_key(self, parameters):
+        dh_key_cdata = self._lib.DH_new()
+        assert dh_key_cdata != self._ffi.NULL
+        dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
+
+        dh_key_cdata.p = self._lib.BN_dup(parameters._dh_cdata.p)
+        dh_key_cdata.q = self._lib.BN_dup(parameters._dh_cdata.q)
+
+        res = DH_generate_key(dh_key_cdata)
+        assert res == 1
+
+        return _DHPrivateKey(self, dh_key_cdata)
+
+    def generate_dh_private_key_and_parameters(self, key_size):
+        return self.generate_dh_private_key(
+            self.generate_dh_parameters(key_size))
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):
