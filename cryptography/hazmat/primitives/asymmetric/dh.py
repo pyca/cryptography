@@ -14,6 +14,14 @@
 from __future__ import absolute_import, division, print_function
 
 
+def generate_parameters(key_size, backend):
+    return backend.generate_dh_parameters(2, key_size)
+
+
+def generate_private_key(key_size, backend):
+    return backend.generate_dh_private_key_and_parameters(2, key_size)
+
+
 class DHPrivateNumbers(object):
     def __init__(self, public_numbers, private_value):
         if not isinstance(public_numbers, DHPublicNumbers):
@@ -37,8 +45,9 @@ class DHPrivateNumbers(object):
 
 class DHPublicNumbers(object):
     def __init__(self, parameters, public_value):
-        if not isinstance(parameters, DHParameters):
-            raise TypeError("parameters must be an instance of DHParameters.")
+        if not isinstance(parameters, DHParameterNumbers):
+            raise TypeError(
+                "parameters must be an instance of DHParameterNumbers.")
 
         if not isinstance(public_value, int):
             raise TypeError("public_value must be an integer.")

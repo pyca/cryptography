@@ -1067,7 +1067,7 @@ class Backend(object):
         dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
 
         res = self._lib.DH_generate_parameters_ex(
-            dh_param_cdata
+            dh_param_cdata,
             key_size,
             generator,
             self._ffi.NULL
