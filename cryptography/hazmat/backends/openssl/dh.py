@@ -19,31 +19,13 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import dh
 
 
-class _DHKeyAgreementContext(object):
-    def __init__(self, private_key, backend):
-        self._private_key = private_key
-        self._backend = backend
-
-    def agree(self, public_key):
-        lib = self._backend._lib
-        ffi = self._backend._ffi
-
-        key_size = lib.DH_size(private_key)
-
-        buf = ffi.new("char[]", key_size)
-        res = lib.DH_compute_key(
-            key_buf, public_key, private_key
-        )
-        assert res != -1
-        return ffi.buffer(buf)[:key_size]
-
-
 @utils.register_interface(interfaces.DHParameters)
 class _DHParameters(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
 
+    @property
     def parameter_numbers(self):
         return dh.DHParameterNumbers(
             modulus=self._backend._bn_to_int(self._dh_cdata.p),
@@ -65,6 +47,7 @@ class _DHPrivateKey(object):
     def key_size(self):
         return self._key_size
 
+    @property
     def private_numbers(self):
         return dh.DHPrivateNumbers(
             public_numbers=dh.DHPublicNumbers(
@@ -77,6 +60,9 @@ class _DHPrivateKey(object):
             private_value=self._backend._bn_to_int(self._dh_cdata.priv_key)
         )
 
+    def exchange(self):
+        return _DHKeyExchangeContext(self)
+
     def public_key(self):
         dh_cdata = self._backend._lib.DH_new()
         assert dh_cdata != self._backend._ffi.NULL
@@ -86,7 +72,7 @@ class _DHPrivateKey(object):
         dh_cdata.p = self._backend._lib.BN_dup(self._dh_cdata.p)
         dh_cdata.g = self._backend._lib.BN_dup(self._dh_cdata.g)
         dh_cdata.pub_key = self._backend._lib.BN_dup(self._dh_cdata.pub_key)
-        return _DSAPublicKey(self._backend, dh_cdata)
+        return _DHPublicKey(self._backend, dh_cdata)
 
     def parameters(self):
         dh_cdata = self._backend._lib.DH_new()
@@ -99,24 +85,46 @@ class _DHPrivateKey(object):
         return _DHParameters(self._backend, dh_cdata)
 
 
+class _DHKeyExchangeContext(object):
+    def __init__(self, private_key):
+        self._private_key = private_key
+        self._backend = private_key._backend
+
+    def agree(self, public_value):
+        lib = self._backend._lib
+        ffi = self._backend._ffi
+
+        key_size = lib.DH_size(self._private_key._dh_cdata)
+
+        buf = ffi.new("char[]", key_size)
+        res = lib.DH_compute_key(
+            buf,
+            self._backend._int_to_bn(public_value),
+            self._private_key._dh_cdata
+        )
+        assert res != -1
+        return ffi.buffer(buf)[:key_size]
+
+
 @utils.register_interface(interfaces.DHPublicKeyWithNumbers)
 class _DHPublicKey(object):
-    def __init__(self, backend, dsa_cdata):
+    def __init__(self, backend, dh_cdata):
         self._backend = backend
-        self._dsa_cdata = dsa_cdata
+        self._dh_cdata = dh_cdata
         self._key_size = self._backend._lib.DH_size(dh_cdata) * 8
 
     @property
     def key_size(self):
         return self._key_size
 
+    @property
     def public_numbers(self):
-        return dsa.DHPublicNumbers(
-            parameter_numbers=dsa.DHParameterNumbers(
-                modulus=self._backend._bn_to_int(self._dsa_cdata.p),
-                generator=self._backend._bn_to_int(self._dsa_cdata.g)
+        return dh.DHPublicNumbers(
+            parameter_numbers=dh.DHParameterNumbers(
+                modulus=self._backend._bn_to_int(self._dh_cdata.p),
+                generator=self._backend._bn_to_int(self._dh_cdata.g)
             ),
-            public_value=self._backend._bn_to_int(self._dsa_cdata.pub_key)
+            public_value=self._backend._bn_to_int(self._dh_cdata.pub_key)
         )
 
     def parameters(self):
