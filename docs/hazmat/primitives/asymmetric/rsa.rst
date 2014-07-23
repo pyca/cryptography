@@ -153,6 +153,15 @@ is unavailable.
 
         The public exponent.
 
+    .. method:: public_key(backend)
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns: A new instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            provider.
 
 .. class:: RSAPrivateNumbers(p, q, d, dmp1, dmq1, iqmp, public_numbers)
 
@@ -212,6 +221,16 @@ is unavailable.
 
         A `Chinese remainder theorem`_ coefficient used to speed up RSA
         operations. Calculated as: q\ :sup:`-1` mod p
+
+    .. method:: private_key(backend)
+
+        :param backend: A new instance of a
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+            provider.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            provider.
 
 Handling partial RSA private keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

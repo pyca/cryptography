@@ -13,7 +13,7 @@ Supported platforms
 Currently we test ``cryptography`` on Python 2.6, 2.7, 3.2, 3.3, 3.4 and PyPy
 on these operating systems.
 
-* x86-64 CentOS 6.4 and CentOS 5.x
+* x86-64 CentOS 7.x, 6.4 and CentOS 5.x
 * x86-64 FreeBSD 9.2 and FreeBSD 10
 * OS X 10.9 Mavericks, 10.8 Mountain Lion, and 10.7 Lion
 * x86-64 Ubuntu 12.04 LTS
@@ -29,7 +29,7 @@ OpenSSL releases:
 * ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-freebsd``
-* ``OpenSSL 1.0.1g``
+* ``OpenSSL 1.0.1h``
 * ``OpenSSL 1.0.2 beta``
 
 On Windows

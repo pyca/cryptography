@@ -17,7 +17,8 @@ from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend
+    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend,
+    RSABackend, TraditionalOpenSSLSerializationBackend
 )
 
 
@@ -28,6 +29,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(PBKDF2HMACBackend)
 @utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
+@utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 class MultiBackend(object):
@@ -237,6 +239,18 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("DSA is not supported by the backend.",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
+    def load_dsa_public_numbers(self, numbers):
+        for b in self._filtered_backends(DSABackend):
+            return b.load_dsa_public_numbers(numbers)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def load_dsa_private_numbers(self, numbers):
+        for b in self._filtered_backends(DSABackend):
+            return b.load_dsa_private_numbers(numbers)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
     def cmac_algorithm_supported(self, algorithm):
         return any(
             b.cmac_algorithm_supported(algorithm)
@@ -307,6 +321,17 @@ class MultiBackend(object):
     def load_pkcs8_pem_private_key(self, data, password):
         for b in self._filtered_backends(PKCS8SerializationBackend):
             return b.load_pkcs8_pem_private_key(data, password)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this key serialization.",
+            _Reasons.UNSUPPORTED_SERIALIZATION
+        )
+
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        for b in self._filtered_backends(
+            TraditionalOpenSSLSerializationBackend
+        ):
+            return b.load_traditional_openssl_pem_private_key(data, password)
 
         raise UnsupportedAlgorithm(
             "This backend does not support this key serialization.",

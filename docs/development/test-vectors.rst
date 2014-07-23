@@ -22,6 +22,7 @@ Asymmetric ciphers
 * RSA FIPS 186-2 and PKCS1 v1.5 vulnerability test vectors from `NIST CAVP`_.
 * FIPS 186-2 and FIPS 186-3 DSA test vectors from `NIST CAVP`_.
 * FIPS 186-2 and FIPS 186-3 ECDSA test vectors from `NIST CAVP`_.
+* DH and ECDH test vectors from `NIST CAVP`_.
 * Ed25519 test vectors from the `Ed25519 website_`.
 * OpenSSL PEM RSA serialization vectors from the `OpenSSL example key`_ and
   `GnuTLS key parsing tests`_.

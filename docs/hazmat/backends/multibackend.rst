@@ -12,7 +12,24 @@ MultiBackend
     This class allows you to combine multiple backends into a single backend
     that offers the combined features of all of its constituents.
 
-    .. code-block:: pycon
+    .. testsetup::
+
+        from cryptography import utils
+        from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+        from cryptography.hazmat.backends.interfaces import HashBackend
+        from cryptography.hazmat.backends.openssl.backend import backend as backend2
+
+        @utils.register_interface(HashBackend)
+        class DummyHashBackend(object):
+            def hash_supported(self, algorithm):
+                return False
+
+            def create_hash_ctx(self, algorithm):
+                raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_HASH)
+
+        backend1 = DummyHashBackend()
+
+    .. doctest::
 
         >>> from cryptography.hazmat.backends.multibackend import MultiBackend
         >>> from cryptography.hazmat.primitives import hashes
