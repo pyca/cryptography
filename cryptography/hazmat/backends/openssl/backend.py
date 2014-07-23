@@ -24,9 +24,9 @@ from cryptography.exceptions import (
     InternalError, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    CMACBackend, CipherBackend, DHBackend, DSABackend, EllipticCurveBackend,
+    HMACBackend, HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend,
+    RSABackend, TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext

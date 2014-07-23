@@ -290,3 +290,8 @@ class PKCS8SerializationBackend(object):
         Load a private key from PEM encoded data, using password if the data
         is encrypted.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHBackend(object):
+    pass
