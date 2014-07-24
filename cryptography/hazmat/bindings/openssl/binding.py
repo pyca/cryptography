@@ -96,9 +96,10 @@ class Binding(object):
         # OpenSSL goes by a different library name on different operating
         # systems.
         if sys.platform != "win32":
-            # In some circumstances, the order in which these libs are specified
-            # on the linker command-line is significant; libssl must come before
-            # libcrypto (http://marc.info/?l=openssl-users&m=135361825921871)
+            # In some circumstances, the order in which these libs are
+            # specified on the linker command-line is significant;
+            # libssl must come before libcrypto
+            # (http://marc.info/?l=openssl-users&m=135361825921871)
             libraries = ["ssl", "crypto"]
         else:  # pragma: no cover
             link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
