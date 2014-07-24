@@ -7,6 +7,7 @@ pep8-naming
 pretend
 pyasn1
 pytest
+pytest-random
 requests
 sphinx
 sphinx_rtd_theme
