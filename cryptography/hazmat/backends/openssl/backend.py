@@ -69,6 +69,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
+@utils.register_interface(DHBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(HashBackend)

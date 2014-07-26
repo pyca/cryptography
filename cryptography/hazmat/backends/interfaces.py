@@ -294,4 +294,39 @@ class PKCS8SerializationBackend(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):
-    pass
+    @abc.abstractmethod
+    def generate_dh_parameters(self, key_size):
+        """
+        Generate a DHParameters instance with a modulus of key_size bits.
+        """
+
+    @abc.abstractmethod
+    def generate_dh_private_key(self, parameters):
+        """
+        Generate a DHPrivateKey instance with parameters as a DHParameters
+        object.
+        """
+
+    @abc.abstractmethod
+    def generate_dh_private_key_and_parameters(self, key_size):
+        """
+        Generate a DHPrivateKey instance using key size only.
+        """
+
+    @abc.abstractmethod
+    def load_dh_private_numbers(self, numbers):
+        """
+        Returns a DHPrivateKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dh_public_numbers(self, numbers):
+        """
+        Returns a DHPublicKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dh_parameter_numbers(self, numbers):
+        """
+        Returns a DHParameters provider.
+        """
