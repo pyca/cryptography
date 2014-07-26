@@ -60,8 +60,8 @@ class _DHPrivateKey(object):
             private_value=self._backend._bn_to_int(self._dh_cdata.priv_key)
         )
 
-    def exchange(self):
-        return _DHKeyExchangeContext(self)
+    def exchange(self, exchange_algorithm):
+        return _DHKeyExchangeContext(self, exchange_algorithm)
 
     def public_key(self):
         dh_cdata = self._backend._lib.DH_new()
@@ -85,25 +85,37 @@ class _DHPrivateKey(object):
         return _DHParameters(self._backend, dh_cdata)
 
 
+def _agree_tls_key(private_key, public_value, backend):
+    lib = backend._lib
+    ffi = backend._ffi
+
+    key_size = lib.DH_size(private_key._dh_cdata)
+
+    buf = ffi.new("char[]", key_size)
+    res = lib.DH_compute_key(
+        buf,
+        backend._int_to_bn(public_value),
+        private_key._dh_cdata
+    )
+    assert res != -1
+    return ffi.buffer(buf)[:key_size]
+
+
 class _DHKeyExchangeContext(object):
-    def __init__(self, private_key):
+    def __init__(self, private_key, exchange_algorithm):
         self._private_key = private_key
+        self._exchange_algorithm = exchange_algorithm
         self._backend = private_key._backend
 
     def agree(self, public_value):
-        lib = self._backend._lib
-        ffi = self._backend._ffi
-
-        key_size = lib.DH_size(self._private_key._dh_cdata)
-
-        buf = ffi.new("char[]", key_size)
-        res = lib.DH_compute_key(
-            buf,
-            self._backend._int_to_bn(public_value),
-            self._private_key._dh_cdata
-        )
-        assert res != -1
-        return ffi.buffer(buf)[:key_size]
+        if isinstance(self._exchange_algorithm, dh.TLSKeyExchange):
+            return _agree_tls_key(
+                self._private_key,
+                public_value,
+                self._backend
+            )
+        else:
+            raise UnsupportedAlgorithm()
 
 
 @utils.register_interface(interfaces.DHPublicKeyWithNumbers)

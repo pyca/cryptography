@@ -97,17 +97,17 @@ class TestDH(object):
         assert isinstance(public, interfaces.DHPublicKey)
         assert public.key_size == 512
 
-    def test_exchange(self, backend):
+    def test_tls_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
         assert isinstance(parameters, interfaces.DHParameters)
 
         key1 = parameters.generate_private_key()
         key2 = parameters.generate_private_key()
 
-        exch = key1.exchange()
+        exch = key1.exchange(dh.TLSKeyExchange())
         symkey1 = exch.agree(key2.public_key().public_numbers.public_value)
         assert symkey1
 
-        exch = key2.exchange()
+        exch = key2.exchange(dh.TLSKeyExchange())
         symkey2 = exch.agree(key1.public_key().public_numbers.public_value)
         assert symkey1 == symkey2

@@ -15,6 +15,9 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography import utils
+from cryptography.hazmat.primitives import interfaces
+
 
 def generate_parameters(generator, key_size, backend):
     return backend.generate_dh_parameters(generator, key_size)
@@ -84,3 +87,8 @@ class DHParameterNumbers(object):
     @property
     def generator(self):
         return self._generator
+
+
+@utils.register_interface(interfaces.DHExchangeAlgorithm)
+class TLSKeyExchange(object):
+    pass

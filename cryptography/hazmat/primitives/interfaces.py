@@ -528,3 +528,8 @@ class DHPublicKeyWithNumbers(DHPublicKey):
         """
         Returns a DHPublicNumbers.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHExchangeAlgorithm(object):
+    pass
