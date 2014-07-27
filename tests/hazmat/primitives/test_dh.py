@@ -13,10 +13,14 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives import interfaces
+
+from ...utils import load_kasvs_dh_vectors, load_vectors_from_file
 
 
 def test_dh_parameters():
@@ -107,7 +111,7 @@ class TestDH(object):
         exch = key1.exchange(dh.TLSKeyExchange())
         symkey1 = exch.agree(key2.public_key().public_numbers.public_value)
         assert symkey1
-        assert len(symkey1) == 512//8
+        assert len(symkey1) == 512 // 8
 
         exch = key2.exchange(dh.TLSKeyExchange())
         symkey2 = exch.agree(key1.public_key().public_numbers.public_value)
@@ -123,3 +127,63 @@ class TestDH(object):
 
         with pytest.raises(ValueError):
             exch.agree(1)
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH",
+                         "KASValidityTest_FFCStatic_NOKC_ZZOnly_init.fax"),
+            load_kasvs_dh_vectors
+        )
+    )
+    def test_kasvs_dh(self, vector, backend):
+        parameters = dh.DHParameterNumbers(
+            modulus=vector['p'],
+            generator=vector['g']
+        )
+
+        pubnum1 = dh.DHPublicNumbers(
+            parameters,
+            vector['y1']
+        )
+
+        privnum1 = dh.DHPrivateNumbers(
+            pubnum1,
+            vector['x1']
+        )
+
+        pubnum2 = dh.DHPublicNumbers(
+            parameters,
+            vector['y2']
+        )
+
+        privnum2 = dh.DHPrivateNumbers(
+            pubnum2,
+            vector['x2']
+        )
+
+        key1 = privnum1.private_key(backend)
+        key2 = privnum2.private_key(backend)
+
+        exch1 = key1.exchange(dh.TLSKeyExchange())
+        agreed_key1 = exch1.agree(key2.public_key().public_numbers.public_value)
+        assert agreed_key1
+
+        exch2 = key2.exchange(dh.TLSKeyExchange())
+        agreed_key2 = exch2.agree(key1.public_key().public_numbers.public_value)
+        assert agreed_key2
+
+        fail = False
+
+        if vector['fail_z']:
+            assert agreed_key1 != vector['z']
+            assert agreed_key2 != vector['z']
+            fail = True
+
+        if vector['fail_agree']:
+            assert agreed_key1 != agreed_key2
+            fail = True
+
+        if fail is False:
+            assert agreed_key1 == vector['z']
+            assert agreed_key1 == agreed_key2

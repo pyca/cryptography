@@ -33,7 +33,7 @@ class DHPrivateNumbers(object):
             raise TypeError("public_numbers must be an instance of "
                             "DHPublicNumbers.")
 
-        if not isinstance(private_value, int):
+        if not isinstance(private_value, six.integer_types):
             raise TypeError("private_value must be an integer.")
 
         self._public_numbers = public_numbers
@@ -46,6 +46,13 @@ class DHPrivateNumbers(object):
     @property
     def private_value(self):
         return self._private_value
+
+    @property
+    def x(self):
+        return self._private_value
+
+    def private_key(self, backend):
+        return backend.load_dh_private_numbers(self)
 
 
 class DHPublicNumbers(object):
@@ -65,8 +72,15 @@ class DHPublicNumbers(object):
         return self._public_value
 
     @property
+    def y(self):
+        return self._public_value
+
+    @property
     def parameter_numbers(self):
         return self._parameters
+
+    def public_key(self, backend):
+        return backend.load_dh_public_numbers(self)
 
 
 class DHParameterNumbers(object):
@@ -87,6 +101,17 @@ class DHParameterNumbers(object):
     @property
     def generator(self):
         return self._generator
+
+    @property
+    def p(self):
+        return self._modulus
+
+    @property
+    def g(self):
+        return self._generator
+
+    def parameters(self, backend):
+        backend.load_dh_parameter_numbers(self)
 
 
 @utils.register_interface(interfaces.DHExchangeAlgorithm)
