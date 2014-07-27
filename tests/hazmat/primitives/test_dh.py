@@ -107,7 +107,19 @@ class TestDH(object):
         exch = key1.exchange(dh.TLSKeyExchange())
         symkey1 = exch.agree(key2.public_key().public_numbers.public_value)
         assert symkey1
+        assert len(symkey1) == 512//8
 
         exch = key2.exchange(dh.TLSKeyExchange())
         symkey2 = exch.agree(key1.public_key().public_numbers.public_value)
         assert symkey1 == symkey2
+
+    def test_bad_tls_exchange(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        assert isinstance(parameters, interfaces.DHParameters)
+
+        key1 = parameters.generate_private_key()
+
+        exch = key1.exchange(dh.TLSKeyExchange())
+
+        with pytest.raises(ValueError):
+            exch.agree(1)
