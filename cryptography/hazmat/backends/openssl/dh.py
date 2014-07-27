@@ -14,7 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.exceptions import InvalidSignature
+from cryptography.exceptions import _Reasons, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import dh
 
@@ -85,6 +85,18 @@ class _DHPrivateKey(object):
         return _DHParameters(self._backend, dh_cdata)
 
 
+def _handle_dh_compute_key_error(errors, backend):
+    lib = backend._lib
+
+    assert errors[0][1:] == (
+        lib.ERR_LIB_DH,
+        lib.DH_F_COMPUTE_KEY,
+        lib.DH_R_INVALID_PUBKEY
+    )
+
+    raise ValueError("Public key value is invalid for this exchange.")
+
+
 def _agree_tls_key(private_key, public_value, backend):
     lib = backend._lib
     ffi = backend._ffi
@@ -97,8 +109,12 @@ def _agree_tls_key(private_key, public_value, backend):
         backend._int_to_bn(public_value),
         private_key._dh_cdata
     )
-    assert res != -1
-    return ffi.buffer(buf)[:key_size]
+
+    if res == -1:
+        errors = backend._consume_errors()
+        _handle_dh_compute_key_error(errors, backend)
+    else:
+        return ffi.buffer(buf)[:key_size]
 
 
 class _DHKeyExchangeContext(object):
@@ -115,7 +131,7 @@ class _DHKeyExchangeContext(object):
                 self._backend
             )
         else:
-            raise UnsupportedAlgorithm()
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_KEY_EXCHANGE)
 
 
 @utils.register_interface(interfaces.DHPublicKeyWithNumbers)

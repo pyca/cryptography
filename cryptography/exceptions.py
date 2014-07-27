@@ -23,6 +23,7 @@ class _Reasons(object):
     UNSUPPORTED_PUBLIC_KEY_ALGORITHM = object()
     UNSUPPORTED_ELLIPTIC_CURVE = object()
     UNSUPPORTED_SERIALIZATION = object()
+    UNSUPPORTED_KEY_EXCHANGE = object()
 
 
 class UnsupportedAlgorithm(Exception):
