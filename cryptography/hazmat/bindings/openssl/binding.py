@@ -116,12 +116,6 @@ class Binding(object):
         assert res != 0
 
     @classmethod
-    def is_available(cls):
-        # For now, OpenSSL is considered our "default" binding, so we treat it
-        # as always available.
-        return True
-
-    @classmethod
     def init_static_locks(cls):
         with cls._lock_init_lock:
             cls._ensure_ffi_initialized()

@@ -25,23 +25,12 @@ def _available_backends():
     global _available_backends_list
 
     if _available_backends_list is None:
-        _available_backends_list = []
-
-        for backend in pkg_resources.iter_entry_points(
-            "cryptography.hazmat.backends"
-        ):
-            is_backend_available = pkg_resources.get_entry_info(
-                backend.dist,
-                "cryptography.hazmat.is_backend_available",
-                backend.name
+        _available_backends_list = [
+            backend.load(require=False)
+            for backend in pkg_resources.iter_entry_points(
+                "cryptography.backends"
             )
-
-            if is_backend_available is not None:
-                is_backend_available = is_backend_available.load(require=False)
-                if not is_backend_available():
-                    continue
-
-            _available_backends_list.append(backend.load(require=False))
+        ]
 
     return _available_backends_list
 
