@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from zope.interface.verify import verifyClass
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -212,6 +214,9 @@ class DummyTraditionalOpenSSLSerializationBackend(object):
 
 
 class TestMultiBackend(object):
+    def test_verifyClass(self):
+        verifyClass(CipherBackend, MultiBackend)
+
     def test_ciphers(self):
         backend = MultiBackend([
             DummyHashBackend([]),

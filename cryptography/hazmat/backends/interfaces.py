@@ -17,23 +17,21 @@ import abc
 
 import six
 
+from cryptography.utils import Interface
 
-@six.add_metaclass(abc.ABCMeta)
-class CipherBackend(object):
-    @abc.abstractmethod
-    def cipher_supported(self, cipher, mode):
+
+class CipherBackend(Interface):
+    def cipher_supported(cipher, mode):
         """
         Return True if the given cipher and mode are supported.
         """
 
-    @abc.abstractmethod
-    def create_symmetric_encryption_ctx(self, cipher, mode):
+    def create_symmetric_encryption_ctx(cipher, mode):
         """
         Get a CipherContext that can be used for encryption.
         """
 
-    @abc.abstractmethod
-    def create_symmetric_decryption_ctx(self, cipher, mode):
+    def create_symmetric_decryption_ctx(cipher, mode):
         """
         Get a CipherContext that can be used for decryption.
         """

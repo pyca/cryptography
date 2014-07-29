@@ -15,15 +15,36 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
+from zope.interface import implementer
+from zope.interface.interface import InterfaceClass
+
 
 DeprecatedIn05 = DeprecationWarning
 
 
 def register_interface(iface):
+    if isinstance(iface, InterfaceClass):
+        return implementer(iface)
+
     def register_decorator(klass):
         iface.register(klass)
         return klass
+
     return register_decorator
+
+
+class _IsInstancableInterfaceClass(InterfaceClass):
+    def __subclasscheck__(interface, other):
+        return interface.implementedBy(other)
+
+    def __instancecheck__(interface, other):
+        return interface.providedBy(other)
+
+
+Interface = _IsInstancableInterfaceClass(
+    "Interface",
+    __module__="cryptography.utils"
+)
 
 
 def bit_length(x):
