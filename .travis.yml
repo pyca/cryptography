@@ -13,12 +13,14 @@ env:
         - TOX_ENV=py33
         - TOX_ENV=py34
         - TOX_ENV=pypy
+        - TOX_ENV=pypy3
         - TOX_ENV=py26 OPENSSL=0.9.8
         - TOX_ENV=py27 OPENSSL=0.9.8
         - TOX_ENV=py32 OPENSSL=0.9.8
         - TOX_ENV=py33 OPENSSL=0.9.8
         - TOX_ENV=py34 OPENSSL=0.9.8
         - TOX_ENV=pypy OPENSSL=0.9.8
+        - TOX_ENV=pypy3 OPENSSL=0.9.8
         - TOX_ENV=docs
         - TOX_ENV=pep8
         - TOX_ENV=py3pep8
