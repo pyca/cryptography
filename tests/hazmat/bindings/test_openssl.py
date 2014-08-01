@@ -27,9 +27,6 @@ class TestOpenSSL(object):
         assert binding.lib
         assert binding.ffi
 
-    def test_is_available(self):
-        assert Binding.is_available() is True
-
     def test_crypto_lock_init(self):
         b = Binding()
         b.init_static_locks()

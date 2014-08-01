@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import platform
 import subprocess
 import sys
 from distutils.command.build import build
@@ -32,13 +33,15 @@ with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
+SETUPTOOLS_DEPENDENCY = "setuptools"
 CFFI_DEPENDENCY = "cffi>=0.8"
 SIX_DEPENDENCY = "six>=1.4.1"
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
     CFFI_DEPENDENCY,
-    SIX_DEPENDENCY
+    SIX_DEPENDENCY,
+    SETUPTOOLS_DEPENDENCY
 ]
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
@@ -55,6 +58,21 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
     test_requirements.append(VECTORS_DEPENDENCY)
 
 
+def cc_is_available():
+    return sys.platform == "darwin" and list(map(
+        int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]
+
+
+backends = [
+    "openssl = cryptography.hazmat.backends.openssl:backend"
+]
+
+if cc_is_available():
+    backends.append(
+        "commoncrypto = cryptography.hazmat.backends.commoncrypto:backend",
+    )
+
+
 def get_ext_modules():
     from cryptography.hazmat.bindings.commoncrypto.binding import (
         Binding as CommonCryptoBinding
@@ -69,7 +87,7 @@ def get_ext_modules():
         constant_time._ffi.verifier.get_extension(),
         padding._ffi.verifier.get_extension()
     ]
-    if CommonCryptoBinding.is_available():
+    if cc_is_available():
         ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
     return ext_modules
 
@@ -173,5 +191,9 @@ setup(
         "build": CFFIBuild,
         "install": CFFIInstall,
         "test": PyTest,
+    },
+
+    entry_points={
+        "cryptography.backends": backends,
     }
 )
