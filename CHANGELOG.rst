@@ -11,6 +11,11 @@ Changelog
   constructor. The ``salt_length`` should be passed to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
 
+0.5.3 - 2014-08-06
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.1i.
+
 0.5.2 - 2014-07-09
 ~~~~~~~~~~~~~~~~~~
 
