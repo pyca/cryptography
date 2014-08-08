@@ -112,10 +112,17 @@ def _agree_tls_key(private_key, public_value, backend):
 
     if res == -1:
         errors = backend._consume_errors()
-        _handle_dh_compute_key_error(errors, backend)
+        return _handle_dh_compute_key_error(errors, backend)
     else:
-        return ffi.buffer(buf)[:key_size]
+        assert res >= 1
 
+        key = ffi.buffer(buf)[:res]
+        pad = key_size - len(key)
+
+        if pad > 0:
+            key = (b"\x00" * pad) + key
+
+        return key
 
 class _DHKeyExchangeContext(object):
     def __init__(self, private_key, exchange_algorithm):
