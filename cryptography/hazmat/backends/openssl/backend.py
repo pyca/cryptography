@@ -333,6 +333,8 @@ class Backend(object):
         )
 
     def _bn_to_int(self, bn):
+        assert bn != self._ffi.NULL
+
         if six.PY3:
             # Python 3 has constant time from_bytes, so use that.
 
@@ -359,6 +361,8 @@ class Backend(object):
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
+
+        assert (bn is None) or (bn is not None and bn != self._ffi.NULL)
 
         if bn is None:
             bn = self._ffi.NULL
