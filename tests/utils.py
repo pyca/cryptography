@@ -652,7 +652,8 @@ def load_kasvs_dh_vectors(vector_data):
         elif line.startswith("G = "):
             data["g"] = int(line.split("=")[1], 16)
         elif line.startswith("Z = "):
-            data["z"] = binascii.unhexlify(line.split("=")[1].strip())
+            z_hex = line.split("=")[1].strip().encode("ascii")
+            data["z"] = binascii.unhexlify(z_hex)
         elif line.startswith("XstatCAVS = "):
             data["x1"] = int(line.split("=")[1], 16)
         elif line.startswith("YstatCAVS = "):
