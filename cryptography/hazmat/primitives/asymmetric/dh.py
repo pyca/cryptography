@@ -111,7 +111,7 @@ class DHParameterNumbers(object):
         return self._generator
 
     def parameters(self, backend):
-        backend.load_dh_parameter_numbers(self)
+        return backend.load_dh_parameter_numbers(self)
 
 
 @utils.register_interface(interfaces.DHExchangeAlgorithm)

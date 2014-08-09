@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import dh
 
 
-@utils.register_interface(interfaces.DHParameters)
+@utils.register_interface(interfaces.DHParametersWithNumbers)
 class _DHParameters(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend

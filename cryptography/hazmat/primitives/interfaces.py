@@ -468,7 +468,7 @@ class DHParameters(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DHParametersWithNumbers(DSAParameters):
+class DHParametersWithNumbers(DHParameters):
     @abc.abstractmethod
     def parameter_numbers(self):
         """
