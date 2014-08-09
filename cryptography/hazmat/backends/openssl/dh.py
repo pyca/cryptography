@@ -134,21 +134,30 @@ def _agree_tls_key(private_key, public_value, backend):
 
         return key
 
+
 class _DHKeyExchangeContext(object):
     def __init__(self, private_key, exchange_algorithm):
         self._private_key = private_key
         self._exchange_algorithm = exchange_algorithm
         self._backend = private_key._backend
 
-    def agree(self, public_value):
         if isinstance(self._exchange_algorithm, dh.TLSKeyExchange):
-            return _agree_tls_key(
-                self._private_key,
-                public_value,
-                self._backend
-            )
+            self._agree_func = self._agree_tls
         else:
-            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_KEY_EXCHANGE)
+            raise UnsupportedAlgorithm(
+                "Only TLS key exchange is supported by this backend.",
+                _Reasons.UNSUPPORTED_KEY_EXCHANGE
+            )
+
+    def agree(self, public_value):
+        return self._agree_func(public_value)
+
+    def _agree_tls(self, public_value):
+        return _agree_tls_key(
+            self._private_key,
+            public_value,
+            self._backend
+        )
 
 
 @utils.register_interface(interfaces.DHPublicKeyWithNumbers)
