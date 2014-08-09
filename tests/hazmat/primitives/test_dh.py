@@ -17,11 +17,21 @@ import os
 
 import pytest
 
+from cryptography import utils
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives import interfaces
 from cryptography.utils import bit_length
 
-from ...utils import load_kasvs_dh_vectors, load_vectors_from_file
+from ...utils import (
+    load_kasvs_dh_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
+)
+
+
+@utils.register_interface(interfaces.DHExchangeAlgorithm)
+class DummyKeyExchange(object):
+    pass
 
 
 def test_dh_parameters():
@@ -138,14 +148,19 @@ class TestDH(object):
 
     def test_bad_tls_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
-        assert isinstance(parameters, interfaces.DHParameters)
-
         key1 = parameters.generate_private_key()
 
         exch = key1.exchange(dh.TLSKeyExchange())
 
         with pytest.raises(ValueError):
             exch.agree(1)
+
+    def test_unsupported_agreement(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+        key1 = parameters.generate_private_key()
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_KEY_EXCHANGE):
+            key1.exchange(DummyKeyExchange())
 
     @pytest.mark.parametrize(
         "vector",
@@ -210,11 +225,15 @@ class TestDH(object):
         key2 = privnum2.private_key(backend)
 
         exch1 = key1.exchange(dh.TLSKeyExchange())
-        agreed_key1 = exch1.agree(key2.public_key().public_numbers.public_value)
+        agreed_key1 = exch1.agree(
+            key2.public_key().public_numbers.public_value
+        )
         assert agreed_key1
 
         exch2 = key2.exchange(dh.TLSKeyExchange())
-        agreed_key2 = exch2.agree(key1.public_key().public_numbers.public_value)
+        agreed_key2 = exch2.agree(
+            key1.public_key().public_numbers.public_value
+        )
         assert agreed_key2
 
         fail = False
