@@ -94,11 +94,10 @@ class TestDH(object):
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 511, backend)
 
-    @pytest.mark.parametrize(
-        ("generator", "key_size"),
-        [(2, 512)]
-    )
-    def test_generate_dh(self, generator, key_size, backend):
+    def test_generate_dh(self, backend):
+        generator = 2
+        key_size = 512
+
         parameters = dh.generate_parameters(generator, key_size, backend)
         assert isinstance(parameters, interfaces.DHParameters)
 
@@ -115,11 +114,11 @@ class TestDH(object):
             assert isinstance(parameter_numbers, dh.DHParameterNumbers)
             assert bit_length(parameter_numbers.modulus) == key_size
 
+        if isinstance(public, interfaces.DHPublicKeyWithNumbers):
+            assert isinstance(public.public_numbers, dh.DHPublicNumbers)
+
         if isinstance(key, interfaces.DHPrivateKeyWithNumbers):
             assert isinstance(key.private_numbers, dh.DHPrivateNumbers)
-
-        if isinstance(key, interfaces.DHPublicKeyWithNumbers):
-            assert isinstance(key.public_numbers, dh.DHPublicNumbers)
 
     def test_tls_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
