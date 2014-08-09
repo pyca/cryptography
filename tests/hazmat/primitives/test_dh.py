@@ -19,6 +19,7 @@ import pytest
 
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives import interfaces
+from cryptography.utils import bit_length
 
 from ...utils import load_kasvs_dh_vectors, load_vectors_from_file
 
@@ -89,17 +90,36 @@ def test_dh_numbers():
 
 @pytest.mark.dh
 class TestDH(object):
-    def test_generate_dh(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
+    def test_small_key_generate_dh(self, backend):
+        with pytest.raises(ValueError):
+            dh.generate_parameters(2, 511, backend)
+
+    @pytest.mark.parametrize(
+        ("generator", "key_size"),
+        [(2, 512)]
+    )
+    def test_generate_dh(self, generator, key_size, backend):
+        parameters = dh.generate_parameters(generator, key_size, backend)
         assert isinstance(parameters, interfaces.DHParameters)
 
         key = parameters.generate_private_key()
         assert isinstance(key, interfaces.DHPrivateKey)
-        assert key.key_size == 512
+        assert key.key_size == key_size
 
         public = key.public_key()
         assert isinstance(public, interfaces.DHPublicKey)
-        assert public.key_size == 512
+        assert public.key_size == key_size
+
+        if isinstance(parameters, interfaces.DHParametersWithNumbers):
+            parameter_numbers = parameters.parameter_numbers
+            assert isinstance(parameter_numbers, dh.DHParameterNumbers)
+            assert bit_length(parameter_numbers.modulus) == key_size
+
+        if isinstance(key, interfaces.DHPrivateKeyWithNumbers):
+            assert isinstance(key.private_numbers, dh.DHPrivateNumbers)
+
+        if isinstance(key, interfaces.DHPublicKeyWithNumbers):
+            assert isinstance(key.public_numbers, dh.DHPublicNumbers)
 
     def test_tls_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
@@ -127,6 +147,31 @@ class TestDH(object):
 
         with pytest.raises(ValueError):
             exch.agree(1)
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("asymmetric", "DH",
+                         "KASValidityTest_FFCStatic_NOKC_ZZOnly_init.fax"),
+            load_kasvs_dh_vectors
+        )
+    )
+    def test_generate_kasvs_dh(self, vector, backend):
+        parameter_numbers = dh.DHParameterNumbers(
+            modulus=vector['p'],
+            generator=vector['g']
+        )
+
+        parameters = parameter_numbers.parameters(backend)
+        key = parameters.generate_private_key()
+        assert isinstance(key, interfaces.DHPrivateKey)
+
+        key_params = key.parameters()
+
+        if isinstance(key_params, interfaces.DHParametersWithNumbers):
+            key_param_numbers = key_params.parameter_numbers
+            assert key_param_numbers.modulus == parameter_numbers.modulus
+            assert key_param_numbers.generator == parameter_numbers.generator
 
     @pytest.mark.parametrize(
         "vector",
