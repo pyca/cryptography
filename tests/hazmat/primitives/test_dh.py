@@ -156,7 +156,7 @@ class TestDH(object):
             load_kasvs_dh_vectors
         )
     )
-    def test_generate_kasvs_dh(self, vector, backend):
+    def test_kasvs_generate_private_key(self, vector, backend):
         parameter_numbers = dh.DHParameterNumbers(
             modulus=vector['p'],
             generator=vector['g']
@@ -181,7 +181,7 @@ class TestDH(object):
             load_kasvs_dh_vectors
         )
     )
-    def test_kasvs_dh(self, vector, backend):
+    def test_kasvs_agree_key(self, vector, backend):
         parameters = dh.DHParameterNumbers(
             modulus=vector['p'],
             generator=vector['g']
