@@ -2632,7 +2632,6 @@ def test_load_kasvs_dh_vectors():
                      "KASValidityTest_FFCStatic_NOKC_ZZOnly_init.fax"),
         load_kasvs_dh_vectors
     )
-    print(vectors)
     assert vectors
 
 
