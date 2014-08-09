@@ -224,15 +224,18 @@ class TestDH(object):
         key1 = privnum1.private_key(backend)
         key2 = privnum2.private_key(backend)
 
+        pubkey1 = pubnum1.public_key(backend)
+        pubkey2 = pubnum2.public_key(backend)
+
         exch1 = key1.exchange(dh.TLSKeyExchange())
         agreed_key1 = exch1.agree(
-            key2.public_key().public_numbers.public_value
+            pubkey2.public_numbers.public_value
         )
         assert agreed_key1
 
         exch2 = key2.exchange(dh.TLSKeyExchange())
         agreed_key2 = exch2.agree(
-            key1.public_key().public_numbers.public_value
+            pubkey1.public_numbers.public_value
         )
         assert agreed_key2
 

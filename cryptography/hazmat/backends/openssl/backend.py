@@ -1118,9 +1118,9 @@ class Backend(object):
         assert dh_cdata != self._ffi.NULL
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
 
-        dh_cdata.p = self._int_to_bn(numbers.parameter_numbers.p)
-        dh_cdata.g = self._int_to_bn(numbers.parameter_numbers.g)
-        dh_cdata.pub_key = self._int_to_bn(numbers.y)
+        dh_cdata.p = self._int_to_bn(numbers.parameter_numbers.modulus)
+        dh_cdata.g = self._int_to_bn(numbers.parameter_numbers.generator)
+        dh_cdata.pub_key = self._int_to_bn(numbers.public_value)
 
         return _DHPublicKey(self, dh_cdata)
 
