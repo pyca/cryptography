@@ -33,7 +33,7 @@ from cryptography.hazmat.backends.openssl.ciphers import (
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
-    _DHParameters, _DHPrivateKey, _DHPublicKey, _DHKeyExchangeContext
+    _DHParameters, _DHPrivateKey, _DHPublicKey
 )
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey,
@@ -1095,7 +1095,6 @@ class Backend(object):
         return _DHPrivateKey(self, dh_key_cdata)
 
     def load_dh_private_numbers(self, numbers):
-        #dh._check_dh_private_numbers(numbers)
         parameter_numbers = numbers.public_numbers.parameter_numbers
 
         dh_cdata = self._lib.DH_new()
@@ -1107,7 +1106,6 @@ class Backend(object):
         dh_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
         dh_cdata.priv_key = self._int_to_bn(numbers.x)
 
-
         codes = self._ffi.new("int[]", 1)
         res = self._lib.DH_check(dh_cdata, codes)
         assert res == 1
@@ -1116,7 +1114,6 @@ class Backend(object):
         return _DHPrivateKey(self, dh_cdata)
 
     def load_dh_public_numbers(self, numbers):
-        #dh._check_dh_parameters(numbers.parameter_numbers)
         dh_cdata = self._lib.DH_new()
         assert dh_cdata != self._ffi.NULL
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1128,7 +1125,6 @@ class Backend(object):
         return _DHPublicKey(self, dh_cdata)
 
     def load_dh_parameter_numbers(self, numbers):
-        #dh._check_dh_parameters(numbers)
         dh_cdata = self._lib.DH_new()
         assert dh_cdata != self._ffi.NULL
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1137,7 +1133,6 @@ class Backend(object):
         dh_cdata.g = self._int_to_bn(numbers.g)
 
         return _DHParameters(self, dh_cdata)
-
 
 
 class GetCipherByName(object):

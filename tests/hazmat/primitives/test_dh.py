@@ -19,8 +19,8 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.utils import bit_length
 
 from ...utils import (
