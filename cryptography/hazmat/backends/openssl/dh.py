@@ -19,6 +19,23 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import dh
 
 
+def _dh_cdata_to_parameters(dh_cdata, backend):
+    lib = backend._lib
+    ffi = backend._ffi
+
+    param_cdata = lib.DH_new()
+    assert param_cdata != ffi.NULL
+    param_cdata = ffi.gc(param_cdata, lib.DH_free)
+
+    param_cdata.p = lib.BN_dup(dh_cdata.p)
+    assert param_cdata.p != ffi.NULL
+
+    param_cdata.g = lib.BN_dup(dh_cdata.g)
+    assert param_cdata.g != ffi.NULL
+
+    return _DHParameters(backend, param_cdata)
+
+
 @utils.register_interface(interfaces.DHParametersWithNumbers)
 class _DHParameters(object):
     def __init__(self, backend, dh_cdata):
@@ -75,14 +92,7 @@ class _DHPrivateKey(object):
         return _DHPublicKey(self._backend, dh_cdata)
 
     def parameters(self):
-        dh_cdata = self._backend._lib.DH_new()
-        assert dh_cdata != self._backend._ffi.NULL
-        dh_cdata = self._backend._ffi.gc(
-            dh_cdata, self._backend._lib.DH_free
-        )
-        dh_cdata.p = self._backend._lib.BN_dup(self._dh_cdata.p)
-        dh_cdata.g = self._backend._lib.BN_dup(self._dh_cdata.g)
-        return _DHParameters(self._backend, dh_cdata)
+        return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
 
 
 def _handle_dh_compute_key_error(errors, backend):
@@ -163,11 +173,4 @@ class _DHPublicKey(object):
         )
 
     def parameters(self):
-        dh_cdata = self._backend._lib.DH_new()
-        assert dh_cdata != self._backend._ffi.NULL
-        dh_cdata = self._backend._ffi.gc(
-            dh_cdata, self._backend._lib.DH_free
-        )
-        dh_cdata.p = self._backend._lib.BN_dup(self._dh_cdata.p)
-        dh_cdata.g = self._backend._lib.BN_dup(self._dh_cdata.g)
-        return _DHParameters(self._backend, dh_cdata)
+        return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
