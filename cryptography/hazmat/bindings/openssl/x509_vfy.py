@@ -185,10 +185,10 @@ void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
                               Cryptography_STACK_OF_X509_CRL *);
 
 /* X509_VERIFY_PARAM */
-int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const unsigned char *,
+int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const char *,
                                 size_t);
 void X509_VERIFY_PARAM_set_hostflags(X509_VERIFY_PARAM *, unsigned int);
-int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const unsigned char *,
+int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const char *,
                                  size_t);
 int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
                               size_t);
@@ -224,9 +224,9 @@ static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
 static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
 
-int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const unsigned char *,
+int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
                                    size_t) = NULL;
-int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const unsigned char *,
+int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const char *,
                                     size_t) = NULL;
 int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
                                  size_t) = NULL;
