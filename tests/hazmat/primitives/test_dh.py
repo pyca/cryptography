@@ -126,9 +126,11 @@ class TestDH(object):
 
         if isinstance(public, interfaces.DHPublicKeyWithNumbers):
             assert isinstance(public.public_numbers, dh.DHPublicNumbers)
+            assert isinstance(public.parameters(), interfaces.DHParameters)
 
         if isinstance(key, interfaces.DHPrivateKeyWithNumbers):
             assert isinstance(key.private_numbers, dh.DHPrivateNumbers)
+            assert isinstance(key.parameters(), interfaces.DHParameters)
 
     def test_tls_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
