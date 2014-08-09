@@ -23,10 +23,6 @@ def generate_parameters(generator, key_size, backend):
     return backend.generate_dh_parameters(generator, key_size)
 
 
-def generate_private_key(generator, key_size, backend):
-    return backend.generate_dh_private_key_and_parameters(generator, key_size)
-
-
 class DHPrivateNumbers(object):
     def __init__(self, public_numbers, private_value):
         if not isinstance(public_numbers, DHPublicNumbers):
