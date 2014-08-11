@@ -5,8 +5,7 @@ include LICENSE
 include README.rst
 
 recursive-include docs *
-recursive-include cryptography/hazmat/primitives/src *.c
-recursive-include cryptography/hazmat/primitives/src *.h
+recursive-include cryptography/hazmat/primitives/src *.c *.h
 prune docs/_build
 recursive-include tests *.py
 recursive-exclude vectors *
