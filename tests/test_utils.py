@@ -30,9 +30,9 @@ from .utils import (
     check_backend_support, check_for_iface, der_encode_dsa_signature,
     load_cryptrec_vectors, load_fips_dsa_key_pair_vectors,
     load_fips_dsa_sig_vectors, load_fips_ecdsa_key_pair_vectors,
-    load_fips_ecdsa_signing_vectors, load_hash_vectors, load_nist_vectors,
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm, select_backends
+    load_fips_ecdsa_signing_vectors, load_hash_vectors, load_kasvs_dh_vectors,
+    load_nist_vectors, load_pkcs1_vectors, load_rsa_nist_vectors,
+    load_vectors_from_file, raises_unsupported_algorithm, select_backends
 )
 
 
@@ -2624,6 +2624,15 @@ bdcf3035f6829ede041b745955d219dc5d30ddd8b37f6ba0f6d2857504cdc68a1ed812a10
         }
     ]
     assert expected == load_fips_ecdsa_signing_vectors(vector_data)
+
+
+def test_load_kasvs_dh_vectors():
+    vectors = load_vectors_from_file(
+        os.path.join("asymmetric", "DH",
+                     "KASValidityTest_FFCStatic_NOKC_ZZOnly_init.fax"),
+        load_kasvs_dh_vectors
+    )
+    assert vectors
 
 
 def test_vector_version():

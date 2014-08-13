@@ -9,5 +9,6 @@ Asymmetric algorithms
     dsa
     ec
     rsa
+    dh
     padding
     serialization

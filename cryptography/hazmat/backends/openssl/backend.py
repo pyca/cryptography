@@ -24,14 +24,17 @@ from cryptography.exceptions import (
     InternalError, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    CMACBackend, CipherBackend, DHBackend, DSABackend, EllipticCurveBackend,
+    HMACBackend, HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend,
+    RSABackend, TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
+from cryptography.hazmat.backends.openssl.dh import (
+    _DHParameters, _DHPrivateKey, _DHPublicKey
+)
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey,
     _DSASignatureContext, _DSAVerificationContext
@@ -66,6 +69,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
+@utils.register_interface(DHBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(HashBackend)
@@ -329,6 +333,8 @@ class Backend(object):
         )
 
     def _bn_to_int(self, bn):
+        assert bn != self._ffi.NULL
+
         if six.PY3:
             # Python 3 has constant time from_bytes, so use that.
 
@@ -355,6 +361,8 @@ class Backend(object):
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
+
+        assert (bn is None) or (bn is not None and bn != self._ffi.NULL)
 
         if bn is None:
             bn = self._ffi.NULL
@@ -1054,6 +1062,77 @@ class Backend(object):
         assert res == 1
 
         return ctx
+
+    def generate_dh_parameters(self, generator, key_size):
+        if key_size < 512:
+            raise ValueError("DH key_size must be at least 512 bits")
+
+        dh_param_cdata = self._lib.DH_new()
+        assert dh_param_cdata != self._ffi.NULL
+        dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
+
+        res = self._lib.DH_generate_parameters_ex(
+            dh_param_cdata,
+            key_size,
+            generator,
+            self._ffi.NULL
+        )
+        assert res == 1
+
+        return _DHParameters(self, dh_param_cdata)
+
+    def generate_dh_private_key(self, parameters):
+        dh_key_cdata = self._lib.DH_new()
+        assert dh_key_cdata != self._ffi.NULL
+        dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
+
+        dh_key_cdata.p = self._lib.BN_dup(parameters._dh_cdata.p)
+        dh_key_cdata.g = self._lib.BN_dup(parameters._dh_cdata.g)
+
+        res = self._lib.DH_generate_key(dh_key_cdata)
+        assert res == 1
+
+        return _DHPrivateKey(self, dh_key_cdata)
+
+    def load_dh_private_numbers(self, numbers):
+        parameter_numbers = numbers.public_numbers.parameter_numbers
+
+        dh_cdata = self._lib.DH_new()
+        assert dh_cdata != self._ffi.NULL
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        dh_cdata.p = self._int_to_bn(parameter_numbers.p)
+        dh_cdata.g = self._int_to_bn(parameter_numbers.g)
+        dh_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
+        dh_cdata.priv_key = self._int_to_bn(numbers.x)
+
+        codes = self._ffi.new("int[]", 1)
+        res = self._lib.DH_check(dh_cdata, codes)
+        assert res == 1
+        assert codes[0] in (0, 6, 2, 4)
+
+        return _DHPrivateKey(self, dh_cdata)
+
+    def load_dh_public_numbers(self, numbers):
+        dh_cdata = self._lib.DH_new()
+        assert dh_cdata != self._ffi.NULL
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        dh_cdata.p = self._int_to_bn(numbers.parameter_numbers.modulus)
+        dh_cdata.g = self._int_to_bn(numbers.parameter_numbers.generator)
+        dh_cdata.pub_key = self._int_to_bn(numbers.public_value)
+
+        return _DHPublicKey(self, dh_cdata)
+
+    def load_dh_parameter_numbers(self, numbers):
+        dh_cdata = self._lib.DH_new()
+        assert dh_cdata != self._ffi.NULL
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        dh_cdata.p = self._int_to_bn(numbers.p)
+        dh_cdata.g = self._int_to_bn(numbers.g)
+
+        return _DHParameters(self, dh_cdata)
 
 
 class GetCipherByName(object):
