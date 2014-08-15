@@ -82,6 +82,8 @@ FUNCTIONS = """
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
+void GENERAL_NAMES_free(GENERAL_NAMES *);
+void *X509V3_EXT_d2i(X509_EXTENSION *);
 """
 
 MACROS = """
