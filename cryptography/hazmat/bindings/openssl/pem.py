@@ -41,6 +41,7 @@ int i2d_PKCS8PrivateKey_bio(BIO *, EVP_PKEY *, const EVP_CIPHER *,
 int i2d_PKCS8PrivateKey_nid_bio(BIO *, EVP_PKEY *, int,
                                 char *, int, pem_password_cb *, void *);
 
+PKCS7 *d2i_PKCS7_bio(BIO *, PKCS7 **);
 EVP_PKEY *d2i_PKCS8PrivateKey_bio(BIO *, EVP_PKEY **, pem_password_cb *,
                                   void *);
 

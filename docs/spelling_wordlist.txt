@@ -38,6 +38,7 @@ plaintext
 preprocessor
 preprocessors
 pseudorandom
+pyOpenSSL
 Schneier
 scrypt
 Tanja
