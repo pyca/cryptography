@@ -4,9 +4,7 @@ Changelog
 0.5.4
 ~~~~~
 
-* Added a missing function to the OpenSSL bindings, which is needed by
-  pyOpenSSL.
-* Added several other functions to the OpenSSL bindings to support new
+* Added several functions to the OpenSSL bindings to support new
   functionality in pyOpenSSL.
 
 0.5.3 - 2014-08-06
