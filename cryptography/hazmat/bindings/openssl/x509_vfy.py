@@ -30,6 +30,7 @@ TYPES = """
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
+static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
 static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
@@ -222,7 +223,6 @@ static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
-static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
 
 int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
                                    size_t) = NULL;
@@ -233,6 +233,14 @@ int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
 int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
 void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
                                         unsigned int) = NULL;
+#endif
+
+/* OpenSSL 1.0.2+ or Solaris's backport */
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 1;
+#else
+static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 0;
+static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
 #endif
 
 /* OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e... */
@@ -293,8 +301,6 @@ CONDITIONAL_NAMES = {
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
         "X509_V_FLAG_SUITEB_128_LOS",
-        "X509_V_FLAG_PARTIAL_CHAIN",
-
         "X509_VERIFY_PARAM_set1_host",
         "X509_VERIFY_PARAM_set1_email",
         "X509_VERIFY_PARAM_set1_ip",
@@ -303,6 +309,9 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": [
         "X509_V_FLAG_TRUSTED_FIRST",
+    ],
+    "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": [
+        "X509_V_FLAG_PARTIAL_CHAIN",
     ],
     "Cryptography_HAS_100_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_DIFFERENT_CRL_SCOPE',
