@@ -41,6 +41,7 @@ pseudorandom
 pyOpenSSL
 Schneier
 scrypt
+Solaris
 Tanja
 testability
 Ubuntu
