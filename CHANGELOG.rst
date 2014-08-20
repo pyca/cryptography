@@ -1,11 +1,12 @@
 Changelog
 =========
 
-0.5.4
-~~~~~
+0.5.4 - 2014-08-19
+~~~~~~~~~~~~~~~~~~
 
 * Added several functions to the OpenSSL bindings to support new
   functionality in pyOpenSSL.
+* Fixed a redefined constant causing compilation failure with Solaris 11.2.
 
 0.5.3 - 2014-08-06
 ~~~~~~~~~~~~~~~~~~
