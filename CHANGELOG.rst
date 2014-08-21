@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.5.4 - 2014-08-19
+0.5.4 - 2014-08-20
 ~~~~~~~~~~~~~~~~~~
 
 * Added several functions to the OpenSSL bindings to support new
