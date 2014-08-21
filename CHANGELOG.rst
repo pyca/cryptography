@@ -11,6 +11,13 @@ Changelog
   constructor. The ``salt_length`` should be passed to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
 
+0.5.4 - 2014-08-20
+~~~~~~~~~~~~~~~~~~
+
+* Added several functions to the OpenSSL bindings to support new
+  functionality in pyOpenSSL.
+* Fixed a redefined constant causing compilation failure with Solaris 11.2.
+
 0.5.3 - 2014-08-06
 ~~~~~~~~~~~~~~~~~~
 
