@@ -10,6 +10,7 @@ Changelog
   the :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
   constructor. The ``salt_length`` should be passed to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
+* Fix compilation on OS X Yosemite.
 
 0.5.4 - 2014-08-20
 ~~~~~~~~~~~~~~~~~~
