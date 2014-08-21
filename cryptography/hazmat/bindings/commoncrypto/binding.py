@@ -48,5 +48,7 @@ class Binding(object):
         cls.ffi, cls.lib = build_ffi(
             module_prefix=cls._module_prefix,
             modules=cls._modules,
-            extra_link_args=["-framework", "Security"]
+            extra_link_args=[
+                "-framework", "Security", "-framework", "CoreFoundation"
+            ]
         )
