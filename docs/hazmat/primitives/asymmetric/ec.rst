@@ -63,7 +63,7 @@ Elliptic Curve Signature Algorithms
 
         :type: :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
 
-        The :class:`EllipticCurvePublicNumbers` which makes up the EC public
+        The :class:`EllipticCurvePublicNumbers` that make up the EC public
         key associated with this EC private key.
 
     .. attribute:: private_value

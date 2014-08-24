@@ -105,19 +105,19 @@ Numbers
 
         :type: int
 
-        The public modulus.
+        The public modulus. Synonym for the ``modulus`` attribute.
 
     .. attribute:: q
 
         :type: int
 
-        The sub-group order.
+        The sub-group order. Synonym for the ``subgroup_order`` attribute.
 
     .. attribute:: g
 
         :type: int
 
-        The generator.
+        The generator. Synonnym for the ``generator`` attribute.
 
     .. method:: parameters(backend)
 
