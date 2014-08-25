@@ -1,6 +1,6 @@
 .. hazmat::
 
-Message Authentication Codes
+Message authentication codes
 ============================
 
 While cryptography supports both the CMAC and HMAC algorithms, we strongly
