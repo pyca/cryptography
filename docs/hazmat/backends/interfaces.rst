@@ -509,3 +509,83 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param bytes data: DER formatted certificate data.
 
         :returns: An instance of :class:`~cryptography.x509.Certificate`.
+
+
+.. class:: DHBackend
+
+    .. versionadded:: 0.8
+
+    A backend with methods for doing Diffie-Hellman key exchange.
+
+    .. method:: generate_dh_parameters(g, key_size)
+
+        :param int g: The generator value.
+
+        :param int key_size: The bit length of the prime modulus to generate.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.dh.DHParameters`
+            provider.
+
+        :raises ValueError: If ``key_size`` is not at least 512.
+
+    .. method:: generate_dh_private_key(parameters)
+
+        :param parameters: A
+            :class:`~cryptography.hazmat.primitives.dh.DSAParameters`
+            provider.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.dh.DHPrivateKey`
+            provider.
+
+    .. method:: generate_dh_private_key_and_parameters(self, generator, key_size)
+
+        :param int g: The generator value.
+
+        :param int key_size: The bit length of the prime modulus to generate.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.dh.DHPrivateKey`
+            provider.
+
+        :raises ValueError: If ``key_size`` is not at least 512.
+
+    .. method:: load_dh_private_numbers(numbers)
+
+        :param numbers: A
+            :class:`~cryptography.hazmat.primitives.dh.DHPrivateNumbers`
+            instance.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.dh.DHPrivateKey`
+            provider.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
+
+    .. method:: load_dh_public_numbers(numbers)
+
+        :param numbers: A
+            :class:`~cryptography.hazmat.primitives.dh.DHPublicNumbers`
+            instance.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.dh.DHPublicKey`
+            provider.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
+
+    .. method:: load_dh_parameter_numbers(numbers)
+
+        :param numbers: A
+            :class:`~cryptography.hazmat.primitives.dh.DHParameterNumbers`
+            instance.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.dh.DHParameters`
+            provider.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
