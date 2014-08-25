@@ -273,3 +273,55 @@ class X509Backend(object):
         """
         Load an X.509 CSR from PEM encoded data.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHBackend(object):
+    @abc.abstractmethod
+    def generate_dh_parameters(self, key_size):
+        """
+        Generate a DHParameters instance with a modulus of key_size bits.
+        """
+
+    @abc.abstractmethod
+    def generate_dh_private_key(self, parameters):
+        """
+        Generate a DHPrivateKey instance with parameters as a DHParameters
+        object.
+        """
+
+    @abc.abstractmethod
+    def generate_dh_private_key_and_parameters(self, key_size):
+        """
+        Generate a DHPrivateKey instance using key size only.
+        """
+
+    @abc.abstractmethod
+    def load_dh_private_numbers(self, numbers):
+        """
+        Returns a DHPrivateKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dh_public_numbers(self, numbers):
+        """
+        Returns a DHPublicKey provider.
+        """
+
+    @abc.abstractmethod
+    def load_dh_parameter_numbers(self, numbers):
+        """
+        Returns a DHParameters provider.
+        """
+
+    @abc.abstractmethod
+    def dh_exchange_algorithm_supported(self, exchange_algorithm):
+        """
+        Returns whether the exchange algorithm is supported by this backend.
+        """
+
+    @abc.abstractmethod
+    def dh_parameters_supported(self, p, g):
+        """
+        Returns whether the backend supports DH with these parameter values.
+        """
