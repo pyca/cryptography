@@ -1616,6 +1616,8 @@ class TestRSAEncryption(object):
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.encrypt(b"somedata", DummyPadding())
+        with pytest.raises(TypeError):
+            public_key.encrypt(b"somedata", padding=object())
 
     def test_unsupported_oaep_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
