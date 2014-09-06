@@ -46,10 +46,12 @@ requirements = [
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
-    "pytest",
-    "pyasn1",
-    "pretend",
+    "coverage",
+    "diff_cover",
     "iso8601",
+    "pretend",
+    "pyasn1",
+    "pytest",
 ]
 
 # If there's no vectors locally that probably means we are in a tarball and
