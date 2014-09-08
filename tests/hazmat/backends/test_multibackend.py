@@ -19,7 +19,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
+    PKCS8SerializationBackend, RSABackend,
     TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
@@ -208,6 +209,12 @@ class DummyPKCS8SerializationBackend(object):
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
 class DummyTraditionalOpenSSLSerializationBackend(object):
     def load_traditional_openssl_pem_private_key(self, data, password):
+        pass
+
+
+@utils.register_interface(PEMSerializationBackend)
+class DummyPEMSerializationBackend(object):
+    def load_pem_private_key(self, data, password):
         pass
 
 
@@ -520,3 +527,12 @@ class TestMultiBackend(object):
         backend = MultiBackend([])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_traditional_openssl_pem_private_key(b"keydata", None)
+
+    def test_pem_serialization_backend(self):
+        backend = MultiBackend([DummyPEMSerializationBackend()])
+
+        backend.load_pem_private_key(b"keydata", None)
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_pem_private_key(b"keydata", None)
