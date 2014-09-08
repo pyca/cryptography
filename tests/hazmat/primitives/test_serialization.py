@@ -22,7 +22,7 @@ import pytest
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key, load_pem_pkcs8_private_key,
+    load_pem_pkcs8_private_key, load_pem_private_key,
     load_pem_traditional_openssl_private_key
 )
 
