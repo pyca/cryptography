@@ -15,10 +15,12 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 
 
-@pytest.mark.skipif(not Binding.is_available(),
+@pytest.mark.skipif("commoncrypto" not in
+                    [i.name for i in _available_backends()],
                     reason="CommonCrypto not available")
 class TestCommonCrypto(object):
     def test_binding_loads(self):

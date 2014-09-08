@@ -13,13 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pkg_resources
+
 from cryptography.hazmat.backends.multibackend import MultiBackend
-from cryptography.hazmat.bindings.commoncrypto.binding import (
-    Binding as CommonCryptoBinding
-)
-from cryptography.hazmat.bindings.openssl.binding import (
-    Binding as OpenSSLBinding
-)
 
 
 _available_backends_list = None
@@ -29,18 +25,14 @@ def _available_backends():
     global _available_backends_list
 
     if _available_backends_list is None:
-        _available_backends_list = []
-
-        if CommonCryptoBinding.is_available():
-            from cryptography.hazmat.backends import commoncrypto
-            _available_backends_list.append(commoncrypto.backend)
-
-        if OpenSSLBinding.is_available():
-            from cryptography.hazmat.backends import openssl
-            _available_backends_list.append(openssl.backend)
+        _available_backends_list = [
+            backend.load(require=False)
+            for backend in pkg_resources.iter_entry_points(
+                "cryptography.backends"
+            )
+        ]
 
     return _available_backends_list
-
 
 _default_backend = None
 

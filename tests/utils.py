@@ -624,3 +624,62 @@ def load_fips_ecdsa_signing_vectors(vector_data):
     if data is not None:
         vectors.append(data)
     return vectors
+
+
+def load_kasvs_dh_vectors(vector_data):
+    """
+    Loads data out of the KASVS key exchange vector data
+    """
+
+    result_rx = re.compile(r"([FP]) \(([0-9]+) -")
+
+    vectors = []
+    data = {
+        "fail_z": False,
+        "fail_agree": False
+    }
+
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("P = "):
+            data["p"] = int(line.split("=")[1], 16)
+        elif line.startswith("Q = "):
+            data["q"] = int(line.split("=")[1], 16)
+        elif line.startswith("G = "):
+            data["g"] = int(line.split("=")[1], 16)
+        elif line.startswith("Z = "):
+            z_hex = line.split("=")[1].strip().encode("ascii")
+            data["z"] = binascii.unhexlify(z_hex)
+        elif line.startswith("XstatCAVS = "):
+            data["x1"] = int(line.split("=")[1], 16)
+        elif line.startswith("YstatCAVS = "):
+            data["y1"] = int(line.split("=")[1], 16)
+        elif line.startswith("XstatIUT = "):
+            data["x2"] = int(line.split("=")[1], 16)
+        elif line.startswith("YstatIUT = "):
+            data["y2"] = int(line.split("=")[1], 16)
+        elif line.startswith("Result = "):
+            result_str = line.split("=")[1].strip()
+            match = result_rx.match(result_str)
+
+            if match.group(1) == "F":
+                if int(match.group(2)) in (5, 10):
+                    data["fail_z"] = True
+                else:
+                    data["fail_agree"] = True
+
+            vectors.append(data)
+
+            data = {
+                "p": data["p"],
+                "q": data["q"],
+                "g": data["g"],
+                "fail_z": False,
+                "fail_agree": False
+            }
+
+    return vectors
