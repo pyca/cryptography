@@ -788,7 +788,7 @@ class Backend(object):
             utils.DeprecatedIn06,
             stacklevel=2
         )
-        return self.load_pem_private_key(self, data, password)
+        return self.load_pem_private_key(data, password)
 
     def load_pkcs8_pem_private_key(self, data, password):
         warnings.warn(
@@ -797,7 +797,7 @@ class Backend(object):
             utils.DeprecatedIn06,
             stacklevel=2
         )
-        return self.load_pem_private_key(self, data, password)
+        return self.load_pem_private_key(data, password)
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
