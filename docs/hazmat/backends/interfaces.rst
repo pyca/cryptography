@@ -588,7 +588,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :param bytes data: PEM data to load.
         :param bytes password: The password to use if the data is encrypted.
-            Should be ``None`` is the data is not encrypted.
+            Should be ``None`` if the data is not encrypted.
         :return: A new instance of the appropriate type of private key that the
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
