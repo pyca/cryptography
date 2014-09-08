@@ -273,6 +273,16 @@ class EllipticCurveBackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class PEMSerializationBackend(object):
+    @abc.abstractmethod
+    def load_pem_private_key(self, data, password):
+        """
+        Loads a private key from PEM encoded data, using the provided password
+        if the data is encrypted.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class TraditionalOpenSSLSerializationBackend(object):
     @abc.abstractmethod
     def load_traditional_openssl_pem_private_key(self, data, password):
