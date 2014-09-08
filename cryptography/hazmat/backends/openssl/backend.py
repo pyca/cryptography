@@ -780,8 +780,24 @@ class Backend(object):
             password,
         )
 
-    load_traditional_openssl_pem_private_key = load_pkcs8_pem_private_key = \
-        load_pem_private_key
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        warnings.warn(
+            "load_traditional_openssl_pem_private_key is deprecated and will "
+            "be removed in a future version, use load_pem_private_key "
+            "instead.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_pem_private_key(self, data, password)
+
+    def load_pkcs8_pem_private_key(self, data, password):
+        warnings.warn(
+            "load_pkcs8_pem_private_key is deprecated and will be removed in a"
+            " future version, use load_pem_private_key instead.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_pem_private_key(self, data, password)
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
