@@ -57,10 +57,11 @@ methods.
 PEM
 ~~~
 
-PEM is an encapsulation format, meaning keys in it can actually be any one of
-several formats, however these are all self-identifying, so you don't need to
-worry about this detail. PEM keys are recognizable because they all begin with
-``-----BEGIN {format}-----`` and end with ``-----END {format}-----``.
+PEM is an encapsulation format, meaning keys in it can actually be any of
+several different key types, however these are all self-identifying, so you
+don't need to worry about this detail. PEM keys are recognizable because they
+all begin with ``-----BEGIN {format}-----`` and end with ``-----END
+{format}-----``.
 
 .. function:: load_pem_private_key(data, password, backend):
 
