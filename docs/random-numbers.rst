@@ -13,10 +13,9 @@ provided random number generator`_, which is available as ``os.urandom()``. For
 example, if you need 16 bytes of random data for an initialization vector, you
 can obtain them with:
 
-.. code-block:: pycon
+.. doctest::
 
     >>> import os
-    >>> os.urandom(16)
-    '...'
+    >>> iv = os.urandom(16)
 
 .. _`always use your operating system's provided random number generator`: http://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/

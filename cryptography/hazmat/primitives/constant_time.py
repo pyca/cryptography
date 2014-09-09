@@ -14,37 +14,20 @@
 from __future__ import absolute_import, division, print_function
 
 import hmac
+import os
 import sys
 
 import cffi
 
 from cryptography.hazmat.bindings.utils import _create_modulename
 
-TYPES = """
-uint8_t Cryptography_constant_time_bytes_eq(uint8_t *, size_t, uint8_t *,
-                                            size_t);
-"""
 
-FUNCTIONS = """
-uint8_t Cryptography_constant_time_bytes_eq(uint8_t *a, size_t len_a,
-                                            uint8_t *b, size_t len_b) {
-    size_t i = 0;
-    uint8_t mismatch = 0;
-    if (len_a != len_b) {
-        return 0;
-    }
-    for (i = 0; i < len_a; i++) {
-        mismatch |= a[i] ^ b[i];
-    }
+with open(os.path.join(os.path.dirname(__file__), "src/constant_time.h")) as f:
+    TYPES = f.read()
 
-    /* Make sure any bits set are copied to the lowest bit */
-    mismatch |= mismatch >> 4;
-    mismatch |= mismatch >> 2;
-    mismatch |= mismatch >> 1;
-    /* Now check the low bit to see if it's set */
-    return (mismatch & 1) == 0;
-}
-"""
+with open(os.path.join(os.path.dirname(__file__), "src/constant_time.c")) as f:
+    FUNCTIONS = f.read()
+
 
 _ffi = cffi.FFI()
 _ffi.cdef(TYPES)

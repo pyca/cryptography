@@ -96,7 +96,11 @@ class Binding(object):
         # OpenSSL goes by a different library name on different operating
         # systems.
         if sys.platform != "win32":
-            libraries = ["crypto", "ssl"]
+            # In some circumstances, the order in which these libs are
+            # specified on the linker command-line is significant;
+            # libssl must come before libcrypto
+            # (http://marc.info/?l=openssl-users&m=135361825921871)
+            libraries = ["ssl", "crypto"]
         else:  # pragma: no cover
             link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
             libraries = _get_windows_libraries(link_type)
@@ -110,12 +114,6 @@ class Binding(object):
         )
         res = cls.lib.Cryptography_add_osrandom_engine()
         assert res != 0
-
-    @classmethod
-    def is_available(cls):
-        # For now, OpenSSL is considered our "default" binding, so we treat it
-        # as always available.
-        return True
 
     @classmethod
     def init_static_locks(cls):
