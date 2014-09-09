@@ -237,21 +237,6 @@ class DSABackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class CMACBackend(object):
-    @abc.abstractmethod
-    def cmac_algorithm_supported(self, algorithm):
-        """
-        Returns True if the block cipher is supported for CMAC by this backend
-        """
-
-    @abc.abstractmethod
-    def create_cmac_ctx(self, algorithm):
-        """
-        Create a CMACContext for calculating a message authentication code.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
 class EllipticCurveBackend(object):
     @abc.abstractmethod
     def elliptic_curve_signature_algorithm_supported(
