@@ -60,6 +60,17 @@ class TestPEMSerialization(object):
             numbers = key.public_numbers()
             assert numbers.e == 65537
 
+    def test_load_pem_dsa_public_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.DSAPublicKey)
+
 
 @pytest.mark.traditional_openssl_serialization
 class TestTraditionalOpenSSLSerialization(object):
