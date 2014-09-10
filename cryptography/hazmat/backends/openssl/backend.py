@@ -25,7 +25,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
+    PKCS8SerializationBackend, RSABackend,
     TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
@@ -74,6 +75,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
+@utils.register_interface(PEMSerializationBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -770,18 +772,32 @@ class Backend(object):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        # OpenSSLs API for loading PKCS#8 certs can also load the traditional
-        # format so we just use that for both of them.
-        return self.load_pkcs8_pem_private_key(data, password)
-
-    def load_pkcs8_pem_private_key(self, data, password):
+    def load_pem_private_key(self, data, password):
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,
             self._evp_pkey_to_private_key,
             data,
             password,
         )
+
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        warnings.warn(
+            "load_traditional_openssl_pem_private_key is deprecated and will "
+            "be removed in a future version, use load_pem_private_key "
+            "instead.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_pem_private_key(data, password)
+
+    def load_pkcs8_pem_private_key(self, data, password):
+        warnings.warn(
+            "load_pkcs8_pem_private_key is deprecated and will be removed in a"
+            " future version, use load_pem_private_key instead.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_pem_private_key(data, password)
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)

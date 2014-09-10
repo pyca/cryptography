@@ -45,14 +45,52 @@ methods.
 
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import interfaces
-        >>> from cryptography.hazmat.primitives.serialization import load_pem_pkcs8_private_key
-        >>> key = load_pem_pkcs8_private_key(pem_data, password=None, backend=default_backend())
+        >>> from cryptography.hazmat.primitives.serialization import load_pem_private_key
+        >>> key = load_pem_private_key(pem_data, password=None, backend=default_backend())
         >>> if isinstance(key, interfaces.RSAPrivateKey):
         ...     signature = sign_with_rsa_key(key, message)
         ... elif isinstance(key, interfaces.DSAPrivateKey):
         ...     signature = sign_with_dsa_key(key, message)
         ... else:
         ...     raise TypeError
+
+PEM
+~~~
+
+PEM is an encapsulation format, meaning keys in it can actually be any of
+several different key types. However these are all self-identifying, so you
+don't need to worry about this detail. PEM keys are recognizable because they
+all begin with ``-----BEGIN {format}-----`` and end with ``-----END
+{format}-----``.
+
+.. function:: load_pem_private_key(data, password, backend):
+
+    .. versionadded:: 0.6
+
+    Deserialize a private key from PEM encoded data to one of the supported
+    asymmetric private key types.
+
+    :param bytes data: The PEM encoded key data.
+
+    :param bytes password: The password to use to decrypt the data. Should
+        be ``None`` if the private key is not encrypted.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
+        provider.
+
+    :returns: A new instance of a private key.
+
+    :raises ValueError: If the PEM data could not be decrypted or if its
+        structure could not be decoded successfully.
+
+    :raises TypeError: If a ``password`` was given and the private key was
+        not encrypted. Or if the key was encrypted but no
+        password was supplied.
+
+    :raises UnsupportedAlgorithm: If the serialized key is of a type that
+        is not supported by the backend or if the key is encrypted with a
+        symmetric cipher that is not supported by the backend.
 
 
 PKCS #8 Format
@@ -71,6 +109,8 @@ with ``-----BEGIN ENCRYPTED PRIVATE KEY-----`` if they have a password.
 
     Deserialize a private key from PEM encoded data to one of the supported
     asymmetric private key types.
+
+    This has been deprecated in favor of :func:`load_pem_private_key`.
 
     :param bytes data: The PEM encoded key data.
 
@@ -110,6 +150,8 @@ KEY-----`` or ``-----BEGIN DSA PRIVATE KEY-----``.
 
     Deserialize a private key from PEM encoded data to one of the supported
     asymmetric private key types.
+
+    This has been deprecated in favor of :func:`load_pem_private_key`.
 
     :param bytes data: The PEM encoded key data.
 

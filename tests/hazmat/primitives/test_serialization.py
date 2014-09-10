@@ -22,15 +22,33 @@ import pytest
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key, load_pem_traditional_openssl_private_key
+    load_pem_pkcs8_private_key, load_pem_private_key,
+    load_pem_traditional_openssl_private_key
 )
 
 from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
 
+@pytest.mark.pem_serialization
+class TestPEMSerialization(object):
+    def test_load_pem_rsa_private_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "Traditional_OpenSSL_Serialization", "key1.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), b"123456", backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.RSAPrivateKey)
+        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+            _check_rsa_private_numbers(key.private_numbers())
+
+
 @pytest.mark.traditional_openssl_serialization
-class TestTraditionalOpenSSLSerialisation(object):
+class TestTraditionalOpenSSLSerialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
         [
@@ -252,7 +270,7 @@ class TestTraditionalOpenSSLSerialisation(object):
 
 
 @pytest.mark.pkcs8_serialization
-class TestPKCS8Serialisation(object):
+class TestPKCS8Serialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
         [
