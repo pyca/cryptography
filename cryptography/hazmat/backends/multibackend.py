@@ -339,7 +339,7 @@ class MultiBackend(object):
         )
 
     def load_pem_public_key(self, data, password):
-        for b in self._filtered_backends(PKCS8SerializationBackend):
+        for b in self._filtered_backends(PEMSerializationBackend):
             return b.load_pem_public_key(data, password)
 
         raise UnsupportedAlgorithm(
