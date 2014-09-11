@@ -595,6 +595,13 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
             encrypted with an unsupported algorithm.
 
+    .. method:: load_pem_public_key(data)
+
+        :param bytes data: PEM data to load.
+        :return: A new instance of the appropriate type of public key that the
+            serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+
 .. class:: TraditionalOpenSSLSerializationBackend
 
     .. versionadded:: 0.3
