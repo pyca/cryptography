@@ -800,12 +800,12 @@ class Backend(object):
             password,
         )
 
-    def load_pem_public_key(self, data, password):
+    def load_pem_public_key(self, data):
         return self._load_key(
             self._lib.PEM_read_bio_PUBKEY,
             self._evp_pkey_to_public_key,
             data,
-            password,
+            None,
         )
 
     def load_traditional_openssl_pem_private_key(self, data, password):

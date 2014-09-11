@@ -46,5 +46,5 @@ def load_pem_private_key(data, password, backend):
     return backend.load_pem_private_key(data, password)
 
 
-def load_pem_public_key(data, password, backend):
-    return backend.load_pem_public_key(data, password)
+def load_pem_public_key(data, backend):
+    return backend.load_pem_public_key(data)

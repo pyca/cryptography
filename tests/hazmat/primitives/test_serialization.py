@@ -50,7 +50,7 @@ class TestPEMSerialization(object):
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "unencpkcs8.pub.pem"),
             lambda pemfile: load_pem_public_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), backend
             )
         )
 
@@ -64,7 +64,7 @@ class TestPEMSerialization(object):
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
             lambda pemfile: load_pem_public_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), backend
             )
         )
 

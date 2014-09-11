@@ -92,7 +92,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
 
-.. function:: load_pem_public_key(data, password, backend)
+.. function:: load_pem_public_key(data, backend)
 
     .. versionadded:: 0.6
 
@@ -100,9 +100,6 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     asymmetric public key types.
 
     :param bytes data: The PEM encoded key data.
-
-    :param bytes password: The password to use to decrypt the data. Should
-        be ``None`` if the private key is not encrypted.
 
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
@@ -112,10 +109,6 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :raises ValueError: If the PEM data could not be decrypted or if its
         structure could not be decoded successfully.
-
-    :raises TypeError: If a ``password`` was given and the public key was
-        not encrypted. Or if the key was encrypted but no
-        password was supplied.
 
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend or if the key is encrypted with a
