@@ -151,6 +151,11 @@ class _GCMCipherContext(object):
             len(mode.initialization_vector)
         )
         self._backend._check_cipher_response(res)
+        # CommonCrypto has a bug where calling update without at least one
+        # call to authenticate_additional_data will result in null byte output
+        # for ciphertext. The following empty byte string call prevents the
+        # issue, which is present in at least 10.8 and 10.9.
+        self.authenticate_additional_data(b"")
 
     def update(self, data):
         buf = self._backend._ffi.new("unsigned char[]", len(data))
@@ -164,6 +169,11 @@ class _GCMCipherContext(object):
         return self._backend._ffi.buffer(buf)[:]
 
     def finalize(self):
+        # CommonCrypto has a yet another bug where you must make at least one
+        # call to update. If you pass just AAD and call finalize without a call
+        # to update you'll get null bytes for tag. The following update call
+        # prevents this issue, which is present in at least 10.8 and 10.9.
+        self.update(b"")
         tag_size = self._cipher.block_size // 8
         tag_buf = self._backend._ffi.new("unsigned char[]", tag_size)
         tag_len = self._backend._ffi.new("size_t *", tag_size)
