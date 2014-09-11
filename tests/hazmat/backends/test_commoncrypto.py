@@ -74,10 +74,10 @@ class TestCommonCrypto(object):
     def test_gcm_tag_with_only_aad(self):
         from cryptography.hazmat.backends.commoncrypto.backend import Backend
         b = Backend()
-        key = binascii.unhexlify("1dde380d6b04fdcb004005b8a77bd5e3")
-        iv = binascii.unhexlify("5053bf901463f97decd88c33")
-        aad = binascii.unhexlify("f807f5f6133021d15cb6434d5ad95cf7d8488727")
-        tag = binascii.unhexlify("4bebf3ff2cb67bb5444dda53bd039e22")
+        key = binascii.unhexlify(b"1dde380d6b04fdcb004005b8a77bd5e3")
+        iv = binascii.unhexlify(b"5053bf901463f97decd88c33")
+        aad = binascii.unhexlify(b"f807f5f6133021d15cb6434d5ad95cf7d8488727")
+        tag = binascii.unhexlify(b"4bebf3ff2cb67bb5444dda53bd039e22")
 
         cipher = Cipher(AES(key), GCM(iv), backend=b)
         encryptor = cipher.encryptor()
@@ -88,11 +88,11 @@ class TestCommonCrypto(object):
     def test_gcm_ciphertext_with_no_aad(self):
         from cryptography.hazmat.backends.commoncrypto.backend import Backend
         b = Backend()
-        key = binascii.unhexlify("e98b72a9881a84ca6b76e0f43e68647a")
-        iv = binascii.unhexlify("8b23299fde174053f3d652ba")
-        ct = binascii.unhexlify("5a3c1cf1985dbb8bed818036fdd5ab42")
-        tag = binascii.unhexlify("23c7ab0f952b7091cd324835043b5eb5")
-        pt = binascii.unhexlify("28286a321293253c3e0aa2704a278032")
+        key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
+        iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
+        ct = binascii.unhexlify(b"5a3c1cf1985dbb8bed818036fdd5ab42")
+        tag = binascii.unhexlify(b"23c7ab0f952b7091cd324835043b5eb5")
+        pt = binascii.unhexlify(b"28286a321293253c3e0aa2704a278032")
 
         cipher = Cipher(AES(key), GCM(iv), backend=b)
         encryptor = cipher.encryptor()
