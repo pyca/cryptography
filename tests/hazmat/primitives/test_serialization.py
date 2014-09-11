@@ -46,6 +46,29 @@ class TestPEMSerialization(object):
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
+    def test_load_pem_ec_private_key_unencrypted(self, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "ec_private_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+
+    def test_load_pem_ec_private_key_encrypted(self, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "ec_private_key_encrypted.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), b"123456", backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
 
 @pytest.mark.traditional_openssl_serialization
 class TestTraditionalOpenSSLSerialization(object):
