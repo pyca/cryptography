@@ -21,15 +21,14 @@ import pytest
 
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key, load_pem_private_key,
     load_pem_traditional_openssl_private_key
 )
-from tests.hazmat.primitives.test_ec import (
-    _skip_curve_unsupported
-)
-from cryptography.hazmat.primitives.asymmetric import ec
 
+
+from .test_ec import _skip_curve_unsupported
 from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
