@@ -25,6 +25,10 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key, load_pem_private_key,
     load_pem_traditional_openssl_private_key
 )
+from tests.hazmat.primitives.test_ec import (
+    _skip_curve_unsupported
+)
+from cryptography.hazmat.primitives.asymmetric import ec
 
 from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
@@ -46,7 +50,9 @@ class TestPEMSerialization(object):
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
+    @pytest.mark.elliptic
     def test_load_pem_ec_private_key_unencrypted(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_private_key.pem"),
@@ -58,7 +64,9 @@ class TestPEMSerialization(object):
         assert key
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
 
+    @pytest.mark.elliptic
     def test_load_pem_ec_private_key_encrypted(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization",
