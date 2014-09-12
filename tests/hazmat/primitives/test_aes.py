@@ -230,10 +230,10 @@ class TestAESModeGCM(object):
     )
 
     def test_gcm_tag_with_only_aad(self, backend):
-        key = binascii.unhexlify(b"1dde380d6b04fdcb004005b8a77bd5e3")
-        iv = binascii.unhexlify(b"5053bf901463f97decd88c33")
-        aad = binascii.unhexlify(b"f807f5f6133021d15cb6434d5ad95cf7d8488727")
-        tag = binascii.unhexlify(b"4bebf3ff2cb67bb5444dda53bd039e22")
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+        tag = binascii.unhexlify(b"0f247e7f9c2505de374006738018493b")
 
         cipher = base.Cipher(
             algorithms.AES(key),

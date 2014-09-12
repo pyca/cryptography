@@ -128,6 +128,14 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
+        # OpenSSL 1.0.1 on Ubuntu 12.04 (and possibly other distributions)
+        # appears to have a bug where you must make at least one call to update
+        # even if you are only using authenticate_additional_data or the
+        # GCM tag will be wrong. An (empty) call to update resolves this
+        # and is harmless for all other versions of OpenSSL.
+        if isinstance(self._mode, GCM):
+            self.update(b"")
+
         buf = self._backend._ffi.new("unsigned char[]", self._block_size)
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherFinal_ex(self._ctx, buf, outlen)
