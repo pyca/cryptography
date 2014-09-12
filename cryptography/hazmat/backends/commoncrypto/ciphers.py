@@ -155,6 +155,7 @@ class _GCMCipherContext(object):
         # call to authenticate_additional_data will result in null byte output
         # for ciphertext. The following empty byte string call prevents the
         # issue, which is present in at least 10.8 and 10.9.
+        # Filed as rdar://18314544
         self.authenticate_additional_data(b"")
 
     def update(self, data):
@@ -173,6 +174,7 @@ class _GCMCipherContext(object):
         # call to update. If you pass just AAD and call finalize without a call
         # to update you'll get null bytes for tag. The following update call
         # prevents this issue, which is present in at least 10.8 and 10.9.
+        # Filed as rdar://18314580
         self.update(b"")
         tag_size = self._cipher.block_size // 8
         tag_buf = self._backend._ffi.new("unsigned char[]", tag_size)
