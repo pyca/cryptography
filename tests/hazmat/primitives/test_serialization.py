@@ -61,7 +61,8 @@ class TestPEMSerialization(object):
     def test_load_pem_ec_private_key_encrypted(self, backend):
         key = load_vectors_from_file(
             os.path.join(
-                "asymmetric", "PEM_Serialization", "ec_private_key_encrypted.pem"),
+                "asymmetric", "PEM_Serialization",
+                "ec_private_key_encrypted.pem"),
             lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), b"123456", backend
             )
@@ -69,6 +70,7 @@ class TestPEMSerialization(object):
 
         assert key
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+
 
 @pytest.mark.traditional_openssl_serialization
 class TestTraditionalOpenSSLSerialization(object):
