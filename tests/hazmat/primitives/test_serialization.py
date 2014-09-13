@@ -21,11 +21,14 @@ import pytest
 
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key, load_pem_private_key,
     load_pem_traditional_openssl_private_key
 )
 
+
+from .test_ec import _skip_curve_unsupported
 from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
@@ -45,6 +48,27 @@ class TestPEMSerialization(object):
         assert isinstance(key, interfaces.RSAPrivateKey)
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("ec_private_key.pem", None),
+            ("ec_private_key_encrypted.pem", b"123456"),
+        ]
+    )
+    @pytest.mark.elliptic
+    def test_load_pem_ec_private_key(self, key_file, password, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", key_file),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), password, backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
 
 
 @pytest.mark.traditional_openssl_serialization
@@ -302,6 +326,26 @@ class TestPKCS8Serialization(object):
         assert isinstance(key, interfaces.RSAPrivateKey)
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("ec_private_key.pem", None),
+            ("ec_private_key_encrypted.pem", b"123456"),
+        ]
+    )
+    @pytest.mark.elliptic
+    def test_load_pem_ec_private_key(self, key_file, password, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", key_file),
+            lambda pemfile: load_pem_pkcs8_private_key(
+                pemfile.read().encode(), password, backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
 
     def test_unused_password(self, backend):
         key_file = os.path.join(

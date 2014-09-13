@@ -76,7 +76,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         be ``None`` if the private key is not encrypted.
 
     :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
         provider.
 
     :returns: A new instance of a private key.
