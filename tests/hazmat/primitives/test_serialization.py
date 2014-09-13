@@ -23,7 +23,7 @@ from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key, load_pem_private_key,
+    load_pem_pkcs8_private_key, load_pem_private_key, load_pem_public_key,
     load_pem_traditional_openssl_private_key
 )
 
@@ -66,9 +66,32 @@ class TestPEMSerialization(object):
                 pemfile.read().encode(), password, backend
             )
         )
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+
+    def test_load_pem_rsa_public_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unencpkcs8.pub.pem"),
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), backend
+            )
+        )
 
         assert key
-        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+        assert isinstance(key, interfaces.RSAPublicKey)
+        if isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+            numbers = key.public_numbers()
+            assert numbers.e == 65537
+
+    def test_load_pem_dsa_public_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.DSAPublicKey)
 
 
 @pytest.mark.traditional_openssl_serialization
