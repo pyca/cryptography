@@ -24,7 +24,9 @@ import six
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, padding
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import (
+    Cipher, _PaddedCipher, algorithms, modes
+)
 from cryptography.hazmat.primitives.hmac import HMAC
 
 
@@ -63,12 +65,13 @@ class Fernet(object):
         if not isinstance(data, bytes):
             raise TypeError("data must be bytes.")
 
-        padder = padding.PKCS7(algorithms.AES.block_size).padder()
-        padded_data = padder.update(data) + padder.finalize()
-        encryptor = Cipher(
+        c = Cipher(
             algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
+        )
+        encryptor = _PaddedCipher(
+            c, padding.PKCS7(algorithms.AES.block_size)
         ).encryptor()
-        ciphertext = encryptor.update(padded_data) + encryptor.finalize()
+        ciphertext = encryptor.update(data) + encryptor.finalize()
 
         basic_parts = (
             b"\x80" + struct.pack(">Q", current_time) + iv + ciphertext
@@ -111,19 +114,15 @@ class Fernet(object):
 
         iv = data[9:25]
         ciphertext = data[25:-32]
-        decryptor = Cipher(
+        c = Cipher(
             algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
+        )
+        decryptor = _PaddedCipher(
+            c, padding.PKCS7(algorithms.AES.block_size)
         ).decryptor()
-        plaintext_padded = decryptor.update(ciphertext)
+        data = decryptor.update(ciphertext)
         try:
-            plaintext_padded += decryptor.finalize()
+            data += decryptor.finalize()
         except ValueError:
             raise InvalidToken
-        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
-
-        unpadded = unpadder.update(plaintext_padded)
-        try:
-            unpadded += unpadder.finalize()
-        except ValueError:
-            raise InvalidToken
-        return unpadded
+        return data
