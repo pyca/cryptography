@@ -149,8 +149,8 @@ Building cryptography with conda
 --------------------------------
 
 Because of a `bug in conda`_, attempting to install cryptography out of the box
-will result in an error. This can be resolved by setting the library path
-environment variable for your platform.
+with pip will result in an error. This can be resolved by setting the library
+path environment variable for your platform.
 
 On OS X:
 
@@ -166,6 +166,12 @@ and on Linux:
 
 You will need to set this variable every time you start Python. For more
 information, consult `Greg Wilson's blog post`_ on the subject.
+
+You can also work around this by installing cryptography with ``conda``:
+
+.. code-block:: console
+
+    $ conda install cryptography
 
 
 .. _`Homebrew`: http://brew.sh
