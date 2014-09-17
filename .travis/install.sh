@@ -50,6 +50,11 @@ if [[ "$DARWIN" = true ]]; then
             pyenv global pypy-2.3.1
             pip install virtualenv
             ;;
+        pypy3)
+            pyenv install pypy3-2.3.1
+            pyenv global pypy3-2.3.1
+            pip install virtualenv
+            ;;
         py32)
             pyenv install 3.2.5
             pyenv global 3.2.5
