@@ -298,9 +298,9 @@ class TestPKCS8Serialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
         [
-            ("unencpkcs8.pem", None),
-            ("encpkcs8.pem", b"foobar"),
-            ("enc2pkcs8.pem", b"baz"),
+            ("unenc-rsa-pkcs8.pem", None),
+            ("enc-rsa-pkcs8.pem", b"foobar"),
+            ("enc2-rsa-pkcs8.pem", b"baz"),
             ("pkcs12_s2k_pem-X_9607.pem", b"123456"),
             ("pkcs12_s2k_pem-X_9671.pem", b"123456"),
             ("pkcs12_s2k_pem-X_9925.pem", b"123456"),
@@ -349,7 +349,7 @@ class TestPKCS8Serialization(object):
 
     def test_unused_password(self, backend):
         key_file = os.path.join(
-            "asymmetric", "PKCS8", "unencpkcs8.pem")
+            "asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem")
         password = b"this password will not be used"
 
         with pytest.raises(TypeError):
@@ -362,7 +362,7 @@ class TestPKCS8Serialization(object):
 
     def test_wrong_password(self, backend):
         key_file = os.path.join(
-            "asymmetric", "PKCS8", "encpkcs8.pem")
+            "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem")
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
@@ -378,7 +378,7 @@ class TestPKCS8Serialization(object):
         key_file = os.path.join(
             "asymmetric",
             "PKCS8",
-            "encpkcs8.pem"
+            "enc-rsa-pkcs8.pem"
         )
 
         with pytest.raises(TypeError):
@@ -403,7 +403,7 @@ class TestPKCS8Serialization(object):
             )
 
     def test_corrupt_format(self, backend):
-        # unencpkcs8.pem with a bunch of data missing.
+        # unenc-rsa-pkcs8.pem with a bunch of data missing.
         key_data = textwrap.dedent("""\
         -----BEGIN PRIVATE KEY-----
         MIICdQIBADALBgkqhkiG9w0BAQEEggJhMIICXQIBAAKBgQC7JHoJfg6yNzLMOWet
@@ -433,7 +433,7 @@ class TestPKCS8Serialization(object):
             )
 
     def test_encrypted_corrupt_format(self, backend):
-        # encpkcs8.pem with some bits flipped.
+        # enc-rsa-pkcs8.pem with some bits flipped.
         key_data = textwrap.dedent("""\
         -----BEGIN ENCRYPTED PRIVATE KEY-----
         MIICojAcBgoqhkiG9w0BDAEDMA4ECHK0M0+QuEL9AgIBIcSCAoDRq+KRY+0XP0tO
@@ -469,7 +469,7 @@ class TestPKCS8Serialization(object):
     def test_key1_pem_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
             os.path.join(
-                "asymmetric", "PKCS8", "encpkcs8.pem"),
+                "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
             lambda pemfile: load_pem_pkcs8_private_key(
                 pemfile.read().encode(), b"foobar", backend
             )
