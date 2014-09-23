@@ -282,7 +282,7 @@ class PEMSerializationBackend(object):
         """
 
     @abc.abstractmethod
-    def load_pem_public_key(self, data):
+    def load_pem_public_key(self, data, password):
         """
         Loads a public key from PEM encoded data.
         """
