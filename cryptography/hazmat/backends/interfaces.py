@@ -281,6 +281,12 @@ class PEMSerializationBackend(object):
         if the data is encrypted.
         """
 
+    @abc.abstractmethod
+    def load_pem_public_key(self, data, password):
+        """
+        Loads a public key from PEM encoded data.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class TraditionalOpenSSLSerializationBackend(object):

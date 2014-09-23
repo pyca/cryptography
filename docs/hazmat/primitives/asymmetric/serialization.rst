@@ -92,6 +92,27 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
 
+.. function:: load_pem_public_key(data, backend):
+
+    .. versionadded:: 0.6
+
+    Deserialize a public key from PEM encoded data to one of the supported
+    asymmetric public key types.
+
+    :param bytes data: The PEM encoded key data.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
+        provider.
+
+    :returns: A new instance of a public key.
+
+    :raises ValueError: If the PEM data could not be decrypted or if its
+        structure could not be decoded successfully.
+
+    :raises UnsupportedAlgorithm: If the serialized key is of a type that
+        is not supported by the backend.
+
 
 PKCS #8 Format
 ~~~~~~~~~~~~~~

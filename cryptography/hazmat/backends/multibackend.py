@@ -187,14 +187,12 @@ class MultiBackend(object):
     def load_rsa_private_numbers(self, numbers):
         for b in self._filtered_backends(RSABackend):
             return b.load_rsa_private_numbers(numbers)
-
         raise UnsupportedAlgorithm("RSA is not supported by the backend",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
     def load_rsa_public_numbers(self, numbers):
         for b in self._filtered_backends(RSABackend):
             return b.load_rsa_public_numbers(numbers)
-
         raise UnsupportedAlgorithm("RSA is not supported by the backend",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
@@ -323,6 +321,15 @@ class MultiBackend(object):
     def load_pem_private_key(self, data, password):
         for b in self._filtered_backends(PEMSerializationBackend):
             return b.load_pem_private_key(data, password)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this key serialization.",
+            _Reasons.UNSUPPORTED_SERIALIZATION
+        )
+
+    def load_pem_public_key(self, data):
+        for b in self._filtered_backends(PEMSerializationBackend):
+            return b.load_pem_public_key(data)
 
         raise UnsupportedAlgorithm(
             "This backend does not support this key serialization.",
