@@ -483,6 +483,27 @@ class Backend(object):
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
+    def _evp_pkey_to_public_key(self, evp_pkey):
+        """
+        Return the appropriate type of PublicKey given an evp_pkey cdata
+        pointer.
+        """
+
+        type = evp_pkey.type
+
+        if type == self._lib.EVP_PKEY_RSA:
+            rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
+            assert rsa_cdata != self._ffi.NULL
+            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+            return _RSAPublicKey(self, rsa_cdata)
+        elif type == self._lib.EVP_PKEY_DSA:
+            dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
+            assert dsa_cdata != self._ffi.NULL
+            dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+            return _DSAPublicKey(self, dsa_cdata)
+        else:
+            raise UnsupportedAlgorithm("Unsupported key type.")
+
     def _pem_password_cb(self, password):
         """
         Generate a pem_password_cb function pointer that copied the password to
@@ -785,6 +806,14 @@ class Backend(object):
             self._evp_pkey_to_private_key,
             data,
             password,
+        )
+
+    def load_pem_public_key(self, data):
+        return self._load_key(
+            self._lib.PEM_read_bio_PUBKEY,
+            self._evp_pkey_to_public_key,
+            data,
+            None,
         )
 
     def load_traditional_openssl_pem_private_key(self, data, password):
