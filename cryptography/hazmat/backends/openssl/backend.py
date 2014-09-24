@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import itertools
 import warnings
+from contextlib import contextmanager
 
 import six
 
@@ -1012,6 +1013,15 @@ class Backend(object):
             )
         return curve_nid
 
+    @contextmanager
+    def _bn_ctx_manager(self):
+        bn_ctx = self._lib.BN_CTX_new()
+        assert bn_ctx != self._ffi.NULL
+        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
+        self._lib.BN_CTX_start(bn_ctx)
+        yield bn_ctx
+        self._lib.BN_CTX_end(bn_ctx)
+
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
         This is a port of EC_KEY_set_public_key_affine_coordinates that was
@@ -1028,10 +1038,6 @@ class Backend(object):
 
         nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
         assert nid_two_field != self._lib.NID_undef
-
-        bn_ctx = self._lib.BN_CTX_new()
-        assert bn_ctx != self._ffi.NULL
-        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
 
         group = self._lib.EC_KEY_get0_group(ctx)
         assert group != self._ffi.NULL
@@ -1055,9 +1061,7 @@ class Backend(object):
 
         assert set_func and get_func
 
-        try:
-            self._lib.BN_CTX_start(bn_ctx)
-
+        with self._bn_ctx_manager() as bn_ctx:
             check_x = self._lib.BN_CTX_get(bn_ctx)
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
@@ -1071,8 +1075,6 @@ class Backend(object):
                 self._lib.BN_cmp(bn_x, check_x) == 0 and
                 self._lib.BN_cmp(bn_y, check_y) == 0
             )
-        finally:
-            self._lib.BN_CTX_end(bn_ctx)
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1
