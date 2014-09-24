@@ -1061,7 +1061,6 @@ class Backend(object):
             check_x = self._lib.BN_CTX_get(bn_ctx)
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
-
             res = set_func(group, point, bn_x, bn_y, bn_ctx)
             assert res == 1
 
