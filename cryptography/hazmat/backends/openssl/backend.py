@@ -1033,8 +1033,6 @@ class Backend(object):
         assert bn_ctx != self._ffi.NULL
         bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
 
-        self._lib.BN_CTX_start(bn_ctx)
-
         group = self._lib.EC_KEY_get0_group(ctx)
         assert group != self._ffi.NULL
 
@@ -1048,9 +1046,6 @@ class Backend(object):
         nid = self._lib.EC_METHOD_get_field_type(method)
         assert nid != self._lib.NID_undef
 
-        check_x = self._lib.BN_CTX_get(bn_ctx)
-        check_y = self._lib.BN_CTX_get(bn_ctx)
-
         if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
             set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
@@ -1060,18 +1055,25 @@ class Backend(object):
 
         assert set_func and get_func
 
-        res = set_func(group, point, bn_x, bn_y, bn_ctx)
-        assert res == 1
+        try:
+            self._lib.BN_CTX_start(bn_ctx)
 
-        res = get_func(group, point, check_x, check_y, bn_ctx)
-        assert res == 1
+            check_x = self._lib.BN_CTX_get(bn_ctx)
+            check_y = self._lib.BN_CTX_get(bn_ctx)
 
-        assert (
-            self._lib.BN_cmp(bn_x, check_x) == 0 and
-            self._lib.BN_cmp(bn_y, check_y) == 0
-        )
 
-        self._lib.BN_CTX_end(bn_ctx)
+            res = set_func(group, point, bn_x, bn_y, bn_ctx)
+            assert res == 1
+
+            res = get_func(group, point, check_x, check_y, bn_ctx)
+            assert res == 1
+
+            assert (
+                self._lib.BN_cmp(bn_x, check_x) == 0 and
+                self._lib.BN_cmp(bn_y, check_y) == 0
+            )
+        finally:
+            self._lib.BN_CTX_end(bn_ctx)
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1
