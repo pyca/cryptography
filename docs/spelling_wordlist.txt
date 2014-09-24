@@ -43,6 +43,7 @@ preprocessor
 preprocessors
 pseudorandom
 pyOpenSSL
+rsa
 secp
 secp256r1
 Schneier
