@@ -20,6 +20,9 @@ decrypting
 deserialize
 deserialized
 Docstrings
+dsa
+dsaparam
+ec
 fernet
 Fernet
 hazmat
@@ -33,12 +36,15 @@ Lange
 metadata
 namespace
 namespaces
+pem
 pickleable
 plaintext
 preprocessor
 preprocessors
 pseudorandom
 pyOpenSSL
+secp
+secp256r1
 Schneier
 scrypt
 Solaris
