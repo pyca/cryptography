@@ -444,6 +444,15 @@ class EllipticCurvePrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePrivateKeyWithNumbers(EllipticCurvePrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns an EllipticCurvePrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePublicKey(object):
     @abc.abstractmethod
     def verifier(self, signature, signature_algorithm):
@@ -455,4 +464,13 @@ class EllipticCurvePublicKey(object):
     def curve(self):
         """
         The EllipticCurve that this key is on.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePublicKeyWithNumbers(EllipticCurvePublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns an EllipticCurvePublicNumbers.
         """

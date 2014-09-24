@@ -492,6 +492,23 @@ Elliptic Curve
         The EllipticCurvePublicKey object for this private key.
 
 
+.. class:: EllipticCurvePrivateKeyWithNumbers
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
+            instance.
+
+
 .. class:: EllipticCurvePublicKey
 
     .. versionadded:: 0.5
@@ -516,6 +533,23 @@ Elliptic Curve
         :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
 
         The elliptic curve for this key.
+
+
+.. class:: EllipticCurvePublicKeyWithNumbers
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePublicKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
+            instance.
 
 
 Hash algorithms
