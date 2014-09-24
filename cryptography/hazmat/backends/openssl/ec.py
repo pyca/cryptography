@@ -129,7 +129,7 @@ class _ECDSAVerificationContext(object):
         return True
 
 
-@utils.register_interface(interfaces.EllipticCurvePrivateKey)
+@utils.register_interface(interfaces.EllipticCurvePrivateKeyWithNumbers)
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata, curve):
         self._backend = backend
@@ -172,8 +172,16 @@ class _EllipticCurvePrivateKey(object):
             self._backend, public_ec_key, self._curve
         )
 
+    def private_numbers(self):
+        bn = self._backend._lib.EC_KEY_get0_private_key(self._ec_key)
+        private_value = self._backend._bn_to_int(bn)
+        return ec.EllipticCurvePrivateNumbers(
+            private_value=private_value,
+            public_numbers=self.public_key().public_numbers()
+        )
 
-@utils.register_interface(interfaces.EllipticCurvePublicKey)
+
+@utils.register_interface(interfaces.EllipticCurvePublicKeyWithNumbers)
 class _EllipticCurvePublicKey(object):
     def __init__(self, backend, ec_key_cdata, curve):
         self._backend = backend
@@ -193,3 +201,50 @@ class _EllipticCurvePublicKey(object):
             raise UnsupportedAlgorithm(
                 "Unsupported elliptic curve signature algorithm.",
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def public_numbers(self):
+        bn_ctx = self._backend._lib.BN_CTX_new()
+        assert bn_ctx != self._backend._ffi.NULL
+        bn_ctx = self._backend._ffi.gc(bn_ctx, self._backend._lib.BN_CTX_free)
+
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        assert group != self._backend._ffi.NULL
+
+        method = self._backend._lib.EC_GROUP_method_of(group)
+        assert method != self._backend._ffi.NULL
+
+        nid = self._backend._lib.EC_METHOD_get_field_type(method)
+        assert nid != self._backend._lib.NID_undef
+
+        nid_two_field = self._backend._lib.OBJ_sn2nid(
+            b"characteristic-two-field"
+        )
+        assert nid_two_field != self._backend._lib.NID_undef
+
+        if nid == nid_two_field and self._backend._lib.Cryptography_HAS_EC2M:
+            get_func = self._backend._lib.EC_POINT_get_affine_coordinates_GF2m
+        else:
+            get_func = self._backend._lib.EC_POINT_get_affine_coordinates_GFp
+
+        point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        assert point != self._backend._ffi.NULL
+
+        try:
+            self._backend._lib.BN_CTX_start(bn_ctx)
+
+            bn_x = self._backend._lib.BN_CTX_get(bn_ctx)
+            bn_y = self._backend._lib.BN_CTX_get(bn_ctx)
+
+            res = get_func(group, point, bn_x, bn_y, bn_ctx)
+            assert res == 1
+
+            x = self._backend._bn_to_int(bn_x)
+            y = self._backend._bn_to_int(bn_y)
+        finally:
+            self._backend._lib.BN_CTX_end(bn_ctx)
+
+        return ec.EllipticCurvePublicNumbers(
+            x=x,
+            y=y,
+            curve=self._curve
+        )
