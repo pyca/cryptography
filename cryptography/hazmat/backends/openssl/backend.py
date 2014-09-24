@@ -1033,6 +1033,8 @@ class Backend(object):
         assert bn_ctx != self._ffi.NULL
         bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
 
+        self._lib.BN_CTX_start(bn_ctx)
+
         group = self._lib.EC_KEY_get0_group(ctx)
         assert group != self._ffi.NULL
 
@@ -1068,6 +1070,8 @@ class Backend(object):
             self._lib.BN_cmp(bn_x, check_x) == 0 and
             self._lib.BN_cmp(bn_y, check_y) == 0
         )
+
+        self._lib.BN_CTX_end(bn_ctx)
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1
