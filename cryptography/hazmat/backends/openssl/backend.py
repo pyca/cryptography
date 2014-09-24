@@ -474,12 +474,28 @@ class Backend(object):
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPrivateKey(self, dsa_cdata)
-        elif self._lib.Cryptography_HAS_EC == 1 \
-                and type == self._lib.EVP_PKEY_EC:
+        elif (self._lib.Cryptography_HAS_EC == 1 and
+              type == self._lib.EVP_PKEY_EC):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            return _EllipticCurvePrivateKey(self, ec_cdata, None)
+            group = self._lib.EC_KEY_get0_group(ec_cdata)
+            assert group != self._ffi.NULL
+
+            nid = self._lib.EC_GROUP_get_curve_name(group)
+            assert nid != 0
+
+            curve_name = self._lib.OBJ_nid2sn(nid)
+            assert curve_name != self._ffi.NULL
+
+            sn = self._ffi.string(curve_name).decode('ascii')
+
+            curve = self._sn_to_elliptic_curve(sn)
+
+            point = self._lib.EC_POINT_new(group)
+            assert point != self._ffi.NULL
+            point = self._ffi.gc(point, self._lib.EC_POINT_free)
+            return _EllipticCurvePrivateKey(self, ec_cdata, curve)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -1047,6 +1063,15 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
         return curve_nid
+
+    def _sn_to_elliptic_curve(self, sn):
+        try:
+            return ec.CURVE_TYPES[sn]()
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "{0} is not a supported elliptic curve".format(sn),
+                _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+            )
 
     @contextmanager
     def _bn_ctx_manager(self):

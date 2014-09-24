@@ -412,6 +412,8 @@ class TestPKCS8Serialization(object):
         )
         assert key
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+        assert key.curve.name == "secp256r1"
+        assert key.curve.key_size == 256
 
     def test_unused_password(self, backend):
         key_file = os.path.join(
