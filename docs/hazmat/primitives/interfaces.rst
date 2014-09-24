@@ -416,7 +416,7 @@ DSA
 
     Extends :class:`DSAPublicKey`.
 
-    .. method:: private_numbers()
+    .. method:: public_numbers()
 
         Create a
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
@@ -541,7 +541,7 @@ Elliptic Curve
 
     Extends :class:`EllipticCurvePublicKey`.
 
-    .. method:: private_numbers()
+    .. method:: public_numbers()
 
         Create a
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
