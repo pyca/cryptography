@@ -510,6 +510,7 @@ class TestOpenSSLEllipticCurve(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             backend._sn_to_elliptic_curve(b"fake")
 
+
 class TestDeprecatedRSABackendMethods(object):
     def test_create_rsa_signature_ctx(self):
         private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
