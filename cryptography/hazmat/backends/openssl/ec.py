@@ -24,6 +24,13 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 
 def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
+    """
+    This function truncates digests that are longer than a given elliptic
+    curve key's length so they can be signed. Since elliptic curve keys are
+    much shorter than RSA keys many digests (e.g. SHA-512) may require
+    truncation.
+    """
+
     _lib = backend._lib
     _ffi = backend._ffi
 
@@ -31,17 +38,14 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
 
     group = _lib.EC_KEY_get0_group(ec_key_cdata)
 
-    bn_ctx = _lib.BN_CTX_new()
-    assert bn_ctx != _ffi.NULL
-    bn_ctx = _ffi.gc(bn_ctx, _lib.BN_CTX_free)
+    with backend._bn_ctx_manager() as bn_ctx:
+        order = _lib.BN_CTX_get(bn_ctx)
+        assert order != _ffi.NULL
 
-    order = _lib.BN_CTX_get(bn_ctx)
-    assert order != _ffi.NULL
+        res = _lib.EC_GROUP_get_order(group, order, bn_ctx)
+        assert res == 1
 
-    res = _lib.EC_GROUP_get_order(group, order, bn_ctx)
-    assert res == 1
-
-    order_bits = _lib.BN_num_bits(order)
+        order_bits = _lib.BN_num_bits(order)
 
     if 8 * digest_len > order_bits:
         digest_len = (order_bits + 7) // 8
