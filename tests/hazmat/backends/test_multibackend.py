@@ -217,6 +217,9 @@ class DummyPEMSerializationBackend(object):
     def load_pem_private_key(self, data, password):
         pass
 
+    def load_pem_public_key(self, data):
+    pass
+
 
 class TestMultiBackend(object):
     def test_ciphers(self):
@@ -532,7 +535,10 @@ class TestMultiBackend(object):
         backend = MultiBackend([DummyPEMSerializationBackend()])
 
         backend.load_pem_private_key(b"keydata", None)
+        backend.load_pem_public_key(b"keydata")
 
         backend = MultiBackend([])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pem_private_key(b"keydata", None)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_pem_public_key(b"keydata")
