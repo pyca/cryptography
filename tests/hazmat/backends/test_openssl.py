@@ -28,7 +28,7 @@ from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
@@ -568,4 +568,40 @@ class TestDeprecatedDSABackendMethods(object):
             public_key,
             b"\x00" * 128,
             hashes.SHA1()
+        )
+
+
+@pytest.mark.elliptic
+class TestDeprecatedECBackendMethods(object):
+    def test_elliptic_curve_private_key_from_numbers(self):
+        d = 5634846038258869671139984276180670841223409490498798721258
+        y = 4131560123026307384858369684985976479488628761329758810693
+        x = 3402090428547195623222463880060959356423657484435591627791
+        curve = ec.SECP192R1()
+        pub_numbers = ec.EllipticCurvePublicNumbers(
+            x=x,
+            y=y,
+            curve=curve
+        )
+        numbers = ec.EllipticCurvePrivateNumbers(
+            private_value=d,
+            public_numbers=pub_numbers
+        )
+        pytest.deprecated_call(
+            backend.elliptic_curve_private_key_from_numbers,
+            numbers
+        )
+
+    def test_elliptic_curve_public_key_from_numbers(self):
+        y = 4131560123026307384858369684985976479488628761329758810693
+        x = 3402090428547195623222463880060959356423657484435591627791
+        curve = ec.SECP192R1()
+        pub_numbers = ec.EllipticCurvePublicNumbers(
+            x=x,
+            y=y,
+            curve=curve
+        )
+        pytest.deprecated_call(
+            backend.elliptic_curve_public_key_from_numbers,
+            pub_numbers
         )

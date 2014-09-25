@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
@@ -297,9 +299,18 @@ class MultiBackend(object):
         )
 
     def elliptic_curve_private_key_from_numbers(self, numbers):
+        warnings.warn(
+            "elliptic_curve_private_key_from_numbers is deprecated and will "
+            "be removed in a future version.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_elliptic_curve_private_numbers(numbers)
+
+    def load_elliptic_curve_private_numbers(self, numbers):
         for b in self._filtered_backends(EllipticCurveBackend):
             try:
-                return b.elliptic_curve_private_key_from_numbers(numbers)
+                return b.load_elliptic_curve_private_numbers(numbers)
             except UnsupportedAlgorithm:
                 continue
 
@@ -309,9 +320,18 @@ class MultiBackend(object):
         )
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
+        warnings.warn(
+            "elliptic_curve_public_key_from_numbers is deprecated and will "
+            "be removed in a future version.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_elliptic_curve_public_numbers(numbers)
+
+    def load_elliptic_curve_public_numbers(self, numbers):
         for b in self._filtered_backends(EllipticCurveBackend):
             try:
-                return b.elliptic_curve_public_key_from_numbers(numbers)
+                return b.load_elliptic_curve_public_numbers(numbers)
             except UnsupportedAlgorithm:
                 continue
 

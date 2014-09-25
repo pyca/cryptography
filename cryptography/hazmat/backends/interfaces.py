@@ -260,13 +260,13 @@ class EllipticCurveBackend(object):
         """
 
     @abc.abstractmethod
-    def elliptic_curve_public_key_from_numbers(self, numbers):
+    def load_elliptic_curve_public_numbers(self, numbers):
         """
         Return an EllipticCurvePublicKey provider using the given numbers.
         """
 
     @abc.abstractmethod
-    def elliptic_curve_private_key_from_numbers(self, numbers):
+    def load_elliptic_curve_private_numbers(self, numbers):
         """
         Return an EllipticCurvePublicKey provider using the given numbers.
         """
