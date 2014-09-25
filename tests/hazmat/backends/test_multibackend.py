@@ -198,10 +198,12 @@ class DummyEllipticCurveBackend(object):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
     def elliptic_curve_private_key_from_numbers(self, numbers):
-        return None
+        if not self.elliptic_curve_supported(numbers.public_numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
-        return None
+        if not self.elliptic_curve_supported(numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
     def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
@@ -527,6 +529,12 @@ class TestMultiBackend(object):
                 ec.SECT283K1
             ])
         ])
+
+        assert backend.elliptic_curve_signature_algorithm_supported(
+            ec.ECDSA(hashes.SHA256()),
+            ec.SECT163K1()
+        ) is False
+
         pub_numbers = ec.EllipticCurvePublicNumbers(2, 3, ec.SECT283K1())
         numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
 
@@ -538,6 +546,27 @@ class TestMultiBackend(object):
             backend.elliptic_curve_public_key_from_numbers,
             pub_numbers
         )
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.elliptic_curve_private_key_from_numbers(
+                ec.EllipticCurvePrivateNumbers(
+                    1,
+                    ec.EllipticCurvePublicNumbers(
+                        2,
+                        3,
+                        ec.SECT163K1()
+                    )
+                )
+            )
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.elliptic_curve_public_key_from_numbers(
+                ec.EllipticCurvePublicNumbers(
+                    2,
+                    3,
+                    ec.SECT163K1()
+                )
+            )
 
     def test_pkcs8_serialization_backend(self):
         backend = MultiBackend([DummyPKCS8SerializationBackend()])
