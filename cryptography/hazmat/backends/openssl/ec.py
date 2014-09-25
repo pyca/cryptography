@@ -203,35 +203,13 @@ class _EllipticCurvePublicKey(object):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
     def public_numbers(self):
-        bn_ctx = self._backend._lib.BN_CTX_new()
-        assert bn_ctx != self._backend._ffi.NULL
-        bn_ctx = self._backend._ffi.gc(bn_ctx, self._backend._lib.BN_CTX_free)
-
-        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
-        assert group != self._backend._ffi.NULL
-
-        method = self._backend._lib.EC_GROUP_method_of(group)
-        assert method != self._backend._ffi.NULL
-
-        nid = self._backend._lib.EC_METHOD_get_field_type(method)
-        assert nid != self._backend._lib.NID_undef
-
-        nid_two_field = self._backend._lib.OBJ_sn2nid(
-            b"characteristic-two-field"
+        set_func, get_func, group = (
+            self._backend._ec_key_determine_group_get_set_funcs(self._ec_key)
         )
-        assert nid_two_field != self._backend._lib.NID_undef
-
-        if nid == nid_two_field and self._backend._lib.Cryptography_HAS_EC2M:
-            get_func = self._backend._lib.EC_POINT_get_affine_coordinates_GF2m
-        else:
-            get_func = self._backend._lib.EC_POINT_get_affine_coordinates_GFp
-
         point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
         assert point != self._backend._ffi.NULL
 
-        try:
-            self._backend._lib.BN_CTX_start(bn_ctx)
-
+        with self._backend._tmp_bn_ctx() as bn_ctx:
             bn_x = self._backend._lib.BN_CTX_get(bn_ctx)
             bn_y = self._backend._lib.BN_CTX_get(bn_ctx)
 
@@ -240,8 +218,6 @@ class _EllipticCurvePublicKey(object):
 
             x = self._backend._bn_to_int(bn_x)
             y = self._backend._bn_to_int(bn_y)
-        finally:
-            self._backend._lib.BN_CTX_end(bn_ctx)
 
         return ec.EllipticCurvePublicNumbers(
             x=x,

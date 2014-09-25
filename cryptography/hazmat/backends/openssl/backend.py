@@ -1085,29 +1085,18 @@ class Backend(object):
         finally:
             self._lib.BN_CTX_end(bn_ctx)
 
-    def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
+    def _ec_key_determine_group_get_set_funcs(self, ctx):
         """
-        This is a port of EC_KEY_set_public_key_affine_coordinates that was
-        added in 1.0.1.
-
-        Sets the public key point in the EC_KEY context to the affine x and y
-        values.
+        Given an EC_KEY determine the group and what methods are required to
+        get/set point coordinates.
         """
-
         assert ctx != self._ffi.NULL
-
-        bn_x = self._int_to_bn(x)
-        bn_y = self._int_to_bn(y)
 
         nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
         assert nid_two_field != self._lib.NID_undef
 
         group = self._lib.EC_KEY_get0_group(ctx)
         assert group != self._ffi.NULL
-
-        point = self._lib.EC_POINT_new(group)
-        assert point != self._ffi.NULL
-        point = self._ffi.gc(point, self._lib.EC_POINT_free)
 
         method = self._lib.EC_GROUP_method_of(group)
         assert method != self._ffi.NULL
@@ -1123,6 +1112,28 @@ class Backend(object):
             get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
 
         assert set_func and get_func
+
+        return set_func, get_func, group
+
+    def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
+        """
+        This is a port of EC_KEY_set_public_key_affine_coordinates that was
+        added in 1.0.1.
+
+        Sets the public key point in the EC_KEY context to the affine x and y
+        values.
+        """
+
+        bn_x = self._int_to_bn(x)
+        bn_y = self._int_to_bn(y)
+
+        set_func, get_func, group = (
+            self._ec_key_determine_group_get_set_funcs(ctx)
+        )
+
+        point = self._lib.EC_POINT_new(group)
+        assert point != self._ffi.NULL
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
 
         with self._tmp_bn_ctx() as bn_ctx:
             check_x = self._lib.BN_CTX_get(bn_ctx)
