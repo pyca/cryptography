@@ -142,7 +142,7 @@ class TestECDSAVectors(object):
         ))
     )
     def test_signing_with_example_keys(self, backend, vector, hash_type):
-        curve_type = ec.CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -168,7 +168,7 @@ class TestECDSAVectors(object):
         verifier.verify()
 
     @pytest.mark.parametrize(
-        "curve", ec.CURVE_TYPES.values()
+        "curve", ec._CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
         _skip_curve_unsupported(backend, curve())
@@ -224,7 +224,7 @@ class TestECDSAVectors(object):
     )
     def test_signatures(self, backend, vector):
         hash_type = _HASH_TYPES[vector['digest_algorithm']]
-        curve_type = ec.CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -256,7 +256,7 @@ class TestECDSAVectors(object):
     )
     def test_signature_failures(self, backend, vector):
         hash_type = _HASH_TYPES[vector['digest_algorithm']]
-        curve_type = ec.CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 

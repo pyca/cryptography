@@ -492,9 +492,6 @@ class Backend(object):
 
             curve = self._sn_to_elliptic_curve(sn)
 
-            point = self._lib.EC_POINT_new(group)
-            assert point != self._ffi.NULL
-            point = self._ffi.gc(point, self._lib.EC_POINT_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, curve)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
@@ -1066,7 +1063,7 @@ class Backend(object):
 
     def _sn_to_elliptic_curve(self, sn):
         try:
-            return ec.CURVE_TYPES[sn]()
+            return ec._CURVE_TYPES[sn]()
         except KeyError:
             raise UnsupportedAlgorithm(
                 "{0} is not a supported elliptic curve".format(sn),

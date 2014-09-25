@@ -184,7 +184,7 @@ class SECP192R1(object):
         return 192
 
 
-CURVE_TYPES = {
+_CURVE_TYPES = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
 
