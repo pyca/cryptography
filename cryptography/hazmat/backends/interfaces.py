@@ -282,7 +282,7 @@ class PEMSerializationBackend(object):
         """
 
     @abc.abstractmethod
-    def load_pem_public_key(self, data, password):
+    def load_pem_public_key(self, data):
         """
         Loads a public key from PEM encoded data.
         """
@@ -303,6 +303,6 @@ class PKCS8SerializationBackend(object):
     @abc.abstractmethod
     def load_pkcs8_pem_private_key(self, data, password):
         """
-        Load a private key from PEM encoded data, using password if the data
+        Load a private key from PKCS8 encoded data, using password if the data
         is encrypted.
         """
