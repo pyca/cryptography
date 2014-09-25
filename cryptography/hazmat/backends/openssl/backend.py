@@ -1018,9 +1018,11 @@ class Backend(object):
         bn_ctx = self._lib.BN_CTX_new()
         assert bn_ctx != self._ffi.NULL
         bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
-        self._lib.BN_CTX_start(bn_ctx)
-        yield bn_ctx
-        self._lib.BN_CTX_end(bn_ctx)
+        try:
+            self._lib.BN_CTX_start(bn_ctx)
+            yield bn_ctx
+        finally:
+            self._lib.BN_CTX_end(bn_ctx)
 
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
