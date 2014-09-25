@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import itertools
 import warnings
+from contextlib import contextmanager
 
 import six
 
@@ -1012,6 +1013,17 @@ class Backend(object):
             )
         return curve_nid
 
+    @contextmanager
+    def _bn_ctx_manager(self):
+        bn_ctx = self._lib.BN_CTX_new()
+        assert bn_ctx != self._ffi.NULL
+        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
+        try:
+            self._lib.BN_CTX_start(bn_ctx)
+            yield bn_ctx
+        finally:
+            self._lib.BN_CTX_end(bn_ctx)
+
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
         This is a port of EC_KEY_set_public_key_affine_coordinates that was
@@ -1029,10 +1041,6 @@ class Backend(object):
         nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
         assert nid_two_field != self._lib.NID_undef
 
-        bn_ctx = self._lib.BN_CTX_new()
-        assert bn_ctx != self._ffi.NULL
-        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
-
         group = self._lib.EC_KEY_get0_group(ctx)
         assert group != self._ffi.NULL
 
@@ -1046,9 +1054,6 @@ class Backend(object):
         nid = self._lib.EC_METHOD_get_field_type(method)
         assert nid != self._lib.NID_undef
 
-        check_x = self._lib.BN_CTX_get(bn_ctx)
-        check_y = self._lib.BN_CTX_get(bn_ctx)
-
         if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
             set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
@@ -1058,16 +1063,20 @@ class Backend(object):
 
         assert set_func and get_func
 
-        res = set_func(group, point, bn_x, bn_y, bn_ctx)
-        assert res == 1
+        with self._bn_ctx_manager() as bn_ctx:
+            check_x = self._lib.BN_CTX_get(bn_ctx)
+            check_y = self._lib.BN_CTX_get(bn_ctx)
 
-        res = get_func(group, point, check_x, check_y, bn_ctx)
-        assert res == 1
+            res = set_func(group, point, bn_x, bn_y, bn_ctx)
+            assert res == 1
 
-        assert (
-            self._lib.BN_cmp(bn_x, check_x) == 0 and
-            self._lib.BN_cmp(bn_y, check_y) == 0
-        )
+            res = get_func(group, point, check_x, check_y, bn_ctx)
+            assert res == 1
+
+            assert (
+                self._lib.BN_cmp(bn_x, check_x) == 0 and
+                self._lib.BN_cmp(bn_y, check_y) == 0
+            )
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1
