@@ -37,6 +37,15 @@ from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
+def _skip_curve_unsupported(backend, curve):
+    if not backend.elliptic_curve_supported(curve):
+        pytest.skip(
+            "Curve {0} is not supported by this backend {1}".format(
+                curve.name, backend
+            )
+        )
+
+
 @utils.register_interface(interfaces.Mode)
 class DummyMode(object):
     name = "dummy-mode"
@@ -578,6 +587,7 @@ class TestDeprecatedECBackendMethods(object):
         y = 4131560123026307384858369684985976479488628761329758810693
         x = 3402090428547195623222463880060959356423657484435591627791
         curve = ec.SECP192R1()
+        _skip_curve_unsupported(backend, curve)
         pub_numbers = ec.EllipticCurvePublicNumbers(
             x=x,
             y=y,
@@ -596,6 +606,7 @@ class TestDeprecatedECBackendMethods(object):
         y = 4131560123026307384858369684985976479488628761329758810693
         x = 3402090428547195623222463880060959356423657484435591627791
         curve = ec.SECP192R1()
+        _skip_curve_unsupported(backend, curve)
         pub_numbers = ec.EllipticCurvePublicNumbers(
             x=x,
             y=y,
