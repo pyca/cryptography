@@ -218,7 +218,7 @@ class DummyPEMSerializationBackend(object):
         pass
 
     def load_pem_public_key(self, data):
-        pass
+    pass
 
 
 class TestMultiBackend(object):
