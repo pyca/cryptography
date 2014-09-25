@@ -82,21 +82,40 @@ class TestPEMSerialization(object):
         assert key
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
 
-    def test_load_pem_rsa_public_key(self, backend):
-        key = load_vectors_from_file(
+    @pytest.mark.parametrize(
+        ("key_file"),
+        [
+            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
             os.path.join(
                 "asymmetric", "PEM_Serialization", "rsa_public_key.pem"),
+            ),
+        ]
+    )
+    def test_load_pem_rsa_public_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            key_file,
             lambda pemfile: load_pem_public_key(
                 pemfile.read().encode(), backend
             )
         )
         assert key
         assert isinstance(key, interfaces.RSAPublicKey)
+        if isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+            numbers = key.public_numbers()
+            assert numbers.e == 65537
 
-    def test_load_pem_dsa_public_key(self, backend):
+    @pytest.mark.parametrize(
+    ("key_file"),
+    [
+        os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+        os.path.join(
+                "asymmetric", "PEM_Serialization",
+                "dsa_public_key.pem"
+),      ),
+    ]
+    def test_load_pem_dsa_public_key(self, keyfile, backend):
         key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PEM_Serialization", "dsa_public_key.pem"),
+            keyfile,
             lambda pemfile: load_pem_public_key(
                 pemfile.read().encode(), backend
             )
@@ -104,6 +123,14 @@ class TestPEMSerialization(object):
         assert key
         assert isinstance(key, interfaces.DSAPublicKey)
 
+    def test_load_pem_ec_public_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PEM_Serialization",
+                "ec_public_key.pem"),
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), backend
+            )
+        )
 
 @pytest.mark.traditional_openssl_serialization
 class TestTraditionalOpenSSLSerialization(object):
