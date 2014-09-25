@@ -305,7 +305,16 @@ class MultiBackend(object):
             utils.DeprecatedIn06,
             stacklevel=2
         )
-        return self.load_elliptic_curve_private_numbers(numbers)
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.elliptic_curve_private_key_from_numbers(numbers)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
 
     def load_elliptic_curve_private_numbers(self, numbers):
         for b in self._filtered_backends(EllipticCurveBackend):
@@ -326,7 +335,16 @@ class MultiBackend(object):
             utils.DeprecatedIn06,
             stacklevel=2
         )
-        return self.load_elliptic_curve_public_numbers(numbers)
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.elliptic_curve_public_key_from_numbers(numbers)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
 
     def load_elliptic_curve_public_numbers(self, numbers):
         for b in self._filtered_backends(EllipticCurveBackend):
