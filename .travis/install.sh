@@ -33,7 +33,10 @@ if [[ "${TOX_ENV}" == "docs" ]]; then
 fi
 
 if [[ "$DARWIN" = true ]]; then
-    if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
+    if which pyenv > /dev/null; then
+        eval "$(pyenv init -)"
+    fi
+
     case "${TOX_ENV}" in
         py26)
             curl -O https://bootstrap.pypa.io/get-pip.py
@@ -46,8 +49,10 @@ if [[ "$DARWIN" = true ]]; then
             sudo pip install virtualenv
             ;;
         pypy)
-            pyenv install pypy-2.3.1
-            pyenv global pypy-2.3.1
+            brew update
+            brew upgrade pyenv
+            pyenv install pypy-2.4.0
+            pyenv global pypy-2.4.0
             pip install virtualenv
             ;;
         py32)
@@ -105,7 +110,3 @@ fi
 virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox coveralls
-
-if [[ "$DARWIN" = true ]]; then
-    pyenv rehash
-fi
