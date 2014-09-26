@@ -1021,7 +1021,7 @@ class Backend(object):
             utils.DeprecatedIn06,
             stacklevel=2
         )
-        self.load_elliptic_curve_private_numbers(numbers)
+        return self.load_elliptic_curve_private_numbers(numbers)
 
     def load_elliptic_curve_private_numbers(self, numbers):
         public = numbers.public_numbers
