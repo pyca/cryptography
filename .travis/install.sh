@@ -46,6 +46,7 @@ if [[ "$DARWIN" = true ]]; then
             sudo pip install virtualenv
             ;;
         pypy)
+            brew update
             brew upgrade pyenv
             pyenv install pypy-2.4.0
             pyenv global pypy-2.4.0
