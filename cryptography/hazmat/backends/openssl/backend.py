@@ -1049,12 +1049,12 @@ class Backend(object):
         return curve_nid
 
     @contextmanager
-    def _bn_ctx_manager(self):
+    def _tmp_bn_ctx(self):
         bn_ctx = self._lib.BN_CTX_new()
         assert bn_ctx != self._ffi.NULL
         bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
+        self._lib.BN_CTX_start(bn_ctx)
         try:
-            self._lib.BN_CTX_start(bn_ctx)
             yield bn_ctx
         finally:
             self._lib.BN_CTX_end(bn_ctx)
@@ -1098,7 +1098,7 @@ class Backend(object):
 
         assert set_func and get_func
 
-        with self._bn_ctx_manager() as bn_ctx:
+        with self._tmp_bn_ctx() as bn_ctx:
             check_x = self._lib.BN_CTX_get(bn_ctx)
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
