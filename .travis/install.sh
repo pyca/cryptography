@@ -46,8 +46,10 @@ if [[ "$DARWIN" = true ]]; then
             sudo pip install virtualenv
             ;;
         pypy)
-            pyenv install pypy-2.3.1
-            pyenv global pypy-2.3.1
+            brew update
+            brew upgrade pyenv
+            pyenv install pypy-2.4.0
+            pyenv global pypy-2.4.0
             pip install virtualenv
             ;;
         py32)
