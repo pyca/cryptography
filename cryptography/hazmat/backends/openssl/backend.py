@@ -519,7 +519,7 @@ class Backend(object):
         assert group != self._ffi.NULL
 
         nid = self._lib.EC_GROUP_get_curve_name(group)
-        assert nid != 0
+        assert nid != self._lib.NID_undef
 
         curve_name = self._lib.OBJ_nid2sn(nid)
         assert curve_name != self._ffi.NULL
