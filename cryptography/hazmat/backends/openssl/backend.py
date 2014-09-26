@@ -479,19 +479,8 @@ class Backend(object):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            group = self._lib.EC_KEY_get0_group(ec_cdata)
-            assert group != self._ffi.NULL
-
-            nid = self._lib.EC_GROUP_get_curve_name(group)
-            assert nid != 0
-
-            curve_name = self._lib.OBJ_nid2sn(nid)
-            assert curve_name != self._ffi.NULL
-
-            sn = self._ffi.string(curve_name).decode('ascii')
-
+            sn = self._ec_key_curve_sn(ec_cdata)
             curve = self._sn_to_elliptic_curve(sn)
-
             return _EllipticCurvePrivateKey(self, ec_cdata, curve)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
@@ -514,14 +503,29 @@ class Backend(object):
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPublicKey(self, dsa_cdata)
-        elif self._lib.Cryptography_HAS_EC == 1 \
-                and type == self._lib.EVP_PKEY_EC:
+        elif (self._lib.Cryptography_HAS_EC == 1 and
+              type == self._lib.EVP_PKEY_EC):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            return _EllipticCurvePublicKey(self, ec_cdata, None)
+            sn = self._ec_key_curve_sn(ec_cdata)
+            curve = self._sn_to_elliptic_curve(sn)
+            return _EllipticCurvePublicKey(self, ec_cdata, curve)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
+
+    def _ec_key_curve_sn(self, ec_key):
+            group = self._lib.EC_KEY_get0_group(ec_key)
+            assert group != self._ffi.NULL
+
+            nid = self._lib.EC_GROUP_get_curve_name(group)
+            assert nid != 0
+
+            curve_name = self._lib.OBJ_nid2sn(nid)
+            assert curve_name != self._ffi.NULL
+
+            sn = self._ffi.string(curve_name).decode('ascii')
+            return sn
 
     def _pem_password_cb(self, password):
         """

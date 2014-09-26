@@ -135,6 +135,8 @@ class TestPEMSerialization(object):
         )
         assert key
         assert isinstance(key, interfaces.EllipticCurvePublicKey)
+        assert key.curve.name == "secp256r1"
+        assert key.curve.key_size == 256
 
 
 @pytest.mark.traditional_openssl_serialization
