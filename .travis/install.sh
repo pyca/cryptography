@@ -33,7 +33,10 @@ if [[ "${TOX_ENV}" == "docs" ]]; then
 fi
 
 if [[ "$DARWIN" = true ]]; then
-    if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
+    if which pyenv > /dev/null; then
+        eval "$(pyenv init -)"
+    fi
+
     case "${TOX_ENV}" in
         py26)
             curl -O https://bootstrap.pypa.io/get-pip.py
@@ -107,7 +110,3 @@ fi
 virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox coveralls
-
-if [[ "$DARWIN" = true ]]; then
-    pyenv rehash
-fi
