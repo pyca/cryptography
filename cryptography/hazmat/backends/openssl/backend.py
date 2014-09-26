@@ -515,17 +515,17 @@ class Backend(object):
             raise UnsupportedAlgorithm("Unsupported key type.")
 
     def _ec_key_curve_sn(self, ec_key):
-            group = self._lib.EC_KEY_get0_group(ec_key)
-            assert group != self._ffi.NULL
+        group = self._lib.EC_KEY_get0_group(ec_key)
+        assert group != self._ffi.NULL
 
-            nid = self._lib.EC_GROUP_get_curve_name(group)
-            assert nid != 0
+        nid = self._lib.EC_GROUP_get_curve_name(group)
+        assert nid != 0
 
-            curve_name = self._lib.OBJ_nid2sn(nid)
-            assert curve_name != self._ffi.NULL
+        curve_name = self._lib.OBJ_nid2sn(nid)
+        assert curve_name != self._ffi.NULL
 
-            sn = self._ffi.string(curve_name).decode('ascii')
-            return sn
+        sn = self._ffi.string(curve_name).decode('ascii')
+        return sn
 
     def _pem_password_cb(self, password):
         """
