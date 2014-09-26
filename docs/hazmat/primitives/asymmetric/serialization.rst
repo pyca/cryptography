@@ -107,8 +107,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :returns: A new instance of a public key.
 
-    :raises ValueError: If the PEM data could not be decrypted or if its
-        structure could not be decoded successfully.
+    :raises ValueError: If the PEM data's structure could not be decoded
+        successfully.
 
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend.
