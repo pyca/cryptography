@@ -501,6 +501,12 @@ class Backend(object):
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPublicKey(self, dsa_cdata)
+        elif self._lib.Cryptography_HAS_EC == 1 \
+                and type == self._lib.EVP_PKEY_EC:
+            ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
+            assert ec_cdata != self._ffi.NULL
+            ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+            return _EllipticCurvePublicKey(self, ec_cdata, None)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
