@@ -126,7 +126,9 @@ class TestPEMSerialization(object):
     def test_load_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
-            os.path.join("asymmetric", "PEM_Serialization", "ec_public_key.pem"),
+            os.path.join(
+                "asymmetric", "PEM_Serialization",
+                "ec_public_key.pem"),
             lambda pemfile: load_pem_public_key(
                 pemfile.read().encode(), backend
             )
