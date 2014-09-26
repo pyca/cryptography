@@ -473,6 +473,8 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
         key = pretend.stub(type="unsupported")
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_private_key(key)
+        with raises_unsupported_algorithm(None):
+            backend._evp_pkey_to_public_key(key)
 
     def test_very_long_pem_serialization_password(self):
         password = "x" * 1024
