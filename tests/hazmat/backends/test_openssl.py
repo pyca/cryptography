@@ -34,16 +34,8 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
+from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
-
-
-def _skip_curve_unsupported(backend, curve):
-    if not backend.elliptic_curve_supported(curve):
-        pytest.skip(
-            "Curve {0} is not supported by this backend {1}".format(
-                curve.name, backend
-            )
-        )
 
 
 @utils.register_interface(interfaces.Mode)
