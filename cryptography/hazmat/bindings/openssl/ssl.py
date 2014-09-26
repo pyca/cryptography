@@ -243,6 +243,7 @@ unsigned long SSL_get_mode(SSL *);
 
 unsigned long SSL_set_options(SSL *, unsigned long);
 unsigned long SSL_get_options(SSL *);
+unsigned long SSL_clear_options(SSL *, unsigned long);
 
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
@@ -254,6 +255,7 @@ long SSL_get_secure_renegotiation_support(SSL *);
    and Windows defines long as 32-bit. */
 unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_options(SSL_CTX *);
+unsigned long SSL_CTX_clear_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_set_mode(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_mode(SSL_CTX *);
 unsigned long SSL_CTX_set_session_cache_mode(SSL_CTX *, unsigned long);
