@@ -109,9 +109,11 @@ class TestOpenSSL(object):
         assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLSv1_method())
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
+        current_options = b.lib.SSL_CTX_get_options(ctx)
         resp = b.lib.SSL_CTX_set_options(ctx, b.lib.SSL_OP_ALL)
-        assert resp == b.lib.SSL_OP_ALL
-        assert b.lib.SSL_OP_ALL == b.lib.SSL_CTX_get_options(ctx)
+        expected_options = current_options | b.lib.SSL_OP_ALL
+        assert resp == expected_options
+        assert b.lib.SSL_CTX_get_options(ctx) == expected_options
 
     def test_ssl_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
@@ -121,9 +123,11 @@ class TestOpenSSL(object):
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         ssl = b.lib.SSL_new(ctx)
         ssl = b.ffi.gc(ssl, b.lib.SSL_free)
+        current_options = b.lib.SSL_get_options(ssl)
         resp = b.lib.SSL_set_options(ssl, b.lib.SSL_OP_ALL)
-        assert resp == b.lib.SSL_OP_ALL
-        assert b.lib.SSL_OP_ALL == b.lib.SSL_get_options(ssl)
+        expected_options = current_options | b.lib.SSL_OP_ALL
+        assert resp == expected_options
+        assert b.lib.SSL_get_options(ssl) == expected_options
 
     def test_ssl_mode(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
@@ -133,9 +137,11 @@ class TestOpenSSL(object):
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         ssl = b.lib.SSL_new(ctx)
         ssl = b.ffi.gc(ssl, b.lib.SSL_free)
+        current_options = b.lib.SSL_get_mode(ssl)
         resp = b.lib.SSL_set_mode(ssl, b.lib.SSL_OP_ALL)
-        assert resp == b.lib.SSL_OP_ALL
-        assert b.lib.SSL_OP_ALL == b.lib.SSL_get_mode(ssl)
+        expected_options = current_options | b.lib.SSL_OP_ALL
+        assert resp == expected_options
+        assert b.lib.SSL_get_mode(ssl) == expected_options
 
     def test_windows_static_dynamic_libraries(self):
         assert "ssleay32mt" in _get_windows_libraries("static")
