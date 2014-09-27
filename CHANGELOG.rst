@@ -21,7 +21,7 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublickeyWithNumbers`
   support.
-* Fix three GCM related bugs.
+* Work around three GCM related bugs in CommonCrypto and OpenSSL.
 
   * On the CommonCrypto backend adding AAD but not subsequently calling update
     would return null tag bytes.
