@@ -38,7 +38,7 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
 
     group = _lib.EC_KEY_get0_group(ec_key_cdata)
 
-    with backend._bn_ctx_manager() as bn_ctx:
+    with backend._tmp_bn_ctx() as bn_ctx:
         order = _lib.BN_CTX_get(bn_ctx)
         assert order != _ffi.NULL
 
