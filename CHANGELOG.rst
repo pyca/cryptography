@@ -6,6 +6,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key` to
+  ease loading private keys, and
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key` to
+  support loading public keys.
 * Removed the, deprecated in 0.4, support for the ``salt_length`` argument to
   the :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
   constructor. The ``salt_length`` should be passed to
