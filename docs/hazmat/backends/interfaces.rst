@@ -558,7 +558,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
             provider.
 
-    .. method:: elliptic_curve_private_key_from_numbers(numbers)
+    .. method:: load_elliptic_curve_private_numbers(numbers)
 
         :param numbers: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateNumbers`
@@ -568,7 +568,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
             provider.
 
-    .. method:: elliptic_curve_public_key_from_numbers(numbers)
+    .. method:: load_elliptic_curve_public_numbers(numbers)
 
         :param numbers: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicNumbers`

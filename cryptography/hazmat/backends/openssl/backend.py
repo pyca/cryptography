@@ -1015,6 +1015,15 @@ class Backend(object):
             )
 
     def elliptic_curve_private_key_from_numbers(self, numbers):
+        warnings.warn(
+            "elliptic_curve_private_key_from_numbers is deprecated and will "
+            "be removed in a future version.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_elliptic_curve_private_numbers(numbers)
+
+    def load_elliptic_curve_private_numbers(self, numbers):
         public = numbers.public_numbers
 
         curve_nid = self._elliptic_curve_to_nid(public.curve)
@@ -1034,6 +1043,15 @@ class Backend(object):
                                         numbers.public_numbers.curve)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
+        warnings.warn(
+            "elliptic_curve_public_key_from_numbers is deprecated and will be "
+            "removed in a future version.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_elliptic_curve_public_numbers(numbers)
+
+    def load_elliptic_curve_public_numbers(self, numbers):
         curve_nid = self._elliptic_curve_to_nid(numbers.curve)
 
         ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)

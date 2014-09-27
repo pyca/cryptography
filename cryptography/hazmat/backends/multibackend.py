@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
@@ -297,6 +299,12 @@ class MultiBackend(object):
         )
 
     def elliptic_curve_private_key_from_numbers(self, numbers):
+        warnings.warn(
+            "elliptic_curve_private_key_from_numbers is deprecated and will "
+            "be removed in a future version.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
         for b in self._filtered_backends(EllipticCurveBackend):
             try:
                 return b.elliptic_curve_private_key_from_numbers(numbers)
@@ -308,10 +316,40 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
+    def load_elliptic_curve_private_numbers(self, numbers):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.load_elliptic_curve_private_numbers(numbers)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
     def elliptic_curve_public_key_from_numbers(self, numbers):
+        warnings.warn(
+            "elliptic_curve_public_key_from_numbers is deprecated and will "
+            "be removed in a future version.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
         for b in self._filtered_backends(EllipticCurveBackend):
             try:
                 return b.elliptic_curve_public_key_from_numbers(numbers)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
+    def load_elliptic_curve_public_numbers(self, numbers):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.load_elliptic_curve_public_numbers(numbers)
             except UnsupportedAlgorithm:
                 continue
 

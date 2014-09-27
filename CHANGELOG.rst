@@ -11,6 +11,11 @@ Changelog
   constructor. The ``salt_length`` should be passed to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
 * Fix compilation on OS X Yosemite.
+* Deprecated ``elliptic_curve_private_key_from_numbers`` and
+  ``elliptic_curve_public_key_from_numbers`` in favor of
+  ``load_elliptic_curve_private_numbers`` and
+  ``load_elliptic_curve_public_numbers`` on
+  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
 0.5.4 - 2014-08-20
 ~~~~~~~~~~~~~~~~~~

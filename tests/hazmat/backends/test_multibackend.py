@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -191,11 +193,19 @@ class DummyEllipticCurveBackend(object):
         if not self.elliptic_curve_supported(curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
+    def load_elliptic_curve_private_numbers(self, numbers):
+        if not self.elliptic_curve_supported(numbers.public_numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
     def elliptic_curve_private_key_from_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.public_numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
+        if not self.elliptic_curve_supported(numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
@@ -463,7 +473,7 @@ class TestMultiBackend(object):
 
         backend.generate_elliptic_curve_private_key(ec.SECT283K1())
 
-        backend.elliptic_curve_private_key_from_numbers(
+        backend.load_elliptic_curve_private_numbers(
             ec.EllipticCurvePrivateNumbers(
                 1,
                 ec.EllipticCurvePublicNumbers(
@@ -474,7 +484,7 @@ class TestMultiBackend(object):
             )
         )
 
-        backend.elliptic_curve_public_key_from_numbers(
+        backend.load_elliptic_curve_public_numbers(
             ec.EllipticCurvePublicNumbers(
                 2,
                 3,
@@ -491,6 +501,51 @@ class TestMultiBackend(object):
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             backend.generate_elliptic_curve_private_key(ec.SECT163K1())
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.load_elliptic_curve_private_numbers(
+                ec.EllipticCurvePrivateNumbers(
+                    1,
+                    ec.EllipticCurvePublicNumbers(
+                        2,
+                        3,
+                        ec.SECT163K1()
+                    )
+                )
+            )
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.load_elliptic_curve_public_numbers(
+                ec.EllipticCurvePublicNumbers(
+                    2,
+                    3,
+                    ec.SECT163K1()
+                )
+            )
+
+    def test_deprecated_elliptic_curve(self):
+        backend = MultiBackend([
+            DummyEllipticCurveBackend([
+                ec.SECT283K1
+            ])
+        ])
+
+        assert backend.elliptic_curve_signature_algorithm_supported(
+            ec.ECDSA(hashes.SHA256()),
+            ec.SECT163K1()
+        ) is False
+
+        pub_numbers = ec.EllipticCurvePublicNumbers(2, 3, ec.SECT283K1())
+        numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
+
+        pytest.deprecated_call(
+            backend.elliptic_curve_private_key_from_numbers,
+            numbers
+        )
+        pytest.deprecated_call(
+            backend.elliptic_curve_public_key_from_numbers,
+            pub_numbers
+        )
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             backend.elliptic_curve_private_key_from_numbers(
