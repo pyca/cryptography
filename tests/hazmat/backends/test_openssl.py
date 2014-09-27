@@ -493,7 +493,7 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
             )
 
 
-class TestOpenSSLNoEllipticCurve(object):
+class TestOpenSSLEllipticCurve(object):
     def test_elliptic_curve_supported(self, monkeypatch):
         monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
 
@@ -505,6 +505,10 @@ class TestOpenSSLNoEllipticCurve(object):
         assert backend.elliptic_curve_signature_algorithm_supported(
             None, None
         ) is False
+
+    def test_sn_to_elliptic_curve_not_supported(self):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend._sn_to_elliptic_curve(b"fake")
 
 
 class TestDeprecatedRSABackendMethods(object):

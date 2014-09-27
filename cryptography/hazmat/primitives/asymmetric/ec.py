@@ -184,6 +184,30 @@ class SECP192R1(object):
         return 192
 
 
+_CURVE_TYPES = {
+    "prime192v1": SECP192R1,
+    "prime256v1": SECP256R1,
+
+    "secp192r1": SECP192R1,
+    "secp224r1": SECP224R1,
+    "secp256r1": SECP256R1,
+    "secp384r1": SECP384R1,
+    "secp521r1": SECP521R1,
+
+    "sect163k1": SECT163K1,
+    "sect233k1": SECT233K1,
+    "sect283k1": SECT283K1,
+    "sect409k1": SECT409K1,
+    "sect571k1": SECT571K1,
+
+    "sect163r2": SECT163R2,
+    "sect233r1": SECT233R1,
+    "sect283r1": SECT283R1,
+    "sect409r1": SECT409R1,
+    "sect571r1": SECT571R1,
+}
+
+
 @utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
 class ECDSA(object):
     def __init__(self, algorithm):

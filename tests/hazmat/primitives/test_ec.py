@@ -29,26 +29,6 @@ from ...utils import (
     raises_unsupported_algorithm
 )
 
-_CURVE_TYPES = {
-    "secp192r1": ec.SECP192R1,
-    "secp224r1": ec.SECP224R1,
-    "secp256r1": ec.SECP256R1,
-    "secp384r1": ec.SECP384R1,
-    "secp521r1": ec.SECP521R1,
-
-    "sect163k1": ec.SECT163K1,
-    "sect233k1": ec.SECT233K1,
-    "sect283k1": ec.SECT283K1,
-    "sect409k1": ec.SECT409K1,
-    "sect571k1": ec.SECT571K1,
-
-    "sect163r2": ec.SECT163R2,
-    "sect233r1": ec.SECT233R1,
-    "sect283r1": ec.SECT283R1,
-    "sect409r1": ec.SECT409R1,
-    "sect571r1": ec.SECT571R1,
-}
-
 _HASH_TYPES = {
     "SHA-1": hashes.SHA1,
     "SHA-224": hashes.SHA224,
@@ -162,7 +142,7 @@ class TestECDSAVectors(object):
         ))
     )
     def test_signing_with_example_keys(self, backend, vector, hash_type):
-        curve_type = _CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -188,7 +168,7 @@ class TestECDSAVectors(object):
         verifier.verify()
 
     @pytest.mark.parametrize(
-        "curve", _CURVE_TYPES.values()
+        "curve", ec._CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
         _skip_curve_unsupported(backend, curve())
@@ -244,7 +224,7 @@ class TestECDSAVectors(object):
     )
     def test_signatures(self, backend, vector):
         hash_type = _HASH_TYPES[vector['digest_algorithm']]
-        curve_type = _CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 
@@ -276,7 +256,7 @@ class TestECDSAVectors(object):
     )
     def test_signature_failures(self, backend, vector):
         hash_type = _HASH_TYPES[vector['digest_algorithm']]
-        curve_type = _CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 
