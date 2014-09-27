@@ -142,7 +142,7 @@ class TestECWithNumbers(object):
         ))
     )
     def test_with_numbers(self, backend, vector, hash_type):
-        curve_type = _CURVE_TYPES[vector['curve']]
+        curve_type = ec._CURVE_TYPES[vector['curve']]
 
         _skip_ecdsa_vector(backend, curve_type, hash_type)
 
