@@ -94,7 +94,9 @@ def release(version):
 
     session = requests.Session()
 
-    response = session.request("PURGE", "https://pypi.python.org/simple/cryptography/")
+    response = session.request(
+        "PURGE", "https://pypi.python.org/simple/cryptography/"
+    )
     response.raise_for_status()
 
     username = getpass.getpass("Input the GitHub/Jenkins username: ")
