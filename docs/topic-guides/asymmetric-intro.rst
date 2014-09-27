@@ -69,20 +69,20 @@ Key loading
 
 If you already have an on-disk key, which you would like to load for use within
 ``cryptography``, there are APIs for loading keys in many different formats.
-Here is an example of loading an RSA key in the popular PKCS #8 format:
+Here is an example of loading an RSA key in the PEM format:
 
 .. code-block:: pycon
 
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
     >>> with open("path/to/key.pem", "rb") as key_file:
-    ...     private_key = serialization.load_pem_pkcs8_private_key(
+    ...     private_key = serialization.load_pem_private_key(
     ...         key_file.read(),
     ...         password=None,
     ...         backend=default_backend()
     ...     )
 
-PKCS #8 optionally supports encrypting keys on disk using a password. In this
+PEM optionally supports encrypting keys on disk using a password. In this
 example we loaded an unencrypted key, and therefore we did not provide a
 password.
 
