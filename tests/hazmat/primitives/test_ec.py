@@ -20,6 +20,7 @@ import os
 import pytest
 
 from cryptography import exceptions, utils
+from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -68,6 +69,15 @@ class DummyCurve(object):
 @utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
 class DummySignatureAlgorithm(object):
     pass
+
+
+@utils.register_interface(EllipticCurveBackend)
+class DeprecatedDummyECBackend(object):
+    def elliptic_curve_private_key_from_numbers(self, numbers):
+        return b"private_key"
+
+    def elliptic_curve_public_key_from_numbers(self, numbers):
+        return b"public_key"
 
 
 @pytest.mark.elliptic
@@ -282,3 +292,14 @@ class TestECDSAVectors(object):
                 verifier.verify()
         else:
             verifier.verify()
+
+    def test_deprecated_public_private_key_load(self):
+        b = DeprecatedDummyECBackend()
+        pub_numbers = ec.EllipticCurvePublicNumbers(
+            2,
+            3,
+            ec.SECT283K1()
+        )
+        numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
+        assert numbers.private_key(b) == b"private_key"
+        assert pub_numbers.public_key(b) == b"public_key"
