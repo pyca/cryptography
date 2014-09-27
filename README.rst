@@ -5,6 +5,10 @@ Cryptography
     :target: https://pypi.python.org/pypi/cryptography/
     :alt: Latest Version
 
+.. image:: https://readthedocs.org/projects/cryptography/badge/?version=latest
+    :target: https://cryptography.io
+    :alt: Latest Docs
+
 .. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
