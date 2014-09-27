@@ -17,7 +17,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.bindings.commoncrypto.binding import Binding
+from cryptography.hazmat.backends import _available_backends
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.base import Cipher
@@ -32,7 +32,8 @@ class DummyCipher(object):
     block_size = 128
 
 
-@pytest.mark.skipif(not Binding.is_available(),
+@pytest.mark.skipif("commoncrypto" not in
+                    [i.name for i in _available_backends()],
                     reason="CommonCrypto not available")
 class TestCommonCrypto(object):
     def test_supports_cipher(self):

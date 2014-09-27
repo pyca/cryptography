@@ -19,7 +19,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
+    PKCS8SerializationBackend, RSABackend,
     TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
@@ -144,6 +145,12 @@ class DummyDSABackend(object):
     def dsa_parameters_supported(self, p, q, g):
         pass
 
+    def load_dsa_private_numbers(self, numbers):
+        pass
+
+    def load_dsa_public_numbers(self, numbers):
+        pass
+
 
 @utils.register_interface(CMACBackend)
 class DummyCMACBackend(object):
@@ -202,6 +209,15 @@ class DummyPKCS8SerializationBackend(object):
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
 class DummyTraditionalOpenSSLSerializationBackend(object):
     def load_traditional_openssl_pem_private_key(self, data, password):
+        pass
+
+
+@utils.register_interface(PEMSerializationBackend)
+class DummyPEMSerializationBackend(object):
+    def load_pem_private_key(self, data, password):
+        pass
+
+    def load_pem_public_key(self, data):
         pass
 
 
@@ -365,6 +381,8 @@ class TestMultiBackend(object):
         backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
         backend.dsa_hash_supported(hashes.SHA1())
         backend.dsa_parameters_supported(1, 2, 3)
+        backend.load_dsa_private_numbers("numbers")
+        backend.load_dsa_public_numbers("numbers")
 
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
@@ -403,6 +421,16 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.dsa_parameters_supported('p', 'q', 'g')
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_dsa_private_numbers("numbers")
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_dsa_public_numbers("numbers")
 
     def test_cmac(self):
         backend = MultiBackend([
@@ -502,3 +530,15 @@ class TestMultiBackend(object):
         backend = MultiBackend([])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_traditional_openssl_pem_private_key(b"keydata", None)
+
+    def test_pem_serialization_backend(self):
+        backend = MultiBackend([DummyPEMSerializationBackend()])
+
+        backend.load_pem_private_key(b"keydata", None)
+        backend.load_pem_public_key(b"keydata")
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_pem_private_key(b"keydata", None)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_pem_public_key(b"keydata")

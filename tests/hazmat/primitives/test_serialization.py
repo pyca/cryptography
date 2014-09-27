@@ -21,16 +21,124 @@ import pytest
 
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key, load_pem_traditional_openssl_private_key
+    load_pem_pkcs8_private_key, load_pem_private_key,
+    load_pem_public_key,
+    load_pem_traditional_openssl_private_key
 )
 
+
+from .test_ec import _skip_curve_unsupported
 from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
 
+@pytest.mark.pem_serialization
+class TestPEMSerialization(object):
+    def test_load_pem_rsa_private_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "rsa_private_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), b"123456", backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.RSAPrivateKey)
+        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+            _check_rsa_private_numbers(key.private_numbers())
+
+    def test_load_dsa_private_key(self, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "dsa_private_key.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), b"123456", backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.DSAPrivateKey)
+
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("ec_private_key.pem", None),
+            ("ec_private_key_encrypted.pem", b"123456"),
+        ]
+    )
+    @pytest.mark.elliptic
+    def test_load_pem_ec_private_key(self, key_file, password, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization", key_file),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), password, backend
+            )
+        )
+
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+
+    @pytest.mark.parametrize(
+        ("key_file"),
+        [
+            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "rsa_public_key.pem"),
+        ]
+    )
+    def test_load_pem_rsa_public_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            key_file,
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.RSAPublicKey)
+        if isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+            numbers = key.public_numbers()
+            assert numbers.e == 65537
+
+    @pytest.mark.parametrize(
+        ("key_file"),
+        [
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+            os.path.join(
+                "asymmetric", "PEM_Serialization",
+                "dsa_public_key.pem"),
+        ]
+    )
+    def test_load_pem_dsa_public_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            key_file,
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.DSAPublicKey)
+
+    @pytest.mark.elliptic
+    def test_load_ec_public_key(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PEM_Serialization",
+                "ec_public_key.pem"),
+            lambda pemfile: load_pem_public_key(
+                pemfile.read().encode(), backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+
+
 @pytest.mark.traditional_openssl_serialization
-class TestTraditionalOpenSSLSerialisation(object):
+class TestTraditionalOpenSSLSerialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
         [
@@ -252,13 +360,13 @@ class TestTraditionalOpenSSLSerialisation(object):
 
 
 @pytest.mark.pkcs8_serialization
-class TestPKCS8Serialisation(object):
+class TestPKCS8Serialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
         [
-            ("unencpkcs8.pem", None),
-            ("encpkcs8.pem", b"foobar"),
-            ("enc2pkcs8.pem", b"baz"),
+            ("unenc-rsa-pkcs8.pem", None),
+            ("enc-rsa-pkcs8.pem", b"foobar"),
+            ("enc2-rsa-pkcs8.pem", b"baz"),
             ("pkcs12_s2k_pem-X_9607.pem", b"123456"),
             ("pkcs12_s2k_pem-X_9671.pem", b"123456"),
             ("pkcs12_s2k_pem-X_9925.pem", b"123456"),
@@ -285,9 +393,29 @@ class TestPKCS8Serialisation(object):
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            ("ec_private_key.pem", None),
+            ("ec_private_key_encrypted.pem", b"123456"),
+        ]
+    )
+    @pytest.mark.elliptic
+    def test_load_pem_ec_private_key(self, key_file, password, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", key_file),
+            lambda pemfile: load_pem_pkcs8_private_key(
+                pemfile.read().encode(), password, backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+
     def test_unused_password(self, backend):
         key_file = os.path.join(
-            "asymmetric", "PKCS8", "unencpkcs8.pem")
+            "asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem")
         password = b"this password will not be used"
 
         with pytest.raises(TypeError):
@@ -300,7 +428,7 @@ class TestPKCS8Serialisation(object):
 
     def test_wrong_password(self, backend):
         key_file = os.path.join(
-            "asymmetric", "PKCS8", "encpkcs8.pem")
+            "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem")
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
@@ -316,7 +444,7 @@ class TestPKCS8Serialisation(object):
         key_file = os.path.join(
             "asymmetric",
             "PKCS8",
-            "encpkcs8.pem"
+            "enc-rsa-pkcs8.pem"
         )
 
         with pytest.raises(TypeError):
@@ -341,7 +469,7 @@ class TestPKCS8Serialisation(object):
             )
 
     def test_corrupt_format(self, backend):
-        # unencpkcs8.pem with a bunch of data missing.
+        # unenc-rsa-pkcs8.pem with a bunch of data missing.
         key_data = textwrap.dedent("""\
         -----BEGIN PRIVATE KEY-----
         MIICdQIBADALBgkqhkiG9w0BAQEEggJhMIICXQIBAAKBgQC7JHoJfg6yNzLMOWet
@@ -371,7 +499,7 @@ class TestPKCS8Serialisation(object):
             )
 
     def test_encrypted_corrupt_format(self, backend):
-        # encpkcs8.pem with some bits flipped.
+        # enc-rsa-pkcs8.pem with some bits flipped.
         key_data = textwrap.dedent("""\
         -----BEGIN ENCRYPTED PRIVATE KEY-----
         MIICojAcBgoqhkiG9w0BDAEDMA4ECHK0M0+QuEL9AgIBIcSCAoDRq+KRY+0XP0tO
@@ -407,7 +535,7 @@ class TestPKCS8Serialisation(object):
     def test_key1_pem_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
             os.path.join(
-                "asymmetric", "PKCS8", "encpkcs8.pem"),
+                "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
             lambda pemfile: load_pem_pkcs8_private_key(
                 pemfile.read().encode(), b"foobar", backend
             )

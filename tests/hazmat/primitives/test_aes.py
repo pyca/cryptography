@@ -18,7 +18,7 @@ import os
 
 import pytest
 
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from .utils import generate_aead_test, generate_encrypt_test
 from ...utils import load_nist_vectors
@@ -228,3 +228,36 @@ class TestAESModeGCM(object):
         algorithms.AES,
         modes.GCM,
     )
+
+    def test_gcm_tag_with_only_aad(self, backend):
+        key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
+        iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
+        aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
+        tag = binascii.unhexlify(b"0f247e7f9c2505de374006738018493b")
+
+        cipher = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.authenticate_additional_data(aad)
+        encryptor.finalize()
+        assert encryptor.tag == tag
+
+    def test_gcm_ciphertext_with_no_aad(self, backend):
+        key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
+        iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
+        ct = binascii.unhexlify(b"5a3c1cf1985dbb8bed818036fdd5ab42")
+        tag = binascii.unhexlify(b"23c7ab0f952b7091cd324835043b5eb5")
+        pt = binascii.unhexlify(b"28286a321293253c3e0aa2704a278032")
+
+        cipher = base.Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=backend
+        )
+        encryptor = cipher.encryptor()
+        computed_ct = encryptor.update(pt) + encryptor.finalize()
+        assert computed_ct == ct
+        assert encryptor.tag == tag

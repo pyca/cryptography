@@ -10,6 +10,19 @@ Changelog
   the :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
   constructor. The ``salt_length`` should be passed to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
+* Fix compilation on OS X Yosemite.
+
+0.5.4 - 2014-08-20
+~~~~~~~~~~~~~~~~~~
+
+* Added several functions to the OpenSSL bindings to support new
+  functionality in pyOpenSSL.
+* Fixed a redefined constant causing compilation failure with Solaris 11.2.
+
+0.5.3 - 2014-08-06
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.1i.
 
 0.5.2 - 2014-07-09
 ~~~~~~~~~~~~~~~~~~

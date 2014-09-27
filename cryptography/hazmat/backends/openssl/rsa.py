@@ -43,6 +43,9 @@ def _get_rsa_pss_salt_length(pss, key_size, digest_size):
 
 
 def _enc_dec_rsa(backend, key, data, padding):
+    if not isinstance(padding, interfaces.AsymmetricPadding):
+        raise TypeError("Padding must be an instance of AsymmetricPadding.")
+
     if isinstance(padding, PKCS1v15):
         padding_enum = backend._lib.RSA_PKCS1_PADDING
     elif isinstance(padding, OAEP):

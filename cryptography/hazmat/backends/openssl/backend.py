@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import collections
 import itertools
 import warnings
+from contextlib import contextmanager
 
 import six
 
@@ -25,7 +26,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PKCS8SerializationBackend, RSABackend,
+    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
+    PKCS8SerializationBackend, RSABackend,
     TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
@@ -74,6 +76,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
+@utils.register_interface(PEMSerializationBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -471,6 +474,39 @@ class Backend(object):
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPrivateKey(self, dsa_cdata)
+        elif self._lib.Cryptography_HAS_EC == 1 \
+                and type == self._lib.EVP_PKEY_EC:
+            ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
+            assert ec_cdata != self._ffi.NULL
+            ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+            return _EllipticCurvePrivateKey(self, ec_cdata, None)
+        else:
+            raise UnsupportedAlgorithm("Unsupported key type.")
+
+    def _evp_pkey_to_public_key(self, evp_pkey):
+        """
+        Return the appropriate type of PublicKey given an evp_pkey cdata
+        pointer.
+        """
+
+        type = evp_pkey.type
+
+        if type == self._lib.EVP_PKEY_RSA:
+            rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
+            assert rsa_cdata != self._ffi.NULL
+            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+            return _RSAPublicKey(self, rsa_cdata)
+        elif type == self._lib.EVP_PKEY_DSA:
+            dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
+            assert dsa_cdata != self._ffi.NULL
+            dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
+            return _DSAPublicKey(self, dsa_cdata)
+        elif self._lib.Cryptography_HAS_EC == 1 \
+                and type == self._lib.EVP_PKEY_EC:
+            ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
+            assert ec_cdata != self._ffi.NULL
+            ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
+            return _EllipticCurvePublicKey(self, ec_cdata, None)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -770,18 +806,40 @@ class Backend(object):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        # OpenSSLs API for loading PKCS#8 certs can also load the traditional
-        # format so we just use that for both of them.
-        return self.load_pkcs8_pem_private_key(data, password)
-
-    def load_pkcs8_pem_private_key(self, data, password):
+    def load_pem_private_key(self, data, password):
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,
             self._evp_pkey_to_private_key,
             data,
             password,
         )
+
+    def load_pem_public_key(self, data):
+        return self._load_key(
+            self._lib.PEM_read_bio_PUBKEY,
+            self._evp_pkey_to_public_key,
+            data,
+            None,
+        )
+
+    def load_traditional_openssl_pem_private_key(self, data, password):
+        warnings.warn(
+            "load_traditional_openssl_pem_private_key is deprecated and will "
+            "be removed in a future version, use load_pem_private_key "
+            "instead.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_pem_private_key(data, password)
+
+    def load_pkcs8_pem_private_key(self, data, password):
+        warnings.warn(
+            "load_pkcs8_pem_private_key is deprecated and will be removed in a"
+            " future version, use load_pem_private_key instead.",
+            utils.DeprecatedIn06,
+            stacklevel=2
+        )
+        return self.load_pem_private_key(data, password)
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
@@ -990,6 +1048,17 @@ class Backend(object):
             )
         return curve_nid
 
+    @contextmanager
+    def _tmp_bn_ctx(self):
+        bn_ctx = self._lib.BN_CTX_new()
+        assert bn_ctx != self._ffi.NULL
+        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
+        self._lib.BN_CTX_start(bn_ctx)
+        try:
+            yield bn_ctx
+        finally:
+            self._lib.BN_CTX_end(bn_ctx)
+
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
         This is a port of EC_KEY_set_public_key_affine_coordinates that was
@@ -1007,10 +1076,6 @@ class Backend(object):
         nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
         assert nid_two_field != self._lib.NID_undef
 
-        bn_ctx = self._lib.BN_CTX_new()
-        assert bn_ctx != self._ffi.NULL
-        bn_ctx = self._ffi.gc(bn_ctx, self._lib.BN_CTX_free)
-
         group = self._lib.EC_KEY_get0_group(ctx)
         assert group != self._ffi.NULL
 
@@ -1024,9 +1089,6 @@ class Backend(object):
         nid = self._lib.EC_METHOD_get_field_type(method)
         assert nid != self._lib.NID_undef
 
-        check_x = self._lib.BN_CTX_get(bn_ctx)
-        check_y = self._lib.BN_CTX_get(bn_ctx)
-
         if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
             set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
@@ -1036,16 +1098,20 @@ class Backend(object):
 
         assert set_func and get_func
 
-        res = set_func(group, point, bn_x, bn_y, bn_ctx)
-        assert res == 1
+        with self._tmp_bn_ctx() as bn_ctx:
+            check_x = self._lib.BN_CTX_get(bn_ctx)
+            check_y = self._lib.BN_CTX_get(bn_ctx)
 
-        res = get_func(group, point, check_x, check_y, bn_ctx)
-        assert res == 1
+            res = set_func(group, point, bn_x, bn_y, bn_ctx)
+            assert res == 1
 
-        assert (
-            self._lib.BN_cmp(bn_x, check_x) == 0 and
-            self._lib.BN_cmp(bn_y, check_y) == 0
-        )
+            res = get_func(group, point, check_x, check_y, bn_ctx)
+            assert res == 1
+
+            assert (
+                self._lib.BN_cmp(bn_x, check_x) == 0 and
+                self._lib.BN_cmp(bn_y, check_y) == 0
+            )
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1

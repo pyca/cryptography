@@ -27,10 +27,10 @@ typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
 """
 
 TYPES = """
-static const long Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS;
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
+static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
 static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
@@ -186,10 +186,10 @@ void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
                               Cryptography_STACK_OF_X509_CRL *);
 
 /* X509_VERIFY_PARAM */
-int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const unsigned char *,
+int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const char *,
                                 size_t);
 void X509_VERIFY_PARAM_set_hostflags(X509_VERIFY_PARAM *, unsigned int);
-int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const unsigned char *,
+int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const char *,
                                  size_t);
 int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
                               size_t);
@@ -197,15 +197,6 @@ int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 1.0.2+, but only some very new releases */
-#ifdef X509_VERIFY_PARAM_set_hostflags
-static const long Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS = 1;
-#else
-static const long Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS = 0;
-void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
-                                        unsigned int) = NULL;
-#endif
-
 /* OpenSSL 1.0.2+ verification error codes */
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
@@ -232,15 +223,24 @@ static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
 static const long X509_V_FLAG_SUITEB_192_LOS = 0;
 static const long X509_V_FLAG_SUITEB_128_LOS = 0;
-static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
 
-int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const unsigned char *,
+int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
                                    size_t) = NULL;
-int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const unsigned char *,
+int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const char *,
                                     size_t) = NULL;
 int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
                                  size_t) = NULL;
 int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
+void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
+                                        unsigned int) = NULL;
+#endif
+
+/* OpenSSL 1.0.2+ or Solaris's backport */
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 1;
+#else
+static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 0;
+static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
 #endif
 
 /* OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e... */
@@ -286,9 +286,6 @@ static const long X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 """
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_X509_VERIFY_PARAM_SET_HOSTFLAGS": [
-        "X509_VERIFY_PARAM_set_hostflags",
-    ],
     "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
@@ -304,15 +301,17 @@ CONDITIONAL_NAMES = {
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
         "X509_V_FLAG_SUITEB_128_LOS",
-        "X509_V_FLAG_PARTIAL_CHAIN",
-
         "X509_VERIFY_PARAM_set1_host",
         "X509_VERIFY_PARAM_set1_email",
         "X509_VERIFY_PARAM_set1_ip",
         "X509_VERIFY_PARAM_set1_ip_asc",
+        "X509_VERIFY_PARAM_set_hostflags",
     ],
     "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": [
         "X509_V_FLAG_TRUSTED_FIRST",
+    ],
+    "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": [
+        "X509_V_FLAG_PARTIAL_CHAIN",
     ],
     "Cryptography_HAS_100_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_DIFFERENT_CRL_SCOPE',
