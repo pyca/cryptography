@@ -27,6 +27,7 @@ from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
+from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -509,7 +510,7 @@ class TestOpenSSLEllipticCurve(object):
 
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
-            backend._sn_to_elliptic_curve(b"fake")
+            _sn_to_elliptic_curve(backend, b"fake")
 
 
 class TestDeprecatedRSABackendMethods(object):

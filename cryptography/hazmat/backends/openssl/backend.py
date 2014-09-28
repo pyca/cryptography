@@ -1065,28 +1065,6 @@ class Backend(object):
             )
         return curve_nid
 
-    def _ec_key_curve_sn(self, ec_key):
-        group = self._lib.EC_KEY_get0_group(ec_key)
-        assert group != self._ffi.NULL
-
-        nid = self._lib.EC_GROUP_get_curve_name(group)
-        assert nid != self._lib.NID_undef
-
-        curve_name = self._lib.OBJ_nid2sn(nid)
-        assert curve_name != self._ffi.NULL
-
-        sn = self._ffi.string(curve_name).decode('ascii')
-        return sn
-
-    def _sn_to_elliptic_curve(self, sn):
-        try:
-            return ec._CURVE_TYPES[sn]()
-        except KeyError:
-            raise UnsupportedAlgorithm(
-                "{0} is not a supported elliptic curve".format(sn),
-                _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
-            )
-
     @contextmanager
     def _tmp_bn_ctx(self):
         bn_ctx = self._lib.BN_CTX_new()

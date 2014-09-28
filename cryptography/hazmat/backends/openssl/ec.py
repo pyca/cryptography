@@ -63,6 +63,30 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
     return digest
 
 
+def _ec_key_curve_sn(backend, ec_key):
+    group = backend._lib.EC_KEY_get0_group(ec_key)
+    assert group != backend._ffi.NULL
+
+    nid = backend._lib.EC_GROUP_get_curve_name(group)
+    assert nid != backend._lib.NID_undef
+
+    curve_name = backend._lib.OBJ_nid2sn(nid)
+    assert curve_name != backend._ffi.NULL
+
+    sn = backend._ffi.string(curve_name).decode('ascii')
+    return sn
+
+
+def _sn_to_elliptic_curve(backend, sn):
+    try:
+        return ec._CURVE_TYPES[sn]()
+    except KeyError:
+        raise UnsupportedAlgorithm(
+            "{0} is not a supported elliptic curve".format(sn),
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
+
 @utils.register_interface(interfaces.AsymmetricSignatureContext)
 class _ECDSASignatureContext(object):
     def __init__(self, backend, private_key, algorithm):
@@ -135,8 +159,8 @@ class _EllipticCurvePrivateKey(object):
         self._backend = backend
         self._ec_key = ec_key_cdata
 
-        sn = backend._ec_key_curve_sn(ec_key_cdata)
-        self._curve = backend._sn_to_elliptic_curve(sn)
+        sn = _ec_key_curve_sn(backend, ec_key_cdata)
+        self._curve = _sn_to_elliptic_curve(backend, sn)
 
     @property
     def curve(self):
@@ -189,8 +213,8 @@ class _EllipticCurvePublicKey(object):
         self._backend = backend
         self._ec_key = ec_key_cdata
 
-        sn = backend._ec_key_curve_sn(ec_key_cdata)
-        self._curve = backend._sn_to_elliptic_curve(sn)
+        sn = _ec_key_curve_sn(backend, ec_key_cdata)
+        self._curve = _sn_to_elliptic_curve(backend, sn)
 
     @property
     def curve(self):
