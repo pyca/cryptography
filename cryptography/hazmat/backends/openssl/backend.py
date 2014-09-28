@@ -980,14 +980,14 @@ class Backend(object):
         if self.elliptic_curve_supported(curve):
             curve_nid = self._elliptic_curve_to_nid(curve)
 
-            ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-            assert ctx != self._ffi.NULL
-            ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
+            ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+            assert ec_cdata != self._ffi.NULL
+            ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-            res = self._lib.EC_KEY_generate_key(ctx)
+            res = self._lib.EC_KEY_generate_key(ec_cdata)
             assert res == 1
 
-            res = self._lib.EC_KEY_check_key(ctx)
+            res = self._lib.EC_KEY_check_key(ec_cdata)
             assert res == 1
 
             return _EllipticCurvePrivateKey(self, ec_cdata)
@@ -1011,15 +1011,15 @@ class Backend(object):
 
         curve_nid = self._elliptic_curve_to_nid(public.curve)
 
-        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
+        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ec_cdata != self._ffi.NULL
+        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-        ctx = self._ec_key_set_public_key_affine_coordinates(
-            ctx, public.x, public.y)
+        ec_cdata = self._ec_key_set_public_key_affine_coordinates(
+            ec_cdata, public.x, public.y)
 
         res = self._lib.EC_KEY_set_private_key(
-            ctx, self._int_to_bn(numbers.private_value))
+            ec_cdata, self._int_to_bn(numbers.private_value))
         assert res == 1
 
         return _EllipticCurvePrivateKey(self, ec_cdata)
@@ -1036,12 +1036,12 @@ class Backend(object):
     def load_elliptic_curve_public_numbers(self, numbers):
         curve_nid = self._elliptic_curve_to_nid(numbers.curve)
 
-        ctx = self._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.EC_KEY_free)
+        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ec_cdata != self._ffi.NULL
+        ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-        ctx = self._ec_key_set_public_key_affine_coordinates(
-            ctx, numbers.x, numbers.y)
+        ec_cdata = self._ec_key_set_public_key_affine_coordinates(
+            ec_cdata, numbers.x, numbers.y)
 
         return _EllipticCurvePublicKey(self, ec_cdata)
 
