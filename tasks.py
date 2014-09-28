@@ -94,6 +94,9 @@ def release(version):
 
     session = requests.Session()
 
+    # This tells the CDN to delete the cached response for the URL. We do this
+    # so that the Jenkins builders will see the new sdist immediately when they
+    # go to build the wheels.
     response = session.request(
         "PURGE", "https://pypi.python.org/simple/cryptography/"
     )
