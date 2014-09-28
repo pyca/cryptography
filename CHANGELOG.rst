@@ -22,9 +22,9 @@ Changelog
   ``load_elliptic_curve_public_numbers`` on
   :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 * Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`
+  :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKeyWithNumbers`
   and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublickeyWithNumbers`
+  :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKeyWithNumbers`
   support.
 * Work around three GCM related bugs in CommonCrypto and OpenSSL.
 
