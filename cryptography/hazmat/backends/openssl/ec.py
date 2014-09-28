@@ -131,10 +131,12 @@ class _ECDSAVerificationContext(object):
 
 @utils.register_interface(interfaces.EllipticCurvePrivateKeyWithNumbers)
 class _EllipticCurvePrivateKey(object):
-    def __init__(self, backend, ec_key_cdata, curve):
+    def __init__(self, backend, ec_key_cdata):
         self._backend = backend
         self._ec_key = ec_key_cdata
-        self._curve = curve
+
+        sn = backend._ec_key_curve_sn(ec_key_cdata)
+        self._curve = backend._sn_to_elliptic_curve(sn)
 
     @property
     def curve(self):
@@ -169,7 +171,7 @@ class _EllipticCurvePrivateKey(object):
         assert res == 1
 
         return _EllipticCurvePublicKey(
-            self._backend, public_ec_key, self._curve
+            self._backend, public_ec_key
         )
 
     def private_numbers(self):
@@ -183,10 +185,12 @@ class _EllipticCurvePrivateKey(object):
 
 @utils.register_interface(interfaces.EllipticCurvePublicKeyWithNumbers)
 class _EllipticCurvePublicKey(object):
-    def __init__(self, backend, ec_key_cdata, curve):
+    def __init__(self, backend, ec_key_cdata):
         self._backend = backend
         self._ec_key = ec_key_cdata
-        self._curve = curve
+
+        sn = backend._ec_key_curve_sn(ec_key_cdata)
+        self._curve = backend._sn_to_elliptic_curve(sn)
 
     @property
     def curve(self):

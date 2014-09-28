@@ -479,9 +479,7 @@ class Backend(object):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            sn = self._ec_key_curve_sn(ec_cdata)
-            curve = self._sn_to_elliptic_curve(sn)
-            return _EllipticCurvePrivateKey(self, ec_cdata, curve)
+            return _EllipticCurvePrivateKey(self, ec_cdata)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -508,24 +506,9 @@ class Backend(object):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            sn = self._ec_key_curve_sn(ec_cdata)
-            curve = self._sn_to_elliptic_curve(sn)
-            return _EllipticCurvePublicKey(self, ec_cdata, curve)
+            return _EllipticCurvePublicKey(self, ec_cdata)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
-
-    def _ec_key_curve_sn(self, ec_key):
-        group = self._lib.EC_KEY_get0_group(ec_key)
-        assert group != self._ffi.NULL
-
-        nid = self._lib.EC_GROUP_get_curve_name(group)
-        assert nid != self._lib.NID_undef
-
-        curve_name = self._lib.OBJ_nid2sn(nid)
-        assert curve_name != self._ffi.NULL
-
-        sn = self._ffi.string(curve_name).decode('ascii')
-        return sn
 
     def _pem_password_cb(self, password):
         """
@@ -1007,7 +990,7 @@ class Backend(object):
             res = self._lib.EC_KEY_check_key(ctx)
             assert res == 1
 
-            return _EllipticCurvePrivateKey(self, ctx, curve)
+            return _EllipticCurvePrivateKey(self, ec_cdata)
         else:
             raise UnsupportedAlgorithm(
                 "Backend object does not support {0}.".format(curve.name),
@@ -1039,8 +1022,7 @@ class Backend(object):
             ctx, self._int_to_bn(numbers.private_value))
         assert res == 1
 
-        return _EllipticCurvePrivateKey(self, ctx,
-                                        numbers.public_numbers.curve)
+        return _EllipticCurvePrivateKey(self, ec_cdata)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
         warnings.warn(
@@ -1061,7 +1043,7 @@ class Backend(object):
         ctx = self._ec_key_set_public_key_affine_coordinates(
             ctx, numbers.x, numbers.y)
 
-        return _EllipticCurvePublicKey(self, ctx, numbers.curve)
+        return _EllipticCurvePublicKey(self, ec_cdata)
 
     def _elliptic_curve_to_nid(self, curve):
         """
@@ -1082,6 +1064,19 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
         return curve_nid
+
+    def _ec_key_curve_sn(self, ec_key):
+        group = self._lib.EC_KEY_get0_group(ec_key)
+        assert group != self._ffi.NULL
+
+        nid = self._lib.EC_GROUP_get_curve_name(group)
+        assert nid != self._lib.NID_undef
+
+        curve_name = self._lib.OBJ_nid2sn(nid)
+        assert curve_name != self._ffi.NULL
+
+        sn = self._ffi.string(curve_name).decode('ascii')
+        return sn
 
     def _sn_to_elliptic_curve(self, sn):
         try:
