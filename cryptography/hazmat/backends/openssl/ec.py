@@ -129,7 +129,7 @@ class _ECDSAVerificationContext(object):
         return True
 
 
-@utils.register_interface(interfaces.EllipticCurvePrivateKey)
+@utils.register_interface(interfaces.EllipticCurvePrivateKeyWithNumbers)
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata, curve):
         self._backend = backend
@@ -172,8 +172,16 @@ class _EllipticCurvePrivateKey(object):
             self._backend, public_ec_key, self._curve
         )
 
+    def private_numbers(self):
+        bn = self._backend._lib.EC_KEY_get0_private_key(self._ec_key)
+        private_value = self._backend._bn_to_int(bn)
+        return ec.EllipticCurvePrivateNumbers(
+            private_value=private_value,
+            public_numbers=self.public_key().public_numbers()
+        )
 
-@utils.register_interface(interfaces.EllipticCurvePublicKey)
+
+@utils.register_interface(interfaces.EllipticCurvePublicKeyWithNumbers)
 class _EllipticCurvePublicKey(object):
     def __init__(self, backend, ec_key_cdata, curve):
         self._backend = backend
@@ -193,3 +201,26 @@ class _EllipticCurvePublicKey(object):
             raise UnsupportedAlgorithm(
                 "Unsupported elliptic curve signature algorithm.",
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def public_numbers(self):
+        set_func, get_func, group = (
+            self._backend._ec_key_determine_group_get_set_funcs(self._ec_key)
+        )
+        point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        assert point != self._backend._ffi.NULL
+
+        with self._backend._tmp_bn_ctx() as bn_ctx:
+            bn_x = self._backend._lib.BN_CTX_get(bn_ctx)
+            bn_y = self._backend._lib.BN_CTX_get(bn_ctx)
+
+            res = get_func(group, point, bn_x, bn_y, bn_ctx)
+            assert res == 1
+
+            x = self._backend._bn_to_int(bn_x)
+            y = self._backend._bn_to_int(bn_y)
+
+        return ec.EllipticCurvePublicNumbers(
+            x=x,
+            y=y,
+            curve=self._curve
+        )
