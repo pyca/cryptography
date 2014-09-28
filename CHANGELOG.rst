@@ -21,6 +21,23 @@ Changelog
   ``load_elliptic_curve_private_numbers`` and
   ``load_elliptic_curve_public_numbers`` on
   :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublickeyWithNumbers`
+  support.
+* Work around three GCM related bugs in CommonCrypto and OpenSSL.
+
+  * On the CommonCrypto backend adding AAD but not subsequently calling update
+    would return null tag bytes.
+
+  * One the CommonCrypto backend a call to update without an empty add AAD call
+    would return null ciphertext bytes.
+
+  * On the OpenSSL backend with certain versions adding AAD only would give
+    invalid tag bytes.
+
+* Support loading EC private keys from PEM.
 
 0.5.4 - 2014-08-20
 ~~~~~~~~~~~~~~~~~~
