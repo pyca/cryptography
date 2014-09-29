@@ -29,8 +29,8 @@ Asymmetric ciphers
 * OpenSSL PEM DSA serialization vectors from the `GnuTLS example keys`_.
 * PKCS #8 PEM serialization vectors from
 
-  * GnuTLS: `enc-rsa-pkcs8.pem`_, `enc2-rsa-pkcs8.pem`_, `unenc-rsa-pkcs8.pem`_,
-    `pkcs12_s2k_pem.c`_.
+  * GnuTLS: `enc-rsa-pkcs8.pem`_, `enc2-rsa-pkcs8.pem`_,
+    `unenc-rsa-pkcs8.pem`_, `pkcs12_s2k_pem.c`_.
   * `Botan's ECC private keys`_.
 
 Hashes
