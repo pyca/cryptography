@@ -1451,7 +1451,7 @@ class TestRSANumbers(object):
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPublicNumbers(e=16, n=15).public_key(backend)
+            rsa.RSAPublicNumbers(e=14, n=15).public_key(backend)
 
     def test_invalid_private_numbers_argument_values(self, backend):
         # Start with p=3, q=11, private_exponent=3, public_exponent=7,
