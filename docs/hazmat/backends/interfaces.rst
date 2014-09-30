@@ -240,63 +240,6 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :raises ValueError: If the public_exponent is not valid.
 
-    .. method:: create_rsa_signature_ctx(private_key, padding, algorithm)
-
-        .. deprecated:: 0.5
-
-        :param private_key: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-            provider.
-
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
-
-    .. method:: create_rsa_verification_ctx(public_key, signature, padding, algorithm)
-
-        .. deprecated:: 0.5
-
-        :param public_key: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-            provider.
-
-        :param bytes signature: The signature to verify.
-
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
-
-    .. method:: mgf1_hash_supported(algorithm)
-
-        ..deprecated:: 0.5
-
-        Check if the specified ``algorithm`` is supported for use with
-        :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
-        inside :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
-        padding. This method is deprecated in favor of
-        ``rsa_padding_supported``.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            provider.
-
-        :returns: ``True`` if the specified ``algorithm`` is supported by this
-            backend, otherwise ``False``.
-
     .. method:: rsa_padding_supported(padding)
 
         Check if the specified ``padding`` is supported by the backend.
@@ -316,49 +259,6 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param int public_exponent: The public exponent.
 
         :param int key_size: The bit length of the generated modulus.
-
-    .. method:: decrypt_rsa(private_key, ciphertext, padding)
-
-        .. deprecated:: 0.5
-
-        :param private_key: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-            provider.
-
-        :param bytes ciphertext: The ciphertext to decrypt.
-
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
-
-        :return bytes: The decrypted data.
-
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If an unsupported
-            MGF, hash function, or padding is chosen.
-
-        :raises ValueError: When decryption fails or key size does not match
-            ciphertext length.
-
-    .. method:: encrypt_rsa(public_key, plaintext, padding)
-
-        .. deprecated:: 0.5
-
-        :param public_key: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-            provider.
-
-        :param bytes plaintext: The plaintext to encrypt.
-
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
-            provider.
-
-        :return bytes: The encrypted data.
-
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If an unsupported
-            MGF, hash function, or padding is chosen.
-
-        :raises ValueError: When plaintext is too long for the key size.
 
     .. method:: load_rsa_private_numbers(numbers):
 
