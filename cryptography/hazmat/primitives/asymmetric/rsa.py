@@ -13,11 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 import six
 
-from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 
@@ -94,65 +91,6 @@ def _check_public_key_components(e, n):
         raise ValueError("e must be odd.")
 
 
-class RSAPublicKey(object):
-    def __init__(self, public_exponent, modulus):
-        warnings.warn(
-            "The RSAPublicKey class is deprecated and will be removed in a "
-            "future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        if (
-            not isinstance(public_exponent, six.integer_types) or
-            not isinstance(modulus, six.integer_types)
-        ):
-            raise TypeError("RSAPublicKey arguments must be integers.")
-
-        _check_public_key_components(public_exponent, modulus)
-
-        self._public_exponent = public_exponent
-        self._modulus = modulus
-
-    def verifier(self, signature, padding, algorithm, backend):
-        if not isinstance(backend, RSABackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
-            )
-
-        return backend.create_rsa_verification_ctx(self, signature, padding,
-                                                   algorithm)
-
-    def encrypt(self, plaintext, padding, backend):
-        if not isinstance(backend, RSABackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
-            )
-
-        return backend.encrypt_rsa(self, plaintext, padding)
-
-    @property
-    def key_size(self):
-        return utils.bit_length(self.modulus)
-
-    @property
-    def public_exponent(self):
-        return self._public_exponent
-
-    @property
-    def modulus(self):
-        return self._modulus
-
-    @property
-    def e(self):
-        return self.public_exponent
-
-    @property
-    def n(self):
-        return self.modulus
-
-
 def _modinv(e, m):
     """
     Modular Multiplicative Inverse. Returns x such that: (x*e) mod m == 1
@@ -187,136 +125,6 @@ def rsa_crt_dmq1(private_exponent, q):
     private_exponent and q.
     """
     return private_exponent % (q - 1)
-
-
-class RSAPrivateKey(object):
-    def __init__(self, p, q, private_exponent, dmp1, dmq1, iqmp,
-                 public_exponent, modulus):
-        warnings.warn(
-            "The RSAPrivateKey class is deprecated and will be removed in a "
-            "future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        if (
-            not isinstance(p, six.integer_types) or
-            not isinstance(q, six.integer_types) or
-            not isinstance(dmp1, six.integer_types) or
-            not isinstance(dmq1, six.integer_types) or
-            not isinstance(iqmp, six.integer_types) or
-            not isinstance(private_exponent, six.integer_types) or
-            not isinstance(public_exponent, six.integer_types) or
-            not isinstance(modulus, six.integer_types)
-        ):
-            raise TypeError("RSAPrivateKey arguments must be integers.")
-
-        _check_private_key_components(p, q, private_exponent, dmp1, dmq1, iqmp,
-                                      public_exponent, modulus)
-
-        self._p = p
-        self._q = q
-        self._dmp1 = dmp1
-        self._dmq1 = dmq1
-        self._iqmp = iqmp
-        self._private_exponent = private_exponent
-        self._public_exponent = public_exponent
-        self._modulus = modulus
-
-    @classmethod
-    def generate(cls, public_exponent, key_size, backend):
-        warnings.warn(
-            "generate is deprecated and will be removed in a future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        if not isinstance(backend, RSABackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
-            )
-
-        _verify_rsa_parameters(public_exponent, key_size)
-        key = backend.generate_rsa_private_key(public_exponent, key_size)
-        private_numbers = key.private_numbers()
-        return RSAPrivateKey(
-            p=private_numbers.p,
-            q=private_numbers.q,
-            dmp1=private_numbers.dmp1,
-            dmq1=private_numbers.dmq1,
-            iqmp=private_numbers.iqmp,
-            private_exponent=private_numbers.d,
-            public_exponent=private_numbers.public_numbers.e,
-            modulus=private_numbers.public_numbers.n
-        )
-
-    def signer(self, padding, algorithm, backend):
-        if not isinstance(backend, RSABackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
-            )
-
-        return backend.create_rsa_signature_ctx(self, padding, algorithm)
-
-    def decrypt(self, ciphertext, padding, backend):
-        if not isinstance(backend, RSABackend):
-            raise UnsupportedAlgorithm(
-                "Backend object does not implement RSABackend.",
-                _Reasons.BACKEND_MISSING_INTERFACE
-            )
-
-        return backend.decrypt_rsa(self, ciphertext, padding)
-
-    @property
-    def key_size(self):
-        return utils.bit_length(self.modulus)
-
-    def public_key(self):
-        return RSAPublicKey(self.public_exponent, self.modulus)
-
-    @property
-    def p(self):
-        return self._p
-
-    @property
-    def q(self):
-        return self._q
-
-    @property
-    def private_exponent(self):
-        return self._private_exponent
-
-    @property
-    def public_exponent(self):
-        return self._public_exponent
-
-    @property
-    def modulus(self):
-        return self._modulus
-
-    @property
-    def d(self):
-        return self.private_exponent
-
-    @property
-    def dmp1(self):
-        return self._dmp1
-
-    @property
-    def dmq1(self):
-        return self._dmq1
-
-    @property
-    def iqmp(self):
-        return self._iqmp
-
-    @property
-    def e(self):
-        return self.public_exponent
-
-    @property
-    def n(self):
-        return self.modulus
 
 
 class RSAPrivateNumbers(object):

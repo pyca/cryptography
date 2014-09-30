@@ -325,7 +325,7 @@ class TestOpenSSLRSA(object):
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
-        private_key = rsa.RSAPrivateKey.generate(
+        private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=512,
             backend=backend
@@ -338,8 +338,7 @@ class TestOpenSSLRSA(object):
                     ),
                     salt_length=padding.PSS.MAX_LENGTH
                 ),
-                hashes.SHA1(),
-                backend
+                hashes.SHA1()
             )
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
@@ -351,15 +350,8 @@ class TestOpenSSLRSA(object):
                     ),
                     salt_length=padding.PSS.MAX_LENGTH
                 ),
-                hashes.SHA1(),
-                backend
+                hashes.SHA1()
             )
-
-    def test_unsupported_mgf1_hash_algorithm(self):
-        assert pytest.deprecated_call(
-            backend.mgf1_hash_supported,
-            DummyHash()
-        ) is False
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(
@@ -400,7 +392,7 @@ class TestOpenSSLRSA(object):
         ) is False
 
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
-        private_key = rsa.RSAPrivateKey.generate(
+        private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=512,
             backend=backend
@@ -412,12 +404,11 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA256()),
                     algorithm=hashes.SHA1(),
                     label=None
-                ),
-                backend
+                )
             )
 
     def test_unsupported_oaep_hash_algorithm_decrypt(self):
-        private_key = rsa.RSAPrivateKey.generate(
+        private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=512,
             backend=backend
@@ -429,12 +420,11 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA256(),
                     label=None
-                ),
-                backend
+                )
             )
 
     def test_unsupported_oaep_label_decrypt(self):
-        private_key = rsa.RSAPrivateKey.generate(
+        private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=512,
             backend=backend
@@ -446,8 +436,7 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
                     label=b"label"
-                ),
-                backend
+                )
             )
 
 
@@ -511,44 +500,6 @@ class TestOpenSSLEllipticCurve(object):
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
-
-
-class TestDeprecatedRSABackendMethods(object):
-    def test_create_rsa_signature_ctx(self):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        pytest.deprecated_call(
-            backend.create_rsa_signature_ctx,
-            private_key,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
-
-    def test_create_rsa_verification_ctx(self):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        public_key = private_key.public_key()
-        pytest.deprecated_call(
-            backend.create_rsa_verification_ctx,
-            public_key,
-            b"\x00" * 64,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
-
-    def test_encrypt_decrypt_rsa(self):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        public_key = private_key.public_key()
-        ct = pytest.deprecated_call(
-            backend.encrypt_rsa,
-            public_key,
-            b"\x00" * 32,
-            padding.PKCS1v15()
-        )
-        pytest.deprecated_call(
-            backend.decrypt_rsa,
-            private_key,
-            ct,
-            padding.PKCS1v15()
-        )
 
 
 class TestDeprecatedDSABackendMethods(object):
