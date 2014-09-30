@@ -35,8 +35,7 @@ from cryptography.hazmat.backends.openssl.ciphers import (
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dsa import (
-    _DSAParameters, _DSAPrivateKey, _DSAPublicKey,
-    _DSASignatureContext, _DSAVerificationContext
+    _DSAParameters, _DSAPrivateKey, _DSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey, _EllipticCurvePublicKey
@@ -594,14 +593,9 @@ class Backend(object):
         ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        if isinstance(parameters, dsa.DSAParameters):
-            ctx.p = self._int_to_bn(parameters.p)
-            ctx.q = self._int_to_bn(parameters.q)
-            ctx.g = self._int_to_bn(parameters.g)
-        else:
-            ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
-            ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
-            ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
+        ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
+        ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
+        ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
 
         self._lib.DSA_generate_key(ctx)
 
@@ -610,29 +604,6 @@ class Backend(object):
     def generate_dsa_private_key_and_parameters(self, key_size):
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
-
-    def create_dsa_signature_ctx(self, private_key, algorithm):
-        warnings.warn(
-            "create_dsa_signature_ctx is deprecated and will be removed in "
-            "a future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        dsa_cdata = self._dsa_cdata_from_private_key(private_key)
-        key = _DSAPrivateKey(self, dsa_cdata)
-        return _DSASignatureContext(self, key, algorithm)
-
-    def create_dsa_verification_ctx(self, public_key, signature,
-                                    algorithm):
-        warnings.warn(
-            "create_dsa_verification_ctx is deprecated and will be removed in "
-            "a future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        dsa_cdata = self._dsa_cdata_from_public_key(public_key)
-        key = _DSAPublicKey(self, dsa_cdata)
-        return _DSAVerificationContext(self, key, signature, algorithm)
 
     def load_dsa_private_numbers(self, numbers):
         dsa._check_dsa_private_numbers(numbers)
@@ -674,29 +645,6 @@ class Backend(object):
         dsa_cdata.g = self._int_to_bn(numbers.g)
 
         return _DSAParameters(self, dsa_cdata)
-
-    def _dsa_cdata_from_public_key(self, public_key):
-        ctx = self._lib.DSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        parameters = public_key.parameters()
-        ctx.p = self._int_to_bn(parameters.p)
-        ctx.q = self._int_to_bn(parameters.q)
-        ctx.g = self._int_to_bn(parameters.g)
-        ctx.pub_key = self._int_to_bn(public_key.y)
-        return ctx
-
-    def _dsa_cdata_from_private_key(self, private_key):
-        ctx = self._lib.DSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        parameters = private_key.parameters()
-        ctx.p = self._int_to_bn(parameters.p)
-        ctx.q = self._int_to_bn(parameters.q)
-        ctx.g = self._int_to_bn(parameters.g)
-        ctx.priv_key = self._int_to_bn(private_key.x)
-        ctx.pub_key = self._int_to_bn(private_key.y)
-        return ctx
 
     def dsa_hash_supported(self, algorithm):
         if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:

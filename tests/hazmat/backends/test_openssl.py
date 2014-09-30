@@ -175,20 +175,22 @@ class TestOpenSSL(object):
     )
     def test_large_key_size_on_old_openssl(self):
         with pytest.raises(ValueError):
-            dsa.DSAParameters.generate(2048, backend=backend)
+            dsa.generate_parameters(2048, backend=backend)
 
         with pytest.raises(ValueError):
-            dsa.DSAParameters.generate(3072, backend=backend)
+            dsa.generate_parameters(3072, backend=backend)
 
     @pytest.mark.skipif(
         backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
         reason="Requires a newer OpenSSL. Must be >= 1.0.0"
     )
     def test_large_key_size_on_new_openssl(self):
-        parameters = dsa.DSAParameters.generate(2048, backend)
-        assert utils.bit_length(parameters.p) == 2048
-        parameters = dsa.DSAParameters.generate(3072, backend)
-        assert utils.bit_length(parameters.p) == 3072
+        parameters = dsa.generate_parameters(2048, backend)
+        param_num = parameters.parameter_numbers()
+        assert utils.bit_length(param_num.p) == 2048
+        parameters = dsa.generate_parameters(3072, backend)
+        param_num = parameters.parameter_numbers()
+        assert utils.bit_length(param_num.p) == 3072
 
     def test_int_to_bn(self):
         value = (2 ** 4242) - 4242
@@ -500,28 +502,6 @@ class TestOpenSSLEllipticCurve(object):
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
-
-
-class TestDeprecatedDSABackendMethods(object):
-    def test_create_dsa_signature_ctx(self):
-        params = dsa.DSAParameters.generate(1024, backend)
-        key = dsa.DSAPrivateKey.generate(params, backend)
-        pytest.deprecated_call(
-            backend.create_dsa_signature_ctx,
-            key,
-            hashes.SHA1()
-        )
-
-    def test_create_dsa_verification_ctx(self):
-        params = dsa.DSAParameters.generate(1024, backend)
-        key = dsa.DSAPrivateKey.generate(params, backend)
-        public_key = key.public_key()
-        pytest.deprecated_call(
-            backend.create_dsa_verification_ctx,
-            public_key,
-            b"\x00" * 128,
-            hashes.SHA1()
-        )
 
 
 @pytest.mark.elliptic

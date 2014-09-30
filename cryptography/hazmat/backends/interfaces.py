@@ -159,20 +159,6 @@ class DSABackend(object):
         """
 
     @abc.abstractmethod
-    def create_dsa_signature_ctx(self, private_key, algorithm):
-        """
-        Returns an object conforming to the AsymmetricSignatureContext
-        interface.
-        """
-
-    @abc.abstractmethod
-    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
-        """
-        Returns an object conforming to the AsymmetricVerificationContext
-        interface.
-        """
-
-    @abc.abstractmethod
     def dsa_hash_supported(self, algorithm):
         """
         Return True if the hash algorithm is supported by the backend for DSA.
