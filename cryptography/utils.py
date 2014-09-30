@@ -17,7 +17,7 @@ import sys
 
 
 DeprecatedIn05 = DeprecationWarning
-DeprecatedIn06 = PendingDeprecationWarning
+DeprecatedIn06 = DeprecationWarning
 
 
 def register_interface(iface):
