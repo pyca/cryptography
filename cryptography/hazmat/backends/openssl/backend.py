@@ -550,36 +550,6 @@ class Backend(object):
             pem_password_cb
         )
 
-    def _rsa_cdata_from_private_key(self, private_key):
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-
-        ctx.p = self._int_to_bn(private_key.p)
-        ctx.q = self._int_to_bn(private_key.q)
-        ctx.d = self._int_to_bn(private_key.d)
-        ctx.e = self._int_to_bn(private_key.e)
-        ctx.n = self._int_to_bn(private_key.n)
-        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
-        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
-        ctx.iqmp = self._int_to_bn(private_key.iqmp)
-        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
-        assert res == 1
-
-        return ctx
-
-    def _rsa_cdata_from_public_key(self, public_key):
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-
-        ctx.e = self._int_to_bn(public_key.e)
-        ctx.n = self._int_to_bn(public_key.n)
-        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
-        assert res == 1
-
-        return ctx
-
     def _mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
             return self.hash_supported(algorithm)
