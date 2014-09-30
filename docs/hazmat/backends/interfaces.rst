@@ -598,7 +598,8 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: load_pem_public_key(data)
 
         :param bytes data: PEM data to load.
-        :return: A new instance of the appropriate type of public key serialized data contains.
+        :return: A new instance of the appropriate type of public key
+            serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
 .. class:: TraditionalOpenSSLSerializationBackend
