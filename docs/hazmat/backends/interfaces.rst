@@ -341,39 +341,6 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises ValueError: This is raised if the key size is not supported
             by the backend.
 
-    .. method:: create_dsa_signature_ctx(private_key, algorithm)
-
-        .. deprecated:: 0.5
-
-        :param private_key: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
-            provider.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            provider
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
-
-    .. method:: create_dsa_verification_ctx(public_key, signature, algorithm)
-
-        .. deprecated:: 0.5
-
-        :param public_key: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
-            provider.
-
-        :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`6979`.
-
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
-
     .. method:: dsa_hash_supported(algorithm):
 
         :param algorithm: An instance of a

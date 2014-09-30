@@ -18,8 +18,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, _Reasons)
+from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.utils import bit_length
@@ -30,57 +29,18 @@ from .fixtures_dsa import (
 from ...utils import (
     der_encode_dsa_signature, load_fips_dsa_key_pair_vectors,
     load_fips_dsa_sig_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
 )
-
-
-def _check_dsa_private_key(skey):
-    assert skey
-    assert skey.x
-    assert skey.y
-    assert skey.key_size
-
-    skey_parameters = skey.parameters()
-    assert skey_parameters
-    assert skey_parameters.modulus
-    assert skey_parameters.subgroup_order
-    assert skey_parameters.generator
-    assert skey_parameters.modulus == skey_parameters.p
-    assert skey_parameters.subgroup_order == skey_parameters.q
-    assert skey_parameters.generator == skey_parameters.g
-
-    pkey = skey.public_key()
-    assert pkey
-    assert skey.y == pkey.y
-    assert skey.key_size == pkey.key_size
-
-    pkey_parameters = pkey.parameters()
-    assert pkey_parameters
-    assert pkey_parameters.modulus
-    assert pkey_parameters.subgroup_order
-    assert pkey_parameters.generator
-    assert pkey_parameters.modulus == pkey_parameters.p
-    assert pkey_parameters.subgroup_order == pkey_parameters.q
-    assert pkey_parameters.generator == pkey_parameters.g
-
-    assert skey_parameters.modulus == pkey_parameters.modulus
-    assert skey_parameters.subgroup_order == pkey_parameters.subgroup_order
-    assert skey_parameters.generator == pkey_parameters.generator
 
 
 @pytest.mark.dsa
 class TestDSA(object):
-    def test_generate_dsa_parameters_class_method(self, backend):
-        parameters = dsa.DSAParameters.generate(1024, backend)
-        assert bit_length(parameters.p) == 1024
-
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(1024, backend)
         assert isinstance(parameters, interfaces.DSAParameters)
 
     def test_generate_invalid_dsa_parameters(self, backend):
         with pytest.raises(ValueError):
-            dsa.DSAParameters.generate(1, backend)
+            dsa.generate_parameters(1, backend)
 
     @pytest.mark.parametrize(
         "vector",
@@ -127,529 +87,546 @@ class TestDSA(object):
                 skey_parameters.g, numbers.x, skey_parameters.p
             )
 
-    def test_invalid_parameters_argument_types(self):
-        with pytest.raises(TypeError):
-            dsa.DSAParameters(None, None, None)
-
-    def test_invalid_private_key_argument_types(self):
-        with pytest.raises(TypeError):
-            dsa.DSAPrivateKey(None, None, None, None, None)
-
-    def test_invalid_public_key_argument_types(self):
-        with pytest.raises(TypeError):
-            dsa.DSAPublicKey(None, None, None, None)
-
-    def test_load_dsa_example_keys(self):
-        parameters = dsa.DSAParameters(
-            modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-            subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-            generator=DSA_KEY_1024.public_numbers.parameter_numbers.g
-        )
-
-        assert parameters
-        assert parameters.modulus
-        assert parameters.subgroup_order
-        assert parameters.generator
-        assert parameters.modulus == parameters.p
-        assert parameters.subgroup_order == parameters.q
-        assert parameters.generator == parameters.g
-
-        pub_key = dsa.DSAPublicKey(
-            modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-            subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-            generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            y=DSA_KEY_1024.public_numbers.y
-        )
-        assert pub_key
-        assert pub_key.key_size
-        assert pub_key.y
-        pub_key_parameters = pub_key.parameters()
-        assert pub_key_parameters
-        assert pub_key_parameters.modulus
-        assert pub_key_parameters.subgroup_order
-        assert pub_key_parameters.generator
-
-        skey = dsa.DSAPrivateKey(
-            modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-            subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-            generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            y=DSA_KEY_1024.public_numbers.y,
-            x=DSA_KEY_1024.x
-        )
-        assert skey
-        _check_dsa_private_key(skey)
-        skey_parameters = skey.parameters()
-        assert skey_parameters
-        assert skey_parameters.modulus
-        assert skey_parameters.subgroup_order
-        assert skey_parameters.generator
-
-        pkey = dsa.DSAPublicKey(
-            modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-            subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-            generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            y=DSA_KEY_1024.public_numbers.y
-        )
-        assert pkey
-        pkey_parameters = pkey.parameters()
-        assert pkey_parameters
-        assert pkey_parameters.modulus
-        assert pkey_parameters.subgroup_order
-        assert pkey_parameters.generator
-
-        pkey2 = skey.public_key()
-        assert pkey2
-        pkey2_parameters = pkey.parameters()
-        assert pkey2_parameters
-        assert pkey2_parameters.modulus
-        assert pkey2_parameters.subgroup_order
-        assert pkey2_parameters.generator
-
-        assert skey_parameters.modulus == pkey_parameters.modulus
-        assert skey_parameters.subgroup_order == pkey_parameters.subgroup_order
-        assert skey_parameters.generator == pkey_parameters.generator
-        assert skey.y == pkey.y
-        assert skey.key_size == pkey.key_size
-
-        assert pkey_parameters.modulus == pkey2_parameters.modulus
-        assert pkey_parameters.subgroup_order == \
-            pkey2_parameters.subgroup_order
-        assert pkey_parameters.generator == pkey2_parameters.generator
-        assert pkey.y == pkey2.y
-        assert pkey.key_size == pkey2.key_size
-
-    def test_invalid_parameters_values(self):
-        # Test a modulus < 1024 bits in length
+    def test_invalid_parameters_values(self, backend):
+        # Test a p < 1024 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=2 ** 1000,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=2 ** 1000,
+                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a modulus < 2048 bits in length
+        # Test a p < 2048 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=2 ** 2000,
-                subgroup_order=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=2 ** 2000,
+                q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a modulus < 3072 bits in length
+        # Test a p < 3072 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=2 ** 3000,
-                subgroup_order=DSA_KEY_3072.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=2 ** 3000,
+                q=DSA_KEY_3072.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a modulus > 3072 bits in length
+        # Test a p > 3072 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=2 ** 3100,
-                subgroup_order=DSA_KEY_3072.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=2 ** 3100,
+                q=DSA_KEY_3072.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a subgroup_order < 160 bits in length
+        # Test a q < 160 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 150,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                q=2 ** 150,
+                g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a subgroup_order < 256 bits in length
+        # Test a q < 256 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 250,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
+                q=2 ** 250,
+                g=DSA_KEY_2048.public_numbers.parameter_numbers.g
+            ).parameters(backend)
 
-        # Test a subgroup_order > 256 bits in length
+        # Test a q > 256 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 260,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
+                q=2 ** 260,
+                g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a modulus, subgroup_order pair of (1024, 256) bit lengths
+        # Test a p, q pair of (1024, 256) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a modulus, subgroup_order pair of (2048, 160) bit lengths
+        # Test a p, q pair of (2048, 160) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
+                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_2048.public_numbers.parameter_numbers.g
+            ).parameters(backend)
 
-        # Test a modulus, subgroup_order pair of (3072, 160) bit lengths
+        # Test a p, q pair of (3072, 160) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
+                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            ).parameters(backend)
 
-        # Test a generator < 1
+        # Test a g < 1
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=0
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                g=0
+            ).parameters(backend)
 
-        # Test a generator = 1
+        # Test a g = 1
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=1
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                g=1
+            ).parameters(backend)
 
-        # Test a generator > modulus
+        # Test a g > p
         with pytest.raises(ValueError):
-            dsa.DSAParameters(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=2 ** 1200
-            )
+            dsa.DSAParameterNumbers(
+                p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                g=2 ** 1200
+            ).parameters(backend)
 
-    def test_invalid_dsa_private_key_arguments(self):
-        # Test a modulus < 1024 bits in length
+    def test_invalid_dsa_private_key_arguments(self, backend):
+        # Test a p < 1024 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=2 ** 1000,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-                x=DSA_KEY_1024.x,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=2 ** 1000,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
+                x=DSA_KEY_1024.x
+            ).private_key(backend)
 
-        # Test a modulus < 2048 bits in length
+        # Test a p < 2048 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=2 ** 2000,
-                subgroup_order=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=2 ** 2000,
+                        q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_2048.public_numbers.y
+                ),
                 x=DSA_KEY_2048.x,
-                y=DSA_KEY_2048.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a modulus < 3072 bits in length
+        # Test a p < 3072 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=2 ** 3000,
-                subgroup_order=DSA_KEY_3072.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=2 ** 3000,
+                        q=DSA_KEY_3072.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_3072.public_numbers.y
+                ),
                 x=DSA_KEY_3072.x,
-                y=DSA_KEY_3072.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a modulus > 3072 bits in length
+        # Test a p > 3072 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=2 ** 3100,
-                subgroup_order=DSA_KEY_3072.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=2 ** 3100,
+                        q=DSA_KEY_3072.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_3072.public_numbers.y
+                ),
                 x=DSA_KEY_3072.x,
-                y=DSA_KEY_3072.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a subgroup_order < 160 bits in length
+        # Test a q < 160 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 150,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=2 ** 150,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=DSA_KEY_1024.x,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a subgroup_order < 256 bits in length
+        # Test a q < 256 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 250,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
+                        q=2 ** 250,
+                        g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_2048.public_numbers.y
+                ),
                 x=DSA_KEY_2048.x,
-                y=DSA_KEY_2048.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a subgroup_order > 256 bits in length
+        # Test a q > 256 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 260,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
+                        q=2 ** 260,
+                        g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_3072.public_numbers.y
+                ),
                 x=DSA_KEY_3072.x,
-                y=DSA_KEY_3072.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a modulus, subgroup_order pair of (1024, 256) bit lengths
+        # Test a p, q pair of (1024, 256) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=DSA_KEY_1024.x,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a modulus, subgroup_order pair of (2048, 160) bit lengths
+        # Test a p, q pair of (2048, 160) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_2048.public_numbers.y
+                ),
                 x=DSA_KEY_2048.x,
-                y=DSA_KEY_2048.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a modulus, subgroup_order pair of (3072, 160) bit lengths
+        # Test a p, q pair of (3072, 160) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_3072.public_numbers.y
+                ),
                 x=DSA_KEY_3072.x,
-                y=DSA_KEY_3072.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a generator < 1
+        # Test a g < 1
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=0,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=0,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=DSA_KEY_1024.x,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a generator = 1
+        # Test a g = 1
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=1,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=1,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=DSA_KEY_1024.x,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test a generator > modulus
+        # Test a g > p
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=2 ** 1200,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=2 ** 1200,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=DSA_KEY_1024.x,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
         # Test x = 0
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=0,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
         # Test x < 0
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=-2,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test x = subgroup_order
+        # Test x = q
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=2 ** 159,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test x > subgroup_order
+        # Test x > q
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=2 ** 200,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-        # Test y != (generator ** x) % modulus
+        # Test y != (g ** x) % p
         with pytest.raises(ValueError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=2 ** 100
+                ),
                 x=DSA_KEY_1024.x,
-                y=2 ** 100
-            )
+            ).private_key(backend)
 
         # Test a non-integer y value
         with pytest.raises(TypeError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=None
+                ),
                 x=DSA_KEY_1024.x,
-                y=None
-            )
+            ).private_key(backend)
 
         # Test a non-integer x value
         with pytest.raises(TypeError):
-            dsa.DSAPrivateKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPrivateNumbers(
+                public_numbers=dsa.DSAPublicNumbers(
+                    parameter_numbers=dsa.DSAParameterNumbers(
+                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    ),
+                    y=DSA_KEY_1024.public_numbers.y
+                ),
                 x=None,
-                y=DSA_KEY_1024.public_numbers.y
-            )
+            ).private_key(backend)
 
-    def test_invalid_dsa_public_key_arguments(self):
-        # Test a modulus < 1024 bits in length
+    def test_invalid_dsa_public_key_arguments(self, backend):
+        # Test a p < 1024 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=2 ** 1000,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=2 ** 1000,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_1024.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a modulus < 2048 bits in length
+        # Test a p < 2048 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=2 ** 2000,
-                subgroup_order=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=2 ** 2000,
+                    q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_2048.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a modulus < 3072 bits in length
+        # Test a p < 3072 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=2 ** 3000,
-                subgroup_order=DSA_KEY_3072.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=2 ** 3000,
+                    q=DSA_KEY_3072.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_3072.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a modulus > 3072 bits in length
+        # Test a p > 3072 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=2 ** 3100,
-                subgroup_order=DSA_KEY_3072.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=2 ** 3100,
+                    q=DSA_KEY_3072.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_3072.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a subgroup_order < 160 bits in length
+        # Test a q < 160 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 150,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                    q=2 ** 150,
+                    g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_1024.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a subgroup_order < 256 bits in length
+        # Test a q < 256 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 250,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
+                    q=2 ** 250,
+                    g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_2048.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a subgroup_order > 256 bits in length
+        # Test a q > 256 bits in length
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                subgroup_order=2 ** 260,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
+                    q=2 ** 260,
+                    g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_3072.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a modulus, subgroup_order pair of (1024, 256) bit lengths
+        # Test a p, q pair of (1024, 256) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_1024.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a modulus, subgroup_order pair of (2048, 160) bit lengths
+        # Test a p, q pair of (2048, 160) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_2048.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a modulus, subgroup_order pair of (3072, 160) bit lengths
+        # Test a p, q pair of (3072, 160) bit lengths
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
+                ),
                 y=DSA_KEY_3072.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a generator < 1
+        # Test a g < 1
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=0,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=0,
+                ),
                 y=DSA_KEY_1024.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a generator = 1
+        # Test a g = 1
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=1,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=1,
+                ),
                 y=DSA_KEY_1024.public_numbers.y
-            )
+            ).public_key(backend)
 
-        # Test a generator > modulus
+        # Test a g > p
         with pytest.raises(ValueError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=2 ** 1200,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=2 ** 1200,
+                ),
                 y=DSA_KEY_1024.public_numbers.y
-            )
+            ).public_key(backend)
 
         # Test a non-integer y value
         with pytest.raises(TypeError):
-            dsa.DSAPublicKey(
-                modulus=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                subgroup_order=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                generator=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+            dsa.DSAPublicNumbers(
+                parameter_numbers=dsa.DSAParameterNumbers(
+                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                    g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                ),
                 y=None
-            )
+            ).public_key(backend)
 
 
 @pytest.mark.dsa
@@ -698,27 +675,15 @@ class TestDSAVerification(object):
             verifier.verify()
 
     def test_dsa_verify_invalid_asn1(self, backend):
-        parameters = pytest.deprecated_call(
-            dsa.DSAParameters.generate,
-            1024,
-            backend
-        )
-        private_key = pytest.deprecated_call(
-            dsa.DSAPrivateKey.generate,
-            parameters,
-            backend
-        )
-        public_key = pytest.deprecated_call(private_key.public_key)
-        verifier = public_key.verifier(b'fakesig', hashes.SHA1(), backend)
+        public_key = DSA_KEY_1024.public_numbers.public_key(backend)
+        verifier = public_key.verifier(b'fakesig', hashes.SHA1())
         verifier.update(b'fakesig')
         with pytest.raises(InvalidSignature):
             verifier.verify()
 
     def test_use_after_finalize(self, backend):
-        parameters = dsa.DSAParameters.generate(1024, backend)
-        private_key = dsa.DSAPrivateKey.generate(parameters, backend)
-        public_key = private_key.public_key()
-        verifier = public_key.verifier(b'fakesig', hashes.SHA1(), backend)
+        public_key = DSA_KEY_1024.public_numbers.public_key(backend)
+        verifier = public_key.verifier(b'fakesig', hashes.SHA1())
         verifier.update(b'irrelevant')
         with pytest.raises(InvalidSignature):
             verifier.verify()
@@ -726,16 +691,6 @@ class TestDSAVerification(object):
             verifier.verify()
         with pytest.raises(AlreadyFinalized):
             verifier.update(b"more data")
-
-    def test_dsa_verifier_invalid_backend(self, backend):
-        pretend_backend = object()
-        params = dsa.DSAParameters.generate(1024, backend)
-        private_key = dsa.DSAPrivateKey.generate(params, backend)
-        public_key = private_key.public_key()
-
-        with raises_unsupported_algorithm(
-                _Reasons.BACKEND_MISSING_INTERFACE):
-            public_key.verifier(b"sig", hashes.SHA1(), pretend_backend)
 
 
 @pytest.mark.dsa
@@ -787,37 +742,14 @@ class TestDSASignature(object):
         verifier.verify()
 
     def test_use_after_finalize(self, backend):
-        parameters = dsa.DSAParameters.generate(1024, backend)
-        private_key = dsa.DSAPrivateKey.generate(parameters, backend)
-        signer = private_key.signer(hashes.SHA1(), backend)
+        private_key = DSA_KEY_1024.private_key(backend)
+        signer = private_key.signer(hashes.SHA1())
         signer.update(b"data")
         signer.finalize()
         with pytest.raises(AlreadyFinalized):
             signer.finalize()
         with pytest.raises(AlreadyFinalized):
             signer.update(b"more data")
-
-    def test_dsa_signer_invalid_backend(self, backend):
-        pretend_backend = object()
-        params = dsa.DSAParameters.generate(1024, backend)
-        private_key = dsa.DSAPrivateKey.generate(params, backend)
-
-        with raises_unsupported_algorithm(
-                _Reasons.BACKEND_MISSING_INTERFACE):
-            private_key.signer(hashes.SHA1(), pretend_backend)
-
-
-def test_dsa_generate_invalid_backend():
-    pretend_backend = object()
-
-    with raises_unsupported_algorithm(
-            _Reasons.BACKEND_MISSING_INTERFACE):
-        dsa.DSAParameters.generate(1024, pretend_backend)
-
-    pretend_parameters = object()
-    with raises_unsupported_algorithm(
-            _Reasons.BACKEND_MISSING_INTERFACE):
-        dsa.DSAPrivateKey.generate(pretend_parameters, pretend_backend)
 
 
 class TestDSANumbers(object):
