@@ -103,16 +103,6 @@ class TestRSA(object):
             pkey = skey.public_key()
             assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
 
-    def test_generate_rsa_key_class_method(self, backend):
-        skey = pytest.deprecated_call(
-            rsa.RSAPrivateKey.generate,
-            65537,
-            512,
-            backend
-        )
-        assert skey.key_size == 512
-        assert skey.public_exponent == 65537
-
     def test_generate_bad_public_exponent(self, backend):
         with pytest.raises(ValueError):
             rsa.generate_private_key(public_exponent=1,
@@ -172,250 +162,12 @@ class TestRSA(object):
         assert public_num.n == public_num2.n
         assert public_num.e == public_num2.e
 
-    def test_invalid_private_key_argument_types(self):
-        with pytest.raises(TypeError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None
-            )
-
-    def test_invalid_public_key_argument_types(self):
-        with pytest.raises(TypeError):
-            pytest.deprecated_call(rsa.RSAPublicKey, None, None)
-
-    def test_invalid_private_key_argument_values(self):
-        # Start with p=3, q=11, private_exponent=3, public_exponent=7,
-        # modulus=33, dmp1=1, dmq1=3, iqmp=2. Then change one value at
-        # a time to test the bounds.
-
-        # Test a modulus < 3.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=2
-            )
-
-        # Test a modulus != p * q.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=35
-            )
-
-        # Test a p > modulus.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=37,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test a q > modulus.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=37,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test a dmp1 > modulus.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=35,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test a dmq1 > modulus.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=35,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test an iqmp > modulus.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=35,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test a private_exponent > modulus
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=37,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test a public_exponent < 3
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=1,
-                modulus=33
-            )
-
-        # Test a public_exponent > modulus
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=65537,
-                modulus=33
-            )
-
-        # Test a public_exponent that is not odd.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=6,
-                modulus=33
-            )
-
-        # Test a dmp1 that is not odd.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=2,
-                dmq1=3,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-        # Test a dmq1 that is not odd.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPrivateKey,
-                p=3,
-                q=11,
-                private_exponent=3,
-                dmp1=1,
-                dmq1=4,
-                iqmp=2,
-                public_exponent=7,
-                modulus=33
-            )
-
-    def test_invalid_public_key_argument_values(self):
-        # Start with public_exponent=7, modulus=15. Then change one value at a
-        # time to test the bounds.
-
-        # Test a modulus < 3.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPublicKey, public_exponent=7, modulus=2
-            )
-
-        # Test a public_exponent < 3
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPublicKey, public_exponent=1, modulus=15
-            )
-
-        # Test a public_exponent > modulus
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPublicKey, public_exponent=17, modulus=15
-            )
-
-        # Test a public_exponent that is not odd.
-        with pytest.raises(ValueError):
-            pytest.deprecated_call(
-                rsa.RSAPublicKey, public_exponent=6, modulus=15
-            )
-
 
 def test_rsa_generate_invalid_backend():
     pretend_backend = object()
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         rsa.generate_private_key(65537, 2048, pretend_backend)
-
-    with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-        pytest.deprecated_call(
-            rsa.RSAPrivateKey.generate, 65537, 2048, pretend_backend
-        )
 
 
 @pytest.mark.rsa
@@ -436,18 +188,19 @@ class TestRSASignature(object):
     )
     def test_pkcs1v15_signing(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        private_key = pytest.deprecated_call(
-            rsa.RSAPrivateKey,
+        private_key = rsa.RSAPrivateNumbers(
             p=private["p"],
             q=private["q"],
-            private_exponent=private["private_exponent"],
+            d=private["private_exponent"],
             dmp1=private["dmp1"],
             dmq1=private["dmq1"],
             iqmp=private["iqmp"],
-            public_exponent=private["public_exponent"],
-            modulus=private["modulus"]
-        )
-        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1(), backend)
+            public_numbers=rsa.RSAPublicNumbers(
+                e=private["public_exponent"],
+                n=private["modulus"]
+            )
+        ).private_key(backend)
+        signer = private_key.signer(padding.PKCS1v15(), hashes.SHA1())
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
         assert binascii.hexlify(signature) == example["signature"]
@@ -471,28 +224,28 @@ class TestRSASignature(object):
     )
     def test_pss_signing(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        private_key = pytest.deprecated_call(
-            rsa.RSAPrivateKey,
+        private_key = rsa.RSAPrivateNumbers(
             p=private["p"],
             q=private["q"],
-            private_exponent=private["private_exponent"],
+            d=private["private_exponent"],
             dmp1=private["dmp1"],
             dmq1=private["dmq1"],
             iqmp=private["iqmp"],
-            public_exponent=private["public_exponent"],
-            modulus=private["modulus"]
-        )
-        public_key = rsa.RSAPublicKey(
-            public_exponent=public["public_exponent"],
-            modulus=public["modulus"]
-        )
+            public_numbers=rsa.RSAPublicNumbers(
+                e=private["public_exponent"],
+                n=private["modulus"]
+            )
+        ).private_key(backend)
+        public_key = rsa.RSAPublicNumbers(
+            e=public["public_exponent"],
+            n=public["modulus"]
+        ).public_key(backend)
         signer = private_key.signer(
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         signer.update(binascii.unhexlify(example["message"]))
         signature = signer.finalize()
@@ -507,7 +260,6 @@ class TestRSASignature(object):
                 salt_length=padding.PSS.MAX_LENGTH
             ),
             hashes.SHA1(),
-            backend
         )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
@@ -635,24 +387,6 @@ class TestRSASignature(object):
         with pytest.raises(TypeError):
             private_key.signer("notpadding", hashes.SHA1())
 
-    def test_rsa_signer_invalid_backend(self, backend):
-        pretend_backend = object()
-        private_key = pytest.deprecated_call(
-            rsa.RSAPrivateKey,
-            p=RSA_KEY_512.p,
-            q=RSA_KEY_512.q,
-            private_exponent=RSA_KEY_512.d,
-            dmp1=RSA_KEY_512.dmp1,
-            dmq1=RSA_KEY_512.dmq1,
-            iqmp=RSA_KEY_512.iqmp,
-            public_exponent=RSA_KEY_512.public_numbers.e,
-            modulus=RSA_KEY_512.public_numbers.n
-        )
-
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            private_key.signer(
-                padding.PKCS1v15(), hashes.SHA256, pretend_backend)
-
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
@@ -720,15 +454,14 @@ class TestRSAVerification(object):
     )
     def test_pkcs1v15_verification(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        public_key = rsa.RSAPublicKey(
-            public_exponent=public["public_exponent"],
-            modulus=public["modulus"]
-        )
+        public_key = rsa.RSAPublicNumbers(
+            e=public["public_exponent"],
+            n=public["modulus"]
+        ).public_key(backend)
         verifier = public_key.verifier(
             binascii.unhexlify(example["signature"]),
             padding.PKCS1v15(),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
@@ -795,18 +528,17 @@ class TestRSAVerification(object):
     )
     def test_pss_verification(self, pkcs1_example, backend):
         private, public, example = pkcs1_example
-        public_key = rsa.RSAPublicKey(
-            public_exponent=public["public_exponent"],
-            modulus=public["modulus"]
-        )
+        public_key = rsa.RSAPublicNumbers(
+            e=public["public_exponent"],
+            n=public["modulus"]
+        ).public_key(backend)
         verifier = public_key.verifier(
             binascii.unhexlify(example["signature"]),
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=20
             ),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         verifier.update(binascii.unhexlify(example["message"]))
         verifier.verify()
@@ -821,14 +553,14 @@ class TestRSAVerification(object):
         skip_message="Does not support PSS."
     )
     def test_invalid_pss_signature_wrong_data(self, backend):
-        public_key = rsa.RSAPublicKey(
-            modulus=int(
+        public_key = rsa.RSAPublicNumbers(
+            n=int(
                 b"dffc2137d5e810cde9e4b4612f5796447218bab913b3fa98bdf7982e4fa6"
                 b"ec4d6653ef2b29fb1642b095befcbea6decc178fb4bed243d3c3592c6854"
                 b"6af2d3f3", 16
             ),
-            public_exponent=65537
-        )
+            e=65537
+        ).public_key(backend)
         signature = binascii.unhexlify(
             b"0e68c3649df91c5bc3665f96e157efa75b71934aaa514d91e94ca8418d100f45"
             b"6f05288e58525f99666bab052adcffdf7186eb40f583bd38d98c97d3d524808b"
@@ -839,8 +571,7 @@ class TestRSAVerification(object):
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         verifier.update(b"incorrect data")
         with pytest.raises(InvalidSignature):
@@ -860,24 +591,23 @@ class TestRSAVerification(object):
             b"3a1880165014ba6eb53cc1449d13e5132ebcc0cfd9ade6d7a2494a0503bd0826"
             b"f8a46c431e0d7be0ca3e453f8b2b009e2733764da7927cc6dbe7a021437a242e"
         )
-        public_key = rsa.RSAPublicKey(
-            modulus=int(
+        public_key = rsa.RSAPublicNumbers(
+            n=int(
                 b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
                 b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
                 b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
                 b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
                 b"030d3581e13522e1", 16
             ),
-            public_exponent=65537
-        )
+            e=65537
+        ).public_key(backend)
         verifier = public_key.verifier(
             signature,
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
@@ -897,24 +627,23 @@ class TestRSAVerification(object):
             b"cb43bde4f7ab89eb4a79c6e8dd67e0d1af60715da64429d90c716a490b799c29"
             b"194cf8046509c6ed851052367a74e2e92d9b38947ed74332acb115a03fcc0222"
         )
-        public_key = rsa.RSAPublicKey(
-            modulus=int(
+        public_key = rsa.RSAPublicNumbers(
+            n=int(
                 b"381201f4905d67dfeb3dec131a0fbea773489227ec7a1448c3109189ac68"
                 b"5a95441be90866a14c4d2e139cd16db540ec6c7abab13ffff91443fd46a8"
                 b"960cbb7658ded26a5c95c86f6e40384e1c1239c63e541ba221191c4dd303"
                 b"231b42e33c6dbddf5ec9a746f09bf0c25d0f8d27f93ee0ae5c0d723348f4"
                 b"030d3581e13522", 16
             ),
-            public_exponent=65537
-        )
+            e=65537
+        ).public_key(backend)
         verifier = public_key.verifier(
             signature,
             padding.PSS(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH
             ),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
@@ -956,20 +685,6 @@ class TestRSAVerification(object):
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(b"sig", "notpadding", hashes.SHA1())
-
-    def test_rsa_verifier_invalid_backend(self, backend):
-        pretend_backend = object()
-        private_key = pytest.deprecated_call(
-            rsa.RSAPrivateKey.generate,
-            65537,
-            2048,
-            backend
-        )
-        public_key = private_key.public_key()
-
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            public_key.verifier(
-                b"foo", padding.PKCS1v15(), hashes.SHA256(), pretend_backend)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1034,14 +749,14 @@ class TestRSAVerification(object):
             b"8b9a3ae9fb3b64158f3476dd8d8a1f1425444e98940e0926378baa9944d219d8"
             b"534c050ef6b19b1bdc6eb4da422e89161106a6f5b5cc16135b11eb6439b646bd"
         )
-        public_key = rsa.RSAPublicKey(
-            modulus=int(
+        public_key = rsa.RSAPublicNumbers(
+            n=int(
                 b"d309e4612809437548b747d7f9eb9cd3340f54fe42bb3f84a36933b0839c"
                 b"11b0c8b7f67e11f7252370161e31159c49c784d4bc41c42a78ce0f0b40a3"
                 b"ca8ffb91", 16
             ),
-            public_exponent=65537
-        )
+            e=65537
+        ).public_key(backend)
         verifier = public_key.verifier(
             signature,
             padding.PSS(
@@ -1050,8 +765,7 @@ class TestRSAVerification(object):
                 ),
                 salt_length=1000000
             ),
-            hashes.SHA1(),
-            backend
+            hashes.SHA1()
         )
         verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
@@ -1354,23 +1068,21 @@ class TestRSADecryption(object):
     )
     def test_decrypt_pkcs1v15_vectors(self, vector, backend):
         private, public, example = vector
-        skey = rsa.RSAPrivateKey(
+        skey = rsa.RSAPrivateNumbers(
             p=private["p"],
             q=private["q"],
-            private_exponent=private["private_exponent"],
+            d=private["private_exponent"],
             dmp1=private["dmp1"],
             dmq1=private["dmq1"],
             iqmp=private["iqmp"],
-            public_exponent=private["public_exponent"],
-            modulus=private["modulus"]
-        )
+            public_numbers=rsa.RSAPublicNumbers(
+                e=private["public_exponent"],
+                n=private["modulus"]
+            )
+        ).private_key(backend)
         ciphertext = binascii.unhexlify(example["encryption"])
         assert len(ciphertext) == math.ceil(skey.key_size / 8.0)
-        message = skey.decrypt(
-            ciphertext,
-            padding.PKCS1v15(),
-            backend
-        )
+        message = skey.decrypt(ciphertext, padding.PKCS1v15())
         assert message == binascii.unhexlify(example["message"])
 
     def test_unsupported_padding(self, backend):
@@ -1424,19 +1136,6 @@ class TestRSADecryption(object):
                 padding.PKCS1v15()
             )
 
-    def test_rsa_decrypt_invalid_backend(self, backend):
-        pretend_backend = object()
-        private_key = pytest.deprecated_call(
-            rsa.RSAPrivateKey.generate, 65537, 2048, backend
-        )
-
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            private_key.decrypt(
-                b"irrelevant",
-                padding.PKCS1v15(),
-                pretend_backend
-            )
-
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.OAEP(
@@ -1457,25 +1156,25 @@ class TestRSADecryption(object):
     )
     def test_decrypt_oaep_vectors(self, vector, backend):
         private, public, example = vector
-        skey = pytest.deprecated_call(
-            rsa.RSAPrivateKey,
+        skey = rsa.RSAPrivateNumbers(
             p=private["p"],
             q=private["q"],
-            private_exponent=private["private_exponent"],
+            d=private["private_exponent"],
             dmp1=private["dmp1"],
             dmq1=private["dmq1"],
             iqmp=private["iqmp"],
-            public_exponent=private["public_exponent"],
-            modulus=private["modulus"]
-        )
+            public_numbers=rsa.RSAPublicNumbers(
+                e=private["public_exponent"],
+                n=private["modulus"]
+            )
+        ).private_key(backend)
         message = skey.decrypt(
             binascii.unhexlify(example["encryption"]),
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 algorithm=hashes.SHA1(),
                 label=None
-            ),
-            backend
+            )
         )
         assert message == binascii.unhexlify(example["message"])
 
@@ -1520,22 +1219,13 @@ class TestRSAEncryption(object):
         )
     )
     def test_rsa_encrypt_oaep(self, key_data, pad, backend):
-        private_key = rsa.RSAPrivateKey(
-            p=key_data.p,
-            q=key_data.q,
-            private_exponent=key_data.d,
-            dmp1=key_data.dmp1,
-            dmq1=key_data.dmq1,
-            iqmp=key_data.iqmp,
-            public_exponent=key_data.public_numbers.e,
-            modulus=key_data.public_numbers.n
-        )
+        private_key = key_data.private_key(backend)
         pt = b"encrypt me!"
         public_key = private_key.public_key()
-        ct = public_key.encrypt(pt, pad, backend)
+        ct = public_key.encrypt(pt, pad)
         assert ct != pt
         assert len(ct) == math.ceil(public_key.key_size / 8.0)
-        recovered_pt = private_key.decrypt(ct, pad, backend)
+        recovered_pt = private_key.decrypt(ct, pad)
         assert recovered_pt == pt
 
     @pytest.mark.supported(
@@ -1594,20 +1284,6 @@ class TestRSAEncryption(object):
             public_key.encrypt(
                 b"\x00" * (private_key.key_size // 8 + 5),
                 pad
-            )
-
-    def test_rsa_encrypt_invalid_backend(self, backend):
-        pretend_backend = object()
-        private_key = pytest.deprecated_call(
-            rsa.RSAPrivateKey.generate, 65537, 512, backend
-        )
-        public_key = private_key.public_key()
-
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            public_key.encrypt(
-                b"irrelevant",
-                padding.PKCS1v15(),
-                pretend_backend
             )
 
     def test_unsupported_padding(self, backend):
@@ -1775,7 +1451,7 @@ class TestRSANumbers(object):
 
         # Test a public_exponent that is not odd.
         with pytest.raises(ValueError):
-            rsa.RSAPublicNumbers(e=16, n=15).public_key(backend)
+            rsa.RSAPublicNumbers(e=14, n=15).public_key(backend)
 
     def test_invalid_private_numbers_argument_values(self, backend):
         # Start with p=3, q=11, private_exponent=3, public_exponent=7,

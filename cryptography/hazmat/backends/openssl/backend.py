@@ -44,8 +44,7 @@ from cryptography.hazmat.backends.openssl.ec import (
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
-    _RSAPrivateKey, _RSAPublicKey, _RSASignatureContext,
-    _RSAVerificationContext
+    _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes
@@ -551,69 +550,6 @@ class Backend(object):
             pem_password_cb
         )
 
-    def _rsa_cdata_from_private_key(self, private_key):
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-
-        ctx.p = self._int_to_bn(private_key.p)
-        ctx.q = self._int_to_bn(private_key.q)
-        ctx.d = self._int_to_bn(private_key.d)
-        ctx.e = self._int_to_bn(private_key.e)
-        ctx.n = self._int_to_bn(private_key.n)
-        ctx.dmp1 = self._int_to_bn(private_key.dmp1)
-        ctx.dmq1 = self._int_to_bn(private_key.dmq1)
-        ctx.iqmp = self._int_to_bn(private_key.iqmp)
-        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
-        assert res == 1
-
-        return ctx
-
-    def _rsa_cdata_from_public_key(self, public_key):
-        ctx = self._lib.RSA_new()
-        assert ctx != self._ffi.NULL
-        ctx = self._ffi.gc(ctx, self._lib.RSA_free)
-
-        ctx.e = self._int_to_bn(public_key.e)
-        ctx.n = self._int_to_bn(public_key.n)
-        res = self._lib.RSA_blinding_on(ctx, self._ffi.NULL)
-        assert res == 1
-
-        return ctx
-
-    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
-        warnings.warn(
-            "create_rsa_signature_ctx is deprecated and will be removed in a "
-            "future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
-        key = _RSAPrivateKey(self, rsa_cdata)
-        return _RSASignatureContext(self, key, padding, algorithm)
-
-    def create_rsa_verification_ctx(self, public_key, signature, padding,
-                                    algorithm):
-        warnings.warn(
-            "create_rsa_verification_ctx is deprecated and will be removed in "
-            "a future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        rsa_cdata = self._rsa_cdata_from_public_key(public_key)
-        key = _RSAPublicKey(self, rsa_cdata)
-        return _RSAVerificationContext(self, key, signature, padding,
-                                       algorithm)
-
-    def mgf1_hash_supported(self, algorithm):
-        warnings.warn(
-            "mgf1_hash_supported is deprecated and will be removed in "
-            "a future version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        return self._mgf1_hash_supported(algorithm)
-
     def _mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
             return self.hash_supported(algorithm)
@@ -773,28 +709,6 @@ class Backend(object):
             return (utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160)
         else:
             return True
-
-    def decrypt_rsa(self, private_key, ciphertext, padding):
-        warnings.warn(
-            "decrypt_rsa is deprecated and will be removed in a future "
-            "version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        rsa_cdata = self._rsa_cdata_from_private_key(private_key)
-        key = _RSAPrivateKey(self, rsa_cdata)
-        return key.decrypt(ciphertext, padding)
-
-    def encrypt_rsa(self, public_key, plaintext, padding):
-        warnings.warn(
-            "encrypt_rsa is deprecated and will be removed in a future "
-            "version.",
-            utils.DeprecatedIn05,
-            stacklevel=2
-        )
-        rsa_cdata = self._rsa_cdata_from_public_key(public_key)
-        key = _RSAPublicKey(self, rsa_cdata)
-        return key.encrypt(plaintext, padding)
 
     def cmac_algorithm_supported(self, algorithm):
         return (

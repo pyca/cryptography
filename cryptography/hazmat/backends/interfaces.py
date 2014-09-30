@@ -112,39 +112,6 @@ class RSABackend(object):
         """
 
     @abc.abstractmethod
-    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
-        """
-        Returns an object conforming to the AsymmetricSignatureContext
-        interface.
-        """
-
-    @abc.abstractmethod
-    def create_rsa_verification_ctx(self, public_key, signature, padding,
-                                    algorithm):
-        """
-        Returns an object conforming to the AsymmetricVerificationContext
-        interface.
-        """
-
-    @abc.abstractmethod
-    def mgf1_hash_supported(self, algorithm):
-        """
-        Return True if the hash algorithm is supported for MGF1 in PSS.
-        """
-
-    @abc.abstractmethod
-    def decrypt_rsa(self, private_key, ciphertext, padding):
-        """
-        Returns decrypted bytes.
-        """
-
-    @abc.abstractmethod
-    def encrypt_rsa(self, public_key, plaintext, padding):
-        """
-        Returns encrypted bytes.
-        """
-
-    @abc.abstractmethod
     def rsa_padding_supported(self, padding):
         """
         Returns True if the backend supports the given padding options.
