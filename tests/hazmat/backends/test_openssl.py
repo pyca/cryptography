@@ -29,12 +29,13 @@ from cryptography.hazmat.backends.openssl.backend import (
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
+from ..primitives.fixtures_rsa import RSA_KEY_512
 from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
@@ -327,11 +328,7 @@ class TestOpenSSLRSA(object):
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.signer(
                 padding.PSS(
@@ -394,11 +391,7 @@ class TestOpenSSLRSA(object):
         ) is False
 
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.decrypt(
                 b"0" * 64,
@@ -410,11 +403,7 @@ class TestOpenSSLRSA(object):
             )
 
     def test_unsupported_oaep_hash_algorithm_decrypt(self):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.decrypt(
                 b"0" * 64,
@@ -426,11 +415,7 @@ class TestOpenSSLRSA(object):
             )
 
     def test_unsupported_oaep_label_decrypt(self):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(ValueError):
             private_key.decrypt(
                 b"0" * 64,
