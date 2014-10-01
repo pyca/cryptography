@@ -148,38 +148,6 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm("RSA is not supported by the backend.",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
-    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
-        for b in self._filtered_backends(RSABackend):
-            return b.create_rsa_signature_ctx(private_key, padding, algorithm)
-        raise UnsupportedAlgorithm("RSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def create_rsa_verification_ctx(self, public_key, signature, padding,
-                                    algorithm):
-        for b in self._filtered_backends(RSABackend):
-            return b.create_rsa_verification_ctx(public_key, signature,
-                                                 padding, algorithm)
-        raise UnsupportedAlgorithm("RSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def mgf1_hash_supported(self, algorithm):
-        for b in self._filtered_backends(RSABackend):
-            return b.mgf1_hash_supported(algorithm)
-        raise UnsupportedAlgorithm("RSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def decrypt_rsa(self, private_key, ciphertext, padding):
-        for b in self._filtered_backends(RSABackend):
-            return b.decrypt_rsa(private_key, ciphertext, padding)
-        raise UnsupportedAlgorithm("RSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def encrypt_rsa(self, public_key, plaintext, padding):
-        for b in self._filtered_backends(RSABackend):
-            return b.encrypt_rsa(public_key, plaintext, padding)
-        raise UnsupportedAlgorithm("RSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
     def rsa_padding_supported(self, padding):
         for b in self._filtered_backends(RSABackend):
             return b.rsa_padding_supported(padding)
@@ -215,19 +183,6 @@ class MultiBackend(object):
     def generate_dsa_private_key_and_parameters(self, key_size):
         for b in self._filtered_backends(DSABackend):
             return b.generate_dsa_private_key_and_parameters(key_size)
-        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
-        for b in self._filtered_backends(DSABackend):
-            return b.create_dsa_verification_ctx(public_key, signature,
-                                                 algorithm)
-        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
-                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
-    def create_dsa_signature_ctx(self, private_key, algorithm):
-        for b in self._filtered_backends(DSABackend):
-            return b.create_dsa_signature_ctx(private_key, algorithm)
         raise UnsupportedAlgorithm("DSA is not supported by the backend.",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
