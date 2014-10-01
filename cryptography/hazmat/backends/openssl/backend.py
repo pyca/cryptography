@@ -684,6 +684,56 @@ class Backend(object):
             None,
         )
 
+    def dump_unencrypted_pem_pkcs8_private_key(self, key):
+        if isinstance(key, _RSAPrivateKey):
+            evp_pkey = key._evp_pkey
+        elif isinstance(key, _DSAPrivateKey):
+            evp_pkey = self._lib.EVP_PKEY_new()
+            assert evp_pkey != self._ffi.NULL
+            evp_pkey = self._ffi.gc(
+                evp_pkey, self._lib.EVP_PKEY_free
+            )
+            res = self._lib.EVP_PKEY_set1_DSA(
+                evp_pkey, key._dsa_cdata
+            )
+            assert res == 1
+        elif isinstance(key, _EllipticCurvePrivateKey):
+            evp_pkey = self._lib.EVP_PKEY_new()
+            assert evp_pkey != self._ffi.NULL
+            evp_pkey = self._ffi.gc(
+                evp_pkey, self._lib.EVP_PKEY_free
+            )
+            res = self._lib.EVP_PKEY_set1_EC_KEY(
+                evp_pkey, key._ec_key
+            )
+            assert res == 1
+        else:
+            raise UnsupportedAlgorithm(
+                "Unsupported key type",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+            )
+
+        bio_method = self._lib.BIO_s_mem()
+        assert bio_method != self._ffi.NULL
+        bio = self._lib.BIO_new(bio_method)
+        assert bio != self._ffi.NULL
+        bio = self._ffi.gc(bio, self._lib.BIO_free)
+        res = self._lib.PEM_write_bio_PKCS8PrivateKey(
+            bio,
+            evp_pkey,
+            self._ffi.NULL,
+            self._ffi.NULL,
+            0,
+            self._ffi.NULL,
+            self._ffi.NULL
+        )
+        assert res == 1
+        buf = self._ffi.new("char **")
+        buf_len = self._lib.BIO_get_mem_data(bio, buf)
+        assert buf_len > 0
+        assert buf[0] != self._ffi.NULL
+        return self._ffi.buffer(buf[0], buf_len)[:]
+
     def load_traditional_openssl_pem_private_key(self, data, password):
         warnings.warn(
             "load_traditional_openssl_pem_private_key is deprecated and will "

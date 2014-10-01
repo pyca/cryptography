@@ -469,6 +469,17 @@ A specific ``backend`` may provide one or more of these interfaces.
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
+    .. method:: dump_unencrypted_pem_pkcs8_private_key(key)
+
+        :param key: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`,
+            or
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
+            provider.
+        :return bytes: A PEM encoded byte string representing the serialized
+            key.
+
 .. class:: TraditionalOpenSSLSerializationBackend
 
     .. versionadded:: 0.3

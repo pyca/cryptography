@@ -63,7 +63,7 @@ don't need to worry about this detail. PEM keys are recognizable because they
 all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 {format}-----``.
 
-.. function:: load_pem_private_key(data, password, backend):
+.. function:: load_pem_private_key(data, password, backend)
 
     .. versionadded:: 0.6
 
@@ -112,6 +112,21 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend.
+
+.. function:: dump_unencrypted_pem_pkcs8_private_key(key)
+
+    .. versionadded:: 0.7
+
+    Serialize a private key from one of the supported asymmetric private key
+    types to PEM encoded data.
+
+    :param key: An instance of a
+        :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`, or
+        :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
+        provider.
+
+    :return bytes: The PEM encoded key in PKCS #8 format.
 
 
 PKCS #8 Format
