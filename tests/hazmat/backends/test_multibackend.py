@@ -95,26 +95,10 @@ class DummyRSABackend(object):
     def generate_rsa_private_key(self, public_exponent, private_key):
         pass
 
-    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
-        pass
-
-    def create_rsa_verification_ctx(self, public_key, signature, padding,
-                                    algorithm):
-        pass
-
-    def mgf1_hash_supported(self, algorithm):
-        pass
-
     def rsa_padding_supported(self, padding):
         pass
 
     def generate_rsa_parameters_supported(self, public_exponent, key_size):
-        pass
-
-    def decrypt_rsa(self, private_key, ciphertext, padding):
-        pass
-
-    def encrypt_rsa(self, public_key, plaintext, padding):
         pass
 
     def load_rsa_private_numbers(self, numbers):
@@ -133,12 +117,6 @@ class DummyDSABackend(object):
         pass
 
     def generate_dsa_private_key_and_parameters(self, key_size):
-        pass
-
-    def create_dsa_signature_ctx(self, private_key, algorithm):
-        pass
-
-    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
         pass
 
     def dsa_hash_supported(self, algorithm):
@@ -303,21 +281,9 @@ class TestMultiBackend(object):
             key_size=1024, public_exponent=65537
         )
 
-        backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
-                                         hashes.MD5())
-
-        backend.create_rsa_verification_ctx("public_key", "sig",
-                                            padding.PKCS1v15(), hashes.MD5())
-
-        backend.mgf1_hash_supported(hashes.MD5())
-
         backend.rsa_padding_supported(padding.PKCS1v15())
 
         backend.generate_rsa_parameters_supported(65537, 1024)
-
-        backend.encrypt_rsa("public_key", "encryptme", padding.PKCS1v15())
-
-        backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
 
         backend.load_rsa_private_numbers("private_numbers")
 
@@ -332,39 +298,12 @@ class TestMultiBackend(object):
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
-            backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
-                                             hashes.MD5())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.create_rsa_verification_ctx(
-                "public_key", "sig", padding.PKCS1v15(), hashes.MD5())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.mgf1_hash_supported(hashes.MD5())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
             backend.rsa_padding_supported(padding.PKCS1v15())
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_rsa_parameters_supported(65537, 1024)
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.encrypt_rsa("public_key", "encryptme", padding.PKCS1v15())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -387,8 +326,6 @@ class TestMultiBackend(object):
         backend.generate_dsa_private_key(parameters)
         backend.generate_dsa_private_key_and_parameters(key_size=1024)
 
-        backend.create_dsa_verification_ctx("public_key", "sig", hashes.SHA1())
-        backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
         backend.dsa_hash_supported(hashes.SHA1())
         backend.dsa_parameters_supported(1, 2, 3)
         backend.load_dsa_private_numbers("numbers")
@@ -409,18 +346,6 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_dsa_private_key_and_parameters(key_size=1024)
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.create_dsa_verification_ctx(
-                "public_key", b"sig", hashes.SHA1()
-            )
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
