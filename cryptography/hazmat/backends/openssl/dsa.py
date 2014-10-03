@@ -28,7 +28,8 @@ def _truncate_digest_for_dsa(dsa_cdata, digest, backend):
     This function truncates digests that are longer than a given DS
     key's length so they can be signed. OpenSSL does this for us in
     1.0.0c+ and it isn't needed in 0.9.8, but that leaves us with three
-    releases (1.0.0, 1.0.0a, and 1.0.0b) where this is a problem.
+    releases (1.0.0, 1.0.0a, and 1.0.0b) where this is a problem. This
+    truncation is not required in 0.9.8 because DSA is limited to SHA-1.
     """
 
     order_bits = backend._lib.BN_num_bits(dsa_cdata.q)
