@@ -109,4 +109,4 @@ fi
 
 virtualenv ~/.venv
 source ~/.venv/bin/activate
-pip install tox coveralls
+pip install tox codecov
