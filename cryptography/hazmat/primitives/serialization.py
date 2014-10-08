@@ -67,7 +67,7 @@ class _ECParameters(univ.Choice):
     # TODO: There are a few more options for this choice I think, the RFC says
     # not to use them though...
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('namedCurve', univ.ObjectIdentifier()),
+        namedtype.NamedType("namedCurve", univ.ObjectIdentifier()),
     )
 
 
@@ -77,15 +77,15 @@ class _ECPrivateKey(univ.Sequence):
             "version",
             univ.Integer(
                 namedValues=namedval.NamedValues(
-                    ('ecPrivkeyVer1', 1),
+                    ("ecPrivkeyVer1", 1),
                 )
             ),
         ),
-        namedtype.NamedType('privateKey', univ.OctetString()),
-        namedtype.OptionalNamedType('parameters', _ECParameters().subtype(
+        namedtype.NamedType("privateKey", univ.OctetString()),
+        namedtype.OptionalNamedType("parameters", _ECParameters().subtype(
             implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0),
         )),
-        namedtype.OptionalNamedType('publicKey', univ.BitString().subtype(
+        namedtype.OptionalNamedType("publicKey", univ.BitString().subtype(
             implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1),
         )),
     )
@@ -114,13 +114,13 @@ class _ECDSAPrivateKeyParser(object):
         asn1_private_key, _ = decoder.decode(pem._body, asn1Spec=_ECPrivateKey())
 
         private_value = bytes_to_int(
-            map(ord, asn1_private_key.getComponentByName('privateKey'))
+            map(ord, asn1_private_key.getComponentByName("privateKey"))
         )
-        public_key = bits_to_bytes(asn1_private_key.getComponentByName('publicKey'))
+        public_key = bits_to_bytes(asn1_private_key.getComponentByName("publicKey"))
         if public_key[0] != 4:
             raise ValueError
 
-        curve = ec._OID_TO_CURVE[asn1_private_key.getComponentByName('parameters').getComponent(0).asTuple()]()
+        curve = ec._OID_TO_CURVE[asn1_private_key.getComponentByName("parameters").getComponent(0).asTuple()]()
 
         x = bytes_to_int(public_key[1:(curve.key_size // 8) + 1])
         y = bytes_to_int(public_key[(curve.key_size // 8) + 1:])
