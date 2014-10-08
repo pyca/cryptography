@@ -24,7 +24,7 @@ from pyasn1.type import univ, namedtype, namedval, tag
 
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes, padding
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
@@ -61,6 +61,62 @@ def load_pem_private_key(data, password, backend):
 
 def load_pem_public_key(data, backend):
     return backend.load_pem_public_key(data)
+
+
+class _OtherPrimeInfo(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedTypes("prime", univ.Integer()),
+        namedtype.NamedTypes("exponent", univ.Integer()),
+        namedtype.NamedTypes("coefficient", univ.Integer()),
+    )
+
+
+class _OtherPrimeInfos(univ.SequenceOf):
+    componentType = _OtherPrimeInfo()
+
+
+class _RSAPrivateKey(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType(
+            "version",
+            univ.Integer(
+                namedValues=namedval.NamedValues(
+                    ("two-prime", 0),
+                    ("multi", 1),
+                )
+            )
+        ),
+        namedtype.NamedType("modulus", univ.Integer()),
+        namedtype.NamedType("publicExponent", univ.Integer()),
+        namedtype.NamedType("privateExponent", univ.Integer()),
+        namedtype.NamedType("prime1", univ.Integer()),
+        namedtype.NamedType("prime2", univ.Integer()),
+        namedtype.NamedType("exponent1", univ.Integer()),
+        namedtype.NamedType("exponent2", univ.Integer()),
+        namedtype.NamedType("coefficient", univ.Integer()),
+        namedtype.OptionalNamedType("otherPrimeInfos", _OtherPrimeInfos())
+    )
+
+
+class _RSAPrivateKeyParser(object):
+    def __init__(self, backend):
+        self._backend = backend
+
+    def load_object(self, pem):
+        asn1_private_key, _ = decoder.decode(pem._body, asn1Spec=_RSAPrivateKey())
+        assert asn1_private_key.getComponentByName("version") == 0
+        return rsa.RSAPrivateNumbers(
+            int(asn1_private_key.getComponentByName("prime1")),
+            int(asn1_private_key.getComponentByName("prime2")),
+            int(asn1_private_key.getComponentByName("privateExponent")),
+            int(asn1_private_key.getComponentByName("exponent1")),
+            int(asn1_private_key.getComponentByName("exponent2")),
+            int(asn1_private_key.getComponentByName("coefficient")),
+            rsa.RSAPublicNumbers(
+                int(asn1_private_key.getComponentByName("publicExponent")),
+                int(asn1_private_key.getComponentByName("modulus")),
+            )
+        ).private_key(self._backend)
 
 
 class _ECParameters(univ.Choice):
@@ -135,6 +191,7 @@ class _ECDSAPrivateKeyParser(object):
 
 _PRIVATE_KEY_PARSERS = {
     "EC PRIVATE KEY": _ECDSAPrivateKeyParser,
+    "RSA PRIVATE KEY": _RSAPrivateKeyParser,
 }
 
 
