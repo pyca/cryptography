@@ -207,6 +207,10 @@ _CURVE_TYPES = {
     "sect571r1": SECT571R1,
 }
 
+_OID_TO_CURVE = {
+    (1, 2, 840, 10045, 3, 1, 7): SECP256R1,
+}
+
 
 @utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
 class ECDSA(object):
