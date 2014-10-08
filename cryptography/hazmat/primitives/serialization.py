@@ -20,7 +20,7 @@ import re
 import warnings
 
 from pyasn1.codec.der import decoder
-from pyasn1.type import univ, namedtype, namedval, tag
+from pyasn1.type import namedtype, namedval, tag, univ
 
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes, padding
@@ -103,7 +103,9 @@ class _RSAPrivateKeyParser(object):
         self._backend = backend
 
     def load_object(self, pem):
-        asn1_private_key, _ = decoder.decode(pem._body, asn1Spec=_RSAPrivateKey())
+        asn1_private_key, _ = decoder.decode(
+            pem._body, asn1Spec=_RSAPrivateKey()
+        )
         assert asn1_private_key.getComponentByName("version") == 0
         return rsa.RSAPrivateNumbers(
             int(asn1_private_key.getComponentByName("prime1")),
@@ -167,16 +169,23 @@ class _ECDSAPrivateKeyParser(object):
         self._backend = backend
 
     def load_object(self, pem):
-        asn1_private_key, _ = decoder.decode(pem._body, asn1Spec=_ECPrivateKey())
+        asn1_private_key, _ = decoder.decode(
+            pem._body, asn1Spec=_ECPrivateKey()
+        )
 
         private_value = bytes_to_int(
             map(ord, asn1_private_key.getComponentByName("privateKey"))
         )
-        public_key = bits_to_bytes(asn1_private_key.getComponentByName("publicKey"))
+        public_key = bits_to_bytes(
+            asn1_private_key.getComponentByName("publicKey")
+        )
         if public_key[0] != 4:
             raise ValueError
 
-        curve = ec._OID_TO_CURVE[asn1_private_key.getComponentByName("parameters").getComponent(0).asTuple()]()
+        curve_oid = asn1_private_key.getComponentByName(
+            "parameters"
+        ).getComponent(0).asTuple()
+        curve = ec._OID_TO_CURVE[curve_oid]()
 
         x = bytes_to_int(public_key[1:(curve.key_size // 8) + 1])
         y = bytes_to_int(public_key[(curve.key_size // 8) + 1:])
