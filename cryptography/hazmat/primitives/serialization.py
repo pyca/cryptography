@@ -92,7 +92,7 @@ class _ECPrivateKey(univ.Sequence):
 
 
 def bytes_to_int(b):
-    return sum(c << (i * 8) for i, c in enumerate(b))
+    return sum(c << (i * 8) for i, c in enumerate(reversed(b)))
 
 
 def bits_to_int(b):
