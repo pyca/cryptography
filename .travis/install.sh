@@ -56,4 +56,4 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
-pip install tox coveralls
+pip install tox codecov
