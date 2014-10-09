@@ -32,9 +32,12 @@ def _check_dsa_parameters(parameters):
             (1024, 160),
             (2048, 256),
             (3072, 256)):
-        raise ValueError("p and q lengths must be "
-                         "one of these pairs (1024, 160) or (2048, 256) "
-                         "or (3072, 256).")
+        raise ValueError(
+            "p and q's bit-lengths must be one of these pairs (1024, 160), "
+            "(2048, 256), or (3072, 256). Not ({0:d}, {1:d})".format(
+                utils.bit_length(parameters.p), utils.bit_length(parameters.q)
+            )
+        )
 
     if not (1 < parameters.g < parameters.p):
         raise ValueError("g, p don't satisfy 1 < g < p.")
