@@ -23,6 +23,7 @@ from pyasn1.codec.der import decoder
 from pyasn1.type import namedtype, namedval, tag, univ
 
 from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -325,6 +326,13 @@ class _PEMObject(object):
 
         algorithm_name, hex_iv = dek_info.split(",", 1)
         iv = binascii.unhexlify(hex_iv)
-        pem_cipher = _PEM_CIPHERS[algorithm_name]
+        try:
+            pem_cipher = _PEM_CIPHERS[algorithm_name]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "PEM data is encrypted with an unsupported cipher",
+                _Reasons.UNSUPPORTED_CIPHER
+            )
+
         body = pem_cipher.decrypt(self._body, password, iv, backend)
         return _PEMObject(self._object_type, [], body)
