@@ -24,7 +24,7 @@ from pyasn1.type import namedtype, namedval, tag, univ
 
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes, padding
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
@@ -121,6 +121,38 @@ class _RSAPrivateKeyParser(object):
         ).private_key(self._backend)
 
 
+class _DSAPrivateKey(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("version", univ.Integer()),
+        namedtype.NamedType("p", univ.Integer()),
+        namedtype.NamedType("q", univ.Integer()),
+        namedtype.NamedType("g", univ.Integer()),
+        namedtype.NamedType("pub_key", univ.Integer()),
+        namedtype.NamedType("priv_key", univ.Integer()),
+    )
+
+
+class _DSAPrivateKeyParser(object):
+    def __init__(self, backend):
+        self._backend = backend
+
+    def load_object(self, pem):
+        asn1_private_key, _ = decoder.decode(
+            pem._body, asn1Spec=_DSAPrivateKey()
+        )
+        return dsa.DSAPrivateNumbers(
+            int(asn1_private_key.getComponentByName("priv_key")),
+            dsa.DSAPublicNumbers(
+                int(asn1_private_key.getComponentByName("pub_key")),
+                dsa.DSAParameterNumbers(
+                    int(asn1_private_key.getComponentByName("p")),
+                    int(asn1_private_key.getComponentByName("q")),
+                    int(asn1_private_key.getComponentByName("g")),
+                )
+            )
+        ).private_key(self._backend)
+
+
 class _ECParameters(univ.Choice):
     # TODO: There are a few more options for this choice I think, the RFC says
     # not to use them though...
@@ -199,6 +231,7 @@ class _ECDSAPrivateKeyParser(object):
 
 
 _PRIVATE_KEY_PARSERS = {
+    "DSA PRIVATE KEY": _DSAPrivateKeyParser,
     "EC PRIVATE KEY": _ECDSAPrivateKeyParser,
     "RSA PRIVATE KEY": _RSAPrivateKeyParser,
 }
