@@ -229,10 +229,52 @@ class _ECDSAPrivateKeyParser(object):
         ).private_key(self._backend)
 
 
+# RFC 5280, section 4.1.1.2
+class _AlgorithmIdentifier(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("algorithm", univ.ObjectIdentifier()),
+        namedtype.OptionalNamedType("parameters", univ.Any()),
+    )
+
+
+class _EncryptedPrivateKeyInfo(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("encryptionAlgorithm", _AlgorithmIdentifier()),
+        namedtype.NamedType("encryptedData", univ.OctetString()),
+    )
+
+
+class _EncryptedPKCS8Parser(object):
+    def __init__(self, backend):
+        self._backend = backend
+
+    def load_object(self, pem):
+        asn1_encrypted_private_key_info, _ = decoder.decode(pem._body, asn1Spec=_EncryptedPrivateKeyInfo())
+
+        encryption_algorithm = asn1_encrypted_private_key_info.getComponentByName("encryptionAlgorithm")
+        algorithm_oid = encryption_algorithm.getComponentByName("algorithm").asTuple()
+        try:
+            pkcs8_cipher = _PKCS8_CIPHERS[algorithm_oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "PKCS8 data is encrypted with an unsupported cipher",
+                _Reasons.UNSUPPORTED_CIPHER
+            )
+
+        contents = pkcs8_cipher.decrypt(
+            encryption_algorithm.getComponentByName("parameters"),
+            asn1_encrypted_private_key_info.getComponentByName("encryptedData")
+        )
+
+
+_PKCS8_CIPHERS = {
+}
+
 _PRIVATE_KEY_PARSERS = {
     "DSA PRIVATE KEY": _DSAPrivateKeyParser,
     "EC PRIVATE KEY": _ECDSAPrivateKeyParser,
     "RSA PRIVATE KEY": _RSAPrivateKeyParser,
+    "ENCRYPTED PRIVATE KEY": _EncryptedPKCS8Parser,
 }
 
 
