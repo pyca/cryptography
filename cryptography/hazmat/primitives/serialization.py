@@ -267,6 +267,7 @@ class _PEMCipher(object):
 
 
 _PEM_CIPHERS = {
+    "AES-128-CBC": _PEMCipher(algorithms.AES, modes.CBC, 128 // 8),
     "AES-256-CBC": _PEMCipher(algorithms.AES, modes.CBC, 256 // 8),
     "DES-EDE3-CBC": _PEMCipher(algorithms.TripleDES, modes.CBC, 192 // 8),
 }
