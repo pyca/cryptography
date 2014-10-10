@@ -270,11 +270,62 @@ class _EncryptedPKCS8Parser(object):
 _PKCS8_CIPHERS = {
 }
 
+
+# RFC 5208, section 5
+class _PrivateKeyInfo(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("version", univ.Integer()),
+        namedtype.NamedType("privateKeyAlgorithm", _AlgorithmIdentifier()),
+        namedtype.NamedType("privateKey", univ.OctetString()),
+        # The "attributes" field is ignored.
+    )
+
+
+class _DSAAlgorithmIdentifierParameters(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("p", univ.Integer()),
+        namedtype.NamedType("q", univ.Integer()),
+        namedtype.NamedType("g", univ.Integer()),
+    )
+
+
+class _PKCS8Parser(object):
+    def __init__(self, backend):
+        self._backend = backend
+
+    def load_object(self, pem):
+        asn1_private_key_info, _ = decoder.decode(pem._body, asn1Spec=_PrivateKeyInfo())
+        assert asn1_private_key_info.getComponentByName("version") == 0
+
+        private_key_algorithm = asn1_private_key_info.getComponentByName("privateKeyAlgorithm")
+        algorithm = private_key_algorithm.getComponentByName("algorithm")
+        if algorithm.asTuple() == (1, 2, 840, 10040, 4, 1):
+            # DSA
+            asn1_parameters, _ = decoder.decode(private_key_algorithm.getComponentByName("parameters"), asn1Spec=_DSAAlgorithmIdentifierParameters())
+            x, _ = decoder.decode(asn1_private_key_info.getComponentByName('privateKey'), asn1Spec=univ.Integer())
+
+            x = int(x)
+            p = int(asn1_parameters.getComponentByName("p"))
+            q = int(asn1_parameters.getComponentByName("q"))
+            g = int(asn1_parameters.getComponentByName("g"))
+            return dsa.DSAPrivateNumbers(
+                x,
+                dsa.DSAPublicNumbers(
+                    pow(g, x, p),
+                    dsa.DSAParameterNumbers(p, q, g)
+                )
+            ).private_key(self._backend)
+        else:
+            raise UnsupportedAlgorithm("%s" % algorithm, _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+
+
 _PRIVATE_KEY_PARSERS = {
     "DSA PRIVATE KEY": _DSAPrivateKeyParser,
     "EC PRIVATE KEY": _ECDSAPrivateKeyParser,
     "RSA PRIVATE KEY": _RSAPrivateKeyParser,
     "ENCRYPTED PRIVATE KEY": _EncryptedPKCS8Parser,
+    "PRIVATE KEY": _PKCS8Parser,
 }
 
 
