@@ -268,6 +268,7 @@ class _EncryptedPKCS8Parser(object):
 
 
 _PKCS8_CIPHERS = {
+    (1, 2, 840, 113549, 1, 12, 1, 3): None
 }
 
 
