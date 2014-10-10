@@ -315,6 +315,21 @@ class _PKCS8Parser(object):
                     dsa.DSAParameterNumbers(p, q, g)
                 )
             ).private_key(self._backend)
+        elif algorithm.asTuple() == (1, 2, 840, 113549, 1, 1, 1):
+            # RSA
+            asn1_rsa, _ = decoder.decode(asn1_private_key_info.getComponentByName("privateKey"), asn1Spec=_RSAPrivateKey())
+            return rsa.RSAPrivateNumbers(
+                int(asn1_rsa.getComponentByName("prime1")),
+                int(asn1_rsa.getComponentByName("prime2")),
+                int(asn1_rsa.getComponentByName("privateExponent")),
+                int(asn1_rsa.getComponentByName("exponent1")),
+                int(asn1_rsa.getComponentByName("exponent2")),
+                int(asn1_rsa.getComponentByName("coefficient")),
+                rsa.RSAPublicNumbers(
+                    int(asn1_rsa.getComponentByName("publicExponent")),
+                    int(asn1_rsa.getComponentByName("modulus")),
+                )
+            ).private_key(self._backend)
         else:
             raise UnsupportedAlgorithm("%s" % algorithm, _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
