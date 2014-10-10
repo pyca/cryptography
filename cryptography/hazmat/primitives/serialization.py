@@ -263,12 +263,31 @@ class _EncryptedPKCS8Parser(object):
 
         contents = pkcs8_cipher.decrypt(
             encryption_algorithm.getComponentByName("parameters"),
-            asn1_encrypted_private_key_info.getComponentByName("encryptedData")
+            asn1_encrypted_private_key_info.getComponentByName("encryptedData"),
+            self._backend
         )
 
 
+class _PBEParameter(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("salt", univ.OctetString()),
+        namedtype.NamedType("iterations", univ.Integer())
+    )
+
+
+class _PKCS12Cipher(object):
+    def __init__(self, algorithm_cls, hash_cls, key_size):
+        self._algorithm_cls = algorithm_cls
+        self._hash_cls = hash_cls
+        self._key_size = key_size
+
+    def decrypt(self, parameters, data, backend):
+        asn1_params, _ = decoder.decode(parameters, _PBEParameter())
+        raise ZeroDivisionError(asn1_params)
+
+
 _PKCS8_CIPHERS = {
-    (1, 2, 840, 113549, 1, 12, 1, 3): None
+    (1, 2, 840, 113549, 1, 12, 1, 3): _PKCS12Cipher(algorithms.TripleDES, hashes.SHA1, 192 // 8),
 }
 
 
