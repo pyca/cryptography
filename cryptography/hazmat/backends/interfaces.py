@@ -66,7 +66,7 @@ class HMACBackend(object):
     @abc.abstractmethod
     def create_hmac_ctx(self, key, algorithm):
         """
-        Create a HashContext for calculating a message authentication code.
+        Create a MACContext for calculating a message authentication code.
         """
 
 
@@ -81,7 +81,7 @@ class CMACBackend(object):
     @abc.abstractmethod
     def create_cmac_ctx(self, algorithm):
         """
-        Create a CMACContext for calculating a message authentication code.
+        Create a MACContext for calculating a message authentication code.
         """
 
 
