@@ -669,7 +669,7 @@ Key derivation functions
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to authenticate
+        :param data bytes: The data you want to authenticate.
 
     .. method:: finalize()
 
