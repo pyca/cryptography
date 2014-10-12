@@ -393,7 +393,7 @@ class KeyDerivationFunction(object):
 @six.add_metaclass(abc.ABCMeta)
 class CMACContext(object):
     @abc.abstractmethod
-    def update(self):
+    def update(self, data):
         """
         Processes the provided bytes.
         """
