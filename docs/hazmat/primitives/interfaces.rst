@@ -643,8 +643,8 @@ Key derivation functions
         stored derived key.
 
 
-`CMAC`_
--------
+`Message Authentication Code`_
+------------------------------
 
 .. class:: CMACContext
 
@@ -663,6 +663,29 @@ Key derivation functions
         :return: A :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
             that is a copy of the current context.
 
+.. class:: MACContext
+
+    .. versionadded:: 0.7
+
+    .. method:: update(data)
+
+        :param data bytes: The data you want to authenticate
+
+    .. method:: finalize()
+
+        :return: The message authentication code.
+
+    .. method:: copy()
+
+        :return: A :class:`~cryptography.hazmat.primitives.interfaces.MACContext`
+            that is a copy of the current context.
+
+    .. method:: verify()
+
+        :param signature bytes: The signature to verify.
+
+        :raises cryptography.exceptions.InvalidSignature: This is raised when
+            the provided signature does not match the expected signature.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem

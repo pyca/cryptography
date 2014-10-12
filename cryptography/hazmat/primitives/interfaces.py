@@ -516,7 +516,7 @@ class MACContext(object):
         """
 
     @abc.abstractmethod
-    def verify(self):
+    def verify(self, signature):
         """
         Checks if the generated message authentication code matches the
         signature.
