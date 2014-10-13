@@ -103,9 +103,13 @@ class _RSAPrivateKeyParser(object):
         self._backend = backend
 
     def load_object(self, pem, password):
-        asn1_private_key, _ = decoder.decode(
-            pem._body, asn1Spec=_RSAPrivateKey()
-        )
+        try:
+            asn1_private_key, _ = decoder.decode(
+                pem._body, asn1Spec=_RSAPrivateKey()
+            )
+        except PyAsn1Error:
+            raise ValueError("Could not unserialize key data.")
+
         assert asn1_private_key.getComponentByName("version") == 0
         return rsa.RSAPrivateNumbers(
             int(asn1_private_key.getComponentByName("prime1")),
@@ -479,6 +483,10 @@ class _PEMObject(object):
             return self
         elif dek_info is None:
             raise ValueError("Missing DEK-INFO")
+        elif not password:
+            raise TypeError(
+                "Password was not given but private key is encrypted."
+            )
 
         algorithm_name, hex_iv = dek_info.split(",", 1)
         iv = binascii.unhexlify(hex_iv)
