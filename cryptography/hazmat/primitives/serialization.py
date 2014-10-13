@@ -268,10 +268,11 @@ class _EncryptedPKCS8Parser(object):
         )
 
 
+# RFC 2898, appendix A.3
 class _PBEParameter(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("salt", univ.OctetString()),
-        namedtype.NamedType("iterations", univ.Integer())
+        namedtype.NamedType("iterationCount", univ.Integer())
     )
 
 
