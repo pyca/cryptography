@@ -20,6 +20,7 @@ import re
 import warnings
 
 from pyasn1.codec.der import decoder
+from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, namedval, tag, univ
 
 from cryptography import utils
@@ -55,7 +56,7 @@ def load_pem_private_key(data, password, backend):
     pem = _PEMObject.find_pem(data)
     pem = pem.handle_encrypted(password, backend)
     parser_type = _PRIVATE_KEY_PARSERS[pem._object_type]
-    return parser_type(backend).load_object(pem)
+    return parser_type(backend).load_object(pem, password)
 
 
 def load_pem_public_key(data, backend):
@@ -101,7 +102,7 @@ class _RSAPrivateKeyParser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem):
+    def load_object(self, pem, password):
         asn1_private_key, _ = decoder.decode(
             pem._body, asn1Spec=_RSAPrivateKey()
         )
@@ -135,7 +136,7 @@ class _DSAPrivateKeyParser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem):
+    def load_object(self, pem, password):
         asn1_private_key, _ = decoder.decode(
             pem._body, asn1Spec=_DSAPrivateKey()
         )
@@ -199,7 +200,7 @@ class _ECDSAPrivateKeyParser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem):
+    def load_object(self, pem, password):
         asn1_private_key, _ = decoder.decode(
             pem._body, asn1Spec=_ECPrivateKey()
         )
@@ -248,8 +249,18 @@ class _EncryptedPKCS8Parser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem):
-        asn1_encrypted_private_key_info, _ = decoder.decode(pem._body, asn1Spec=_EncryptedPrivateKeyInfo())
+    def load_object(self, pem, password):
+        try:
+            asn1_encrypted_private_key_info, _ = decoder.decode(
+                pem._body, asn1Spec=_EncryptedPrivateKeyInfo()
+            )
+        except PyAsn1Error:
+            raise ValueError("Could not unserialize key data.")
+
+        if not password:
+            raise TypeError(
+                "Password was not given but private key is encrypted."
+            )
 
         encryption_algorithm = asn1_encrypted_private_key_info.getComponentByName("encryptionAlgorithm")
         algorithm_oid = encryption_algorithm.getComponentByName("algorithm").asTuple()
@@ -264,6 +275,7 @@ class _EncryptedPKCS8Parser(object):
         contents = pkcs8_cipher.decrypt(
             encryption_algorithm.getComponentByName("parameters"),
             asn1_encrypted_private_key_info.getComponentByName("encryptedData"),
+            password,
             self._backend
         )
 
@@ -282,9 +294,18 @@ class _PKCS12Cipher(object):
         self._hash_cls = hash_cls
         self._key_size = key_size
 
-    def decrypt(self, parameters, data, backend):
+    def _encode_password(self, password):
+        result = bytearray(len(password) * 2 + 2)
+        for i, c in enumerate(password):
+            result[i * 2] = 0
+            result[i * 2 + 1] = c
+        return bytes(result)
+
+    def decrypt(self, parameters, data, password, backend):
         asn1_params, _ = decoder.decode(parameters, _PBEParameter())
-        raise ZeroDivisionError(asn1_params)
+        encoded_password = self._encode_password(password)
+        salt = bytes(asn1_params.getComponentByName("salt"))
+        iterations = int(asn1_params.getComponentByName("iterationCount"))
 
 
 _PKCS8_CIPHERS = {
@@ -314,8 +335,14 @@ class _PKCS8Parser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem):
-        asn1_private_key_info, _ = decoder.decode(pem._body, asn1Spec=_PrivateKeyInfo())
+    def load_object(self, pem, password):
+        try:
+            asn1_private_key_info, _ = decoder.decode(
+                pem._body, asn1Spec=_PrivateKeyInfo()
+            )
+        except PyAsn1Error:
+            raise ValueError("Could not unserialize key data.")
+
         assert asn1_private_key_info.getComponentByName("version") == 0
 
         private_key_algorithm = asn1_private_key_info.getComponentByName("privateKeyAlgorithm")
