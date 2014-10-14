@@ -1007,7 +1007,9 @@ class Backend(object):
         assert res == 1
 
         res = self._lib.EC_KEY_check_key(ctx)
-        assert res == 1
+        if res != 1:
+            self._consume_errors()
+            raise ValueError("Invalid EC key.")
 
         return ctx
 
