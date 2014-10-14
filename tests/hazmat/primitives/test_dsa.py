@@ -144,30 +144,6 @@ class TestDSA(object):
                 g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
             ).parameters(backend)
 
-        # Test a p, q pair of (1024, 256) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAParameterNumbers(
-                p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-            ).parameters(backend)
-
-        # Test a p, q pair of (2048, 160) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAParameterNumbers(
-                p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                g=DSA_KEY_2048.public_numbers.parameter_numbers.g
-            ).parameters(backend)
-
-        # Test a p, q pair of (3072, 160) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAParameterNumbers(
-                p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-            ).parameters(backend)
-
         # Test a g < 1
         with pytest.raises(ValueError):
             dsa.DSAParameterNumbers(
@@ -284,48 +260,6 @@ class TestDSA(object):
                     parameter_numbers=dsa.DSAParameterNumbers(
                         p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
                         q=2 ** 260,
-                        g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-                    ),
-                    y=DSA_KEY_3072.public_numbers.y
-                ),
-                x=DSA_KEY_3072.x,
-            ).private_key(backend)
-
-        # Test a p, q pair of (1024, 256) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAPrivateNumbers(
-                public_numbers=dsa.DSAPublicNumbers(
-                    parameter_numbers=dsa.DSAParameterNumbers(
-                        p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                        q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                        g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-                    ),
-                    y=DSA_KEY_1024.public_numbers.y
-                ),
-                x=DSA_KEY_1024.x,
-            ).private_key(backend)
-
-        # Test a p, q pair of (2048, 160) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAPrivateNumbers(
-                public_numbers=dsa.DSAPublicNumbers(
-                    parameter_numbers=dsa.DSAParameterNumbers(
-                        p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                        g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
-                    ),
-                    y=DSA_KEY_2048.public_numbers.y
-                ),
-                x=DSA_KEY_2048.x,
-            ).private_key(backend)
-
-        # Test a p, q pair of (3072, 160) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAPrivateNumbers(
-                public_numbers=dsa.DSAPublicNumbers(
-                    parameter_numbers=dsa.DSAParameterNumbers(
-                        p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                        q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
                         g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
                     ),
                     y=DSA_KEY_3072.public_numbers.y
@@ -546,39 +480,6 @@ class TestDSA(object):
                 parameter_numbers=dsa.DSAParameterNumbers(
                     p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
                     q=2 ** 260,
-                    g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
-                ),
-                y=DSA_KEY_3072.public_numbers.y
-            ).public_key(backend)
-
-        # Test a p, q pair of (1024, 256) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAPublicNumbers(
-                parameter_numbers=dsa.DSAParameterNumbers(
-                    p=DSA_KEY_1024.public_numbers.parameter_numbers.p,
-                    q=DSA_KEY_2048.public_numbers.parameter_numbers.q,
-                    g=DSA_KEY_1024.public_numbers.parameter_numbers.g,
-                ),
-                y=DSA_KEY_1024.public_numbers.y
-            ).public_key(backend)
-
-        # Test a p, q pair of (2048, 160) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAPublicNumbers(
-                parameter_numbers=dsa.DSAParameterNumbers(
-                    p=DSA_KEY_2048.public_numbers.parameter_numbers.p,
-                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
-                    g=DSA_KEY_2048.public_numbers.parameter_numbers.g,
-                ),
-                y=DSA_KEY_2048.public_numbers.y
-            ).public_key(backend)
-
-        # Test a p, q pair of (3072, 160) bit lengths
-        with pytest.raises(ValueError):
-            dsa.DSAPublicNumbers(
-                parameter_numbers=dsa.DSAParameterNumbers(
-                    p=DSA_KEY_3072.public_numbers.parameter_numbers.p,
-                    q=DSA_KEY_1024.public_numbers.parameter_numbers.q,
                     g=DSA_KEY_3072.public_numbers.parameter_numbers.g,
                 ),
                 y=DSA_KEY_3072.public_numbers.y
