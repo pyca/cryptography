@@ -742,10 +742,17 @@ class Backend(object):
         if not errors:
             raise ValueError("Could not unserialize key data.")
 
-        elif errors[0][1:] == (
-            self._lib.ERR_LIB_EVP,
-            self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-            self._lib.EVP_R_BAD_DECRYPT
+        elif errors[0][1:] in (
+            (
+                self._lib.ERR_LIB_EVP,
+                self._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                self._lib.EVP_R_BAD_DECRYPT
+            ),
+            (
+                self._lib.ERR_LIB_PKCS12,
+                self._lib.PKCS12_F_PKCS12_PBE_CRYPT,
+                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
+            )
         ):
             raise ValueError("Bad decrypt. Incorrect password?")
 

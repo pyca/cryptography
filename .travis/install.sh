@@ -10,15 +10,15 @@ else
 fi
 
 if [[ "${OPENSSL}" == "0.9.8" ]]; then
-    if [[ "$DARWIN" = true ]]; then
-        # travis has openssl installed via brew already, but let's be sure
-        if [[ "$(brew list | grep openssl)" != "openssl" ]]; then
-            brew install openssl
-        fi
-    else
+    if [[ "$DARWIN" = false ]]; then
         sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
         sudo apt-get -y update
         sudo apt-get install -y --force-yes libssl-dev/lucid
+    fi
+else
+    if [[ "$DARWIN" = true ]]; then
+        brew update
+        brew upgrade openssl
     fi
 fi
 
