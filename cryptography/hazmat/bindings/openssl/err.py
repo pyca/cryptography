@@ -22,6 +22,7 @@ static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
+static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -34,6 +35,7 @@ static const int ERR_LIB_EC;
 static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_RSA;
+static const int ERR_LIB_PKCS12;
 
 static const int ASN1_F_ASN1_ENUMERATED_TO_BN;
 static const int ASN1_F_ASN1_EX_C2I;
@@ -76,6 +78,7 @@ static const int ASN1_F_OID_MODULE_INIT;
 static const int ASN1_F_PARSE_TAGGING;
 static const int ASN1_F_PKCS5_PBE_SET;
 static const int ASN1_F_X509_CINF_NEW;
+
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
 static const int ASN1_R_CIPHER_HAS_NO_OBJECT_IDENTIFIER;
@@ -222,10 +225,15 @@ static const int PEM_R_SHORT_HEADER;
 static const int PEM_R_UNSUPPORTED_CIPHER;
 static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 
+static const int PKCS12_F_PKCS12_PBE_CRYPT;
+
+static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
+
 static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
+static const int RSA_R_PKCS_DECODING_ERROR;
 """
 
 FUNCTIONS = """
@@ -321,6 +329,13 @@ static const long Cryptography_HAS_EC_CODES = 0;
 static const int EC_R_UNKNOWN_GROUP = 0;
 static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
 #endif
+
+#ifdef RSA_R_PKCS_DECODING_ERROR
+static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
+#else
+static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
+static const int RSA_R_PKCS_DECODING_ERROR = 0;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -343,5 +358,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC_CODES": [
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
+    ],
+    "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
+        "RSA_R_PKCS_DECODING_ERROR"
     ]
 }
