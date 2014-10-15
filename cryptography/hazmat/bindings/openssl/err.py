@@ -334,7 +334,7 @@ static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
 #else
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
-static const int RSA_R_PKCS_DECODING_ERROR = 0;
+static const long RSA_R_PKCS_DECODING_ERROR = 0;
 #endif
 """
 
