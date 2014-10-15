@@ -22,6 +22,7 @@ static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
+static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -232,6 +233,7 @@ static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
+static const int RSA_R_PKCS_DECODING_ERROR;
 """
 
 FUNCTIONS = """
@@ -327,6 +329,13 @@ static const long Cryptography_HAS_EC_CODES = 0;
 static const int EC_R_UNKNOWN_GROUP = 0;
 static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
 #endif
+
+#ifdef RSA_R_PKCS_DECODING_ERROR
+static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
+#else
+static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
+static const int RSA_R_PKCS_DECODING_ERROR = 0;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -349,5 +358,8 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC_CODES": [
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
+    ],
+    "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
+        "RSA_R_PKCS_DECODING_ERROR"
     ]
 }
