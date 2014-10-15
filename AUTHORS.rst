@@ -16,5 +16,5 @@ PGP key fingerprints are enclosed in parentheses.
 * Stephen Holsapple <sholsapp@gmail.com>
 * Terry Chia <terrycwk1994@gmail.com>
 * Matthew Iversen <matt@notevencode.com> (2F04 3DCC D6E6 D5AC D262  2E0B C046 E8A8 7452 2973)
-* Mohammed Attia <skeuomorf@gmail.com>
+* Mohammed Attia <skeuomorf@gmail.com> (854A F9C5 9FF5 6E38 B17D 9587 2D70 E1ED 5290 D357)
 * Michael Hart <michael.hart1994@gmail.com>
