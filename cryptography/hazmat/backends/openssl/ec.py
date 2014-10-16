@@ -13,12 +13,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
+from cryptography.hazmat.backends.openssl.utils import _truncate_digest
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
@@ -34,8 +33,6 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
     _lib = backend._lib
     _ffi = backend._ffi
 
-    digest_len = len(digest)
-
     group = _lib.EC_KEY_get0_group(ec_key_cdata)
 
     with backend._tmp_bn_ctx() as bn_ctx:
@@ -47,20 +44,7 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
 
         order_bits = _lib.BN_num_bits(order)
 
-    if 8 * digest_len > order_bits:
-        digest_len = (order_bits + 7) // 8
-        digest = digest[:digest_len]
-
-    if 8 * digest_len > order_bits:
-        rshift = 8 - (order_bits & 0x7)
-        assert rshift > 0 and rshift < 8
-
-        mask = 0xFF >> rshift << rshift
-
-        # Set the bottom rshift bits to 0
-        digest = digest[:-1] + six.int2byte(six.indexbytes(digest, -1) & mask)
-
-    return digest
+    return _truncate_digest(digest, order_bits)
 
 
 def _ec_key_curve_sn(backend, ec_key):
