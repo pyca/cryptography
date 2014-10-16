@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.6.1 - 2014-10-15
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.1j.
+* Fixed an issue where OpenSSL 1.0.1j changed the errors returned by some
+  functions.
+* Added our license file to the ``cryptography-vectors`` package.
+* Implemented DSA hash truncation support (per FIPS 186-3) in the OpenSSL
+  backend. This works around an issue in 1.0.0, 1.0.0a, and 1.0.0b where
+  truncation was not implemented.
+
 0.6 - 2014-09-29
 ~~~~~~~~~~~~~~~~
 
