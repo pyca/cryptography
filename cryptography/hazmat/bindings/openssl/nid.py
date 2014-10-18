@@ -209,7 +209,6 @@ static const int NID_invalidity_date;
 static const int NID_delta_crl;
 static const int NID_any_policy;
 static const int NID_policy_mappings;
-static const int NID_freshest_crl;
 static const int NID_target_information;
 static const int NID_no_rev_avail;
 static const int NID_anyExtendedKeyUsage;
@@ -234,11 +233,11 @@ static const int NID_ecdsa_with_SHA512 = 0;
 #endif
 
 #ifndef NID_id_pkix_OCSP_noCheck
-static const int NID_id_pkix_OCSP_noCheck = 369;
+static const long NID_id_pkix_OCSP_noCheck = 369;
 #endif
 
 #ifndef NID_anyExtendedKeyUsage
-static const int NID_anyExtendedKeyUsage = 910;
+static const long NID_anyExtendedKeyUsage = 910;
 #endif
 """
 
