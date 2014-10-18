@@ -28,7 +28,7 @@ from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
     PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    TraditionalOpenSSLSerializationBackend, X509CertificateBackend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -45,6 +45,7 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
+from cryptography.hazmat.backends.openssl.x509 import _X509Certificate
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -75,6 +76,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(RSABackend)
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(PEMSerializationBackend)
+@utils.register_interface(X509CertificateBackend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -683,6 +685,16 @@ class Backend(object):
             data,
             None,
         )
+
+    def load_pem_x509_certificate(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        # TODO: handle password protected x509...is that even a thing?
+        x509 = self._lib.PEM_read_bio_X509(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+        assert x509 != self._ffi.NULL
+        x509 = self._ffi.gc(x509, self._lib.X509_free)
+        return _X509Certificate(self, x509)
 
     def load_traditional_openssl_pem_private_key(self, data, password):
         warnings.warn(

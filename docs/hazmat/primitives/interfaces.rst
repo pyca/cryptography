@@ -551,6 +551,76 @@ Elliptic Curve
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
             instance.
 
+X509
+----
+
+.. class:: X509Certificate
+
+    .. attribute:: extensions
+
+        :type: list
+
+        A list of extensions encoded in the certificate.
+
+    .. method:: fingerprint(algorithm)
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            that will be used by this context.
+
+        :return: The fingerprint using the supplied hash algorithm as bytes.
+
+    .. attribute:: serial
+
+        :type: str
+
+        The serial as hexadecimal string.
+
+    .. attribute:: version
+
+        :type: int
+
+        The certificate version.
+
+    .. attribute:: subject
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.X509Name`
+
+        The certificate subject.
+
+    .. attribute:: issuer
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.X509Name`
+
+        The certificate issuer.
+
+    .. attribute:: signature_algorithm
+
+        :type: str
+
+        The string form of the OID (e.g. ``sha256withRSAEncryption``).
+
+    .. method:: public_key()
+
+        :type:
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+
+        The public key associated with the certificate.
+
+    .. attribute:: not_before
+
+        :type: datetime
+
+    The beginning of the validity period for the certificate.
+
+    .. attribute:: not_after
+
+        :type: datetime
+
+    The end of the validity period for the certificate.
+
 
 Hash algorithms
 ---------------
