@@ -13,7 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-INCLUDES = ""
+INCLUDES = """
+#include <openssl/obj_mac.h>
+"""
 
 TYPES = """
 static const int Cryptography_HAS_ECDSA_SHA2_NIDS;
@@ -39,10 +41,7 @@ static const int NID_ecdsa_with_SHA224;
 static const int NID_ecdsa_with_SHA256;
 static const int NID_ecdsa_with_SHA384;
 static const int NID_ecdsa_with_SHA512;
-static const int NID_crl_reason;
 static const int NID_pbe_WithSHA1And3_Key_TripleDES_CBC;
-static const int NID_subject_alt_name;
-static const int NID_issuer_alt_name;
 static const int NID_X9_62_c2pnb163v1;
 static const int NID_X9_62_c2pnb163v2;
 static const int NID_X9_62_c2pnb163v3;
@@ -185,6 +184,35 @@ static const char *const SN_wap_wsg_idm_ecid_wtls11;
 static const char *const SN_wap_wsg_idm_ecid_wtls12;
 static const char *const SN_ipsec3;
 static const char *const SN_ipsec4;
+
+static const int NID_subject_key_identifier;
+static const int NID_authority_key_identifier;
+static const int NID_policy_constraints;
+static const int NID_ext_key_usage;
+static const int NID_info_access;
+static const int NID_key_usage;
+static const int NID_subject_alt_name;
+static const int NID_issuer_alt_name;
+static const int NID_basic_constraints;
+static const int NID_issuing_distribution_point;
+static const int NID_certificate_issuer;
+static const int NID_name_constraints;
+static const int NID_crl_distribution_points;
+static const int NID_certificate_policies;
+static const int NID_inhibit_any_policy;
+static const int NID_id_pkix_OCSP_noCheck;
+
+static const int NID_private_key_usage_period;
+static const int NID_crl_number;
+static const int NID_crl_reason;
+static const int NID_invalidity_date;
+static const int NID_delta_crl;
+static const int NID_any_policy;
+static const int NID_policy_mappings;
+static const int NID_freshest_crl;
+static const int NID_target_information;
+static const int NID_no_rev_avail;
+static const int NID_anyExtendedKeyUsage;
 """
 
 FUNCTIONS = """
@@ -203,6 +231,14 @@ static const int NID_ecdsa_with_SHA224 = 0;
 static const int NID_ecdsa_with_SHA256 = 0;
 static const int NID_ecdsa_with_SHA384 = 0;
 static const int NID_ecdsa_with_SHA512 = 0;
+#endif
+
+#ifndef NID_id_pkix_OCSP_noCheck
+static const int NID_id_pkix_OCSP_noCheck = 369;
+#endif
+
+#ifndef NID_anyExtendedKeyUsage
+static const int NID_anyExtendedKeyUsage = 910;
 #endif
 """
 
