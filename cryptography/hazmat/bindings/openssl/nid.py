@@ -200,7 +200,6 @@ static const int NID_name_constraints;
 static const int NID_crl_distribution_points;
 static const int NID_certificate_policies;
 static const int NID_inhibit_any_policy;
-static const int NID_id_pkix_OCSP_noCheck;
 
 static const int NID_private_key_usage_period;
 static const int NID_crl_number;
@@ -211,7 +210,6 @@ static const int NID_any_policy;
 static const int NID_policy_mappings;
 static const int NID_target_information;
 static const int NID_no_rev_avail;
-static const int NID_anyExtendedKeyUsage;
 """
 
 FUNCTIONS = """
@@ -230,14 +228,6 @@ static const int NID_ecdsa_with_SHA224 = 0;
 static const int NID_ecdsa_with_SHA256 = 0;
 static const int NID_ecdsa_with_SHA384 = 0;
 static const int NID_ecdsa_with_SHA512 = 0;
-#endif
-
-#ifndef NID_id_pkix_OCSP_noCheck
-static const long NID_id_pkix_OCSP_noCheck = 369;
-#endif
-
-#ifndef NID_anyExtendedKeyUsage
-static const long NID_anyExtendedKeyUsage = 910;
 #endif
 """
 
