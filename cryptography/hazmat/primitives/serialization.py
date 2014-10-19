@@ -63,6 +63,7 @@ def load_pem_public_key(data, backend):
     return backend.load_pem_public_key(data)
 
 
+# RFC 3447, section A.1.2
 class _OtherPrimeInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedTypes("prime", univ.Integer()),
@@ -71,10 +72,12 @@ class _OtherPrimeInfo(univ.Sequence):
     )
 
 
+# RFC 3447, section A.1.2
 class _OtherPrimeInfos(univ.SequenceOf):
     componentType = _OtherPrimeInfo()
 
 
+# RFC 3447, section A.1.2
 class _RSAPrivateKey(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
@@ -157,6 +160,7 @@ class _DSAPrivateKeyParser(object):
         ).private_key(self._backend)
 
 
+# RFC 5480, section 2.1.1
 class _ECParameters(univ.Choice):
     # TODO: There are a few more options for this choice I think, the RFC says
     # not to use them though...
@@ -165,6 +169,7 @@ class _ECParameters(univ.Choice):
     )
 
 
+# RFC 5915, Appendix A
 class _ECPrivateKey(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
@@ -242,6 +247,7 @@ class _AlgorithmIdentifier(univ.Sequence):
     )
 
 
+# RFC 5208, section 6
 class _EncryptedPrivateKeyInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("encryptionAlgorithm", _AlgorithmIdentifier()),
