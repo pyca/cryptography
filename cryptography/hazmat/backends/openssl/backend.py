@@ -1005,10 +1005,8 @@ class Backend(object):
             res = get_func(group, point, check_x, check_y, bn_ctx)
             assert res == 1
 
-            assert (
-                self._lib.BN_cmp(bn_x, check_x) == 0 and
-                self._lib.BN_cmp(bn_y, check_y) == 0
-            )
+            assert self._lib.BN_cmp(bn_x, check_x) == 0
+            assert self._lib.BN_cmp(bn_y, check_y) == 0
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1
