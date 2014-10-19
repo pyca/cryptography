@@ -260,6 +260,20 @@ class TestECDSAVectors(object):
             ec.SECP192R1()
         ) is False
 
+    def test_load_invalid_ec_key_from_numbers(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        numbers = ec.EllipticCurvePrivateNumbers(
+            357646505660320080863666618182642070958081774038609089496899025506,
+            ec.EllipticCurvePublicNumbers(
+                47250808410327023131573602008345894927686381772325561185532964,
+                1120253292479243545483756778742719537373113335231773536789915,
+                ec.SECP256R1(),
+            )
+        )
+        with pytest.raises(ValueError):
+            numbers.private_key(backend)
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
