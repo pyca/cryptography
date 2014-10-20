@@ -648,6 +648,8 @@ Key derivation functions
 
 .. class:: CMACContext
 
+    `CMACContext` has been deprecated in favor of `MACContext`.
+
     .. versionadded:: 0.4
 
     .. method:: update(data)

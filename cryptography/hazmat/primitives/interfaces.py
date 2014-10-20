@@ -495,4 +495,5 @@ class MACContext(object):
         signature.
         """
 
+# DeprecatedIn07
 CMACContext = MACContext

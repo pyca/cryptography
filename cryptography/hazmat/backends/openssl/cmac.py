@@ -21,7 +21,6 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
 @utils.register_interface(interfaces.MACContext)
-@utils.register_interface(interfaces.CMACContext)
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
