@@ -127,3 +127,21 @@ class Fernet(object):
         except ValueError:
             raise InvalidToken
         return unpadded
+
+
+class MultiFernet(object):
+    def __init__(self, fernets):
+        if not fernets:
+            raise ValueError("MultiFernet requires at least one fernet")
+        self._fernets = fernets
+
+    def encrypt(self, msg):
+        return self._fernets[0].encrypt(msg)
+
+    def decrypt(self, msg, ttl=None):
+        for f in self._fernets:
+            try:
+                return f.decrypt(msg, ttl)
+            except InvalidToken:
+                pass
+        raise InvalidToken
