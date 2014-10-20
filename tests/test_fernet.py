@@ -86,14 +86,19 @@ class TestFernet(object):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_invalid_start_byte(self, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
     def test_timestamp_too_short(self, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
+
+    def test_non_base64_token(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(b"\x00")
 
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
