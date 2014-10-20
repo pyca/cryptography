@@ -90,7 +90,7 @@ class Fernet(object):
         except (TypeError, binascii.Error):
             raise InvalidToken
 
-        if not data or  six.indexbytes(data, 0) != 0x80:
+        if not data or six.indexbytes(data, 0) != 0x80:
             raise InvalidToken
 
         try:
