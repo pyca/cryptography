@@ -6,6 +6,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
+  from numbers.
+
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~
 
