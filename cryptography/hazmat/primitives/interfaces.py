@@ -287,6 +287,12 @@ class DSAPrivateKey(object):
         The DSAParameters object associated with this private key.
         """
 
+    @abc.abstractmethod
+    def signer(self, signature_algorithm):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSAPrivateKeyWithNumbers(DSAPrivateKey):
@@ -309,6 +315,12 @@ class DSAPublicKey(object):
     def parameters(self):
         """
         The DSAParameters object associated with this public key.
+        """
+
+    @abc.abstractmethod
+    def verifier(self, signature, signature_algorithm):
+        """
+        Returns an AsymmetricVerificationContext used for signing data.
         """
 
 
