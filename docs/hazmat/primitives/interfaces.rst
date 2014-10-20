@@ -648,7 +648,7 @@ Key derivation functions
 
 .. class:: CMACContext
 
-    `CMACContext` has been deprecated in favor of `MACContext`.
+    :class:`CMACContext` has been deprecated in favor of :class:`MACContext`.
 
     .. versionadded:: 0.4
 
@@ -679,10 +679,11 @@ Key derivation functions
 
     .. method:: copy()
 
-        :return: A :class:`~cryptography.hazmat.primitives.interfaces.MACContext`
-            that is a copy of the current context.
+        :return: A
+            :class:`~cryptography.hazmat.primitives.interfaces.MACContext` that
+            is a copy of the current context.
 
-    .. method:: verify()
+    .. method:: verify(signature)
 
         :param signature bytes: The signature to verify.
 
