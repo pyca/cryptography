@@ -274,6 +274,28 @@ class TestECDSAVectors(object):
         with pytest.raises(ValueError):
             numbers.private_key(backend)
 
+        numbers = ec.EllipticCurvePrivateNumbers(
+            357646505660320080863666618182642070958081774038609089496899025506,
+            ec.EllipticCurvePublicNumbers(
+                -4725080841032702313157360200834589492768638177232556118553296,
+                1120253292479243545483756778742719537373113335231773536789915,
+                ec.SECP256R1(),
+            )
+        )
+        with pytest.raises(ValueError):
+            numbers.private_key(backend)
+
+        numbers = ec.EllipticCurvePrivateNumbers(
+            357646505660320080863666618182642070958081774038609089496899025506,
+            ec.EllipticCurvePublicNumbers(
+                47250808410327023131573602008345894927686381772325561185532964,
+                -1120253292479243545483756778742719537373113335231773536789915,
+                ec.SECP256R1(),
+            )
+        )
+        with pytest.raises(ValueError):
+            numbers.private_key(backend)
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
