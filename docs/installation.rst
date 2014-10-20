@@ -136,7 +136,7 @@ To link cryptography against a custom version of OpenSSL you'll need to set
 .. code-block:: console
 
     $ brew install openssl
-    $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/opt/openssl/lib" CFLAGS="-I/usr/local/opt/openssl/include" pip install cryptography
+    $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/usr/local/homebrew/opt/openssl/lib" CFLAGS="-I/usr/local/homebrew/opt/openssl/include" pip install cryptography
 
 or `MacPorts`_:
 
