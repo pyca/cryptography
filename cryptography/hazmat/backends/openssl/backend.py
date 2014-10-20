@@ -984,6 +984,11 @@ class Backend(object):
         values.
         """
 
+        if x < 0 or y < 0:
+            raise ValueError(
+                "Invalid EC key. Both x and y must be non-negative."
+            )
+
         bn_x = self._int_to_bn(x)
         bn_y = self._int_to_bn(y)
 
