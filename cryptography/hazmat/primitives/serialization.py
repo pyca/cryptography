@@ -48,3 +48,7 @@ def load_pem_private_key(data, password, backend):
 
 def load_pem_public_key(data, backend):
     return backend.load_pem_public_key(data)
+
+
+def dump_unencrypted_pem_pkcs8_private_key(key):
+    return key._backend.dump_unencrypted_pem_pkcs8_private_key(key)

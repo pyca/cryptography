@@ -23,7 +23,8 @@ from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key, load_pem_private_key, load_pem_public_key,
+    dump_unencrypted_pem_pkcs8_private_key, load_pem_pkcs8_private_key,
+    load_pem_private_key, load_pem_public_key,
     load_pem_traditional_openssl_private_key
 )
 
@@ -380,6 +381,7 @@ class TestPKCS8Serialization(object):
             ("pkcs12_s2k_pem-X_9932.pem", b"123456"),
         ]
     )
+    @pytest.mark.rsa
     def test_load_pem_rsa_private_key(self, key_file, password, backend):
         key = load_vectors_from_file(
             os.path.join(
@@ -393,6 +395,39 @@ class TestPKCS8Serialization(object):
         assert isinstance(key, interfaces.RSAPrivateKey)
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "unenc-rsa-pkcs8.pem",
+        ]
+    )
+    @pytest.mark.rsa
+    def test_dump_pem_pkcs8_rsa_private_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", key_file),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.RSAPrivateKey)
+
+        pem = dump_unencrypted_pem_pkcs8_private_key(key)
+        assert pem
+        key2 = load_pem_private_key(pem, None, backend)
+        assert isinstance(key2, interfaces.RSAPrivateKey)
+        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+            _check_rsa_private_numbers(key.private_numbers())
+            key_numbers = key.private_numbers()
+            key2_numbers = key2.private_numbers()
+            assert key_numbers.p == key2_numbers.p
+            assert key_numbers.q == key2_numbers.q
+            assert key_numbers.d == key2_numbers.d
+            assert key_numbers.iqmp == key2_numbers.iqmp
+            assert key_numbers.dmp1 == key2_numbers.dmp1
+            assert key_numbers.dmq1 == key2_numbers.dmq1
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -415,6 +450,39 @@ class TestPKCS8Serialization(object):
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
+
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "ec_private_key.pem"
+        ]
+    )
+    @pytest.mark.elliptic
+    def test_dump_pem_ec_private_key(self, key_file, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", key_file),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+        pem = dump_unencrypted_pem_pkcs8_private_key(key)
+        assert pem
+        key2 = load_pem_private_key(pem, None, backend)
+        if isinstance(key, interfaces.EllipticCurvePrivateKeyWithNumbers):
+            priv_num = key.private_numbers()
+            priv_num2 = key2.private_numbers()
+            pub_num = priv_num.public_numbers
+            pub_num2 = priv_num2.public_numbers
+
+            assert priv_num.private_value == priv_num2.private_value
+            assert pub_num.x == pub_num2.x
+            assert pub_num.y == pub_num2.y
+            assert pub_num.curve.name == pub_num2.curve.name
+            assert pub_num.curve.key_size == pub_num2.curve.key_size
 
     def test_unused_password(self, backend):
         key_file = os.path.join(
@@ -650,6 +718,38 @@ class TestPKCS8Serialization(object):
                 "68ce5cfff241cd3246",
                 16
             )
+
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "unenc-dsa-pkcs8.pem",
+        ]
+    )
+    def test_dump_pem_dsa_private_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", key_file),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        assert key
+        assert isinstance(key, interfaces.DSAPrivateKey)
+
+        pem = dump_unencrypted_pem_pkcs8_private_key(key)
+        assert pem
+        key2 = load_pem_private_key(pem, None, backend)
+
+        if isinstance(key2, interfaces.DSAPrivateKeyWithNumbers):
+            priv_num = key.private_numbers()
+            priv_num2 = key2.private_numbers()
+            params = priv_num.public_numbers.parameter_numbers
+            params2 = priv_num2.public_numbers.parameter_numbers
+            assert params.p == params2.p
+            assert params.q == params2.q
+            assert params.g == params2.g
+            assert priv_num.x == priv_num2.x
+            assert priv_num.public_numbers.y == priv_num2.public_numbers.y
 
     @pytest.mark.parametrize(
         ("key_file", "password"),

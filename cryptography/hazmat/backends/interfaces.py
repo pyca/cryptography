@@ -240,6 +240,12 @@ class PEMSerializationBackend(object):
         Loads a public key from PEM encoded data.
         """
 
+    @abc.abstractmethod
+    def dump_unencrypted_pem_pkcs8_private_key(self, key):
+        """
+        Returns an unencrypted PKCS8 byte string of the key provided.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class TraditionalOpenSSLSerializationBackend(object):
