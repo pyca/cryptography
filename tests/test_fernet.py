@@ -125,16 +125,15 @@ class TestFernet(object):
 )
 class TestMultiFernet(object):
     def test_encrypt(self, backend):
-        single_f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f = MultiFernet([
-            single_f,
-            Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
-        ])
-        assert single_f.decrypt(f.encrypt(b"abc")) == b"abc"
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+        f = MultiFernet([f1, f2])
+
+        assert f1.decrypt(f.encrypt(b"abc")) == b"abc"
 
     def test_decrypt(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
         f = MultiFernet([f1, f2])
 
         assert f.decrypt(f1.encrypt(b"abc")) == b"abc"
