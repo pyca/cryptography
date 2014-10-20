@@ -132,7 +132,9 @@ class Fernet(object):
 class MultiFernet(object):
     def __init__(self, fernets):
         if not fernets:
-            raise ValueError("MultiFernet requires at least one fernet")
+            raise ValueError(
+                "MultiFernet requires at least one Fernet instance"
+            )
         self._fernets = fernets
 
     def encrypt(self, msg):
