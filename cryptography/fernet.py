@@ -131,6 +131,7 @@ class Fernet(object):
 
 class MultiFernet(object):
     def __init__(self, fernets):
+        fernets = list(fernets)
         if not fernets:
             raise ValueError(
                 "MultiFernet requires at least one Fernet instance"

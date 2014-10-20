@@ -146,3 +146,7 @@ class TestMultiFernet(object):
     def test_no_fernets(self, backend):
         with pytest.raises(ValueError):
             MultiFernet([])
+
+    def test_non_iterable_argument(self, backend):
+        with pytest.raises(TypeError):
+            MultiFernet(None)
