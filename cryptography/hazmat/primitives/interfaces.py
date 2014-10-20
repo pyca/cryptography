@@ -391,27 +391,6 @@ class KeyDerivationFunction(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class CMACContext(object):
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Processes the provided bytes.
-        """
-
-    @abc.abstractmethod
-    def finalize(self):
-        """
-        Returns the message authentication code as bytes.
-        """
-
-    @abc.abstractmethod
-    def copy(self):
-        """
-        Return a CMACContext that is a copy of the current context.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
 class EllipticCurve(object):
     @abc.abstractproperty
     def name(self):
@@ -491,12 +470,6 @@ class EllipticCurvePublicKeyWithNumbers(EllipticCurvePublicKey):
 
 @six.add_metaclass(abc.ABCMeta)
 class MACContext(object):
-    @abc.abstractproperty
-    def algorithm(self):
-        """
-        The algorithm that will be used by this context.
-        """
-
     @abc.abstractmethod
     def update(self, data):
         """
@@ -521,3 +494,5 @@ class MACContext(object):
         Checks if the generated message authentication code matches the
         signature.
         """
+
+CMACContext = MACContext
