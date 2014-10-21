@@ -163,8 +163,8 @@ class RSAPrivateNumbers(object):
     d = utils.read_only_property("_d")
     dmp1 = utils.read_only_property("_dmp1")
     dmq1 = utils.read_only_property("_dmq1")
-    iqmp = utils.read_only_property("iqmp")
-    public_numbers = utils.read_only_property("public_numbers")
+    iqmp = utils.read_only_property("_iqmp")
+    public_numbers = utils.read_only_property("_public_numbers")
 
     def private_key(self, backend):
         return backend.load_rsa_private_numbers(self)
