@@ -21,6 +21,7 @@ from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
     PKCS8SerializationBackend, RSABackend,
+    ScryptBackend,
     TraditionalOpenSSLSerializationBackend
 )
 
@@ -36,6 +37,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(PEMSerializationBackend)
+@utils.register_interface(ScryptBackend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -356,3 +358,9 @@ class MultiBackend(object):
             "This backend does not support this key serialization.",
             _Reasons.UNSUPPORTED_SERIALIZATION
         )
+
+    def derive_scrypt(self, key_material, salt, length, N, r, p):
+        for b in self._filtered_backends(ScryptBackend):
+            return b.derive_scrypt(key_material, salt, length, N, r, p)
+
+        raise UnsupportedAlgorithm("This backend does not support scrypt.")
