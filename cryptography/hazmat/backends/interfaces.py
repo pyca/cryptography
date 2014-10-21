@@ -259,3 +259,12 @@ class PKCS8SerializationBackend(object):
         Load a private key from PKCS8 encoded data, using password if the data
         is encrypted.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ScryptBackend(object):
+    @abc.abstractmethod
+    def derive_scrypt(self, key_material, salt, length, N, r, p):
+        """
+        Return bytes derived from provided Scrypt parameters.
+        """
