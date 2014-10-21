@@ -37,7 +37,7 @@ def verify_interface(iface, klass):
             raise InterfaceNotImplemented(
                 "{0} is missing a {1!r} method".format(klass, method)
             )
-        spec = getattr(iface, method).__func__
+        spec = getattr(iface, method)
         actual = getattr(klass, method)
         if inspect.getargspec(spec) != inspect.getargspec(actual):
             raise InterfaceNotImplemented(
