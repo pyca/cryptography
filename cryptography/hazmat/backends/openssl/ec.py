@@ -146,9 +146,7 @@ class _EllipticCurvePrivateKey(object):
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
 
-    @property
-    def curve(self):
-        return self._curve
+    curve = utils.read_only_property("_curve")
 
     def signer(self, signature_algorithm):
         if isinstance(signature_algorithm, ec.ECDSA):
@@ -200,9 +198,7 @@ class _EllipticCurvePublicKey(object):
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
 
-    @property
-    def curve(self):
-        return self._curve
+    curve = utils.read_only_property("_curve")
 
     def verifier(self, signature, signature_algorithm):
         if isinstance(signature_algorithm, ec.ECDSA):

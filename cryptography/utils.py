@@ -26,6 +26,10 @@ def register_interface(iface):
     return register_decorator
 
 
+def read_only_property(name):
+    return property(lambda self: getattr(self, name))
+
+
 def bit_length(x):
     if sys.version_info >= (2, 7):
         return x.bit_length()
