@@ -51,3 +51,18 @@ class TestVerifyInterface(object):
 
         with pytest.raises(InterfaceNotImplemented):
             verify_interface(SimpleInterface, NonImplementer)
+
+    def test_handles_abstract_property(self):
+        @six.add_metaclass(abc.ABCMeta)
+        class SimpleInterface(object):
+            @abc.abstractproperty
+            def property(self):
+                pass
+
+        @register_interface(SimpleInterface)
+        class NonImplementer(object):
+            @property
+            def property(self):
+                pass
+
+        verify_interface(SimpleInterface, NonImplementer)

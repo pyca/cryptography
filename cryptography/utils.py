@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 import inspect
 import sys
 
@@ -37,12 +38,16 @@ def verify_interface(iface, klass):
             raise InterfaceNotImplemented(
                 "{0} is missing a {1!r} method".format(klass, method)
             )
-        spec = getattr(iface, method)
-        actual = getattr(klass, method)
-        if inspect.getargspec(spec) != inspect.getargspec(actual):
+        if isinstance(getattr(iface, method), abc.abstractproperty):
+            # Can't properly verify these yet.
+            continue
+        spec = inspect.getargspec(getattr(iface, method))
+        actual = inspect.getargspec(getattr(klass, method))
+        if spec != actual:
             raise InterfaceNotImplemented(
-                "{0}.{1}'s signature differs from the expected".format(
-                    klass, method
+                "{0}.{1}'s signature differs from the expected. Expected: "
+                "{2!r}. Received: {3!r}".format(
+                    klass, method, spec, actual
                 )
             )
 
