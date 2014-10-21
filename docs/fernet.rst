@@ -75,6 +75,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
 .. class:: MultiFernet(fernets)
 
+    .. versionadded:: 0.7
+
     This class implements key rotation for Fernet. It takes a ``list`` of
     :class:`Fernet` instances, and implements the same API:
 
