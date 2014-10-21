@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added key-rotation support to :doc:`Fernet </fernet>` with
+  :class:`~cryptography.fernet.MultiFernet`.
 * More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
   from numbers.
 * Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
