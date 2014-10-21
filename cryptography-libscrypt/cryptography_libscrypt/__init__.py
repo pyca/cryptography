@@ -12,3 +12,8 @@
 # limitations under the License.
 
 from __future__ import absolute_import, division, print_function
+
+from cryptography_libscrypt.backend import backend
+
+
+__all__ = ["backend"]

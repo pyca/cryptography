@@ -10,29 +10,22 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.utils import build_ffi
+__all__ = [
+    "__title__", "__summary__", "__uri__", "__version__", "__author__",
+    "__email__", "__license__", "__copyright__",
+]
 
+__title__ = "cryptography_libscrypt"
+__summary__ = "Libscrypt backend for the cryptography library."
 
-class Binding(object):
-    """
-    libscrypt API wrapper.
-    """
-    _module_prefix = "cryptography_libscrypt."
-    _modules = ["libscrypt"]
+__uri__ = "https://github.com/pyca/cryptography"
 
-    ffi = None
-    lib = None
+__version__ = "0.7.dev1"
 
-    def __init__(self):
-        self._ensure_ffi_initialized()
+__author__ = "The cryptography developers"
+__email__ = "cryptography-dev@python.org"
 
-    @classmethod
-    def _ensure_ffi_initialized(cls):
-        if cls.ffi is not None and cls.lib is not None:
-            return
-        cls.ffi, cls.lib = build_ffi(
-            cls._module_prefix, cls._modules, "", "", ["scrypt"]
-        )
+__license__ = "Apache License, Version 2.0"
+__copyright__ = "Copyright 2013-2014 %s" % __author__
