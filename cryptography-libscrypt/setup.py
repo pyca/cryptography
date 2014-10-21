@@ -59,8 +59,8 @@ setup(
     author_email=about["__email__"],
 
     packages=find_packages(),
-    setup_requires="cryptography>=0.6",
-    install_requires="cryptography>=0.6",
+    setup_requires="cryptography>=0.7.dev1",
+    install_requires="cryptography>=0.7.dev1",
     zip_safe=False,
     cmdclass={
         "build": CFFIBuild,
