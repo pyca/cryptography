@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
-@utils.register_interface(interfaces.CMACContext)
+@utils.register_interface(interfaces.MACContext)
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):

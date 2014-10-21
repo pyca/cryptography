@@ -6,6 +6,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
+  from numbers.
+* Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
+  common interface for CMAC and HMAC and deprecated
+  :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
+
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~
 

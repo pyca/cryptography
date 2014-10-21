@@ -21,6 +21,7 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces
 
 
+@utils.register_interface(interfaces.MACContext)
 @utils.register_interface(interfaces.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, backend, ctx=None):

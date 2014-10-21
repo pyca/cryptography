@@ -21,7 +21,7 @@ from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives import constant_time, interfaces
 
 
-@utils.register_interface(interfaces.CMACContext)
+@utils.register_interface(interfaces.MACContext)
 class CMAC(object):
     def __init__(self, algorithm, backend, ctx=None):
         if not isinstance(backend, CMACBackend):
