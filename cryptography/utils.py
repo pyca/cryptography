@@ -13,6 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import inspect
 import sys
 
 
@@ -24,6 +25,26 @@ def register_interface(iface):
         iface.register(klass)
         return klass
     return register_decorator
+
+
+class InterfaceNotImplemented(Exception):
+    pass
+
+
+def verify_interface(iface, klass):
+    for method in iface.__abstractmethods__:
+        if not hasattr(klass, method):
+            raise InterfaceNotImplemented(
+                "{0} is missing a {1!r} method".format(klass, method)
+            )
+        spec = getattr(iface, method).__func__
+        actual = getattr(klass, method)
+        if inspect.getargspec(spec) != inspect.getargspec(actual):
+            raise InterfaceNotImplemented(
+                "{0}.{1}'s signature differs from the expected".format(
+                    klass, method
+                )
+            )
 
 
 def bit_length(x):
