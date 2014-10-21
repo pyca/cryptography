@@ -15,7 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.hazmat.backends.interfaces import ScryptBackend
-from cryptography-libscrypt.binding import Binding
+
+from cryptography_libscrypt.binding import Binding
 
 
 @utils.register_interface(ScryptBackend)
