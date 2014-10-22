@@ -28,6 +28,10 @@ def register_interface(iface):
     return register_decorator
 
 
+def read_only_property(name):
+    return property(lambda self: getattr(self, name))
+
+
 class InterfaceNotImplemented(Exception):
     pass
 

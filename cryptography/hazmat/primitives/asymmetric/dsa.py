@@ -61,17 +61,9 @@ class DSAParameterNumbers(object):
         self._q = q
         self._g = g
 
-    @property
-    def p(self):
-        return self._p
-
-    @property
-    def q(self):
-        return self._q
-
-    @property
-    def g(self):
-        return self._g
+    p = utils.read_only_property("_p")
+    q = utils.read_only_property("_q")
+    g = utils.read_only_property("_g")
 
     def parameters(self, backend):
         return backend.load_dsa_parameter_numbers(self)
@@ -90,13 +82,8 @@ class DSAPublicNumbers(object):
         self._y = y
         self._parameter_numbers = parameter_numbers
 
-    @property
-    def y(self):
-        return self._y
-
-    @property
-    def parameter_numbers(self):
-        return self._parameter_numbers
+    y = utils.read_only_property("_y")
+    parameter_numbers = utils.read_only_property("_parameter_numbers")
 
     def public_key(self, backend):
         return backend.load_dsa_public_numbers(self)
@@ -114,13 +101,8 @@ class DSAPrivateNumbers(object):
         self._public_numbers = public_numbers
         self._x = x
 
-    @property
-    def x(self):
-        return self._x
-
-    @property
-    def public_numbers(self):
-        return self._public_numbers
+    x = utils.read_only_property("_x")
+    public_numbers = utils.read_only_property("_public_numbers")
 
     def private_key(self, backend):
         return backend.load_dsa_private_numbers(self)
