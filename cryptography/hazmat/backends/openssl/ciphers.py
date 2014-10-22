@@ -187,9 +187,7 @@ class _CipherContext(object):
         )
         assert res != 0
 
-    @property
-    def tag(self):
-        return self._tag
+    tag = utils.read_only_property("_tag")
 
 
 @utils.register_interface(interfaces.CipherContext)

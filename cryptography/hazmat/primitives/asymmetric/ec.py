@@ -213,9 +213,7 @@ class ECDSA(object):
     def __init__(self, algorithm):
         self._algorithm = algorithm
 
-    @property
-    def algorithm(self):
-        return self._algorithm
+    algorithm = utils.read_only_property("_algorithm")
 
 
 def generate_private_key(curve, backend):
@@ -243,17 +241,9 @@ class EllipticCurvePublicNumbers(object):
         except AttributeError:
             return backend.elliptic_curve_public_key_from_numbers(self)
 
-    @property
-    def curve(self):
-        return self._curve
-
-    @property
-    def x(self):
-        return self._x
-
-    @property
-    def y(self):
-        return self._y
+    curve = utils.read_only_property("_curve")
+    x = utils.read_only_property("_x")
+    y = utils.read_only_property("_y")
 
 
 class EllipticCurvePrivateNumbers(object):
@@ -276,10 +266,5 @@ class EllipticCurvePrivateNumbers(object):
         except AttributeError:
             return backend.elliptic_curve_private_key_from_numbers(self)
 
-    @property
-    def private_value(self):
-        return self._private_value
-
-    @property
-    def public_numbers(self):
-        return self._public_numbers
+    private_value = utils.read_only_property("_private_value")
+    public_numbers = utils.read_only_property("_public_numbers")
