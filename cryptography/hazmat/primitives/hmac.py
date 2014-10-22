@@ -33,7 +33,7 @@ class HMAC(object):
 
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
-        self.algorithm = algorithm
+        self._algorithm = algorithm
 
         self._backend = backend
         self._key = key
@@ -42,12 +42,14 @@ class HMAC(object):
         else:
             self._ctx = ctx
 
-    def update(self, msg):
+    algorithm = utils.read_only_property("_algorithm")
+
+    def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if not isinstance(msg, bytes):
-            raise TypeError("msg must be bytes.")
-        self._ctx.update(msg)
+        if not isinstance(data, bytes):
+            raise TypeError("data must be bytes.")
+        self._ctx.update(data)
 
     def copy(self):
         if self._ctx is None:

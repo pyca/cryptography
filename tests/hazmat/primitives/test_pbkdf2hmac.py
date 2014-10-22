@@ -31,6 +31,8 @@ from ...utils import raises_unsupported_algorithm
 @utils.register_interface(interfaces.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
+    block_size = 128
+    digest_size = 128
 
 
 class TestPBKDF2HMAC(object):

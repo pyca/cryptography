@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives import interfaces
 @utils.register_interface(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
-        self.algorithm = algorithm
+        self._algorithm = algorithm
         self._backend = backend
         if ctx is None:
             ctx = self._backend._ffi.new("CCHmacContext *")
@@ -38,6 +38,8 @@ class _HMACContext(object):
 
         self._ctx = ctx
         self._key = key
+
+    algorithm = utils.read_only_property("_algorithm")
 
     def copy(self):
         copied_ctx = self._backend._ffi.new("CCHmacContext *")

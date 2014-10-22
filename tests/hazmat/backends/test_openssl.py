@@ -51,6 +51,7 @@ class DummyMode(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
+    key_size = 128
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
@@ -61,6 +62,8 @@ class DummyPadding(object):
 @utils.register_interface(interfaces.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
+    block_size = 128
+    digest_size = 128
 
 
 class DummyMGF(object):

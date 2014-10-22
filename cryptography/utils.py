@@ -23,6 +23,7 @@ DeprecatedIn06 = DeprecationWarning
 
 def register_interface(iface):
     def register_decorator(klass):
+        verify_interface(iface, klass)
         iface.register(klass)
         return klass
     return register_decorator

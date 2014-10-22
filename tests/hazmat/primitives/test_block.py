@@ -43,6 +43,7 @@ class DummyMode(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
+    key_size = 128
 
 
 @pytest.mark.cipher

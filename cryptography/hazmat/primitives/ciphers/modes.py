@@ -17,10 +17,10 @@ from cryptography import utils
 from cryptography.hazmat.primitives import interfaces
 
 
-def _check_iv_length(mode, algorithm):
-    if len(mode.initialization_vector) * 8 != algorithm.block_size:
+def _check_iv_length(self, algorithm):
+    if len(self.initialization_vector) * 8 != algorithm.block_size:
         raise ValueError("Invalid IV size ({0}) for {1}.".format(
-            len(mode.initialization_vector), mode.name
+            len(self.initialization_vector), self.name
         ))
 
 
@@ -30,8 +30,9 @@ class CBC(object):
     name = "CBC"
 
     def __init__(self, initialization_vector):
-        self.initialization_vector = initialization_vector
+        self._initialization_vector = initialization_vector
 
+    initialization_vector = utils.read_only_property("_initialization_vector")
     validate_for_algorithm = _check_iv_length
 
 
@@ -49,8 +50,9 @@ class OFB(object):
     name = "OFB"
 
     def __init__(self, initialization_vector):
-        self.initialization_vector = initialization_vector
+        self._initialization_vector = initialization_vector
 
+    initialization_vector = utils.read_only_property("_initialization_vector")
     validate_for_algorithm = _check_iv_length
 
 
@@ -60,8 +62,9 @@ class CFB(object):
     name = "CFB"
 
     def __init__(self, initialization_vector):
-        self.initialization_vector = initialization_vector
+        self._initialization_vector = initialization_vector
 
+    initialization_vector = utils.read_only_property("_initialization_vector")
     validate_for_algorithm = _check_iv_length
 
 
@@ -71,8 +74,9 @@ class CFB8(object):
     name = "CFB8"
 
     def __init__(self, initialization_vector):
-        self.initialization_vector = initialization_vector
+        self._initialization_vector = initialization_vector
 
+    initialization_vector = utils.read_only_property("_initialization_vector")
     validate_for_algorithm = _check_iv_length
 
 
@@ -82,7 +86,9 @@ class CTR(object):
     name = "CTR"
 
     def __init__(self, nonce):
-        self.nonce = nonce
+        self._nonce = nonce
+
+    nonce = utils.read_only_property("_nonce")
 
     def validate_for_algorithm(self, algorithm):
         if len(self.nonce) * 8 != algorithm.block_size:
@@ -109,8 +115,11 @@ class GCM(object):
                     min_tag_length)
             )
 
-        self.initialization_vector = initialization_vector
-        self.tag = tag
+        self._initialization_vector = initialization_vector
+        self._tag = tag
+
+    tag = utils.read_only_property("_tag")
+    initialization_vector = utils.read_only_property("_initialization_vector")
 
     def validate_for_algorithm(self, algorithm):
         pass
