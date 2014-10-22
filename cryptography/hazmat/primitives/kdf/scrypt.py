@@ -36,5 +36,5 @@ class Scrypt(object):
 
     def verify(self, key_material, expected_key):
         derived_key = self.derive(key_material)
-        if not constant_time.bytes_eq(derive_key, expected_key):
+        if not constant_time.bytes_eq(derived_key, expected_key):
             raise InvalidKey("Keys do not match.")
