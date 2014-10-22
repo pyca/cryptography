@@ -28,7 +28,7 @@ class TestVerifyInterface(object):
         class SimpleInterface(object):
             @abc.abstractmethod
             def method(self):
-                pass
+                """A simple method"""
 
         @register_interface(SimpleInterface)
         class NonImplementer(object):
@@ -42,12 +42,12 @@ class TestVerifyInterface(object):
         class SimpleInterface(object):
             @abc.abstractmethod
             def method(self, a):
-                pass
+                """Method with one argument"""
 
         @register_interface(SimpleInterface)
         class NonImplementer(object):
             def method(self):
-                pass
+                """Method with no arguments"""
 
         with pytest.raises(InterfaceNotImplemented):
             verify_interface(SimpleInterface, NonImplementer)
@@ -57,12 +57,12 @@ class TestVerifyInterface(object):
         class SimpleInterface(object):
             @abc.abstractproperty
             def property(self):
-                pass
+                """An abstract property"""
 
         @register_interface(SimpleInterface)
         class NonImplementer(object):
             @property
             def property(self):
-                pass
+                """A concrete property"""
 
         verify_interface(SimpleInterface, NonImplementer)
