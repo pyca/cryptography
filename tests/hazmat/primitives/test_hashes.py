@@ -35,7 +35,7 @@ class UnsupportedDummyHash(object):
     name = "unsupported-dummy-hash"
 
 
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestHashContext(object):
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
@@ -81,7 +81,7 @@ class TestHashContext(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA1()),
     skip_message="Does not support SHA1",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA1(object):
     test_SHA1 = generate_base_hash_test(
         hashes.SHA1(),
@@ -94,7 +94,7 @@ class TestSHA1(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
     skip_message="Does not support SHA224",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA224(object):
     test_SHA224 = generate_base_hash_test(
         hashes.SHA224(),
@@ -107,7 +107,7 @@ class TestSHA224(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
     skip_message="Does not support SHA256",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA256(object):
     test_SHA256 = generate_base_hash_test(
         hashes.SHA256(),
@@ -120,7 +120,7 @@ class TestSHA256(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
     skip_message="Does not support SHA384",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA384(object):
     test_SHA384 = generate_base_hash_test(
         hashes.SHA384(),
@@ -133,7 +133,7 @@ class TestSHA384(object):
     only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
     skip_message="Does not support SHA512",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestSHA512(object):
     test_SHA512 = generate_base_hash_test(
         hashes.SHA512(),
@@ -146,7 +146,7 @@ class TestSHA512(object):
     only_if=lambda backend: backend.hash_supported(hashes.RIPEMD160()),
     skip_message="Does not support RIPEMD160",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestRIPEMD160(object):
     test_RIPEMD160 = generate_base_hash_test(
         hashes.RIPEMD160(),
@@ -159,7 +159,7 @@ class TestRIPEMD160(object):
     only_if=lambda backend: backend.hash_supported(hashes.Whirlpool()),
     skip_message="Does not support Whirlpool",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestWhirlpool(object):
     test_Whirlpool = generate_base_hash_test(
         hashes.Whirlpool(),
@@ -172,7 +172,7 @@ class TestWhirlpool(object):
     only_if=lambda backend: backend.hash_supported(hashes.MD5()),
     skip_message="Does not support MD5",
 )
-@pytest.mark.hash
+@pytest.mark.requires_backend_interface(interface=HashBackend)
 class TestMD5(object):
     test_MD5 = generate_base_hash_test(
         hashes.MD5(),

@@ -22,13 +22,14 @@ import six
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
 )
+from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.hmac
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDF(object):
     def test_length_limit(self, backend):
         big_length = 255 * (hashes.SHA256().digest_size // 8) + 1
@@ -153,7 +154,7 @@ class TestHKDF(object):
             hkdf.verify(b"foo", six.u("bar"))
 
 
-@pytest.mark.hmac
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestHKDFExpand(object):
     def test_derive(self, backend):
         prk = binascii.unhexlify(
