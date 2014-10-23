@@ -12,10 +12,10 @@ We ask that you do not report security issues to our normal GitHub issue
 tracker.
 
 If you believe you've identified a security issue with ``cryptography``, please
-report it to ``alex.gaynor@gmail.com``. Message may be optionally be encrypted
-with PGP using  key fingerprint
-``E27D 4AA0 1651 72CB C5D2  AF2B 125F 5C67 DFE9 4084``
-(this public key is available from most commonly-used key servers).
+report it to ``alex.gaynor@gmail.com``. Messages may be optionally encrypted
+with PGP using key fingerprint
+``E27D 4AA0 1651 72CB C5D2  AF2B 125F 5C67 DFE9 4084`` (this public key is
+available from most commonly-used key servers).
 
 Once you've submitted an issue via email, you should receive an acknowledgment
 within 48 hours, and depending on the action to be taken, you may receive
