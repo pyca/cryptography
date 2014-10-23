@@ -25,22 +25,31 @@ def pytest_generate_tests(metafunc):
     selected_backends = select_backends(names, _available_backends())
 
     if "backend" in metafunc.fixturenames:
-        metafunc.parametrize("backend", selected_backends)
+        filtered_backends = []
+        for backend in selected_backends:
+            try:
+                required = metafunc.function.requires_backend_interface
+                required_interfaces = tuple(
+                    mark.kwargs["interface"] for mark in required
+                )
+                if isinstance(backend, required_interfaces):
+                    filtered_backends.append(backend)
+            except AttributeError:
+                # function does not have requires_backend_interface decorator
+                filtered_backends.append(backend)
+
+        if not filtered_backends:
+            pytest.skip(
+                "No backends provided supply the interface: {0}".format(
+                    ", ".join(iface.__name__ for iface in required_interfaces)
+                )
+            )
+        else:
+            metafunc.parametrize("backend", filtered_backends)
 
 
 @pytest.mark.trylast
 def pytest_runtest_setup(item):
-    required = item.keywords.get("requires_backend_interface")
-    if required is not None and "backend" in item.funcargs:
-        required_interfaces = tuple(
-            mark.kwargs["interface"] for mark in required
-        )
-        if not isinstance(item.funcargs["backend"], required_interfaces):
-            pytest.skip("{0} backend does not support {1}".format(
-                item.funcargs["backend"],
-                ", ".join(iface.__name__ for iface in required_interfaces)
-            ))
-
     check_backend_support(item)
 
 
