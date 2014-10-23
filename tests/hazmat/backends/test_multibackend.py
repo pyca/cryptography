@@ -38,15 +38,15 @@ class DummyCipherBackend(object):
     def __init__(self, supported_ciphers):
         self._ciphers = supported_ciphers
 
-    def cipher_supported(self, algorithm, mode):
-        return (type(algorithm), type(mode)) in self._ciphers
+    def cipher_supported(self, cipher, mode):
+        return (type(cipher), type(mode)) in self._ciphers
 
-    def create_symmetric_encryption_ctx(self, algorithm, mode):
-        if not self.cipher_supported(algorithm, mode):
+    def create_symmetric_encryption_ctx(self, cipher, mode):
+        if not self.cipher_supported(cipher, mode):
             raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
 
-    def create_symmetric_decryption_ctx(self, algorithm, mode):
-        if not self.cipher_supported(algorithm, mode):
+    def create_symmetric_decryption_ctx(self, cipher, mode):
+        if not self.cipher_supported(cipher, mode):
             raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
 
 
@@ -92,7 +92,7 @@ class DummyPBKDF2HMACBackend(object):
 
 @utils.register_interface(RSABackend)
 class DummyRSABackend(object):
-    def generate_rsa_private_key(self, public_exponent, private_key):
+    def generate_rsa_private_key(self, public_exponent, key_size):
         pass
 
     def rsa_padding_supported(self, padding):

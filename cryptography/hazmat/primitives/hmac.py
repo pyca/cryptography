@@ -42,12 +42,12 @@ class HMAC(object):
         else:
             self._ctx = ctx
 
-    def update(self, msg):
+    def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if not isinstance(msg, bytes):
-            raise TypeError("msg must be bytes.")
-        self._ctx.update(msg)
+        if not isinstance(data, bytes):
+            raise TypeError("data must be bytes.")
+        self._ctx.update(data)
 
     def copy(self):
         if self._ctx is None:
