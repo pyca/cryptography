@@ -30,26 +30,38 @@ def pytest_generate_tests(metafunc):
     selected_backends = select_backends(names, _available_backends())
 
     if "backend" in metafunc.fixturenames:
-        metafunc.parametrize("backend", selected_backends)
+        filtered_backends = selected_backends[:]
+        for backend in selected_backends:
+            for name, iface in [
+                ("hmac", HMACBackend),
+                ("cipher", CipherBackend),
+                ("cmac", CMACBackend),
+                ("hash", HashBackend),
+                ("pbkdf2hmac", PBKDF2HMACBackend),
+                ("dsa", DSABackend),
+                ("rsa", RSABackend),
+                ("traditional_openssl_serialization",
+                 TraditionalOpenSSLSerializationBackend),
+                ("pkcs8_serialization", PKCS8SerializationBackend),
+                ("elliptic", EllipticCurveBackend),
+                ("pem_serialization", PEMSerializationBackend),
+            ]:
+                try:
+                    getattr(metafunc.function, name)
+                    if not isinstance(backend,iface):
+                        filtered_backends.remove(backend)
+                        break
+                except AttributeError:
+                    pass
+
+        if not filtered_backends:
+            pytest.skip("List of backends is empty...")
+        else:
+            metafunc.parametrize("backend", filtered_backends)
 
 
 @pytest.mark.trylast
 def pytest_runtest_setup(item):
-    check_for_iface("hmac", HMACBackend, item)
-    check_for_iface("cipher", CipherBackend, item)
-    check_for_iface("cmac", CMACBackend, item)
-    check_for_iface("hash", HashBackend, item)
-    check_for_iface("pbkdf2hmac", PBKDF2HMACBackend, item)
-    check_for_iface("dsa", DSABackend, item)
-    check_for_iface("rsa", RSABackend, item)
-    check_for_iface(
-        "traditional_openssl_serialization",
-        TraditionalOpenSSLSerializationBackend,
-        item
-    )
-    check_for_iface("pkcs8_serialization", PKCS8SerializationBackend, item)
-    check_for_iface("elliptic", EllipticCurveBackend, item)
-    check_for_iface("pem_serialization", PEMSerializationBackend, item)
     check_backend_support(item)
 
 
