@@ -31,10 +31,7 @@ def pytest_generate_tests(metafunc):
 @pytest.mark.trylast
 def pytest_runtest_setup(item):
     required = item.keywords.get("requires_backend_interface")
-    if (
-        required is not None and
-        "backend" in item.funcargs
-    ):
+    if required is not None and "backend" in item.funcargs:
         required_interfaces = tuple(
             kwargs["interface"] for args, kwargs in required._arglist
         )
