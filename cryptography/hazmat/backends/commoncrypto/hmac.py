@@ -18,6 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import interfaces
 
 
+@utils.register_interface(interfaces.MACContext)
 @utils.register_interface(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
