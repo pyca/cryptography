@@ -32,7 +32,7 @@ from ...utils import raises_unsupported_algorithm
 
 @utils.register_interface(interfaces.HashAlgorithm)
 class UnsupportedDummyHash(object):
-        name = "unsupported-dummy-hash"
+    name = "unsupported-dummy-hash"
 
 
 @pytest.mark.supported(
