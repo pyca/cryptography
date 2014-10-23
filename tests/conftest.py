@@ -33,7 +33,7 @@ def pytest_runtest_setup(item):
     required = item.keywords.get("requires_backend_interface")
     if required is not None and "backend" in item.funcargs:
         required_interfaces = tuple(
-            kwargs["interface"] for args, kwargs in required._arglist
+            mark.kwargs["interface"] for mark in required
         )
         if not isinstance(item.funcargs["backend"], required_interfaces):
             pytest.skip("{0} backend does not support {1}".format(
