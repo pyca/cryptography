@@ -20,8 +20,9 @@ import sys
 import cffi
 
 
-def build_ffi(module_prefix, modules, pre_include="", post_include="",
-              libraries=[], extra_compile_args=[], extra_link_args=[]):
+def build_ffi_for_binding(module_prefix, modules, pre_include="",
+                          post_include="", libraries=[], extra_compile_args=[],
+                          extra_link_args=[]):
     """
     Modules listed in ``modules`` should have the following attributes:
 
@@ -36,7 +37,6 @@ def build_ffi(module_prefix, modules, pre_include="", post_include="",
         library to a list of names which will not be present without the
         condition.
     """
-    ffi = cffi.FFI()
     types = []
     includes = []
     functions = []
@@ -53,9 +53,6 @@ def build_ffi(module_prefix, modules, pre_include="", post_include="",
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
 
-    cdef_sources = types + functions + macros
-    ffi.cdef("\n".join(cdef_sources))
-
     # We include functions here so that if we got any of their definitions
     # wrong, the underlying C compiler will explode. In C you are allowed
     # to re-declare a function if it has the same signature. That is:
@@ -64,18 +61,17 @@ def build_ffi(module_prefix, modules, pre_include="", post_include="",
     # is legal, but the following will fail to compile:
     #   int foo(int);
     #   int foo(short);
-    source = "\n".join(
+    verify_source = "\n".join(
         [pre_include] +
         includes +
         [post_include] +
         functions +
         customizations
     )
-    lib = ffi.verify(
-        source=source,
-        modulename=_create_modulename(cdef_sources, source, sys.version),
+    ffi, lib = build_ffi(
+        cdef_source="\n".join(types + functions + macros),
+        verify_source=verify_source,
         libraries=libraries,
-        ext_package="cryptography",
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
@@ -91,6 +87,21 @@ def build_ffi(module_prefix, modules, pre_include="", post_include="",
     return ffi, lib
 
 
+def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
+              extra_link_args=[]):
+    ffi = cffi.FFI()
+    ffi.cdef(cdef_source)
+    lib = ffi.verify(
+        source=verify_source,
+        modulename=_create_modulename(cdef_source, verify_source, sys.version),
+        libraries=libraries,
+        ext_package="cryptography",
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
+    )
+    return ffi, lib
+
+
 def _create_modulename(cdef_sources, source, sys_version):
     """
     cffi creates a modulename internally that incorporates the cffi version.
@@ -99,7 +110,7 @@ def _create_modulename(cdef_sources, source, sys_version):
     resolve this we build our own modulename that uses most of the same code
     from cffi but elides the version key.
     """
-    key = '\x00'.join([sys_version[:3], source] + cdef_sources)
+    key = '\x00'.join([sys_version[:3], source, cdef_sources])
     key = key.encode('utf-8')
     k1 = hex(binascii.crc32(key[0::2]) & 0xffffffff)
     k1 = k1.lstrip('0x').rstrip('L')

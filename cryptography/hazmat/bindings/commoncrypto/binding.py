@@ -13,7 +13,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.utils import build_ffi
+from cryptography.hazmat.bindings.utils import build_ffi_for_binding
 
 
 class Binding(object):
@@ -45,7 +45,7 @@ class Binding(object):
         if cls.ffi is not None and cls.lib is not None:
             return
 
-        cls.ffi, cls.lib = build_ffi(
+        cls.ffi, cls.lib = build_ffi_for_binding(
             module_prefix=cls._module_prefix,
             modules=cls._modules,
             extra_link_args=[

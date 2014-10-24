@@ -13,15 +13,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import sys
-
-import cffi
-
 import six
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.bindings.utils import _create_modulename
+from cryptography.hazmat.bindings.utils import build_ffi
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -67,12 +63,9 @@ uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
 }
 """
 
-_ffi = cffi.FFI()
-_ffi.cdef(TYPES)
-_lib = _ffi.verify(
-    source=FUNCTIONS,
-    modulename=_create_modulename([TYPES], FUNCTIONS, sys.version),
-    ext_package="cryptography",
+_ffi, _lib = build_ffi(
+    cdef_source=TYPES,
+    verify_source=FUNCTIONS,
 )
 
 
