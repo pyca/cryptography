@@ -25,6 +25,7 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
+from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
@@ -85,7 +86,7 @@ def test_modular_inverse():
     )
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSA(object):
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
@@ -170,7 +171,7 @@ def test_rsa_generate_invalid_backend():
         rsa.generate_private_key(65537, 2048, pretend_backend)
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSASignature(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -436,7 +437,7 @@ class TestRSASignature(object):
         signer.finalize()
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -772,7 +773,7 @@ class TestRSAVerification(object):
             verifier.verify()
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPSSMGF1Verification(object):
     test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -900,7 +901,7 @@ class TestRSAPSSMGF1Verification(object):
     ))
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPKCS1Verification(object):
     test_rsa_pkcs1v15_verify_sha1 = pytest.mark.supported(
         only_if=lambda backend: (
@@ -1050,7 +1051,7 @@ class TestOAEP(object):
             )
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSADecryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1191,7 +1192,7 @@ class TestRSADecryption(object):
             )
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAEncryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1310,7 +1311,7 @@ class TestRSAEncryption(object):
             )
 
 
-@pytest.mark.rsa
+@pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSANumbers(object):
     def test_rsa_public_numbers(self):
         public_numbers = rsa.RSAPublicNumbers(e=1, n=15)

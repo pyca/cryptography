@@ -24,6 +24,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
+from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
@@ -489,7 +490,7 @@ class TestOpenSSLEllipticCurve(object):
             _sn_to_elliptic_curve(backend, b"fake")
 
 
-@pytest.mark.elliptic
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestDeprecatedECBackendMethods(object):
     def test_elliptic_curve_private_key_from_numbers(self):
         d = 5634846038258869671139984276180670841223409490498798721258

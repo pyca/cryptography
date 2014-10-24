@@ -52,7 +52,7 @@ vectors_3des = load_vectors_from_file(
 fake_key = b"\x00" * 16
 
 
-@pytest.mark.cmac
+@pytest.mark.requires_backend_interface(interface=CMACBackend)
 class TestCMAC(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(

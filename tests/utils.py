@@ -55,14 +55,6 @@ def select_backends(names, backend_list):
         )
 
 
-def check_for_iface(name, iface, item):
-    if name in item.keywords and "backend" in item.funcargs:
-        if not isinstance(item.funcargs["backend"], iface):
-            pytest.skip("{0} backend does not support {1}".format(
-                item.funcargs["backend"], name
-            ))
-
-
 def check_backend_support(item):
     supported = item.keywords.get("supported")
     if supported and "backend" in item.funcargs:
