@@ -48,3 +48,8 @@ def load_pem_private_key(data, password, backend):
 
 def load_pem_public_key(data, backend):
     return backend.load_pem_public_key(data)
+
+
+# TODO: document
+def load_pem_x509_certificate(data, backend):
+    return backend.load_pem_x509_certificate(data)

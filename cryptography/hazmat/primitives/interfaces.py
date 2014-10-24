@@ -497,3 +497,65 @@ class MACContext(object):
 
 # DeprecatedIn07
 CMACContext = MACContext
+
+
+class X509Certificate(object):
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns a list of extension objects
+        """
+
+    @abc.abstractmethod
+    def fingerprint(self, algorithm):
+        """
+        Returns bytes using digest passed.
+        """
+
+    @abc.abstractproperty
+    def serial(self):
+        """
+        Returns certificate serial number
+        """
+
+    @abc.abstractproperty
+    def version(self):
+        """
+        Returns certificate version
+        """
+
+    @abc.abstractmethod
+    def subject(self):
+        """
+        Returns the subject distinguished name object
+        """
+
+    @abc.abstractmethod
+    def issuer(self):
+        """
+        Returns the issuer distinguished name object
+        """
+
+    @abc.abstractproperty
+    def signature_algorithm(self):
+        """
+        Returns signature algorithm data.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        Returns the public key
+        """
+
+    @abc.abstractproperty
+    def not_before(self):
+        """
+        Not before time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def not_after(self):
+        """
+        Not after time (represented as UTC datetime)
+        """
