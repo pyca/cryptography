@@ -29,14 +29,15 @@ def pytest_generate_tests(metafunc):
         for backend in selected_backends:
             try:
                 required = metafunc.function.requires_backend_interface
+            except AttributeError:
+                # function does not have requires_backend_interface decorator
+                filtered_backends.append(backend)
+            else:
                 required_interfaces = tuple(
                     mark.kwargs["interface"] for mark in required
                 )
                 if isinstance(backend, required_interfaces):
                     filtered_backends.append(backend)
-            except AttributeError:
-                # function does not have requires_backend_interface decorator
-                filtered_backends.append(backend)
 
         if not filtered_backends:
             pytest.skip(
