@@ -40,6 +40,8 @@ def pytest_generate_tests(metafunc):
                     filtered_backends.append(backend)
 
         if not filtered_backends:
+            # If you pass an empty list to parametrize Bad Things(tm) happen
+            # as of pytest 2.6.4 when the test also has a parametrize decorator
             pytest.skip(
                 "No backends provided supply the interface: {0}".format(
                     ", ".join(iface.__name__ for iface in required_interfaces)
