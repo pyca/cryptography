@@ -17,7 +17,8 @@ import binascii
 
 import sys
 
-import cffi
+from cffi import FFI
+from cffi.verifier import Verifier
 
 
 def build_ffi_for_binding(module_prefix, modules, pre_include="",
@@ -89,17 +90,20 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
 
 def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
               extra_link_args=[]):
-    ffi = cffi.FFI()
+    ffi = FFI()
     ffi.cdef(cdef_source)
-    lib = ffi.verify(
-        source=verify_source,
+
+    ffi.verifier = Verifier(
+        ffi,
+        verify_source,
+        tmpdir='',
         modulename=_create_modulename(cdef_source, verify_source, sys.version),
         libraries=libraries,
         ext_package="cryptography",
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
-    return ffi, lib
+    return ffi, ffi.verifier.load_library()
 
 
 def _create_modulename(cdef_sources, source, sys_version):
