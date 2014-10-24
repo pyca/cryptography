@@ -26,6 +26,7 @@ import six
 
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 import cryptography_vectors
@@ -46,7 +47,7 @@ def test_default_backend():
     assert f._backend is default_backend()
 
 
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)

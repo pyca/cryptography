@@ -18,6 +18,7 @@ import os
 
 import pytest
 
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms
 
 from .utils import generate_stream_encryption_test
@@ -30,7 +31,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support ARC4",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestARC4(object):
     test_rfc = generate_stream_encryption_test(
         load_nist_vectors,

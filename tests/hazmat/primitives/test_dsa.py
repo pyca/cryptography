@@ -19,6 +19,7 @@ import os
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidSignature
+from cryptography.hazmat.backends.interfaces import DSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.utils import bit_length
@@ -32,7 +33,7 @@ from ...utils import (
 )
 
 
-@pytest.mark.dsa
+@pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(1024, backend)
@@ -530,7 +531,7 @@ class TestDSA(object):
             ).public_key(backend)
 
 
-@pytest.mark.dsa
+@pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSAVerification(object):
     _algorithms_dict = {
         'SHA1': hashes.SHA1,
@@ -594,7 +595,7 @@ class TestDSAVerification(object):
             verifier.update(b"more data")
 
 
-@pytest.mark.dsa
+@pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSASignature(object):
     _algorithms_dict = {
         'SHA1': hashes.SHA1,

@@ -89,7 +89,7 @@ class DeprecatedDummyECBackend(object):
         return b"public_key"
 
 
-@pytest.mark.elliptic
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_curve_unsupported(backend, DummyCurve())
@@ -147,7 +147,7 @@ def test_ec_numbers():
         )
 
 
-@pytest.mark.elliptic
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECWithNumbers(object):
     @pytest.mark.parametrize(
         ("vector", "hash_type"),
@@ -183,7 +183,7 @@ class TestECWithNumbers(object):
             assert curve_type().name == priv_num.public_numbers.curve.name
 
 
-@pytest.mark.elliptic
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDSAVectors(object):
     @pytest.mark.parametrize(
         ("vector", "hash_type"),

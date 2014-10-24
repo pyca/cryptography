@@ -21,6 +21,7 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, _Reasons
 )
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
@@ -46,7 +47,7 @@ class DummyCipher(object):
     key_size = 128
 
 
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCipher(object):
     def test_creates_encryptor(self, backend):
         cipher = Cipher(
@@ -70,7 +71,7 @@ class TestCipher(object):
             Cipher(algorithm, mode=None, backend=backend)
 
 
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCipherContext(object):
     def test_use_after_finalize(self, backend):
         cipher = Cipher(
@@ -147,7 +148,7 @@ class TestCipherContext(object):
     ),
     skip_message="Does not support AES GCM",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAEADCipherContext(object):
     test_aead_exceptions = generate_aead_exception_test(
         algorithms.AES,
@@ -159,7 +160,7 @@ class TestAEADCipherContext(object):
     )
 
 
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestModeValidation(object):
     def test_cbc(self, backend):
         with pytest.raises(ValueError):

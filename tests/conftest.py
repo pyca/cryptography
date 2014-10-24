@@ -16,13 +16,8 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography.hazmat.backends import _available_backends
-from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
-)
-from .utils import check_backend_support, check_for_iface, select_backends
+
+from .utils import check_backend_support, select_backends
 
 
 def pytest_generate_tests(metafunc):
@@ -35,21 +30,17 @@ def pytest_generate_tests(metafunc):
 
 @pytest.mark.trylast
 def pytest_runtest_setup(item):
-    check_for_iface("hmac", HMACBackend, item)
-    check_for_iface("cipher", CipherBackend, item)
-    check_for_iface("cmac", CMACBackend, item)
-    check_for_iface("hash", HashBackend, item)
-    check_for_iface("pbkdf2hmac", PBKDF2HMACBackend, item)
-    check_for_iface("dsa", DSABackend, item)
-    check_for_iface("rsa", RSABackend, item)
-    check_for_iface(
-        "traditional_openssl_serialization",
-        TraditionalOpenSSLSerializationBackend,
-        item
-    )
-    check_for_iface("pkcs8_serialization", PKCS8SerializationBackend, item)
-    check_for_iface("elliptic", EllipticCurveBackend, item)
-    check_for_iface("pem_serialization", PEMSerializationBackend, item)
+    required = item.keywords.get("requires_backend_interface")
+    if required is not None and "backend" in item.funcargs:
+        required_interfaces = tuple(
+            mark.kwargs["interface"] for mark in required
+        )
+        if not isinstance(item.funcargs["backend"], required_interfaces):
+            pytest.skip("{0} backend does not support {1}".format(
+                item.funcargs["backend"],
+                ", ".join(iface.__name__ for iface in required_interfaces)
+            ))
+
     check_backend_support(item)
 
 
