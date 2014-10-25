@@ -32,7 +32,7 @@ class Hash(object):
 
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
-        self.algorithm = algorithm
+        self._algorithm = algorithm
 
         self._backend = backend
 
@@ -40,6 +40,8 @@ class Hash(object):
             self._ctx = self._backend.create_hash_ctx(self.algorithm)
         else:
             self._ctx = ctx
+
+    algorithm = utils.read_only_property("_algorithm")
 
     def update(self, data):
         if self._ctx is None:
