@@ -56,18 +56,24 @@ if [[ "$DARWIN" = true ]]; then
             pip install virtualenv
             ;;
         py32)
-            pyenv install 3.2.5
-            pyenv global 3.2.5
+            brew update
+            brew upgrade pyenv
+            pyenv install 3.2.6
+            pyenv global 3.2.6
             pip install virtualenv
             ;;
         py33)
-            pyenv install 3.3.5
-            pyenv global 3.3.5
+            brew update
+            brew upgrade pyenv
+            pyenv install 3.3.6
+            pyenv global 3.3.6
             pip install virtualenv
             ;;
         py34)
-            pyenv install 3.4.1
-            pyenv global 3.4.1
+            brew update
+            brew upgrade pyenv
+            pyenv install 3.4.2
+            pyenv global 3.4.2
             pip install virtualenv
             ;;
         docs)
