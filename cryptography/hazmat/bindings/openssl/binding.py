@@ -17,7 +17,7 @@ import os
 import sys
 import threading
 
-from cryptography.hazmat.bindings.utils import build_ffi
+from cryptography.hazmat.bindings.utils import build_ffi_for_binding
 
 
 _OSX_PRE_INCLUDE = """
@@ -105,7 +105,7 @@ class Binding(object):
             link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
             libraries = _get_windows_libraries(link_type)
 
-        cls.ffi, cls.lib = build_ffi(
+        cls.ffi, cls.lib = build_ffi_for_binding(
             module_prefix=cls._module_prefix,
             modules=cls._modules,
             pre_include=_OSX_PRE_INCLUDE,

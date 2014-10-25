@@ -15,11 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 import hmac
 import os
-import sys
 
-import cffi
-
-from cryptography.hazmat.bindings.utils import _create_modulename
+from cryptography.hazmat.bindings.utils import build_ffi
 
 
 with open(os.path.join(os.path.dirname(__file__), "src/constant_time.h")) as f:
@@ -29,12 +26,9 @@ with open(os.path.join(os.path.dirname(__file__), "src/constant_time.c")) as f:
     FUNCTIONS = f.read()
 
 
-_ffi = cffi.FFI()
-_ffi.cdef(TYPES)
-_lib = _ffi.verify(
-    source=FUNCTIONS,
-    modulename=_create_modulename([TYPES], FUNCTIONS, sys.version),
-    ext_package="cryptography",
+_ffi, _lib = build_ffi(
+    cdef_source=TYPES,
+    verify_source=FUNCTIONS,
 )
 
 if hasattr(hmac, "compare_digest"):
