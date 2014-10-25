@@ -17,7 +17,7 @@ import pytest
 
 from cryptography.hazmat.backends import _available_backends
 
-from .utils import check_backend_support, select_backends
+from .utils import check_backend_support, select_backends, skip_if_empty
 
 
 def pytest_generate_tests(metafunc):
@@ -39,16 +39,11 @@ def pytest_generate_tests(metafunc):
                 if isinstance(backend, required_interfaces):
                     filtered_backends.append(backend)
 
-        if not filtered_backends:
-            # If you pass an empty list to parametrize Bad Things(tm) happen
-            # as of pytest 2.6.4 when the test also has a parametrize decorator
-            pytest.skip(
-                "No backends provided supply the interface: {0}".format(
-                    ", ".join(iface.__name__ for iface in required_interfaces)
-                )
-            )
-        else:
-            metafunc.parametrize("backend", filtered_backends)
+        # If you pass an empty list to parametrize Bad Things(tm) happen
+        # as of pytest 2.6.4 when the test also has a parametrize decorator
+        skip_if_empty(filtered_backends, required_interfaces)
+
+        metafunc.parametrize("backend", filtered_backends)
 
 
 @pytest.mark.trylast

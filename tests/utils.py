@@ -53,6 +53,15 @@ def select_backends(names, backend_list):
         )
 
 
+def skip_if_empty(backend_list, required_interfaces):
+    if not backend_list:
+        pytest.skip(
+            "No backends provided supply the interface: {0}".format(
+                ", ".join(iface.__name__ for iface in required_interfaces)
+            )
+        )
+
+
 def check_backend_support(item):
     supported = item.keywords.get("supported")
     if supported and "backend" in item.funcargs:
