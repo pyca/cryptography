@@ -14,6 +14,7 @@ if [[ "$DARWIN" = true ]]; then
 
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
 	brew upgrade openssl
+    fi
 
     if which pyenv > /dev/null; then
 	eval "$(pyenv init -)"
@@ -67,6 +68,7 @@ else
 
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
 	sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
+    fi
 
     sudo apt-get update
 
