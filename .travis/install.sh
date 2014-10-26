@@ -57,7 +57,7 @@ if [[ "$DARWIN" = true ]]; then
 	    sudo python get-pip.py
 	    ;;
     esac
-    pvenv rehash
+    pyenv rehash
 
 else
     sudo add-apt-repository ppa:fkrull/deadsnakes
