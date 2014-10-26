@@ -21,10 +21,10 @@ import pytest
 
 import six
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, TripleDES
@@ -195,18 +195,14 @@ class TestCMAC(object):
 
 
 def test_copy():
-    @utils.register_interface(CMACBackend)
-    class PretendBackend(object):
-        pass
-
-    pretend_backend = PretendBackend()
+    backend = default_backend()
     copied_ctx = pretend.stub()
     pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
     key = b"2b7e151628aed2a6abf7158809cf4f3c"
-    cmac = CMAC(AES(key), backend=pretend_backend, ctx=pretend_ctx)
+    cmac = CMAC(AES(key), backend=backend, ctx=pretend_ctx)
 
-    assert cmac._backend is pretend_backend
-    assert cmac.copy()._backend is pretend_backend
+    assert cmac._backend is backend
+    assert cmac.copy()._backend is backend
 
 
 def test_invalid_backend():
