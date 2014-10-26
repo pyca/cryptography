@@ -27,17 +27,12 @@ def pytest_generate_tests(metafunc):
     if "backend" in metafunc.fixturenames:
         filtered_backends = []
         for backend in selected_backends:
-            try:
-                required = metafunc.function.requires_backend_interface
-            except AttributeError:
-                # function does not have requires_backend_interface decorator
+            required = metafunc.function.requires_backend_interface
+            required_interfaces = tuple(
+                mark.kwargs["interface"] for mark in required
+            )
+            if isinstance(backend, required_interfaces):
                 filtered_backends.append(backend)
-            else:
-                required_interfaces = tuple(
-                    mark.kwargs["interface"] for mark in required
-                )
-                if isinstance(backend, required_interfaces):
-                    filtered_backends.append(backend)
 
         # If you pass an empty list to parametrize Bad Things(tm) happen
         # as of pytest 2.6.4 when the test also has a parametrize decorator
