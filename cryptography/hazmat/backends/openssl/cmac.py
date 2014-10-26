@@ -50,6 +50,8 @@ class _CMACContext(object):
 
         self._ctx = ctx
 
+    algorithm = utils.read_only_property("_algorithm")
+
     def update(self, data):
         res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
         assert res == 1
