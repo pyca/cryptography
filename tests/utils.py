@@ -40,8 +40,6 @@ def select_backends(names, backend_list):
     if names is None:
         return backend_list
     split_names = [x.strip() for x in names.split(',')]
-    # this must be duplicated and then removed to preserve the metadata
-    # pytest associates. Appending backends to a new list doesn't seem to work
     selected_backends = []
     for backend in backend_list:
         if backend.name in split_names:
@@ -52,6 +50,15 @@ def select_backends(names, backend_list):
     else:
         raise ValueError(
             "No backend selected. Tried to select: {0}".format(split_names)
+        )
+
+
+def skip_if_empty(backend_list, required_interfaces):
+    if not backend_list:
+        pytest.skip(
+            "No backends provided supply the interface: {0}".format(
+                ", ".join(iface.__name__ for iface in required_interfaces)
+            )
         )
 
 
