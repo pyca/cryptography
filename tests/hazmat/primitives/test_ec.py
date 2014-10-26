@@ -71,17 +71,7 @@ class DummySignatureAlgorithm(object):
     algorithm = None
 
 
-@utils.register_interface(EllipticCurveBackend)
 class DeprecatedDummyECBackend(object):
-    def _unimplemented(self):
-        raise NotImplementedError
-
-    elliptic_curve_signature_algorithm_supported = _unimplemented
-    load_elliptic_curve_private_numbers = _unimplemented
-    load_elliptic_curve_public_numbers = _unimplemented
-    elliptic_curve_supported = _unimplemented
-    generate_elliptic_curve_private_key = _unimplemented
-
     def elliptic_curve_private_key_from_numbers(self, numbers):
         return b"private_key"
 
