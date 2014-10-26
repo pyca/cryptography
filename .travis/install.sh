@@ -74,6 +74,7 @@ else
 
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
 	sudo apt-get install --force-yes libssl-dev/lucid
+    fi
 
     case "${TOX_ENV}" in
 	py26)
