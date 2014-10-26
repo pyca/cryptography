@@ -27,6 +27,7 @@ if [[ "$DARWIN" = true ]]; then
 	py27)
 	    curl -O https://bootstrap.pypa.io/get-pip.py
 	    sudo python get-pip.py
+	    ;;
 	py32)
 	    brew upgrade pyenv
 	    pyenv install 3.2.6
