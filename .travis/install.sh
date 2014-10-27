@@ -60,20 +60,20 @@ if [[ "$DARWIN" = true ]]; then
     pyenv rehash
 
 else
-    sudo add-apt-repository ppa:fkrull/deadsnakes
+    sudo add-apt-repository -y ppa:fkrull/deadsnakes
 
     if [[ "${TOX_ENV}" == "pypy" ]]; then
-	sudo add-apt-repository ppa:pypy/ppa
+	sudo add-apt-repository -y ppa:pypy/ppa
     fi
 
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
-	sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
+	sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ lucid main"
     fi
 
-    sudo apt-get update
+    sudo apt-get -y update
 
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
-	sudo apt-get install --force-yes libssl-dev/lucid
+	sudo apt-get install -y --force-yes libssl-dev/lucid
     fi
 
     case "${TOX_ENV}" in
