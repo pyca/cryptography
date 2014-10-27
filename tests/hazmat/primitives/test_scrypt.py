@@ -20,13 +20,14 @@ import pytest
 from cryptography.exceptions import InvalidKey
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
+from cryptography.hazmat.backends.interfaces import ScryptBackend
 from tests.utils import load_nist_vectors, load_vectors_from_file
 
 vectors = load_vectors_from_file(
     "KDF/scrypt.txt", load_nist_vectors)
 
 
-@pytest.mark.scrypt
+@pytest.mark.requires_backend_interface(interface=ScryptBackend)
 class TestScrypt(object):
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
