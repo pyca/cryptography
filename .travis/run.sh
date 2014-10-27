@@ -18,4 +18,4 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     fi
 fi
 source ~/.venv/bin/activate
-tox -e "$TOX_ENV" -- $TOX_FLAGS
+tox -e $TOX_ENV -- $TOX_FLAGS
