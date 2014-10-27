@@ -17,7 +17,7 @@ if [[ "$DARWIN" = true ]]; then
     fi
 
     if which pyenv > /dev/null; then
-	eval "$(pyenv init -)"
+        eval "$(pyenv init -)"
     fi
 
     case "${TOX_ENV}" in
