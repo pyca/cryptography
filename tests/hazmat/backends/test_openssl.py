@@ -439,8 +439,7 @@ class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
         @utils.register_interface(BlockCipherAlgorithm)
         class FakeAlgorithm(object):
-            def __init__(self):
-                self.block_size = 64
+            block_size = 64
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(FakeAlgorithm())
