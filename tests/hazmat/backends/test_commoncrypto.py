@@ -30,6 +30,7 @@ from ...utils import raises_unsupported_algorithm
 class DummyCipher(object):
     name = "dummy-cipher"
     block_size = 128
+    digest_size = None
 
 
 @pytest.mark.skipif("commoncrypto" not in

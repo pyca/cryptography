@@ -44,6 +44,7 @@ class DummyMode(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
+    key_size = None
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)

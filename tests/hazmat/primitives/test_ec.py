@@ -68,7 +68,7 @@ class DummyCurve(object):
 
 @utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
 class DummySignatureAlgorithm(object):
-    pass
+    algorithm = None
 
 
 @utils.register_interface(EllipticCurveBackend)
