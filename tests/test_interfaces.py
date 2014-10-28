@@ -17,9 +17,7 @@ import pytest
 
 import six
 
-from cryptography.utils import (
-    InterfaceNotImplemented, register_interface, verify_interface
-)
+from cryptography.utils import InterfaceNotImplemented, verify_interface
 
 
 class TestVerifyInterface(object):
@@ -30,7 +28,6 @@ class TestVerifyInterface(object):
             def method(self):
                 """A simple method"""
 
-        @register_interface(SimpleInterface)
         class NonImplementer(object):
             pass
 
@@ -44,7 +41,6 @@ class TestVerifyInterface(object):
             def method(self, a):
                 """Method with one argument"""
 
-        @register_interface(SimpleInterface)
         class NonImplementer(object):
             def method(self):
                 """Method with no arguments"""
@@ -59,7 +55,6 @@ class TestVerifyInterface(object):
             def property(self):
                 """An abstract property"""
 
-        @register_interface(SimpleInterface)
         class NonImplementer(object):
             @property
             def property(self):
