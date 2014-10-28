@@ -34,8 +34,8 @@ from ...utils import raises_unsupported_algorithm
 @utils.register_interface(interfaces.HashAlgorithm)
 class UnsupportedDummyHash(object):
     name = "unsupported-dummy-hash"
-    block_size = 128
-    digest_size = 128
+    block_size = None
+    digest_size = None
 
 
 @pytest.mark.requires_backend_interface(interface=HashBackend)
