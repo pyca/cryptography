@@ -15,10 +15,10 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import CMACBackend
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import constant_time, interfaces
 
 
 @utils.register_interface(interfaces.MACContext)
@@ -57,7 +57,11 @@ class CMAC(object):
         return digest
 
     def verify(self, signature):
-        self._ctx.verify(signature)
+        if not isinstance(signature, bytes):
+            raise TypeError("signature must be bytes.")
+        digest = self.finalize()
+        if not constant_time.bytes_eq(digest, signature):
+            raise InvalidSignature("Signature did not match digest.")
 
     def copy(self):
         if self._ctx is None:
