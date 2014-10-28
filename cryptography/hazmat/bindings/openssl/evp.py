@@ -120,6 +120,8 @@ int EVP_PKEY_add1_attr_by_NID(EVP_PKEY *, int, int,
                               const unsigned char *, int);
 int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
                               const unsigned char *, int);
+
+int EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
 """
 
 MACROS = """
