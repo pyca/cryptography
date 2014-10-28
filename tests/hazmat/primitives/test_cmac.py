@@ -24,14 +24,14 @@ import six
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, TripleDES
 )
 from cryptography.hazmat.primitives.cmac import CMAC
 
-from tests.utils import (
+from ..backends.test_multibackend import DummyCMACBackend
+from ...utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
 
@@ -195,7 +195,7 @@ class TestCMAC(object):
 
 
 def test_copy():
-    backend = default_backend()
+    backend = DummyCMACBackend([AES])
     copied_ctx = pretend.stub()
     pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
     key = b"2b7e151628aed2a6abf7158809cf4f3c"

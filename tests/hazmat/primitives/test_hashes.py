@@ -20,14 +20,12 @@ import pytest
 import six
 
 from cryptography import utils
-from cryptography.exceptions import (
-    AlreadyFinalized, _Reasons
-)
-from cryptography.hazmat.backends import default_backend
+from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 
 from .utils import generate_base_hash_test
+from ..backends.test_multibackend import DummyHashBackend
 from ...utils import raises_unsupported_algorithm
 
 
@@ -46,7 +44,7 @@ class TestHashContext(object):
             m.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        backend = default_backend()
+        backend = DummyHashBackend([hashes.SHA1])
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
         h = hashes.Hash(hashes.SHA1(), backend=backend, ctx=pretend_ctx)

@@ -27,6 +27,7 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes, hmac, interfaces
 
 from .utils import generate_base_hmac_test
+from ..backends.test_multibackend import DummyHMACBackend
 from ...utils import raises_unsupported_algorithm
 
 
@@ -56,17 +57,12 @@ class TestHMAC(object):
             h.update(six.u("\u00FC"))
 
     def test_copy_backend_object(self):
-        @utils.register_interface(HMACBackend)
-        class PretendBackend(object):
-            pass
-
-        pretend_backend = PretendBackend()
+        backend = DummyHMACBackend([hashes.SHA1])
         copied_ctx = pretend.stub()
         pretend_ctx = pretend.stub(copy=lambda: copied_ctx)
-        h = hmac.HMAC(b"key", hashes.SHA1(), backend=pretend_backend,
-                      ctx=pretend_ctx)
-        assert h._backend is pretend_backend
-        assert h.copy()._backend is pretend_backend
+        h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend, ctx=pretend_ctx)
+        assert h._backend is backend
+        assert h.copy()._backend is backend
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
