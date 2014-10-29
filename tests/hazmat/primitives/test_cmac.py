@@ -31,7 +31,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 )
 from cryptography.hazmat.primitives.cmac import CMAC
 
-from tests.utils import (
+from ...utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
 
