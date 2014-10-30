@@ -85,8 +85,6 @@ class _HMACContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def verify(self, signature):
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
         digest = self.finalize()
         if not constant_time.bytes_eq(digest, signature):
             raise InvalidSignature("Signature did not match digest.")
