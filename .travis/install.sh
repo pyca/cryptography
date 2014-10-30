@@ -9,30 +9,13 @@ else
     DARWIN=false
 fi
 
-if [[ "${OPENSSL}" == "0.9.8" ]]; then
-    if [[ "$DARWIN" = false ]]; then
-        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ lucid main"
-        sudo apt-get -y update
-        sudo apt-get install -y --force-yes libssl-dev/lucid
-    fi
-else
-    if [[ "$DARWIN" = true ]]; then
-        brew update
+if [[ "$DARWIN" = true ]]; then
+    brew update
+
+    if [[ "${OPENSSL}" != "0.9.8" ]]; then
         brew upgrade openssl
     fi
-fi
 
-if [[ "${TOX_ENV}" == "docs" ]]; then
-    if [[ "$DARWIN" = true ]]; then
-        brew update
-        brew install enchant
-    else
-        sudo apt-get -y update
-        sudo apt-get install libenchant-dev
-    fi
-fi
-
-if [[ "$DARWIN" = true ]]; then
     if which pyenv > /dev/null; then
         eval "$(pyenv init -)"
     fi
@@ -41,52 +24,57 @@ if [[ "$DARWIN" = true ]]; then
         py26)
             curl -O https://bootstrap.pypa.io/get-pip.py
             sudo python get-pip.py
-            sudo pip install virtualenv
             ;;
         py27)
             curl -O https://bootstrap.pypa.io/get-pip.py
             sudo python get-pip.py
-            sudo pip install virtualenv
-            ;;
-        pypy)
-            brew update
-            brew upgrade pyenv
-            pyenv install pypy-2.4.0
-            pyenv global pypy-2.4.0
-            pip install virtualenv
             ;;
         py32)
-            brew update
             brew upgrade pyenv
             pyenv install 3.2.6
             pyenv global 3.2.6
-            pip install virtualenv
             ;;
         py33)
-            brew update
             brew upgrade pyenv
             pyenv install 3.3.6
             pyenv global 3.3.6
-            pip install virtualenv
             ;;
         py34)
-            brew update
             brew upgrade pyenv
             pyenv install 3.4.2
             pyenv global 3.4.2
-            pip install virtualenv
+            ;;
+        py3pep8)
+            sudo apt-get install python3.3 python3.3-dev
+            ;;
+        pypy)
+            brew upgrade pyenv
+            pyenv install pypy-2.4.0
+            pyenv global pypy-2.4.0
             ;;
         docs)
             curl -O https://bootstrap.pypa.io/get-pip.py
             sudo python get-pip.py
-            sudo pip install virtualenv
             ;;
     esac
     pyenv rehash
+
 else
-    # add mega-python ppa
     sudo add-apt-repository -y ppa:fkrull/deadsnakes
+
+    if [[ "${TOX_ENV}" == "pypy" ]]; then
+        sudo add-apt-repository -y ppa:pypy/ppa
+    fi
+
+    if [[ "${OPENSSL}" == "0.9.8" ]]; then
+        sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ lucid main"
+    fi
+
     sudo apt-get -y update
+
+    if [[ "${OPENSSL}" == "0.9.8" ]]; then
+        sudo apt-get install -y --force-yes libssl-dev/lucid
+    fi
 
     case "${TOX_ENV}" in
         py26)
@@ -105,14 +93,15 @@ else
             sudo apt-get install python3.3 python3.3-dev
             ;;
         pypy)
-            sudo add-apt-repository -y ppa:pypy/ppa
-            sudo apt-get -y update
-            sudo apt-get install -y --force-yes pypy pypy-dev
+            sudo apt-get install --force-yes pypy pypy-dev
+            ;;
+        docs)
+            sudo apt-get install libenchant-dev
             ;;
     esac
-    sudo pip install virtualenv
 fi
 
+sudo pip install virtualenv
 virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox coveralls
