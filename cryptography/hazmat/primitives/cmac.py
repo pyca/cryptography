@@ -59,9 +59,11 @@ class CMAC(object):
     def verify(self, signature):
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
-        digest = self.finalize()
-        if not constant_time.bytes_eq(digest, signature):
-            raise InvalidSignature("Signature did not match digest.")
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+
+        ctx, self._ctx = self._ctx, None
+        ctx.verify(signature)
 
     def copy(self):
         if self._ctx is None:

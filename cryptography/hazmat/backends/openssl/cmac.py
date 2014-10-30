@@ -15,8 +15,10 @@ from __future__ import absolute_import, division, print_function
 
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import interfaces
+from cryptography.exceptions import (
+    InvalidSignature, UnsupportedAlgorithm, _Reasons
+)
+from cryptography.hazmat.primitives import constant_time, interfaces
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
@@ -80,3 +82,8 @@ class _CMACContext(object):
         return _CMACContext(
             self._backend, self._algorithm, ctx=copied_ctx
         )
+
+    def verify(self, signature):
+        digest = self.finalize()
+        if not constant_time.bytes_eq(digest, signature):
+            raise InvalidSignature("Signature did not match digest.")
