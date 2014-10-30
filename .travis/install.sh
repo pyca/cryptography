@@ -12,7 +12,7 @@ fi
 if [[ "$DARWIN" = true ]]; then
     brew update
 
-    if [[ "${OPENSSL}" == "0.9.8" ]]; then
+    if [[ "${OPENSSL}" != "0.9.8" ]]; then
         brew upgrade openssl
     fi
 
