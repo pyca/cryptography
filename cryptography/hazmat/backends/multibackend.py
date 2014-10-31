@@ -359,8 +359,10 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_SERIALIZATION
         )
 
-    def derive_scrypt(self, key_material, salt, length, N, r, p):
+    def derive_scrypt(self, key_material, salt, length, work_factor,
+                      block_size, parallelization_factor):
         for b in self._filtered_backends(ScryptBackend):
-            return b.derive_scrypt(key_material, salt, length, N, r, p)
+            return b.derive_scrypt(key_material, salt, length, work_factor,
+                                   block_size, parallelization_factor)
 
         raise UnsupportedAlgorithm("This backend does not support scrypt.")

@@ -29,7 +29,6 @@ class Scrypt(object):
         self._block_size = block_size
         self._parallelization_factor = parallelization_factor
 
-
     def derive(self, key_material):
         return self._backend.derive_scrypt(
             key_material, self._salt, self._length, self._work_factor,

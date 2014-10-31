@@ -18,9 +18,10 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidKey
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
 from cryptography.hazmat.backends.interfaces import ScryptBackend
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+
 from tests.utils import load_nist_vectors, load_vectors_from_file
 
 vectors = load_vectors_from_file(
@@ -32,38 +33,42 @@ class TestScrypt(object):
     @pytest.mark.parametrize("params", vectors)
     def test_derive(self, backend, params):
         password = params["password"]
-        N = int(params["n"])
-        r = int(params["r"])
-        p = int(params["p"])
+        work_factor = int(params["n"])
+        block_size = int(params["r"])
+        parallelization_factor = int(params["p"])
         length = int(params["length"])
         salt = params["salt"]
         derived_key = params["derived_key"]
 
-        scrypt = Scrypt(salt, length, N, r, p, backend)
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
         assert binascii.hexlify(scrypt.derive(password)) == derived_key
 
     @pytest.mark.parametrize("params", vectors)
     def test_verify(self, backend, params):
         password = params["password"]
-        N = int(params["n"])
-        r = int(params["r"])
-        p = int(params["p"])
+        work_factor = int(params["n"])
+        block_size = int(params["r"])
+        parallelization_factor = int(params["p"])
         length = int(params["length"])
         salt = params["salt"]
         derived_key = params["derived_key"]
 
-        scrypt = Scrypt(salt, length, N, r, p, backend)
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
         assert scrypt.verify(password, binascii.unhexlify(derived_key)) is None
 
     def test_invalid_verify(self, backend):
         password = b"password"
-        N = 1024
-        r = 8
-        p = 16
+        work_factor = 1024
+        block_size = 8
+        parallelization_factor = 16
         length = 64
         salt = b"NaCl"
         derived_key = b"fdbabe1c9d3472007856e7190d01e9fe7c6ad7cbc8237830e773"
 
-        scrypt = Scrypt(salt, length, N, r, p, backend)
+        scrypt = Scrypt(salt, length, work_factor, block_size,
+                        parallelization_factor, backend)
+
         with pytest.raises(InvalidKey):
             scrypt.verify(password, binascii.unhexlify(derived_key))
