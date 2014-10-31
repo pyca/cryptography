@@ -15,8 +15,10 @@ from __future__ import absolute_import, division, print_function
 
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import interfaces
+from cryptography.exceptions import (
+    InvalidSignature, UnsupportedAlgorithm, _Reasons
+)
+from cryptography.hazmat.primitives import constant_time, interfaces
 
 
 @utils.register_interface(interfaces.MACContext)
@@ -81,3 +83,8 @@ class _HMACContext(object):
         assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
+
+    def verify(self, signature):
+        digest = self.finalize()
+        if not constant_time.bytes_eq(digest, signature):
+            raise InvalidSignature("Signature did not match digest.")

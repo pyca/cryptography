@@ -166,6 +166,9 @@ class TestCMAC(object):
         with pytest.raises(AlreadyFinalized):
             cmac.finalize()
 
+        with pytest.raises(AlreadyFinalized):
+            cmac.verify(b"")
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
             AES(fake_key)),
