@@ -31,10 +31,12 @@ class Backend(object):
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
-    def derive_scrypt(self, key_material, salt, length, N, r, p):
+    def derive_scrypt(self, key_material, salt, length,
+                      work_factor, block_size, parallelization_factor):
         buf = self._ffi.new("uint8_t[]", length)
         self._lib.libscrypt_scrypt(key_material, len(key_material),
-                                   salt, len(salt), N, r, p, buf, length)
+                                   salt, len(salt), work_factor, block_size,
+                                   parallelization_factor, buf, length)
         return self._ffi.buffer(buf)[:]
 
 backend = Backend()

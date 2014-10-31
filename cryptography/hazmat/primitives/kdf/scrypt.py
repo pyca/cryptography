@@ -20,18 +20,20 @@ from cryptography.hazmat.primitives import constant_time, interfaces
 
 @utils.register_interface(interfaces.KeyDerivationFunction)
 class Scrypt(object):
-    def __init__(self, salt, length, N, r, p, backend):
+    def __init__(self, salt, length, work_factor,
+                 block_size, parallelization_factor, backend):
         self._backend = backend
         self._salt = salt
         self._length = length
-        self._N = N
-        self._r = r
-        self._p = p
+        self._work_factor = work_factor
+        self._block_size = block_size
+        self._parallelization_factor = parallelization_factor
 
 
     def derive(self, key_material):
         return self._backend.derive_scrypt(
-            key_material, self._salt, self._length, self._N, self._r, self._p
+            key_material, self._salt, self._length, self._work_factor,
+            self._block_size, self._parallelization_factor
         )
 
     def verify(self, key_material, expected_key):

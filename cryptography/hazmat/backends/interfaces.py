@@ -264,7 +264,8 @@ class PKCS8SerializationBackend(object):
 @six.add_metaclass(abc.ABCMeta)
 class ScryptBackend(object):
     @abc.abstractmethod
-    def derive_scrypt(self, key_material, salt, length, N, r, p):
+    def derive_scrypt(self, key_material, salt, length,
+                      work_factor, block_size,  parallelization_factor):
         """
         Return bytes derived from provided Scrypt parameters.
         """
