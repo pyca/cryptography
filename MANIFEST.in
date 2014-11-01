@@ -2,6 +2,8 @@ include AUTHORS.rst
 include CHANGELOG.rst
 include CONTRIBUTING.rst
 include LICENSE
+include LICENSE.APACHE
+include LICENSE.BSD
 include README.rst
 
 recursive-include docs *
