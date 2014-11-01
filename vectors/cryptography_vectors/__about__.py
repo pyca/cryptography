@@ -27,5 +27,5 @@ __version__ = "0.7.dev1"
 __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
 
-__license__ = "Apache License, Version 2.0"
+__license__ = "BSD and Apache License, Version 2.0"
 __copyright__ = "Copyright 2013-2014 %s" % __author__
