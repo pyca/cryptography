@@ -198,6 +198,4 @@ class _GCMCipherContext(object):
         )
         self._backend._check_cipher_response(res)
 
-    @property
-    def tag(self):
-        return self._tag
+    tag = utils.read_only_property("_tag")

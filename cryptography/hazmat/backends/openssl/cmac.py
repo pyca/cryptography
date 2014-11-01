@@ -15,12 +15,14 @@ from __future__ import absolute_import, division, print_function
 
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import interfaces
+from cryptography.exceptions import (
+    InvalidSignature, UnsupportedAlgorithm, _Reasons
+)
+from cryptography.hazmat.primitives import constant_time, interfaces
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 
-@utils.register_interface(interfaces.CMACContext)
+@utils.register_interface(interfaces.MACContext)
 class _CMACContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         if not backend.cmac_algorithm_supported(algorithm):
@@ -50,6 +52,8 @@ class _CMACContext(object):
 
         self._ctx = ctx
 
+    algorithm = utils.read_only_property("_algorithm")
+
     def update(self, data):
         res = self._backend._lib.CMAC_Update(self._ctx, data, len(data))
         assert res == 1
@@ -78,3 +82,8 @@ class _CMACContext(object):
         return _CMACContext(
             self._backend, self._algorithm, ctx=copied_ctx
         )
+
+    def verify(self, signature):
+        digest = self.finalize()
+        if not constant_time.bytes_eq(digest, signature):
+            raise InvalidSignature("Signature did not match digest.")

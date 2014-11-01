@@ -15,14 +15,17 @@ from __future__ import absolute_import, division, print_function
 
 
 from cryptography import utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import interfaces
+from cryptography.exceptions import (
+    InvalidSignature, UnsupportedAlgorithm, _Reasons
+)
+from cryptography.hazmat.primitives import constant_time, interfaces
 
 
+@utils.register_interface(interfaces.MACContext)
 @utils.register_interface(interfaces.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
-        self.algorithm = algorithm
+        self._algorithm = algorithm
         self._backend = backend
 
         if ctx is None:
@@ -46,6 +49,8 @@ class _HMACContext(object):
 
         self._ctx = ctx
         self._key = key
+
+    algorithm = utils.read_only_property("_algorithm")
 
     def copy(self):
         copied_ctx = self._backend._ffi.new("HMAC_CTX *")
@@ -78,3 +83,8 @@ class _HMACContext(object):
         assert outlen[0] == self.algorithm.digest_size
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
+
+    def verify(self, signature):
+        digest = self.finalize()
+        if not constant_time.bytes_eq(digest, signature):
+            raise InvalidSignature("Signature did not match digest.")

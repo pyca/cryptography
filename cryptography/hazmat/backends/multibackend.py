@@ -47,33 +47,33 @@ class MultiBackend(object):
             if isinstance(b, interface):
                 yield b
 
-    def cipher_supported(self, algorithm, mode):
+    def cipher_supported(self, cipher, mode):
         return any(
-            b.cipher_supported(algorithm, mode)
+            b.cipher_supported(cipher, mode)
             for b in self._filtered_backends(CipherBackend)
         )
 
-    def create_symmetric_encryption_ctx(self, algorithm, mode):
+    def create_symmetric_encryption_ctx(self, cipher, mode):
         for b in self._filtered_backends(CipherBackend):
             try:
-                return b.create_symmetric_encryption_ctx(algorithm, mode)
+                return b.create_symmetric_encryption_ctx(cipher, mode)
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
             "cipher {0} in {1} mode is not supported by this backend.".format(
-                algorithm.name, mode.name if mode else mode),
+                cipher.name, mode.name if mode else mode),
             _Reasons.UNSUPPORTED_CIPHER
         )
 
-    def create_symmetric_decryption_ctx(self, algorithm, mode):
+    def create_symmetric_decryption_ctx(self, cipher, mode):
         for b in self._filtered_backends(CipherBackend):
             try:
-                return b.create_symmetric_decryption_ctx(algorithm, mode)
+                return b.create_symmetric_decryption_ctx(cipher, mode)
             except UnsupportedAlgorithm:
                 pass
         raise UnsupportedAlgorithm(
             "cipher {0} in {1} mode is not supported by this backend.".format(
-                algorithm.name, mode.name if mode else mode),
+                cipher.name, mode.name if mode else mode),
             _Reasons.UNSUPPORTED_CIPHER
         )
 
@@ -207,6 +207,12 @@ class MultiBackend(object):
     def load_dsa_private_numbers(self, numbers):
         for b in self._filtered_backends(DSABackend):
             return b.load_dsa_private_numbers(numbers)
+        raise UnsupportedAlgorithm("DSA is not supported by the backend.",
+                                   _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
+
+    def load_dsa_parameter_numbers(self, numbers):
+        for b in self._filtered_backends(DSABackend):
+            return b.load_dsa_parameter_numbers(numbers)
         raise UnsupportedAlgorithm("DSA is not supported by the backend.",
                                    _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 

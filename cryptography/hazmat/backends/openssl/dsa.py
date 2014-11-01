@@ -129,12 +129,10 @@ class _DSAPrivateKey(object):
         self._dsa_cdata = dsa_cdata
         self._key_size = self._backend._lib.BN_num_bits(self._dsa_cdata.p)
 
-    @property
-    def key_size(self):
-        return self._key_size
+    key_size = utils.read_only_property("_key_size")
 
-    def signer(self, algorithm):
-        return _DSASignatureContext(self._backend, self, algorithm)
+    def signer(self, signature_algorithm):
+        return _DSASignatureContext(self._backend, self, signature_algorithm)
 
     def private_numbers(self):
         return dsa.DSAPrivateNumbers(
@@ -180,13 +178,11 @@ class _DSAPublicKey(object):
         self._dsa_cdata = dsa_cdata
         self._key_size = self._backend._lib.BN_num_bits(self._dsa_cdata.p)
 
-    @property
-    def key_size(self):
-        return self._key_size
+    key_size = utils.read_only_property("_key_size")
 
-    def verifier(self, signature, algorithm):
+    def verifier(self, signature, signature_algorithm):
         return _DSAVerificationContext(
-            self._backend, self, signature, algorithm
+            self._backend, self, signature, signature_algorithm
         )
 
     def public_numbers(self):

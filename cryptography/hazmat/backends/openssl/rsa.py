@@ -142,10 +142,14 @@ def _handle_rsa_enc_dec_error(backend, key):
             "larger key size."
         )
     else:
-        assert (
-            errors[0].reason == backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01 or
-            errors[0].reason == backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02
-        )
+        decoding_errors = [
+            backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01,
+            backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02,
+        ]
+        if backend._lib.Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR:
+            decoding_errors.append(backend._lib.RSA_R_PKCS_DECODING_ERROR)
+
+        assert errors[0].reason in decoding_errors
         raise ValueError("Decryption failed.")
 
 
@@ -528,9 +532,7 @@ class _RSAPrivateKey(object):
 
         self._key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
 
-    @property
-    def key_size(self):
-        return self._key_size
+    key_size = utils.read_only_property("_key_size")
 
     def signer(self, padding, algorithm):
         return _RSASignatureContext(self._backend, self, padding, algorithm)
@@ -584,9 +586,7 @@ class _RSAPublicKey(object):
 
         self._key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
 
-    @property
-    def key_size(self):
-        return self._key_size
+    key_size = utils.read_only_property("_key_size")
 
     def verifier(self, signature, padding, algorithm):
         return _RSAVerificationContext(

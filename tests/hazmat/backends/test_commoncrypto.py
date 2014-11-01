@@ -29,7 +29,8 @@ from ...utils import raises_unsupported_algorithm
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
-    block_size = 128
+    block_size = None
+    key_size = None
 
 
 @pytest.mark.skipif("commoncrypto" not in

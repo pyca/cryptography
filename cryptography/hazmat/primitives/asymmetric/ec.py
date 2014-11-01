@@ -21,167 +21,92 @@ from cryptography.hazmat.primitives import interfaces
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT571R1(object):
-    @property
-    def name(self):
-        return "sect571r1"
-
-    @property
-    def key_size(self):
-        return 571
+    name = "sect571r1"
+    key_size = 571
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT409R1(object):
-    @property
-    def name(self):
-        return "sect409r1"
-
-    @property
-    def key_size(self):
-        return 409
+    name = "sect409r1"
+    key_size = 409
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT283R1(object):
-    @property
-    def name(self):
-        return "sect283r1"
-
-    @property
-    def key_size(self):
-        return 283
+    name = "sect283r1"
+    key_size = 283
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT233R1(object):
-    @property
-    def name(self):
-        return "sect233r1"
-
-    @property
-    def key_size(self):
-        return 233
+    name = "sect233r1"
+    key_size = 233
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT163R2(object):
-    @property
-    def name(self):
-        return "sect163r2"
-
-    @property
-    def key_size(self):
-        return 163
+    name = "sect163r2"
+    key_size = 163
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT571K1(object):
-    @property
-    def name(self):
-        return "sect571k1"
-
-    @property
-    def key_size(self):
-        return 571
+    name = "sect571k1"
+    key_size = 571
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT409K1(object):
-    @property
-    def name(self):
-        return "sect409k1"
-
-    @property
-    def key_size(self):
-        return 409
+    name = "sect409k1"
+    key_size = 409
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT283K1(object):
-    @property
-    def name(self):
-        return "sect283k1"
-
-    @property
-    def key_size(self):
-        return 283
+    name = "sect283k1"
+    key_size = 283
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT233K1(object):
-    @property
-    def name(self):
-        return "sect233k1"
-
-    @property
-    def key_size(self):
-        return 233
+    name = "sect233k1"
+    key_size = 233
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECT163K1(object):
-    @property
-    def name(self):
-        return "sect163k1"
-
-    @property
-    def key_size(self):
-        return 163
+    name = "sect163k1"
+    key_size = 163
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECP521R1(object):
-    @property
-    def name(self):
-        return "secp521r1"
-
-    @property
-    def key_size(self):
-        return 521
+    name = "secp521r1"
+    key_size = 521
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECP384R1(object):
-    @property
-    def name(self):
-        return "secp384r1"
-
-    @property
-    def key_size(self):
-        return 384
+    name = "secp384r1"
+    key_size = 384
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECP256R1(object):
-    @property
-    def name(self):
-        return "secp256r1"
-
-    @property
-    def key_size(self):
-        return 256
+    name = "secp256r1"
+    key_size = 256
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECP224R1(object):
-    @property
-    def name(self):
-        return "secp224r1"
-
-    @property
-    def key_size(self):
-        return 224
+    name = "secp224r1"
+    key_size = 224
 
 
 @utils.register_interface(interfaces.EllipticCurve)
 class SECP192R1(object):
-    @property
-    def name(self):
-        return "secp192r1"
-
-    @property
-    def key_size(self):
-        return 192
+    name = "secp192r1"
+    key_size = 192
 
 
 _CURVE_TYPES = {
@@ -213,9 +138,7 @@ class ECDSA(object):
     def __init__(self, algorithm):
         self._algorithm = algorithm
 
-    @property
-    def algorithm(self):
-        return self._algorithm
+    algorithm = utils.read_only_property("_algorithm")
 
 
 def generate_private_key(curve, backend):
@@ -243,17 +166,9 @@ class EllipticCurvePublicNumbers(object):
         except AttributeError:
             return backend.elliptic_curve_public_key_from_numbers(self)
 
-    @property
-    def curve(self):
-        return self._curve
-
-    @property
-    def x(self):
-        return self._x
-
-    @property
-    def y(self):
-        return self._y
+    curve = utils.read_only_property("_curve")
+    x = utils.read_only_property("_x")
+    y = utils.read_only_property("_y")
 
 
 class EllipticCurvePrivateNumbers(object):
@@ -276,10 +191,5 @@ class EllipticCurvePrivateNumbers(object):
         except AttributeError:
             return backend.elliptic_curve_private_key_from_numbers(self)
 
-    @property
-    def private_value(self):
-        return self._private_value
-
-    @property
-    def public_numbers(self):
-        return self._public_numbers
+    private_value = utils.read_only_property("_private_value")
+    public_numbers = utils.read_only_property("_public_numbers")

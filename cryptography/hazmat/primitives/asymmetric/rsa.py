@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import six
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 
@@ -157,33 +158,13 @@ class RSAPrivateNumbers(object):
         self._iqmp = iqmp
         self._public_numbers = public_numbers
 
-    @property
-    def p(self):
-        return self._p
-
-    @property
-    def q(self):
-        return self._q
-
-    @property
-    def d(self):
-        return self._d
-
-    @property
-    def dmp1(self):
-        return self._dmp1
-
-    @property
-    def dmq1(self):
-        return self._dmq1
-
-    @property
-    def iqmp(self):
-        return self._iqmp
-
-    @property
-    def public_numbers(self):
-        return self._public_numbers
+    p = utils.read_only_property("_p")
+    q = utils.read_only_property("_q")
+    d = utils.read_only_property("_d")
+    dmp1 = utils.read_only_property("_dmp1")
+    dmq1 = utils.read_only_property("_dmq1")
+    iqmp = utils.read_only_property("_iqmp")
+    public_numbers = utils.read_only_property("_public_numbers")
 
     def private_key(self, backend):
         return backend.load_rsa_private_numbers(self)
@@ -200,13 +181,8 @@ class RSAPublicNumbers(object):
         self._e = e
         self._n = n
 
-    @property
-    def e(self):
-        return self._e
-
-    @property
-    def n(self):
-        return self._n
+    e = utils.read_only_property("_e")
+    n = utils.read_only_property("_n")
 
     def public_key(self, backend):
         return backend.load_rsa_public_numbers(self)

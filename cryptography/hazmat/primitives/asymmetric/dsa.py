@@ -27,14 +27,10 @@ def generate_private_key(key_size, backend):
 
 
 def _check_dsa_parameters(parameters):
-    if (utils.bit_length(parameters.p),
-        utils.bit_length(parameters.q)) not in (
-            (1024, 160),
-            (2048, 256),
-            (3072, 256)):
-        raise ValueError("p and q lengths must be "
-                         "one of these pairs (1024, 160) or (2048, 256) "
-                         "or (3072, 256).")
+    if utils.bit_length(parameters.p) not in [1024, 2048, 3072]:
+        raise ValueError("p must be exactly 1024, 2048, or 3072 bits long")
+    if utils.bit_length(parameters.q) not in [160, 256]:
+        raise ValueError("q must be exactly 160 or 256 bits long")
 
     if not (1 < parameters.g < parameters.p):
         raise ValueError("g, p don't satisfy 1 < g < p.")
@@ -65,17 +61,9 @@ class DSAParameterNumbers(object):
         self._q = q
         self._g = g
 
-    @property
-    def p(self):
-        return self._p
-
-    @property
-    def q(self):
-        return self._q
-
-    @property
-    def g(self):
-        return self._g
+    p = utils.read_only_property("_p")
+    q = utils.read_only_property("_q")
+    g = utils.read_only_property("_g")
 
     def parameters(self, backend):
         return backend.load_dsa_parameter_numbers(self)
@@ -94,13 +82,8 @@ class DSAPublicNumbers(object):
         self._y = y
         self._parameter_numbers = parameter_numbers
 
-    @property
-    def y(self):
-        return self._y
-
-    @property
-    def parameter_numbers(self):
-        return self._parameter_numbers
+    y = utils.read_only_property("_y")
+    parameter_numbers = utils.read_only_property("_parameter_numbers")
 
     def public_key(self, backend):
         return backend.load_dsa_public_numbers(self)
@@ -118,13 +101,8 @@ class DSAPrivateNumbers(object):
         self._public_numbers = public_numbers
         self._x = x
 
-    @property
-    def x(self):
-        return self._x
-
-    @property
-    def public_numbers(self):
-        return self._public_numbers
+    x = utils.read_only_property("_x")
+    public_numbers = utils.read_only_property("_public_numbers")
 
     def private_key(self, backend):
         return backend.load_dsa_private_numbers(self)

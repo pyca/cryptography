@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives import interfaces
 @utils.register_interface(interfaces.HashContext)
 class _HashContext(object):
     def __init__(self, backend, algorithm, ctx=None):
-        self.algorithm = algorithm
+        self._algorithm = algorithm
         self._backend = backend
 
         if ctx is None:
@@ -38,6 +38,8 @@ class _HashContext(object):
             assert res == 1
 
         self._ctx = ctx
+
+    algorithm = utils.read_only_property("_algorithm")
 
     def copy(self):
         methods = self._backend._hash_mapping[self.algorithm.name]

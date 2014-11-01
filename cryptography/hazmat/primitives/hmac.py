@@ -15,12 +15,13 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import (
-    AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
+    AlreadyFinalized, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import constant_time, interfaces
+from cryptography.hazmat.primitives import interfaces
 
 
+@utils.register_interface(interfaces.MACContext)
 @utils.register_interface(interfaces.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, backend, ctx=None):
@@ -32,7 +33,7 @@ class HMAC(object):
 
         if not isinstance(algorithm, interfaces.HashAlgorithm):
             raise TypeError("Expected instance of interfaces.HashAlgorithm.")
-        self.algorithm = algorithm
+        self._algorithm = algorithm
 
         self._backend = backend
         self._key = key
@@ -41,12 +42,14 @@ class HMAC(object):
         else:
             self._ctx = ctx
 
-    def update(self, msg):
+    algorithm = utils.read_only_property("_algorithm")
+
+    def update(self, data):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
-        if not isinstance(msg, bytes):
-            raise TypeError("msg must be bytes.")
-        self._ctx.update(msg)
+        if not isinstance(data, bytes):
+            raise TypeError("data must be bytes.")
+        self._ctx.update(data)
 
     def copy(self):
         if self._ctx is None:
@@ -68,6 +71,8 @@ class HMAC(object):
     def verify(self, signature):
         if not isinstance(signature, bytes):
             raise TypeError("signature must be bytes.")
-        digest = self.finalize()
-        if not constant_time.bytes_eq(digest, signature):
-            raise InvalidSignature("Signature did not match digest.")
+        if self._ctx is None:
+            raise AlreadyFinalized("Context was already finalized.")
+
+        ctx, self._ctx = self._ctx, None
+        ctx.verify(signature)

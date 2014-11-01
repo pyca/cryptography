@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_pbkdf2_test
@@ -25,7 +26,7 @@ from ...utils import load_nist_vectors
     only_if=lambda backend: backend.pbkdf2_hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1 for PBKDF2HMAC",
 )
-@pytest.mark.pbkdf2hmac
+@pytest.mark.requires_backend_interface(interface=PBKDF2HMACBackend)
 class TestPBKDF2HMACSHA1(object):
     test_pbkdf2_sha1 = generate_pbkdf2_test(
         load_nist_vectors,

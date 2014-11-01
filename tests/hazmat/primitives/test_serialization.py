@@ -20,6 +20,10 @@ import textwrap
 import pytest
 
 from cryptography.exceptions import _Reasons
+from cryptography.hazmat.backends.interfaces import (
+    EllipticCurveBackend, PEMSerializationBackend, PKCS8SerializationBackend,
+    TraditionalOpenSSLSerializationBackend
+)
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import (
@@ -33,7 +37,7 @@ from .utils import _check_rsa_private_numbers, load_vectors_from_file
 from ...utils import raises_unsupported_algorithm
 
 
-@pytest.mark.pem_serialization
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPEMSerialization(object):
     def test_load_pem_rsa_private_key(self, backend):
         key = load_vectors_from_file(
@@ -67,7 +71,7 @@ class TestPEMSerialization(object):
             ("ec_private_key_encrypted.pem", b"123456"),
         ]
     )
-    @pytest.mark.elliptic
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_pem_ec_private_key(self, key_file, password, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
@@ -121,7 +125,7 @@ class TestPEMSerialization(object):
         assert key
         assert isinstance(key, interfaces.DSAPublicKey)
 
-    @pytest.mark.elliptic
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
@@ -138,7 +142,9 @@ class TestPEMSerialization(object):
         assert key.curve.key_size == 256
 
 
-@pytest.mark.traditional_openssl_serialization
+@pytest.mark.requires_backend_interface(
+    interface=TraditionalOpenSSLSerializationBackend
+)
 class TestTraditionalOpenSSLSerialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -360,7 +366,7 @@ class TestTraditionalOpenSSLSerialization(object):
             )
 
 
-@pytest.mark.pkcs8_serialization
+@pytest.mark.requires_backend_interface(interface=PKCS8SerializationBackend)
 class TestPKCS8Serialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -401,7 +407,7 @@ class TestPKCS8Serialization(object):
             ("ec_private_key_encrypted.pem", b"123456"),
         ]
     )
-    @pytest.mark.elliptic
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_pem_ec_private_key(self, key_file, password, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
