@@ -14,11 +14,27 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import threading
 
 import sys
 
 from cffi import FFI
 from cffi.verifier import Verifier
+
+
+class LazyLibrary(object):
+    def __init__(self, ffi):
+        self._ffi = ffi
+        self._lib = None
+        self._lock = threading.Lock()
+
+    def __getattr__(self, name):
+        if self._lib is None:
+            with self._lock:
+                if self._lib is None:
+                    self._lib = self._ffi.verifier.load_library()
+
+        return getattr(self._lib, name)
 
 
 def load_library_for_binding(ffi, module_prefix, modules):
