@@ -6,6 +6,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Cryptography has been relicensed from the Apache Software License, Version
+  2.0, to being available under *either* the Apache Software License, Version
+  2.0, or the BSD license.
 * Added key-rotation support to :doc:`Fernet </fernet>` with
   :class:`~cryptography.fernet.MultiFernet`.
 * More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
