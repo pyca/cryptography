@@ -95,15 +95,7 @@ class Binding(object):
 
         # OpenSSL goes by a different library name on different operating
         # systems.
-        if sys.platform != "win32":
-            # In some circumstances, the order in which these libs are
-            # specified on the linker command-line is significant;
-            # libssl must come before libcrypto
-            # (http://marc.info/?l=openssl-users&m=135361825921871)
-            libraries = ["ssl", "crypto"]
-        else:  # pragma: no cover
-            link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
-            libraries = _get_windows_libraries(link_type)
+        libraries = _get_libraries(sys.platform)
 
         cls.ffi, cls.lib = build_ffi_for_binding(
             module_prefix=cls._module_prefix,
@@ -155,6 +147,17 @@ class Binding(object):
                 )
             )
 
+
+def _get_libraries(platform):
+    if platform != "win32":
+        # In some circumstances, the order in which these libs are
+        # specified on the linker command-line is significant;
+        # libssl must come before libcrypto
+        # (http://marc.info/?l=openssl-users&m=135361825921871)
+        return ["ssl", "crypto"]
+    else:
+        link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
+        return _get_windows_libraries(link_type)
 
 def _get_windows_libraries(link_type):
     if link_type == "dynamic":
