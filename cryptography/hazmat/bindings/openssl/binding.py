@@ -97,15 +97,17 @@ class Binding(object):
         # systems.
         libraries = _get_libraries(sys.platform)
 
-        cls.ffi, cls.lib = build_ffi_for_binding(
+        cls.ffi, lib = build_ffi_for_binding(
             module_prefix=cls._module_prefix,
             modules=cls._modules,
             pre_include=_OSX_PRE_INCLUDE,
             post_include=_OSX_POST_INCLUDE,
             libraries=libraries,
         )
-        res = cls.lib.Cryptography_add_osrandom_engine()
-        assert res != 0
+        def cb(lib):
+            res = lib.Cryptography_add_osrandom_engine()
+            assert res != 0
+        cls.lib = lib._add_callback(cb)
 
     @classmethod
     def init_static_locks(cls):

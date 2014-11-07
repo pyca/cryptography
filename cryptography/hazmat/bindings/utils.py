@@ -14,8 +14,8 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-
 import sys
+import threading
 
 from cffi import FFI
 from cffi.verifier import Verifier
@@ -76,7 +76,33 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
+    cb = lambda lib: _remove_conditions(lib, modules, module_prefix)
+    return ffi, lib._add_callback(cb)
 
+
+class LazyLibrary(object):
+    def __init__(self, verifier, callbacks=[]):
+        self._lock = threading.Lock()
+        self._verifier = verifier
+        self._callbacks = callbacks
+        self._lib = None
+
+    def _add_callback(self, cb):
+        assert self._lib is None
+        return LazyLibrary(self._verifier, self._callbacks + [cb])
+
+    def __getattr__(self, name):
+        if self._lib is None:
+            with self._lock:
+                if self._lib is None:
+                    lib = self._verifier.load_library()
+                    for cb in self._callbacks:
+                        cb(lib)
+                    self._lib = lib
+        return getattr(self._lib, name)
+
+
+def _remove_conditions(lib, modules, module_prefix):
     for name in modules:
         module_name = module_prefix + name
         module = sys.modules[module_name]
@@ -85,8 +111,12 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
                 for name in names:
                     delattr(lib, name)
 
-    return ffi, lib
 
+def _compile_module(*args, **kwargs):
+    raise RuntimeError(
+        "Attempted implicit compile of a cffi module. All cffi modules should "
+        "be pre-compiled at installation time."
+    )
 
 def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
               extra_link_args=[]):
@@ -103,7 +133,9 @@ def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
-    return ffi, ffi.verifier.load_library()
+    ffi.verifier.compile_module = _compile_module
+    ffi.verifier._compile_module = _compile_module
+    return ffi, LazyLibrary(ffi.verifier)
 
 
 def _create_modulename(cdef_sources, source, sys_version):
