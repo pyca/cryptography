@@ -14,8 +14,8 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-
 import sys
+import threading
 
 from cffi import FFI
 from cffi.verifier import Verifier
@@ -88,6 +88,20 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
     return ffi, lib
 
 
+class LazyLibrary(object):
+    def __init__(self, verifier):
+        self._lock = threading.Lock()
+        self._verifier = verifier
+        self._lib = None
+
+    def __getattr__(self, name):
+        if self._lib is None:
+            with self._lock:
+                if self._lib is None:
+                    self._lib = self._verifier.load_library()
+        return getattr(self._lib, name)
+
+
 def _compile_module(*args, **kwargs):
     raise RuntimeError(
         "Attempted implicit compile of a cffi module. All cffi modules should "
@@ -111,7 +125,7 @@ def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
     )
     ffi.verifier.compile_module = _compile_module
     ffi.verifier._compile_module = _compile_module
-    return ffi, ffi.verifier.load_library()
+    return ffi, LazyLibrary(ffi.verifier)
 
 
 def _create_modulename(cdef_sources, source, sys_version):
