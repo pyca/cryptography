@@ -88,6 +88,12 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
     return ffi, lib
 
 
+def _compile_module(*args, **kwargs):
+    raise RuntimeError(
+        "Attempted implicit compile of a cffi module. All cffi modules should "
+        "be pre-compiled at installation time."
+    )
+
 def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
               extra_link_args=[]):
     ffi = FFI()
@@ -103,6 +109,8 @@ def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
+    ffi.verifier.compile_module = _compile_module
+    ffi.verifier._compile_module = _compile_module
     return ffi, ffi.verifier.load_library()
 
 
