@@ -159,6 +159,7 @@ def _get_libraries(platform):
         link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
         return _get_windows_libraries(link_type)
 
+
 def _get_windows_libraries(link_type):
     if link_type == "dynamic":
         return ["libeay32", "ssleay32", "advapi32"]
