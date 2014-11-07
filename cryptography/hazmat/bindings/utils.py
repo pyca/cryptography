@@ -76,46 +76,40 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
-    lib = LazyLibraryWithConditionals(lib._verifier, modules, module_prefix)
-    return ffi, lib
+    cb = lambda lib: _remove_conditions(lib, modules, module_prefix)
+    return ffi, lib._add_callback(cb)
 
 
 class LazyLibrary(object):
-    def __init__(self, verifier):
+    def __init__(self, verifier, callbacks=[]):
         self._lock = threading.Lock()
         self._verifier = verifier
+        self._callbacks = callbacks
         self._lib = None
 
-    def __getattr__(self, name):
-        if self._lib is None:
-            with self._lock:
-                if self._lib is None:
-                    self._lib = self._verifier.load_library()
-        return getattr(self._lib, name)
-
-
-class LazyLibraryWithConditionals(object):
-    def __init__(self, verifier, modules, module_prefix):
-        self._lock = threading.Lock()
-        self._verifier = verifier
-        self._lib = None
-        self._modules = modules
-        self._module_prefix = module_prefix
+    def _add_callback(self, cb):
+        assert self._lib is None
+        return LazyLibrary(self._verifier, self._callbacks + [cb])
 
     def __getattr__(self, name):
         if self._lib is None:
             with self._lock:
                 if self._lib is None:
                     lib = self._verifier.load_library()
-                    for name in self._modules:
-                        module_name = self._module_prefix + name
-                        module = sys.modules[module_name]
-                        for condition, names in module.CONDITIONAL_NAMES.items():
-                            if not getattr(lib, condition):
-                                for name in names:
-                                    delattr(lib, name)
+                    for cb in self._callbacks:
+                        cb(lib)
                     self._lib = lib
         return getattr(self._lib, name)
+
+
+def _remove_conditions(lib, modules, module_prefix):
+    for name in modules:
+        module_name = module_prefix + name
+        module = sys.modules[module_name]
+        for condition, names in module.CONDITIONAL_NAMES.items():
+            if not getattr(lib, condition):
+                for name in names:
+                    delattr(lib, name)
 
 
 def _compile_module(*args, **kwargs):
