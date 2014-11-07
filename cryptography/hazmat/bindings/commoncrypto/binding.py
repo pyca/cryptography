@@ -13,7 +13,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography.hazmat.bindings.utils import build_ffi_for_binding
+from cryptography.hazmat.bindings.utils import (
+    build_ffi_for_binding, load_library_for_binding,
+)
 
 
 class Binding(object):
@@ -34,7 +36,13 @@ class Binding(object):
         "sectransform",
     ]
 
-    ffi = None
+    ffi = build_ffi_for_binding(
+        module_prefix=_module_prefix,
+        modules=_modules,
+        extra_link_args=[
+            "-framework", "Security", "-framework", "CoreFoundation"
+        ],
+    )
     lib = None
 
     def __init__(self):
@@ -42,13 +50,11 @@ class Binding(object):
 
     @classmethod
     def _ensure_ffi_initialized(cls):
-        if cls.ffi is not None and cls.lib is not None:
+        if cls.lib is not None:
             return
 
-        cls.ffi, cls.lib = build_ffi_for_binding(
+        cls.lib = load_library_for_binding(
+            cls.ffi,
             module_prefix=cls._module_prefix,
             modules=cls._modules,
-            extra_link_args=[
-                "-framework", "Security", "-framework", "CoreFoundation"
-            ]
         )

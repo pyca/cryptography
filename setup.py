@@ -83,12 +83,12 @@ def get_ext_modules():
     from cryptography.hazmat.primitives import constant_time, padding
 
     ext_modules = [
-        OpenSSLBinding().ffi.verifier.get_extension(),
+        OpenSSLBinding.ffi.verifier.get_extension(),
         constant_time._ffi.verifier.get_extension(),
         padding._ffi.verifier.get_extension()
     ]
     if cc_is_available():
-        ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
+        ext_modules.append(CommonCryptoBinding.ffi.verifier.get_extension())
     return ext_modules
 
 

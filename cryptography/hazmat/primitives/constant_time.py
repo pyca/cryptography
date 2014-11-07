@@ -26,10 +26,9 @@ with open(os.path.join(os.path.dirname(__file__), "src/constant_time.c")) as f:
     FUNCTIONS = f.read()
 
 
-_ffi, _lib = build_ffi(
-    cdef_source=TYPES,
-    verify_source=FUNCTIONS,
-)
+_ffi = build_ffi(cdef_source=TYPES, verify_source=FUNCTIONS)
+_lib = _ffi.verifier.load_library()
+
 
 if hasattr(hmac, "compare_digest"):
     def bytes_eq(a, b):

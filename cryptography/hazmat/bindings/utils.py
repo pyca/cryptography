@@ -21,6 +21,20 @@ from cffi import FFI
 from cffi.verifier import Verifier
 
 
+def load_library_for_binding(ffi, module_prefix, modules):
+    lib = ffi.verifier.load_library()
+
+    for name in modules:
+        module_name = module_prefix + name
+        module = sys.modules[module_name]
+        for condition, names in module.CONDITIONAL_NAMES.items():
+            if not getattr(lib, condition):
+                for name in names:
+                    delattr(lib, name)
+
+    return lib
+
+
 def build_ffi_for_binding(module_prefix, modules, pre_include="",
                           post_include="", libraries=[], extra_compile_args=[],
                           extra_link_args=[]):
@@ -69,7 +83,7 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
         functions +
         customizations
     )
-    ffi, lib = build_ffi(
+    ffi = build_ffi(
         cdef_source="\n".join(types + functions + macros),
         verify_source=verify_source,
         libraries=libraries,
@@ -77,15 +91,7 @@ def build_ffi_for_binding(module_prefix, modules, pre_include="",
         extra_link_args=extra_link_args,
     )
 
-    for name in modules:
-        module_name = module_prefix + name
-        module = sys.modules[module_name]
-        for condition, names in module.CONDITIONAL_NAMES.items():
-            if not getattr(lib, condition):
-                for name in names:
-                    delattr(lib, name)
-
-    return ffi, lib
+    return ffi
 
 
 def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
@@ -103,7 +109,7 @@ def build_ffi(cdef_source, verify_source, libraries=[], extra_compile_args=[],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
     )
-    return ffi, ffi.verifier.load_library()
+    return ffi
 
 
 def _create_modulename(cdef_sources, source, sys_version):

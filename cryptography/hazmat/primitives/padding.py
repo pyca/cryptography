@@ -63,10 +63,9 @@ uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
 }
 """
 
-_ffi, _lib = build_ffi(
-    cdef_source=TYPES,
-    verify_source=FUNCTIONS,
-)
+
+_ffi = build_ffi(cdef_source=TYPES, verify_source=FUNCTIONS)
+_lib = _ffi.verifier.load_library()
 
 
 class PKCS7(object):
