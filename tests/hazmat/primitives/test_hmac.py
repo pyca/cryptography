@@ -25,9 +25,9 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes, hmac, interfaces
+from cryptography.tests.primitives.utils import generate_base_hmac_test
 from cryptography.tests.utils import raises_unsupported_algorithm
 
-from .utils import generate_base_hmac_test
 from ..backends.test_multibackend import DummyHMACBackend
 
 

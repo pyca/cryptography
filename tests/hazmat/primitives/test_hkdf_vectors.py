@@ -19,9 +19,8 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
+from cryptography.tests.primitives.utils import generate_hkdf_test
 from cryptography.tests.utils import load_nist_vectors
-
-from .utils import generate_hkdf_test
 
 
 @pytest.mark.supported(

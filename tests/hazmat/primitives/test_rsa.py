@@ -35,13 +35,12 @@ from cryptography.tests.fixtures.rsa import (
     RSA_KEY_512, RSA_KEY_512_ALT, RSA_KEY_522, RSA_KEY_599, RSA_KEY_745,
     RSA_KEY_768,
 )
+from cryptography.tests.primitives.utils import (
+    _check_rsa_private_numbers, generate_rsa_verification_test
+)
 from cryptography.tests.utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
-)
-
-from .utils import (
-    _check_rsa_private_numbers, generate_rsa_verification_test
 )
 
 

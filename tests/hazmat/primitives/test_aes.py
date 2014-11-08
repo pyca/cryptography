@@ -20,9 +20,10 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
+from cryptography.tests.primitives.utils import (
+    generate_aead_test, generate_encrypt_test,
+)
 from cryptography.tests.utils import load_nist_vectors
-
-from .utils import generate_aead_test, generate_encrypt_test
 
 
 @pytest.mark.supported(

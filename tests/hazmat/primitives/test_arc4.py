@@ -20,9 +20,8 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.tests.primitives.utils import generate_stream_encryption_test
 from cryptography.tests.utils import load_nist_vectors
-
-from .utils import generate_stream_encryption_test
 
 
 @pytest.mark.supported(
