@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import hmac
 import os
 
-from cryptography.hazmat.bindings.utils import build_ffi
+from cryptography.hazmat.bindings.utils import LazyLibrary, build_ffi
 
 
 with open(os.path.join(os.path.dirname(__file__), "src/constant_time.h")) as f:
@@ -26,10 +26,9 @@ with open(os.path.join(os.path.dirname(__file__), "src/constant_time.c")) as f:
     FUNCTIONS = f.read()
 
 
-_ffi, _lib = build_ffi(
-    cdef_source=TYPES,
-    verify_source=FUNCTIONS,
-)
+_ffi = build_ffi(cdef_source=TYPES, verify_source=FUNCTIONS)
+_lib = LazyLibrary(_ffi)
+
 
 if hasattr(hmac, "compare_digest"):
     def bytes_eq(a, b):

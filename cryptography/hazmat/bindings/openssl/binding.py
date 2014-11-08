@@ -17,7 +17,9 @@ import os
 import sys
 import threading
 
-from cryptography.hazmat.bindings.utils import build_ffi_for_binding
+from cryptography.hazmat.bindings.utils import (
+    build_ffi_for_binding, load_library_for_binding,
+)
 
 
 _OSX_PRE_INCLUDE = """
@@ -37,6 +39,31 @@ _OSX_POST_INCLUDE = """
     __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
 #endif
 """
+
+
+def _get_libraries(platform):
+    # OpenSSL goes by a different library name on different operating systems.
+    if platform != "win32":
+        # In some circumstances, the order in which these libs are
+        # specified on the linker command-line is significant;
+        # libssl must come before libcrypto
+        # (http://marc.info/?l=openssl-users&m=135361825921871)
+        return ["ssl", "crypto"]
+    else:
+        link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
+        return _get_windows_libraries(link_type)
+
+
+def _get_windows_libraries(link_type):
+    if link_type == "dynamic":
+        return ["libeay32", "ssleay32", "advapi32"]
+    elif link_type == "static" or link_type == "":
+        return ["libeay32mt", "ssleay32mt", "advapi32",
+                "crypt32", "gdi32", "user32", "ws2_32"]
+    else:
+        raise ValueError(
+            "PYCA_WINDOWS_LINK_TYPE must be 'static' or 'dynamic'"
+        )
 
 
 class Binding(object):
@@ -82,7 +109,13 @@ class Binding(object):
     _lock_cb_handle = None
     _lock_init_lock = threading.Lock()
 
-    ffi = None
+    ffi = build_ffi_for_binding(
+        module_prefix=_module_prefix,
+        modules=_modules,
+        pre_include=_OSX_PRE_INCLUDE,
+        post_include=_OSX_POST_INCLUDE,
+        libraries=_get_libraries(sys.platform)
+    )
     lib = None
 
     def __init__(self):
@@ -90,20 +123,15 @@ class Binding(object):
 
     @classmethod
     def _ensure_ffi_initialized(cls):
-        if cls.ffi is not None and cls.lib is not None:
+        if cls.lib is not None:
             return
 
-        # OpenSSL goes by a different library name on different operating
-        # systems.
-        libraries = _get_libraries(sys.platform)
-
-        cls.ffi, cls.lib = build_ffi_for_binding(
-            module_prefix=cls._module_prefix,
-            modules=cls._modules,
-            pre_include=_OSX_PRE_INCLUDE,
-            post_include=_OSX_POST_INCLUDE,
-            libraries=libraries,
+        cls.lib = load_library_for_binding(
+            cls.ffi,
+            cls._module_prefix,
+            cls._modules,
         )
+
         res = cls.lib.Cryptography_add_osrandom_engine()
         assert res != 0
 
@@ -146,27 +174,3 @@ class Binding(object):
                     mode, n, file, line
                 )
             )
-
-
-def _get_libraries(platform):
-    if platform != "win32":
-        # In some circumstances, the order in which these libs are
-        # specified on the linker command-line is significant;
-        # libssl must come before libcrypto
-        # (http://marc.info/?l=openssl-users&m=135361825921871)
-        return ["ssl", "crypto"]
-    else:
-        link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
-        return _get_windows_libraries(link_type)
-
-
-def _get_windows_libraries(link_type):
-    if link_type == "dynamic":
-        return ["libeay32", "ssleay32", "advapi32"]
-    elif link_type == "static" or link_type == "":
-        return ["libeay32mt", "ssleay32mt", "advapi32",
-                "crypt32", "gdi32", "user32", "ws2_32"]
-    else:
-        raise ValueError(
-            "PYCA_WINDOWS_LINK_TYPE must be 'static' or 'dynamic'"
-        )

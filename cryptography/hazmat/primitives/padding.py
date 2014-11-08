@@ -17,7 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.bindings.utils import build_ffi
+from cryptography.hazmat.bindings.utils import LazyLibrary, build_ffi
 from cryptography.hazmat.primitives import interfaces
 
 
@@ -63,10 +63,9 @@ uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
 }
 """
 
-_ffi, _lib = build_ffi(
-    cdef_source=TYPES,
-    verify_source=FUNCTIONS,
-)
+
+_ffi = build_ffi(cdef_source=TYPES, verify_source=FUNCTIONS)
+_lib = LazyLibrary(_ffi)
 
 
 class PKCS7(object):
