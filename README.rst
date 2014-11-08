@@ -12,8 +12,8 @@ Cryptography
 .. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
-.. image:: https://coveralls.io/repos/pyca/cryptography/badge.png?branch=master
-    :target: https://coveralls.io/r/pyca/cryptography?branch=master
+.. image:: https://codecov.io/github/pyca/cryptography/coverage.svg?branch=master
+    :target: https://codecov.io/github/pyca/cryptography?branch=master
 
 
 ``cryptography`` is a package which provides cryptographic recipes and
