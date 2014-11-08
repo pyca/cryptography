@@ -31,12 +31,9 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_traditional_openssl_private_key
 )
 from cryptography.tests.primitives.utils import (
-    _check_rsa_private_numbers, load_vectors_from_file,
+    _check_rsa_private_numbers, load_vectors_from_file, skip_curve_unsupported,
 )
 from cryptography.tests.utils import raises_unsupported_algorithm
-
-
-from .test_ec import _skip_curve_unsupported
 
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
@@ -75,7 +72,7 @@ class TestPEMSerialization(object):
     )
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_pem_ec_private_key(self, key_file, password, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
+        skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", key_file),
@@ -129,7 +126,7 @@ class TestPEMSerialization(object):
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_ec_public_key(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
+        skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization",
@@ -411,7 +408,7 @@ class TestPKCS8Serialization(object):
     )
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_pem_ec_private_key(self, key_file, password, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
+        skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),

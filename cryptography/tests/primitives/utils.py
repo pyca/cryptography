@@ -422,3 +422,12 @@ def _check_rsa_private_numbers(skey):
     assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
     assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
     assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
+
+
+def skip_curve_unsupported(backend, curve):
+    if not backend.elliptic_curve_supported(curve):
+        pytest.skip(
+            "Curve {0} is not supported by this backend {1}".format(
+                curve.name, backend
+            )
+        )
