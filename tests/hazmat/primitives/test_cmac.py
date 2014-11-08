@@ -29,11 +29,11 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, TripleDES
 )
 from cryptography.hazmat.primitives.cmac import CMAC
-
-from ..backends.test_multibackend import DummyCMACBackend
-from ...utils import (
+from cryptography.tests.utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
+
+from ..backends.test_multibackend import DummyCMACBackend
 
 vectors_aes128 = load_vectors_from_file(
     "CMAC/nist-800-38b-aes128.txt", load_nist_vectors)

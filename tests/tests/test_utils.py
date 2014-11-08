@@ -23,10 +23,7 @@ import pytest
 
 import cryptography
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-
-import cryptography_vectors
-
-from .utils import (
+from cryptography.tests.utils import (
     check_backend_support, der_encode_dsa_signature, load_cryptrec_vectors,
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
@@ -34,6 +31,8 @@ from .utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm, select_backends, skip_if_empty
 )
+
+import cryptography_vectors
 
 
 class FakeInterface(object):

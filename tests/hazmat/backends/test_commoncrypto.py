@@ -22,8 +22,7 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.base import Cipher
 from cryptography.hazmat.primitives.ciphers.modes import CBC, GCM
-
-from ...utils import raises_unsupported_algorithm
+from cryptography.tests.utils import raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.CipherAlgorithm)

@@ -24,8 +24,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from ...utils import raises_unsupported_algorithm
+from cryptography.tests.utils import raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.HashAlgorithm)

@@ -17,9 +17,9 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
 from cryptography.hazmat.primitives import hashes
+from cryptography.tests.utils import load_nist_vectors
 
 from .utils import generate_pbkdf2_test
-from ...utils import load_nist_vectors
 
 
 @pytest.mark.supported(

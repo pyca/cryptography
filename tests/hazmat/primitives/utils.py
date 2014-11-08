@@ -28,8 +28,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from ...utils import load_vectors_from_file
+from cryptography.tests.utils import load_vectors_from_file
 
 
 def _load_all_params(path, file_names, param_loader):

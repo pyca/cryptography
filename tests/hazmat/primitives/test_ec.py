@@ -23,8 +23,7 @@ from cryptography import exceptions, utils
 from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
-
-from ...utils import (
+from cryptography.tests.utils import (
     der_encode_dsa_signature, load_fips_ecdsa_key_pair_vectors,
     load_fips_ecdsa_signing_vectors, load_vectors_from_file,
     raises_unsupported_algorithm

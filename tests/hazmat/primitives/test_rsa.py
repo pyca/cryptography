@@ -29,6 +29,10 @@ from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.tests.utils import (
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
+)
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -38,10 +42,6 @@ from .fixtures_rsa import (
 )
 from .utils import (
     _check_rsa_private_numbers, generate_rsa_verification_test
-)
-from ...utils import (
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
 )
 
 
