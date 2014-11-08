@@ -23,10 +23,9 @@ from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.tests.backends.dummy import DummyHashBackend
 from cryptography.tests.primitives.utils import generate_base_hash_test
 from cryptography.tests.utils import raises_unsupported_algorithm
-
-from ..backends.test_multibackend import DummyHashBackend
 
 
 @utils.register_interface(interfaces.HashAlgorithm)
