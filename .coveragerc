@@ -1,7 +1,7 @@
 [run]
 branch = True
 source =
-    cryptography/
+    cryptography
     tests/
 
 [report]
