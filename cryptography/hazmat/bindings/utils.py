@@ -14,9 +14,8 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
-import threading
-
 import sys
+import threading
 
 from cffi import FFI
 from cffi.verifier import Verifier
