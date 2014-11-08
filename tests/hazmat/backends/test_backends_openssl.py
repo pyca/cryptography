@@ -35,11 +35,11 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
+from cryptography.tests.fixtures.rsa import RSA_KEY_512
 from cryptography.tests.utils import (
     load_vectors_from_file, raises_unsupported_algorithm,
 )
 
-from ..primitives.fixtures_rsa import RSA_KEY_512
 from ..primitives.test_ec import _skip_curve_unsupported
 
 

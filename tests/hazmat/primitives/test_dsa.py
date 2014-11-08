@@ -22,15 +22,14 @@ from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.backends.interfaces import DSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.tests.fixtures.dsa import (
+    DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
+)
 from cryptography.tests.utils import (
     der_encode_dsa_signature, load_fips_dsa_key_pair_vectors,
     load_fips_dsa_sig_vectors, load_vectors_from_file,
 )
 from cryptography.utils import bit_length
-
-from .fixtures_dsa import (
-    DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
-)
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)

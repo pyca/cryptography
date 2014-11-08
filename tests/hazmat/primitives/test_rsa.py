@@ -29,17 +29,17 @@ from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
-from cryptography.tests.utils import (
-    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
-)
-
-from .fixtures_rsa import (
+from cryptography.tests.fixtures.rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
     RSA_KEY_1029, RSA_KEY_1030, RSA_KEY_1031, RSA_KEY_1536, RSA_KEY_2048,
     RSA_KEY_512, RSA_KEY_512_ALT, RSA_KEY_522, RSA_KEY_599, RSA_KEY_745,
     RSA_KEY_768,
 )
+from cryptography.tests.utils import (
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
+)
+
 from .utils import (
     _check_rsa_private_numbers, generate_rsa_verification_test
 )
