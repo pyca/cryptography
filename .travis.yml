@@ -30,7 +30,7 @@ script:
     - ./.travis/run.sh
 
 after_success:
-    - source ~/.venv/bin/activate && codecov
+    - source ~/.venv/bin/activate && codecov --env TOX_ENV OPENSSL
 
 notifications:
     irc:
