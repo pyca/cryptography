@@ -122,6 +122,8 @@ void X509_REQ_free(X509_REQ *);
 int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
+int X509_REQ_digest(const X509_REQ *, const EVP_MD *,
+                    unsigned char *, unsigned int *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
