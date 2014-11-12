@@ -35,10 +35,11 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
-
-from ..primitives.fixtures_rsa import RSA_KEY_512
-from ..primitives.test_ec import _skip_curve_unsupported
-from ...utils import load_vectors_from_file, raises_unsupported_algorithm
+from cryptography.tests.fixtures.rsa import RSA_KEY_512
+from cryptography.tests.primitives.utils import skip_curve_unsupported
+from cryptography.tests.utils import (
+    load_vectors_from_file, raises_unsupported_algorithm,
+)
 
 
 @utils.register_interface(interfaces.Mode)
@@ -499,7 +500,7 @@ class TestDeprecatedECBackendMethods(object):
         y = 4131560123026307384858369684985976479488628761329758810693
         x = 3402090428547195623222463880060959356423657484435591627791
         curve = ec.SECP192R1()
-        _skip_curve_unsupported(backend, curve)
+        skip_curve_unsupported(backend, curve)
         pub_numbers = ec.EllipticCurvePublicNumbers(
             x=x,
             y=y,
@@ -518,7 +519,7 @@ class TestDeprecatedECBackendMethods(object):
         y = 4131560123026307384858369684985976479488628761329758810693
         x = 3402090428547195623222463880060959356423657484435591627791
         curve = ec.SECP192R1()
-        _skip_curve_unsupported(backend, curve)
+        skip_curve_unsupported(backend, curve)
         pub_numbers = ec.EllipticCurvePublicNumbers(
             x=x,
             y=y,

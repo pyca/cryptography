@@ -16,8 +16,9 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography.hazmat.backends import _available_backends
-
-from .utils import check_backend_support, select_backends, skip_if_empty
+from cryptography.tests.utils import (
+    check_backend_support, select_backends, skip_if_empty,
+)
 
 
 def pytest_generate_tests(metafunc):

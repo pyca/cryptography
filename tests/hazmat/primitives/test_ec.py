@@ -23,8 +23,8 @@ from cryptography import exceptions, utils
 from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
-
-from ...utils import (
+from cryptography.tests.primitives.utils import skip_curve_unsupported
+from cryptography.tests.utils import (
     der_encode_dsa_signature, load_fips_ecdsa_key_pair_vectors,
     load_fips_ecdsa_signing_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
@@ -51,15 +51,6 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
         )
 
 
-def _skip_curve_unsupported(backend, curve):
-    if not backend.elliptic_curve_supported(curve):
-        pytest.skip(
-            "Curve {0} is not supported by this backend {1}".format(
-                curve.name, backend
-            )
-        )
-
-
 @utils.register_interface(interfaces.EllipticCurve)
 class DummyCurve(object):
     name = "dummy-curve"
@@ -82,7 +73,7 @@ class DeprecatedDummyECBackend(object):
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
-        _skip_curve_unsupported(backend, DummyCurve())
+        skip_curve_unsupported(backend, DummyCurve())
 
 
 def test_ec_numbers():
@@ -216,7 +207,7 @@ class TestECDSAVectors(object):
         "curve", ec._CURVE_TYPES.values()
     )
     def test_generate_vector_curves(self, backend, curve):
-        _skip_curve_unsupported(backend, curve())
+        skip_curve_unsupported(backend, curve())
 
         key = ec.generate_private_key(curve(), backend)
         assert key
@@ -240,7 +231,7 @@ class TestECDSAVectors(object):
         ) is False
 
     def test_unknown_signature_algoritm(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP192R1())
+        skip_curve_unsupported(backend, ec.SECP192R1())
 
         key = ec.generate_private_key(ec.SECP192R1(), backend)
 
@@ -260,7 +251,7 @@ class TestECDSAVectors(object):
         ) is False
 
     def test_load_invalid_ec_key_from_numbers(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
+        skip_curve_unsupported(backend, ec.SECP256R1())
 
         numbers = ec.EllipticCurvePrivateNumbers(
             357646505660320080863666618182642070958081774038609089496899025506,

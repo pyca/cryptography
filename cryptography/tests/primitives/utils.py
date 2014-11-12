@@ -28,8 +28,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from ...utils import load_vectors_from_file
+from cryptography.tests.utils import load_vectors_from_file
 
 
 def _load_all_params(path, file_names, param_loader):
@@ -423,3 +422,12 @@ def _check_rsa_private_numbers(skey):
     assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
     assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
     assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
+
+
+def skip_curve_unsupported(backend, curve):
+    if not backend.elliptic_curve_supported(curve):
+        pytest.skip(
+            "Curve {0} is not supported by this backend {1}".format(
+                curve.name, backend
+            )
+        )

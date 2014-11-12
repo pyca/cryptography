@@ -25,8 +25,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
-
-from ...utils import raises_unsupported_algorithm
+from cryptography.tests.utils import raises_unsupported_algorithm
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)

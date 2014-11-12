@@ -23,8 +23,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, Camellia, IDEA, SEED, TripleDES
 )
 from cryptography.hazmat.primitives.ciphers.modes import ECB
-
-from ...utils import raises_unsupported_algorithm
+from cryptography.tests.utils import raises_unsupported_algorithm
 
 
 class TestAES(object):

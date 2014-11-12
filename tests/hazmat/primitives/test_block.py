@@ -26,11 +26,10 @@ from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
     Cipher, algorithms, modes
 )
-
-from .utils import (
+from cryptography.tests.primitives.utils import (
     generate_aead_exception_test, generate_aead_tag_exception_test
 )
-from ...utils import raises_unsupported_algorithm
+from cryptography.tests.utils import raises_unsupported_algorithm
 
 
 @utils.register_interface(interfaces.Mode)

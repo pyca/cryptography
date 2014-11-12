@@ -19,9 +19,10 @@ import pytest
 
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
-
-from .utils import generate_hash_test, generate_long_string_hash_test
-from ...utils import load_hash_vectors
+from cryptography.tests.primitives.utils import (
+    generate_hash_test, generate_long_string_hash_test,
+)
+from cryptography.tests.utils import load_hash_vectors
 
 
 @pytest.mark.supported(

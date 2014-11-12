@@ -22,8 +22,7 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
-
-from ....utils import (
+from cryptography.tests.utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
 )
 
