@@ -4,6 +4,11 @@ source =
     cryptography
     tests/
 
+[paths]
+source =
+   src/cryptography
+   .tox/*/lib/python*/site-packages/cryptography
+
 [report]
 exclude_lines =
     @abc.abstractmethod
