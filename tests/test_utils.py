@@ -27,12 +27,12 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 import cryptography_vectors
 
 from .utils import (
-    check_backend_support, check_for_iface, der_encode_dsa_signature,
-    load_cryptrec_vectors, load_fips_dsa_key_pair_vectors,
-    load_fips_dsa_sig_vectors, load_fips_ecdsa_key_pair_vectors,
-    load_fips_ecdsa_signing_vectors, load_hash_vectors, load_kasvs_dh_vectors,
-    load_nist_vectors, load_pkcs1_vectors, load_rsa_nist_vectors,
-    load_vectors_from_file, raises_unsupported_algorithm, select_backends
+    check_backend_support, der_encode_dsa_signature, load_cryptrec_vectors,
+    load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
+    load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
+    load_hash_vectors, load_kasvs_dh_vectors, load_nist_vectors,
+    load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm, select_backends, skip_if_empty
 )
 
 
@@ -82,17 +82,11 @@ def test_select_two_backends():
     assert selected_backends == [b1, b2]
 
 
-def test_check_for_iface():
-    item = pretend.stub(keywords=["fake_name"], funcargs={"backend": True})
-    with pytest.raises(pytest.skip.Exception) as exc_info:
-        check_for_iface("fake_name", FakeInterface, item)
-    assert exc_info.value.args[0] == "True backend does not support fake_name"
+def test_skip_if_empty():
+    with pytest.raises(pytest.skip.Exception):
+        skip_if_empty([], [FakeInterface])
 
-    item = pretend.stub(
-        keywords=["fake_name"],
-        funcargs={"backend": FakeInterface()}
-    )
-    check_for_iface("fake_name", FakeInterface, item)
+    skip_if_empty(["notempty"], [FakeInterface])
 
 
 def test_check_backend_support_skip():

@@ -13,6 +13,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -36,15 +38,15 @@ class DummyCipherBackend(object):
     def __init__(self, supported_ciphers):
         self._ciphers = supported_ciphers
 
-    def cipher_supported(self, algorithm, mode):
-        return (type(algorithm), type(mode)) in self._ciphers
+    def cipher_supported(self, cipher, mode):
+        return (type(cipher), type(mode)) in self._ciphers
 
-    def create_symmetric_encryption_ctx(self, algorithm, mode):
-        if not self.cipher_supported(algorithm, mode):
+    def create_symmetric_encryption_ctx(self, cipher, mode):
+        if not self.cipher_supported(cipher, mode):
             raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
 
-    def create_symmetric_decryption_ctx(self, algorithm, mode):
-        if not self.cipher_supported(algorithm, mode):
+    def create_symmetric_decryption_ctx(self, cipher, mode):
+        if not self.cipher_supported(cipher, mode):
             raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
 
 
@@ -90,29 +92,13 @@ class DummyPBKDF2HMACBackend(object):
 
 @utils.register_interface(RSABackend)
 class DummyRSABackend(object):
-    def generate_rsa_private_key(self, public_exponent, private_key):
-        pass
-
-    def create_rsa_signature_ctx(self, private_key, padding, algorithm):
-        pass
-
-    def create_rsa_verification_ctx(self, public_key, signature, padding,
-                                    algorithm):
-        pass
-
-    def mgf1_hash_supported(self, algorithm):
+    def generate_rsa_private_key(self, public_exponent, key_size):
         pass
 
     def rsa_padding_supported(self, padding):
         pass
 
     def generate_rsa_parameters_supported(self, public_exponent, key_size):
-        pass
-
-    def decrypt_rsa(self, private_key, ciphertext, padding):
-        pass
-
-    def encrypt_rsa(self, public_key, plaintext, padding):
         pass
 
     def load_rsa_private_numbers(self, numbers):
@@ -133,12 +119,6 @@ class DummyDSABackend(object):
     def generate_dsa_private_key_and_parameters(self, key_size):
         pass
 
-    def create_dsa_signature_ctx(self, private_key, algorithm):
-        pass
-
-    def create_dsa_verification_ctx(self, public_key, signature, algorithm):
-        pass
-
     def dsa_hash_supported(self, algorithm):
         pass
 
@@ -149,6 +129,9 @@ class DummyDSABackend(object):
         pass
 
     def load_dsa_public_numbers(self, numbers):
+        pass
+
+    def load_dsa_parameter_numbers(self, numbers):
         pass
 
 
@@ -191,11 +174,19 @@ class DummyEllipticCurveBackend(object):
         if not self.elliptic_curve_supported(curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
+    def load_elliptic_curve_private_numbers(self, numbers):
+        if not self.elliptic_curve_supported(numbers.public_numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
     def elliptic_curve_private_key_from_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.public_numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
+        if not self.elliptic_curve_supported(numbers.curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
@@ -293,21 +284,9 @@ class TestMultiBackend(object):
             key_size=1024, public_exponent=65537
         )
 
-        backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
-                                         hashes.MD5())
-
-        backend.create_rsa_verification_ctx("public_key", "sig",
-                                            padding.PKCS1v15(), hashes.MD5())
-
-        backend.mgf1_hash_supported(hashes.MD5())
-
         backend.rsa_padding_supported(padding.PKCS1v15())
 
         backend.generate_rsa_parameters_supported(65537, 1024)
-
-        backend.encrypt_rsa("public_key", "encryptme", padding.PKCS1v15())
-
-        backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
 
         backend.load_rsa_private_numbers("private_numbers")
 
@@ -322,39 +301,12 @@ class TestMultiBackend(object):
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
-            backend.create_rsa_signature_ctx("private_key", padding.PKCS1v15(),
-                                             hashes.MD5())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.create_rsa_verification_ctx(
-                "public_key", "sig", padding.PKCS1v15(), hashes.MD5())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.mgf1_hash_supported(hashes.MD5())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
             backend.rsa_padding_supported(padding.PKCS1v15())
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.generate_rsa_parameters_supported(65537, 1024)
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.encrypt_rsa("public_key", "encryptme", padding.PKCS1v15())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.decrypt_rsa("private_key", "encrypted", padding.PKCS1v15())
 
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
@@ -377,12 +329,11 @@ class TestMultiBackend(object):
         backend.generate_dsa_private_key(parameters)
         backend.generate_dsa_private_key_and_parameters(key_size=1024)
 
-        backend.create_dsa_verification_ctx("public_key", "sig", hashes.SHA1())
-        backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
         backend.dsa_hash_supported(hashes.SHA1())
         backend.dsa_parameters_supported(1, 2, 3)
         backend.load_dsa_private_numbers("numbers")
         backend.load_dsa_public_numbers("numbers")
+        backend.load_dsa_parameter_numbers("numbers")
 
         backend = MultiBackend([])
         with raises_unsupported_algorithm(
@@ -403,18 +354,6 @@ class TestMultiBackend(object):
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
-            backend.create_dsa_signature_ctx("private_key", hashes.SHA1())
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
-            backend.create_dsa_verification_ctx(
-                "public_key", b"sig", hashes.SHA1()
-            )
-
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
             backend.dsa_hash_supported(hashes.SHA1())
 
         with raises_unsupported_algorithm(
@@ -431,6 +370,11 @@ class TestMultiBackend(object):
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
             backend.load_dsa_public_numbers("numbers")
+
+        with raises_unsupported_algorithm(
+            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+        ):
+            backend.load_dsa_parameter_numbers("numbers")
 
     def test_cmac(self):
         backend = MultiBackend([
@@ -463,7 +407,7 @@ class TestMultiBackend(object):
 
         backend.generate_elliptic_curve_private_key(ec.SECT283K1())
 
-        backend.elliptic_curve_private_key_from_numbers(
+        backend.load_elliptic_curve_private_numbers(
             ec.EllipticCurvePrivateNumbers(
                 1,
                 ec.EllipticCurvePublicNumbers(
@@ -474,7 +418,7 @@ class TestMultiBackend(object):
             )
         )
 
-        backend.elliptic_curve_public_key_from_numbers(
+        backend.load_elliptic_curve_public_numbers(
             ec.EllipticCurvePublicNumbers(
                 2,
                 3,
@@ -491,6 +435,51 @@ class TestMultiBackend(object):
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             backend.generate_elliptic_curve_private_key(ec.SECT163K1())
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.load_elliptic_curve_private_numbers(
+                ec.EllipticCurvePrivateNumbers(
+                    1,
+                    ec.EllipticCurvePublicNumbers(
+                        2,
+                        3,
+                        ec.SECT163K1()
+                    )
+                )
+            )
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            backend.load_elliptic_curve_public_numbers(
+                ec.EllipticCurvePublicNumbers(
+                    2,
+                    3,
+                    ec.SECT163K1()
+                )
+            )
+
+    def test_deprecated_elliptic_curve(self):
+        backend = MultiBackend([
+            DummyEllipticCurveBackend([
+                ec.SECT283K1
+            ])
+        ])
+
+        assert backend.elliptic_curve_signature_algorithm_supported(
+            ec.ECDSA(hashes.SHA256()),
+            ec.SECT163K1()
+        ) is False
+
+        pub_numbers = ec.EllipticCurvePublicNumbers(2, 3, ec.SECT283K1())
+        numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
+
+        pytest.deprecated_call(
+            backend.elliptic_curve_private_key_from_numbers,
+            numbers
+        )
+        pytest.deprecated_call(
+            backend.elliptic_curve_public_key_from_numbers,
+            pub_numbers
+        )
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             backend.elliptic_curve_private_key_from_numbers(

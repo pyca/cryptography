@@ -1,16 +1,68 @@
 Changelog
 =========
 
-0.6 - `master`_
+0.7 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
+* Cryptography has been relicensed from the Apache Software License, Version
+  2.0, to being available under *either* the Apache Software License, Version
+  2.0, or the BSD license.
+* Added key-rotation support to :doc:`Fernet </fernet>` with
+  :class:`~cryptography.fernet.MultiFernet`.
+* More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
+  from numbers.
+* Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
+  common interface for CMAC and HMAC and deprecated
+  :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
+
+0.6.1 - 2014-10-15
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.1j.
+* Fixed an issue where OpenSSL 1.0.1j changed the errors returned by some
+  functions.
+* Added our license file to the ``cryptography-vectors`` package.
+* Implemented DSA hash truncation support (per FIPS 186-3) in the OpenSSL
+  backend. This works around an issue in 1.0.0, 1.0.0a, and 1.0.0b where
+  truncation was not implemented.
+
+0.6 - 2014-09-29
+~~~~~~~~~~~~~~~~
+
+* Added
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key` to
+  ease loading private keys, and
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key` to
+  support loading public keys.
 * Removed the, deprecated in 0.4, support for the ``salt_length`` argument to
   the :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`
   constructor. The ``salt_length`` should be passed to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` instead.
 * Fix compilation on OS X Yosemite.
+* Deprecated ``elliptic_curve_private_key_from_numbers`` and
+  ``elliptic_curve_public_key_from_numbers`` in favor of
+  ``load_elliptic_curve_private_numbers`` and
+  ``load_elliptic_curve_public_numbers`` on
+  :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
+* Added
+  :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKeyWithNumbers`
+  and
+  :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKeyWithNumbers`
+  support.
+* Work around three GCM related bugs in CommonCrypto and OpenSSL.
+
+  * On the CommonCrypto backend adding AAD but not subsequently calling update
+    would return null tag bytes.
+
+  * One the CommonCrypto backend a call to update without an empty add AAD call
+    would return null ciphertext bytes.
+
+  * On the OpenSSL backend with certain versions adding AAD only would give
+    invalid tag bytes.
+
+* Support loading EC private keys from PEM.
 
 0.5.4 - 2014-08-20
 ~~~~~~~~~~~~~~~~~~

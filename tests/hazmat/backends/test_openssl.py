@@ -24,16 +24,20 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
+from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
+from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import dsa, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
+from ..primitives.fixtures_rsa import RSA_KEY_512
+from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -48,6 +52,7 @@ class DummyMode(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
+    key_size = None
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
@@ -58,6 +63,8 @@ class DummyPadding(object):
 @utils.register_interface(interfaces.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
+    block_size = None
+    digest_size = None
 
 
 class DummyMGF(object):
@@ -173,20 +180,22 @@ class TestOpenSSL(object):
     )
     def test_large_key_size_on_old_openssl(self):
         with pytest.raises(ValueError):
-            dsa.DSAParameters.generate(2048, backend=backend)
+            dsa.generate_parameters(2048, backend=backend)
 
         with pytest.raises(ValueError):
-            dsa.DSAParameters.generate(3072, backend=backend)
+            dsa.generate_parameters(3072, backend=backend)
 
     @pytest.mark.skipif(
         backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
         reason="Requires a newer OpenSSL. Must be >= 1.0.0"
     )
     def test_large_key_size_on_new_openssl(self):
-        parameters = dsa.DSAParameters.generate(2048, backend)
-        assert utils.bit_length(parameters.p) == 2048
-        parameters = dsa.DSAParameters.generate(3072, backend)
-        assert utils.bit_length(parameters.p) == 3072
+        parameters = dsa.generate_parameters(2048, backend)
+        param_num = parameters.parameter_numbers()
+        assert utils.bit_length(param_num.p) == 2048
+        parameters = dsa.generate_parameters(3072, backend)
+        param_num = parameters.parameter_numbers()
+        assert utils.bit_length(param_num.p) == 3072
 
     def test_int_to_bn(self):
         value = (2 ** 4242) - 4242
@@ -323,11 +332,7 @@ class TestOpenSSLRSA(object):
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
-        private_key = rsa.RSAPrivateKey.generate(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.signer(
                 padding.PSS(
@@ -336,8 +341,7 @@ class TestOpenSSLRSA(object):
                     ),
                     salt_length=padding.PSS.MAX_LENGTH
                 ),
-                hashes.SHA1(),
-                backend
+                hashes.SHA1()
             )
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
@@ -349,15 +353,8 @@ class TestOpenSSLRSA(object):
                     ),
                     salt_length=padding.PSS.MAX_LENGTH
                 ),
-                hashes.SHA1(),
-                backend
+                hashes.SHA1()
             )
-
-    def test_unsupported_mgf1_hash_algorithm(self):
-        assert pytest.deprecated_call(
-            backend.mgf1_hash_supported,
-            DummyHash()
-        ) is False
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(
@@ -398,11 +395,7 @@ class TestOpenSSLRSA(object):
         ) is False
 
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
-        private_key = rsa.RSAPrivateKey.generate(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.decrypt(
                 b"0" * 64,
@@ -410,16 +403,11 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA256()),
                     algorithm=hashes.SHA1(),
                     label=None
-                ),
-                backend
+                )
             )
 
     def test_unsupported_oaep_hash_algorithm_decrypt(self):
-        private_key = rsa.RSAPrivateKey.generate(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.decrypt(
                 b"0" * 64,
@@ -427,16 +415,11 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA256(),
                     label=None
-                ),
-                backend
+                )
             )
 
     def test_unsupported_oaep_label_decrypt(self):
-        private_key = rsa.RSAPrivateKey.generate(
-            public_exponent=65537,
-            key_size=512,
-            backend=backend
-        )
+        private_key = RSA_KEY_512.private_key(backend)
         with pytest.raises(ValueError):
             private_key.decrypt(
                 b"0" * 64,
@@ -444,8 +427,7 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
                     label=b"label"
-                ),
-                backend
+                )
             )
 
 
@@ -457,8 +439,7 @@ class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
         @utils.register_interface(BlockCipherAlgorithm)
         class FakeAlgorithm(object):
-            def __init__(self):
-                self.block_size = 64
+            block_size = 64
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(FakeAlgorithm())
@@ -493,7 +474,7 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
             )
 
 
-class TestOpenSSLNoEllipticCurve(object):
+class TestOpenSSLEllipticCurve(object):
     def test_elliptic_curve_supported(self, monkeypatch):
         monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
 
@@ -506,62 +487,44 @@ class TestOpenSSLNoEllipticCurve(object):
             None, None
         ) is False
 
+    def test_sn_to_elliptic_curve_not_supported(self):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
+            _sn_to_elliptic_curve(backend, b"fake")
 
-class TestDeprecatedRSABackendMethods(object):
-    def test_create_rsa_signature_ctx(self):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        pytest.deprecated_call(
-            backend.create_rsa_signature_ctx,
-            private_key,
-            padding.PKCS1v15(),
-            hashes.SHA1()
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestDeprecatedECBackendMethods(object):
+    def test_elliptic_curve_private_key_from_numbers(self):
+        d = 5634846038258869671139984276180670841223409490498798721258
+        y = 4131560123026307384858369684985976479488628761329758810693
+        x = 3402090428547195623222463880060959356423657484435591627791
+        curve = ec.SECP192R1()
+        _skip_curve_unsupported(backend, curve)
+        pub_numbers = ec.EllipticCurvePublicNumbers(
+            x=x,
+            y=y,
+            curve=curve
         )
-
-    def test_create_rsa_verification_ctx(self):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        public_key = private_key.public_key()
-        pytest.deprecated_call(
-            backend.create_rsa_verification_ctx,
-            public_key,
-            b"\x00" * 64,
-            padding.PKCS1v15(),
-            hashes.SHA1()
-        )
-
-    def test_encrypt_decrypt_rsa(self):
-        private_key = rsa.RSAPrivateKey.generate(65537, 512, backend)
-        public_key = private_key.public_key()
-        ct = pytest.deprecated_call(
-            backend.encrypt_rsa,
-            public_key,
-            b"\x00" * 32,
-            padding.PKCS1v15()
+        numbers = ec.EllipticCurvePrivateNumbers(
+            private_value=d,
+            public_numbers=pub_numbers
         )
         pytest.deprecated_call(
-            backend.decrypt_rsa,
-            private_key,
-            ct,
-            padding.PKCS1v15()
+            backend.elliptic_curve_private_key_from_numbers,
+            numbers
         )
 
-
-class TestDeprecatedDSABackendMethods(object):
-    def test_create_dsa_signature_ctx(self):
-        params = dsa.DSAParameters.generate(1024, backend)
-        key = dsa.DSAPrivateKey.generate(params, backend)
-        pytest.deprecated_call(
-            backend.create_dsa_signature_ctx,
-            key,
-            hashes.SHA1()
+    def test_elliptic_curve_public_key_from_numbers(self):
+        y = 4131560123026307384858369684985976479488628761329758810693
+        x = 3402090428547195623222463880060959356423657484435591627791
+        curve = ec.SECP192R1()
+        _skip_curve_unsupported(backend, curve)
+        pub_numbers = ec.EllipticCurvePublicNumbers(
+            x=x,
+            y=y,
+            curve=curve
         )
-
-    def test_create_dsa_verification_ctx(self):
-        params = dsa.DSAParameters.generate(1024, backend)
-        key = dsa.DSAPrivateKey.generate(params, backend)
-        public_key = key.public_key()
         pytest.deprecated_call(
-            backend.create_dsa_verification_ctx,
-            public_key,
-            b"\x00" * 128,
-            hashes.SHA1()
+            backend.elliptic_curve_public_key_from_numbers,
+            pub_numbers
         )

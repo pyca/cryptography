@@ -416,7 +416,7 @@ DSA
 
     Extends :class:`DSAPublicKey`.
 
-    .. method:: private_numbers()
+    .. method:: public_numbers()
 
         Create a
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
@@ -492,6 +492,23 @@ Elliptic Curve
         The EllipticCurvePublicKey object for this private key.
 
 
+.. class:: EllipticCurvePrivateKeyWithNumbers
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
+            instance.
+
+
 .. class:: EllipticCurvePublicKey
 
     .. versionadded:: 0.5
@@ -516,6 +533,23 @@ Elliptic Curve
         :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
 
         The elliptic curve for this key.
+
+
+.. class:: EllipticCurvePublicKeyWithNumbers
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
+            instance.
 
 
 Hash algorithms
@@ -609,10 +643,12 @@ Key derivation functions
         stored derived key.
 
 
-`CMAC`_
--------
+`Message Authentication Code`_
+------------------------------
 
 .. class:: CMACContext
+
+    :class:`CMACContext` has been deprecated in favor of :class:`MACContext`.
 
     .. versionadded:: 0.4
 
@@ -629,6 +665,30 @@ Key derivation functions
         :return: A :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
             that is a copy of the current context.
 
+.. class:: MACContext
+
+    .. versionadded:: 0.7
+
+    .. method:: update(data)
+
+        :param data bytes: The data you want to authenticate.
+
+    .. method:: finalize()
+
+        :return: The message authentication code.
+
+    .. method:: copy()
+
+        :return: A
+            :class:`~cryptography.hazmat.primitives.interfaces.MACContext` that
+            is a copy of the current context.
+
+    .. method:: verify(signature)
+
+        :param signature bytes: The signature to verify.
+
+        :raises cryptography.exceptions.InvalidSignature: This is raised when
+            the provided signature does not match the expected signature.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem

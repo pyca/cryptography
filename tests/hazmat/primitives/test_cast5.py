@@ -18,6 +18,7 @@ import os
 
 import pytest
 
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -30,7 +31,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support CAST5 ECB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
@@ -47,7 +48,7 @@ class TestCAST5ModeECB(object):
     ),
     skip_message="Does not support CAST5 CBC",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeCBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
@@ -64,7 +65,7 @@ class TestCAST5ModeCBC(object):
     ),
     skip_message="Does not support CAST5 OFB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeOFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
@@ -81,7 +82,7 @@ class TestCAST5ModeOFB(object):
     ),
     skip_message="Does not support CAST5 CFB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeCFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
@@ -98,7 +99,7 @@ class TestCAST5ModeCFB(object):
     ),
     skip_message="Does not support CAST5 CTR",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestCAST5ModeCTR(object):
     test_CTR = generate_encrypt_test(
         load_nist_vectors,

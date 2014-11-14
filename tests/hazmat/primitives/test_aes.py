@@ -18,6 +18,7 @@ import os
 
 import pytest
 
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from .utils import generate_aead_test, generate_encrypt_test
@@ -30,7 +31,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support AES CBC",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
@@ -63,7 +64,7 @@ class TestAESModeCBC(object):
     ),
     skip_message="Does not support AES ECB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
@@ -96,7 +97,7 @@ class TestAESModeECB(object):
     ),
     skip_message="Does not support AES OFB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeOFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
@@ -129,7 +130,7 @@ class TestAESModeOFB(object):
     ),
     skip_message="Does not support AES CFB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
@@ -162,7 +163,7 @@ class TestAESModeCFB(object):
     ),
     skip_message="Does not support AES CFB8",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCFB8(object):
     test_CFB8 = generate_encrypt_test(
         load_nist_vectors,
@@ -195,7 +196,7 @@ class TestAESModeCFB8(object):
     ),
     skip_message="Does not support AES CTR",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeCTR(object):
     test_CTR = generate_encrypt_test(
         load_nist_vectors,
@@ -212,7 +213,7 @@ class TestAESModeCTR(object):
     ),
     skip_message="Does not support AES GCM",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestAESModeGCM(object):
     test_GCM = generate_aead_test(
         load_nist_vectors,

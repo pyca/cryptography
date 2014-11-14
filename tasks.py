@@ -25,9 +25,9 @@ import requests
 JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
 
 
-def wait_for_build_completed():
+def wait_for_build_completed(session):
     while True:
-        response = requests.get(
+        response = session.get(
             "{0}/lastBuild/api/json/".format(JENKINS_URL),
             headers={
                 "Accept": "application/json",
@@ -40,8 +40,8 @@ def wait_for_build_completed():
         time.sleep(0.1)
 
 
-def download_artifacts():
-    response = requests.get(
+def download_artifacts(session):
+    response = session.get(
         "{0}/lastBuild/api/json/".format(JENKINS_URL),
         headers={
             "Accept": "application/json"
@@ -54,7 +54,7 @@ def download_artifacts():
     paths = []
 
     for run in response.json()["runs"]:
-        response = requests.get(
+        response = session.get(
             run["url"] + "api/json/",
             headers={
                 "Accept": "application/json",
@@ -62,7 +62,7 @@ def download_artifacts():
         )
         response.raise_for_status()
         for artifact in response.json()["artifacts"]:
-            response = requests.get(
+            response = session.get(
                 "{0}artifact/{1}".format(run["url"], artifact["relativePath"])
             )
             out_path = os.path.join(
@@ -92,9 +92,19 @@ def release(version):
         "vectors/dist/cryptography_vectors-{0}*".format(version)
     )
 
+    session = requests.Session()
+
+    # This tells the CDN to delete the cached response for the URL. We do this
+    # so that the Jenkins builders will see the new sdist immediately when they
+    # go to build the wheels.
+    response = session.request(
+        "PURGE", "https://pypi.python.org/simple/cryptography/"
+    )
+    response.raise_for_status()
+
     username = getpass.getpass("Input the GitHub/Jenkins username: ")
     token = getpass.getpass("Input the Jenkins token: ")
-    response = requests.post(
+    response = session.post(
         "{0}/build".format(JENKINS_URL),
         auth=requests.auth.HTTPBasicAuth(
             username, token
@@ -104,6 +114,6 @@ def release(version):
         }
     )
     response.raise_for_status()
-    wait_for_build_completed()
-    paths = download_artifacts()
+    wait_for_build_completed(session)
+    paths = download_artifacts(session)
     invoke.run("twine upload {0}".format(" ".join(paths)))

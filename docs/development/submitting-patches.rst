@@ -8,6 +8,9 @@ Submitting patches
 * Larger changes should be discussed on `our mailing list`_ before submission.
 * New features and significant bug fixes should be documented in the
   :doc:`/changelog`.
+* You must have legal permission to distribute any code you contribute to
+  ``cryptography``, and it must be available under both the BSD and Apache
+  Software License Version 2.0 licenses.
 
 If you believe you've identified a security issue in ``cryptography``, please
 follow the directions on the :doc:`security page </security>`.

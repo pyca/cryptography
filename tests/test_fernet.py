@@ -24,8 +24,9 @@ import pytest
 
 import six
 
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 import cryptography_vectors
@@ -41,14 +42,20 @@ def json_parametrize(keys, filename):
         ])
 
 
-@pytest.mark.cipher
+def test_default_backend():
+    f = Fernet(Fernet.generate_key())
+    assert f._backend is default_backend()
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
+    ),
+    skip_message="Does not support AES CBC",
+)
 class TestFernet(object):
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"), "generate.json",
     )
@@ -61,12 +68,6 @@ class TestFernet(object):
         )
         assert actual_token == token.encode("ascii")
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     @json_parametrize(
         ("secret", "now", "src", "ttl_sec", "token"), "verify.json",
     )
@@ -78,12 +79,6 @@ class TestFernet(object):
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
@@ -92,34 +87,21 @@ class TestFernet(object):
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     def test_invalid_start_byte(self, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     def test_timestamp_too_short(self, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
+    def test_non_base64_token(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(b"\x00")
+
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
@@ -127,27 +109,47 @@ class TestFernet(object):
         with pytest.raises(TypeError):
             f.decrypt(six.u(""))
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
         f = Fernet(Fernet.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message
 
-    def test_default_backend(self):
-        f = Fernet(Fernet.generate_key())
-        assert f._backend is default_backend()
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
-        ),
-        skip_message="Does not support AES CBC",
-    )
     def test_bad_key(self, backend):
         with pytest.raises(ValueError):
             Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
+    ),
+    skip_message="Does not support AES CBC",
+)
+class TestMultiFernet(object):
+    def test_encrypt(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+        f = MultiFernet([f1, f2])
+
+        assert f1.decrypt(f.encrypt(b"abc")) == b"abc"
+
+    def test_decrypt(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+        f = MultiFernet([f1, f2])
+
+        assert f.decrypt(f1.encrypt(b"abc")) == b"abc"
+        assert f.decrypt(f2.encrypt(b"abc")) == b"abc"
+
+        with pytest.raises(InvalidToken):
+            f.decrypt(b"\x00" * 16)
+
+    def test_no_fernets(self, backend):
+        with pytest.raises(ValueError):
+            MultiFernet([])
+
+    def test_non_iterable_argument(self, backend):
+        with pytest.raises(TypeError):
+            MultiFernet(None)
