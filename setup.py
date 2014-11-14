@@ -27,9 +27,14 @@ from setuptools.command.test import test
 
 
 base_dir = os.path.dirname(__file__)
+src_dir = os.path.join(base_dir, "src")
+
+# When executing the setup.py, we need to be able to import ourselves, this
+# means that we need to add the src/ directory to the sys.path.
+sys.path.insert(0, src_dir)
 
 about = {}
-with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
+with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
@@ -324,7 +329,8 @@ setup(
         "Topic :: Security :: Cryptography",
     ],
 
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    package_dir={"": "src"},
+    packages=find_packages(where="src", exclude=["tests", "tests.*"]),
     include_package_data=True,
 
     install_requires=requirements,

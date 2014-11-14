@@ -1,8 +1,13 @@
 [run]
 branch = True
 source =
-    cryptography/
+    cryptography
     tests/
+
+[paths]
+source =
+   src/cryptography
+   .tox/*/lib/python*/site-packages/cryptography
 
 [report]
 exclude_lines =
