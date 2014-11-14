@@ -27,9 +27,14 @@ from setuptools.command.test import test
 
 
 base_dir = os.path.dirname(__file__)
+src_dir = os.path.join(base_dir, "src")
+
+# When executing the setup.py, we need to be able to import ourselves, this
+# means that we need to add the src/ directory to the sys.path.
+sys.path.insert(0, src_dir)
 
 about = {}
-with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
+with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
@@ -83,12 +88,12 @@ def get_ext_modules():
     from cryptography.hazmat.primitives import constant_time, padding
 
     ext_modules = [
-        OpenSSLBinding().ffi.verifier.get_extension(),
+        OpenSSLBinding.ffi.verifier.get_extension(),
         constant_time._ffi.verifier.get_extension(),
         padding._ffi.verifier.get_extension()
     ]
     if cc_is_available():
-        ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
+        ext_modules.append(CommonCryptoBinding.ffi.verifier.get_extension())
     return ext_modules
 
 
@@ -304,6 +309,7 @@ setup(
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX",
@@ -323,7 +329,8 @@ setup(
         "Topic :: Security :: Cryptography",
     ],
 
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    package_dir={"": "src"},
+    packages=find_packages(where="src", exclude=["tests", "tests.*"]),
     include_package_data=True,
 
     install_requires=requirements,

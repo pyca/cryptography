@@ -24,6 +24,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
+from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
@@ -51,6 +52,7 @@ class DummyMode(object):
 @utils.register_interface(interfaces.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
+    key_size = None
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
@@ -61,6 +63,8 @@ class DummyPadding(object):
 @utils.register_interface(interfaces.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
+    block_size = None
+    digest_size = None
 
 
 class DummyMGF(object):
@@ -435,8 +439,7 @@ class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
         @utils.register_interface(BlockCipherAlgorithm)
         class FakeAlgorithm(object):
-            def __init__(self):
-                self.block_size = 64
+            block_size = 64
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(FakeAlgorithm())
@@ -489,7 +492,7 @@ class TestOpenSSLEllipticCurve(object):
             _sn_to_elliptic_curve(backend, b"fake")
 
 
-@pytest.mark.elliptic
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestDeprecatedECBackendMethods(object):
     def test_elliptic_curve_private_key_from_numbers(self):
         d = 5634846038258869671139984276180670841223409490498798721258

@@ -18,6 +18,7 @@ import os
 
 import pytest
 
+from cryptography.hazmat.backends.interfaces import CipherBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from .utils import generate_encrypt_test
@@ -30,7 +31,7 @@ from ...utils import load_nist_vectors
     ),
     skip_message="Does not support IDEA ECB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeECB(object):
     test_ECB = generate_encrypt_test(
         load_nist_vectors,
@@ -47,7 +48,7 @@ class TestIDEAModeECB(object):
     ),
     skip_message="Does not support IDEA CBC",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeCBC(object):
     test_CBC = generate_encrypt_test(
         load_nist_vectors,
@@ -64,7 +65,7 @@ class TestIDEAModeCBC(object):
     ),
     skip_message="Does not support IDEA OFB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeOFB(object):
     test_OFB = generate_encrypt_test(
         load_nist_vectors,
@@ -81,7 +82,7 @@ class TestIDEAModeOFB(object):
     ),
     skip_message="Does not support IDEA CFB",
 )
-@pytest.mark.cipher
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
 class TestIDEAModeCFB(object):
     test_CFB = generate_encrypt_test(
         load_nist_vectors,
