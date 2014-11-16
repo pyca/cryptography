@@ -25,7 +25,14 @@ configuration. You can also run the ``tox`` job with ``tox -e pep8``.
 
 `Write comments as complete sentences.`_
 
-Every code file must start with the boilerplate notice of the Apache License.
+Every code file must start with the boilerplate licensing notice:
+
+.. code-block:: python
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+
 Additionally, every Python code file must contain
 
 .. code-block:: python
