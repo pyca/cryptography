@@ -52,6 +52,9 @@ Elliptic Curve Signature Algorithms
         >>> signer.update(b" to sign")
         >>> signature = signer.finalize()
 
+    The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
+    described in :rfc:`6979`.
+
 
 .. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
 
