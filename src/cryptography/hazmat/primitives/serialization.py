@@ -187,11 +187,13 @@ def bytes_to_int(b):
     return sum(c << (i * 8) for i, c in enumerate(reversed(b)))
 
 
-def int_to_bytes(x):
+def int_to_bytes(x, width):
     b = b""
     while x:
         b = six.int2byte(x & 255) + b
         x >>= 8
+    if len(b) < width:
+        b = (b"\x00" * (width - len(b))) + b
     return b
 
 
@@ -336,7 +338,7 @@ class _PKCS12Cipher(object):
             B = bytes_to_int(self._make_block(A))
             for i in range(0, len(I), v):
                 x = (bytes_to_int(I[i:i + v]) + B + 1) % (1 << (v * 8))
-                I[i:i + v] = int_to_bytes(x)
+                I[i:i + v] = int_to_bytes(x, v)
             key += A
         return key[:desired_length]
 
