@@ -275,8 +275,14 @@ class _EncryptedPKCS8Parser(object):
                 "Password was not given but private key is encrypted."
             )
 
-        encryption_algorithm = asn1_encrypted_private_key_info.getComponentByName("encryptionAlgorithm")
-        algorithm_oid = encryption_algorithm.getComponentByName("algorithm").asTuple()
+        encryption_algorithm = (
+            asn1_encrypted_private_key_info.getComponentByName(
+                "encryptionAlgorithm"
+            )
+        )
+        algorithm_oid = encryption_algorithm.getComponentByName(
+            "algorithm"
+        ).asTuple()
         try:
             pkcs8_cipher = _PKCS8_CIPHERS[algorithm_oid]
         except KeyError:
@@ -287,7 +293,11 @@ class _EncryptedPKCS8Parser(object):
 
         contents = pkcs8_cipher.decrypt(
             encryption_algorithm.getComponentByName("parameters"),
-            bytes(asn1_encrypted_private_key_info.getComponentByName("encryptedData")),
+            bytes(
+                asn1_encrypted_private_key_info.getComponentByName(
+                    "encryptedData"
+                )
+            ),
             password,
             self._backend
         )
@@ -325,7 +335,10 @@ class _PKCS12Cipher(object):
              identifier, backend):
         v = self._hash_cls.block_size
         D = v * six.int2byte(identifier)
-        I = self._make_block(salt) + self._make_block(encoded_password + b"\x00\x00")
+        I = (
+            self._make_block(salt) +
+            self._make_block(encoded_password + b"\x00\x00")
+        )
 
         key = b""
         while len(key) < desired_length:
@@ -370,7 +383,9 @@ class _PKCS12Cipher(object):
 
 
 _PKCS8_CIPHERS = {
-    (1, 2, 840, 113549, 1, 12, 1, 3): _PKCS12Cipher(algorithms.TripleDES, hashes.SHA1, 192 // 8),
+    (1, 2, 840, 113549, 1, 12, 1, 3): _PKCS12Cipher(
+        algorithms.TripleDES, hashes.SHA1, 192 // 8
+    ),
 }
 
 
@@ -406,12 +421,20 @@ class _PKCS8Parser(object):
 
         assert asn1_private_key_info.getComponentByName("version") == 0
 
-        private_key_algorithm = asn1_private_key_info.getComponentByName("privateKeyAlgorithm")
+        private_key_algorithm = asn1_private_key_info.getComponentByName(
+            "privateKeyAlgorithm"
+        )
         algorithm = private_key_algorithm.getComponentByName("algorithm")
         if algorithm.asTuple() == (1, 2, 840, 10040, 4, 1):
             # DSA
-            asn1_parameters, _ = decoder.decode(private_key_algorithm.getComponentByName("parameters"), asn1Spec=_DSAAlgorithmIdentifierParameters())
-            x, _ = decoder.decode(asn1_private_key_info.getComponentByName('privateKey'), asn1Spec=univ.Integer())
+            asn1_parameters, _ = decoder.decode(
+                private_key_algorithm.getComponentByName("parameters"),
+                asn1Spec=_DSAAlgorithmIdentifierParameters()
+            )
+            x, _ = decoder.decode(
+                asn1_private_key_info.getComponentByName('privateKey'),
+                asn1Spec=univ.Integer()
+            )
 
             x = int(x)
             p = int(asn1_parameters.getComponentByName("p"))
@@ -426,7 +449,10 @@ class _PKCS8Parser(object):
             ).private_key(self._backend)
         elif algorithm.asTuple() == (1, 2, 840, 113549, 1, 1, 1):
             # RSA
-            asn1_rsa, _ = decoder.decode(asn1_private_key_info.getComponentByName("privateKey"), asn1Spec=_RSAPrivateKey())
+            asn1_rsa, _ = decoder.decode(
+                asn1_private_key_info.getComponentByName("privateKey"),
+                asn1Spec=_RSAPrivateKey()
+            )
             return rsa.RSAPrivateNumbers(
                 int(asn1_rsa.getComponentByName("prime1")),
                 int(asn1_rsa.getComponentByName("prime2")),
@@ -440,8 +466,9 @@ class _PKCS8Parser(object):
                 )
             ).private_key(self._backend)
         else:
-            raise UnsupportedAlgorithm("%s" % algorithm, _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
-
+            raise UnsupportedAlgorithm(
+                "%s" % algorithm, _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+            )
 
 
 _PRIVATE_KEY_PARSERS = {
