@@ -14,6 +14,8 @@ from pyasn1.codec.der import decoder
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, namedval, tag, univ
 
+import six
+
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import hashes, padding
@@ -47,7 +49,7 @@ def load_pem_private_key(data, password, backend):
     pem = _PEMObject.find_pem(data)
     pem = pem.handle_encrypted(password, backend)
     parser_type = _PRIVATE_KEY_PARSERS[pem._object_type]
-    return parser_type(backend).load_object(pem, password)
+    return parser_type(backend).load_object(pem._body, password)
 
 
 def load_pem_public_key(data, backend):
@@ -96,10 +98,10 @@ class _RSAPrivateKeyParser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem, password):
+    def load_object(self, body, password):
         try:
             asn1_private_key, _ = decoder.decode(
-                pem._body, asn1Spec=_RSAPrivateKey()
+                body, asn1Spec=_RSAPrivateKey()
             )
         except PyAsn1Error:
             raise ValueError("Could not unserialize key data.")
@@ -134,9 +136,9 @@ class _DSAPrivateKeyParser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem, password):
+    def load_object(self, body, password):
         asn1_private_key, _ = decoder.decode(
-            pem._body, asn1Spec=_DSAPrivateKey()
+            body, asn1Spec=_DSAPrivateKey()
         )
         return dsa.DSAPrivateNumbers(
             int(asn1_private_key.getComponentByName("priv_key")),
@@ -185,6 +187,14 @@ def bytes_to_int(b):
     return sum(c << (i * 8) for i, c in enumerate(reversed(b)))
 
 
+def int_to_bytes(x):
+    b = b""
+    while x:
+        b = six.int2byte(x & 255) + b
+        x >>= 8
+    return b
+
+
 def bits_to_int(b):
     return sum(c << i for i, c in enumerate(b))
 
@@ -200,9 +210,9 @@ class _ECDSAPrivateKeyParser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem, password):
+    def load_object(self, body, password):
         asn1_private_key, _ = decoder.decode(
-            pem._body, asn1Spec=_ECPrivateKey()
+            body, asn1Spec=_ECPrivateKey()
         )
 
         private_value = bytes_to_int(
@@ -250,10 +260,10 @@ class _EncryptedPKCS8Parser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem, password):
+    def load_object(self, body, password):
         try:
             asn1_encrypted_private_key_info, _ = decoder.decode(
-                pem._body, asn1Spec=_EncryptedPrivateKeyInfo()
+                body, asn1Spec=_EncryptedPrivateKeyInfo()
             )
         except PyAsn1Error:
             raise ValueError("Could not unserialize key data.")
@@ -275,10 +285,11 @@ class _EncryptedPKCS8Parser(object):
 
         contents = pkcs8_cipher.decrypt(
             encryption_algorithm.getComponentByName("parameters"),
-            asn1_encrypted_private_key_info.getComponentByName("encryptedData"),
+            bytes(asn1_encrypted_private_key_info.getComponentByName("encryptedData")),
             password,
             self._backend
         )
+        return _PKCS8Parser(self._backend).load_object(contents, None)
 
 
 # RFC 2898, appendix A.3
@@ -302,11 +313,58 @@ class _PKCS12Cipher(object):
             result[i * 2 + 1] = c
         return bytes(result)
 
+    def _make_block(self, data):
+        assert data
+        v = self._hash_cls.block_size
+        size = ((len(data) + v - 1) // v) * v
+        return bytearray((((size + len(data) - 1)) // len(data)) * data)[:size]
+
+    def _kdf(self, encoded_password, salt, iterations, desired_length,
+             identifier, backend):
+        v = self._hash_cls.block_size
+        D = v * six.int2byte(identifier)
+        I = self._make_block(salt) + self._make_block(encoded_password + b"\x00\x00")
+
+        key = b""
+        while len(key) < desired_length:
+            A = bytes(D + I)
+            for i in range(iterations):
+                h = hashes.Hash(self._hash_cls(), backend)
+                h.update(A)
+                A = h.finalize()
+
+            B = bytes_to_int(self._make_block(A))
+            for i in range(0, len(I), v):
+                x = (bytes_to_int(I[i:i + v]) + B + 1) % (1 << (v * 8))
+                I[i:i + v] = int_to_bytes(x)
+            key += A
+        return key[:desired_length]
+
     def decrypt(self, parameters, data, password, backend):
         asn1_params, _ = decoder.decode(parameters, _PBEParameter())
-        encoded_password = self._encode_password(password)
+        encoded_password = password.encode("utf-16be")
         salt = bytes(asn1_params.getComponentByName("salt"))
         iterations = int(asn1_params.getComponentByName("iterationCount"))
+
+        key = self._kdf(
+            encoded_password, salt, iterations,
+            identifier=1,
+            desired_length=self._key_size,
+            backend=backend
+        )
+        iv = self._kdf(
+            encoded_password, salt, iterations,
+            identifier=2,
+            desired_length=self._algorithm_cls.block_size // 8,
+            backend=backend
+        )
+        decryptor = Cipher(
+            self._algorithm_cls(key), modes.CBC(iv), backend=backend
+        ).decryptor()
+        unpadder = padding.PKCS7(self._algorithm_cls.block_size).unpadder()
+        plaintext = unpadder.update(decryptor.update(data))
+        plaintext += unpadder.update(decryptor.finalize())
+        return plaintext + unpadder.finalize()
 
 
 _PKCS8_CIPHERS = {
@@ -336,10 +394,10 @@ class _PKCS8Parser(object):
     def __init__(self, backend):
         self._backend = backend
 
-    def load_object(self, pem, password):
+    def load_object(self, body, password):
         try:
             asn1_private_key_info, _ = decoder.decode(
-                pem._body, asn1Spec=_PrivateKeyInfo()
+                body, asn1Spec=_PrivateKeyInfo()
             )
         except PyAsn1Error:
             raise ValueError("Could not unserialize key data.")
