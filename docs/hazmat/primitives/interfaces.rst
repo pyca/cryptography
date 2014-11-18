@@ -334,6 +334,8 @@ DSA
         .. versionadded:: 0.4
 
         Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`6979`.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -470,8 +472,11 @@ Elliptic Curve
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
 
-    .. classmethod:: signer(signature_algorithm)
+    .. method:: signer(signature_algorithm)
+
         Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`6979`.
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
@@ -482,8 +487,6 @@ Elliptic Curve
 
 
         :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
-
-        The elliptic curve for this key.
 
     .. method:: public_key()
 
@@ -519,7 +522,8 @@ Elliptic Curve
         Verify data was signed by the private key associated with this public
         key.
 
-        :param bytes signature: The signature to verify.
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`

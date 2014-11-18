@@ -3,8 +3,7 @@ _build/
 build/
 dist/
 htmlcov/
-cryptography/_cffi__*
-cryptography/_Cryptography_cffi_*
+src/cryptography/_Cryptography_cffi_*
 .tox/
 .cache/
 .coverage
