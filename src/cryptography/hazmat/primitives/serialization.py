@@ -47,7 +47,7 @@ def load_pem_pkcs8_private_key(data, password, backend):
 
 def load_pem_private_key(data, password, backend):
     pem = _PEMObject.find_pem(data)
-    pem = pem.handle_encrypted(password, backend)
+    pem, password = pem.handle_encrypted(password, backend)
     parser_type = _PRIVATE_KEY_PARSERS[pem._object_type]
     return parser_type(backend).load_object(pem._body, password)
 
@@ -580,7 +580,7 @@ class _PEMObject(object):
                 dek_info = value
 
         if not encrypted:
-            return self
+            return self, password
         elif dek_info is None:
             raise ValueError("Missing DEK-INFO")
         elif not password:
@@ -599,4 +599,4 @@ class _PEMObject(object):
             )
 
         body = pem_cipher.decrypt(self._body, password, iv, backend)
-        return _PEMObject(self._object_type, [], body)
+        return _PEMObject(self._object_type, [], body), None
