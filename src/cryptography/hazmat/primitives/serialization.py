@@ -292,7 +292,7 @@ class _EncryptedPKCS8Parser(object):
             )
 
         contents = pkcs8_cipher.decrypt(
-            encryption_algorithm.getComponentByName("parameters"),
+            bytes(encryption_algorithm.getComponentByName("parameters")),
             bytes(
                 asn1_encrypted_private_key_info.getComponentByName(
                     "encryptedData"
@@ -382,10 +382,26 @@ class _PKCS12Cipher(object):
         return plaintext + unpadder.finalize()
 
 
+# RFC 2898, appendix A.4
+class _PBES2Params(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("keyDerivationFunc", _AlgorithmIdentifier()),
+        namedtype.NamedType("encryptionScheme", _AlgorithmIdentifier()),
+    )
+
+
+
+class _PBES2(object):
+    def decrypt(self, parameters, data, password, backend):
+        asn1_pbes2_parameters_asn1, _ = decoder.decode(parameters, asn1Spec=_PBES2Params())
+        raise NotImplementedError
+
+
 _PKCS8_CIPHERS = {
     (1, 2, 840, 113549, 1, 12, 1, 3): _PKCS12Cipher(
         algorithms.TripleDES, hashes.SHA1, 192 // 8
     ),
+    (1, 2, 840, 113549, 1, 5, 13): _PBES2(),
 }
 
 
