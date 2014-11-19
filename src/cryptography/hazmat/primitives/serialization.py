@@ -481,6 +481,9 @@ class _PKCS8Parser(object):
                     int(asn1_rsa.getComponentByName("modulus")),
                 )
             ).private_key(self._backend)
+        elif algorithm.asTuple() == (1, 2, 840, 10045, 2, 1):
+            # EC
+            raise NotImplementedError
         else:
             raise UnsupportedAlgorithm(
                 "%s" % algorithm, _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
