@@ -21,6 +21,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 def load_pem_traditional_openssl_private_key(data, password, backend):
@@ -390,11 +391,63 @@ class _PBES2Params(univ.Sequence):
     )
 
 
+# RFC 2898, appendix A.2
+class _PBKDF2Salt(univ.Choice):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("specified", univ.OctetString()),
+        namedtype.NamedType("otherSource", _AlgorithmIdentifier()),
+    )
+
+
+class _PBKDF2ParamsDefaultPRF(object):
+    def clone(self):
+        return _AlgorithmIdentifier().setComponentByName(
+            "algorithm", univ.ObjectIdentifier("1.2.840.113549.2.7")
+        )
+
+
+# RFC 2898, appendix A.2
+class _PBKDF2Params(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType("salt", _PBKDF2Salt()),
+        namedtype.NamedType("iterationCount", univ.Integer()),
+        namedtype.OptionalNamedType("keyLength", univ.Integer()),
+        # TODO: is this the correct way to set the default?
+        namedtype.DefaultedNamedType("prf", _PBKDF2ParamsDefaultPRF()),
+    )
+
+
 
 class _PBES2(object):
     def decrypt(self, parameters, data, password, backend):
         asn1_pbes2_parameters_asn1, _ = decoder.decode(parameters, asn1Spec=_PBES2Params())
-        raise NotImplementedError
+        kdf = asn1_pbes2_parameters_asn1.getComponentByName("keyDerivationFunc")
+        kdf_oid = kdf.getComponentByName("algorithm").asTuple()
+        # PBKDF2
+        assert kdf_oid == (1, 2, 840, 113549, 1, 5, 12)
+        asn1_pbkdf2_params, _ = decoder.decode(
+            kdf.getComponentByName("parameters"), asn1Spec=_PBKDF2Params()
+        )
+        asn1_salt = asn1_pbkdf2_params.getComponentByName("salt").getComponentByName("specified")
+        assert asn1_salt is not None
+        salt = bytes(asn1_salt)
+        iterations = int(asn1_pbkdf2_params.getComponentByName("iterationCount"))
+        # TODO: support explicit key length and just assert it matches the one from the cipher
+        assert asn1_pbkdf2_params.getComponentByName("keyLength") is None
+        prf_algorithm = asn1_pbkdf2_params.getComponentByName("prf").getComponentByName("algorithm")
+        # HMAC-SHA1 PRF
+        assert prf_algorithm.asTuple() == (1, 2, 840, 113549, 2, 7)
+
+        encryption = asn1_pbes2_parameters_asn1.getComponentByName("encryptionScheme")
+        # AES-128-CBC
+        assert encryption.getComponentByName("algorithm").asTuple() == (2, 16, 840, 1, 101, 3, 4, 1, 2)
+        iv, _ = decoder.decode(encryption.getComponentByName("parameters"), asn1Spec=univ.OctetString())
+
+        key = PBKDF2HMAC(hashes.SHA1(), 128 // 8, salt, iterations, backend=backend).derive(password)
+        decryptor = Cipher(algorithms.AES(key), modes.CBC(bytes(iv)), backend=backend).decryptor()
+        plaintext = decryptor.update(data) + decryptor.finalize()
+        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+        return unpadder.update(plaintext) + unpadder.finalize()
 
 
 _PKCS8_CIPHERS = {
