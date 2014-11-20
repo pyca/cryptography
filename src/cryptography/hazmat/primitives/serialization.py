@@ -233,10 +233,9 @@ class _ECDSAPrivateKeyParser(object):
             body, asn1Spec=_ECPrivateKey()
         )
 
-        private_value = bytes_to_int([
-            six.byte2int(c)
-            for c in asn1_private_key.getComponentByName("privateKey")
-        ])
+        private_value = bytes_to_int(list(six.iterbytes(
+            asn1_private_key.getComponentByName("privateKey")
+        )))
         public_key = bits_to_bytes(
             asn1_private_key.getComponentByName("publicKey")
         )
@@ -556,10 +555,9 @@ class _PKCS8Parser(object):
                 asn1_private_key_info.getComponentByName("privateKey"), asn1Spec=_ECPrivateKey()
             )
 
-            private_value = bytes_to_int([
-                six.byte2int(c)
-                for c in asn1_private_key.getComponentByName("privateKey")
-            ])
+            private_value = bytes_to_int(list(six.iterbytes(
+                asn1_private_key.getComponentByName("privateKey")
+            )))
             public_key = bits_to_bytes(
                 asn1_private_key.getComponentByName("publicKey")
             )
