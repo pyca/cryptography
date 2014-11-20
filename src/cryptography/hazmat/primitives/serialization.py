@@ -432,34 +432,58 @@ class _PBKDF2Params(univ.Sequence):
     )
 
 
-
 class _PBES2(object):
     def decrypt(self, parameters, data, password, backend):
-        asn1_pbes2_parameters_asn1, _ = decoder.decode(parameters, asn1Spec=_PBES2Params())
-        kdf = asn1_pbes2_parameters_asn1.getComponentByName("keyDerivationFunc")
+        asn1_pbes2_parameters_asn1, _ = decoder.decode(
+            parameters, asn1Spec=_PBES2Params()
+        )
+        kdf = asn1_pbes2_parameters_asn1.getComponentByName(
+            "keyDerivationFunc"
+        )
         kdf_oid = kdf.getComponentByName("algorithm").asTuple()
         # PBKDF2
         assert kdf_oid == (1, 2, 840, 113549, 1, 5, 12)
         asn1_pbkdf2_params, _ = decoder.decode(
             kdf.getComponentByName("parameters"), asn1Spec=_PBKDF2Params()
         )
-        asn1_salt = asn1_pbkdf2_params.getComponentByName("salt").getComponentByName("specified")
+        asn1_salt = asn1_pbkdf2_params.getComponentByName(
+            "salt"
+        ).getComponentByName("specified")
         assert asn1_salt is not None
         salt = bytes(asn1_salt)
-        iterations = int(asn1_pbkdf2_params.getComponentByName("iterationCount"))
-        # TODO: support explicit key length and just assert it matches the one from the cipher
+        iterations = int(
+            asn1_pbkdf2_params.getComponentByName("iterationCount")
+        )
+        # TODO: support explicit key length and just assert it matches the one
+        # from the cipher
         assert asn1_pbkdf2_params.getComponentByName("keyLength") is None
-        prf_algorithm = asn1_pbkdf2_params.getComponentByName("prf").getComponentByName("algorithm")
+        prf_algorithm = asn1_pbkdf2_params.getComponentByName(
+            "prf"
+        ).getComponentByName("algorithm")
         # HMAC-SHA1 PRF
         assert prf_algorithm.asTuple() == (1, 2, 840, 113549, 2, 7)
 
-        encryption = asn1_pbes2_parameters_asn1.getComponentByName("encryptionScheme")
+        encryption = asn1_pbes2_parameters_asn1.getComponentByName(
+            "encryptionScheme"
+        )
         # AES-128-CBC
-        assert encryption.getComponentByName("algorithm").asTuple() == (2, 16, 840, 1, 101, 3, 4, 1, 2)
-        iv, _ = decoder.decode(encryption.getComponentByName("parameters"), asn1Spec=univ.OctetString())
+        encryption_algorithm_oid = encryption.getComponentByName(
+            "algorithm"
+        ).asTuple()
+        assert encryption_algorithm_oid == (2, 16, 840, 1, 101, 3, 4, 1, 2)
+        iv, _ = decoder.decode(
+            encryption.getComponentByName("parameters"),
+            asn1Spec=univ.OctetString()
+        )
 
-        key = PBKDF2HMAC(hashes.SHA1(), 128 // 8, salt, iterations, backend=backend).derive(password)
-        decryptor = Cipher(algorithms.AES(key), modes.CBC(bytes(iv)), backend=backend).decryptor()
+        key = PBKDF2HMAC(
+            hashes.SHA1(), 128 // 8, salt, iterations, backend=backend
+        ).derive(password)
+        decryptor = Cipher(
+            algorithms.AES(key),
+            modes.CBC(bytes(iv)),
+            backend=backend
+        ).decryptor()
         plaintext = decryptor.update(data) + decryptor.finalize()
         unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
         return unpadder.update(plaintext) + unpadder.finalize()
@@ -550,9 +574,13 @@ class _PKCS8Parser(object):
                 )
             ).private_key(self._backend)
         elif algorithm.asTuple() == (1, 2, 840, 10045, 2, 1):
-            curve_oid, _ = decoder.decode(private_key_algorithm.getComponentByName("parameters"), asn1Spec=univ.ObjectIdentifier())
+            curve_oid, _ = decoder.decode(
+                private_key_algorithm.getComponentByName("parameters"),
+                asn1Spec=univ.ObjectIdentifier()
+            )
             asn1_private_key, _ = decoder.decode(
-                asn1_private_key_info.getComponentByName("privateKey"), asn1Spec=_ECPrivateKey()
+                asn1_private_key_info.getComponentByName("privateKey"),
+                asn1Spec=_ECPrivateKey()
             )
 
             private_value = bytes_to_int(list(six.iterbytes(
