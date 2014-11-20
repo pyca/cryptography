@@ -229,7 +229,7 @@ class _ECDSAPrivateKeyParser(object):
 
         curve_oid = asn1_private_key.getComponentByName(
             "parameters"
-        ).getComponent(0).asTuple()
+        ).getComponentByName("namedCurve").asTuple()
         curve = ec._OID_TO_CURVE[curve_oid]()
 
         x = bytes_to_int(public_key[1:(curve.key_size // 8) + 1])
@@ -535,8 +535,32 @@ class _PKCS8Parser(object):
                 )
             ).private_key(self._backend)
         elif algorithm.asTuple() == (1, 2, 840, 10045, 2, 1):
-            # EC
-            raise NotImplementedError
+            curve_oid, _ = decoder.decode(private_key_algorithm.getComponentByName("parameters"), asn1Spec=univ.ObjectIdentifier())
+            asn1_private_key, _ = decoder.decode(
+                asn1_private_key_info.getComponentByName("privateKey"), asn1Spec=_ECPrivateKey()
+            )
+
+            private_value = bytes_to_int(
+                map(ord, asn1_private_key.getComponentByName("privateKey"))
+            )
+            public_key = bits_to_bytes(
+                asn1_private_key.getComponentByName("publicKey")
+            )
+            if public_key[0] != 4:
+                raise ValueError
+
+            curve = ec._OID_TO_CURVE[curve_oid]()
+
+            x = bytes_to_int(public_key[1:(curve.key_size // 8) + 1])
+            y = bytes_to_int(public_key[(curve.key_size // 8) + 1:])
+
+            return ec.EllipticCurvePrivateNumbers(
+                private_value,
+                ec.EllipticCurvePublicNumbers(
+                    x, y, curve
+                )
+            ).private_key(self._backend)
+
         else:
             raise UnsupportedAlgorithm(
                 "%s" % algorithm, _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
