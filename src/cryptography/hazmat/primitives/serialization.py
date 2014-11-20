@@ -220,7 +220,7 @@ def bits_to_int(b):
 def bits_to_bytes(b):
     return [
         bits_to_int(reversed(b[i:i + 8]))
-        for i in xrange(0, len(b), 8)
+        for i in range(0, len(b), 8)
     ]
 
 
