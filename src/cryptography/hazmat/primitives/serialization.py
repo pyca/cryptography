@@ -233,9 +233,10 @@ class _ECDSAPrivateKeyParser(object):
             body, asn1Spec=_ECPrivateKey()
         )
 
-        private_value = bytes_to_int(
-            map(ord, asn1_private_key.getComponentByName("privateKey"))
-        )
+        private_value = bytes_to_int([
+            ord(c)
+            for c in asn1_private_key.getComponentByName("privateKey")
+        ])
         public_key = bits_to_bytes(
             asn1_private_key.getComponentByName("publicKey")
         )
@@ -373,7 +374,7 @@ class _PKCS12Cipher(object):
 
     def decrypt(self, parameters, data, password, backend):
         asn1_params, _ = decoder.decode(parameters, _PBEParameter())
-        encoded_password = password.encode("utf-16be")
+        encoded_password = password.decode().encode("utf-16be")
         salt = bytes(asn1_params.getComponentByName("salt"))
         iterations = int(asn1_params.getComponentByName("iterationCount"))
 
@@ -555,9 +556,10 @@ class _PKCS8Parser(object):
                 asn1_private_key_info.getComponentByName("privateKey"), asn1Spec=_ECPrivateKey()
             )
 
-            private_value = bytes_to_int(
-                map(ord, asn1_private_key.getComponentByName("privateKey"))
-            )
+            private_value = bytes_to_int([
+                ord(c)
+                for c in asn1_private_key.getComponentByName("privateKey")
+            ])
             public_key = bits_to_bytes(
                 asn1_private_key.getComponentByName("publicKey")
             )
