@@ -623,9 +623,9 @@ class _PEMCipher(object):
 
 
 _PEM_CIPHERS = {
-    "AES-128-CBC": _PEMCipher(algorithms.AES, modes.CBC, 128 // 8),
-    "AES-256-CBC": _PEMCipher(algorithms.AES, modes.CBC, 256 // 8),
-    "DES-EDE3-CBC": _PEMCipher(algorithms.TripleDES, modes.CBC, 192 // 8),
+    b"AES-128-CBC": _PEMCipher(algorithms.AES, modes.CBC, 128 // 8),
+    b"AES-256-CBC": _PEMCipher(algorithms.AES, modes.CBC, 256 // 8),
+    b"DES-EDE3-CBC": _PEMCipher(algorithms.TripleDES, modes.CBC, 192 // 8),
 }
 
 
@@ -669,9 +669,9 @@ class _PEMObject(object):
         encrypted = False
         dek_info = None
         for key, value in self._headers:
-            if key == "Proc-Type" and value == "4,ENCRYPTED":
+            if key == b"Proc-Type" and value == b"4,ENCRYPTED":
                 encrypted = True
-            elif key == "DEK-Info":
+            elif key == b"DEK-Info":
                 dek_info = value
 
         if not encrypted:
@@ -683,7 +683,7 @@ class _PEMObject(object):
                 "Password was not given but private key is encrypted."
             )
 
-        algorithm_name, hex_iv = dek_info.split(",", 1)
+        algorithm_name, hex_iv = dek_info.split(b",", 1)
         iv = binascii.unhexlify(hex_iv)
         try:
             pem_cipher = _PEM_CIPHERS[algorithm_name]
