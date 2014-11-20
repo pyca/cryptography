@@ -654,7 +654,7 @@ class _PEMObject(object):
                 # TODO: line continuations :-()
                 name, value = line.split(b":", 1)
                 headers.append((name, value.strip()))
-            elif line == b"-----END {0}-----".format(object_type):
+            elif line == b"-----END " + object_type + "-----":
                 break
             else:
                 body_lines.append(line)
