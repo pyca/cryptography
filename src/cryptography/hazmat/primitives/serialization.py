@@ -234,7 +234,7 @@ class _ECDSAPrivateKeyParser(object):
         )
 
         private_value = bytes_to_int([
-            ord(c)
+            six.byte2int(c)
             for c in asn1_private_key.getComponentByName("privateKey")
         ])
         public_key = bits_to_bytes(
@@ -557,7 +557,7 @@ class _PKCS8Parser(object):
             )
 
             private_value = bytes_to_int([
-                ord(c)
+                six.byte2int(c)
                 for c in asn1_private_key.getComponentByName("privateKey")
             ])
             public_key = bits_to_bytes(
