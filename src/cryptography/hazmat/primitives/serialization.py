@@ -350,25 +350,25 @@ class _PKCS12Cipher(object):
     def _kdf(self, encoded_password, salt, iterations, desired_length,
              identifier, backend):
         v = self._hash_cls.block_size
-        D = v * six.int2byte(identifier)
-        I = (
+        d = v * six.int2byte(identifier)
+        i = (
             self._make_block(salt) +
             self._make_block(encoded_password + b"\x00\x00")
         )
 
         key = b""
         while len(key) < desired_length:
-            A = bytes(D + I)
-            for i in range(iterations):
+            a = bytes(d + i)
+            for _ in range(iterations):
                 h = hashes.Hash(self._hash_cls(), backend)
-                h.update(A)
-                A = h.finalize()
+                h.update(a)
+                a = h.finalize()
 
-            B = bytes_to_int(self._make_block(A))
-            for i in range(0, len(I), v):
-                x = (bytes_to_int(I[i:i + v]) + B + 1) % (1 << (v * 8))
-                I[i:i + v] = int_to_bytes(x, v)
-            key += A
+            b = bytes_to_int(self._make_block(a))
+            for j in range(0, len(i), v):
+                x = (bytes_to_int(i[j:j + v]) + b + 1) % (1 << (v * 8))
+                i[j:j + v] = int_to_bytes(x, v)
+            key += a
         return key[:desired_length]
 
     def decrypt(self, parameters, data, password, backend):
