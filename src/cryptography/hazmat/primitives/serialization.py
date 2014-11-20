@@ -583,11 +583,11 @@ class _PKCS8Parser(object):
 
 
 _PRIVATE_KEY_PARSERS = {
-    "DSA PRIVATE KEY": _DSAPrivateKeyParser,
-    "EC PRIVATE KEY": _ECDSAPrivateKeyParser,
-    "RSA PRIVATE KEY": _RSAPrivateKeyParser,
-    "ENCRYPTED PRIVATE KEY": _EncryptedPKCS8Parser,
-    "PRIVATE KEY": _PKCS8Parser,
+    b"DSA PRIVATE KEY": _DSAPrivateKeyParser,
+    b"EC PRIVATE KEY": _ECDSAPrivateKeyParser,
+    b"RSA PRIVATE KEY": _RSAPrivateKeyParser,
+    b"ENCRYPTED PRIVATE KEY": _EncryptedPKCS8Parser,
+    b"PRIVATE KEY": _PKCS8Parser,
 }
 
 
