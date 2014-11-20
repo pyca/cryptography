@@ -46,11 +46,26 @@ def load_pem_pkcs8_private_key(data, password, backend):
     return load_pem_private_key(data, password, backend)
 
 
+class _PasswordStorage(object):
+    def __init__(self, password):
+        self._password = password
+        self.used = False
+
+    def get(self):
+        self.used = True
+        return self._password
+
+
 def load_pem_private_key(data, password, backend):
+    if password:
+        password = _PasswordStorage(password)
     pem = _PEMObject.find_pem(data)
-    pem, password = pem.handle_encrypted(password, backend)
+    pem = pem.handle_encrypted(password, backend)
     parser_type = _PRIVATE_KEY_PARSERS[pem._object_type]
-    return parser_type(backend).load_object(pem._body, password)
+    result = parser_type(backend).load_object(pem._body, password)
+    if password and not password.used:
+        raise TypeError("password provided but not used")
+    return result
 
 
 def load_pem_public_key(data, backend):
@@ -299,7 +314,7 @@ class _EncryptedPKCS8Parser(object):
                     "encryptedData"
                 )
             ),
-            password,
+            password.get(),
             self._backend
         )
         return _PKCS8Parser(self._backend).load_object(contents, None)
@@ -660,7 +675,7 @@ class _PEMObject(object):
                 dek_info = value
 
         if not encrypted:
-            return self, password
+            return self
         elif dek_info is None:
             raise ValueError("Missing DEK-INFO")
         elif not password:
@@ -678,5 +693,5 @@ class _PEMObject(object):
                 _Reasons.UNSUPPORTED_CIPHER
             )
 
-        body = pem_cipher.decrypt(self._body, password, iv, backend)
-        return _PEMObject(self._object_type, [], body), None
+        body = pem_cipher.decrypt(self._body, password.get(), iv, backend)
+        return _PEMObject(self._object_type, [], body)
