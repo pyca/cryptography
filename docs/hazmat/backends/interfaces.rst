@@ -260,7 +260,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :param int key_size: The bit length of the generated modulus.
 
-    .. method:: load_rsa_private_numbers(numbers):
+    .. method:: load_rsa_private_numbers(numbers)
 
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
@@ -275,7 +275,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
             any backend specific criteria are not met.
 
-    .. method:: load_rsa_public_numbers(numbers):
+    .. method:: load_rsa_public_numbers(numbers)
 
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
@@ -341,7 +341,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises ValueError: This is raised if the key size is not supported
             by the backend.
 
-    .. method:: dsa_hash_supported(algorithm):
+    .. method:: dsa_hash_supported(algorithm)
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -350,7 +350,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported by this
             backend, otherwise ``False``.
 
-    .. method:: dsa_parameters_supported(p, q, g):
+    .. method:: dsa_parameters_supported(p, q, g)
 
         :param int p: The p value of a DSA key.
 
@@ -361,7 +361,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the given values of ``p``, ``q``, and ``g`` are
             supported by this backend, otherwise ``False``.
 
-    .. method:: load_dsa_parameter_numbers(numbers):
+    .. method:: load_dsa_parameter_numbers(numbers)
 
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`.
@@ -372,7 +372,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
             any backend specific criteria are not met.
 
-    .. method:: load_dsa_private_numbers(numbers):
+    .. method:: load_dsa_private_numbers(numbers)
 
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`.
@@ -383,7 +383,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
             any backend specific criteria are not met.
 
-    .. method:: load_dsa_public_numbers(numbers):
+    .. method:: load_dsa_public_numbers(numbers)
 
         :param numbers: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`.

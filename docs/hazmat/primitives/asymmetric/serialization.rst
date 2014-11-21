@@ -63,7 +63,7 @@ don't need to worry about this detail. PEM keys are recognizable because they
 all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 {format}-----``.
 
-.. function:: load_pem_private_key(data, password, backend):
+.. function:: load_pem_private_key(data, password, backend)
 
     .. versionadded:: 0.6
 
@@ -92,7 +92,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
 
-.. function:: load_pem_public_key(data, backend):
+.. function:: load_pem_public_key(data, backend)
 
     .. versionadded:: 0.6
 
