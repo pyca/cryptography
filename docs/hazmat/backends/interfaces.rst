@@ -197,8 +197,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported for
             PBKDF2 HMAC by this backend, otherwise ``False``.
 
-    .. method:: derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
-                                   key_material)
+    .. method:: derive_pbkdf2_hmac(self, algorithm, length, salt, iterations, key_material)
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
