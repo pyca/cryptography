@@ -695,6 +695,50 @@ Key derivation functions
         :raises cryptography.exceptions.InvalidSignature: This is raised when
             the provided signature does not match the expected signature.
 
+
+X509
+----
+
+.. class:: X509Certificate
+
+    .. versionadded:: 0.7
+
+    .. method:: fingerprint(algorithm)
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            that will be used by this context.
+
+        :return: The fingerprint using the supplied hash algorithm as bytes.
+
+    .. attribute:: serial
+
+        :type: int
+
+        The serial as a Python integer.
+
+    .. method:: public_key()
+
+        :type:
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+
+        The public key associated with the certificate.
+
+    .. attribute:: not_before
+
+        :type: datetime
+
+    The beginning of the validity period for the certificate (UTC).
+
+    .. attribute:: not_after
+
+        :type: datetime
+
+    The end of the validity period for the certificate (UTC).
+
+
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm

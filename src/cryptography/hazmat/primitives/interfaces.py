@@ -488,3 +488,36 @@ class MACContext(object):
 
 # DeprecatedIn07
 CMACContext = MACContext
+
+
+@six.add_metaclass(abc.ABCMeta)
+class X509Certificate(object):
+    @abc.abstractmethod
+    def fingerprint(self, algorithm):
+        """
+        Returns bytes using digest passed.
+        """
+
+    @abc.abstractproperty
+    def serial(self):
+        """
+        Returns certificate serial number
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        Returns the public key
+        """
+
+    @abc.abstractproperty
+    def not_before(self):
+        """
+        Not before time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def not_after(self):
+        """
+        Not after time (represented as UTC datetime)
+        """
