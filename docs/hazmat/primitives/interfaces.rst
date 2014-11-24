@@ -729,14 +729,14 @@ X509
 
     .. attribute:: not_before
 
-        :type: datetime.datetime
+        :type: :class:`datetime.datetime`
 
     A naïve datetime representing the beginning of the validity period for the
     certificate in UTC. This value is inclusive.
 
     .. attribute:: not_after
 
-        :type: datetime.datetime
+        :type: :class:`datetime.datetime`
 
     A naïve datetime representing the end of the validity period for the
     certificate in UTC. This value is inclusive.
