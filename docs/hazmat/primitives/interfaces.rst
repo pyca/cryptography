@@ -709,7 +709,8 @@ X509
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
             that will be used by this context.
 
-        :return: The fingerprint using the supplied hash algorithm as bytes.
+        :return bytes: The fingerprint using the supplied hash algorithm as
+            bytes.
 
     .. attribute:: serial
 
@@ -728,15 +729,17 @@ X509
 
     .. attribute:: not_before
 
-        :type: datetime
+        :type: datetime.datetime
 
-    The beginning of the validity period for the certificate (UTC).
+    A naïve datetime representing the beginning of the validity period for the
+    certificate in UTC. This value is inclusive.
 
     .. attribute:: not_after
 
-        :type: datetime
+        :type: datetime.datetime
 
-    The end of the validity period for the certificate (UTC).
+    A naïve datetime representing the end of the validity period for the
+    certificate in UTC. This value is inclusive.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
