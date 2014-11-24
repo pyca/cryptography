@@ -34,6 +34,11 @@ Asymmetric ciphers
     `enc2-rsa-pkcs8.pem`_ was re-encrypted using a stronger PKCS#8 cipher.
   * `Botan's ECC private keys`_.
 
+X.509
+~~~~~
+
+* PKITS test suite from `NIST PKI Testing`_.
+
 Hashes
 ~~~~~~
 
@@ -168,3 +173,4 @@ header format (substituting the correct information):
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
 .. _`Ed25519 website`: http://ed25519.cr.yp.to/software.html
 .. _`NIST SP-800-38B`: http://csrc.nist.gov/publications/nistpubs/800-38B/Updated_CMAC_Examples.pdf
+.. _`NIST PKI Testing`: http://csrc.nist.gov/groups/ST/crypto_apps_infra/pki/pkitesting.html
