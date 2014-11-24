@@ -512,3 +512,17 @@ A specific ``backend`` may provide one or more of these interfaces.
         :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
             encrypted with an unsupported algorithm.
 
+
+.. class:: X509Backend
+
+    .. versionadded:: 0.7
+
+    A backend with methods for working with X.509 objects.
+
+    .. method:: load_pem_x509_certificate(data)
+
+        :param bytes data: PEM formatted certificate data.
+
+        :returns: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.X509Certificate`
+            provider.
