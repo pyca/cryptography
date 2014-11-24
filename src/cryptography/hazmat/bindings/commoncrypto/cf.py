@@ -16,7 +16,7 @@ typedef uint32_t UInt32;
 
 typedef const void * CFAllocatorRef;
 const CFAllocatorRef kCFAllocatorDefault;
-typedef const void * CFDataRef;
+typedef ... *CFDataRef;
 typedef signed long long CFIndex;
 typedef ... *CFStringRef;
 typedef ... *CFArrayRef;
