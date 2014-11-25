@@ -504,6 +504,12 @@ class X509Certificate(object):
         Returns certificate serial number
         """
 
+    @abc.abstractproperty
+    def version(self):
+        """
+        Returns the certificate version
+        """
+
     @abc.abstractmethod
     def public_key(self):
         """

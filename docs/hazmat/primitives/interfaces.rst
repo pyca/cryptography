@@ -703,6 +703,12 @@ X509
 
     .. versionadded:: 0.7
 
+    .. attribute:: version
+
+        :type: X509Version
+
+        The certificate version as an enumeration.
+
     .. method:: fingerprint(algorithm)
 
         :param algorithm: A
