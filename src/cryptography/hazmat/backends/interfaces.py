@@ -259,3 +259,9 @@ class X509Backend(object):
         """
         Load an X.509 certificate from PEM encoded data.
         """
+
+    @abc.abstractmethod
+    def load_der_x509_certificate(self, data):
+        """
+        Load an X.509 certificate from DER encoded data.
+        """

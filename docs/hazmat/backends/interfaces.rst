@@ -525,3 +525,10 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: An instance of
             :class:`~cryptography.hazmat.primitives.interfaces.X509Certificate`.
+
+    .. method:: load_der_x509_certificate(data)
+
+        :param bytes data: DER formatted certificate data.
+
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.interfaces.X509Certificate`.
