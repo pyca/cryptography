@@ -67,6 +67,7 @@ The recipes layer
     exceptions
     faq
     glossary
+    x509
 
 The hazardous materials layer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

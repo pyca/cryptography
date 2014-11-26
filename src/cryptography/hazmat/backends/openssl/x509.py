@@ -15,8 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 
-from cryptography import utils
-from cryptography.hazmat.primitives import hashes, interfaces, x509
+from cryptography import utils, x509
+from cryptography.hazmat.primitives import hashes, interfaces
 
 
 @utils.register_interface(interfaces.X509Certificate)

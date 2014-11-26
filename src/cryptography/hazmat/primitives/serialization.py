@@ -116,7 +116,3 @@ else:
             data = data[4:]
 
         return result
-
-
-def load_pem_x509_certificate(data, backend):
-    return backend.load_pem_x509_certificate(data)
