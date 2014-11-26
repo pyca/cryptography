@@ -16,7 +16,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 
 from cryptography import utils
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes, interfaces, x509
 
 
 @utils.register_interface(interfaces.X509Certificate)
@@ -51,6 +51,16 @@ class _X509Certificate(object):
         der = self._read_bio(bio)
         h.update(der)
         return h.finalize()
+
+    @property
+    def version(self):
+        version = self._backend._lib.X509_get_version(self._x509)
+        if version == 0:
+            return x509.X509Version.v1
+        elif version == 2:
+            return x509.X509Version.v3
+        else:
+            raise StandardError("TODO")
 
     @property
     def serial(self):
