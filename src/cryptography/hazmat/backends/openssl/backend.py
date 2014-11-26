@@ -682,14 +682,20 @@ class Backend(object):
         x509 = self._lib.PEM_read_bio_X509(
             mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
         )
-        assert x509 != self._ffi.NULL
+        if x509 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _X509Certificate(self, x509)
 
     def load_der_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)
         x509 = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
-        assert x509 != self._ffi.NULL
+        if x509 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _X509Certificate(self, x509)
 

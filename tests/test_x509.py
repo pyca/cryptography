@@ -103,3 +103,11 @@ class TestX509Certificate(object):
             )
         )
         assert cert.version == x509.X509Version.v1
+
+    def test_invalid_pem(self, backend):
+        with pytest.raises(ValueError):
+            x509.load_pem_x509_certificate(b"notacert", backend)
+
+    def test_invalid_der(self, backend):
+        with pytest.raises(ValueError):
+            x509.load_der_x509_certificate(b"notacert", backend)
