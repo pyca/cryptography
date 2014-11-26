@@ -12,7 +12,7 @@ from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
     PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    TraditionalOpenSSLSerializationBackend, X509Backend
 )
 
 
@@ -27,6 +27,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(PEMSerializationBackend)
+@utils.register_interface(X509Backend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -346,4 +347,26 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm(
             "This backend does not support this key serialization.",
             _Reasons.UNSUPPORTED_SERIALIZATION
+        )
+
+    def load_pem_x509_certificate(self, data):
+        for b in self._filtered_backends(
+            X509Backend
+        ):
+            return b.load_pem_x509_certificate(data)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
+        )
+
+    def load_der_x509_certificate(self, data):
+        for b in self._filtered_backends(
+            X509Backend
+        ):
+            return b.load_der_x509_certificate(data)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
         )
