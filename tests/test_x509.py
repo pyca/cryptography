@@ -45,7 +45,6 @@ class TestX509Certificate(object):
     def test_load_good_ca_cert(self, backend):
         cert = _load_der_cert("GoodCACert.crt", backend)
 
-        assert cert
         assert cert.not_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_after == datetime.datetime(2030, 12, 31, 8, 30)
         assert cert.serial == 2
@@ -53,16 +52,31 @@ class TestX509Certificate(object):
         assert isinstance(public_key, interfaces.RSAPublicKey)
         assert cert.version == x509.X509Version.v3
 
-    def test_pre_2000_utc_not_before_cert(self, backend):
+    def test_utc_pre_2000_not_before_cert(self, backend):
         cert = _load_der_cert(
             "Validpre2000UTCnotBeforeDateTest3EE.crt",
             backend
         )
 
-        assert cert
         assert cert.not_before == datetime.datetime(1950, 1, 1, 12, 1)
-        assert cert.not_after == datetime.datetime(2030, 12, 31, 8, 30)
-        assert cert.version == x509.X509Version.v3
+
+    def test_pre_2000_utc_not_after_cert(self, backend):
+        cert = _load_der_cert(
+            "Invalidpre2000UTCEEnotAfterDateTest7EE.crt",
+            backend
+        )
+
+        assert cert.not_after == datetime.datetime(1999, 1, 1, 12, 1)
+
+    def test_post_2000_utc_cert(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            )
+        )
+        assert cert.not_before == datetime.datetime(2014, 11, 26, 21, 41, 20)
+        assert cert.not_after == datetime.datetime(2014, 12, 26, 21, 41, 20)
 
     def test_generalized_time_not_before_cert(self, backend):
         cert = _load_der_cert(
@@ -70,7 +84,6 @@ class TestX509Certificate(object):
             backend
         )
 
-        assert cert
         assert cert.not_before == datetime.datetime(2002, 1, 1, 12, 1)
         assert cert.not_after == datetime.datetime(2030, 12, 31, 8, 30)
         assert cert.version == x509.X509Version.v3
@@ -80,7 +93,6 @@ class TestX509Certificate(object):
             "ValidGeneralizedTimenotAfterDateTest8EE.crt",
             backend
         )
-        assert cert
         assert cert.not_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_after == datetime.datetime(2050, 1, 1, 12, 1)
         assert cert.version == x509.X509Version.v3
