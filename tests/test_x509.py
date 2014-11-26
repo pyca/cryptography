@@ -94,3 +94,12 @@ class TestX509Certificate(object):
         )
         with pytest.raises(InvalidX509Version):
             cert.version
+
+    def test_version_1_cert(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "v1_cert.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            )
+        )
+        assert cert.version == x509.X509Version.v1
