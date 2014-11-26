@@ -12,10 +12,11 @@ import textwrap
 import pytest
 
 from cryptography import x509
+from cryptography.exceptions import InvalidX509Version
 from cryptography.hazmat.backends.interfaces import RSABackend, X509Backend
 from cryptography.hazmat.primitives import interfaces
 
-from .hazmat.primitives.utils import load_vectors_from_file
+from .utils import load_vectors_from_file
 
 
 def _der_to_pem(data):
@@ -83,3 +84,13 @@ class TestX509Certificate(object):
         assert cert.not_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_after == datetime.datetime(2050, 1, 1, 12, 1)
         assert cert.version == x509.X509Version.v3
+
+    def test_invalid_version_cert(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "invalid_version.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            )
+        )
+        with pytest.raises(InvalidX509Version):
+            cert.version

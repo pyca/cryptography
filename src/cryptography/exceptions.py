@@ -53,3 +53,7 @@ class InvalidKey(Exception):
 
 class InvalidToken(Exception):
     pass
+
+
+class InvalidX509Version(Exception):
+    pass

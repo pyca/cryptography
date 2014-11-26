@@ -705,7 +705,7 @@ X509
 
     .. attribute:: version
 
-        :type: X509Version
+        :type: :class:`~cryptography.x509.X509Version`
 
         The certificate version as an enumeration.
 

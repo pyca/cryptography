@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 
 from cryptography import utils, x509
+from cryptography.exceptions import InvalidX509Version
 from cryptography.hazmat.primitives import hashes, interfaces
 
 
@@ -60,7 +61,9 @@ class _X509Certificate(object):
         elif version == 2:
             return x509.X509Version.v3
         else:
-            raise StandardError("TODO")
+            raise InvalidX509Version(
+                "{0} is not a valid X509 version", version
+            )
 
     @property
     def serial(self):

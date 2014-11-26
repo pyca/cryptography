@@ -43,3 +43,8 @@ Exceptions
 
     This is raised when the verify method of a one time password function's
     computed token does not match the expected token.
+
+
+.. class:: InvalidX509Version
+
+    This is raised when an X.509 certificate has an invalid version number.
