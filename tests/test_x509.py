@@ -68,7 +68,7 @@ class TestRSAX509Certificate(object):
         assert isinstance(public_key, interfaces.RSAPublicKey)
         assert cert.version == x509.X509Version.v3
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
-        assert fingerprint == "6f49779533d565e8b7c1062503eab41492c38e4d"
+        assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
 
     def test_utc_pre_2000_not_before_cert(self, backend):
         cert = _load_cert(
