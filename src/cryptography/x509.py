@@ -18,3 +18,7 @@ def load_pem_x509_certificate(data, backend):
 
 def load_der_x509_certificate(data, backend):
     return backend.load_der_x509_certificate(data)
+
+
+class InvalidX509Version(Exception):
+    pass

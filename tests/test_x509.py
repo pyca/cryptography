@@ -10,7 +10,6 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.exceptions import InvalidX509Version
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
@@ -43,7 +42,7 @@ class TestRSAX509Certificate(object):
                 pemfile.read(), backend
             )
         )
-        assert cert
+        assert isinstance(cert, interfaces.X509Certificate)
 
     def test_load_der_cert(self, backend):
         cert = load_vectors_from_file(
@@ -53,7 +52,7 @@ class TestRSAX509Certificate(object):
                 derfile.read(), backend
             )
         )
-        assert cert
+        assert isinstance(cert, interfaces.X509Certificate)
 
     def test_load_good_ca_cert(self, backend):
         cert = _load_der_cert("GoodCACert.crt", backend)
@@ -117,7 +116,7 @@ class TestRSAX509Certificate(object):
                 pemfile.read(), backend
             )
         )
-        with pytest.raises(InvalidX509Version):
+        with pytest.raises(x509.InvalidX509Version):
             cert.version
 
     def test_version_1_cert(self, backend):
