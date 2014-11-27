@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
 import datetime
 import os
 
@@ -13,7 +14,7 @@ from cryptography import x509
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
@@ -66,6 +67,8 @@ class TestRSAX509Certificate(object):
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.RSAPublicKey)
         assert cert.version == x509.X509Version.v3
+        fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
+        assert fingerprint == "6f49779533d565e8b7c1062503eab41492c38e4d"
 
     def test_utc_pre_2000_not_before_cert(self, backend):
         cert = _load_cert(
