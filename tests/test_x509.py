@@ -4,36 +4,29 @@
 
 from __future__ import absolute_import, division, print_function
 
-import base64
 import datetime
 import os
-import textwrap
 
 import pytest
 
 from cryptography import x509
 from cryptography.exceptions import InvalidX509Version
-from cryptography.hazmat.backends.interfaces import RSABackend, X509Backend
+from cryptography.hazmat.backends.interfaces import (
+    DSABackend, EllipticCurveBackend, RSABackend, X509Backend
+)
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.asymmetric import ec
 
+from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
-
-
-def _der_to_pem(data):
-    lines = textwrap.wrap(base64.b64encode(data), 64)
-    return (
-        "-----BEGIN CERTIFICATE-----\n" +
-        "\n".join(lines) +
-        "\n-----END CERTIFICATE-----"
-    )
 
 
 def _load_der_cert(name, backend):
     cert = load_vectors_from_file(
         os.path.join(
             "x509", "PKITS_data", "certs", name),
-        lambda pemfile: x509.load_der_x509_certificate(
-            pemfile.read(), backend
+        lambda derfile: x509.load_der_x509_certificate(
+            derfile.read(), backend
         )
     )
     return cert
@@ -41,7 +34,27 @@ def _load_der_cert(name, backend):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestX509Certificate(object):
+class TestRSAX509Certificate(object):
+    def test_load_pem_cert(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join(
+                "x509", "custom", "post2000utctime.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            )
+        )
+        assert cert
+
+    def test_load_der_cert(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join(
+                "x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            lambda derfile: x509.load_der_x509_certificate(
+                derfile.read(), backend
+            )
+        )
+        assert cert
+
     def test_load_good_ca_cert(self, backend):
         cert = _load_der_cert("GoodCACert.crt", backend)
 
@@ -123,3 +136,32 @@ class TestX509Certificate(object):
     def test_invalid_der(self, backend):
         with pytest.raises(ValueError):
             x509.load_der_x509_certificate(b"notacert", backend)
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestDSAX509Certificate(object):
+    def test_load_dsa_cert(self, backend):
+        cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "dsa_root.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            )
+        )
+        public_key = cert.public_key()
+        assert isinstance(public_key, interfaces.DSAPublicKey)
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestECDSAX509Certificate(object):
+    def test_load_ecdsa_cert(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        cert = load_vectors_from_file(
+            os.path.join("x509", "ecdsa_root.pem"),
+            lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read(), backend
+            )
+        )
+        public_key = cert.public_key()
+        assert isinstance(public_key, interfaces.EllipticCurvePublicKey)
