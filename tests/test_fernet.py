@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import base64
 import calendar
 import json
+import os
 import time
 
 import iso8601
@@ -24,7 +25,9 @@ import cryptography_vectors
 
 
 def json_parametrize(keys, filename):
-    vector_file = cryptography_vectors.open_vector_file('fernet', filename)
+    vector_file = cryptography_vectors.open_vector_file(
+        os.path.join('fernet', filename), "r"
+    )
     with vector_file:
         data = json.load(vector_file)
         return pytest.mark.parametrize(keys, [
