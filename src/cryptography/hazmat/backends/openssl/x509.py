@@ -105,5 +105,5 @@ class _X509Certificate(object):
             self._backend._lib.ASN1_STRING_data(
                 self._backend._ffi.cast("ASN1_STRING *", generalized_time)
             )
-        )
+        ).decode("ascii")
         return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")

@@ -20,13 +20,16 @@ from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
 
 
-def _load_der_cert(name, backend):
+def _load_cert(filename, fmt, backend):
+    if fmt == "pem":
+        loader = x509.load_pem_x509_certificate
+    else:
+        loader = x509.load_der_x509_certificate
+
     cert = load_vectors_from_file(
-        os.path.join(
-            "x509", "PKITS_data", "certs", name),
-        lambda derfile: x509.load_der_x509_certificate(
-            derfile.read(), backend
-        )
+        filename=filename,
+        loader=lambda pemfile: loader(pemfile.read(), backend),
+        mode="rb"
     )
     return cert
 
@@ -35,27 +38,27 @@ def _load_der_cert(name, backend):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRSAX509Certificate(object):
     def test_load_pem_cert(self, backend):
-        cert = load_vectors_from_file(
-            os.path.join(
-                "x509", "custom", "post2000utctime.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            )
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            "pem",
+            backend
         )
         assert isinstance(cert, interfaces.X509Certificate)
 
     def test_load_der_cert(self, backend):
-        cert = load_vectors_from_file(
-            os.path.join(
-                "x509", "PKITS_data", "certs", "GoodCACert.crt"),
-            lambda derfile: x509.load_der_x509_certificate(
-                derfile.read(), backend
-            )
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            "der",
+            backend
         )
         assert isinstance(cert, interfaces.X509Certificate)
 
     def test_load_good_ca_cert(self, backend):
-        cert = _load_der_cert("GoodCACert.crt", backend)
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            "der",
+            backend
+        )
 
         assert cert.not_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_after == datetime.datetime(2030, 12, 31, 8, 30)
@@ -65,44 +68,58 @@ class TestRSAX509Certificate(object):
         assert cert.version == x509.X509Version.v3
 
     def test_utc_pre_2000_not_before_cert(self, backend):
-        cert = _load_der_cert(
-            "Validpre2000UTCnotBeforeDateTest3EE.crt",
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "Validpre2000UTCnotBeforeDateTest3EE.crt"
+            ),
+            "der",
             backend
         )
 
         assert cert.not_before == datetime.datetime(1950, 1, 1, 12, 1)
 
     def test_pre_2000_utc_not_after_cert(self, backend):
-        cert = _load_der_cert(
-            "Invalidpre2000UTCEEnotAfterDateTest7EE.crt",
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "Invalidpre2000UTCEEnotAfterDateTest7EE.crt"
+            ),
+            "der",
             backend
         )
 
         assert cert.not_after == datetime.datetime(1999, 1, 1, 12, 1)
 
     def test_post_2000_utc_cert(self, backend):
-        cert = load_vectors_from_file(
+        cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            )
+            "pem",
+            backend
         )
         assert cert.not_before == datetime.datetime(2014, 11, 26, 21, 41, 20)
         assert cert.not_after == datetime.datetime(2014, 12, 26, 21, 41, 20)
 
     def test_generalized_time_not_before_cert(self, backend):
-        cert = _load_der_cert(
-            "ValidGeneralizedTimenotBeforeDateTest4EE.crt",
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "ValidGeneralizedTimenotBeforeDateTest4EE.crt"
+            ),
+            "der",
             backend
         )
-
         assert cert.not_before == datetime.datetime(2002, 1, 1, 12, 1)
         assert cert.not_after == datetime.datetime(2030, 12, 31, 8, 30)
         assert cert.version == x509.X509Version.v3
 
     def test_generalized_time_not_after_cert(self, backend):
-        cert = _load_der_cert(
-            "ValidGeneralizedTimenotAfterDateTest8EE.crt",
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "ValidGeneralizedTimenotAfterDateTest8EE.crt"
+            ),
+            "der",
             backend
         )
         assert cert.not_before == datetime.datetime(2010, 1, 1, 8, 30)
@@ -110,21 +127,19 @@ class TestRSAX509Certificate(object):
         assert cert.version == x509.X509Version.v3
 
     def test_invalid_version_cert(self, backend):
-        cert = load_vectors_from_file(
+        cert = _load_cert(
             os.path.join("x509", "custom", "invalid_version.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            )
+            "pem",
+            backend
         )
         with pytest.raises(x509.InvalidX509Version):
             cert.version
 
     def test_version_1_cert(self, backend):
-        cert = load_vectors_from_file(
+        cert = _load_cert(
             os.path.join("x509", "v1_cert.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            )
+            "pem",
+            backend
         )
         assert cert.version == x509.X509Version.v1
 
@@ -141,11 +156,10 @@ class TestRSAX509Certificate(object):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestDSAX509Certificate(object):
     def test_load_dsa_cert(self, backend):
-        cert = load_vectors_from_file(
+        cert = _load_cert(
             os.path.join("x509", "custom", "dsa_root.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            )
+            "pem",
+            backend
         )
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.DSAPublicKey)
@@ -156,11 +170,10 @@ class TestDSAX509Certificate(object):
 class TestECDSAX509Certificate(object):
     def test_load_ecdsa_cert(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
-        cert = load_vectors_from_file(
+        cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            )
+            "pem",
+            backend
         )
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.EllipticCurvePublicKey)
