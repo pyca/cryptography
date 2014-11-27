@@ -14,3 +14,13 @@ Asymmetric Utilities
     :param bytes signature: The signature to decode.
 
     :returns: The decoded tuple ``(r, s)``.
+
+.. function:: encode_rfc6979_signature(r, s)
+
+    Creates an :rfc:`6979` byte string from raw signature values.
+
+    :param int r: The raw signature value ``r``.
+
+    :param int s: The raw signature value ``s``.
+
+    :return bytes: The encoded signature.

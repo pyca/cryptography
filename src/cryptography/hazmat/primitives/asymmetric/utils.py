@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from pyasn1.codec.der import decoder
+from pyasn1.codec.der import decoder, encoder
 from pyasn1.type import namedtype, univ
 
 
@@ -20,3 +20,10 @@ def decode_rfc6979_signature(signature):
     r = int(data[0].getComponentByName('r'))
     s = int(data[0].getComponentByName('s'))
     return (r, s)
+
+
+def encode_rfc6979_signature(r, s):
+    sig = _DSSSigValue()
+    sig.setComponentByName('r', r)
+    sig.setComponentByName('s', s)
+    return encoder.encode(sig)
