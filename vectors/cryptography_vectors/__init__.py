@@ -18,6 +18,6 @@ __all__ = [
 ]
 
 
-def open_vector_file(*args):
+def open_vector_file(filename, mode):
     base = os.path.dirname(__file__)
-    return open(os.path.join(base, *args), "r")
+    return open(os.path.join(base, filename), mode)

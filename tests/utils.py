@@ -87,8 +87,8 @@ def der_encode_dsa_signature(r, s):
     return encoder.encode(sig)
 
 
-def load_vectors_from_file(filename, loader):
-    with cryptography_vectors.open_vector_file(filename) as vector_file:
+def load_vectors_from_file(filename, loader, mode="r"):
+    with cryptography_vectors.open_vector_file(filename, mode) as vector_file:
         return loader(vector_file)
 
 
