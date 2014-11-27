@@ -1,0 +1,3058 @@
+dn: O=Test Certificates 2011,C=US
+objectClass: organization
+o: Test Certificates 2011
+
+dn: CN=Trust Anchor,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Trust Anchor
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/TrustAnchorRootCertificate.crt
+certificateRevocationList;binary:< file:///tmp/crls/TrustAnchorRootCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BadSignedCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BadnotBeforeDateCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BadnotAfterDateCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/NameOrderingCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/UIDCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/RFC3280MandatoryAttributeTypesCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/RFC3280OptionalAttributeTypesCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/UTF8StringEncodedNamesCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/RolloverfromPrintableStringtoUTF8StringCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/UTF8StringCaseInsensitiveMatchCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/NoCRLCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BadCRLSignatureCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BadCRLIssuerNameCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/WrongCRLCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/TwoCRLsCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/UnknownCRLEntryExtensionCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/UnknownCRLExtensionCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/OldCRLnextUpdateCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pre2000CRLnextUpdateCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/GeneralizedTimeCRLnextUpdateCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/NegativeSerialNumberCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/LongSerialNumberCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/SeparateCertificateandCRLKeysCertificateSigningCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/SeparateCertificateandCRLKeysCA2CertificateSigningCACertreversecrossCerificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BasicSelfIssuedNewKeyCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BasicSelfIssuedOldKeyCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/BasicSelfIssuedCRLSigningKeyCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/MissingbasicConstraintsCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/basicConstraintsCriticalcAFalseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/basicConstraintsNotCriticalcAFalseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/basicConstraintsNotCriticalCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint0CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageCriticalkeyCertSignFalseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageNotCriticalkeyCertSignFalseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageNotCriticalCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageCriticalcRLSignFalseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageNotCriticalcRLSignFalseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/NoPoliciesCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP1234CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP12CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/anyPolicyCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP3CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/Mapping1to2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/P12Mapping1to3CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/P1Mapping1to234CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/MappingFromanyPolicyCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/MappingToanyPolicyCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PanyPolicyMapping1to2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/P1anyPolicyMapping1to2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping0CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy0CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy5CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN3CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN4CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN5CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsRFC822CA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsRFC822CA2CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsRFC822CA3CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDNS1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDNS2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsURI1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsURI2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/distributionPoint1CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/distributionPoint2CACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/NoissuingDistributionPointCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlyContainsUserCertsCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlyContainsCACertsCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlyContainsAttributeCertsCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA2CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA3CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA4CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA2CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA3CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA4CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA5CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA6CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLIndicatorNoBaseCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLCA2CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLCA3CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/DSACACertreversecrossCertificatePair.cp
+
+dn: CN=Good CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Good CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/GoodCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/GoodCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/RevokedsubCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP2subCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodsubCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP2subCA2CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodsubCAPanyPolicyMapping1to2CACertreversecrossCertificatePair.cp
+
+dn: CN=Valid EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidCertificatePathTest1EE.crt
+
+dn: CN=Bad Signed CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Bad Signed CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BadSignedCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BadSignedCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/BadSignedCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid CA Signature Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid CA Signature Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidCASignatureTest2EE.crt
+
+dn: CN=Invalid EE Signature Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid EE Signature Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidEESignatureTest3EE.crt
+
+dn: CN=Bad notBefore Date CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Bad notBefore Date CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BadnotBeforeDateCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BadnotBeforeDateCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/BadnotBeforeDateCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid CA notBefore Date EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid CA notBefore Date EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidCAnotBeforeDateTest1EE.crt
+
+dn: CN=Invalid EE notBefore Date EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid EE notBefore Date EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidEEnotBeforeDateTest2EE.crt
+
+dn: CN=Valid pre2000 UTC notBefore Date EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid pre2000 UTC notBefore Date EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/Validpre2000UTCnotBeforeDateTest3EE.crt
+
+dn: CN=Valid GeneralizedTime notBefore Date EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid GeneralizedTime notBefore Date EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidGeneralizedTimenotBeforeDateTest4EE.crt
+
+dn: CN=Bad notAfter Date CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Bad notAfter Date CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BadnotAfterDateCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BadnotAfterDateCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/BadnotAfterDateCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid CA notAfter Date EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid CA notAfter Date EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidCAnotAfterDateTest5EE.crt
+
+dn: CN=Invalid EE notAfter Date EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid EE notAfter Date EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidEEnotAfterDateTest6EE.crt
+
+dn: CN=Invalid pre2000 UTC EE notAfter Date EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pre2000 UTC EE notAfter Date EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/Invalidpre2000UTCEEnotAfterDateTest7EE.crt
+
+dn: CN=Valid GeneralizedTime notAfter Date EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid GeneralizedTime notAfter Date EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidGeneralizedTimenotAfterDateTest8EE.crt
+
+dn: CN=Good CA Root,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Good CA Root
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/GoodCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/GoodCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Name Chaining EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Name Chaining EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidNameChainingTest1EE.crt
+
+dn: OU=Organizational Unit Name 1,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: Organizational Unit Name 1
+
+dn: OU=Organizational Unit Name 2,OU=Organizational Unit Name 1,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: Organizational Unit Name 2
+
+dn: CN=Name Ordering CA,OU=Organizational Unit Name 2,OU=Organizational Unit Name 1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Name Ordering CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/NameOrderingCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/NameOrderCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/NameOrderingCACertforwardcrossCertificatePair.cp
+
+dn: OU=Organizational Unit Name 2,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: Organizational Unit Name 2
+
+dn: OU=Organizational Unit Name 1,OU=Organizational Unit Name 2,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: Organizational Unit Name 1
+
+dn: CN=Name Ordering CA,OU=Organizational Unit Name 1,OU=Organizational Unit Name 2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Name Ordering CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/NameOrderingCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/NameOrderCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/NameOrderingCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Name Chaining Order EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Name Chaining Order EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidNameChainingOrderTest2EE.crt
+
+dn: CN=Valid Name Chaining Whitespace EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Name Chaining Whitespace EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidNameChainingWhitespaceTest3EE.crt
+
+dn: CN=Valid Name Chaining Whitespace EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Name Chaining Whitespace EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidNameChainingWhitespaceTest4EE.crt
+
+dn: CN=Valid Name Chaining Capitalization EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Name Chaining Capitalization EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidNameChainingCapitalizationTest5EE.crt
+
+dn: CN=UID CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: UID CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/UIDCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/UIDCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/UIDCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid UIDs EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid UIDs EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidNameUIDsTest6EE.crt
+
+# gov, Test Certificates 2011, US
+dn: dc=gov,O=Test Certificates 2011,c=US
+objectClass: domain
+dc: gov
+
+# testcertificates, gov, Test Certificates 2011, US
+dn: dc=testcertificates,dc=gov,O=Test Certificates 2011,c=US
+objectClass: domain
+dc: testcertificates
+
+# Maryland, testcertificates, gov, Test Certificates 2011, US
+dn: st=Maryland,dc=testcertificates,dc=gov,O=Test Certificates 2011,c=US
+objectClass: locality
+st: Maryland
+
+# 345, Maryland, testcertificates, gov, Test Certificates 2011, US
+dn: serialNumber=345,st=Maryland,dc=testcertificates,dc=gov,o=Test Certificates 2011,c=US
+objectClass: device
+cn: CA 345
+serialNumber: 345
+
+dn: dnQualifier=CA,serialNumber=345,st=Maryland,dc=testcertificates,dc=gov,O=Test Certificates 2011,c=US
+objectClass: domain
+objectClass: entrustDNQualifierUser
+objectClass: pkiCA
+dnQualifier: CA
+dc: testcertificates
+cACertificate;binary:< file:///tmp/certs/RFC3280MandatoryAttributeTypesCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/RFC3280MandatoryAttributeTypesCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/RFC3280MandatoryAttributeTypesCACertforwardcrossCertificatePair.cp
+
+dn: cn=Valid RFC3280 Mandatory Attribute Types EE Certificate Test7,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: Valid RFC3280 Mandatory Attribute Types EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidRFC3280MandatoryAttributeTypesTest7EE.crt
+
+# Gaithersburg, Test Certificates 2011, US
+dn: localityName=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: domain
+dc: testcertificates
+localityName: Gaithersburg
+
+# John, Gaithersburg, Test Certificates 2011, US
+dn: givenName=John,localityName=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: inetOrgPerson
+cn: John
+sn: CA
+givenName: John
+
+# Q, John, Gaithersburg, Test Certificates 2011, US
+dn: initials=Q,givenName=John,localityName=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: inetOrgPerson
+cn: John
+sn: CA
+initials: Q
+
+# Fictitious, Q, John, Gaithersburg, Test Certificates 2011, US
+dn: pseudonym=Fictitious,initials=Q,givenName=John,localityName=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: person
+objectClass: naturalPerson
+cn: John
+sn: CA
+pseudonym: Fictitious
+
+# CA, Fictitious, Q, John, Gaithersburg, Test Certificates 2011, US
+dn: sn=CA,pseudonym=Fictitious,initials=Q,givenName=John,localityName=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: person
+cn: John
+sn: CA
+
+# III, CA, Fictitious, Q, John, Gaithersburg, Test Certificates 2011, US
+dn: generationQualifier=III,sn=CA,pseudonym=Fictitious,initials=Q,givenName=John,localityName=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: person
+objectClass: entrustNamedObject
+cn: John
+sn: CA
+generationQualifier: III
+
+dn: title=M.D.,generationQualifier=III,sn=CA,2.5.4.65=Fictitious,initials=Q,givenName=John,l=Gaithersburg,O=Test Certificates 2011,c=US
+objectClass: organizationalPerson
+objectClass: pkiCA
+title: M.D.
+cn: John Q. CA
+sn: CA
+cACertificate;binary:< file:///tmp/certs/RFC3280OptionalAttributeTypesCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/RFC3280OptionalAttributeTypesCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/RFC3280OptionalAttributeTypesCACertforwardcrossCertificatePair.cp
+
+dn: cn=Valid RFC3280 Optional Attribute Types EE Certificate Test8,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: Valid RFC3280 Optional Attribute Types EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidRFC3280OptionalAttributeTypesTest8EE.crt
+
+dn: cn=UTF8String CA,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: UTF8String CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/UTF8StringEncodedNamesCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/UTF8StringEncodedNamesCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/UTF8StringEncodedNamesCACertforwardcrossCertificatePair.cp
+
+dn: cn=Valid UTF8String Encoded Names EE Certificate Test9,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: Valid UTF8String Encoded Names EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidUTF8StringEncodedNamesTest9EE.crt
+
+dn: cn=Rollover from PrintableString to UTF8String CA,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: Rollover from PrintableString to UTF8String CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/RolloverfromPrintableStringtoUTF8StringCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/RolloverfromPrintableStringtoUTF8StringCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/RolloverfromPrintableStringtoUTF8StringCACertforwardcrossCertificatePair.cp
+
+dn: cn=Valid Rollover PrintableString to UTF8String EE Cert Test10,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: Valid Rollover PrintableString to UTF8String EE Cert Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidRolloverfromPrintableStringtoUTF8StringTest10EE.crt
+
+dn: cn=UTF8String Case Insensitive Match CA,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: UTF8String Case Insensitive Match CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/UTF8StringCaseInsensitiveMatchCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/UTF8StringCaseInsensitiveMatchCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/UTF8StringCaseInsensitiveMatchCACertforwardcrossCertificatePair.cp
+
+dn: cn=Valid UTF8String Case Insensitive Match EE Certificate Test11,O=Test Certificates 2011,c=US
+objectClass: organizationalRole
+cn: Valid UTF8String Case Insensitive Match EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidUTF8StringCaseInsensitiveMatchTest11EE.crt
+
+dn: CN=No CRL CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: No CRL CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/NoCRLCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/NoCRLCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Missing CRL EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Missing CRL EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidMissingCRLTest1EE.crt
+
+dn: CN=Revoked subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Revoked subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/RevokedsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/RevokedsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/RevokedsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Revoked CA Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Revoked CA Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidRevokedCATest2EE.crt
+
+dn: CN=Invalid Revoked EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Revoked EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidRevokedEETest3EE.crt
+
+dn: CN=Bad CRL Signature CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Bad CRL Signature CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BadCRLSignatureCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BadCRLSignatureCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/BadCRLSignatureCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Bad CRL Signature EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Bad CRL Signature EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidBadCRLSignatureTest4EE.crt
+
+dn: CN=Bad CRL Issuer Name CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Bad CRL Issuer Name CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BadCRLIssuerNameCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BadCRLIssuerNameCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/BadCRLIssuerNameCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Bad CRL Issuer Name EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Bad CRL Issuer Name EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidBadCRLIssuerNameTest5EE.crt
+
+dn: CN=Wrong CRL CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Wrong CRL CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/WrongCRLCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/WrongCRLCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/WrongCRLCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Wrong CRL EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Wrong CRL EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidWrongCRLTest6EE.crt
+
+dn: CN=Two CRLs CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Two CRLs CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/TwoCRLsCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/TwoCRLsCAGoodCRL.crl
+certificateRevocationList;binary:< file:///tmp/crls/TwoCRLsCABadCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/TwoCRLsCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Two CRLs EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Two CRLs EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidTwoCRLsTest7EE.crt
+
+dn: CN=Unknown CRL Entry Extension CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Unknown CRL Entry Extension CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/UnknownCRLEntryExtensionCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/UnknownCRLEntryExtensionCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/UnknownCRLEntryExtensionCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Unknown CRL Entry Extension EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Unknown CRL Entry Extension EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidUnknownCRLEntryExtensionTest8EE.crt
+
+dn: CN=Unknown CRL Extension CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Unknown CRL Extension CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/UnknownCRLExtensionCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/UnknownCRLExtensionCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/UnknownCRLExtensionCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Unknown CRL Extension EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Unknown CRL Extension EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidUnknownCRLExtensionTest9EE.crt
+
+dn: CN=Invalid Unknown CRL Extension EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Unknown CRL Extension EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidUnknownCRLExtensionTest10EE.crt
+
+dn: CN=Old CRL nextUpdate CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Old CRL nextUpdate CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/OldCRLnextUpdateCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/OldCRLnextUpdateCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/OldCRLnextUpdateCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Old CRL nextUpdate EE Certificate Test11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Old CRL nextUpdate EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidOldCRLnextUpdateTest11EE.crt
+
+dn: CN=pre2000 CRL nextUpdate CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pre2000 CRL nextUpdate CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pre2000CRLnextUpdateCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pre2000CRLnextUpdateCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pre2000CRLnextUpdateCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid pre2000 CRL nextUpdate EE Certificate Test12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pre2000 CRL nextUpdate EE Certificate Test12
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/Invalidpre2000CRLnextUpdateTest12EE.crt
+
+dn: CN=GenerizedTime CRL nextUpdate CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: GenerizedTime CRL nextUpdate CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/GeneralizedTimeCRLnextUpdateCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/GeneralizedTimeCRLnextUpdateCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/GeneralizedTimeCRLnextUpdateCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid GeneralizedTime CRL nextUpdate EE Certificate Test13,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid GeneralizedTime CRL nextUpdate EE Certificate Test13
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidGeneralizedTimeCRLnextUpdateTest13EE.crt
+
+dn: CN=Negative Serial Number CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Negative Serial Number CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/NegativeSerialNumberCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/NegativeSerialNumberCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/NegativeSerialNumberCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Negative Serial Number EE Certificate Test14,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Negative Serial Number EE Certificate Test14
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidNegativeSerialNumberTest14EE.crt
+
+dn: CN=Invalid Negative Serial Number EE Certificate Test15,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Negative Serial Number EE Certificate Test15
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidNegativeSerialNumberTest15EE.crt
+
+dn: CN=Long Serial Number CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Long Serial Number CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/LongSerialNumberCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/LongSerialNumberCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/LongSerialNumberCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Long Serial Number EE Certificate Test16,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Long Serial Number EE Certificate Test16
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidLongSerialNumberTest16EE.crt
+
+dn: CN=Valid Long Serial Number EE Certificate Test17,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Long Serial Number EE Certificate Test17
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidLongSerialNumberTest17EE.crt
+
+dn: CN=Invalid Long Serial Number EE Certificate Test18,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Long Serial Number EE Certificate Test18
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidLongSerialNumberTest18EE.crt
+
+dn: CN=Separate Certificate and CRL Keys CA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Separate Certificate and CRL Keys CA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/SeparateCertificateandCRLKeysCertificateSigningCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/SeparateCertificateandCRLKeysCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/SeparateCertificateandCRLKeysCertificateSigningCACertforwardcrossCertificatePair.cp
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/SeparateCertificateandCRLKeysCRLSigningCert.crt
+
+dn: CN=Valid Separate Certificate and CRL Keys EE Certificate Test19,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Separate Certificate and CRL Keys EE Certificate Test19
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSeparateCertificateandCRLKeysTest19EE.crt
+
+dn: CN=Invalid Separate Certificate and CRL Keys EE Certificate Test20,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Separate Certificate and CRL Keys EE Certificate Test20
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSeparateCertificateandCRLKeysTest20EE.crt
+
+dn: CN=Separate Certificate and CRL Keys CA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Separate Certificate and CRL Keys CA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/SeparateCertificateandCRLKeysCA2CertificateSigningCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/SeparateCertificateandCRLKeysCA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/SeparateCertificateandCRLKeysCA2CertificateSigningCACertforwardcrossCerificatePair.cp
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/SeparateCertificateandCRLKeysCA2CRLSigningCert.crt
+
+dn: CN=Invalid Separate Certificate and CRL Keys EE Certificate Test21,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Separate Certificate and CRL Keys EE Certificate Test21
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSeparateCertificateandCRLKeysTest21EE.crt
+
+dn: CN=Basic Self-Issued New Key CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Basic Self-Issued New Key CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BasicSelfIssuedNewKeyCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BasicSelfIssuedNewKeyCACRL.crl
+cACertificate;binary:< file:///tmp/certs/BasicSelfIssuedNewKeyOldWithNewCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/BasicSelfIssuedNewKeyCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Basic Self-Issued Old With New EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Basic Self-Issued Old With New EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidBasicSelfIssuedOldWithNewTest1EE.crt
+
+dn: CN=Invalid Basic Self-Issued Old With New EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Basic Self-Issued Old With New EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidBasicSelfIssuedOldWithNewTest2EE.crt
+
+dn: CN=Basic Self-Issued Old Key CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Basic Self-Issued Old Key CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BasicSelfIssuedOldKeyCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BasicSelfIssuedOldKeyCACRL.crl
+cACertificate;binary:< file:///tmp/certs/BasicSelfIssuedOldKeyNewWithOldCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/BasicSelfIssuedOldKeyCACertforwardcrossCertificatePair.cp
+
+dn: CN=Self-Issued Cert DP for Basic Self-Issued Old Key CA,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: Self-Issued Cert DP for Basic Self-Issued Old Key CA
+certificateRevocationList;binary:< file:///tmp/crls/BasicSelfIssuedOldKeySelfIssuedCertCRL.crl
+
+dn: CN=Valid Basic Self-Issued New With Old EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Basic Self-Issued New With Old EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidBasicSelfIssuedNewWithOldTest3EE.crt
+
+dn: CN=Valid Basic Self-Issued New With Old EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Basic Self-Issued New With Old EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidBasicSelfIssuedNewWithOldTest4EE.crt
+
+dn: CN=Invalid Basic Self-Issued New With Old EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Basic Self-Issued New With Old EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidBasicSelfIssuedNewWithOldTest5EE.crt
+
+dn: CN=Basic Self-Issued CRL Signing Key CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Basic Self-Issued CRL Signing Key CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/BasicSelfIssuedCRLSigningKeyCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/BasicSelfIssuedCRLSigningKeyCACRL.crl
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/BasicSelfIssuedCRLSigningKeyCRLCert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/BasicSelfIssuedCRLSigningKeyCACertforwardcrossCertificatePair.cp
+
+dn: CN=Self-Issued Cert DP for Basic Self-Issued CRL Signing Key CA,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: Self-Issued Cert DP for Basic Self-Issued CRL Signing Key CA
+certificateRevocationList;binary:< file:///tmp/crls/BasicSelfIssuedCRLSigningKeyCRLCertCRL.crl
+
+dn: CN=Valid Basic Self-Issued CRL Signing Key EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Basic Self-Issued CRL Signing Key EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidBasicSelfIssuedCRLSigningKeyTest6EE.crt
+
+dn: CN=Invalid Basic Self-Issued CRL Signing Key EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Basic Self-Issued CRL Signing Key EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidBasicSelfIssuedCRLSigningKeyTest7EE.crt
+
+dn: CN=Invalid Basic Self-Issued CRL Signing Key EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Basic Self-Issued CRL Signing Key EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidBasicSelfIssuedCRLSigningKeyTest8EE.crt
+
+dn: CN=Missing basicConstraints CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Missing basicConstraints CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/MissingbasicConstraintsCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/MissingbasicConstraintsCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/MissingbasicConstraintsCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Missing basicConstraints EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Missing basicConstraints EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidMissingbasicConstraintsTest1EE.crt
+
+dn: CN=basicConstraints Critical cA False CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: basicConstraints Critical cA False CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/basicConstraintsCriticalcAFalseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/basicConstraintsCriticalcAFalseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/basicConstraintsCriticalcAFalseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid cA False EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cA False EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcAFalseTest2EE.crt
+
+dn: CN=basicConstraints Not Critical cA False CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: basicConstraints Not Critical cA False CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/basicConstraintsNotCriticalcAFalseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/basicConstraintsNotCriticalcAFalseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/basicConstraintsNotCriticalcAFalseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid cA False EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cA False EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcAFalseTest3EE.crt
+
+dn: CN=basicConstraints Not Critical CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: basicConstraints Not Critical CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/basicConstraintsNotCriticalCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/basicConstraintsNotCriticalCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/basicConstraintsNotCriticalCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid basicConstraints Not Critical EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid basicConstraints Not Critical EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidbasicConstraintsNotCriticalTest4EE.crt
+
+dn: CN=pathLenConstraint0 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint0 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint0CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint0CACRL.crl
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint0SelfIssuedCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint0CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint0subCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/ValidpathLenConstraintTest8EEreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint0subCA2CertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint0 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint0 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint0subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint0subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint0subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidpathLenConstraintTest6EEreversecrossCertificatePair.cp
+
+dn: CN=Invalid pathLenConstraint EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pathLenConstraint EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidpathLenConstraintTest5EE.crt
+
+dn: CN=Invalid pathLenConstraint EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pathLenConstraint EE Certificate Test6
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/InvalidpathLenConstraintTest6EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidpathLenConstraintTest6EEforwardcrossCertificatePair.cp
+
+dn: CN=Valid pathLenConstraint EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid pathLenConstraint EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidpathLenConstraintTest7EE.crt
+
+dn: CN=Valid pathLenConstraint EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid pathLenConstraint EE Certificate Test8
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/ValidpathLenConstraintTest8EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/ValidpathLenConstraintTest8EEforwardcrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subCA0CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subCA4CertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subCA0,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subCA0
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subCA0Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subCA0CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subCA0CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubCA00CertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subsubCA00,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subsubCA00
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subsubCA00Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subsubCA00CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubCA00CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidpathLenConstraintTest10EEreversecrossCertificatePair.cp
+
+dn: CN=Invalid pathLenConstraint EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pathLenConstraint EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidpathLenConstraintTest9EE.crt
+
+dn: CN=Invalid pathLenConstraint EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pathLenConstraint EE Certificate Test10
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/InvalidpathLenConstraintTest10EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidpathLenConstraintTest10EEforwardcrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subCA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subCA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subCA1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subCA1CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubCA11CertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subsubCA11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subsubCA11
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subsubCA11Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subsubCA11CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubCA11CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubsubCA11XCertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subsubsubCA11X,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subsubsubCA11X
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subsubsubCA11XCert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subsubsubCA11XCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubsubCA11XCertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidpathLenConstraintTest12EEreversecrossCertificatePair.cp
+
+dn: CN=Invalid pathLenConstraint EE Certificate Test11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pathLenConstraint EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidpathLenConstraintTest11EE.crt
+
+dn: CN=Invalid pathLenConstraint EE Certificate Test12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid pathLenConstraint EE Certificate Test12
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/InvalidpathLenConstraintTest12EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidpathLenConstraintTest12EEforwardcrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subCA4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subCA4
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subCA4Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subCA4CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subCA4CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubCA41CertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subsubCA41,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subsubCA41
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subsubCA41Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subsubCA41CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubCA41CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubsubCA41XCertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint6 subsubsubCA41X,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint6 subsubsubCA41X
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint6subsubsubCA41XCert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint6subsubsubCA41XCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint6subsubsubCA41XCertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/ValidpathLenConstraintTest14EEreversecrossCertificatePair.cp
+
+dn: CN=Valid pathLenConstraint EE Certificate Test13,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid pathLenConstraint EE Certificate Test13
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidpathLenConstraintTest13EE.crt
+
+dn: CN=Valid pathLenConstraint EE Certificate Test14,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid pathLenConstraint EE Certificate Test14
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/ValidpathLenConstraintTest14EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/ValidpathLenConstraintTest14EEforwardcrossCertificatePair.cp
+
+dn: CN=Valid Self-Issued pathLenConstraint EE Certificate Test15,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Self-Issued pathLenConstraint EE Certificate Test15
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSelfIssuedpathLenConstraintTest15EE.crt
+
+dn: CN=pathLenConstraint0 subCA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint0 subCA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint0subCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint0subCA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint0subCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Self-Issued pathLenConstraint EE Certificate Test16,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued pathLenConstraint EE Certificate Test16
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedpathLenConstraintTest16EE.crt
+
+dn: CN=pathLenConstraint1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint1CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint1CACRL.crl
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint1SelfIssuedCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint1CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint1subCACertreversecrossCertificatePair.cp
+
+dn: CN=pathLenConstraint1 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: pathLenConstraint1 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint1subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/pathLenConstraint1subCACRL.crl
+cACertificate;binary:< file:///tmp/certs/pathLenConstraint1SelfIssuedsubCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/pathLenConstraint1subCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Self-Issued pathLenConstraint EE Certificate Test17,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Self-Issued pathLenConstraint EE Certificate Test17
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSelfIssuedpathLenConstraintTest17EE.crt
+
+dn: CN=keyUsage Critical keyCertSign False CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: keyUsage Critical keyCertSign False CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/keyUsageCriticalkeyCertSignFalseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/keyUsageCriticalkeyCertSignFalseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageCriticalkeyCertSignFalseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid keyUsage Critical keyCertSign False EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid keyUsage Critical keyCertSign False EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidkeyUsageCriticalkeyCertSignFalseTest1EE.crt
+
+dn: CN=keyUsage Not Critical keyCertSign False CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: keyUsage Not Critical keyCertSign False CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/keyUsageNotCriticalkeyCertSignFalseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/keyUsageNotCriticalkeyCertSignFalseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageNotCriticalkeyCertSignFalseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid keyUsage Not Critical keyCertSign False EE Cert Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid keyUsage Not Critical keyCertSign False EE Cert Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidkeyUsageNotCriticalkeyCertSignFalseTest2EE.crt
+
+dn: CN=keyUsage Not Critical CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: keyUsage Not Critical CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/keyUsageNotCriticalCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/keyUsageNotCriticalCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageNotCriticalCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid keyUsage Not Critical EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid keyUsage Not Critical EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidkeyUsageNotCriticalTest3EE.crt
+
+dn: CN=keyUsage Critical cRLSign False CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: keyUsage Critical cRLSign False CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/keyUsageCriticalcRLSignFalseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/keyUsageCriticalcRLSignFalseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageCriticalcRLSignFalseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid keyUsage Critical cRLSign False EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid keyUsage Critical cRLSign False EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidkeyUsageCriticalcRLSignFalseTest4EE.crt
+
+dn: CN=keyUsage Not Critical cRLSign False CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: keyUsage Not Critical cRLSign False CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/keyUsageNotCriticalcRLSignFalseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/keyUsageNotCriticalcRLSignFalseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/keyUsageNotCriticalcRLSignFalseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid keyUsage Not Critical cRLSign False EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid keyUsage Not Critical cRLSign False EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidkeyUsageNotCriticalcRLSignFalseTest5EE.crt
+
+dn: CN=No Policies CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: No Policies CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/NoPoliciesCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/NoPoliciesCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/NoPoliciesCACertforwardcrossCertificatePair.cp
+
+dn: CN=All Certificates No Policies EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: All Certificates No Policies EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/AllCertificatesNoPoliciesTest2EE.crt
+
+dn: CN=Policies P2 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P2 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP2subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP2subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP2subCACertforwardcrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/DifferentPoliciesTest3EE.crt
+
+dn: CN=Good subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Good subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/GoodsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/GoodsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/DifferentPoliciesTest4EE.crt
+
+dn: CN=Policies P2 subCA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P2 subCA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP2subCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP2subCA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP2subCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/DifferentPoliciesTest5EE.crt
+
+dn: CN=Policies P1234 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P1234 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP1234CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP1234CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP1234CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP1234subCAP123CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P1234 subCAP123,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P1234 subCAP123
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP1234subCAP123Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP1234subCAP123CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP1234subCAP123CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP1234subsubCAP123P12CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P1234 subsubCAP123P12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P1234 subsubCAP123P12
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP1234subsubCAP123P12Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP1234subsubCAP123P12CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP1234subsubCAP123P12CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/OverlappingPoliciesTest6EEreversecrossCertificatePair.cp
+
+dn: CN=Overlapping Policies EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Overlapping Policies EE Certificate Test6
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/OverlappingPoliciesTest6EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/OverlappingPoliciesTest6EEforwardcrossCertificatePair.cp
+
+dn: CN=Policies P123 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P123 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP123CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP123CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subCAP12CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P123 subCAP12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P123 subCAP12
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP123subCAP12Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP123subCAP12CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subCAP12CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subsubCAP12P1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subsubCAP12P2CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P123 subsubCAP12P1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P123 subsubCAP12P1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP123subsubCAP12P1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP123subsubCAP12P1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subsubCAP12P1CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/DifferentPoliciesTest7EEreversecrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test7
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/DifferentPoliciesTest7EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/DifferentPoliciesTest7EEforwardcrossCertificatePair.cp
+
+dn: CN=Policies P12 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P12 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP12CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP12CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP12CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP12subCAP1CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P12 subCAP1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P12 subCAP1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP12subCAP1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP12subCAP1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP12subCAP1CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP12subsubCAP1P2CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P12 subsubCAP1P2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P12 subsubCAP1P2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP12subsubCAP1P2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP12subsubCAP1P2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP12subsubCAP1P2CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/DifferentPoliciesTest8EEreversecrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test8
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/DifferentPoliciesTest8EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/DifferentPoliciesTest8EEforwardcrossCertificatePair.cp
+
+dn: CN=Policies P123 subsubCAP12P2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P123 subsubCAP12P2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP123subsubCAP12P2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP123subsubCAP2P2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subsubCAP12P2CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subsubsubCAP12P2P1CertreversecrossCertificatePair.cp
+
+dn: CN=Policies P123 subsubsubCAP12P2P1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P123 subsubsubCAP12P2P1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP123subsubsubCAP12P2P1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP123subsubsubCAP12P2P1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP123subsubsubCAP12P2P1CertforwardcrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/DifferentPoliciesTest9EE.crt
+
+dn: CN=All Certificates Same Policies EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: All Certificates Same Policies EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/AllCertificatesSamePoliciesTest10EE.crt
+
+dn: CN=anyPolicy CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: anyPolicy CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/anyPolicyCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/anyPolicyCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/anyPolicyCACertforwardcrossCertificatePair.cp
+
+dn: CN=All Certificates anyPolicy EE Certificate Test11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: All Certificates anyPolicy EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/AllCertificatesanyPolicyTest11EE.crt
+
+dn: CN=Policies P3 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Policies P3 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PoliciesP3CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PoliciesP3CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PoliciesP3CACertforwardcrossCertificatePair.cp
+
+dn: CN=Different Policies EE Certificate Test12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Different Policies EE Certificate Test12
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/DifferentPoliciesTest12EE.crt
+
+dn: CN=All Certificates Same Policies EE Certificate Test13,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: All Certificates Same Policies EE Certificate Test13
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/AllCertificatesSamePoliciesTest13EE.crt
+
+dn: CN=anyPolicy EE Certificate Test14,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: anyPolicy EE Certificate Test14
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/AnyPolicyTest14EE.crt
+
+dn: CN=User Notice Qualifier EE Certificate Test15,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: User Notice Qualifier EE Certificate Test15
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/UserNoticeQualifierTest15EE.crt
+
+dn: CN=User Notice Qualifier EE Certificate Test16,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: User Notice Qualifier EE Certificate Test16
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/UserNoticeQualifierTest16EE.crt
+
+dn: CN=User Notice Qualifier EE Certificate Test17,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: User Notice Qualifier EE Certificate Test17
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/UserNoticeQualifierTest17EE.crt
+
+dn: CN=User Notice Qualifier EE Certificate Test18,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: User Notice Qualifier EE Certificate Test18
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/UserNoticeQualifierTest18EE.crt
+
+dn: CN=User Notice Qualifier EE Certificate Test19,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: User Notice Qualifier EE Certificate Test19
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/UserNoticeQualifierTest19EE.crt
+
+dn: CN=CPS Pointer Qualifier EE Certificate Test20,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: CPS Pointer Qualifier EE Certificate Test20
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/CPSPointerQualifierTest20EE.crt
+
+dn: CN=requireExplicitPolicy10 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy10 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy10CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy10CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10subCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy10 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy10 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy10subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy10subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy10 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy10 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy10subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy10subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10subsubCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10subsubsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy10 subsubsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy10 subsubsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy10subsubsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy10subsubsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy10subsubsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid requireExplicitPolicy EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid requireExplicitPolicy EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidrequireExplicitPolicyTest1EE.crt
+
+dn: CN=requireExplicitPolicy5 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy5 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy5CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy5CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5subCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy5 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy5 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy5subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy5subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy5 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy5 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy5subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy5subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5subsubCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5subsubsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy5 subsubsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy5 subsubsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy5subsubsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy5subsubsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy5subsubsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid requireExplicitPolicy EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid requireExplicitPolicy EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidrequireExplicitPolicyTest2EE.crt
+
+dn: CN=requireExplicitPolicy4 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy4 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy4CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy4CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4subCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy4 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy4 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy4subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy4subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy4 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy4 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy4subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy4subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4subsubCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4subsubsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy4 subsubsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy4 subsubsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy4subsubsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy4subsubsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy4subsubsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid requireExplicitPolicy EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid requireExplicitPolicy EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidrequireExplicitPolicyTest3EE.crt
+
+dn: CN=requireExplicitPolicy0 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy0 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy0CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy0CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0subCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy0 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy0 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy0subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy0subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy0 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy0 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy0subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy0subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0subsubCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0subsubsubCACertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy0 subsubsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy0 subsubsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy0subsubsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy0subsubsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy0subsubsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid requireExplicitPolicy EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid requireExplicitPolicy EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidrequireExplicitPolicyTest4EE.crt
+
+dn: CN=requireExplicitPolicy7 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy7 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy7CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy7CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7subCARE2CertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy7 subCARE2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy7 subCARE2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy7subCARE2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy7subCARE2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7subCARE2CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7subsubCARE2RE4CertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy7 subsubCARE2RE4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy7 subsubCARE2RE4
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy7subsubCARE2RE4Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy7subsubCARE2RE4CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7subsubCARE2RE4CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7subsubsubCARE2RE4CertreversecrossCertificatePair.cp
+
+dn: CN=requireExplicitPolicy7 subsubsubCARE2RE4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy7 subsubsubCARE2RE4
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy7subsubsubCARE2RE4Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy7subsubsubCARE2RE4CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy7subsubsubCARE2RE4CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid requireExplicitPolicy EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid requireExplicitPolicy EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidrequireExplicitPolicyTest5EE.crt
+
+dn: CN=requireExplicitPolicy2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy2CACRL.crl
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy2SelfIssuedCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy2CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy2subCACertreversecrossCertificatePair.cp
+
+dn: CN=Valid Self-Issued requireExplicitPolicy EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Self-Issued requireExplicitPolicy EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSelfIssuedrequireExplicitPolicyTest6EE.crt
+
+dn: CN=requireExplicitPolicy2 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: requireExplicitPolicy2 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy2subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/requireExplicitPolicy2subCACRL.crl
+cACertificate;binary:< file:///tmp/certs/requireExplicitPolicy2SelfIssuedsubCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/requireExplicitPolicy2subCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Self-Issued requireExplicitPolicy EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued requireExplicitPolicy EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedrequireExplicitPolicyTest7EE.crt
+
+dn: CN=Invalid Self-Issued requireExplicitPolicy EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued requireExplicitPolicy EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedrequireExplicitPolicyTest8EE.crt
+
+dn: CN=Mapping 1to2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Mapping 1to2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/Mapping1to2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/Mapping1to2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/Mapping1to2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Policy Mapping EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest1EE.crt
+
+dn: CN=Invalid Policy Mapping EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Policy Mapping EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidPolicyMappingTest2EE.crt
+
+dn: CN=P12 Mapping 1to3 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: P12 Mapping 1to3 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/P12Mapping1to3CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/P12Mapping1to3CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/P12Mapping1to3CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/P12Mapping1to3subCACertreversecrossCertificatePair.cp
+
+dn: CN=P12 Mapping 1to3 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: P12 Mapping 1to3 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/P12Mapping1to3subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/P12Mapping1to3subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/P12Mapping1to3subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/P12Mapping1to3subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=P12 Mapping 1to3 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: P12 Mapping 1to3 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/P12Mapping1to3subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/P12Mapping1to3subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/P12Mapping1to3subsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Policy Mapping EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest3EE.crt
+
+dn: CN=Invalid Policy Mapping EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Policy Mapping EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidPolicyMappingTest4EE.crt
+
+dn: CN=P1 Mapping 1to234 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: P1 Mapping 1to234 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/P1Mapping1to234CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/P1Mapping1to234CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/P1Mapping1to234CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/P1Mapping1to234subCACertreversecrossCertificatePair.cp
+
+dn: CN=P1 Mapping 1to234 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: P1 Mapping 1to234 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/P1Mapping1to234subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/P1Mapping1to234subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/P1Mapping1to234subCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Policy Mapping EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest5EE.crt
+
+dn: CN=Valid Policy Mapping EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest6EE.crt
+
+dn: CN=Mapping From anyPolicy CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Mapping From anyPolicy CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/MappingFromanyPolicyCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/MappingFromanyPolicyCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/MappingFromanyPolicyCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Mapping From anyPolicy EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Mapping From anyPolicy EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidMappingFromanyPolicyTest7EE.crt
+
+dn: CN=Mapping To anyPolicy CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Mapping To anyPolicy CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/MappingToanyPolicyCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/MappingToanyPolicyCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/MappingToanyPolicyCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Mapping To anyPolicy EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Mapping To anyPolicy EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidMappingToanyPolicyTest8EE.crt
+
+dn: CN=PanyPolicy Mapping 1to2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: PanyPolicy Mapping 1to2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/PanyPolicyMapping1to2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/PanyPolicyMapping1to2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/PanyPolicyMapping1to2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Policy Mapping EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest9EE.crt
+
+dn: CN=Good subCA PanyPolicy Mapping 1to2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Good subCA PanyPolicy Mapping 1to2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/GoodsubCAPanyPolicyMapping1to2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/GoodsubCAPanyPolicyMapping1to2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/GoodsubCAPanyPolicyMapping1to2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Policy Mapping EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Policy Mapping EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidPolicyMappingTest10EE.crt
+
+dn: CN=Valid Policy Mapping EE Certificate Test11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest11EE.crt
+
+dn: CN=Valid Policy Mapping EE Certificate Test12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test12
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest12EE.crt
+
+dn: CN=P1anyPolicy Mapping 1to2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: P1anyPolicy Mapping 1to2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/P1anyPolicyMapping1to2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/P1anyPolicyMapping1to2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/P1anyPolicyMapping1to2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid Policy Mapping EE Certificate Test13,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test13
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest13EE.crt
+
+dn: CN=Valid Policy Mapping EE Certificate Test14,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Policy Mapping EE Certificate Test14
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidPolicyMappingTest14EE.crt
+
+dn: CN=inhibitPolicyMapping0 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping0 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping0CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping0CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping0CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping0subCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping0 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping0 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping0subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping0subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping0subCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitPolicyMapping EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitPolicyMapping EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitPolicyMappingTest1EE.crt
+
+dn: CN=inhibitPolicyMapping1 P12 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P12 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P12CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P12CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subCACertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subCAIPM5CertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping1 P12 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P12 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P12subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P12subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=Valid inhibitPolicyMapping EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid inhibitPolicyMapping EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidinhibitPolicyMappingTest2EE.crt
+
+dn: CN=inhibitPolicyMapping1 P12 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P12 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P12subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P12subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitPolicyMapping EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitPolicyMapping EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitPolicyMappingTest3EE.crt
+
+dn: CN=Valid inhibitPolicyMapping EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid inhibitPolicyMapping EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidinhibitPolicyMappingTest4EE.crt
+
+dn: CN=inhibitPolicyMapping5 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping5 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping5CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping5CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5subCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping5 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping5 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping5subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping5subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping5 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping5 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping5subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping5subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5subsubCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5subsubsubCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping5 subsubsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping5 subsubsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping5subsubsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping5subsubsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping5subsubsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitPolicyMapping EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitPolicyMapping EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitPolicyMappingTest5EE.crt
+
+dn: CN=inhibitPolicyMapping1 P12 subCAIPM5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P12 subCAIPM5
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P12subCAIPM5Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P12subCAIPM5CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subCAIPM5CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subsubCAIPM5CertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping1 P12 subsubCAIPM5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P12 subsubCAIPM5
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P12subsubCAIPM5Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P12subsubCAIPM5CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P12subsubCAIPM5CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitPolicyMapping EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitPolicyMapping EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitPolicyMappingTest6EE.crt
+
+dn: CN=inhibitPolicyMapping1 P1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P1CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P1CACRL.crl
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P1SelfIssuedCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P1CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P1subCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitPolicyMapping1 P1 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P1 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P1subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P1subCACRL.crl
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P1SelfIssuedsubCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P1subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P1subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=Valid Self-Issued inhibitPolicyMapping EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Self-Issued inhibitPolicyMapping EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSelfIssuedinhibitPolicyMappingTest7EE.crt
+
+dn: CN=inhibitPolicyMapping1 P1 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitPolicyMapping1 P1 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitPolicyMapping1P1subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitPolicyMapping1P1subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitPolicyMapping1P1subsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Self-Issued inhibitPolicyMapping EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued inhibitPolicyMapping EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedinhibitPolicyMappingTest8EE.crt
+
+dn: CN=Invalid Self-Issued inhibitPolicyMapping EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued inhibitPolicyMapping EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedinhibitPolicyMappingTest9EE.crt
+
+dn: CN=Invalid Self-Issued inhibitPolicyMapping EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued inhibitPolicyMapping EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedinhibitPolicyMappingTest10EE.crt
+
+dn: CN=Invalid Self-Issued inhibitPolicyMapping EE Certificate Test11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued inhibitPolicyMapping EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedinhibitPolicyMappingTest11EE.crt
+
+dn: CN=inhibitAnyPolicy0 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy0 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy0CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy0CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy0CACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitAnyPolicy EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitAnyPolicy EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitAnyPolicyTest1EE.crt
+
+dn: CN=Valid inhibitAnyPolicy EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid inhibitAnyPolicy EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidinhibitAnyPolicyTest2EE.crt
+
+dn: CN=inhibitAnyPolicy1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy1CACRL.crl
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1SelfIssuedCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subCAIAP5CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subCA2CertreversecrossCertificatePair.cp
+
+dn: CN=inhibitAnyPolicy1 subCA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy1 subCA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1subCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy1subCA1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subCA1CertforwardcrossCertificatePair.cp
+
+dn: CN=inhibitAnyPolicy EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/inhibitAnyPolicyTest3EE.crt
+
+dn: CN=Invalid inhibitAnyPolicy EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitAnyPolicy EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitAnyPolicyTest4EE.crt
+
+dn: CN=inhibitAnyPolicy5 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy5 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy5CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy5CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy5CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy5subCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitAnyPolicy5 subCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy5 subCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy5subCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy5subCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy5subCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy5subsubCACertreversecrossCertificatePair.cp
+
+dn: CN=inhibitAnyPolicy5 subsubCA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy5 subsubCA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy5subsubCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy5subsubCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy5subsubCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitAnyPolicy EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitAnyPolicy EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitAnyPolicyTest5EE.crt
+
+dn: CN=inhibitAnyPolicy1 subCAIAP5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy1 subCAIAP5
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1subCAIAP5Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy1subCAIAP5CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subCAIAP5CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid inhibitAnyPolicy EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid inhibitAnyPolicy EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidinhibitAnyPolicyTest6EE.crt
+
+dn: CN=inhibitAnyPolicy1 subCA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy1 subCA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1subCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy1subCA2CRL.crl
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1SelfIssuedsubCA2Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subCA2CertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subsubCA2CertreversecrossCertificatePair.cp
+cACertificate;binary:< file:///tmp/certs/InvalidSelfIssuedinhibitAnyPolicyTest10EE.crt
+
+dn: CN=Valid Self-Issued inhibitAnyPolicy EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Self-Issued inhibitAnyPolicy EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSelfIssuedinhibitAnyPolicyTest7EE.crt
+
+dn: CN=inhibitAnyPolicy1 subsubCA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: inhibitAnyPolicy1 subsubCA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/inhibitAnyPolicy1subsubCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/inhibitAnyPolicy1subsubCA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/inhibitAnyPolicy1subsubCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid Self-Issued inhibitAnyPolicy EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Self-Issued inhibitAnyPolicy EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidSelfIssuedinhibitAnyPolicyTest8EE.crt
+
+dn: CN=Valid Self-Issued inhibitAnyPolicy EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Self-Issued inhibitAnyPolicy EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidSelfIssuedinhibitAnyPolicyTest9EE.crt
+
+dn: CN=nameConstraints DN1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN1CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN1CACRL.crl
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN1SelfIssuedCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1subCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1subCA2CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1subCA3CertreversecrossCertificatePair.cp
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest20EE.crt
+
+dn: OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: permittedSubtree1
+
+dn: CN=Valid DN nameConstraints EE Certificate Test1,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest1EE.crt
+
+dn: OU=excludedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: excludedSubtree1
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test2,OU=excludedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest2EE.crt
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test3,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest3EE.crt
+
+dn: CN=Valid DN nameConstraints EE Certificate Test4,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest4EE.crt
+
+dn: CN=nameConstraints DN2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid DN nameConstraints EE Certificate Test5,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest5EE.crt
+
+dn: CN=nameConstraints DN3 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN3 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN3CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN3CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN3CACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN3subCA1CertreversecrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN3subCA2CertreversecrossCertificatePair.cp
+
+dn: CN=Valid DN nameConstraints EE Certificate Test6,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest6EE.crt
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test7,OU=excludedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest7EE.crt
+
+dn: CN=nameConstraints DN4 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN4 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN4CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN4CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN4CACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test8,OU=excludedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest8EE.crt
+
+dn: OU=excludedSubtree2,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: excludedSubtree2
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test9,OU=excludedSubtree2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest9EE.crt
+
+dn: CN=nameConstraints DN5 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN5 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN5CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN5CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN5CACertforwardcrossCertificatePair.cp
+
+dn: OU=excludedSubtree1,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: excludedSubtree1
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test10,OU=excludedSubtree1,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest10EE.crt
+
+dn: OU=permittedSubtree2,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: permittedSubtree2
+
+dn: CN=Valid DN nameConstraints EE Certificate Test11,OU=permittedSubtree2,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test11
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest11EE.crt
+
+dn: CN=nameConstraints DN1 subCA1,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN1 subCA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN1subCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN1subCA1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1subCA1CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test12,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test12
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest12EE.crt
+
+dn: CN=nameConstraints DN1 subCA2,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN1 subCA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN1subCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN1subCA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1subCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test13,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test13
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest13EE.crt
+
+dn: CN=nameConstraints DN3 subCA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN3 subCA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN3subCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN3subCA1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN3subCA1CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test15,OU=excludedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test15
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest15EE.crt
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test16,OU=excludedSubtree2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test16
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest16EE.crt
+
+dn: CN=nameConstraints DN3 subCA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN3 subCA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN3subCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN3subCA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN3subCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid DN nameConstraints EE Certificate Test17,OU=excludedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN nameConstraints EE Certificate Test17
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNnameConstraintsTest17EE.crt
+
+dn: CN=Valid DN nameConstraints EE Certificate Test18,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test18
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest18EE.crt
+
+dn: CN=Valid DN nameConstraints EE Certificate Test19,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN nameConstraints EE Certificate Test19
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNnameConstraintsTest19EE.crt
+
+dn: CN=nameConstraints RFC822 CA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints RFC822 CA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsRFC822CA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsRFC822CA1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsRFC822CA1CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid RFC822 nameConstraints EE Certificate Test21,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid RFC822 nameConstraints EE Certificate Test21
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidRFC822nameConstraintsTest21EE.crt
+
+dn: CN=Invalid RFC822 nameConstraints EE Certificate Test22,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid RFC822 nameConstraints EE Certificate Test22
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidRFC822nameConstraintsTest22EE.crt
+
+dn: CN=nameConstraints RFC822 CA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints RFC822 CA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsRFC822CA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsRFC822CA2CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsRFC822CA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid RFC822 nameConstraints EE Certificate Test23,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid RFC822 nameConstraints EE Certificate Test23
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidRFC822nameConstraintsTest23EE.crt
+
+dn: CN=Invalid RFC822 nameConstraints EE Certificate Test24,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid RFC822 nameConstraints EE Certificate Test24
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidRFC822nameConstraintsTest24EE.crt
+
+dn: CN=nameConstraints RFC822 CA3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints RFC822 CA3
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsRFC822CA3Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsRFC822CA3CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsRFC822CA3CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid RFC822 nameConstraints EE Certificate Test25,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid RFC822 nameConstraints EE Certificate Test25
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidRFC822nameConstraintsTest25EE.crt
+
+dn: CN=Invalid RFC822 nameConstraints EE Certificate Test26,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid RFC822 nameConstraints EE Certificate Test26
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidRFC822nameConstraintsTest26EE.crt
+
+dn: CN=nameConstraints DN1 subCA3,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DN1 subCA3
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDN1subCA3Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDN1subCA3CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDN1subCA3CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid DN and RFC822 nameConstraints EE Certificate Test27,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DN and RFC822 nameConstraints EE Certificate Test27
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNandRFC822nameConstraintsTest27EE.crt
+
+dn: CN=Invalid DN and RFC822 nameConstraints EE Certificate Test28,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN and RFC822 nameConstraints EE Certificate Test28
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNandRFC822nameConstraintsTest28EE.crt
+
+dn: CN=Invalid DN and RFC822 nameConstraints EE Certificate Test29,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DN and RFC822 nameConstraints EE Certificate Test29
+
+dn: email=Test29EE@invalidcertificates.gov,CN=Invalid DN and RFC822 nameConstraints EE Certificate Test29,OU=permittedSubtree1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+objectClass: opencaEmailAddress
+objectClass: pkiUser
+email: Test29EE@invalidcertificates.gov
+cn: Invalid DN and RFC822 nameConstraints EE Certificate Test29
+userCertificate;binary:< file:///tmp/certs/InvalidDNandRFC822nameConstraintsTest29EE.crt
+
+dn: CN=nameConstraints DNS1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DNS1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDNS1CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDNS1CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDNS1CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid DNS nameConstraints EE Certificate Test30,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DNS nameConstraints EE Certificate Test30
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNSnameConstraintsTest30EE.crt
+
+dn: CN=Invalid DNS nameConstraints EE Certificate Test31,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DNS nameConstraints EE Certificate Test31
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNSnameConstraintsTest31EE.crt
+
+dn: CN=nameConstraints DNS2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints DNS2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsDNS2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsDNS2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsDNS2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid DNS nameConstraints EE Certificate Test32,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DNS nameConstraints EE Certificate Test32
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDNSnameConstraintsTest32EE.crt
+
+dn: CN=Invalid DNS nameConstraints EE Certificate Test33,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DNS nameConstraints EE Certificate Test33
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNSnameConstraintsTest33EE.crt
+
+dn: CN=nameConstraints URI1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints URI1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsURI1CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsURI1CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsURI1CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid URI nameConstraints EE Certificate Test34,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid URI nameConstraints EE Certificate Test34
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidURInameConstraintsTest34EE.crt
+
+dn: CN=Invalid URI nameConstraints EE Certificate Test35,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid URI nameConstraints EE Certificate Test35
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidURInameConstraintsTest35EE.crt
+
+dn: CN=nameConstraints URI2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: nameConstraints URI2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/nameConstraintsURI2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/nameConstraintsURI2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/nameConstraintsURI2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid URI nameConstraints EE Certificate Test36,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid URI nameConstraints EE Certificate Test36
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidURInameConstraintsTest36EE.crt
+
+dn: CN=Invalid URI nameConstraints EE Certificate Test37,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid URI nameConstraints EE Certificate Test37
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidURInameConstraintsTest37EE.crt
+
+dn: CN=Invalid DNS nameConstraints EE Certificate Test38,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DNS nameConstraints EE Certificate Test38
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDNSnameConstraintsTest38EE.crt
+
+dn: OU=distributionPoint1 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: distributionPoint1 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/distributionPoint1CACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/distributionPoint1CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid distributionPoint EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid distributionPoint EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddistributionPointTest1EE.crt
+
+dn: CN=CRL1 of distributionPoint1 CA,OU=distributionPoint1 CA,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL1 of distributionPoint1 CA
+certificateRevocationList;binary:< file:///tmp/crls/distributionPoint1CACRL.crl
+
+dn: CN=Invalid distributionPoint EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid distributionPoint EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddistributionPointTest2EE.crt
+
+dn: CN=Invalid distributionPoint EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid distributionPoint EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddistributionPointTest3EE.crt
+
+dn: CN=CRLx of distributionPoint1 CA,OU=distributionPoint1 CA,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRLx of distributionPoint1 CA
+certificateRevocationList;binary:< file:///tmp/crls/distributionPoint1CACRL.crl
+
+dn: CN=Valid distributionPoint EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid distributionPoint EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddistributionPointTest4EE.crt
+
+dn: OU=distributionPoint2 CA,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: distributionPoint2 CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/distributionPoint2CACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/distributionPoint2CACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/distributionPoint2CACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid distributionPoint EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid distributionPoint EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddistributionPointTest5EE.crt
+
+dn: CN=CRL1 of distributionPoint2 CA,OU=distributionPoint2 CA,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL1 of distributionPoint2 CA
+certificateRevocationList;binary:< file:///tmp/crls/distributionPoint2CACRL.crl
+
+dn: CN=Invalid distributionPoint EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid distributionPoint EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddistributionPointTest6EE.crt
+
+dn: CN=Valid distributionPoint EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid distributionPoint EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddistributionPointTest7EE.crt
+
+dn: CN=Invalid distributionPoint EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid distributionPoint EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddistributionPointTest8EE.crt
+
+dn: CN=Invalid distributionPoint EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid distributionPoint EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddistributionPointTest9EE.crt
+
+dn: OU=No issuingDistributionPoint CA,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: No issuingDistributionPoint CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/NoissuingDistributionPointCACert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/NoissuingDistributionPointCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid No issuingDistributionPoint EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid No issuingDistributionPoint EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidNoissuingDistributionPointTest10EE.crt
+
+dn: CN=CRL,OU=No issuingDistributionPoint CA,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL
+certificateRevocationList;binary:< file:///tmp/crls/NoissuingDistributionPointCACRL.crl
+
+dn: CN=onlyContainsUserCerts CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: onlyContainsUserCerts CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlyContainsUserCertsCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/onlyContainsUserCertsCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/onlyContainsUserCertsCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidonlyContainsUserCertsTest11EEreversecrossCertificatePair.cp
+
+dn: CN=Invalid onlyContainsUserCerts EE Certificate Test11,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlyContainsUserCerts EE Certificate Test11
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/InvalidonlyContainsUserCertsTest11EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/InvalidonlyContainsUserCertsTest11EEforwardcrossCertificatePair.cp
+
+dn: CN=onlyContainsCACerts CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: onlyContainsCACerts CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlyContainsCACertsCACert.crt
+authorityRevocationList;binary:< file:///tmp/crls/onlyContainsCACertsCACRL.crl
+certificateRevocationList;binary:< file:///tmp/crls/onlyContainsCACertsCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/onlyContainsCACertsCACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/ValidonlyContainsCACertsTest13EEreversecrossCertificatePair.cp
+
+dn: CN=Invalid onlyContainsCACerts EE Certificate Test12,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlyContainsCACerts EE Certificate Test12
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlyContainsCACertsTest12EE.crt
+
+dn: CN=Valid onlyContainsCACerts EE Certificate Test13,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid onlyContainsCACerts EE Certificate Test13
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/ValidonlyContainsCACertsTest13EE.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/ValidonlyContainsCACertsTest13EEforwardcrossCertificatePair.cp
+
+dn: CN=onlyContainsAttributeCerts CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: onlyContainsAttributeCerts CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlyContainsAttributeCertsCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/onlyContainsAttributeCertsCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/onlyContainsAttributeCertsCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid onlyContainsAttirubteCerts EE Certificate Test14,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlyContainsAttirubteCerts EE Certificate Test14
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlyContainsAttributeCertsTest14EE.crt
+
+dn: CN=onlySomeReasons CA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: onlySomeReasons CA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlySomeReasonsCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA1compromiseCRL.crl
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA1otherreasonsCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA1CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid onlySomeReasons EE Certificate Test15,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlySomeReasons EE Certificate Test15
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlySomeReasonsTest15EE.crt
+
+dn: CN=Invalid onlySomeReasons EE Certificate Test16,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlySomeReasons EE Certificate Test16
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlySomeReasonsTest16EE.crt
+
+dn: CN=onlySomeReasons CA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: onlySomeReasons CA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlySomeReasonsCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA2CRL1.crl
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA2CRL2.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid onlySomeReasons EE Certificate Test17,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlySomeReasons EE Certificate Test17
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlySomeReasonsTest17EE.crt
+
+dn: OU=onlySomeReasons CA3,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: onlySomeReasons CA3
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlySomeReasonsCA3Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA3CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid onlySomeReasons EE Certificate Test18,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid onlySomeReasons EE Certificate Test18
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidonlySomeReasonsTest18EE.crt
+
+dn: CN=CRL,OU=onlySomeReasons CA3,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA3compromiseCRL.crl
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA3otherreasonsCRL.crl
+
+dn: OU=onlySomeReasons CA4,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: onlySomeReasons CA4
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/onlySomeReasonsCA4Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/onlySomeReasonsCA4CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid onlySomeReasons EE Certificate Test19,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid onlySomeReasons EE Certificate Test19
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidonlySomeReasonsTest19EE.crt
+
+dn: CN=CRL1,OU=onlySomeReasons CA4,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL1
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA4compromiseCRL.crl
+
+dn: CN=CRL2,OU=onlySomeReasons CA4,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL2
+certificateRevocationList;binary:< file:///tmp/crls/onlySomeReasonsCA4otherreasonsCRL.crl
+
+dn: CN=Invalid onlySomeReasons EE Certificate Test20,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlySomeReasons EE Certificate Test20
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlySomeReasonsTest20EE.crt
+
+dn: CN=Invalid onlySomeReasons EE Certificate Test21,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid onlySomeReasons EE Certificate Test21
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidonlySomeReasonsTest21EE.crt
+
+dn: CN=indirectCRL CA1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: indirectCRL CA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/indirectCRLCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA1CRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA1CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid IDP with indirectCRL EE Certificate Test22,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid IDP with indirectCRL EE Certificate Test22
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidIDPwithindirectCRLTest22EE.crt
+
+dn: CN=Invalid IDP with indirectCRL EE Certificate Test23,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid IDP with indirectCRL EE Certificate Test23
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidIDPwithindirectCRLTest23EE.crt
+
+dn: CN=indirectCRL CA2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: indirectCRL CA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/indirectCRLCA2Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid IDP with indirectCRL EE Certificate Test24,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid IDP with indirectCRL EE Certificate Test24
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidIDPwithindirectCRLTest24EE.crt
+
+dn: CN=Valid IDP with indirectCRL EE Certificate Test25,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid IDP with indirectCRL EE Certificate Test25
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidIDPwithindirectCRLTest25EE.crt
+
+dn: CN=Invalid IDP with indirectCRL EE Certificate Test26,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid IDP with indirectCRL EE Certificate Test26
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidIDPwithindirectCRLTest26EE.crt
+
+dn: CN=indirectCRL CA1x,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: indirectCRL CA1x
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA1CRL.crl
+
+dn: CN=Invalid cRLIssuer EE Certificate Test27,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cRLIssuer EE Certificate Test27
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcRLIssuerTest27EE.crt
+
+dn: OU=indirectCRL CA3,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: indirectCRL CA3
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/indirectCRLCA3Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA3CertforwardcrossCertificatePair.cp
+
+dn: OU=indirectCRL CA3 cRLIssuer,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: indirectCRL CA3 cRLIssuer
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/indirectCRLCA3cRLIssuerCert.crt
+
+dn: CN=CRL1,OU=indirectCRL CA3,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL1
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA3CRL.crl
+
+dn: CN=Valid cRLIssuer EE Certificate Test28,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid cRLIssuer EE Certificate Test28
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidcRLIssuerTest28EE.crt
+
+dn: CN=indirect CRL for indirectCRL CA3,OU=indirectCRL CA3 cRLIssuer,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: indirect CRL for indirectCRL CA3
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA3cRLIssuerCRL.crl
+
+dn: CN=Valid cRLIssuer EE Certificate Test29,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid cRLIssuer EE Certificate Test29
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidcRLIssuerTest29EE.crt
+
+dn: OU=indirectCRL CA4,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: indirectCRL CA4
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/indirectCRLCA4Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA4CertforwardcrossCertificatePair.cp
+
+dn: OU=indirectCRL CA4 cRLIssuer,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: indirectCRL CA4 cRLIssuer
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/indirectCRLCA4cRLIssuerCert.crt
+
+dn: CN=indirect CRL for indirectCRL CA4,OU=indirectCRL CA4 cRLIssuer,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: indirect CRL for indirectCRL CA4
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA4cRLIssuerCRL.crl
+
+dn: CN=Valid cRLIssuer EE Certificate Test30,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid cRLIssuer EE Certificate Test30
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidcRLIssuerTest30EE.crt
+
+dn: OU=indirectCRL CA5,O=Test Certificates 2011,C=US
+objectClass: organizationalUnit
+ou: indirectCRL CA5
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/indirectCRLCA5Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA5CertforwardcrossCertificatePair.cp
+
+dn: CN=indirectCRL CA6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: indirectCRL CA6
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/indirectCRLCA6Cert.crt
+crossCertificatePair;binary:< file:///tmp/certpairs/indirectCRLCA6CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid cRLIssuer EE Certificate Test31,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cRLIssuer EE Certificate Test31
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcRLIssuerTest31EE.crt
+
+dn: CN=indirect CRL for indirectCRL CA6,OU=indirectCRL CA5,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: indirect CRL for indirectCRL CA6
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA5CRL.crl
+
+dn: CN=Invalid cRLIssuer EE Certificate Test32,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cRLIssuer EE Certificate Test32
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcRLIssuerTest32EE.crt
+
+dn: CN=Valid cRLIssuer EE Certificate Test33,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid cRLIssuer EE Certificate Test33
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidcRLIssuerTest33EE.crt
+
+dn: CN=Invalid cRLIssuer EE Certificate Test34,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cRLIssuer EE Certificate Test34
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcRLIssuerTest34EE.crt
+
+dn: CN=CRL1 for indirectCRL CA5,OU=indirectCRL CA5,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: CRL1 for indirectCRL CA5
+certificateRevocationList;binary:< file:///tmp/crls/indirectCRLCA5CRL.crl
+
+dn: CN=Invalid cRLIssuer EE Certificate Test35,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid cRLIssuer EE Certificate Test35
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidcRLIssuerTest35EE.crt
+
+dn: CN=deltaCRLIndicator No Base CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: deltaCRLIndicator No Base CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/deltaCRLIndicatorNoBaseCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/deltaCRLIndicatorNoBaseCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLIndicatorNoBaseCACertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid deltaCRLIndicator No Base EE Certificate Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid deltaCRLIndicator No Base EE Certificate Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddeltaCRLIndicatorNoBaseTest1EE.crt
+
+dn: CN=deltaCRL CA1,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: deltaCRL CA1
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/deltaCRLCA1Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/deltaCRLCA1CRL.crl
+deltaRevocationList;binary:< file:///tmp/crls/deltaCRLCA1deltaCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLCA1CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid deltaCRL EE Certificate Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid deltaCRL EE Certificate Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddeltaCRLTest2EE.crt
+
+dn: CN=Invalid deltaCRL EE Certificate Test3,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid deltaCRL EE Certificate Test3
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddeltaCRLTest3EE.crt
+
+dn: CN=Invalid deltaCRL EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid deltaCRL EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddeltaCRLTest4EE.crt
+
+dn: CN=Valid deltaCRL EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid deltaCRL EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddeltaCRLTest5EE.crt
+
+dn: CN=Invalid deltaCRL EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid deltaCRL EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddeltaCRLTest6EE.crt
+
+dn: CN=Valid deltaCRL EE Certificate Test7,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid deltaCRL EE Certificate Test7
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddeltaCRLTest7EE.crt
+
+dn: CN=deltaCRL CA2,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: deltaCRL CA2
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/deltaCRLCA2Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/deltaCRLCA2CRL.crl
+deltaRevocationList;binary:< file:///tmp/crls/deltaCRLCA2deltaCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLCA2CertforwardcrossCertificatePair.cp
+
+dn: CN=Valid deltaCRL EE Certificate Test8,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid deltaCRL EE Certificate Test8
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValiddeltaCRLTest8EE.crt
+
+dn: CN=Invalid deltaCRL EE Certificate Test9,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid deltaCRL EE Certificate Test9
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddeltaCRLTest9EE.crt
+
+dn: CN=deltaCRL CA3,O=Test Certificates 2011,C=US
+objectClass: cRLDistributionPoint
+cn: deltaCRL CA3
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/deltaCRLCA3Cert.crt
+certificateRevocationList;binary:< file:///tmp/crls/deltaCRLCA3CRL.crl
+deltaRevocationList;binary:< file:///tmp/crls/deltaCRLCA3deltaCRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/deltaCRLCA3CertforwardcrossCertificatePair.cp
+
+dn: CN=Invalid deltaCRL EE Certificate Test10,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid deltaCRL EE Certificate Test10
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvaliddeltaCRLTest10EE.crt
+
+dn: CN=Valid Unknown Not Critical Certificate Extension EE Cert Test1,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid Unknown Not Critical Certificate Extension EE Cert Test1
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidUnknownNotCriticalCertificateExtensionTest1EE.crt
+
+dn: CN=Invalid Unknown Critical Certificate Extension EE Cert Test2,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid Unknown Critical Certificate Extension EE Cert Test2
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidUnknownCriticalCertificateExtensionTest2EE.crt
+
+dn: CN=DSA CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: DSA CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/DSACACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/DSACACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/DSACACertforwardcrossCertificatePair.cp
+crossCertificatePair;binary:< file:///tmp/certpairs/DSAParametersInheritedCACertreversecrossCertificatePair.cp
+
+dn: CN=Valid DSA Signatures EE Certificate Test4,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DSA Signatures EE Certificate Test4
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDSASignaturesTest4EE.crt
+
+dn: CN=DSA Parameters Inherited CA,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: DSA Parameters Inherited CA
+objectClass: pkiCA
+cACertificate;binary:< file:///tmp/certs/DSAParametersInheritedCACert.crt
+certificateRevocationList;binary:< file:///tmp/crls/DSAParametersInheritedCACRL.crl
+crossCertificatePair;binary:< file:///tmp/certpairs/DSAParametersInheritedCACertforwardcrossCertificatePair.cp
+
+dn: CN=Valid DSA Parameter Inheritance EE Certificate Test5,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Valid DSA Parameter Inheritance EE Certificate Test5
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/ValidDSAParameterInheritanceTest5EE.crt
+
+dn: CN=Invalid DSA Signature EE Certificate Test6,O=Test Certificates 2011,C=US
+objectClass: organizationalRole
+cn: Invalid DSA Signature EE Certificate Test6
+objectClass: pkiUser
+userCertificate;binary:< file:///tmp/certs/InvalidDSASignatureTest6EE.crt
+
