@@ -5,7 +5,6 @@ invoke
 iso8601
 pep8-naming
 pretend
-pyasn1
 pytest
 requests
 sphinx

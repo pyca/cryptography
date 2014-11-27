@@ -36,6 +36,7 @@ VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
     CFFI_DEPENDENCY,
+    "pyasn1",
     SIX_DEPENDENCY,
     SETUPTOOLS_DEPENDENCY
 ]
@@ -43,7 +44,6 @@ requirements = [
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
     "pytest",
-    "pyasn1",
     "pretend",
     "iso8601",
 ]
