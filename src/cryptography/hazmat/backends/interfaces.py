@@ -250,3 +250,18 @@ class PKCS8SerializationBackend(object):
         Load a private key from PKCS8 encoded data, using password if the data
         is encrypted.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class X509Backend(object):
+    @abc.abstractmethod
+    def load_pem_x509_certificate(self, data):
+        """
+        Load an X.509 certificate from PEM encoded data.
+        """
+
+    @abc.abstractmethod
+    def load_der_x509_certificate(self, data):
+        """
+        Load an X.509 certificate from DER encoded data.
+        """
