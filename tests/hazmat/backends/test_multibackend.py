@@ -14,7 +14,7 @@ from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
     PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    TraditionalOpenSSLSerializationBackend, X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -200,6 +200,15 @@ class DummyPEMSerializationBackend(object):
         pass
 
     def load_pem_public_key(self, data):
+        pass
+
+
+@utils.register_interface(X509Backend)
+class DummyX509Backend(object):
+    def load_pem_x509_certificate(self, data):
+        pass
+
+    def load_der_x509_certificate(self, data):
         pass
 
 
@@ -522,3 +531,15 @@ class TestMultiBackend(object):
             backend.load_pem_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pem_public_key(b"keydata")
+
+    def test_x509_backend(self):
+        backend = MultiBackend([DummyX509Backend()])
+
+        backend.load_pem_x509_certificate(b"certdata")
+        backend.load_der_x509_certificate(b"certdata")
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_pem_x509_certificate(b"certdata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_der_x509_certificate(b"certdata")
