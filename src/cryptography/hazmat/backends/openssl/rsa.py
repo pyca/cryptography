@@ -16,7 +16,11 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.interfaces import (
-    RSAPrivateKeyWithNumbers, RSAPublicKeyWithNumbers
+    RSAPrivateKeyWithNumbers, RSAPrivateKeyWithSerialization,
+    RSAPublicKeyWithNumbers
+)
+from cryptography.hazmat.primitives.serialization import (
+    BestAvailable, NoEncryption, PKCS8, TraditionalOpenSSL
 )
 
 
@@ -507,6 +511,7 @@ class _RSAVerificationContext(object):
 
 
 @utils.register_interface(RSAPrivateKeyWithNumbers)
+@utils.register_interface(RSAPrivateKeyWithSerialization)
 class _RSAPrivateKey(object):
     def __init__(self, backend, rsa_cdata):
         self._backend = backend
@@ -558,6 +563,50 @@ class _RSAPrivateKey(object):
                 n=self._backend._bn_to_int(self._rsa_cdata.n),
             )
         )
+
+    def dump_pem(self, serializer):
+        if not isinstance(serializer, (TraditionalOpenSSL, PKCS8)):
+            raise TypeError("serializer must be PKCS8 or TraditionalOpenSSL")
+
+        if isinstance(serializer, PKCS8):
+            write_bio = self._backend._lib.PEM_write_bio_PKCS8PrivateKey
+            key = self._evp_pkey
+        else:
+            write_bio = self._backend._lib.PEM_write_bio_RSAPrivateKey
+            key = self._rsa_cdata
+
+        if isinstance(serializer.enctype, NoEncryption):
+            password = b""
+            passlen = 0
+        else:
+            password = serializer.enctype.password
+            passlen = len(password)
+            if passlen > 1023:
+                raise ValueError(
+                    "Passwords longer than 1023 bytes are not supported by "
+                    "this backend"
+                )
+
+        if isinstance(serializer.enctype, BestAvailable):
+            # This is a curated value that we will update over time.
+            evp_cipher = self._backend._lib.EVP_get_cipherbyname(
+                b"aes-256-cbc"
+            )
+        elif isinstance(serializer.enctype, NoEncryption):
+            evp_cipher = self._backend._ffi.NULL
+
+        bio = self._backend._create_mem_bio()
+        res = write_bio(
+            bio,
+            key,
+            evp_cipher,
+            password,
+            passlen,
+            self._backend._ffi.NULL,
+            self._backend._ffi.NULL
+        )
+        assert res == 1
+        return self._backend._read_mem_bio(bio)
 
 
 @utils.register_interface(RSAPublicKeyWithNumbers)

@@ -202,12 +202,22 @@ class RSAPrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+class RSAPrivateKeyWithSerialization(RSAPrivateKey):
     @abc.abstractmethod
     def private_numbers(self):
         """
         Returns an RSAPrivateNumbers.
         """
+
+    @abc.abstractmethod
+    def dump_pem(self, serializer):
+        """
+        Returns the PEM encoded key.
+        """
+
+
+# DeprecatedIn07
+RSAPrivateKeyWithNumbers = RSAPrivateKeyWithSerialization
 
 
 @six.add_metaclass(abc.ABCMeta)

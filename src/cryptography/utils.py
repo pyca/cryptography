@@ -11,6 +11,7 @@ import sys
 
 # DeprecatedIn07 objects exist. This comment exists to remind developers to
 # look for them when it's time for the ninth release cycle deprecation dance.
+# DeprecatedIn08 objects also exist.
 
 
 def register_interface(iface):

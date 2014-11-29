@@ -4,11 +4,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 import base64
 import struct
 
 import six
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
@@ -156,3 +158,41 @@ else:
             data = data[4:]
 
         return result
+
+
+class PKCS8(object):
+    def __init__(self, enctype):
+        if not isinstance(enctype, KeySerializationEncryption):
+            raise TypeError(
+                "Encryption type must be a KeySerializationEncryption object"
+            )
+
+        self.enctype = enctype
+
+
+class TraditionalOpenSSL(object):
+    def __init__(self, enctype):
+        if not isinstance(enctype, KeySerializationEncryption):
+            raise TypeError(
+                "Encryption type must be a KeySerializationEncryption object"
+            )
+        self.enctype = enctype
+
+
+@six.add_metaclass(abc.ABCMeta)
+class KeySerializationEncryption(object):
+    pass
+
+
+@utils.register_interface(KeySerializationEncryption)
+class BestAvailable(object):
+    def __init__(self, password):
+        if not isinstance(password, bytes) or len(password) == 0:
+            raise ValueError("Password must be 1 or more bytes.")
+
+        self.password = password
+
+
+@utils.register_interface(KeySerializationEncryption)
+class NoEncryption(object):
+    pass

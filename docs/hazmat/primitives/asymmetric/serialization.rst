@@ -114,6 +114,50 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         is not supported by the backend.
 
 
+Serializers
+~~~~~~~~~~~
+
+.. class:: PKCS8(enctype)
+
+    .. versionadded:: 0.7
+
+    A serializer for the PKCS #8 format.
+
+    :param enctype: An object conforming to the
+        :class:`~cryptography.hazmat.primitives.asymmetric.serialization.KeySerializationEncryption`
+        interface.
+
+.. class:: TraditionalOpenSSL(enctype)
+
+    .. versionadded:: 0.7
+
+    A serializer for the traditional OpenSSL (sometimes known as PKCS #1)
+    format.
+
+    :param enctype: An object conforming to the
+        :class:`~cryptography.hazmat.primitives.asymmetric.serialization.KeySerializationEncryption`
+        interface.
+
+
+Serializer Encryption Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. class:: KeySerializationEncryption
+
+    Objects with this interface are usable as encryption types for
+    :class:`TraditionalOpenSSL` and :class:`PKCS8` serialization.
+
+.. class:: BestAvailable
+
+    Encrypt using the best available encryption for a given key's backend.
+    This is a curated encryption choice and the algorithm may change over
+    time.
+
+    :param bytes password: The password for encryption.
+
+.. class:: NoEncryption
+
+    Do not encrypt.
+
 OpenSSH Public Key
 ~~~~~~~~~~~~~~~~~~
 

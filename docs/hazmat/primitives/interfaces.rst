@@ -196,6 +196,23 @@ RSA
 
     .. versionadded:: 0.5
 
+    Extends :class:`RSAPrivateKey`. Deprecated in favor of
+    :class:`RSAPrivateKeyWithSerialization`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+            instance.
+
+.. class:: RSAPrivateKeyWithSerialization
+
+    .. versionadded:: 0.7
+
     Extends :class:`RSAPrivateKey`.
 
     .. method:: private_numbers()
@@ -207,6 +224,18 @@ RSA
         :returns: An
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
+
+    .. method:: dump_pem(serializer)
+
+        Dump the key to PEM encoded bytes using the serializer provided.
+
+        :param serializer: An instance of
+            :class:`~cryptography.hazmat.primitives.serialization.TraditionalOpenSSL`
+            or
+            :class:`~cryptography.hazmat.primitives.serialization.PKCS8`
+
+        :return bytes: Serialized key.
+
 
 
 .. class:: RSAPublicKey

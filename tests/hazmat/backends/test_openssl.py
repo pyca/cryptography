@@ -15,18 +15,19 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
+from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes, interfaces, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
-from ..primitives.fixtures_rsa import RSA_KEY_512
+from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -479,3 +480,16 @@ class TestOpenSSLEllipticCurve(object):
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+class TestRSAPemSerialization(object):
+    def test_password_length_limit(self):
+        password = b"x" * 1024
+        key = RSA_KEY_2048.private_key(backend)
+        with pytest.raises(ValueError):
+            key.dump_pem(
+                serialization.PKCS8(
+                    serialization.BestAvailable(password)
+                )
+            )

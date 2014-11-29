@@ -21,6 +21,7 @@ from cryptography.hazmat.primitives.asymmetric.dsa import (
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import (
+    BestAvailable, NoEncryption, PKCS8, TraditionalOpenSSL,
     load_pem_private_key, load_pem_public_key, load_ssh_public_key
 )
 
@@ -69,7 +70,7 @@ class TestPEMSerialization(object):
 
         assert key
         assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+        if isinstance(key, interfaces.RSAPrivateKeyWithSerialization):
             _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -899,3 +900,30 @@ class TestECDSASSHSerialization(object):
         )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
+
+
+@pytest.mark.parametrize(
+    "serializer",
+    [PKCS8, TraditionalOpenSSL]
+)
+class TestSerializers(object):
+    def test_invalid_enctype(self, serializer):
+        with pytest.raises(TypeError):
+            serializer("thing")
+
+    def test_valid_params(self, serializer):
+        no_enc = serializer(NoEncryption())
+        assert isinstance(no_enc.enctype, NoEncryption)
+        best = serializer(BestAvailable(b"password"))
+        assert best.enctype.password == b"password"
+        assert isinstance(best.enctype, BestAvailable)
+
+
+class TestKeySerializationEncryptionTypes(object):
+    def test_non_bytes_password(self):
+        with pytest.raises(ValueError):
+            BestAvailable(object())
+
+    def test_encryption_with_zero_length_password(self):
+        with pytest.raises(ValueError):
+            BestAvailable(b"")

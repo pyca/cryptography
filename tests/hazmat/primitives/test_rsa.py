@@ -15,8 +15,10 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
-from cryptography.hazmat.backends.interfaces import RSABackend
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.backends.interfaces import (
+    PEMSerializationBackend, RSABackend
+)
+from cryptography.hazmat.primitives import hashes, interfaces, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers
@@ -78,6 +80,18 @@ def test_modular_inverse():
     )
 
 
+def _skip_if_no_serialization(key, backend):
+    if not isinstance(key, interfaces.RSAPrivateKeyWithSerialization):
+        pytest.skip(
+            "{0} does not support RSA key serialization".format(backend)
+        )
+
+
+def test_skip_if_no_serialization():
+    with pytest.raises(pytest.skip.Exception):
+        _skip_if_no_serialization("notakeywithserialization", "backend")
+
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSA(object):
     @pytest.mark.parametrize(
@@ -91,7 +105,7 @@ class TestRSA(object):
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
-        if isinstance(skey, interfaces.RSAPrivateKeyWithNumbers):
+        if isinstance(skey, interfaces.RSAPrivateKeyWithSerialization):
             _check_rsa_private_numbers(skey.private_numbers())
             pkey = skey.public_key()
             assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
@@ -1698,3 +1712,55 @@ class TestRSANumbersEquality(object):
             1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 3)
         )
         assert num != object()
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+class TestRSAPEMWriter(object):
+    @pytest.mark.parametrize(
+        ("serializer", "password"),
+        itertools.product(
+            [serialization.TraditionalOpenSSL, serialization.PKCS8],
+            [
+                b"s",
+                b"longerpassword",
+                b"!*$&(@#$*&($T@%_somesymbols",
+                b"\x01" * 1000,
+            ]
+        )
+    )
+    def test_dump_encrypted_pem(self, backend, serializer, password):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.dump_pem(serializer(
+            serialization.BestAvailable(password)
+        ))
+        loaded_key = serialization.load_pem_private_key(
+            serialized, password, backend
+        )
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    @pytest.mark.parametrize(
+        ("serializer"),
+        (serialization.TraditionalOpenSSL, serialization.PKCS8),
+    )
+    def test_dump_unencrypted_pem(self, backend, serializer):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.dump_pem(
+            serializer(serialization.NoEncryption())
+        )
+        loaded_key = serialization.load_pem_private_key(
+            serialized, None, backend
+        )
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    def test_dump_invalid_serializer(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.dump_pem("notaserializer")
