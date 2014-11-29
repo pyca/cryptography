@@ -15,6 +15,7 @@ typedef ... *SecKeyRef;
 FUNCTIONS = """
 OSStatus SecKeyGeneratePair(CFDictionaryRef, SecKeyRef *, SecKeyRef *);
 size_t SecKeyGetBlockSize(SecKeyRef);
+SecKeyRef SecKeyCreateFromData(CFDictionaryRef, CFDataRef, CFErrorRef *);
 """
 
 MACROS = """

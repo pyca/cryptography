@@ -4,19 +4,31 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+import tempfile
+import uuid
 from collections import namedtuple
 
 from cryptography import utils
 from cryptography.exceptions import InternalError
+from cryptography.hazmat.backends.commoncrypto import asn1
 from cryptography.hazmat.backends.commoncrypto.ciphers import (
     _CipherContext, _GCMCipherContext
 )
 from cryptography.hazmat.backends.commoncrypto.hashes import _HashContext
 from cryptography.hazmat.backends.commoncrypto.hmac import _HMACContext
+from cryptography.hazmat.backends.commoncrypto.rsa import (
+    _RSAPrivateKey, _RSAPublicKey
+)
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
+    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend, RSABackend
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric.padding import (
+    MGF1, OAEP, PKCS1v15
+)
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES, ARC4, Blowfish, CAST5, TripleDES
 )
@@ -34,6 +46,7 @@ HashMethods = namedtuple(
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
+@utils.register_interface(RSABackend)
 class Backend(object):
     """
     CommonCrypto API wrapper.
@@ -230,6 +243,155 @@ class Backend(object):
                 " Code: {0}.".format(response)
             )
 
+    # TODO: cover else branch
+    def rsa_padding_supported(self, padding):
+        if isinstance(padding, PKCS1v15):
+            return True
+        elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
+            return isinstance(padding._mgf._algorithm, hashes.SHA1)
+        else:
+            return False
+
+    # TODO: remove this or add it to interface.
+    def load_rsa_parameters_supported(self, public_exponent, key_size):
+        return (key_size % 8 == 0 and key_size <= 4096)
+
+    def generate_rsa_parameters_supported(self, public_exponent, key_size):
+        return (
+            public_exponent == 65537 and key_size >= 1024 and
+            key_size <= 4096 and key_size % 8 == 0
+        )
+
+    def generate_rsa_private_key(self, public_exponent, key_size):
+        if public_exponent != 65537:
+            raise ValueError("Only 65537 is supported for public exponent")
+
+        if key_size < 1024 or key_size > 4096 or key_size % 8 != 0:
+            raise ValueError("key_size must be between 1024 and 4096 bits and "
+                             "divisible by 8.")
+
+        filename = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
+        keycallback = self._ffi.new(
+            "CFDictionaryKeyCallBacks *",
+            self._lib.kCFTypeDictionaryKeyCallBacks
+        )
+        valuecallback = self._ffi.new(
+            "CFDictionaryValueCallBacks *",
+            self._lib.kCFTypeDictionaryValueCallBacks
+        )
+        keydict = self._lib.CFDictionaryCreateMutable(
+            self._lib.kCFAllocatorDefault,
+            0,
+            keycallback,
+            valuecallback
+        )
+        assert keydict != self._ffi.NULL
+        keydict = self._ffi.gc(keydict, self._release_cftyperef)
+        self._lib.CFDictionarySetValue(
+            keydict,
+            self._lib.kSecAttrKeyType,
+            self._lib.kSecAttrKeyTypeRSA
+        )
+        bits = self._lib.CFStringCreateWithCString(
+            self._lib.kCFAllocatorDefault,
+            str(key_size),
+            self._lib.kCFStringEncodingASCII
+        )
+        assert bits != self._ffi.NULL
+        bits = self._ffi.gc(bits, self._release_cftyperef)
+        self._lib.CFDictionarySetValue(
+            keydict,
+            self._lib.kSecAttrKeySizeInBits,
+            bits
+        )
+        keychain = self._ffi.new("SecKeychainRef *")
+        keychain = self._ffi.gc(keychain, self._release_cftyperef_ptr)
+        res = self._lib.SecKeychainCreate(
+            filename, 1, "", False, self._ffi.NULL, keychain
+        )
+        assert res == 0
+        self._lib.CFDictionarySetValue(
+            keydict,
+            self._lib.kSecUseKeychain,
+            keychain[0]
+        )
+        public_key = self._ffi.new("SecKeyRef *")
+        public_key = self._ffi.gc(public_key, self._release_cftyperef_ptr)
+        private_key = self._ffi.new("SecKeyRef *")
+        private_key = self._ffi.gc(private_key, self._release_cftyperef_ptr)
+        res = self._lib.SecKeyGeneratePair(
+            self._ffi.cast("CFDictionaryRef", keydict),
+            public_key,
+            private_key
+        )
+        assert res == 0
+        res = self._lib.SecKeychainDelete(keychain[0])
+        assert res == 0
+
+        return _RSAPrivateKey(self, private_key, key_size)
+
+    def _keyref_from_der(self, der):
+        dataref = self._lib.CFDataCreate(
+            self._lib.kCFAllocatorDefault,
+            der,
+            len(der)
+        )
+        dataref = self._ffi.gc(dataref, self._release_cftyperef)
+        keyparams = self._ffi.new("SecItemImportExportKeyParameters *")
+        keyparams.flags = 0
+        secitemtype = self._ffi.new("SecExternalItemType *",
+                                    self._lib.kSecItemTypeUnknown)
+        secformat = self._ffi.new("SecExternalFormat *",
+                                  self._lib.kSecFormatOpenSSL)
+        outitems = self._ffi.new("CFArrayRef *")
+        outitems = self._ffi.gc(outitems, self._release_cftyperef_ptr)
+        res = self._lib.SecItemImport(
+            dataref,
+            self._ffi.NULL,
+            secformat,
+            secitemtype,
+            0,
+            keyparams,
+            self._ffi.NULL,
+            outitems
+        )
+        assert res == 0
+        assert outitems[0] != self._ffi.NULL
+        keyref = self._lib.CFArrayGetValueAtIndex(outitems[0], 0)
+        keyref = self._ffi.cast("SecKeyRef", self._lib.CFRetain(keyref))
+        keyref = self._ffi.gc(keyref, self._release_cftyperef)
+        return keyref
+
+    def _create_cfnumber(self, number):
+        num = self._ffi.new("int *", number)
+        cfnumber = self._lib.CFNumberCreate(
+            self._lib.kCFAllocatorDefault, self._lib.kCFNumberIntType, num
+        )
+        return self._ffi.gc(cfnumber, self._release_cftyperef)
+
+    def load_rsa_private_numbers(self, numbers):
+        rsa._check_private_key_components(
+            numbers.p,
+            numbers.q,
+            numbers.d,
+            numbers.dmp1,
+            numbers.dmq1,
+            numbers.iqmp,
+            numbers.public_numbers.e,
+            numbers.public_numbers.n
+        )
+        der = asn1.build_private_pkcs1(numbers)
+        keyref = self._keyref_from_der(der)
+        return _RSAPrivateKey(
+            self, keyref, utils.bit_length(numbers.public_numbers.n)
+        )
+
+    def load_rsa_public_numbers(self, numbers):
+        rsa._check_public_key_components(numbers.e, numbers.n)
+        der = asn1.build_public_pkcs1(numbers)
+        keyref = self._keyref_from_der(der)
+        return _RSAPublicKey(self, keyref, utils.bit_length(numbers.n))
+
     def _release_cipher_ctx(self, ctx):
         """
         Called by the garbage collector and used to safely dereference and
@@ -239,6 +401,23 @@ class Backend(object):
             res = self._lib.CCCryptorRelease(ctx[0])
             self._check_cipher_response(res)
             ctx[0] = self._ffi.NULL
+
+    def _release_cftyperef(self, ref):
+        """
+        Called by the garbage collector and used to safely dereference and
+        release a CFTypeRef type. This can be CFArrayRef, CFStringRef, etc
+        """
+        self._lib.CFRelease(self._ffi.cast("CFTypeRef", ref))
+
+    def _release_cftyperef_ptr(self, ptr):
+        """
+        Called by the garbage collector and used to safely dereference and
+        release a CFTypeRef * type. This can be CFArrayRef *, CFStringRef *,
+        etc
+        """
+        if ptr[0] != self._ffi.NULL:
+            self._lib.CFRelease(self._ffi.cast("CFTypeRef", ptr[0]))
+            ptr[0] = self._ffi.NULL
 
 
 backend = Backend()
