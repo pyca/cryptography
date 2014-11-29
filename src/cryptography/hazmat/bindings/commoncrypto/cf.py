@@ -16,6 +16,7 @@ typedef uint32_t UInt32;
 
 typedef const void * CFAllocatorRef;
 const CFAllocatorRef kCFAllocatorDefault;
+typedef unsigned long CFTypeID;
 typedef ... *CFDataRef;
 typedef signed long long CFIndex;
 typedef ... *CFStringRef;
@@ -38,7 +39,8 @@ typedef struct {
 
 typedef UInt32 CFStringEncoding;
 enum {
-    kCFStringEncodingASCII = 0x0600
+    kCFStringEncodingASCII = 0x0600,
+    kCFStringEncodingUTF8 = 0x08000100
 };
 
 enum {
@@ -94,6 +96,10 @@ Boolean CFBooleanGetValue(CFBooleanRef);
 CFNumberRef CFNumberCreate(CFAllocatorRef, CFNumberType, const void *);
 void CFRelease(CFTypeRef);
 CFTypeRef CFRetain(CFTypeRef);
+CFIndex CFErrorGetCode(CFErrorRef);
+Boolean CFStringGetCString(CFStringRef, char *, CFIndex, CFStringEncoding);
+CFStringRef CFErrorCopyDescription(CFErrorRef);
+CFTypeID CFGetTypeID(CFTypeRef);
 """
 
 MACROS = """

@@ -86,6 +86,13 @@ class TestRSA(object):
         )
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
+        if not backend.generate_rsa_parameters_supported(public_exponent,
+                                                         key_size):
+            pytest.skip(
+                "RSA parameters not supported by {0}. Public exponent: {1} "
+                "Key size: {2}".format(backend, public_exponent, key_size)
+            )
+
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
@@ -1210,6 +1217,16 @@ class TestRSAEncryption(object):
         )
     )
     def test_rsa_encrypt_oaep(self, key_data, pad, backend):
+        key_size = utils.bit_length(key_data.public_numbers.n)
+        if not backend.load_rsa_parameters_supported(
+            key_data.public_numbers.e, key_size
+        ):
+            pytest.skip(
+                "RSA parameters not supported by {0}. Public exponent: {1} "
+                "Key size: {2}".format(
+                    backend, key_data.public_numbers.e, key_size
+                )
+            )
         private_key = key_data.private_key(backend)
         pt = b"encrypt me!"
         public_key = private_key.public_key()
@@ -1261,6 +1278,16 @@ class TestRSAEncryption(object):
         )
     )
     def test_rsa_encrypt_key_too_small(self, key_data, pad, backend):
+        key_size = utils.bit_length(key_data.public_numbers.n)
+        if not backend.load_rsa_parameters_supported(
+            key_data.public_numbers.e, key_size
+        ):
+            pytest.skip(
+                "RSA parameters not supported by {0}. Public exponent: {1} "
+                "Key size: {2}".format(
+                    backend, key_data.public_numbers.e, key_size
+                )
+            )
         private_key = key_data.private_key(backend)
         public_key = private_key.public_key()
         # Slightly smaller than the key size but not enough for padding.

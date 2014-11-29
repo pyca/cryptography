@@ -15,6 +15,12 @@ typedef ... *SecKeyRef;
 FUNCTIONS = """
 OSStatus SecKeyGeneratePair(CFDictionaryRef, SecKeyRef *, SecKeyRef *);
 size_t SecKeyGetBlockSize(SecKeyRef);
+SecKeyRef SecKeyCreateFromData(CFDictionaryRef, CFDataRef, CFErrorRef *);
+// this is a private API. fuck it.
+SecKeyRef SecKeyCreatePublicFromPrivate(SecKeyRef);
+CFDataRef SecKeyCopyModulus(SecKeyRef);
+CFDataRef SecKeyCopyExponent(SecKeyRef);
+OSStatus SecKeyCopyPublicBytes(SecKeyRef, CFDataRef *);
 """
 
 MACROS = """

@@ -60,3 +60,30 @@ class TestCommonCrypto(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
+
+
+@pytest.mark.skipif(not Binding.is_available(),
+                    reason="CommonCrypto not available")
+class CommonCryptoRSA(object):
+    def test_cant_generate_unsupported_public_exponent(self, backend):
+        from cryptography.hazmat.backends.commoncrypto.backend import Backend
+        b = Backend()
+
+        with pytest.raises(ValueError):
+            b.generate_rsa_private_key(public_exponent=1, key_size=2048)
+
+        with pytest.raises(ValueError):
+            b.generate_rsa_private_key(public_exponent=3, key_size=2048)
+
+    def test_cant_generate_unsupported_key_sizes(self, backend):
+        from cryptography.hazmat.backends.commoncrypto.backend import Backend
+        b = Backend()
+
+        with pytest.raises(ValueError):
+            b.generate_rsa_private_key(public_exponent=65537, key_size=1023)
+
+        with pytest.raises(ValueError):
+            b.generate_rsa_private_key(public_exponent=65537, key_size=4097)
+
+        with pytest.raises(ValueError):
+            b.generate_rsa_private_key(public_exponent=65537, key_size=1025)

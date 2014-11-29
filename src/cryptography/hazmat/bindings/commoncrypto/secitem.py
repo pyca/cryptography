@@ -14,7 +14,14 @@ const CFTypeRef kSecAttrKeySizeInBits;
 const CFTypeRef kSecAttrIsPermanent;
 const CFTypeRef kSecAttrKeyTypeRSA;
 const CFTypeRef kSecAttrKeyTypeDSA;
+const CFTypeRef kSecAttrKeyTypeEC;
 const CFTypeRef kSecUseKeychain;
+
+const CFTypeRef kSecAttrKeyClass;
+const CFTypeRef kSecAttrKeyClassPublic;
+const CFTypeRef kSecAttrKeyClassPrivate;
+const CFTypeRef kSecAttrKeyClassSymmetric;
+
 """
 
 FUNCTIONS = """
