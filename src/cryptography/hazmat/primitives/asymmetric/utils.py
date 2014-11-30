@@ -17,6 +17,10 @@ class _DSSSigValue(univ.Sequence):
 
 def decode_rfc6979_signature(signature):
     data = decoder.decode(signature, asn1Spec=_DSSSigValue())
+    if data[1]:
+        raise ValueError(
+            "The signature contains bytes after the end of the ASN.1 sequence."
+        )
     r = int(data[0].getComponentByName('r'))
     s = int(data[0].getComponentByName('s'))
     return (r, s)

@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_rfc6979_signature, encode_rfc6979_signature
 )
@@ -32,3 +34,8 @@ def test_rfc6979_signature():
     sig4 = encode_rfc6979_signature(-1, 0)
     assert sig4 == b"0\x06\x02\x01\xFF\x02\x01\x00"
     assert decode_rfc6979_signature(sig4) == (-1, 0)
+
+
+def test_decode_rfc6979_trailing_bytes():
+    with pytest.raises(ValueError):
+        decode_rfc6979_signature(b"0\x06\x02\x01\x01\x02\x01\x01\x00\x00\x00")
