@@ -7,6 +7,10 @@ C bindings are bindings to C libraries, using cffi_ whenever possible.
 
 Bindings live in :py:mod:`cryptography.hazmat.bindings`.
 
+When modifying the bindings you will need to recompile the C extensions to
+test the changes. This can be accomplished with ``pip install -e .`` in the
+project root. If you do not do this a ``RuntimeError`` will be raised.
+
 Style guide
 -----------
 
