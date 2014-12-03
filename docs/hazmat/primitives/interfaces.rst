@@ -711,9 +711,9 @@ X509
 
     .. method:: fingerprint(algorithm)
 
-        :param algorithm: A
+        :param algorithm: The
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            that will be used by this context.
+            that will be used to generate the fingerprint.
 
         :return bytes: The fingerprint using the supplied hash algorithm as
             bytes.
