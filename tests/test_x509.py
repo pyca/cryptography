@@ -21,12 +21,7 @@ from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
 
 
-def _load_cert(filename, fmt, backend):
-    if fmt == "pem":
-        loader = x509.load_pem_x509_certificate
-    else:
-        loader = x509.load_der_x509_certificate
-
+def _load_cert(filename, loader, backend):
     cert = load_vectors_from_file(
         filename=filename,
         loader=lambda pemfile: loader(pemfile.read(), backend),
@@ -41,7 +36,7 @@ class TestRSAX509Certificate(object):
     def test_load_pem_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
-            "pem",
+            x509.load_pem_x509_certificate,
             backend
         )
         assert isinstance(cert, interfaces.X509Certificate)
@@ -49,7 +44,7 @@ class TestRSAX509Certificate(object):
     def test_load_der_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
-            "der",
+            x509.load_der_x509_certificate,
             backend
         )
         assert isinstance(cert, interfaces.X509Certificate)
@@ -57,7 +52,7 @@ class TestRSAX509Certificate(object):
     def test_load_good_ca_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
-            "der",
+            x509.load_der_x509_certificate,
             backend
         )
 
@@ -76,7 +71,7 @@ class TestRSAX509Certificate(object):
                 "x509", "PKITS_data", "certs",
                 "Validpre2000UTCnotBeforeDateTest3EE.crt"
             ),
-            "der",
+            x509.load_der_x509_certificate,
             backend
         )
 
@@ -88,7 +83,7 @@ class TestRSAX509Certificate(object):
                 "x509", "PKITS_data", "certs",
                 "Invalidpre2000UTCEEnotAfterDateTest7EE.crt"
             ),
-            "der",
+            x509.load_der_x509_certificate,
             backend
         )
 
@@ -97,7 +92,7 @@ class TestRSAX509Certificate(object):
     def test_post_2000_utc_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
-            "pem",
+            x509.load_pem_x509_certificate,
             backend
         )
         assert cert.not_before == datetime.datetime(2014, 11, 26, 21, 41, 20)
@@ -109,7 +104,7 @@ class TestRSAX509Certificate(object):
                 "x509", "PKITS_data", "certs",
                 "ValidGeneralizedTimenotBeforeDateTest4EE.crt"
             ),
-            "der",
+            x509.load_der_x509_certificate,
             backend
         )
         assert cert.not_before == datetime.datetime(2002, 1, 1, 12, 1)
@@ -122,7 +117,7 @@ class TestRSAX509Certificate(object):
                 "x509", "PKITS_data", "certs",
                 "ValidGeneralizedTimenotAfterDateTest8EE.crt"
             ),
-            "der",
+            x509.load_der_x509_certificate,
             backend
         )
         assert cert.not_before == datetime.datetime(2010, 1, 1, 8, 30)
@@ -132,7 +127,7 @@ class TestRSAX509Certificate(object):
     def test_invalid_version_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid_version.pem"),
-            "pem",
+            x509.load_pem_x509_certificate,
             backend
         )
         with pytest.raises(x509.InvalidX509Version):
@@ -141,7 +136,7 @@ class TestRSAX509Certificate(object):
     def test_version_1_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "v1_cert.pem"),
-            "pem",
+            x509.load_pem_x509_certificate,
             backend
         )
         assert cert.version == x509.X509Version.v1
@@ -161,7 +156,7 @@ class TestDSAX509Certificate(object):
     def test_load_dsa_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_root.pem"),
-            "pem",
+            x509.load_pem_x509_certificate,
             backend
         )
         public_key = cert.public_key()
@@ -175,7 +170,7 @@ class TestECDSAX509Certificate(object):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
-            "pem",
+            x509.load_pem_x509_certificate,
             backend
         )
         public_key = cert.public_key()
