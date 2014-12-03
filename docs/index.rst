@@ -62,12 +62,12 @@ The recipes layer
 .. toctree::
     :maxdepth: 2
 
+    x509
     fernet
     random-numbers
     exceptions
     faq
     glossary
-    x509
 
 The hazardous materials layer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
