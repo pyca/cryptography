@@ -7,21 +7,21 @@ compiler:
     - gcc
 env:
     matrix:
-        - TOX_ENV=py26
-        - TOX_ENV=py27
-        - TOX_ENV=py32
-        - TOX_ENV=py33
-        - TOX_ENV=py34
-        - TOX_ENV=pypy
-        - TOX_ENV=py26 OPENSSL=0.9.8
-        - TOX_ENV=py27 OPENSSL=0.9.8
-        - TOX_ENV=py32 OPENSSL=0.9.8
-        - TOX_ENV=py33 OPENSSL=0.9.8
-        - TOX_ENV=py34 OPENSSL=0.9.8
-        - TOX_ENV=pypy OPENSSL=0.9.8
-        - TOX_ENV=docs
-        - TOX_ENV=pep8
-        - TOX_ENV=py3pep8
+        - TOXENV=py26
+        - TOXENV=py27
+        - TOXENV=py32
+        - TOXENV=py33
+        - TOXENV=py34
+        - TOXENV=pypy
+        - TOXENV=py26 OPENSSL=0.9.8
+        - TOXENV=py27 OPENSSL=0.9.8
+        - TOXENV=py32 OPENSSL=0.9.8
+        - TOXENV=py33 OPENSSL=0.9.8
+        - TOXENV=py34 OPENSSL=0.9.8
+        - TOXENV=pypy OPENSSL=0.9.8
+        - TOXENV=docs
+        - TOXENV=pep8
+        - TOXENV=py3pep8
 
 install:
     - ./.travis/install.sh
@@ -44,18 +44,18 @@ matrix:
         - os: osx
           compiler: gcc
         - os: osx
-          env: TOX_ENV=pep8
+          env: TOXENV=pep8
           compiler: clang
         - os: osx
-          env: TOX_ENV=py3pep8
+          env: TOXENV=py3pep8
           compiler: clang
 
         - os: linux
-          env: TOX_ENV=docs
+          env: TOXENV=docs
           compiler: clang
         - os: linux
-          env: TOX_ENV=pep8
+          env: TOXENV=pep8
           compiler: clang
         - os: linux
-          env: TOX_ENV=py3pep8
+          env: TOXENV=py3pep8
           compiler: clang
