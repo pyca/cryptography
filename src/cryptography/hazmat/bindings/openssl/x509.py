@@ -70,6 +70,39 @@ typedef struct {
 } X509;
 
 typedef ... NETSCAPE_SPKI;
+
+static const int X509_FLAG_COMPAT;
+static const int X509_FLAG_NO_HEADER;
+static const int X509_FLAG_NO_VERSION;
+static const int X509_FLAG_NO_SERIAL;
+static const int X509_FLAG_NO_SIGNAME;
+static const int X509_FLAG_NO_ISSUER;
+static const int X509_FLAG_NO_VALIDITY;
+static const int X509_FLAG_NO_SUBJECT;
+static const int X509_FLAG_NO_PUBKEY;
+static const int X509_FLAG_NO_EXTENSIONS;
+static const int X509_FLAG_NO_SIGDUMP;
+static const int X509_FLAG_NO_AUX;
+static const int X509_FLAG_NO_ATTRIBUTES;
+
+static const int XN_FLAG_SEP_MASK;
+static const int XN_FLAG_COMPAT;
+static const int XN_FLAG_SEP_COMMA_PLUS;
+static const int XN_FLAG_SEP_CPLUS_SPC;
+static const int XN_FLAG_SEP_SPLUS_SPC;
+static const int XN_FLAG_SEP_MULTILINE;
+static const int XN_FLAG_DN_REV;
+static const int XN_FLAG_FN_MASK;
+static const int XN_FLAG_FN_SN;
+static const int XN_FLAG_FN_LN;
+static const int XN_FLAG_FN_OID;
+static const int XN_FLAG_FN_NONE;
+static const int XN_FLAG_SPC_EQ;
+static const int XN_FLAG_DUMP_UNKNOWN_FIELDS;
+static const int XN_FLAG_FN_ALIGN;
+static const int XN_FLAG_RFC2253;
+static const int XN_FLAG_ONELINE;
+static const int XN_FLAG_MULTILINE;
 """
 
 FUNCTIONS = """
