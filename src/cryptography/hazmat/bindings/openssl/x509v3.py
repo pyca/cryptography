@@ -6,6 +6,19 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/x509v3.h>
+
+/*
+ * This is part of a work-around for the difficulty cffi has in dealing with
+ * `LHASH_OF(foo)` as the name of a type.  We invent a new, simpler name that
+ * will be an alias for this type and use the alias throughout.  This works
+ * together with another opaque typedef for the same name in the TYPES section.
+ * Note that the result is an opaque type.
+ */
+#if OPENSSL_VERSION_NUMBER >= 0x10000000
+typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
+#else
+typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
+#endif
 """
 
 TYPES = """
@@ -67,9 +80,13 @@ typedef struct {
 } GENERAL_NAME;
 
 typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
+
+typedef ... Cryptography_LHASH_OF_CONF_VALUE;
 """
 
+
 FUNCTIONS = """
+int X509V3_EXT_add_alias(int, int);
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
@@ -83,9 +100,13 @@ int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
 
+X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
+                                    X509V3_CTX *, int, char *);
+
 /* These aren't macros these functions are all const X on openssl > 1.0.x */
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
+
 """
 
 CUSTOMIZATIONS = """
