@@ -36,6 +36,14 @@ def test_rfc6979_signature():
     assert decode_rfc6979_signature(sig4) == (-1, 0)
 
 
+def test_encode_rfc6979_non_integer():
+    with pytest.raises(ValueError):
+        encode_rfc6979_signature("h", 3)
+        encode_rfc6979_signature(3, "h")
+        encode_rfc6979_signature(3.3, 1.2)
+        encode_rfc6979_signature("hello", "world")
+
+
 def test_decode_rfc6979_trailing_bytes():
     with pytest.raises(ValueError):
         decode_rfc6979_signature(b"0\x06\x02\x01\x01\x02\x01\x01\x00\x00\x00")

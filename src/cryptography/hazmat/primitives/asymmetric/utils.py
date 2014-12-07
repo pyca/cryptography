@@ -32,7 +32,11 @@ def decode_rfc6979_signature(signature):
 
 
 def encode_rfc6979_signature(r, s):
-    sig = _DSSSigValue()
-    sig.setComponentByName('r', r)
-    sig.setComponentByName('s', s)
+    try:
+        sig = _DSSSigValue()
+        sig.setComponentByName('r', r)
+        sig.setComponentByName('s', s)
+    except PyAsn1Error:
+        raise ValueError("Both r and s must be integers")
+
     return encoder.encode(sig)
