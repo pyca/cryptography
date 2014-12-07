@@ -39,9 +39,17 @@ def test_rfc6979_signature():
 def test_encode_rfc6979_non_integer():
     with pytest.raises(ValueError):
         encode_rfc6979_signature("h", 3)
+
+    with pytest.raises(ValueError):
         encode_rfc6979_signature("3", "2")
+
+    with pytest.raises(ValueError):
         encode_rfc6979_signature(3, "h")
+
+    with pytest.raises(ValueError):
         encode_rfc6979_signature(3.3, 1.2)
+
+    with pytest.raises(ValueError):
         encode_rfc6979_signature("hello", "world")
 
 
