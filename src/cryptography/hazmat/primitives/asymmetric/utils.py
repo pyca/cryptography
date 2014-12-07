@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from pyasn1.codec.der import decoder, encoder
+from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, univ
 
 
@@ -16,7 +17,11 @@ class _DSSSigValue(univ.Sequence):
 
 
 def decode_rfc6979_signature(signature):
-    data, remaining = decoder.decode(signature, asn1Spec=_DSSSigValue())
+    try:
+        data, remaining = decoder.decode(signature, asn1Spec=_DSSSigValue())
+    except PyAsn1Error:
+        raise ValueError("Invalid signature data. Unable to decode ASN.1")
+
     if remaining:
         raise ValueError(
             "The signature contains bytes after the end of the ASN.1 sequence."

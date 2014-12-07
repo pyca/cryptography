@@ -39,3 +39,8 @@ def test_rfc6979_signature():
 def test_decode_rfc6979_trailing_bytes():
     with pytest.raises(ValueError):
         decode_rfc6979_signature(b"0\x06\x02\x01\x01\x02\x01\x01\x00\x00\x00")
+
+
+def test_decode_rfc6979_invalid_asn1():
+    with pytest.raises(ValueError):
+        decode_rfc6979_signature(b"0\x07\x02\x01\x01\x02\x02\x01")
