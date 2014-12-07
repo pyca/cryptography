@@ -8,6 +8,8 @@ from pyasn1.codec.der import decoder, encoder
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, univ
 
+import six
+
 
 class _DSSSigValue(univ.Sequence):
     componentType = namedtype.NamedTypes(
@@ -32,11 +34,13 @@ def decode_rfc6979_signature(signature):
 
 
 def encode_rfc6979_signature(r, s):
-    try:
-        sig = _DSSSigValue()
-        sig.setComponentByName('r', r)
-        sig.setComponentByName('s', s)
-    except PyAsn1Error:
+    if (
+        not isinstance(r, six.integer_types) or
+        not isinstance(s, six.integer_types)
+    ):
         raise ValueError("Both r and s must be integers")
 
+    sig = _DSSSigValue()
+    sig.setComponentByName('r', r)
+    sig.setComponentByName('s', s)
     return encoder.encode(sig)
