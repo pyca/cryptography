@@ -43,4 +43,6 @@ def test_decode_rfc6979_trailing_bytes():
 
 def test_decode_rfc6979_invalid_asn1():
     with pytest.raises(ValueError):
+        # This byte sequence has an invalid ASN.1 sequence length as well as
+        # an invalid integer length for the second integer.
         decode_rfc6979_signature(b"0\x07\x02\x01\x01\x02\x02\x01")
