@@ -16,6 +16,8 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
   common interface for CMAC and HMAC and deprecated
   :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
+* Added support for encoding and decoding :rfc:`6979` signatures in
+  :doc:`/hazmat/primitives/asymmetric/utils`.
 
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~

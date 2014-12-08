@@ -53,7 +53,9 @@ Elliptic Curve Signature Algorithms
         >>> signature = signer.finalize()
 
     The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
-    described in :rfc:`6979`.
+    described in :rfc:`6979`. This can be decoded using
+    :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_rfc6979_signature`.
+
 
 
 .. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
