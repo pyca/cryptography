@@ -15,7 +15,7 @@ TYPES = """
  * Internally invented symbols to tell which versions of SSL/TLS are supported.
 */
 static const long Cryptography_HAS_SSL2;
-static const long Cryptography_HAS_SSL3_METHOD;
+static const long Cryptography_HAS_SSL3;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
@@ -385,13 +385,13 @@ SSL_METHOD* (*SSLv2_server_method)(void) = NULL;
 static const long Cryptography_HAS_SSL2 = 1;
 #endif
 
-#ifdef OPENSSL_NO_SSL3_METHOD
-static const long Cryptography_HAS_SSL3_METHOD = 0;
+#ifdef OPENSSL_NO_SSL3
+static const long Cryptography_HAS_SSL3 = 0;
 SSL_METHOD* (*SSLv3_method)(void) = NULL;
 SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
 SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 #else
-static const long Cryptography_HAS_SSL3_METHOD = 1;
+static const long Cryptography_HAS_SSL3 = 1;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
@@ -564,7 +564,7 @@ CONDITIONAL_NAMES = {
         "SSLv2_server_method",
     ],
 
-    "Cryptography_HAS_SSL3_METHOD": [
+    "Cryptography_HAS_SSL3": [
         "SSLv3_method",
         "SSLv3_client_method",
         "SSLv3_server_method",
