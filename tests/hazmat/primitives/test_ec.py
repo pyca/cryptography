@@ -360,3 +360,38 @@ class TestECDSAVectors(object):
         numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
         assert numbers.private_key(b) == b"private_key"
         assert pub_numbers.public_key(b) == b"public_key"
+
+
+class TestECNumbersEquality(object):
+    def test_public_numbers_eq(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        assert pub == ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+
+    def test_public_numbers_ne(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        assert pub != ec.EllipticCurvePublicNumbers(1, 2, ec.SECP384R1())
+        assert pub != ec.EllipticCurvePublicNumbers(1, 3, ec.SECP192R1())
+        assert pub != ec.EllipticCurvePublicNumbers(2, 2, ec.SECP192R1())
+
+    def test_private_numbers_eq(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        priv = ec.EllipticCurvePrivateNumbers(1, pub)
+        assert priv == ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        )
+
+    def test_private_numbers_ne(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        priv = ec.EllipticCurvePrivateNumbers(1, pub)
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            2, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        )
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(2, 2, ec.SECP192R1())
+        )
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(1, 3, ec.SECP192R1())
+        )
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP521R1())
+        )

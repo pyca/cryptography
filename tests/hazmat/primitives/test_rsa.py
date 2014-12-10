@@ -18,7 +18,9 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.primitives.asymmetric.rsa import (
+    RSAPrivateNumbers, RSAPublicNumbers
+)
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -1647,3 +1649,50 @@ class TestRSANumbers(object):
     def test_public_number_repr(self):
         num = RSAPublicNumbers(1, 1)
         assert repr(num) == "<RSAPublicNumbers(e=1, n=1)>"
+
+
+class TestRSANumbersEquality(object):
+    def test_public_numbers_eq(self):
+        num = RSAPublicNumbers(1, 2)
+        num2 = RSAPublicNumbers(1, 2)
+        assert num == num2
+
+    def test_public_numbers_ne(self):
+        num = RSAPublicNumbers(1, 2)
+        assert num != RSAPublicNumbers(2, 2)
+        assert num != RSAPublicNumbers(1, 3)
+
+    def test_private_numbers_eq(self):
+        pub = RSAPublicNumbers(1, 2)
+        num = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, pub)
+        pub2 = RSAPublicNumbers(1, 2)
+        num2 = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, pub2)
+        assert num == num2
+
+    def test_private_numbers_ne(self):
+        pub = RSAPublicNumbers(1, 2)
+        num = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, pub)
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 5, 7, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 4, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 5, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 4, 4, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 3, 3, 4, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            2, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 5, 6, RSAPublicNumbers(2, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 3)
+        )
