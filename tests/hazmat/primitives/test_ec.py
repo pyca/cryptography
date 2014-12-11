@@ -372,6 +372,7 @@ class TestECNumbersEquality(object):
         assert pub != ec.EllipticCurvePublicNumbers(1, 2, ec.SECP384R1())
         assert pub != ec.EllipticCurvePublicNumbers(1, 3, ec.SECP192R1())
         assert pub != ec.EllipticCurvePublicNumbers(2, 2, ec.SECP192R1())
+        assert pub != object()
 
     def test_private_numbers_eq(self):
         pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
@@ -395,3 +396,4 @@ class TestECNumbersEquality(object):
         assert priv != ec.EllipticCurvePrivateNumbers(
             1, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP521R1())
         )
+        assert priv != object()

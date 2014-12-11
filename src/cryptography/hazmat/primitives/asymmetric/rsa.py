@@ -161,6 +161,9 @@ class RSAPrivateNumbers(object):
         return backend.load_rsa_private_numbers(self)
 
     def __eq__(self, other):
+        if not isinstance(other, RSAPrivateNumbers):
+            return NotImplemented
+
         return (
             self.p == other.p and
             self.q == other.q and
@@ -196,6 +199,9 @@ class RSAPublicNumbers(object):
         return "<RSAPublicNumbers(e={0}, n={1})>".format(self._e, self._n)
 
     def __eq__(self, other):
+        if not isinstance(other, RSAPublicNumbers):
+            return NotImplemented
+
         return self.e == other.e and self.n == other.n
 
     def __ne__(self, other):

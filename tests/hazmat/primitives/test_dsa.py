@@ -717,6 +717,7 @@ class TestDSANumberEquality(object):
         assert param != dsa.DSAParameterNumbers(1, 2, 4)
         assert param != dsa.DSAParameterNumbers(1, 1, 3)
         assert param != dsa.DSAParameterNumbers(2, 2, 3)
+        assert param != object()
 
     def test_public_numbers_eq(self):
         pub = dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
@@ -728,6 +729,7 @@ class TestDSANumberEquality(object):
         assert pub != dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(2, 2, 3))
         assert pub != dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 3, 3))
         assert pub != dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 4))
+        assert pub != object()
 
     def test_private_numbers_eq(self):
         pub = dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
@@ -766,3 +768,4 @@ class TestDSANumberEquality(object):
                 1, dsa.DSAParameterNumbers(1, 2, 4)
             )
         )
+        assert priv != object()

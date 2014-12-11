@@ -60,6 +60,9 @@ class DSAParameterNumbers(object):
         return backend.load_dsa_parameter_numbers(self)
 
     def __eq__(self, other):
+        if not isinstance(other, DSAParameterNumbers):
+            return NotImplemented
+
         return self.p == other.p and self.q == other.q and self.g == other.g
 
     def __ne__(self, other):
@@ -86,6 +89,9 @@ class DSAPublicNumbers(object):
         return backend.load_dsa_public_numbers(self)
 
     def __eq__(self, other):
+        if not isinstance(other, DSAPublicNumbers):
+            return NotImplemented
+
         return (
             self.y == other.y and
             self.parameter_numbers == other.parameter_numbers
@@ -114,6 +120,9 @@ class DSAPrivateNumbers(object):
         return backend.load_dsa_private_numbers(self)
 
     def __eq__(self, other):
+        if not isinstance(other, DSAPrivateNumbers):
+            return NotImplemented
+
         return (
             self.x == other.x and self.public_numbers == other.public_numbers
         )

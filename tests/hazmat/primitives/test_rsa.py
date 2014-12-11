@@ -1661,6 +1661,7 @@ class TestRSANumbersEquality(object):
         num = RSAPublicNumbers(1, 2)
         assert num != RSAPublicNumbers(2, 2)
         assert num != RSAPublicNumbers(1, 3)
+        assert num != object()
 
     def test_private_numbers_eq(self):
         pub = RSAPublicNumbers(1, 2)
@@ -1696,3 +1697,4 @@ class TestRSANumbersEquality(object):
         assert num != RSAPrivateNumbers(
             1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 3)
         )
+        assert num != object()
