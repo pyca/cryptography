@@ -733,14 +733,14 @@ X509
 
         The public key associated with the certificate.
 
-    .. attribute:: not_before
+    .. attribute:: not_valid_before
 
         :type: :class:`datetime.datetime`
 
     A naïve datetime representing the beginning of the validity period for the
     certificate in UTC. This value is inclusive.
 
-    .. attribute:: not_after
+    .. attribute:: not_valid_after
 
         :type: :class:`datetime.datetime`
 

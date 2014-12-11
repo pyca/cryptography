@@ -517,13 +517,13 @@ class X509Certificate(object):
         """
 
     @abc.abstractproperty
-    def not_before(self):
+    def not_valid_before(self):
         """
         Not before time (represented as UTC datetime)
         """
 
     @abc.abstractproperty
-    def not_after(self):
+    def not_valid_after(self):
         """
         Not after time (represented as UTC datetime)
         """

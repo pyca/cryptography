@@ -83,12 +83,12 @@ class _X509Certificate(object):
         return self._backend._evp_pkey_to_public_key(pkey)
 
     @property
-    def not_before(self):
+    def not_valid_before(self):
         asn1_time = self._backend._lib.X509_get_notBefore(self._x509)
         return self._parse_asn1_time(asn1_time)
 
     @property
-    def not_after(self):
+    def not_valid_after(self):
         asn1_time = self._backend._lib.X509_get_notAfter(self._x509)
         return self._parse_asn1_time(asn1_time)
 
