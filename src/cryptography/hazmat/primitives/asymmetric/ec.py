@@ -161,6 +161,20 @@ class EllipticCurvePublicNumbers(object):
     x = utils.read_only_property("_x")
     y = utils.read_only_property("_y")
 
+    def __eq__(self, other):
+        if not isinstance(other, EllipticCurvePublicNumbers):
+            return NotImplemented
+
+        return (
+            self.x == other.x and
+            self.y == other.y and
+            self.curve.name == other.curve.name and
+            self.curve.key_size == other.curve.key_size
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class EllipticCurvePrivateNumbers(object):
     def __init__(self, private_value, public_numbers):
@@ -184,3 +198,15 @@ class EllipticCurvePrivateNumbers(object):
 
     private_value = utils.read_only_property("_private_value")
     public_numbers = utils.read_only_property("_public_numbers")
+
+    def __eq__(self, other):
+        if not isinstance(other, EllipticCurvePrivateNumbers):
+            return NotImplemented
+
+        return (
+            self.private_value == other.private_value and
+            self.public_numbers == other.public_numbers
+        )
+
+    def __ne__(self, other):
+        return not self == other

@@ -160,6 +160,23 @@ class RSAPrivateNumbers(object):
     def private_key(self, backend):
         return backend.load_rsa_private_numbers(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, RSAPrivateNumbers):
+            return NotImplemented
+
+        return (
+            self.p == other.p and
+            self.q == other.q and
+            self.d == other.d and
+            self.dmp1 == other.dmp1 and
+            self.dmq1 == other.dmq1 and
+            self.iqmp == other.iqmp and
+            self.public_numbers == other.public_numbers
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class RSAPublicNumbers(object):
     def __init__(self, e, n):
@@ -180,3 +197,12 @@ class RSAPublicNumbers(object):
 
     def __repr__(self):
         return "<RSAPublicNumbers(e={0}, n={1})>".format(self._e, self._n)
+
+    def __eq__(self, other):
+        if not isinstance(other, RSAPublicNumbers):
+            return NotImplemented
+
+        return self.e == other.e and self.n == other.n
+
+    def __ne__(self, other):
+        return not self == other
