@@ -56,9 +56,8 @@ class _X509Certificate(object):
             asn1_int, self._backend._ffi.NULL
         )
         assert bn != self._backend._ffi.NULL
-        serial = self._backend._lib.BN_bn2hex(bn)
-        assert serial != self._backend._ffi.NULL
-        return int(self._backend._ffi.string(serial), 16)
+        bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
+        return self._backend._bn_to_int(bn)
 
     def public_key(self):
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
