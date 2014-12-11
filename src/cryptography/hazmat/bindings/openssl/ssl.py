@@ -211,6 +211,8 @@ int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
+int SSL_CTX_check_private_key(const SSL_CTX *);
+
 void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
