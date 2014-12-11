@@ -4,7 +4,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 from enum import Enum
+
+import six
 
 
 class X509Version(Enum):
@@ -22,3 +25,42 @@ def load_der_x509_certificate(data, backend):
 
 class InvalidX509Version(Exception):
     pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class X509Certificate(object):
+    @abc.abstractmethod
+    def fingerprint(self, algorithm):
+        """
+        Returns bytes using digest passed.
+        """
+
+    @abc.abstractproperty
+    def serial(self):
+        """
+        Returns certificate serial number
+        """
+
+    @abc.abstractproperty
+    def version(self):
+        """
+        Returns the certificate version
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        Returns the public key
+        """
+
+    @abc.abstractproperty
+    def not_valid_before(self):
+        """
+        Not before time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def not_valid_after(self):
+        """
+        Not after time (represented as UTC datetime)
+        """

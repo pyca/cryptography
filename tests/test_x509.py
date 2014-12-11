@@ -39,7 +39,7 @@ class TestRSAX509Certificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        assert isinstance(cert, interfaces.X509Certificate)
+        assert isinstance(cert, x509.X509Certificate)
 
     def test_load_der_cert(self, backend):
         cert = _load_cert(
@@ -47,7 +47,7 @@ class TestRSAX509Certificate(object):
             x509.load_der_x509_certificate,
             backend
         )
-        assert isinstance(cert, interfaces.X509Certificate)
+        assert isinstance(cert, x509.X509Certificate)
 
     def test_load_good_ca_cert(self, backend):
         cert = _load_cert(

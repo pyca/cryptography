@@ -9,8 +9,9 @@ X.509 is an ITU-T standard for a `public key infrastructure`_. X.509v3 is
 defined in :rfc:`5280` (which obsoletes :rfc:`2459` and :rfc:`3280`). X.509
 certificates are commonly used in protocols like `TLS`_.
 
-Loading
-~~~~~~~
+
+Loading Certificates
+~~~~~~~~~~~~~~~~~~~~
 
 .. function:: load_pem_x509_certificate(data, backend)
 
@@ -24,8 +25,7 @@ Loading
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
-    :returns: An instance of
-        :class:`~cryptography.hazmat.primitives.interfaces.X509Certificate`.
+    :returns: An instance of :class:`~cryptography.x509.X509Certificate`.
 
 .. function:: load_der_x509_certificate(data, backend)
 
@@ -39,8 +39,7 @@ Loading
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
-    :returns: An instance of
-        :class:`~cryptography.hazmat.primitives.interfaces.X509Certificate`.
+    :returns: An instance of :class:`~cryptography.x509.X509Certificate`.
 
 .. testsetup::
 
@@ -75,6 +74,58 @@ Loading
     >>> cert = load_pem_x509_certificate(pem_data, default_backend())
     >>> cert.serial
     2
+
+Interface
+~~~~~~~~~
+
+.. class:: X509Certificate
+
+    .. versionadded:: 0.7
+
+    .. attribute:: version
+
+        :type: :class:`~cryptography.x509.X509Version`
+
+        The certificate version as an enumeration.
+
+    .. method:: fingerprint(algorithm)
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            that will be used to generate the fingerprint.
+
+        :return bytes: The fingerprint using the supplied hash algorithm as
+            bytes.
+
+    .. attribute:: serial
+
+        :type: int
+
+        The serial as a Python integer.
+
+    .. method:: public_key()
+
+        :type:
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+
+        The public key associated with the certificate.
+
+    .. attribute:: not_valid_before
+
+        :type: :class:`datetime.datetime`
+
+    A naïve datetime representing the beginning of the validity period for the
+    certificate in UTC. This value is inclusive.
+
+    .. attribute:: not_valid_after
+
+        :type: :class:`datetime.datetime`
+
+    A naïve datetime representing the end of the validity period for the
+    certificate in UTC. This value is inclusive.
+
 
 Support Classes
 ~~~~~~~~~~~~~~~

@@ -16,10 +16,10 @@ from __future__ import absolute_import, division, print_function
 import datetime
 
 from cryptography import utils, x509
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 
 
-@utils.register_interface(interfaces.X509Certificate)
+@utils.register_interface(x509.X509Certificate)
 class _X509Certificate(object):
     def __init__(self, backend, x509):
         self._backend = backend

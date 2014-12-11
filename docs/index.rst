@@ -62,8 +62,8 @@ The recipes layer
 .. toctree::
     :maxdepth: 2
 
-    x509
     fernet
+    x509
     random-numbers
     exceptions
     faq
