@@ -447,6 +447,28 @@ class Backend(object):
 
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
 
+    def _create_mem_bio(self):
+        """
+        Creates an empty memory BIO.
+        """
+        bio_method = self._lib.BIO_s_mem()
+        assert bio_method != self._ffi.NULL
+        bio = self._lib.BIO_new(bio_method)
+        assert bio != self._ffi.NULL
+        bio = self._ffi.gc(bio, self._lib.BIO_free)
+        return bio
+
+    def _read_mem_bio(self, bio):
+        """
+        Reads a memory BIO. This only works on memory BIOs.
+        """
+        buf = self._ffi.new("char **")
+        buf_len = self._lib.BIO_get_mem_data(bio, buf)
+        assert buf_len > 0
+        assert buf[0] != self._ffi.NULL
+        bio_data = self._ffi.buffer(buf[0], buf_len)[:]
+        return bio_data
+
     def _evp_pkey_to_private_key(self, evp_pkey):
         """
         Return the appropriate type of PrivateKey given an evp_pkey cdata

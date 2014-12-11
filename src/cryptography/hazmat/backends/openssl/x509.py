@@ -25,30 +25,14 @@ class _X509Certificate(object):
         self._backend = backend
         self._x509 = x509
 
-    def _create_bio(self):
-        bio_method = self._backend._lib.BIO_s_mem()
-        assert bio_method != self._backend._ffi.NULL
-        bio = self._backend._lib.BIO_new(bio_method)
-        assert bio != self._backend._ffi.NULL
-        bio = self._backend._ffi.gc(bio, self._backend._lib.BIO_free)
-        return bio
-
-    def _read_bio(self, bio):
-        buf = self._backend._ffi.new("char **")
-        buf_len = self._backend._lib.BIO_get_mem_data(bio, buf)
-        assert buf_len > 0
-        assert buf[0] != self._backend._ffi.NULL
-        bio_data = self._backend._ffi.buffer(buf[0], buf_len)[:]
-        return bio_data
-
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
-        bio = self._create_bio()
+        bio = self._backend._create_mem_bio()
         res = self._backend._lib.i2d_X509_bio(
             bio, self._x509
         )
         assert res == 1
-        der = self._read_bio(bio)
+        der = self._backend._read_mem_bio(bio)
         h.update(der)
         return h.finalize()
 
