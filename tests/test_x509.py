@@ -179,3 +179,13 @@ class TestECDSAX509Certificate(object):
         )
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.EllipticCurvePublicKey)
+
+    def test_load_ecdsa_no_named_curve(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        cert = _load_cert(
+            os.path.join("x509", "custom", "ec_no_named_curve.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(NotImplementedError):
+            cert.public_key()
