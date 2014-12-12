@@ -25,6 +25,9 @@ configuration. You can also run the ``tox`` job with ``tox -e pep8``.
 
 `Write comments as complete sentences.`_
 
+Class names which contains acronyms or initialisms should always be
+capitalized. A class should be named ``HTTPClient``, not ``HttpClient``.
+
 Every code file must start with the boilerplate licensing notice:
 
 .. code-block:: python
