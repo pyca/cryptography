@@ -97,7 +97,6 @@ ASN1_TIME *ASN1_TIME_new(void);
 void ASN1_TIME_free(ASN1_TIME *);
 ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
-int ASN1_TIME_print(BIO *, const ASN1_TIME *);
 
 /*  ASN1 UTCTIME */
 int ASN1_UTCTIME_cmp_time_t(const ASN1_UTCTIME *, time_t);
@@ -121,6 +120,7 @@ const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
+int ASN1_TIME_print(BIO *, const ASN1_TIME *);
 int ASN1_STRING_length(ASN1_STRING *);
 ASN1_STRING *ASN1_STRING_dup(ASN1_STRING *);
 int ASN1_STRING_cmp(ASN1_STRING *, ASN1_STRING *);
