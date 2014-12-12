@@ -9,7 +9,7 @@ properties and methods of most primitive constructs. Backends may also use
 this information to influence their operation. Interfaces should also be used
 to document argument and return types.
 
-.. _`Abstract Base Classes`: http://docs.python.org/3.2/library/abc.html
+.. _`Abstract Base Classes`: https://docs.python.org/3/library/abc.html
 
 
 Symmetric ciphers
@@ -752,5 +752,5 @@ X509
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
-.. _`ECDSA`: http://en.wikipedia.org/wiki/ECDSA
-.. _`EdDSA`: http://en.wikipedia.org/wiki/EdDSA
+.. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
+.. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA

@@ -46,4 +46,4 @@ OpenSSL.
 
 .. _`CFFI`: https://cffi.readthedocs.org/
 .. _`OpenSSL`: https://www.openssl.org/
-.. _`thread safety facilities`: http://www.openssl.org/docs/crypto/threads.html
+.. _`thread safety facilities`: https://www.openssl.org/docs/crypto/threads.html
