@@ -99,5 +99,5 @@ class _X509Certificate(object):
         bio = self._backend._create_mem_bio()
         res = self._backend._lib.ASN1_TIME_print(bio, asn1_time)
         assert res == 1
-        time = self._backend._read_mem_bio(bio)
+        time = self._backend._read_mem_bio(bio).decode("ascii")
         return datetime.datetime.strptime(time, "%b %d %H:%M:%S %Y GMT")
