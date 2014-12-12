@@ -97,6 +97,7 @@ ASN1_TIME *ASN1_TIME_new(void);
 void ASN1_TIME_free(ASN1_TIME *);
 ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
+int ASN1_TIME_print(BIO *, const ASN1_TIME *);
 
 /*  ASN1 UTCTIME */
 int ASN1_UTCTIME_cmp_time_t(const ASN1_UTCTIME *, time_t);

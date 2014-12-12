@@ -76,17 +76,8 @@ class _X509Certificate(object):
         return self._parse_asn1_time(asn1_time)
 
     def _parse_asn1_time(self, asn1_time):
-        assert asn1_time != self._backend._ffi.NULL
-        generalized_time = self._backend._lib.ASN1_TIME_to_generalizedtime(
-            asn1_time, self._backend._ffi.NULL
-        )
-        assert generalized_time != self._backend._ffi.NULL
-        generalized_time = self._backend._ffi.gc(
-            generalized_time, self._backend._lib.ASN1_GENERALIZEDTIME_free
-        )
-        time = self._backend._ffi.string(
-            self._backend._lib.ASN1_STRING_data(
-                self._backend._ffi.cast("ASN1_STRING *", generalized_time)
-            )
-        ).decode("ascii")
-        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+        bio = self._backend._create_mem_bio()
+        res = self._backend._lib.ASN1_TIME_print(bio, asn1_time)
+        assert res == 1
+        time = self._backend._read_mem_bio(bio)
+        return datetime.datetime.strptime(time, "%b %d %H:%M:%S %Y GMT")
