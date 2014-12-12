@@ -73,6 +73,8 @@ Custom X.509 Vectors
 * ``post2000utctime.pem`` - Contains an RSA 2048 bit certificate with the
   ``notBefore`` and ``notAfter`` fields encoded as post-2000 ``UTCTime``.
 * ``dsa_root.pem`` - Contains a DSA root certificate generated using OpenSSL.
+* ``ec_no_named_curve.pem`` - Contains an ECDSA certificate that does not have
+  an embedded OID defining the curve.
 
 Hashes
 ~~~~~~
