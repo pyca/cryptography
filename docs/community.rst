@@ -17,4 +17,4 @@ Conduct`_.
 .. _`Source code`: https://github.com/pyca/cryptography
 .. _`Issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`Documentation`: https://cryptography.io/
-.. _`Python Community Code of Conduct`: http://www.python.org/psf/codeofconduct/
+.. _`Python Community Code of Conduct`: https://www.python.org/psf/codeofconduct/
