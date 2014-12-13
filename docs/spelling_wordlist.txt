@@ -24,6 +24,7 @@ fernet
 Fernet
 hazmat
 indistinguishability
+initialisms
 interoperable
 introspectability
 invariants
