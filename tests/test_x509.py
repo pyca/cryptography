@@ -159,7 +159,7 @@ class TestRSAX509Certificate(object):
 class TestDSAX509Certificate(object):
     def test_load_dsa_cert(self, backend):
         cert = _load_cert(
-            os.path.join("x509", "custom", "dsa_root.pem"),
+            os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
             backend
         )
