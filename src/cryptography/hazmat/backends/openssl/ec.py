@@ -167,6 +167,8 @@ class _EllipticCurvePrivateKey(object):
         res = self._backend._lib.EC_KEY_set_public_key(public_ec_key, point)
         assert res == 1
 
+        self._backend._mark_asn1_named_ec_curve(public_ec_key)
+
         return _EllipticCurvePublicKey(
             self._backend, public_ec_key
         )
