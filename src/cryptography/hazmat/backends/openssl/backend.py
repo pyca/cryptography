@@ -896,6 +896,8 @@ class Backend(object):
             res = self._lib.EC_KEY_check_key(ec_cdata)
             assert res == 1
 
+            self._mark_asn1_named_ec_curve(ec_cdata)
+
             return _EllipticCurvePrivateKey(self, ec_cdata)
         else:
             raise UnsupportedAlgorithm(
@@ -928,6 +930,8 @@ class Backend(object):
             ec_cdata, self._int_to_bn(numbers.private_value))
         assert res == 1
 
+        self._mark_asn1_named_ec_curve(ec_cdata)
+
         return _EllipticCurvePrivateKey(self, ec_cdata)
 
     def elliptic_curve_public_key_from_numbers(self, numbers):
@@ -948,6 +952,8 @@ class Backend(object):
 
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, numbers.x, numbers.y)
+
+        self._mark_asn1_named_ec_curve(ec_cdata)
 
         return _EllipticCurvePublicKey(self, ec_cdata)
 
@@ -970,6 +976,18 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
         return curve_nid
+
+    def _mark_asn1_named_ec_curve(self, ec_cdata):
+        """
+        Set the named curve flag on the EC_KEY. This causes OpenSSL to
+        serialise EC keys along with their curve OID which makes
+        deserialisation easier.
+        """
+
+        self._lib.EC_KEY_set_asn1_flag(
+            ec_cdata,
+            self._backend._lib.OPENSSL_EC_NAMED_CURVE
+        )
 
     @contextmanager
     def _tmp_bn_ctx(self):
