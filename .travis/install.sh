@@ -21,7 +21,7 @@ if [[ "$DARWIN" = true ]]; then
         eval "$(pyenv init -)"
     fi
 
-    case "${TOX_ENV}" in
+    case "${TOXENV}" in
         py26)
             curl -O https://bootstrap.pypa.io/get-pip.py
             sudo python get-pip.py
@@ -63,7 +63,7 @@ if [[ "$DARWIN" = true ]]; then
 else
     sudo add-apt-repository -y ppa:fkrull/deadsnakes
 
-    if [[ "${TOX_ENV}" == "pypy" ]]; then
+    if [[ "${TOXENV}" == "pypy" ]]; then
         sudo add-apt-repository -y ppa:pypy/ppa
     fi
 
@@ -77,7 +77,7 @@ else
         sudo apt-get install -y --force-yes libssl-dev/lucid
     fi
 
-    case "${TOX_ENV}" in
+    case "${TOXENV}" in
         py26)
             sudo apt-get install python2.6 python2.6-dev
             ;;

@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -17,9 +8,6 @@ import binascii
 import collections
 import re
 from contextlib import contextmanager
-
-from pyasn1.codec.der import encoder
-from pyasn1.type import namedtype, univ
 
 import pytest
 
@@ -82,22 +70,8 @@ def raises_unsupported_algorithm(reason):
     assert exc_info.value._reason is reason
 
 
-class _DSSSigValue(univ.Sequence):
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('r', univ.Integer()),
-        namedtype.NamedType('s', univ.Integer())
-    )
-
-
-def der_encode_dsa_signature(r, s):
-    sig = _DSSSigValue()
-    sig.setComponentByName('r', r)
-    sig.setComponentByName('s', s)
-    return encoder.encode(sig)
-
-
-def load_vectors_from_file(filename, loader):
-    with cryptography_vectors.open_vector_file(filename) as vector_file:
+def load_vectors_from_file(filename, loader, mode="r"):
+    with cryptography_vectors.open_vector_file(filename, mode) as vector_file:
         return loader(vector_file)
 
 

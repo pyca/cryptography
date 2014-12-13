@@ -79,6 +79,10 @@ provider.
     >>> signer.update(data)
     >>> signature = signer.finalize()
 
+The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
+described in :rfc:`6979`. This can be decoded using
+:func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_rfc6979_signature`.
+
 Verification
 ~~~~~~~~~~~~
 
@@ -91,6 +95,12 @@ provider.
     >>> verifier = public_key.verifier(signature, hashes.SHA256())
     >>> verifier.update(data)
     >>> verifier.verify()
+
+``verifier()`` takes the signature in the same format as is returned by
+``signer.finalize()``.
+
+``verify()`` will raise an :class:`~cryptography.exceptions.InvalidSignature`
+exception if the signature isn't valid.
 
 Numbers
 ~~~~~~~

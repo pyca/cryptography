@@ -15,7 +15,7 @@ on these operating systems.
 
 * x86-64 CentOS 7.x, 6.4 and CentOS 5.x
 * x86-64 FreeBSD 9.2 and FreeBSD 10
-* OS X 10.9 Mavericks, 10.8 Mountain Lion, and 10.7 Lion
+* OS X 10.10 Yosemite, 10.9 Mavericks, 10.8 Mountain Lion, and 10.7 Lion
 * x86-64 Ubuntu 12.04 LTS
 * 32-bit Python on 64-bit Windows Server 2008
 * 64-bit Python on 64-bit Windows Server 2012

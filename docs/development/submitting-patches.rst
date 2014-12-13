@@ -8,6 +8,9 @@ Submitting patches
 * Larger changes should be discussed on `our mailing list`_ before submission.
 * New features and significant bug fixes should be documented in the
   :doc:`/changelog`.
+* You must have legal permission to distribute any code you contribute to
+  ``cryptography``, and it must be available under both the BSD and Apache
+  Software License Version 2.0 licenses.
 
 If you believe you've identified a security issue in ``cryptography``, please
 follow the directions on the :doc:`security page </security>`.
@@ -22,7 +25,14 @@ configuration. You can also run the ``tox`` job with ``tox -e pep8``.
 
 `Write comments as complete sentences.`_
 
-Every code file must start with the boilerplate notice of the Apache License.
+Every code file must start with the boilerplate licensing notice:
+
+.. code-block:: python
+
+    # This file is dual licensed under the terms of the Apache License, Version
+    # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+    # for complete details.
+
 Additionally, every Python code file must contain
 
 .. code-block:: python

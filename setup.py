@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -27,9 +18,14 @@ from setuptools.command.test import test
 
 
 base_dir = os.path.dirname(__file__)
+src_dir = os.path.join(base_dir, "src")
+
+# When executing the setup.py, we need to be able to import ourselves, this
+# means that we need to add the src/ directory to the sys.path.
+sys.path.insert(0, src_dir)
 
 about = {}
-with open(os.path.join(base_dir, "cryptography", "__about__.py")) as f:
+with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
@@ -40,6 +36,7 @@ VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
     CFFI_DEPENDENCY,
+    "pyasn1",
     SIX_DEPENDENCY,
     SETUPTOOLS_DEPENDENCY
 ]
@@ -47,7 +44,6 @@ requirements = [
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
     "pytest",
-    "pyasn1",
     "pretend",
     "iso8601",
 ]
@@ -83,12 +79,12 @@ def get_ext_modules():
     from cryptography.hazmat.primitives import constant_time, padding
 
     ext_modules = [
-        OpenSSLBinding().ffi.verifier.get_extension(),
+        OpenSSLBinding.ffi.verifier.get_extension(),
         constant_time._ffi.verifier.get_extension(),
         padding._ffi.verifier.get_extension()
     ]
     if cc_is_available():
-        ext_modules.append(CommonCryptoBinding().ffi.verifier.get_extension())
+        ext_modules.append(CommonCryptoBinding.ffi.verifier.get_extension())
     return ext_modules
 
 
@@ -304,6 +300,7 @@ setup(
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX",
@@ -323,7 +320,8 @@ setup(
         "Topic :: Security :: Cryptography",
     ],
 
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    package_dir={"": "src"},
+    packages=find_packages(where="src", exclude=["tests", "tests.*"]),
     include_package_data=True,
 
     install_requires=requirements,

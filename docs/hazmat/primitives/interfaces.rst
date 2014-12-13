@@ -170,11 +170,11 @@ RSA
 
         .. versionadded:: 0.4
 
-        Decrypt data that was encrypted via the public key.
+        Decrypt data that was encrypted with the public key.
 
         :param bytes ciphertext: The ciphertext to decrypt.
 
-        :param padding: An instance of a
+        :param padding: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
@@ -334,6 +334,8 @@ DSA
         .. versionadded:: 0.4
 
         Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`6979`.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
@@ -470,8 +472,11 @@ Elliptic Curve
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
     `EdDSA`_.
 
-    .. classmethod:: signer(signature_algorithm)
+    .. method:: signer(signature_algorithm)
+
         Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`6979`.
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
@@ -482,8 +487,6 @@ Elliptic Curve
 
 
         :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
-
-        The elliptic curve for this key.
 
     .. method:: public_key()
 
@@ -515,11 +518,13 @@ Elliptic Curve
 
     An elliptic curve public key.
 
-    .. classmethod:: verifier(signature, signature_algorithm)
+    .. method:: verifier(signature, signature_algorithm)
+
         Verify data was signed by the private key associated with this public
         key.
 
-        :param bytes signature: The signature to verify.
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
 
         :param signature_algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
@@ -586,7 +591,7 @@ Hash algorithms
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to hash.
+        :param bytes data: The data you want to hash.
 
     .. method:: finalize()
 
@@ -607,9 +612,9 @@ Key derivation functions
 
     .. method:: derive(key_material)
 
-        :param key_material bytes: The input key material. Depending on what
+        :param bytes key_material: The input key material. Depending on what
                                    key derivation function you are using this
-                                   could be either random material, or a user
+                                   could be either random bytes, or a user
                                    supplied password.
         :return: The new key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -622,9 +627,9 @@ Key derivation functions
 
     .. method:: verify(key_material, expected_key)
 
-        :param key_material bytes: The input key material. This is the same as
+        :param bytes key_material: The input key material. This is the same as
                                    ``key_material`` in :meth:`derive`.
-        :param expected_key bytes: The expected result of deriving a new key,
+        :param bytes expected_key: The expected result of deriving a new key,
                                    this is the same as the return value of
                                    :meth:`derive`.
         :raises cryptography.exceptions.InvalidKey: This is raised when the
@@ -654,7 +659,7 @@ Key derivation functions
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to authenticate.
+        :param bytes data: The data you want to authenticate.
 
     .. method:: finalize()
 
@@ -671,7 +676,7 @@ Key derivation functions
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to authenticate.
+        :param bytes data: The data you want to authenticate.
 
     .. method:: finalize()
 
@@ -685,10 +690,63 @@ Key derivation functions
 
     .. method:: verify(signature)
 
-        :param signature bytes: The signature to verify.
+        :param bytes signature: The signature to verify.
 
         :raises cryptography.exceptions.InvalidSignature: This is raised when
             the provided signature does not match the expected signature.
+
+
+X509
+----
+
+.. class:: X509Certificate
+
+    .. versionadded:: 0.7
+
+    .. attribute:: version
+
+        :type: X509Version
+
+        The certificate version as an enumeration.
+
+    .. method:: fingerprint(algorithm)
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            that will be used by this context.
+
+        :return bytes: The fingerprint using the supplied hash algorithm as
+            bytes.
+
+    .. attribute:: serial
+
+        :type: int
+
+        The serial as a Python integer.
+
+    .. method:: public_key()
+
+        :type:
+            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+
+        The public key associated with the certificate.
+
+    .. attribute:: not_before
+
+        :type: :class:`datetime.datetime`
+
+    A naïve datetime representing the beginning of the validity period for the
+    certificate in UTC. This value is inclusive.
+
+    .. attribute:: not_after
+
+        :type: :class:`datetime.datetime`
+
+    A naïve datetime representing the end of the validity period for the
+    certificate in UTC. This value is inclusive.
+
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
