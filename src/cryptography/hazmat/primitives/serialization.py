@@ -52,10 +52,10 @@ def load_ssh_public_key(data, backend):
     if not data.startswith(b'ssh-rsa'):
         raise UnsupportedAlgorithm('Only RSA keys are currently supported.')
 
-    return load_ssh_rsa_public_key(data, backend)
+    return _load_ssh_rsa_public_key(data, backend)
 
 
-def load_ssh_rsa_public_key(data, backend):
+def _load_ssh_rsa_public_key(data, backend):
     if not data.startswith(b'ssh-rsa '):
         raise ValueError('SSH-formatted RSA keys must begin with ssh-rsa')
 

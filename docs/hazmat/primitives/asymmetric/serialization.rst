@@ -232,21 +232,3 @@ Example RSA key in OpenSSH format (line breaks added for formatting purposes)::
 
     :raises UnsupportedAlgorithm: If the serialized key is of a type that is
         not supported.
-
-.. function:: load_ssh_rsa_public_key(data, backend)
-
-    .. versionadded:: 0.7
-
-    Deserialize a RSA public key from OpenSSH (:rfc:`4253`) encoded data to an
-    instance of the RSA Public Key type for the specified backend.
-
-    :param bytes data: The OpenSSH encoded key data.
-
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-        provider.
-
-    :returns: A new instance of a public key type.
-
-    :raises ValueError: If the OpenSSH data could not be properly decoded or
-        if the key is not in the proper format.
