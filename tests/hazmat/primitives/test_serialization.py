@@ -9,16 +9,18 @@ import textwrap
 
 import pytest
 
-from cryptography.exceptions import _Reasons
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, PEMSerializationBackend, PKCS8SerializationBackend,
-    TraditionalOpenSSLSerializationBackend
+    RSABackend, TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key, load_pem_private_key, load_pem_public_key,
-    load_pem_traditional_openssl_private_key
+    load_pem_traditional_openssl_private_key, load_ssh_public_key,
+    load_ssh_rsa_public_key
 )
 
 
@@ -680,3 +682,98 @@ class TestPKCS8Serialization(object):
                     pemfile.read().encode(), password, backend
                 )
             )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+class TestSSHSerialization(object):
+    def test_load_ssh_public_key_unsupported(self, backend):
+        str_key = b'ssh-dss AAAAB3NzaC1kc3MAAACBAO7q0a7VsQZcdRTCqFentQt...'
+
+        with pytest.raises(UnsupportedAlgorithm):
+            load_ssh_public_key(str_key, backend)
+
+    def test_load_ssh_public_key_bad_format(self, backend):
+        str_key = b'not-a-real-key'
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(str_key, backend)
+
+    def test_load_ssh_public_key(self, backend):
+        str_key = (
+            'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk'
+            'FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll'
+            'PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK'
+            'vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f'
+            'sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy'
+            '///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX'
+            '2MzHvnbv testkey@localhost').encode()
+
+        key = load_ssh_public_key(str_key, backend)
+
+        assert key is not None
+        assert isinstance(key, interfaces.RSAPublicKey)
+
+        if not isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+            return
+
+        numbers = key.public_numbers()
+
+        expected_e = 0x10001
+        expected_n = int(
+            '00C3BBF5D13F59322BA0A0B77EA0B6CF570241628AE24B5BA454D'
+            '23DCA295652B3523B67752653DFFD69587FAD9578DD6406F23691'
+            'EA491C3F8B2D391D0312D9653C303B651067ADF887A5241843CEF'
+            '8019680A088E092FEC305FB04EA070340BB9BD0F1635B2AD84142'
+            '61B4E2D010ABD8FC6D2FB768912F78EE6B05A60857532B75B75EF'
+            'C007601A4EF58BA947B7E75E38F3443CDD87E7C138A1DAD9D9FB3'
+            '19FF69DA43A9F6F6B0CD243F042CD1A5AFAEB286BD46AEB2D922B'
+            'D01385D6892167074A0907F94A2BF08A54ABB2FFFFC89920861D0'
+            '46F8706AB88DDADBD9E8204D48B87789081E074024C8996783B31'
+            '7076A98ABF0A2D8550EAF2097D8CCC7BE76EF', 16)
+
+        expected = RSAPublicNumbers(expected_e, expected_n)
+
+        assert numbers == expected
+
+    def test_load_ssh_rsa_public_key_bad_format(self, backend):
+        str_key = b'ssh-rsa-not-a-key'
+
+        with pytest.raises(ValueError):
+            load_ssh_rsa_public_key(str_key, backend)
+
+    def test_load_ssh_rsa_public_key(self, backend):
+        str_key = (
+            'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk'
+            'FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll'
+            'PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK'
+            'vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f'
+            'sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy'
+            '///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX'
+            '2MzHvnbv testkey@localhost').encode()
+
+        key = load_ssh_public_key(str_key, backend)
+
+        assert key is not None
+        assert isinstance(key, interfaces.RSAPublicKey)
+
+        if not isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+            return
+
+        numbers = key.public_numbers()
+
+        expected_e = 0x10001
+        expected_n = int(
+            '00C3BBF5D13F59322BA0A0B77EA0B6CF570241628AE24B5BA454D'
+            '23DCA295652B3523B67752653DFFD69587FAD9578DD6406F23691'
+            'EA491C3F8B2D391D0312D9653C303B651067ADF887A5241843CEF'
+            '8019680A088E092FEC305FB04EA070340BB9BD0F1635B2AD84142'
+            '61B4E2D010ABD8FC6D2FB768912F78EE6B05A60857532B75B75EF'
+            'C007601A4EF58BA947B7E75E38F3443CDD87E7C138A1DAD9D9FB3'
+            '19FF69DA43A9F6F6B0CD243F042CD1A5AFAEB286BD46AEB2D922B'
+            'D01385D6892167074A0907F94A2BF08A54ABB2FFFFC89920861D0'
+            '46F8706AB88DDADBD9E8204D48B87789081E074024C8996783B31'
+            '7076A98ABF0A2D8550EAF2097D8CCC7BE76EF', 16)
+
+        expected = RSAPublicNumbers(expected_e, expected_n)
+
+        assert numbers == expected

@@ -18,6 +18,10 @@ Changelog
   :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
 * Added support for encoding and decoding :rfc:`6979` signatures in
   :doc:`/hazmat/primitives/asymmetric/utils`.
+* Added
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` and
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_rsa_public_key`
+  to support the loading of OpenSSH RSA public keys (RFC 4253).
 
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~
