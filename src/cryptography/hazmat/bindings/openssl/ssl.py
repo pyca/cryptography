@@ -322,7 +322,7 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX*);
+const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *);
 
 /* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
  * versions some special handling of these is necessary.
@@ -353,8 +353,8 @@ SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 /* ALPN APIs were introduced in OpenSSL 1.0.2.  To continue to support earlier
  * versions some special handling of these is necessary.
  */
-int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char*, unsigned);
-int SSL_set_alpn_protos(SSL *, const unsigned char*, unsigned);
+int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char *, unsigned);
+int SSL_set_alpn_protos(SSL *, const unsigned char *, unsigned);
 void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
                                 int (*) (SSL *,
                                          const unsigned char **,
@@ -525,9 +525,9 @@ static const long Cryptography_HAS_NEXTPROTONEG = 1;
 /* ALPN was added in OpenSSL 1.0.2. */
 #if OPENSSL_VERSION_NUMBER < 0x10002001L
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
-                               const unsigned char*,
+                               const unsigned char *,
                                unsigned) = NULL;
-int (*SSL_set_alpn_protos)(SSL *, const unsigned char*, unsigned) = NULL;
+int (*SSL_set_alpn_protos)(SSL *, const unsigned char *, unsigned) = NULL;
 void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX *,
                                    int (*) (SSL *,
                                             const unsigned char **,

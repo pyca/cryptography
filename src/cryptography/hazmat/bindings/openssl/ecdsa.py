@@ -34,7 +34,7 @@ ECDSA_SIG *d2i_ECDSA_SIG(ECDSA_SIG **s, const unsigned char **, long);
 ECDSA_SIG *ECDSA_do_sign(const unsigned char *, int, EC_KEY *);
 ECDSA_SIG *ECDSA_do_sign_ex(const unsigned char *, int, const BIGNUM *,
                             const BIGNUM *, EC_KEY *);
-int ECDSA_do_verify(const unsigned char *, int, const ECDSA_SIG *, EC_KEY*);
+int ECDSA_do_verify(const unsigned char *, int, const ECDSA_SIG *, EC_KEY *);
 int ECDSA_sign_setup(EC_KEY *, BN_CTX *, BIGNUM **, BIGNUM **);
 int ECDSA_sign(int, const unsigned char *, int, unsigned char *,
                unsigned int *, EC_KEY *);
@@ -72,7 +72,7 @@ ECDSA_SIG* (*ECDSA_do_sign)(const unsigned char *, int, EC_KEY *eckey) = NULL;
 ECDSA_SIG* (*ECDSA_do_sign_ex)(const unsigned char *, int, const BIGNUM *,
                                const BIGNUM *, EC_KEY *) = NULL;
 int (*ECDSA_do_verify)(const unsigned char *, int, const ECDSA_SIG *,
-                       EC_KEY*) = NULL;
+                       EC_KEY *) = NULL;
 int (*ECDSA_sign_setup)(EC_KEY *, BN_CTX *, BIGNUM **, BIGNUM **) = NULL;
 int (*ECDSA_sign)(int, const unsigned char *, int, unsigned char *,
                   unsigned int *, EC_KEY *) = NULL;
