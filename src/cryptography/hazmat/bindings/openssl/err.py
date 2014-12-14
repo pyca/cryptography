@@ -231,11 +231,11 @@ FUNCTIONS = """
 void ERR_load_crypto_strings(void);
 void ERR_load_SSL_strings(void);
 void ERR_free_strings(void);
-char* ERR_error_string(unsigned long, char *);
+char *ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
-const char* ERR_lib_error_string(unsigned long);
-const char* ERR_func_error_string(unsigned long);
-const char* ERR_reason_error_string(unsigned long);
+const char *ERR_lib_error_string(unsigned long);
+const char *ERR_func_error_string(unsigned long);
+const char *ERR_reason_error_string(unsigned long);
 void ERR_print_errors(BIO *);
 void ERR_print_errors_fp(FILE *);
 unsigned long ERR_get_error(void);

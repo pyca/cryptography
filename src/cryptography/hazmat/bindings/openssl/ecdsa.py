@@ -44,9 +44,9 @@ int ECDSA_verify(int, const unsigned char *, int, const unsigned char *, int,
                  EC_KEY *);
 int ECDSA_size(const EC_KEY *);
 
-const ECDSA_METHOD* ECDSA_OpenSSL();
+const ECDSA_METHOD *ECDSA_OpenSSL();
 void ECDSA_set_default_method(const ECDSA_METHOD *);
-const ECDSA_METHOD* ECDSA_get_default_method();
+const ECDSA_METHOD *ECDSA_get_default_method();
 int ECDSA_get_ex_new_index(long, void *, CRYPTO_EX_new *,
                            CRYPTO_EX_dup *, CRYPTO_EX_free *);
 int ECDSA_set_method(EC_KEY *, const ECDSA_METHOD *);
