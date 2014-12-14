@@ -56,8 +56,7 @@ def load_ssh_public_key(data, backend):
 
 
 def _load_ssh_rsa_public_key(data, backend):
-    if not data.startswith(b'ssh-rsa '):
-        raise ValueError('SSH-formatted RSA keys must begin with ssh-rsa')
+    assert data.startswith(b'ssh-rsa ')
 
     parts = data.split(b' ')
     data = base64.b64decode(parts[1])
