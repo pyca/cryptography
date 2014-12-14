@@ -89,7 +89,7 @@ static const int BIO_TYPE_FILTER;
 """
 
 FUNCTIONS = """
-BIO* BIO_new(BIO_METHOD *);
+BIO *BIO_new(BIO_METHOD *);
 int BIO_set(BIO *, BIO_METHOD *);
 int BIO_free(BIO *);
 void BIO_vfree(BIO *);
