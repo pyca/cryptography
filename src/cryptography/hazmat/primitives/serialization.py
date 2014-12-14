@@ -65,8 +65,6 @@ def load_ssh_public_key(data, backend):
 
 
 def _load_ssh_rsa_public_key(key_type, key_body, backend):
-    assert key_type == b'ssh-rsa'
-
     data = base64.b64decode(key_body)
 
     key_body_type, rest = _read_next_string(data)
@@ -85,7 +83,7 @@ def _load_ssh_rsa_public_key(key_type, key_body, backend):
 
 def _read_next_string(data):
     """Retrieves the next RFC 4251 string value from the data."""
-    str_len = struct.unpack('>I', data[0:4])[0]
+    str_len, = struct.unpack('>I', data[0:4])
     return data[4:4 + str_len], data[4 + str_len:]
 
 
