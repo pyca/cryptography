@@ -20,7 +20,7 @@ Changelog
   :doc:`/hazmat/primitives/asymmetric/utils`.
 * Added
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
-  to support the loading of OpenSSH public keys (RFC 4253). Currently, only RSA
+  to support the loading of OpenSSH public keys (:rfc:`4253`). Currently, only RSA
   is supported.
 
 0.6.1 - 2014-10-15

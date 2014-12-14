@@ -199,12 +199,13 @@ KEY-----`` or ``-----BEGIN DSA PRIVATE KEY-----``.
 OpenSSH Public Key
 ~~~~~~~~~~~~~~~~~~
 
-The format used by OpenSSH to store public keys as specified in :rfc:`4253`
+The format used by OpenSSH to store public keys as specified in :rfc:`4253`.
 
 Currently, only RSA public keys are supported. Any other type of key will
 result in an exception being thrown.
 
-Example RSA key in OpenSSH format (line breaks added for formatting purposes)::
+An example RSA key in OpenSSH format (line breaks added for formatting
+purposes)::
 
     ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk
     FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll
