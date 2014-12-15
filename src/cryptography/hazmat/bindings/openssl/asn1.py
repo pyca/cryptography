@@ -99,7 +99,12 @@ ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
 
 /*  ASN1 UTCTIME */
+ASN1_UTCTIME *ASN1_UTCTIME_new(void);
+void ASN1_UTCTIME_free(ASN1_UTCTIME *);
 int ASN1_UTCTIME_cmp_time_t(const ASN1_UTCTIME *, time_t);
+ASN1_UTCTIME *ASN1_UTCTIME_set(ASN1_UTCTIME *, time_t);
+int ASN1_UTCTIME_check(ASN1_UTCTIME *);
+int ASN1_UTCTIME_print(BIO * , ASN1_UTCTIME *);
 
 /*  ASN1 GENERALIZEDTIME */
 int ASN1_GENERALIZEDTIME_set_string(ASN1_GENERALIZEDTIME *, const char *);

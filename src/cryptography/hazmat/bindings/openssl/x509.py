@@ -113,6 +113,8 @@ X509 *X509_dup(X509 *);
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
 
 int X509_set_version(X509 *, long);
+int X509_set_notBefore(X509 *, ASN1_UTCTIME *);
+int X509_set_notAfter(X509 *, ASN1_UTCTIME *);
 
 EVP_PKEY *X509_get_pubkey(X509 *);
 int X509_set_pubkey(X509 *, EVP_PKEY *);
@@ -139,6 +141,8 @@ X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
+
+int i2d_X509(X509 *, unsigned char **);
 
 int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
