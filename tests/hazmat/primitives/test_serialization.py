@@ -692,7 +692,7 @@ class TestSSHSerialization(object):
             load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_bad_format(self, backend):
-        ssh_key = b'not-a-real-key'
+        ssh_key = b'not-a-real-key text'
 
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
@@ -743,6 +743,22 @@ class TestSSHSerialization(object):
             b"2MzHvnbvAQ== testkey@localhost"
         )
 
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_different_string(self, backend):
+        ssh_key = (
+            # "AAAAB3NzA" the final A is capitalized here to cause the string
+            # ssh-rsa inside the base64 encoded blob to be incorrect. It should
+            # be a lower case 'a'.
+            b"ssh-rsa AAAAB3NzAC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbvAQ== testkey@localhost"
+        )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
