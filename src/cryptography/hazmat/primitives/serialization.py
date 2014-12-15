@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import base64
 import struct
+import sys
 import warnings
 
 from cryptography import utils
@@ -88,10 +89,15 @@ def _read_next_string(data):
 
 
 def _read_next_mpint(data):
+    """Reads the next mpint from the data. Currently, all mpints are
+    interpreted as unsigned."""
     mpint_data, rest = _read_next_string(data)
 
+    if sys.version_info >= (3, 2):
+        # If we're using >= 3.2, use int.from_bytes for identical results.
+        return int.from_bytes(mpint_data, byteorder='big', signed=False), rest
+
     if len(mpint_data) % 4 != 0:
-        # Pad the bytes with 0x00 to a block size of 4
         mpint_data = (b'\x00' * (4 - (len(mpint_data) % 4))) + mpint_data
 
     result = 0
