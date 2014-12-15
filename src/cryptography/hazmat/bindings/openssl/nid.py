@@ -201,6 +201,17 @@ static const int NID_any_policy;
 static const int NID_policy_mappings;
 static const int NID_target_information;
 static const int NID_no_rev_avail;
+
+static const int NID_commonName;
+static const int NID_countryName;
+static const int NID_localityName;
+static const int NID_stateOrProvinceName;
+static const int NID_organizationName;
+static const int NID_organizationalUnitName;
+static const int NID_serialNumber;
+static const int NID_surname;
+static const int NID_givenName;
+static const int NID_pkcs9_emailAddress;
 """
 
 FUNCTIONS = """
