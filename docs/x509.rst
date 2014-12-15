@@ -34,8 +34,8 @@ Loading Certificates
     .. versionadded:: 0.7
 
     Deserialize a certificate from DER encoded data. DER is a binary format
-    and is commonly found in files with the ``cer`` suffix (although file
-    suffixes are not a guarantee of encoding type).
+    and is commonly found in files with the ``.cer`` extension (although file
+    extensions are not a guarantee of encoding type).
 
     :param bytes data: The DER encoded certificate data.
 
@@ -92,6 +92,9 @@ X.509 Certificate Object
 
         The certificate version as an enumeration. Version 3 certificates are
         the latest version and also the only type you should see in practice.
+
+        :raises cryptography.x509.InvalidVersion: If the version is
+            not valid.
 
     .. method:: fingerprint(algorithm)
 
