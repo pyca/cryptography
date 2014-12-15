@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import base64
 import struct
-import sys
 import warnings
 
 from cryptography import utils
@@ -97,7 +96,6 @@ def _read_next_mpint(data):
     mpint_data, rest = _read_next_string(data)
 
     return _int_from_bytes(mpint_data, byteorder='big', signed=False), rest
-
 
 
 if hasattr(int, "from_bytes"):
