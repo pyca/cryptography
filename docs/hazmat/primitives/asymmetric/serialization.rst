@@ -195,3 +195,42 @@ KEY-----`` or ``-----BEGIN DSA PRIVATE KEY-----``.
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
+
+OpenSSH Public Key
+~~~~~~~~~~~~~~~~~~
+
+The format used by OpenSSH to store public keys, as specified in :rfc:`4253`.
+
+Currently, only RSA public keys are supported. Any other type of key will
+result in an exception being thrown.
+
+An example RSA key in OpenSSH format (line breaks added for formatting
+purposes)::
+
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk
+    FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll
+    PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK
+    vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f
+    sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy
+    ///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX
+    2MzHvnbv testkey@localhost
+
+.. function:: load_ssh_public_key(data, backend)
+
+    .. versionadded:: 0.7
+
+    Deserialize a public key from OpenSSH (:rfc:`4253`) encoded data to an
+    instance of the public key type for the specified backend.
+
+    :param bytes data: The OpenSSH encoded key data.
+
+    :param backend: An
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend` provider.
+
+    :returns: A new instance of a public key type.
+
+    :raises ValueError: If the OpenSSH data could not be properly decoded or
+        if the key is not in the proper format.
+
+    :raises UnsupportedAlgorithm: If the serialized key is of a type that is
+        not supported.

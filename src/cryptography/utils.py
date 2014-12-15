@@ -48,8 +48,9 @@ def verify_interface(iface, klass):
             )
 
 
-def bit_length(x):
-    if sys.version_info >= (2, 7):
+if sys.version_info >= (2, 7):
+    def bit_length(x):
         return x.bit_length()
-    else:
+else:
+    def bit_length(x):
         return len(bin(x)) - (2 + (x <= 0))
