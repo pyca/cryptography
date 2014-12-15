@@ -79,7 +79,7 @@ class _Certificate(object):
             nid = self._backend._lib.EC_GROUP_get_curve_name(group)
             if nid == self._backend._lib.NID_undef:
                 raise NotImplementedError(
-                    "ECDSA certificates without named curves are unsupported "
+                    "ECDSA certificates with unnamed curves are unsupported "
                     "at this time"
                 )
 
