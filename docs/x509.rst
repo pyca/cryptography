@@ -17,7 +17,9 @@ Loading Certificates
 
     .. versionadded:: 0.7
 
-    Deserialize a certificate from PEM encoded data.
+    Deserialize a certificate from PEM encoded data. PEM certificates are
+    base64 decoded and have delimiters that look like
+    ``-----BEGIN CERTIFICATE-----``.
 
     :param bytes data: The PEM encoded certificate data.
 
@@ -25,13 +27,15 @@ Loading Certificates
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
-    :returns: An instance of :class:`~cryptography.x509.X509Certificate`.
+    :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
 .. function:: load_der_x509_certificate(data, backend)
 
     .. versionadded:: 0.7
 
-    Deserialize a certificate from DER encoded data.
+    Deserialize a certificate from DER encoded data. DER is a binary format
+    and is commonly found in files with the ``cer`` suffix (although file
+    suffixes are not a guarantee of encoding type).
 
     :param bytes data: The DER encoded certificate data.
 
@@ -39,7 +43,7 @@ Loading Certificates
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
-    :returns: An instance of :class:`~cryptography.x509.X509Certificate`.
+    :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
 .. testsetup::
 
@@ -75,18 +79,19 @@ Loading Certificates
     >>> cert.serial
     2
 
-Interface
-~~~~~~~~~
+X.509 Certificate Object
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. class:: X509Certificate
+.. class:: Certificate
 
     .. versionadded:: 0.7
 
     .. attribute:: version
 
-        :type: :class:`~cryptography.x509.X509Version`
+        :type: :class:`~cryptography.x509.Version`
 
-        The certificate version as an enumeration.
+        The certificate version as an enumeration. Version 3 certificates are
+        the latest version and also the only type you should see in practice.
 
     .. method:: fingerprint(algorithm)
 
@@ -127,10 +132,7 @@ Interface
     certificate in UTC. This value is inclusive.
 
 
-Support Classes
-~~~~~~~~~~~~~~~
-
-.. class:: X509Version
+.. class:: Version
 
     .. versionadded:: 0.7
 
@@ -144,7 +146,7 @@ Support Classes
 
         For version 3 X.509 certificates.
 
-.. class:: InvalidX509Version
+.. class:: InvalidVersion
 
     This is raised when an X.509 certificate has an invalid version number.
 

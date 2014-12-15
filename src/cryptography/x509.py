@@ -10,7 +10,7 @@ from enum import Enum
 import six
 
 
-class X509Version(Enum):
+class Version(Enum):
     v1 = 0
     v3 = 2
 
@@ -23,12 +23,12 @@ def load_der_x509_certificate(data, backend):
     return backend.load_der_x509_certificate(data)
 
 
-class InvalidX509Version(Exception):
+class InvalidVersion(Exception):
     pass
 
 
 @six.add_metaclass(abc.ABCMeta)
-class X509Certificate(object):
+class Certificate(object):
     @abc.abstractmethod
     def fingerprint(self, algorithm):
         """

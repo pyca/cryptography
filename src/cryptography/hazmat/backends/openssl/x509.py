@@ -19,8 +19,8 @@ from cryptography import utils, x509
 from cryptography.hazmat.primitives import hashes
 
 
-@utils.register_interface(x509.X509Certificate)
-class _X509Certificate(object):
+@utils.register_interface(x509.Certificate)
+class _Certificate(object):
     def __init__(self, backend, x509):
         self._backend = backend
         self._x509 = x509
@@ -40,11 +40,11 @@ class _X509Certificate(object):
     def version(self):
         version = self._backend._lib.X509_get_version(self._x509)
         if version == 0:
-            return x509.X509Version.v1
+            return x509.Version.v1
         elif version == 2:
-            return x509.X509Version.v3
+            return x509.Version.v3
         else:
-            raise x509.InvalidX509Version(
+            raise x509.InvalidVersion(
                 "{0} is not a valid X509 version".format(version)
             )
 

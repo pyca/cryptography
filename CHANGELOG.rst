@@ -22,8 +22,8 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` to
   support the loading of OpenSSH public keys (:rfc:`4253`). Currently, only RSA
   keys are supported.
-* Added initial support for X.509 certificate parsing. See :doc:`X.509 </x509>`
-  for more information.
+* Added initial support for X.509 certificate parsing. See the
+  :doc:`X.509 documentation</x509>` for more information.
 
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~

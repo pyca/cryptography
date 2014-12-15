@@ -36,7 +36,7 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
-from cryptography.hazmat.backends.openssl.x509 import _X509Certificate
+from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -709,7 +709,7 @@ class Backend(object):
             raise ValueError("Unable to load certificate")
 
         x509 = self._ffi.gc(x509, self._lib.X509_free)
-        return _X509Certificate(self, x509)
+        return _Certificate(self, x509)
 
     def load_der_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)
@@ -719,7 +719,7 @@ class Backend(object):
             raise ValueError("Unable to load certificate")
 
         x509 = self._ffi.gc(x509, self._lib.X509_free)
-        return _X509Certificate(self, x509)
+        return _Certificate(self, x509)
 
     def load_traditional_openssl_pem_private_key(self, data, password):
         warnings.warn(
