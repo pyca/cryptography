@@ -199,7 +199,7 @@ KEY-----`` or ``-----BEGIN DSA PRIVATE KEY-----``.
 OpenSSH Public Key
 ~~~~~~~~~~~~~~~~~~
 
-The format used by OpenSSH to store public keys as specified in :rfc:`4253`.
+The format used by OpenSSH to store public keys, as specified in :rfc:`4253`.
 
 Currently, only RSA public keys are supported. Any other type of key will
 result in an exception being thrown.
@@ -224,7 +224,8 @@ purposes)::
 
     :param bytes data: The OpenSSH encoded key data.
 
-    :param backend: A backend provider.
+    :param backend: An
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend` provider.
 
     :returns: A new instance of a public key type.
 

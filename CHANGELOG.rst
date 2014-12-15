@@ -19,9 +19,9 @@ Changelog
 * Added support for encoding and decoding :rfc:`6979` signatures in
   :doc:`/hazmat/primitives/asymmetric/utils`.
 * Added
-  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
-  to support the loading of OpenSSH public keys (:rfc:`4253`). Currently, only RSA
-  is supported.
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` to
+  support the loading of OpenSSH public keys (:rfc:`4253`). Currently, only RSA
+  keys are supported.
 
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~
