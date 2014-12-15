@@ -45,7 +45,7 @@ class _Certificate(object):
             return x509.Version.v3
         else:
             raise x509.InvalidVersion(
-                "{0} is not a valid X509 version".format(version)
+                "{0} is not a valid X509 version".format(version), version
             )
 
     @property

@@ -153,6 +153,10 @@ X.509 Certificate Object
 
     This is raised when an X.509 certificate has an invalid version number.
 
+    .. attribute:: parsed_version
+
+        Returns the version that was parsed from the certificate.
+
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
 .. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security

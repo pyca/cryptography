@@ -24,7 +24,9 @@ def load_der_x509_certificate(data, backend):
 
 
 class InvalidVersion(Exception):
-    pass
+    def __init__(self, msg, parsed_version):
+        super(InvalidVersion, self).__init__(msg)
+        self.parsed_version = parsed_version
 
 
 @six.add_metaclass(abc.ABCMeta)

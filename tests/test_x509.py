@@ -140,8 +140,10 @@ class TestRSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        with pytest.raises(x509.InvalidVersion):
+        with pytest.raises(x509.InvalidVersion) as exc:
             cert.version
+
+        assert exc.value.parsed_version == 7
 
     def test_version_1_cert(self, backend):
         cert = _load_cert(
