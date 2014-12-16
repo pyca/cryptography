@@ -73,9 +73,9 @@ Loading Certificates
 
 .. doctest::
 
-    >>> from cryptography.x509 import load_pem_x509_certificate
+    >>> from cryptography import x509
     >>> from cryptography.hazmat.backends import default_backend
-    >>> cert = load_pem_x509_certificate(pem_data, default_backend())
+    >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
     >>> cert.serial
     2
 
@@ -96,6 +96,11 @@ X.509 Certificate Object
         :raises cryptography.x509.InvalidVersion: If the version is
             not valid.
 
+        .. doctest::
+
+            >>> cert.version
+            <Version.v3: 2>
+
     .. method:: fingerprint(algorithm)
 
         :param algorithm: The
@@ -105,11 +110,22 @@ X.509 Certificate Object
         :return bytes: The fingerprint using the supplied hash algorithm as
             bytes.
 
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> cert.fingerprint(hashes.SHA256())
+            '...'
+
     .. attribute:: serial
 
         :type: int
 
         The serial as a Python integer.
+
+        .. doctest::
+
+            >>> cert.serial
+            2
 
     .. method:: public_key()
 
@@ -120,6 +136,13 @@ X.509 Certificate Object
 
         The public key associated with the certificate.
 
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives import interfaces
+            >>> public_key = cert.public_key()
+            >>> isinstance(public_key, interfaces.RSAPublicKey)
+            True
+
     .. attribute:: not_valid_before
 
         :type: :class:`datetime.datetime`
@@ -127,12 +150,22 @@ X.509 Certificate Object
     A naïve datetime representing the beginning of the validity period for the
     certificate in UTC. This value is inclusive.
 
+        .. doctest::
+
+            >>> cert.not_valid_before
+            datetime.datetime(2010, 1, 1, 8, 30)
+
     .. attribute:: not_valid_after
 
         :type: :class:`datetime.datetime`
 
     A naïve datetime representing the end of the validity period for the
     certificate in UTC. This value is inclusive.
+
+        .. doctest::
+
+            >>> cert.not_valid_after
+            datetime.datetime(2030, 12, 31, 8, 30)
 
 
 .. class:: Version
