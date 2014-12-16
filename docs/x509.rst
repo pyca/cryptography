@@ -114,7 +114,7 @@ X.509 Certificate Object
 
             >>> from cryptography.hazmat.primitives import hashes
             >>> cert.fingerprint(hashes.SHA256())
-            '...'
+            '\x86\xd2\x187Gc\xfc\xe7}[+E9\x8d\xb4\x8f\x10\xe5S\xda\x18u\xbe}a\x03\x08[\xac\xa04?'
 
     .. attribute:: serial
 
@@ -147,8 +147,8 @@ X.509 Certificate Object
 
         :type: :class:`datetime.datetime`
 
-    A naïve datetime representing the beginning of the validity period for the
-    certificate in UTC. This value is inclusive.
+        A naïve datetime representing the beginning of the validity period for
+        the certificate in UTC. This value is inclusive.
 
         .. doctest::
 
@@ -159,8 +159,8 @@ X.509 Certificate Object
 
         :type: :class:`datetime.datetime`
 
-    A naïve datetime representing the end of the validity period for the
-    certificate in UTC. This value is inclusive.
+        A naïve datetime representing the end of the validity period for the
+        certificate in UTC. This value is inclusive.
 
         .. doctest::
 
