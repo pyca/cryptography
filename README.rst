@@ -12,7 +12,7 @@ Cryptography
 .. image:: https://travis-ci.org/pyca/cryptography.svg?branch=master
     :target: https://travis-ci.org/pyca/cryptography
 
-.. image:: https://coveralls.io/repos/pyca/cryptography/badge.png?branch=master
+.. image:: https://img.shields.io/coveralls/pyca/cryptography/master.svg
     :target: https://coveralls.io/r/pyca/cryptography?branch=master
 
 
