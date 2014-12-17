@@ -63,9 +63,9 @@ def load_ssh_public_key(data, backend):
     except TypeError:
         raise ValueError('Key is not in the proper format.')
 
-    if key_type.startswith(b'ssh-rsa'):
+    if key_type == b'ssh-rsa':
         return _load_ssh_rsa_public_key(decoded_data, backend)
-    elif key_type.startswith(b'ssh-dss'):
+    elif key_type == b'ssh-dss':
         return _load_ssh_dss_public_key(decoded_data, backend)
     else:
         raise UnsupportedAlgorithm(
