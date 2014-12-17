@@ -985,8 +985,7 @@ class Backend(object):
         """
 
         self._lib.EC_KEY_set_asn1_flag(
-            ec_cdata,
-            self._backend._lib.OPENSSL_EC_NAMED_CURVE
+            ec_cdata, self._lib.OPENSSL_EC_NAMED_CURVE
         )
 
     @contextmanager
