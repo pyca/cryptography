@@ -113,8 +113,6 @@ X509 *X509_dup(X509 *);
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
 
 int X509_set_version(X509 *, long);
-int X509_set_notBefore(X509 *, ASN1_UTCTIME *);
-int X509_set_notAfter(X509 *, ASN1_UTCTIME *);
 
 EVP_PKEY *X509_get_pubkey(X509 *);
 int X509_set_pubkey(X509 *, EVP_PKEY *);
@@ -261,6 +259,8 @@ int i2d_DSAPrivateKey(DSA *, unsigned char **);
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
+int X509_set_notBefore(X509 *, ASN1_UTCTIME *);
+int X509_set_notAfter(X509 *, ASN1_UTCTIME *);
 
 /* These use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
    RHEL/CentOS 5 we should move these back to FUNCTIONS. */
