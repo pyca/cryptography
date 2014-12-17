@@ -696,58 +696,6 @@ Key derivation functions
             the provided signature does not match the expected signature.
 
 
-X509
-----
-
-.. class:: X509Certificate
-
-    .. versionadded:: 0.7
-
-    .. attribute:: version
-
-        :type: X509Version
-
-        The certificate version as an enumeration.
-
-    .. method:: fingerprint(algorithm)
-
-        :param algorithm: A
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-            that will be used by this context.
-
-        :return bytes: The fingerprint using the supplied hash algorithm as
-            bytes.
-
-    .. attribute:: serial
-
-        :type: int
-
-        The serial as a Python integer.
-
-    .. method:: public_key()
-
-        :type:
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
-
-        The public key associated with the certificate.
-
-    .. attribute:: not_before
-
-        :type: :class:`datetime.datetime`
-
-    A naïve datetime representing the beginning of the validity period for the
-    certificate in UTC. This value is inclusive.
-
-    .. attribute:: not_after
-
-        :type: :class:`datetime.datetime`
-
-    A naïve datetime representing the end of the validity period for the
-    certificate in UTC. This value is inclusive.
-
-
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm

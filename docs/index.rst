@@ -63,6 +63,7 @@ The recipes layer
     :maxdepth: 2
 
     fernet
+    x509
     random-numbers
     exceptions
     faq

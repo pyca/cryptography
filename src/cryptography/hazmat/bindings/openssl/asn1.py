@@ -123,6 +123,7 @@ const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
+int ASN1_TIME_print(BIO *, ASN1_TIME *);
 int ASN1_STRING_length(ASN1_STRING *);
 ASN1_STRING *ASN1_STRING_dup(ASN1_STRING *);
 int ASN1_STRING_cmp(ASN1_STRING *, ASN1_STRING *);

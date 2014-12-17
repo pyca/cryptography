@@ -19,7 +19,7 @@ from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
     PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    TraditionalOpenSSLSerializationBackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -36,6 +36,7 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
+from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -66,6 +67,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(RSABackend)
 @utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(PEMSerializationBackend)
+@utils.register_interface(X509Backend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -445,6 +447,28 @@ class Backend(object):
 
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
 
+    def _create_mem_bio(self):
+        """
+        Creates an empty memory BIO.
+        """
+        bio_method = self._lib.BIO_s_mem()
+        assert bio_method != self._ffi.NULL
+        bio = self._lib.BIO_new(bio_method)
+        assert bio != self._ffi.NULL
+        bio = self._ffi.gc(bio, self._lib.BIO_free)
+        return bio
+
+    def _read_mem_bio(self, bio):
+        """
+        Reads a memory BIO. This only works on memory BIOs.
+        """
+        buf = self._ffi.new("char **")
+        buf_len = self._lib.BIO_get_mem_data(bio, buf)
+        assert buf_len > 0
+        assert buf[0] != self._ffi.NULL
+        bio_data = self._ffi.buffer(buf[0], buf_len)[:]
+        return bio_data
+
     def _evp_pkey_to_private_key(self, evp_pkey):
         """
         Return the appropriate type of PrivateKey given an evp_pkey cdata
@@ -674,6 +698,28 @@ class Backend(object):
             data,
             None,
         )
+
+    def load_pem_x509_certificate(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509 = self._lib.PEM_read_bio_X509(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+        if x509 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
+        x509 = self._ffi.gc(x509, self._lib.X509_free)
+        return _Certificate(self, x509)
+
+    def load_der_x509_certificate(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509 = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
+        if x509 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
+        x509 = self._ffi.gc(x509, self._lib.X509_free)
+        return _Certificate(self, x509)
 
     def load_traditional_openssl_pem_private_key(self, data, password):
         warnings.warn(
