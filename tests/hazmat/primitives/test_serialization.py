@@ -11,11 +11,15 @@ import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    EllipticCurveBackend, PEMSerializationBackend, PKCS8SerializationBackend,
-    RSABackend, TraditionalOpenSSLSerializationBackend
+    DSABackend, EllipticCurveBackend, PEMSerializationBackend,
+    PKCS8SerializationBackend, RSABackend,
+    TraditionalOpenSSLSerializationBackend
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.dsa import (
+    DSAParameterNumbers, DSAPublicNumbers
+)
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import (
     load_pem_pkcs8_private_key, load_pem_private_key, load_pem_public_key,
@@ -684,35 +688,21 @@ class TestPKCS8Serialization(object):
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
-class TestSSHSerialization(object):
+class TestRSASSHSerialization(object):
     def test_load_ssh_public_key_unsupported(self, backend):
-        ssh_key = b'ssh-dss AAAAB3NzaC1kc3MAAACBAO7q0a7VsQZcdRTCqFentQt...'
+        ssh_key = b'ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
 
         with pytest.raises(UnsupportedAlgorithm):
             load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_bad_format(self, backend):
-        ssh_key = b'not-a-real-key text'
+        ssh_key = b'ssh-rsa not-a-real-key'
 
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_rsa_too_short(self, backend):
         ssh_key = b'ssh-rsa'
-
-        with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
-
-    def test_load_ssh_public_key_rsa_key_types_dont_match(self, backend):
-        ssh_key = (
-            b"ssh-bad AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
-            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
-            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
-            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
-            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
-            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
-            b"2MzHvnbv testkey@localhost extra"
-        )
 
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
@@ -794,5 +784,117 @@ class TestSSHSerialization(object):
             '7076A98ABF0A2D8550EAF2097D8CCC7BE76EF', 16)
 
         expected = RSAPublicNumbers(expected_e, expected_n)
+
+        assert numbers == expected
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+class TestDSSSSHSerialization(object):
+    def test_load_ssh_public_key_dss_too_short(self, backend):
+        ssh_key = b'ssh-dss'
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_extra_string_after_comment(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost extra"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_extra_data_after_modulo(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9AAwMD== testkey@localhost"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_different_string(self, backend):
+        ssh_key = (
+            # "AAAAB3NzA" the final A is capitalized here to cause the string
+            # ssh-dss inside the base64 encoded blob to be incorrect. It should
+            # be a lower case 'a'.
+            b"ssh-dss AAAAB3NzAC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
+        )
+
+        key = load_ssh_public_key(ssh_key, backend)
+
+        assert key is not None
+        assert isinstance(key, interfaces.DSAPublicKey)
+
+        numbers = key.public_numbers()
+
+        expected_y = int(
+            "d143cf92901f936fa258e9a11422460c8f8f1597884eef8cb1252a3e2ff0aae"
+            "96a7032c01cdd8485b5cbfb73a46bb04708f98a18bc88d4c7812b284da8f900"
+            "6e473e89897f9bc9125c69bbfd8ef691c0e76c1c34e6c843b8fe240e6e5aeb3"
+            "13486e5fa917ab1288ff1a6ebcf9dcdeed3c5fc88474e30476f53a5ec816ef6"
+            "9f4", 16
+        )
+        expected_p = int(
+            "b9b052d7f07630148d4d838b17790ef4f43437238ebebd5032ea483fd7b7902"
+            "5ec3dc65ebd563ab586a633b4344f6acd10af31353bcf29111fa5e3b8d5c1e8"
+            "7befe3c65f9b8be69c740716698c8366c8ef925b9cec1dcd69e73d926b554e2"
+            "b4b6ddd1453eab39ba0f846e1555adcc33c5a8637128c9ed61104a45505a748"
+            "f6db", 16
+        )
+        expected_q = 1230879958723280233885494314531920096931919647917
+        expected_g = int(
+            "7f6c9170b2cfb67e78267c6fcb8b93b22fb03d895a0676451a15ac44511393a"
+            "7bc249b6cf8f5f5c5022afefd4df5bf9d13bbdf182df5af2a5c5d1dc7604185"
+            "7d5b0e4b22b856c300f850a3b00bac394b728755b8b7a56522eefc491573967"
+            "debb5982fc94d6a8c291f758feae63ad769a5621947221522a2dc31d18ede6f"
+            "b656", 16
+        )
+        expected = DSAPublicNumbers(
+            expected_y,
+            DSAParameterNumbers(expected_p, expected_q, expected_g)
+        )
 
         assert numbers == expected
