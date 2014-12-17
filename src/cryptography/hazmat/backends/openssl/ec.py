@@ -52,6 +52,18 @@ def _ec_key_curve_sn(backend, ec_key):
     return sn
 
 
+def _mark_asn1_named_ec_curve(backend, ec_cdata):
+    """
+    Set the named curve flag on the EC_KEY. This causes OpenSSL to
+    serialise EC keys along with their curve OID which makes
+    deserialisation easier.
+    """
+
+    backend._lib.EC_KEY_set_asn1_flag(
+        ec_cdata, backend._lib.OPENSSL_EC_NAMED_CURVE
+    )
+
+
 def _sn_to_elliptic_curve(backend, sn):
     try:
         return ec._CURVE_TYPES[sn]()
@@ -132,6 +144,7 @@ class _ECDSAVerificationContext(object):
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata):
         self._backend = backend
+        _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         self._ec_key = ec_key_cdata
 
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
@@ -167,8 +180,6 @@ class _EllipticCurvePrivateKey(object):
         res = self._backend._lib.EC_KEY_set_public_key(public_ec_key, point)
         assert res == 1
 
-        self._backend._mark_asn1_named_ec_curve(public_ec_key)
-
         return _EllipticCurvePublicKey(
             self._backend, public_ec_key
         )
@@ -186,6 +197,7 @@ class _EllipticCurvePrivateKey(object):
 class _EllipticCurvePublicKey(object):
     def __init__(self, backend, ec_key_cdata):
         self._backend = backend
+        _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         self._ec_key = ec_key_cdata
 
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
