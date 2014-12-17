@@ -189,7 +189,9 @@ X.509 Certificate Object
 
     .. attribute:: parsed_version
 
-        Returns the version that was parsed from the certificate.
+        :type: int
+
+        Returns the raw version that was parsed from the certificate.
 
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
