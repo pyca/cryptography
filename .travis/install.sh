@@ -44,9 +44,6 @@ if [[ "$DARWIN" = true ]]; then
             pyenv install 3.4.2
             pyenv global 3.4.2
             ;;
-        py3pep8)
-            sudo apt-get install python3.3 python3.3-dev
-            ;;
         pypy)
             brew upgrade pyenv
             pyenv install pypy-2.4.0
