@@ -10,6 +10,9 @@ import warnings
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.primitives.asymmetric.dsa import (
+    DSAParameterNumbers, DSAPublicNumbers
+)
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 
@@ -55,13 +58,14 @@ def load_ssh_public_key(data, backend):
     key_type = key_parts[0]
     key_body = key_parts[1]
 
-    if not key_type.startswith(b'ssh-'):
-        raise ValueError('SSH-formatted keys must begin with \'ssh-\'.')
-
-    if not key_type.startswith(b'ssh-rsa'):
-        raise UnsupportedAlgorithm('Only RSA keys are currently supported.')
-
-    return _load_ssh_rsa_public_key(key_body, backend)
+    if key_type.startswith(b'ssh-rsa'):
+        return _load_ssh_rsa_public_key(key_body, backend)
+    elif key_type.startswith(b'ssh-dss'):
+        return _load_ssh_dss_public_key(key_body, backend)
+    else:
+        raise UnsupportedAlgorithm(
+            'Only RSA and DSA keys are currently supported.'
+        )
 
 
 def _load_ssh_rsa_public_key(key_body, backend):
@@ -79,6 +83,28 @@ def _load_ssh_rsa_public_key(key_body, backend):
         raise ValueError('Key body contains extra bytes.')
 
     return backend.load_rsa_public_numbers(RSAPublicNumbers(e, n))
+
+
+def _load_ssh_dss_public_key(key_body, backend):
+    data = base64.b64decode(key_body)
+
+    key_type, rest = _read_next_string(data)
+    p, rest = _read_next_mpint(rest)
+    q, rest = _read_next_mpint(rest)
+    g, rest = _read_next_mpint(rest)
+    y, rest = _read_next_mpint(rest)
+
+    if key_type != b'ssh-dss':
+        raise ValueError(
+            'Key header and key body contain different key type values.')
+
+    if rest:
+        raise ValueError('Key body contains extra bytes.')
+
+    parameter_numbers = DSAParameterNumbers(p, q, g)
+    public_numbers = DSAPublicNumbers(y, parameter_numbers)
+
+    return backend.load_dsa_public_numbers(public_numbers)
 
 
 def _read_next_string(data):
