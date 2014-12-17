@@ -201,8 +201,8 @@ OpenSSH Public Key
 
 The format used by OpenSSH to store public keys, as specified in :rfc:`4253`.
 
-Currently, only RSA public keys are supported. Any other type of key will
-result in an exception being thrown.
+Currently, only RSA and DSA public keys are supported. Any other type of key
+will result in an exception being thrown.
 
 An example RSA key in OpenSSH format (line breaks added for formatting
 purposes)::
@@ -215,6 +215,9 @@ purposes)::
     ///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX
     2MzHvnbv testkey@localhost
 
+DSA keys look almost identical but begin with ``ssh-dss`` rather than
+``ssh-rsa``.
+
 .. function:: load_ssh_public_key(data, backend)
 
     .. versionadded:: 0.7
@@ -224,8 +227,10 @@ purposes)::
 
     :param bytes data: The OpenSSH encoded key data.
 
-    :param backend: An
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend` provider.
+    :param backend: A backend providing
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend` or
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend` depending
+        on key type.
 
     :returns: A new instance of a public key type.
 

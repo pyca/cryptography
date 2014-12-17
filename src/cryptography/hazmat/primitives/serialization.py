@@ -58,20 +58,23 @@ def load_ssh_public_key(data, backend):
     key_type = key_parts[0]
     key_body = key_parts[1]
 
+    try:
+        decoded_data = base64.b64decode(key_body)
+    except TypeError:
+        raise ValueError('Key is not in the proper format.')
+
     if key_type.startswith(b'ssh-rsa'):
-        return _load_ssh_rsa_public_key(key_body, backend)
+        return _load_ssh_rsa_public_key(decoded_data, backend)
     elif key_type.startswith(b'ssh-dss'):
-        return _load_ssh_dss_public_key(key_body, backend)
+        return _load_ssh_dss_public_key(decoded_data, backend)
     else:
         raise UnsupportedAlgorithm(
             'Only RSA and DSA keys are currently supported.'
         )
 
 
-def _load_ssh_rsa_public_key(key_body, backend):
-    data = base64.b64decode(key_body)
-
-    key_type, rest = _read_next_string(data)
+def _load_ssh_rsa_public_key(decoded_data, backend):
+    key_type, rest = _read_next_string(decoded_data)
     e, rest = _read_next_mpint(rest)
     n, rest = _read_next_mpint(rest)
 
@@ -85,10 +88,8 @@ def _load_ssh_rsa_public_key(key_body, backend):
     return backend.load_rsa_public_numbers(RSAPublicNumbers(e, n))
 
 
-def _load_ssh_dss_public_key(key_body, backend):
-    data = base64.b64decode(key_body)
-
-    key_type, rest = _read_next_string(data)
+def _load_ssh_dss_public_key(decoded_data, backend):
+    key_type, rest = _read_next_string(decoded_data)
     p, rest = _read_next_mpint(rest)
     q, rest = _read_next_mpint(rest)
     g, rest = _read_next_mpint(rest)

@@ -690,9 +690,15 @@ class TestPKCS8Serialization(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSASSHSerialization(object):
     def test_load_ssh_public_key_unsupported(self, backend):
-        ssh_key = b'ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY...'
+        ssh_key = b'ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
 
         with pytest.raises(UnsupportedAlgorithm):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_bad_format(self, backend):
+        ssh_key = b'ssh-rsa not-a-real-key'
+
+        with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_rsa_too_short(self, backend):
