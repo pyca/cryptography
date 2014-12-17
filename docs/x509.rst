@@ -94,7 +94,8 @@ X.509 Certificate Object
         the latest version and also the only type you should see in practice.
 
         :raises cryptography.x509.InvalidVersion: If the version in the
-            certificate is not a known :class:`X.509 version
+            certificate is not a known
+            :class:`X.509 version <cryptography.x509.Version>`.
 
         .. doctest::
 
