@@ -85,7 +85,7 @@ def _load_ssh_rsa_public_key(decoded_data, backend):
     if rest:
         raise ValueError('Key body contains extra bytes.')
 
-    return backend.load_rsa_public_numbers(RSAPublicNumbers(e, n))
+    return RSAPublicNumbers(e, n).public_key(backend)
 
 
 def _load_ssh_dss_public_key(decoded_data, backend):
@@ -105,7 +105,7 @@ def _load_ssh_dss_public_key(decoded_data, backend):
     parameter_numbers = DSAParameterNumbers(p, q, g)
     public_numbers = DSAPublicNumbers(y, parameter_numbers)
 
-    return backend.load_dsa_public_numbers(public_numbers)
+    return public_numbers.public_key(backend)
 
 
 def _read_next_string(data):
