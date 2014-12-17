@@ -140,6 +140,8 @@ int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
 
+int i2d_X509(X509 *, unsigned char **);
+
 int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
@@ -257,6 +259,8 @@ int i2d_DSAPrivateKey(DSA *, unsigned char **);
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
+int X509_set_notBefore(X509 *, ASN1_UTCTIME *);
+int X509_set_notAfter(X509 *, ASN1_UTCTIME *);
 
 /* These use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
    RHEL/CentOS 5 we should move these back to FUNCTIONS. */
