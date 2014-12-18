@@ -1,10 +1,8 @@
 Changelog
 =========
 
-0.7 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+0.7 - 2014-12-17
+~~~~~~~~~~~~~~~~
 
 * Cryptography has been relicensed from the Apache Software License, Version
   2.0, to being available under *either* the Apache Software License, Version
@@ -20,8 +18,8 @@ Changelog
   :doc:`/hazmat/primitives/asymmetric/utils`.
 * Added
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` to
-  support the loading of OpenSSH public keys (:rfc:`4253`). Currently, only RSA
-  keys are supported.
+  support the loading of OpenSSH public keys (:rfc:`4253`). Only RSA and DSA
+  keys are currently supported.
 * Added initial support for X.509 certificate parsing. See the
   :doc:`X.509 documentation</x509>` for more information.
 
