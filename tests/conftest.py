@@ -17,11 +17,11 @@ def pytest_generate_tests(metafunc):
 
     if "backend" in metafunc.fixturenames:
         filtered_backends = []
+        required = metafunc.function.requires_backend_interface
+        required_interfaces = tuple(
+            mark.kwargs["interface"] for mark in required
+        )
         for backend in selected_backends:
-            required = metafunc.function.requires_backend_interface
-            required_interfaces = tuple(
-                mark.kwargs["interface"] for mark in required
-            )
             if isinstance(backend, required_interfaces):
                 filtered_backends.append(backend)
 
