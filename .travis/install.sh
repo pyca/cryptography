@@ -11,6 +11,7 @@ fi
 
 if [[ "$DARWIN" = true ]]; then
     brew update
+    brew install libscrypt
 
     if [[ "${OPENSSL}" != "0.9.8" ]]; then
         brew upgrade openssl
