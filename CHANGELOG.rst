@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.8 - `master`_
+~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 0.7 - 2014-12-17
 ~~~~~~~~~~~~~~~~
 
