@@ -55,8 +55,8 @@ def _ec_key_curve_sn(backend, ec_key):
 def _mark_asn1_named_ec_curve(backend, ec_cdata):
     """
     Set the named curve flag on the EC_KEY. This causes OpenSSL to
-    serialise EC keys along with their curve OID which makes
-    deserialisation easier.
+    serialize EC keys along with their curve OID which makes
+    deserialization easier.
     """
 
     backend._lib.EC_KEY_set_asn1_flag(
