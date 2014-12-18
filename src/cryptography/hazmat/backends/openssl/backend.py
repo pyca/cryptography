@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import collections
 import itertools
-import warnings
 from contextlib import contextmanager
 
 import six
@@ -17,9 +16,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend, X509Backend
+    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend, RSABackend,
+    X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -63,9 +61,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
-@utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
-@utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
 class Backend(object):
@@ -721,25 +717,6 @@ class Backend(object):
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
 
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        warnings.warn(
-            "load_traditional_openssl_pem_private_key is deprecated and will "
-            "be removed in a future version, use load_pem_private_key "
-            "instead.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_pem_private_key(data, password)
-
-    def load_pkcs8_pem_private_key(self, data, password):
-        warnings.warn(
-            "load_pkcs8_pem_private_key is deprecated and will be removed in a"
-            " future version, use load_pem_private_key instead.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_pem_private_key(data, password)
-
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
@@ -903,15 +880,6 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
 
-    def elliptic_curve_private_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_private_key_from_numbers is deprecated and will "
-            "be removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_elliptic_curve_private_numbers(numbers)
-
     def load_elliptic_curve_private_numbers(self, numbers):
         public = numbers.public_numbers
 
@@ -929,15 +897,6 @@ class Backend(object):
         assert res == 1
 
         return _EllipticCurvePrivateKey(self, ec_cdata)
-
-    def elliptic_curve_public_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_public_key_from_numbers is deprecated and will be "
-            "removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_elliptic_curve_public_numbers(numbers)
 
     def load_elliptic_curve_public_numbers(self, numbers):
         curve_nid = self._elliptic_curve_to_nid(numbers.curve)

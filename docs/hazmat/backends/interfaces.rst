@@ -468,51 +468,6 @@ A specific ``backend`` may provide one or more of these interfaces.
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
-.. class:: TraditionalOpenSSLSerializationBackend
-
-    .. versionadded:: 0.3
-
-    A backend with methods for working with OpenSSL's "traditional" PKCS #1
-    style key serialization.
-
-    .. method:: load_openssl_pem_private_key(data, password)
-
-        :param bytes data: PEM data to deserialize.
-
-        :param bytes password: The password to use if this data is encrypted.
-            Should be None if the data is not encrypted.
-
-        :return: A new instance of the appropriate type of private key that the
-            serialized data contains.
-
-        :raises ValueError: If the data could not be deserialized correctly.
-
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
-            encrypted with an unsupported algorithm.
-
-
-.. class:: PKCS8SerializationBackend
-
-    .. versionadded:: 0.5
-
-    A backend with methods for working with PKCS #8 key serialization.
-
-    .. method:: load_pkcs8_pem_private_key(data, password)
-
-        :param bytes data: PEM data to deserialize.
-
-        :param bytes password: The password to use if this data is encrypted.
-            Should be None if the data is not encrypted.
-
-        :return: A new instance of the appropriate private key or public key
-            that the serialized data contains.
-
-        :raises ValueError: If the data could not be deserialized correctly.
-
-        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
-            encrypted with an unsupported algorithm.
-
-
 .. class:: X509Backend
 
     .. versionadded:: 0.7

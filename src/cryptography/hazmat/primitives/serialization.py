@@ -6,38 +6,12 @@ from __future__ import absolute_import, division, print_function
 
 import base64
 import struct
-import warnings
 
-from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.asymmetric.dsa import (
     DSAParameterNumbers, DSAPublicNumbers
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
-
-
-def load_pem_traditional_openssl_private_key(data, password, backend):
-    warnings.warn(
-        "load_pem_traditional_openssl_private_key is deprecated and will be "
-        "removed in a future version, use load_pem_private_key instead.",
-        utils.DeprecatedIn06,
-        stacklevel=2
-    )
-
-    return backend.load_traditional_openssl_pem_private_key(
-        data, password
-    )
-
-
-def load_pem_pkcs8_private_key(data, password, backend):
-    warnings.warn(
-        "load_pem_pkcs8_private_key is deprecated and will be removed in a "
-        "future version, use load_pem_private_key instead.",
-        utils.DeprecatedIn06,
-        stacklevel=2
-    )
-
-    return backend.load_pkcs8_pem_private_key(data, password)
 
 
 def load_pem_private_key(data, password, backend):

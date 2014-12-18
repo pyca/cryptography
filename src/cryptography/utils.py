@@ -9,7 +9,8 @@ import inspect
 import sys
 
 
-DeprecatedIn06 = DeprecationWarning
+# DeprecatedIn07 objects exist. This comment exists to remind developers to
+# look for them when it's time for the ninth release cycle deprecation dance.
 
 
 def register_interface(iface):

@@ -233,26 +233,6 @@ class PEMSerializationBackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class TraditionalOpenSSLSerializationBackend(object):
-    @abc.abstractmethod
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        """
-        Load a private key from PEM encoded data, using password if the data
-        is encrypted.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class PKCS8SerializationBackend(object):
-    @abc.abstractmethod
-    def load_pkcs8_pem_private_key(self, data, password):
-        """
-        Load a private key from PKCS8 encoded data, using password if the data
-        is encrypted.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
 class X509Backend(object):
     @abc.abstractmethod
     def load_pem_x509_certificate(self, data):
