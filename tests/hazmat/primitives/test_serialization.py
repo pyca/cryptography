@@ -11,9 +11,7 @@ import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    DSABackend, EllipticCurveBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    DSABackend, EllipticCurveBackend, PEMSerializationBackend, RSABackend
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -22,8 +20,7 @@ from cryptography.hazmat.primitives.asymmetric.dsa import (
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key, load_pem_private_key, load_pem_public_key,
-    load_pem_traditional_openssl_private_key, load_ssh_public_key
+    load_pem_private_key, load_pem_public_key, load_ssh_public_key
 )
 
 
@@ -138,7 +135,7 @@ class TestPEMSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(
-    interface=TraditionalOpenSSLSerializationBackend
+    interface=PEMSerializationBackend
 )
 class TestTraditionalOpenSSLSerialization(object):
     @pytest.mark.parametrize(
@@ -154,7 +151,7 @@ class TestTraditionalOpenSSLSerialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -176,7 +173,7 @@ class TestTraditionalOpenSSLSerialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -188,7 +185,7 @@ class TestTraditionalOpenSSLSerialization(object):
         pkey = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "Traditional_OpenSSL_Serialization", "key1.pem"),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), b"123456", backend
             )
         )
@@ -235,7 +232,7 @@ class TestTraditionalOpenSSLSerialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -251,7 +248,7 @@ class TestTraditionalOpenSSLSerialization(object):
         with pytest.raises(ValueError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -267,7 +264,7 @@ class TestTraditionalOpenSSLSerialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -276,12 +273,12 @@ class TestTraditionalOpenSSLSerialization(object):
         key_data = b"---- NOT A KEY ----\n"
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -299,12 +296,12 @@ class TestTraditionalOpenSSLSerialization(object):
         """).encode()
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -328,12 +325,12 @@ class TestTraditionalOpenSSLSerialization(object):
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, password, backend
             )
 
@@ -356,12 +353,12 @@ class TestTraditionalOpenSSLSerialization(object):
         password = b"password"
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, password, backend
             )
 
 
-@pytest.mark.requires_backend_interface(interface=PKCS8SerializationBackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPKCS8Serialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -385,7 +382,7 @@ class TestPKCS8Serialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_pkcs8_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -408,7 +405,7 @@ class TestPKCS8Serialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_pkcs8_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -425,7 +422,7 @@ class TestPKCS8Serialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_pkcs8_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -438,7 +435,7 @@ class TestPKCS8Serialization(object):
         with pytest.raises(ValueError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_pkcs8_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -454,7 +451,7 @@ class TestPKCS8Serialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_pkcs8_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -463,12 +460,12 @@ class TestPKCS8Serialization(object):
         key_data = b"---- NOT A KEY ----\n"
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -493,12 +490,12 @@ class TestPKCS8Serialization(object):
         """).encode()
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -527,12 +524,12 @@ class TestPKCS8Serialization(object):
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, password, backend
             )
 
@@ -540,7 +537,7 @@ class TestPKCS8Serialization(object):
         pkey = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
-            lambda pemfile: load_pem_pkcs8_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), b"foobar", backend
             )
         )
@@ -606,7 +603,7 @@ class TestPKCS8Serialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -665,7 +662,7 @@ class TestPKCS8Serialization(object):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -681,7 +678,7 @@ class TestPKCS8Serialization(object):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
