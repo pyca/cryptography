@@ -14,7 +14,7 @@ Changelog
   2.0, or the BSD license.
 * Added key-rotation support to :doc:`Fernet </fernet>` with
   :class:`~cryptography.fernet.MultiFernet`.
-* More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
+* More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
 * Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
   common interface for CMAC and HMAC and deprecated
