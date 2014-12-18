@@ -43,7 +43,13 @@ def _ec_key_curve_sn(backend, ec_key):
     assert group != backend._ffi.NULL
 
     nid = backend._lib.EC_GROUP_get_curve_name(group)
-    assert nid != backend._lib.NID_undef
+    # The following check is to find EC keys with unnamed curves and raise
+    # an error for now.
+    if nid == backend._lib.NID_undef:
+        raise NotImplementedError(
+            "ECDSA certificates with unnamed curves are unsupported "
+            "at this time"
+        )
 
     curve_name = backend._lib.OBJ_nid2sn(nid)
     assert curve_name != backend._ffi.NULL

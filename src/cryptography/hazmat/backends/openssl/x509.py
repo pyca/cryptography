@@ -63,25 +63,6 @@ class _Certificate(object):
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
         assert pkey != self._backend._ffi.NULL
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
-        # The following check is to find ECDSA certificates with unnamed
-        # curves and raise an error for now.
-        if (
-            self._backend._lib.Cryptography_HAS_EC == 1 and
-            pkey.type == self._backend._lib.EVP_PKEY_EC
-        ):
-            ec_cdata = self._backend._lib.EVP_PKEY_get1_EC_KEY(pkey)
-            assert ec_cdata != self._backend._ffi.NULL
-            ec_cdata = self._backend._ffi.gc(
-                ec_cdata, self._backend._lib.EC_KEY_free
-            )
-            group = self._backend._lib.EC_KEY_get0_group(ec_cdata)
-            assert group != self._backend._ffi.NULL
-            nid = self._backend._lib.EC_GROUP_get_curve_name(group)
-            if nid == self._backend._lib.NID_undef:
-                raise NotImplementedError(
-                    "ECDSA certificates with unnamed curves are unsupported "
-                    "at this time"
-                )
 
         return self._backend._evp_pkey_to_public_key(pkey)
 
