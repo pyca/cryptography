@@ -35,7 +35,7 @@ Generation
         Some backends may have additional limitations.
     :param backend: A backend which provides
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
-    :return: An instace of
+    :return: An instance of
         :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
