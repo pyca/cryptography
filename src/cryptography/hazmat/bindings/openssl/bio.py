@@ -17,7 +17,7 @@ struct bio_method_st {
     int (*bwrite)(BIO *, const char *, int);
     int (*bread)(BIO *, char *, int);
     int (*bputs)(BIO *, const char *);
-    int (*bgets)(BIO *, char*, int);
+    int (*bgets)(BIO *, char *, int);
     long (*ctrl)(BIO *, int, long, void *);
     int (*create)(BIO *);
     int (*destroy)(BIO *);
@@ -27,7 +27,7 @@ struct bio_method_st {
 typedef struct bio_method_st BIO_METHOD;
 struct bio_st {
     BIO_METHOD *method;
-    long (*callback)(struct bio_st*, int, const char*, int, long, long);
+    long (*callback)(struct bio_st *, int, const char *, int, long, long);
     char *cb_arg;
     int init;
     int shutdown;
@@ -89,7 +89,7 @@ static const int BIO_TYPE_FILTER;
 """
 
 FUNCTIONS = """
-BIO* BIO_new(BIO_METHOD *);
+BIO *BIO_new(BIO_METHOD *);
 int BIO_set(BIO *, BIO_METHOD *);
 int BIO_free(BIO *);
 void BIO_vfree(BIO *);

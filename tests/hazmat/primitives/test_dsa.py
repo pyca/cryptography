@@ -12,14 +12,17 @@ from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.backends.interfaces import DSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    encode_rfc6979_signature
+)
 from cryptography.utils import bit_length
 
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 )
 from ...utils import (
-    der_encode_dsa_signature, load_fips_dsa_key_pair_vectors,
-    load_fips_dsa_sig_vectors, load_vectors_from_file,
+    load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
+    load_vectors_from_file,
 )
 
 
@@ -557,7 +560,7 @@ class TestDSAVerification(object):
             ),
             y=vector['y']
         ).public_key(backend)
-        sig = der_encode_dsa_signature(vector['r'], vector['s'])
+        sig = encode_rfc6979_signature(vector['r'], vector['s'])
         verifier = public_key.verifier(sig, algorithm())
         verifier.update(vector['msg'])
         if vector['result'] == "F":
@@ -702,3 +705,67 @@ class TestDSANumbers(object):
 
         with pytest.raises(TypeError):
             dsa.DSAPrivateNumbers(x=None, public_numbers=public_numbers)
+
+
+class TestDSANumberEquality(object):
+    def test_parameter_numbers_eq(self):
+        param = dsa.DSAParameterNumbers(1, 2, 3)
+        assert param == dsa.DSAParameterNumbers(1, 2, 3)
+
+    def test_parameter_numbers_ne(self):
+        param = dsa.DSAParameterNumbers(1, 2, 3)
+        assert param != dsa.DSAParameterNumbers(1, 2, 4)
+        assert param != dsa.DSAParameterNumbers(1, 1, 3)
+        assert param != dsa.DSAParameterNumbers(2, 2, 3)
+        assert param != object()
+
+    def test_public_numbers_eq(self):
+        pub = dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
+        assert pub == dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
+
+    def test_public_numbers_ne(self):
+        pub = dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
+        assert pub != dsa.DSAPublicNumbers(2, dsa.DSAParameterNumbers(1, 2, 3))
+        assert pub != dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(2, 2, 3))
+        assert pub != dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 3, 3))
+        assert pub != dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 4))
+        assert pub != object()
+
+    def test_private_numbers_eq(self):
+        pub = dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
+        priv = dsa.DSAPrivateNumbers(1, pub)
+        assert priv == dsa.DSAPrivateNumbers(
+            1, dsa.DSAPublicNumbers(
+                1, dsa.DSAParameterNumbers(1, 2, 3)
+            )
+        )
+
+    def test_private_numbers_ne(self):
+        pub = dsa.DSAPublicNumbers(1, dsa.DSAParameterNumbers(1, 2, 3))
+        priv = dsa.DSAPrivateNumbers(1, pub)
+        assert priv != dsa.DSAPrivateNumbers(
+            2, dsa.DSAPublicNumbers(
+                1, dsa.DSAParameterNumbers(1, 2, 3)
+            )
+        )
+        assert priv != dsa.DSAPrivateNumbers(
+            1, dsa.DSAPublicNumbers(
+                2, dsa.DSAParameterNumbers(1, 2, 3)
+            )
+        )
+        assert priv != dsa.DSAPrivateNumbers(
+            1, dsa.DSAPublicNumbers(
+                1, dsa.DSAParameterNumbers(2, 2, 3)
+            )
+        )
+        assert priv != dsa.DSAPrivateNumbers(
+            1, dsa.DSAPublicNumbers(
+                1, dsa.DSAParameterNumbers(1, 3, 3)
+            )
+        )
+        assert priv != dsa.DSAPrivateNumbers(
+            1, dsa.DSAPublicNumbers(
+                1, dsa.DSAParameterNumbers(1, 2, 4)
+            )
+        )
+        assert priv != object()

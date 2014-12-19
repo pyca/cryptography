@@ -15,20 +15,18 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
+from cryptography.hazmat.primitives.asymmetric import dsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
 
 from ..primitives.fixtures_rsa import RSA_KEY_512
-from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -458,7 +456,7 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
                     "key1.pem"
                 ),
                 lambda pemfile: (
-                    backend.load_traditional_openssl_pem_private_key(
+                    backend.load_pem_private_key(
                         pemfile.read().encode(), password
                     )
                 )
@@ -481,41 +479,3 @@ class TestOpenSSLEllipticCurve(object):
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
-
-
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestDeprecatedECBackendMethods(object):
-    def test_elliptic_curve_private_key_from_numbers(self):
-        d = 5634846038258869671139984276180670841223409490498798721258
-        y = 4131560123026307384858369684985976479488628761329758810693
-        x = 3402090428547195623222463880060959356423657484435591627791
-        curve = ec.SECP192R1()
-        _skip_curve_unsupported(backend, curve)
-        pub_numbers = ec.EllipticCurvePublicNumbers(
-            x=x,
-            y=y,
-            curve=curve
-        )
-        numbers = ec.EllipticCurvePrivateNumbers(
-            private_value=d,
-            public_numbers=pub_numbers
-        )
-        pytest.deprecated_call(
-            backend.elliptic_curve_private_key_from_numbers,
-            numbers
-        )
-
-    def test_elliptic_curve_public_key_from_numbers(self):
-        y = 4131560123026307384858369684985976479488628761329758810693
-        x = 3402090428547195623222463880060959356423657484435591627791
-        curve = ec.SECP192R1()
-        _skip_curve_unsupported(backend, curve)
-        pub_numbers = ec.EllipticCurvePublicNumbers(
-            x=x,
-            y=y,
-            curve=curve
-        )
-        pytest.deprecated_call(
-            backend.elliptic_curve_public_key_from_numbers,
-            pub_numbers
-        )

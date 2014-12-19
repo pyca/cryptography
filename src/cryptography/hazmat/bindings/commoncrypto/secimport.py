@@ -75,6 +75,8 @@ OSStatus SecItemImport(CFDataRef, CFStringRef, SecExternalFormat *,
                        const SecItemImportExportKeyParameters *,
                        SecKeychainRef, CFArrayRef *);
 OSStatus SecPKCS12Import(CFDataRef, CFDictionaryRef, CFArrayRef *);
+OSStatus SecItemExport(CFTypeRef, SecExternalFormat, SecItemImportExportFlags,
+                       const SecItemImportExportKeyParameters *, CFDataRef *);
 """
 
 MACROS = """

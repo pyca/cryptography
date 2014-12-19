@@ -15,6 +15,7 @@ TYPES = """
  * Internally invented symbols to tell which versions of SSL/TLS are supported.
 */
 static const long Cryptography_HAS_SSL2;
+static const long Cryptography_HAS_SSL3;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
@@ -210,6 +211,8 @@ int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
+int SSL_CTX_check_private_key(const SSL_CTX *);
+
 void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
@@ -319,7 +322,7 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
-const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX*);
+const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *);
 
 /* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
  * versions some special handling of these is necessary.
@@ -350,8 +353,8 @@ SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 /* ALPN APIs were introduced in OpenSSL 1.0.2.  To continue to support earlier
  * versions some special handling of these is necessary.
  */
-int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char*, unsigned);
-int SSL_set_alpn_protos(SSL *, const unsigned char*, unsigned);
+int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char *, unsigned);
+int SSL_set_alpn_protos(SSL *, const unsigned char *, unsigned);
 void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
                                 int (*) (SSL *,
                                          const unsigned char **,
@@ -382,6 +385,15 @@ SSL_METHOD* (*SSLv2_client_method)(void) = NULL;
 SSL_METHOD* (*SSLv2_server_method)(void) = NULL;
 #else
 static const long Cryptography_HAS_SSL2 = 1;
+#endif
+
+#ifdef OPENSSL_NO_SSL3
+static const long Cryptography_HAS_SSL3 = 0;
+SSL_METHOD* (*SSLv3_method)(void) = NULL;
+SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
+SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
+#else
+static const long Cryptography_HAS_SSL3 = 1;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
@@ -475,7 +487,7 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
 
 /* Workaround for #794 caused by cffi const** bug. */
-const SSL_METHOD* Cryptography_SSL_CTX_get_method(const SSL_CTX* ctx) {
+const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *ctx) {
     return ctx->method;
 }
 
@@ -513,9 +525,9 @@ static const long Cryptography_HAS_NEXTPROTONEG = 1;
 /* ALPN was added in OpenSSL 1.0.2. */
 #if OPENSSL_VERSION_NUMBER < 0x10002001L
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
-                               const unsigned char*,
+                               const unsigned char *,
                                unsigned) = NULL;
-int (*SSL_set_alpn_protos)(SSL *, const unsigned char*, unsigned) = NULL;
+int (*SSL_set_alpn_protos)(SSL *, const unsigned char *, unsigned) = NULL;
 void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX *,
                                    int (*) (SSL *,
                                             const unsigned char **,
@@ -552,6 +564,12 @@ CONDITIONAL_NAMES = {
         "SSLv2_method",
         "SSLv2_client_method",
         "SSLv2_server_method",
+    ],
+
+    "Cryptography_HAS_SSL3": [
+        "SSLv3_method",
+        "SSLv3_client_method",
+        "SSLv3_server_method",
     ],
 
     "Cryptography_HAS_TLSEXT_HOSTNAME": [

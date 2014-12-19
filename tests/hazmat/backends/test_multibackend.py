@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
-
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -13,8 +11,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -169,29 +166,9 @@ class DummyEllipticCurveBackend(object):
         if not self.elliptic_curve_supported(numbers.public_numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
-    def elliptic_curve_private_key_from_numbers(self, numbers):
-        if not self.elliptic_curve_supported(numbers.public_numbers.curve):
-            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
-
-    def elliptic_curve_public_key_from_numbers(self, numbers):
-        if not self.elliptic_curve_supported(numbers.curve):
-            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
-
     def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
-
-
-@utils.register_interface(PKCS8SerializationBackend)
-class DummyPKCS8SerializationBackend(object):
-    def load_pkcs8_pem_private_key(self, data, password):
-        pass
-
-
-@utils.register_interface(TraditionalOpenSSLSerializationBackend)
-class DummyTraditionalOpenSSLSerializationBackend(object):
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        pass
 
 
 @utils.register_interface(PEMSerializationBackend)
@@ -200,6 +177,15 @@ class DummyPEMSerializationBackend(object):
         pass
 
     def load_pem_public_key(self, data):
+        pass
+
+
+@utils.register_interface(X509Backend)
+class DummyX509Backend(object):
+    def load_pem_x509_certificate(self, data):
+        pass
+
+    def load_der_x509_certificate(self, data):
         pass
 
 
@@ -448,69 +434,6 @@ class TestMultiBackend(object):
                 )
             )
 
-    def test_deprecated_elliptic_curve(self):
-        backend = MultiBackend([
-            DummyEllipticCurveBackend([
-                ec.SECT283K1
-            ])
-        ])
-
-        assert backend.elliptic_curve_signature_algorithm_supported(
-            ec.ECDSA(hashes.SHA256()),
-            ec.SECT163K1()
-        ) is False
-
-        pub_numbers = ec.EllipticCurvePublicNumbers(2, 3, ec.SECT283K1())
-        numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
-
-        pytest.deprecated_call(
-            backend.elliptic_curve_private_key_from_numbers,
-            numbers
-        )
-        pytest.deprecated_call(
-            backend.elliptic_curve_public_key_from_numbers,
-            pub_numbers
-        )
-
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
-            backend.elliptic_curve_private_key_from_numbers(
-                ec.EllipticCurvePrivateNumbers(
-                    1,
-                    ec.EllipticCurvePublicNumbers(
-                        2,
-                        3,
-                        ec.SECT163K1()
-                    )
-                )
-            )
-
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
-            backend.elliptic_curve_public_key_from_numbers(
-                ec.EllipticCurvePublicNumbers(
-                    2,
-                    3,
-                    ec.SECT163K1()
-                )
-            )
-
-    def test_pkcs8_serialization_backend(self):
-        backend = MultiBackend([DummyPKCS8SerializationBackend()])
-
-        backend.load_pkcs8_pem_private_key(b"keydata", None)
-
-        backend = MultiBackend([])
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            backend.load_pkcs8_pem_private_key(b"keydata", None)
-
-    def test_traditional_openssl_serialization_backend(self):
-        backend = MultiBackend([DummyTraditionalOpenSSLSerializationBackend()])
-
-        backend.load_traditional_openssl_pem_private_key(b"keydata", None)
-
-        backend = MultiBackend([])
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            backend.load_traditional_openssl_pem_private_key(b"keydata", None)
-
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])
 
@@ -522,3 +445,15 @@ class TestMultiBackend(object):
             backend.load_pem_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pem_public_key(b"keydata")
+
+    def test_x509_backend(self):
+        backend = MultiBackend([DummyX509Backend()])
+
+        backend.load_pem_x509_certificate(b"certdata")
+        backend.load_der_x509_certificate(b"certdata")
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_pem_x509_certificate(b"certdata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_der_x509_certificate(b"certdata")

@@ -29,14 +29,20 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 
 
+SETUPTOOLS_DEPENDENCY = "setuptools"
+CFFI_DEPENDENCY = "cffi>=0.8"
+SIX_DEPENDENCY = "six>=1.4.1"
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
-    "cffi>=0.8",
-    "six>=1.4.1",
-    "setuptools",
+    CFFI_DEPENDENCY,
     "pyasn1",
+    SIX_DEPENDENCY,
+    SETUPTOOLS_DEPENDENCY
 ]
+
+if sys.version_info < (3, 4):
+    requirements.append("enum34")
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [

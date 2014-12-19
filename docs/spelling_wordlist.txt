@@ -24,6 +24,7 @@ fernet
 Fernet
 hazmat
 indistinguishability
+initialisms
 interoperable
 introspectability
 invariants
@@ -31,6 +32,7 @@ iOS
 Koblitz
 Lange
 metadata
+naïve
 namespace
 namespaces
 pickleable

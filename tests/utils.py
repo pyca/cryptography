@@ -9,9 +9,6 @@ import collections
 import re
 from contextlib import contextmanager
 
-from pyasn1.codec.der import encoder
-from pyasn1.type import namedtype, univ
-
 import pytest
 
 import six
@@ -73,22 +70,8 @@ def raises_unsupported_algorithm(reason):
     assert exc_info.value._reason is reason
 
 
-class _DSSSigValue(univ.Sequence):
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('r', univ.Integer()),
-        namedtype.NamedType('s', univ.Integer())
-    )
-
-
-def der_encode_dsa_signature(r, s):
-    sig = _DSSSigValue()
-    sig.setComponentByName('r', r)
-    sig.setComponentByName('s', s)
-    return encoder.encode(sig)
-
-
-def load_vectors_from_file(filename, loader):
-    with cryptography_vectors.open_vector_file(filename) as vector_file:
+def load_vectors_from_file(filename, loader, mode="r"):
+    with cryptography_vectors.open_vector_file(filename, mode) as vector_file:
         return loader(vector_file)
 
 

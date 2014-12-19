@@ -9,7 +9,7 @@ properties and methods of most primitive constructs. Backends may also use
 this information to influence their operation. Interfaces should also be used
 to document argument and return types.
 
-.. _`Abstract Base Classes`: http://docs.python.org/3.2/library/abc.html
+.. _`Abstract Base Classes`: https://docs.python.org/3/library/abc.html
 
 
 Symmetric ciphers
@@ -170,11 +170,11 @@ RSA
 
         .. versionadded:: 0.4
 
-        Decrypt data that was encrypted via the public key.
+        Decrypt data that was encrypted with the public key.
 
         :param bytes ciphertext: The ciphertext to decrypt.
 
-        :param padding: An instance of a
+        :param padding: An instance of an
             :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
             provider.
 
@@ -518,7 +518,8 @@ Elliptic Curve
 
     An elliptic curve public key.
 
-    .. classmethod:: verifier(signature, signature_algorithm)
+    .. method:: verifier(signature, signature_algorithm)
+
         Verify data was signed by the private key associated with this public
         key.
 
@@ -590,7 +591,7 @@ Hash algorithms
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to hash.
+        :param bytes data: The data you want to hash.
 
     .. method:: finalize()
 
@@ -611,9 +612,9 @@ Key derivation functions
 
     .. method:: derive(key_material)
 
-        :param key_material bytes: The input key material. Depending on what
+        :param bytes key_material: The input key material. Depending on what
                                    key derivation function you are using this
-                                   could be either random material, or a user
+                                   could be either random bytes, or a user
                                    supplied password.
         :return: The new key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -626,9 +627,9 @@ Key derivation functions
 
     .. method:: verify(key_material, expected_key)
 
-        :param key_material bytes: The input key material. This is the same as
+        :param bytes key_material: The input key material. This is the same as
                                    ``key_material`` in :meth:`derive`.
-        :param expected_key bytes: The expected result of deriving a new key,
+        :param bytes expected_key: The expected result of deriving a new key,
                                    this is the same as the return value of
                                    :meth:`derive`.
         :raises cryptography.exceptions.InvalidKey: This is raised when the
@@ -658,7 +659,7 @@ Key derivation functions
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to authenticate.
+        :param bytes data: The data you want to authenticate.
 
     .. method:: finalize()
 
@@ -675,7 +676,7 @@ Key derivation functions
 
     .. method:: update(data)
 
-        :param data bytes: The data you want to authenticate.
+        :param bytes data: The data you want to authenticate.
 
     .. method:: finalize()
 
@@ -689,14 +690,15 @@ Key derivation functions
 
     .. method:: verify(signature)
 
-        :param signature bytes: The signature to verify.
+        :param bytes signature: The signature to verify.
 
         :raises cryptography.exceptions.InvalidSignature: This is raised when
             the provided signature does not match the expected signature.
+
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
-.. _`ECDSA`: http://en.wikipedia.org/wiki/ECDSA
-.. _`EdDSA`: http://en.wikipedia.org/wiki/EdDSA
+.. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
+.. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA

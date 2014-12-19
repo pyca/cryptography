@@ -9,7 +9,8 @@ import inspect
 import sys
 
 
-DeprecatedIn06 = DeprecationWarning
+# DeprecatedIn07 objects exist. This comment exists to remind developers to
+# look for them when it's time for the ninth release cycle deprecation dance.
 
 
 def register_interface(iface):
@@ -48,8 +49,9 @@ def verify_interface(iface, klass):
             )
 
 
-def bit_length(x):
-    if sys.version_info >= (2, 7):
+if sys.version_info >= (2, 7):
+    def bit_length(x):
         return x.bit_length()
-    else:
+else:
+    def bit_length(x):
         return len(bin(x)) - (2 + (x <= 0))

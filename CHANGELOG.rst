@@ -1,21 +1,32 @@
 Changelog
 =========
 
-0.7 - `master`_
+0.8 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+0.7 - 2014-12-17
+~~~~~~~~~~~~~~~~
 
 * Cryptography has been relicensed from the Apache Software License, Version
   2.0, to being available under *either* the Apache Software License, Version
   2.0, or the BSD license.
 * Added key-rotation support to :doc:`Fernet </fernet>` with
   :class:`~cryptography.fernet.MultiFernet`.
-* More bit-lengths are now support for ``p`` and ``q`` when loading DSA keys
+* More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
 * Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
   common interface for CMAC and HMAC and deprecated
   :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
+* Added support for encoding and decoding :rfc:`6979` signatures in
+  :doc:`/hazmat/primitives/asymmetric/utils`.
+* Added
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` to
+  support the loading of OpenSSH public keys (:rfc:`4253`). Only RSA and DSA
+  keys are currently supported.
+* Added initial support for X.509 certificate parsing. See the
+  :doc:`X.509 documentation</x509>` for more information.
 
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~
