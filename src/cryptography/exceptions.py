@@ -4,17 +4,19 @@
 
 from __future__ import absolute_import, division, print_function
 
+from enum import Enum
 
-class _Reasons(object):
-    BACKEND_MISSING_INTERFACE = object()
-    UNSUPPORTED_HASH = object()
-    UNSUPPORTED_CIPHER = object()
-    UNSUPPORTED_PADDING = object()
-    UNSUPPORTED_MGF = object()
-    UNSUPPORTED_PUBLIC_KEY_ALGORITHM = object()
-    UNSUPPORTED_ELLIPTIC_CURVE = object()
-    UNSUPPORTED_SERIALIZATION = object()
-    UNSUPPORTED_X509 = object()
+
+class _Reasons(Enum):
+    BACKEND_MISSING_INTERFACE = 0
+    UNSUPPORTED_HASH = 1
+    UNSUPPORTED_CIPHER = 2
+    UNSUPPORTED_PADDING = 3
+    UNSUPPORTED_MGF = 4
+    UNSUPPORTED_PUBLIC_KEY_ALGORITHM = 5
+    UNSUPPORTED_ELLIPTIC_CURVE = 6
+    UNSUPPORTED_SERIALIZATION = 7
+    UNSUPPORTED_X509 = 8
 
 
 class UnsupportedAlgorithm(Exception):
