@@ -48,10 +48,6 @@ class _PasswordStorage(object):
         return self._password
 
 
-def load_pem_public_key(data, backend):
-    return backend.load_pem_public_key(data)
-
-
 # RFC 3447, section A.1.2
 class _OtherPrimeInfo(univ.Sequence):
     componentType = namedtype.NamedTypes(
