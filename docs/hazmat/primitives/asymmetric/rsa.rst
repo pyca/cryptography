@@ -16,6 +16,16 @@ Generation
 
     Generate an RSA private key using the provided ``backend``.
 
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
+
     :param int public_exponent: The public exponent of the new key.
         Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
         doubt you should `use 65537`_.
@@ -23,11 +33,10 @@ Generation
         generated in 2014 it is strongly recommended to be
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-        provider.
-    :return: A :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-        provider.
+    :param backend: A backend which provides
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+    :return: An instace of
+        :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the provided ``backend`` does not implement
@@ -36,19 +45,17 @@ Generation
 Signing
 ~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-provider.
+A private key can be used to sign a message. This allows anyone with the public
+key to verify that the message was created by someone who possesses the
+corresponding private key. RSA signatures require a specific hash function, and
+padding to be used. Here is an example of signing ``message`` using RSA, with a
+secure hash function and padding:
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import rsa, padding
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
+    >>> from cryptography.hazmat.primitives.asymmetric import padding
+
     >>> signer = private_key.signer(
     ...     padding.PSS(
     ...         mgf=padding.MGF1(hashes.SHA256()),
@@ -56,16 +63,23 @@ provider.
     ...     ),
     ...     hashes.SHA256()
     ... )
-    >>> signer.update(b"this is some data I'd like")
-    >>> signer.update(b" to sign")
+    >>> message = b"A message I want to sign"
+    >>> signer.update(message)
     >>> signature = signer.finalize()
 
+Valid paddings for signatures are
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``PSS``
+is the recommended choice for any new protocols or applications, ``PKCS1v15``
+should only be used to support legacy protocols.
 
 Verification
 ~~~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-provider.
+The previous section describes what to do if you have a private key and want to
+sign something. If you have a public key, a message, and a signature, you can
+check that the public key genuinely was used to sign that specific message. You
+also need to know which signing algorithm was used::
 
 .. doctest::
 
@@ -78,32 +92,27 @@ provider.
     ...     ),
     ...     hashes.SHA256()
     ... )
-    >>> data = b"this is some data I'd like to sign"
-    >>> verifier.update(data)
+    >>> verifier.update(message)
     >>> verifier.verify()
+
+If the signature does not match, ``verify()`` will raise an
+:class:`~cryptography.exceptions.InvalidSignature` exception.
 
 Encryption
 ~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-provider.
+RSA encryption is interesting because encryption is performed using the
+**public** key, meaning anyone can encrypt data. The data is then decrypted
+using the **private** key.
+
+Like signatures, RSA supports encryption with several different padding
+options. Here's an example using a secure padding and hash function:
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import padding
-
-    >>> # Generate a key
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
-    >>> public_key = private_key.public_key()
-    >>> # encrypt some data
+    >>> message = b"encrypted data"
     >>> ciphertext = public_key.encrypt(
-    ...     b"encrypted data",
+    ...     message,
     ...     padding.OAEP(
     ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
     ...         algorithm=hashes.SHA1(),
@@ -111,11 +120,17 @@ provider.
     ...     )
     ... )
 
+Valid paddings for encryption are
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` and
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``OAEP``
+is the recommended choice for any new protocols or applications, ``PKCS1v15``
+should only be used to support legacy protocols.
+
+
 Decryption
 ~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-provider.
+Once you have an encrypted message, it can be decrypted using the private key:
 
 .. doctest::
 
@@ -127,6 +142,8 @@ provider.
     ...         label=None
     ...     )
     ... )
+    >>> plaintext == message
+    True
 
 Padding
 ~~~~~~~
@@ -322,21 +339,21 @@ this without having to do the math themselves.
 
     .. versionadded:: 0.4
 
-    Generates the ``iqmp`` (also known as ``qInv``) parameter from the RSA
+    Computes the ``iqmp`` (also known as ``qInv``) parameter from the RSA
     primes ``p`` and ``q``.
 
 .. function:: rsa_crt_dmp1(private_exponent, p)
 
     .. versionadded:: 0.4
 
-    Generates the ``dmp1`` parameter from the RSA private exponent and prime
+    Computes the ``dmp1`` parameter from the RSA private exponent and prime
     ``p``.
 
 .. function:: rsa_crt_dmq1(private_exponent, q)
 
     .. versionadded:: 0.4
 
-    Generates the ``dmq1`` parameter from the RSA private exponent and prime
+    Computes the ``dmq1`` parameter from the RSA private exponent and prime
     ``q``.
 
 
