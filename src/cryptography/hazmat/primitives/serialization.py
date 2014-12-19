@@ -8,6 +8,7 @@ import base64
 import binascii
 import io
 import re
+import struct
 
 from pyasn1.codec.der import decoder
 from pyasn1.error import PyAsn1Error
@@ -738,7 +739,7 @@ def _load_ssh_rsa_public_key(decoded_data, backend):
     if rest:
         raise ValueError('Key body contains extra bytes.')
 
-    return RSAPublicNumbers(e, n).public_key(backend)
+    return rsa.RSAPublicNumbers(e, n).public_key(backend)
 
 
 def _load_ssh_dss_public_key(decoded_data, backend):
@@ -755,8 +756,8 @@ def _load_ssh_dss_public_key(decoded_data, backend):
     if rest:
         raise ValueError('Key body contains extra bytes.')
 
-    parameter_numbers = DSAParameterNumbers(p, q, g)
-    public_numbers = DSAPublicNumbers(y, parameter_numbers)
+    parameter_numbers = dsa.DSAParameterNumbers(p, q, g)
+    public_numbers = dsa.DSAPublicNumbers(y, parameter_numbers)
 
     return public_numbers.public_key(backend)
 
