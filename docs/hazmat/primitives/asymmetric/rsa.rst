@@ -79,7 +79,7 @@ Verification
 The previous section describes what to do if you have a private key and want to
 sign something. If you have a public key, a message, and a signature, you can
 check that the public key genuinely was used to sign that specific message. You
-also need to know which signing algorithm was used::
+also need to know which signing algorithm was used:
 
 .. doctest::
 
