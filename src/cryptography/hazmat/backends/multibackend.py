@@ -4,15 +4,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend, X509Backend
+    RSABackend, X509Backend
 )
 
 
@@ -21,9 +18,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
-@utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
-@utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(PEMSerializationBackend)
@@ -251,46 +246,10 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
-    def elliptic_curve_private_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_private_key_from_numbers is deprecated and will "
-            "be removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        for b in self._filtered_backends(EllipticCurveBackend):
-            try:
-                return b.elliptic_curve_private_key_from_numbers(numbers)
-            except UnsupportedAlgorithm:
-                continue
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support this elliptic curve.",
-            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
-        )
-
     def load_elliptic_curve_private_numbers(self, numbers):
         for b in self._filtered_backends(EllipticCurveBackend):
             try:
                 return b.load_elliptic_curve_private_numbers(numbers)
-            except UnsupportedAlgorithm:
-                continue
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support this elliptic curve.",
-            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
-        )
-
-    def elliptic_curve_public_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_public_key_from_numbers is deprecated and will "
-            "be removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        for b in self._filtered_backends(EllipticCurveBackend):
-            try:
-                return b.elliptic_curve_public_key_from_numbers(numbers)
             except UnsupportedAlgorithm:
                 continue
 
@@ -323,26 +282,6 @@ class MultiBackend(object):
     def load_pem_public_key(self, data):
         for b in self._filtered_backends(PEMSerializationBackend):
             return b.load_pem_public_key(data)
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support this key serialization.",
-            _Reasons.UNSUPPORTED_SERIALIZATION
-        )
-
-    def load_pkcs8_pem_private_key(self, data, password):
-        for b in self._filtered_backends(PKCS8SerializationBackend):
-            return b.load_pkcs8_pem_private_key(data, password)
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support this key serialization.",
-            _Reasons.UNSUPPORTED_SERIALIZATION
-        )
-
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        for b in self._filtered_backends(
-            TraditionalOpenSSLSerializationBackend
-        ):
-            return b.load_traditional_openssl_pem_private_key(data, password)
 
         raise UnsupportedAlgorithm(
             "This backend does not support this key serialization.",
