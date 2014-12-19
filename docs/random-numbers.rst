@@ -18,4 +18,7 @@ can obtain them with:
     >>> import os
     >>> iv = os.urandom(16)
 
+This will use ``/dev/urandom`` on UNIX platforms, and ``CryptGenRandom`` on
+Windows.
+
 .. _`always use your operating system's provided random number generator`: http://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
