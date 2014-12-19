@@ -9,4 +9,5 @@ src/cryptography/_Cryptography_cffi_*
 .coverage
 *.egg-info/
 *.egg
+.eggs/
 *.py[co]
