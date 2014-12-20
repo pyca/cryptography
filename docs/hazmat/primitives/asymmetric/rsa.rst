@@ -75,7 +75,7 @@ password. If the key is encrypted we can pass a ``bytes`` object as the
 ``password`` argument.
 
 There is also support for :func:`loading public keys in the SSH format
-<cryptography.hazmat.primitives.serialization.load_ssh_public_key`.
+<cryptography.hazmat.primitives.serialization.load_ssh_public_key>`.
 
 Signing
 ~~~~~~~
