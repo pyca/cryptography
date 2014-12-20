@@ -64,10 +64,18 @@ The recipes layer
 
     fernet
     x509
-    random-numbers
     exceptions
     faq
     glossary
+
+Topic guides
+~~~~~~~~~~~~
+
+.. toctree::
+    :maxdepth: 2
+
+    topic-guides/random-numbers
+    topic-guides/asymmetric-intro
 
 The hazardous materials layer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
