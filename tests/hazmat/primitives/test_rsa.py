@@ -1,16 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -28,7 +18,9 @@ from cryptography.exceptions import (
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.primitives.asymmetric.rsa import (
+    RSAPrivateNumbers, RSAPublicNumbers
+)
 
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
@@ -1657,3 +1649,52 @@ class TestRSANumbers(object):
     def test_public_number_repr(self):
         num = RSAPublicNumbers(1, 1)
         assert repr(num) == "<RSAPublicNumbers(e=1, n=1)>"
+
+
+class TestRSANumbersEquality(object):
+    def test_public_numbers_eq(self):
+        num = RSAPublicNumbers(1, 2)
+        num2 = RSAPublicNumbers(1, 2)
+        assert num == num2
+
+    def test_public_numbers_ne(self):
+        num = RSAPublicNumbers(1, 2)
+        assert num != RSAPublicNumbers(2, 2)
+        assert num != RSAPublicNumbers(1, 3)
+        assert num != object()
+
+    def test_private_numbers_eq(self):
+        pub = RSAPublicNumbers(1, 2)
+        num = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, pub)
+        pub2 = RSAPublicNumbers(1, 2)
+        num2 = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, pub2)
+        assert num == num2
+
+    def test_private_numbers_ne(self):
+        pub = RSAPublicNumbers(1, 2)
+        num = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, pub)
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 5, 7, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 4, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 5, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 4, 4, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 3, 3, 4, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            2, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 5, 6, RSAPublicNumbers(2, 2)
+        )
+        assert num != RSAPrivateNumbers(
+            1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 3)
+        )
+        assert num != object()

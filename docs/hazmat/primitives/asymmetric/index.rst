@@ -9,5 +9,5 @@ Asymmetric algorithms
     dsa
     ec
     rsa
-    padding
     serialization
+    utils

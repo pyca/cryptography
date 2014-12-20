@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -79,6 +70,39 @@ typedef struct {
 } X509;
 
 typedef ... NETSCAPE_SPKI;
+
+static const int X509_FLAG_COMPAT;
+static const int X509_FLAG_NO_HEADER;
+static const int X509_FLAG_NO_VERSION;
+static const int X509_FLAG_NO_SERIAL;
+static const int X509_FLAG_NO_SIGNAME;
+static const int X509_FLAG_NO_ISSUER;
+static const int X509_FLAG_NO_VALIDITY;
+static const int X509_FLAG_NO_SUBJECT;
+static const int X509_FLAG_NO_PUBKEY;
+static const int X509_FLAG_NO_EXTENSIONS;
+static const int X509_FLAG_NO_SIGDUMP;
+static const int X509_FLAG_NO_AUX;
+static const int X509_FLAG_NO_ATTRIBUTES;
+
+static const int XN_FLAG_SEP_MASK;
+static const int XN_FLAG_COMPAT;
+static const int XN_FLAG_SEP_COMMA_PLUS;
+static const int XN_FLAG_SEP_CPLUS_SPC;
+static const int XN_FLAG_SEP_SPLUS_SPC;
+static const int XN_FLAG_SEP_MULTILINE;
+static const int XN_FLAG_DN_REV;
+static const int XN_FLAG_FN_MASK;
+static const int XN_FLAG_FN_SN;
+static const int XN_FLAG_FN_LN;
+static const int XN_FLAG_FN_OID;
+static const int XN_FLAG_FN_NONE;
+static const int XN_FLAG_SPC_EQ;
+static const int XN_FLAG_DUMP_UNKNOWN_FIELDS;
+static const int XN_FLAG_FN_ALIGN;
+static const int XN_FLAG_RFC2253;
+static const int XN_FLAG_ONELINE;
+static const int XN_FLAG_MULTILINE;
 """
 
 FUNCTIONS = """
@@ -116,6 +140,8 @@ int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
 
+int i2d_X509(X509 *, unsigned char **);
+
 int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
@@ -149,6 +175,7 @@ int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
 int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *, EVP_PKEY *);
 int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *, EVP_PKEY *, const EVP_MD *);
 char *NETSCAPE_SPKI_b64_encode(NETSCAPE_SPKI *);
+NETSCAPE_SPKI *NETSCAPE_SPKI_b64_decode(const char *, int);
 EVP_PKEY *NETSCAPE_SPKI_get_pubkey(NETSCAPE_SPKI *);
 int NETSCAPE_SPKI_set_pubkey(NETSCAPE_SPKI *, EVP_PKEY *);
 NETSCAPE_SPKI *NETSCAPE_SPKI_new(void);
@@ -232,6 +259,8 @@ int i2d_DSAPrivateKey(DSA *, unsigned char **);
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
+int X509_set_notBefore(X509 *, ASN1_UTCTIME *);
+int X509_set_notAfter(X509 *, ASN1_UTCTIME *);
 
 /* These use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
    RHEL/CentOS 5 we should move these back to FUNCTIONS. */

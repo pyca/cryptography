@@ -1,27 +1,15 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
-
-import warnings
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
     HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    RSABackend, X509Backend
 )
 
 
@@ -30,12 +18,11 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
-@utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
-@utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(PEMSerializationBackend)
+@utils.register_interface(X509Backend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -259,46 +246,10 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
-    def elliptic_curve_private_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_private_key_from_numbers is deprecated and will "
-            "be removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        for b in self._filtered_backends(EllipticCurveBackend):
-            try:
-                return b.elliptic_curve_private_key_from_numbers(numbers)
-            except UnsupportedAlgorithm:
-                continue
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support this elliptic curve.",
-            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
-        )
-
     def load_elliptic_curve_private_numbers(self, numbers):
         for b in self._filtered_backends(EllipticCurveBackend):
             try:
                 return b.load_elliptic_curve_private_numbers(numbers)
-            except UnsupportedAlgorithm:
-                continue
-
-        raise UnsupportedAlgorithm(
-            "This backend does not support this elliptic curve.",
-            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
-        )
-
-    def elliptic_curve_public_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_public_key_from_numbers is deprecated and will "
-            "be removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        for b in self._filtered_backends(EllipticCurveBackend):
-            try:
-                return b.elliptic_curve_public_key_from_numbers(numbers)
             except UnsupportedAlgorithm:
                 continue
 
@@ -337,22 +288,24 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_SERIALIZATION
         )
 
-    def load_pkcs8_pem_private_key(self, data, password):
-        for b in self._filtered_backends(PKCS8SerializationBackend):
-            return b.load_pkcs8_pem_private_key(data, password)
+    def load_pem_x509_certificate(self, data):
+        for b in self._filtered_backends(
+            X509Backend
+        ):
+            return b.load_pem_x509_certificate(data)
 
         raise UnsupportedAlgorithm(
-            "This backend does not support this key serialization.",
-            _Reasons.UNSUPPORTED_SERIALIZATION
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
         )
 
-    def load_traditional_openssl_pem_private_key(self, data, password):
+    def load_der_x509_certificate(self, data):
         for b in self._filtered_backends(
-            TraditionalOpenSSLSerializationBackend
+            X509Backend
         ):
-            return b.load_traditional_openssl_pem_private_key(data, password)
+            return b.load_der_x509_certificate(data)
 
         raise UnsupportedAlgorithm(
-            "This backend does not support this key serialization.",
-            _Reasons.UNSUPPORTED_SERIALIZATION
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
         )

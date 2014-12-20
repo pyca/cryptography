@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -66,7 +57,11 @@ typedef ... ASN1_UTCTIME;
 
 static const int V_ASN1_GENERALIZEDTIME;
 
+static const int MBSTRING_FLAG;
+static const int MBSTRING_ASC;
+static const int MBSTRING_BMP;
 static const int MBSTRING_UTF8;
+static const int MBSTRING_UNIV;
 """
 
 FUNCTIONS = """
@@ -104,7 +99,10 @@ ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
 
 /*  ASN1 UTCTIME */
+ASN1_UTCTIME *ASN1_UTCTIME_new(void);
+void ASN1_UTCTIME_free(ASN1_UTCTIME *);
 int ASN1_UTCTIME_cmp_time_t(const ASN1_UTCTIME *, time_t);
+ASN1_UTCTIME *ASN1_UTCTIME_set(ASN1_UTCTIME *, time_t);
 
 /*  ASN1 GENERALIZEDTIME */
 int ASN1_GENERALIZEDTIME_set_string(ASN1_GENERALIZEDTIME *, const char *);
@@ -125,9 +123,11 @@ const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 
+int ASN1_TIME_print(BIO *, ASN1_TIME *);
 int ASN1_STRING_length(ASN1_STRING *);
 ASN1_STRING *ASN1_STRING_dup(ASN1_STRING *);
 int ASN1_STRING_cmp(ASN1_STRING *, ASN1_STRING *);
+int ASN1_UTCTIME_print(BIO *, ASN1_UTCTIME *);
 
 ASN1_OCTET_STRING *ASN1_OCTET_STRING_dup(ASN1_OCTET_STRING *);
 int ASN1_OCTET_STRING_cmp(ASN1_OCTET_STRING *, ASN1_OCTET_STRING *);
@@ -141,6 +141,7 @@ ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
 
 /* These isn't a macro the arg is const on openssl 1.0.2+ */
 int ASN1_GENERALIZEDTIME_check(ASN1_GENERALIZEDTIME *);
+int ASN1_UTCTIME_check(ASN1_UTCTIME *);
 
 /* Not a macro, const on openssl 1.0 */
 int ASN1_STRING_set_default_mask_asc(char *);

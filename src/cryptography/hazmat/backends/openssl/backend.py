@@ -1,21 +1,11 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
 import collections
 import itertools
-import warnings
 from contextlib import contextmanager
 
 import six
@@ -26,9 +16,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    PKCS8SerializationBackend, RSABackend,
-    TraditionalOpenSSLSerializationBackend
+    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend, RSABackend,
+    X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -45,6 +34,7 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
+from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -71,10 +61,9 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
-@utils.register_interface(PKCS8SerializationBackend)
 @utils.register_interface(RSABackend)
-@utils.register_interface(TraditionalOpenSSLSerializationBackend)
 @utils.register_interface(PEMSerializationBackend)
+@utils.register_interface(X509Backend)
 class Backend(object):
     """
     OpenSSL API binding interfaces.
@@ -454,6 +443,28 @@ class Backend(object):
 
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
 
+    def _create_mem_bio(self):
+        """
+        Creates an empty memory BIO.
+        """
+        bio_method = self._lib.BIO_s_mem()
+        assert bio_method != self._ffi.NULL
+        bio = self._lib.BIO_new(bio_method)
+        assert bio != self._ffi.NULL
+        bio = self._ffi.gc(bio, self._lib.BIO_free)
+        return bio
+
+    def _read_mem_bio(self, bio):
+        """
+        Reads a memory BIO. This only works on memory BIOs.
+        """
+        buf = self._ffi.new("char **")
+        buf_len = self._lib.BIO_get_mem_data(bio, buf)
+        assert buf_len > 0
+        assert buf[0] != self._ffi.NULL
+        bio_data = self._ffi.buffer(buf[0], buf_len)[:]
+        return bio_data
+
     def _evp_pkey_to_private_key(self, evp_pkey):
         """
         Return the appropriate type of PrivateKey given an evp_pkey cdata
@@ -684,24 +695,27 @@ class Backend(object):
             None,
         )
 
-    def load_traditional_openssl_pem_private_key(self, data, password):
-        warnings.warn(
-            "load_traditional_openssl_pem_private_key is deprecated and will "
-            "be removed in a future version, use load_pem_private_key "
-            "instead.",
-            utils.DeprecatedIn06,
-            stacklevel=2
+    def load_pem_x509_certificate(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509 = self._lib.PEM_read_bio_X509(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
         )
-        return self.load_pem_private_key(data, password)
+        if x509 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
 
-    def load_pkcs8_pem_private_key(self, data, password):
-        warnings.warn(
-            "load_pkcs8_pem_private_key is deprecated and will be removed in a"
-            " future version, use load_pem_private_key instead.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_pem_private_key(data, password)
+        x509 = self._ffi.gc(x509, self._lib.X509_free)
+        return _Certificate(self, x509)
+
+    def load_der_x509_certificate(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509 = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
+        if x509 == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
+        x509 = self._ffi.gc(x509, self._lib.X509_free)
+        return _Certificate(self, x509)
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
@@ -866,15 +880,6 @@ class Backend(object):
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
             )
 
-    def elliptic_curve_private_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_private_key_from_numbers is deprecated and will "
-            "be removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_elliptic_curve_private_numbers(numbers)
-
     def load_elliptic_curve_private_numbers(self, numbers):
         public = numbers.public_numbers
 
@@ -892,15 +897,6 @@ class Backend(object):
         assert res == 1
 
         return _EllipticCurvePrivateKey(self, ec_cdata)
-
-    def elliptic_curve_public_key_from_numbers(self, numbers):
-        warnings.warn(
-            "elliptic_curve_public_key_from_numbers is deprecated and will be "
-            "removed in a future version.",
-            utils.DeprecatedIn06,
-            stacklevel=2
-        )
-        return self.load_elliptic_curve_public_numbers(numbers)
 
     def load_elliptic_curve_public_numbers(self, numbers):
         curve_nid = self._elliptic_curve_to_nid(numbers.curve)

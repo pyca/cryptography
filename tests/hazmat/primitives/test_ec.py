@@ -1,16 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -23,11 +13,13 @@ from cryptography import exceptions, utils
 from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    encode_rfc6979_signature
+)
 
 from ...utils import (
-    der_encode_dsa_signature, load_fips_ecdsa_key_pair_vectors,
-    load_fips_ecdsa_signing_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm
+    load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
+    load_vectors_from_file, raises_unsupported_algorithm
 )
 
 _HASH_TYPES = {
@@ -315,10 +307,7 @@ class TestECDSAVectors(object):
             curve_type()
         ).public_key(backend)
 
-        signature = der_encode_dsa_signature(
-            vector['r'],
-            vector['s']
-        )
+        signature = encode_rfc6979_signature(vector['r'], vector['s'])
 
         verifier = key.verifier(
             signature,
@@ -347,10 +336,7 @@ class TestECDSAVectors(object):
             curve_type()
         ).public_key(backend)
 
-        signature = der_encode_dsa_signature(
-            vector['r'],
-            vector['s']
-        )
+        signature = encode_rfc6979_signature(vector['r'], vector['s'])
 
         verifier = key.verifier(
             signature,
@@ -374,3 +360,40 @@ class TestECDSAVectors(object):
         numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
         assert numbers.private_key(b) == b"private_key"
         assert pub_numbers.public_key(b) == b"public_key"
+
+
+class TestECNumbersEquality(object):
+    def test_public_numbers_eq(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        assert pub == ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+
+    def test_public_numbers_ne(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        assert pub != ec.EllipticCurvePublicNumbers(1, 2, ec.SECP384R1())
+        assert pub != ec.EllipticCurvePublicNumbers(1, 3, ec.SECP192R1())
+        assert pub != ec.EllipticCurvePublicNumbers(2, 2, ec.SECP192R1())
+        assert pub != object()
+
+    def test_private_numbers_eq(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        priv = ec.EllipticCurvePrivateNumbers(1, pub)
+        assert priv == ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        )
+
+    def test_private_numbers_ne(self):
+        pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        priv = ec.EllipticCurvePrivateNumbers(1, pub)
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            2, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
+        )
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(2, 2, ec.SECP192R1())
+        )
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(1, 3, ec.SECP192R1())
+        )
+        assert priv != ec.EllipticCurvePrivateNumbers(
+            1, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP521R1())
+        )
+        assert priv != object()

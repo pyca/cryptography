@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -27,7 +18,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 import cryptography_vectors
 
 from .utils import (
-    check_backend_support, der_encode_dsa_signature, load_cryptrec_vectors,
+    check_backend_support, load_cryptrec_vectors,
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_hash_vectors, load_kasvs_dh_vectors, load_nist_vectors,
@@ -117,26 +108,6 @@ def test_check_backend_support_no_backend():
                         funcargs={})
     with pytest.raises(ValueError):
         check_backend_support(item)
-
-
-def test_der_encode_dsa_signature_values():
-    sig = der_encode_dsa_signature(1, 1)
-    assert sig == b"0\x06\x02\x01\x01\x02\x01\x01"
-
-    sig2 = der_encode_dsa_signature(
-        1037234182290683143945502320610861668562885151617,
-        559776156650501990899426031439030258256861634312
-    )
-    assert sig2 == (
-        b'0-\x02\x15\x00\xb5\xaf0xg\xfb\x8bT9\x00\x13\xccg\x02\r\xdf\x1f,\x0b'
-        b'\x81\x02\x14b\r;"\xabP1D\x0c>5\xea\xb6\xf4\x81)\x8f\x9e\x9f\x08'
-    )
-
-    sig3 = der_encode_dsa_signature(0, 0)
-    assert sig3 == b"0\x06\x02\x01\x00\x02\x01\x00"
-
-    sig4 = der_encode_dsa_signature(-1, 0)
-    assert sig4 == b"0\x06\x02\x01\xFF\x02\x01\x00"
 
 
 def test_load_nist_vectors():

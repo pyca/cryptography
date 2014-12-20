@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -52,13 +43,31 @@ def _ec_key_curve_sn(backend, ec_key):
     assert group != backend._ffi.NULL
 
     nid = backend._lib.EC_GROUP_get_curve_name(group)
-    assert nid != backend._lib.NID_undef
+    # The following check is to find EC keys with unnamed curves and raise
+    # an error for now.
+    if nid == backend._lib.NID_undef:
+        raise NotImplementedError(
+            "ECDSA certificates with unnamed curves are unsupported "
+            "at this time"
+        )
 
     curve_name = backend._lib.OBJ_nid2sn(nid)
     assert curve_name != backend._ffi.NULL
 
     sn = backend._ffi.string(curve_name).decode('ascii')
     return sn
+
+
+def _mark_asn1_named_ec_curve(backend, ec_cdata):
+    """
+    Set the named curve flag on the EC_KEY. This causes OpenSSL to
+    serialize EC keys along with their curve OID which makes
+    deserialization easier.
+    """
+
+    backend._lib.EC_KEY_set_asn1_flag(
+        ec_cdata, backend._lib.OPENSSL_EC_NAMED_CURVE
+    )
 
 
 def _sn_to_elliptic_curve(backend, sn):
@@ -141,6 +150,7 @@ class _ECDSAVerificationContext(object):
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata):
         self._backend = backend
+        _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         self._ec_key = ec_key_cdata
 
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
@@ -193,6 +203,7 @@ class _EllipticCurvePrivateKey(object):
 class _EllipticCurvePublicKey(object):
     def __init__(self, backend, ec_key_cdata):
         self._backend = backend
+        _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         self._ec_key = ec_key_cdata
 
         sn = _ec_key_curve_sn(backend, ec_key_cdata)

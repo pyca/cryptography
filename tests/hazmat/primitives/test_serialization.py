@@ -1,16 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -19,16 +9,18 @@ import textwrap
 
 import pytest
 
-from cryptography.exceptions import _Reasons
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    EllipticCurveBackend, PEMSerializationBackend, PKCS8SerializationBackend,
-    TraditionalOpenSSLSerializationBackend
+    DSABackend, EllipticCurveBackend, PEMSerializationBackend, RSABackend
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.dsa import (
+    DSAParameterNumbers, DSAPublicNumbers
+)
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_pkcs8_private_key, load_pem_private_key, load_pem_public_key,
-    load_pem_traditional_openssl_private_key
+    load_pem_private_key, load_pem_public_key, load_ssh_public_key
 )
 
 
@@ -143,7 +135,7 @@ class TestPEMSerialization(object):
 
 
 @pytest.mark.requires_backend_interface(
-    interface=TraditionalOpenSSLSerializationBackend
+    interface=PEMSerializationBackend
 )
 class TestTraditionalOpenSSLSerialization(object):
     @pytest.mark.parametrize(
@@ -159,7 +151,7 @@ class TestTraditionalOpenSSLSerialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -181,7 +173,7 @@ class TestTraditionalOpenSSLSerialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -193,7 +185,7 @@ class TestTraditionalOpenSSLSerialization(object):
         pkey = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "Traditional_OpenSSL_Serialization", "key1.pem"),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), b"123456", backend
             )
         )
@@ -240,7 +232,7 @@ class TestTraditionalOpenSSLSerialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -256,7 +248,7 @@ class TestTraditionalOpenSSLSerialization(object):
         with pytest.raises(ValueError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -272,7 +264,7 @@ class TestTraditionalOpenSSLSerialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -281,12 +273,12 @@ class TestTraditionalOpenSSLSerialization(object):
         key_data = b"---- NOT A KEY ----\n"
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -304,12 +296,12 @@ class TestTraditionalOpenSSLSerialization(object):
         """).encode()
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -333,12 +325,12 @@ class TestTraditionalOpenSSLSerialization(object):
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, password, backend
             )
 
@@ -361,12 +353,12 @@ class TestTraditionalOpenSSLSerialization(object):
         password = b"password"
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            load_pem_traditional_openssl_private_key(
+            load_pem_private_key(
                 key_data, password, backend
             )
 
 
-@pytest.mark.requires_backend_interface(interface=PKCS8SerializationBackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPKCS8Serialization(object):
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -390,7 +382,7 @@ class TestPKCS8Serialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_pkcs8_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -413,7 +405,7 @@ class TestPKCS8Serialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_pkcs8_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -430,7 +422,7 @@ class TestPKCS8Serialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_pkcs8_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -443,7 +435,7 @@ class TestPKCS8Serialization(object):
         with pytest.raises(ValueError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_pkcs8_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -459,7 +451,7 @@ class TestPKCS8Serialization(object):
         with pytest.raises(TypeError):
             load_vectors_from_file(
                 key_file,
-                lambda pemfile: load_pem_pkcs8_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -468,12 +460,12 @@ class TestPKCS8Serialization(object):
         key_data = b"---- NOT A KEY ----\n"
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -498,12 +490,12 @@ class TestPKCS8Serialization(object):
         """).encode()
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
 
@@ -532,12 +524,12 @@ class TestPKCS8Serialization(object):
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, None, backend
             )
 
         with pytest.raises(ValueError):
-            load_pem_pkcs8_private_key(
+            load_pem_private_key(
                 key_data, password, backend
             )
 
@@ -545,7 +537,7 @@ class TestPKCS8Serialization(object):
         pkey = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
-            lambda pemfile: load_pem_pkcs8_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), b"foobar", backend
             )
         )
@@ -611,7 +603,7 @@ class TestPKCS8Serialization(object):
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_traditional_openssl_private_key(
+            lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
         )
@@ -670,7 +662,7 @@ class TestPKCS8Serialization(object):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
@@ -686,7 +678,220 @@ class TestPKCS8Serialization(object):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),
-                lambda pemfile: load_pem_traditional_openssl_private_key(
+                lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(), password, backend
                 )
             )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+class TestRSASSHSerialization(object):
+    def test_load_ssh_public_key_unsupported(self, backend):
+        ssh_key = b'ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
+
+        with pytest.raises(UnsupportedAlgorithm):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_bad_format(self, backend):
+        ssh_key = b'ssh-rsa not-a-real-key'
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_too_short(self, backend):
+        ssh_key = b'ssh-rsa'
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_extra_string_after_comment(self, backend):
+        ssh_key = (
+            b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            # Extra section appended
+            b"2MzHvnbv testkey@localhost extra"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_extra_data_after_modulo(self, backend):
+        ssh_key = (
+            b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbvAQ== testkey@localhost"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_different_string(self, backend):
+        ssh_key = (
+            # "AAAAB3NzA" the final A is capitalized here to cause the string
+            # ssh-rsa inside the base64 encoded blob to be incorrect. It should
+            # be a lower case 'a'.
+            b"ssh-rsa AAAAB3NzAC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbvAQ== testkey@localhost"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa(self, backend):
+        ssh_key = (
+            b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbv testkey@localhost"
+        )
+
+        key = load_ssh_public_key(ssh_key, backend)
+
+        assert key is not None
+        assert isinstance(key, interfaces.RSAPublicKey)
+
+        numbers = key.public_numbers()
+
+        expected_e = 0x10001
+        expected_n = int(
+            '00C3BBF5D13F59322BA0A0B77EA0B6CF570241628AE24B5BA454D'
+            '23DCA295652B3523B67752653DFFD69587FAD9578DD6406F23691'
+            'EA491C3F8B2D391D0312D9653C303B651067ADF887A5241843CEF'
+            '8019680A088E092FEC305FB04EA070340BB9BD0F1635B2AD84142'
+            '61B4E2D010ABD8FC6D2FB768912F78EE6B05A60857532B75B75EF'
+            'C007601A4EF58BA947B7E75E38F3443CDD87E7C138A1DAD9D9FB3'
+            '19FF69DA43A9F6F6B0CD243F042CD1A5AFAEB286BD46AEB2D922B'
+            'D01385D6892167074A0907F94A2BF08A54ABB2FFFFC89920861D0'
+            '46F8706AB88DDADBD9E8204D48B87789081E074024C8996783B31'
+            '7076A98ABF0A2D8550EAF2097D8CCC7BE76EF', 16)
+
+        expected = RSAPublicNumbers(expected_e, expected_n)
+
+        assert numbers == expected
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+class TestDSSSSHSerialization(object):
+    def test_load_ssh_public_key_dss_too_short(self, backend):
+        ssh_key = b'ssh-dss'
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_extra_string_after_comment(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost extra"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_extra_data_after_modulo(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9AAwMD== testkey@localhost"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_different_string(self, backend):
+        ssh_key = (
+            # "AAAAB3NzA" the final A is capitalized here to cause the string
+            # ssh-dss inside the base64 encoded blob to be incorrect. It should
+            # be a lower case 'a'.
+            b"ssh-dss AAAAB3NzAC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
+        )
+
+        key = load_ssh_public_key(ssh_key, backend)
+
+        assert key is not None
+        assert isinstance(key, interfaces.DSAPublicKey)
+
+        numbers = key.public_numbers()
+
+        expected_y = int(
+            "d143cf92901f936fa258e9a11422460c8f8f1597884eef8cb1252a3e2ff0aae"
+            "96a7032c01cdd8485b5cbfb73a46bb04708f98a18bc88d4c7812b284da8f900"
+            "6e473e89897f9bc9125c69bbfd8ef691c0e76c1c34e6c843b8fe240e6e5aeb3"
+            "13486e5fa917ab1288ff1a6ebcf9dcdeed3c5fc88474e30476f53a5ec816ef6"
+            "9f4", 16
+        )
+        expected_p = int(
+            "b9b052d7f07630148d4d838b17790ef4f43437238ebebd5032ea483fd7b7902"
+            "5ec3dc65ebd563ab586a633b4344f6acd10af31353bcf29111fa5e3b8d5c1e8"
+            "7befe3c65f9b8be69c740716698c8366c8ef925b9cec1dcd69e73d926b554e2"
+            "b4b6ddd1453eab39ba0f846e1555adcc33c5a8637128c9ed61104a45505a748"
+            "f6db", 16
+        )
+        expected_q = 1230879958723280233885494314531920096931919647917
+        expected_g = int(
+            "7f6c9170b2cfb67e78267c6fcb8b93b22fb03d895a0676451a15ac44511393a"
+            "7bc249b6cf8f5f5c5022afefd4df5bf9d13bbdf182df5af2a5c5d1dc7604185"
+            "7d5b0e4b22b856c300f850a3b00bac394b728755b8b7a56522eefc491573967"
+            "debb5982fc94d6a8c291f758feae63ad769a5621947221522a2dc31d18ede6f"
+            "b656", 16
+        )
+        expected = DSAPublicNumbers(
+            expected_y,
+            DSAParameterNumbers(expected_p, expected_q, expected_g)
+        )
+
+        assert numbers == expected
