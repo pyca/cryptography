@@ -10,11 +10,20 @@ RSA
 Generation
 ~~~~~~~~~~
 
+Unlike symmetric cryptography, where the key is typically just a random series
+of bytes, RSA keys have a complex internal structure with `specific
+mathematical properties`_.
+
 .. function:: generate_private_key(public_exponent, key_size, backend)
 
     .. versionadded:: 0.5
 
-    Generate an RSA private key using the provided ``backend``.
+    Generates a new RSA private key using the provided ``backend``.
+    ``key_size`` describes how many bits long the key should be, larger keys
+    provide more security, currently ``1024`` and below are considered
+    breakable, and ``2048`` or ``4096`` are reasonable default key sizes for
+    new keys. The ``public_exponent`` indicates what one mathematical property
+    of the key generation will be, ``65537`` should almost always be used.
 
     .. doctest::
 
@@ -41,6 +50,32 @@ Generation
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
+
+Key loading
+~~~~~~~~~~~
+
+If you already have an on-disk key in the PEM format (which are recognizable by
+the distinctive ``-----BEGIN {format}-----`` and ``-----END {format}-----``
+markers), you can load it:
+
+.. code-block:: pycon
+
+    >>> from cryptography.hazmat.primitives import serialization
+
+    >>> with open("path/to/key.pem", "rb") as key_file:
+    ...     private_key = serialization.load_pem_private_key(
+    ...         key_file.read(),
+    ...         password=None,
+    ...         backend=default_backend()
+    ...     )
+
+Serialized keys may optionally be encrypted on disk using a password. In this
+example we loaded an unencrypted key, and therefore we did not provide a
+password. If the key is encrypted we can pass a ``bytes`` object as the
+``password`` argument.
+
+There is also support for :func:`loading public keys in the SSH format
+<cryptography.hazmat.primitives.serialization.load_ssh_public_key`.
 
 Signing
 ~~~~~~~
@@ -359,6 +394,7 @@ this without having to do the math themselves.
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
+.. _`specific mathematical properties`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Key_generation
 .. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
 .. _`OpenPGP`: https://en.wikipedia.org/wiki/Pretty_Good_Privacy
