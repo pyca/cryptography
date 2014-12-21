@@ -414,3 +414,10 @@ def _check_rsa_private_numbers(skey):
     assert skey.dmp1 == rsa.rsa_crt_dmp1(skey.d, skey.p)
     assert skey.dmq1 == rsa.rsa_crt_dmq1(skey.d, skey.q)
     assert skey.iqmp == rsa.rsa_crt_iqmp(skey.p, skey.q)
+
+
+def _check_dsa_private_numbers(skey):
+    assert skey
+    pkey = skey.public_numbers
+    params = pkey.parameter_numbers
+    assert pow(params.g, skey.x, params.p) == pkey.y
