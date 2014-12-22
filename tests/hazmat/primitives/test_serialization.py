@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import itertools
 import os
 import textwrap
 
@@ -242,9 +243,15 @@ class TestTraditionalOpenSSLSerialization(object):
             16
         )
 
-    def test_unused_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric", "Traditional_OpenSSL_Serialization", "testrsa.pem")
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["Traditional_OpenSSL_Serialization", "testrsa.pem"],
+            ["PKCS8", "unenc-rsa-pkcs8.pem"]
+        ]
+    )
+    def test_unused_password(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
         password = b"this password will not be used"
 
         with pytest.raises(TypeError):
@@ -255,12 +262,15 @@ class TestTraditionalOpenSSLSerialization(object):
                 )
             )
 
-    def test_wrong_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric",
-            "Traditional_OpenSSL_Serialization",
-            "testrsa-encrypted.pem"
-        )
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
+            ["PKCS8", "enc-rsa-pkcs8.pem"]
+        ]
+    )
+    def test_wrong_password(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
@@ -271,13 +281,19 @@ class TestTraditionalOpenSSLSerialization(object):
                 )
             )
 
-    @pytest.mark.parametrize("password", [None, b""])
-    def test_missing_password(self, backend, password):
-        key_file = os.path.join(
-            "asymmetric",
-            "Traditional_OpenSSL_Serialization",
-            "testrsa-encrypted.pem"
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        itertools.product(
+            [
+                ["Traditional_OpenSSL_Serialization",
+                 "testrsa-encrypted.pem"],
+                ["PKCS8", "enc-rsa-pkcs8.pem"],
+            ],
+            [b"", None]
         )
+    )
+    def test_missing_password(self, key_path, password, backend):
+        key_file = os.path.join("asymmetric", *key_path)
 
         with pytest.raises(TypeError):
             load_vectors_from_file(
@@ -400,48 +416,6 @@ class TestPKCS8Serialization(object):
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
-
-    def test_unused_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem")
-        password = b"this password will not be used"
-
-        with pytest.raises(TypeError):
-            load_vectors_from_file(
-                key_file,
-                lambda pemfile: load_pem_private_key(
-                    pemfile.read().encode(), password, backend
-                )
-            )
-
-    def test_wrong_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem")
-        password = b"this password is wrong"
-
-        with pytest.raises(ValueError):
-            load_vectors_from_file(
-                key_file,
-                lambda pemfile: load_pem_private_key(
-                    pemfile.read().encode(), password, backend
-                )
-            )
-
-    @pytest.mark.parametrize("password", [None, b""])
-    def test_missing_password(self, backend, password):
-        key_file = os.path.join(
-            "asymmetric",
-            "PKCS8",
-            "enc-rsa-pkcs8.pem"
-        )
-
-        with pytest.raises(TypeError):
-            load_vectors_from_file(
-                key_file,
-                lambda pemfile: load_pem_private_key(
-                    pemfile.read().encode(), password, backend
-                )
-            )
 
     def test_wrong_format(self, backend):
         key_data = b"---- NOT A KEY ----\n"
