@@ -26,7 +26,10 @@ from cryptography.hazmat.primitives.serialization import (
 
 
 from .test_ec import _skip_curve_unsupported
-from .utils import _check_rsa_private_numbers, load_vectors_from_file
+from .utils import (
+    _check_dsa_private_numbers, _check_rsa_private_numbers,
+    load_vectors_from_file
+)
 from ...utils import raises_unsupported_algorithm
 
 
@@ -64,16 +67,27 @@ class TestPEMSerialization(object):
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
-    def test_load_dsa_private_key(self, backend):
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (["Traditional_OpenSSL_Serialization", "dsa.1024.pem"], None),
+            (["Traditional_OpenSSL_Serialization", "dsa.2048.pem"], None),
+            (["Traditional_OpenSSL_Serialization", "dsa.3072.pem"], None),
+            (["PKCS8", "unenc-dsa-pkcs8.pem"], None),
+            (["PEM_Serialization", "dsa_private_key.pem"], b"123456"),
+        ]
+    )
+    def test_load_dsa_private_key(self, key_path, password, backend):
         key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PEM_Serialization", "dsa_private_key.pem"),
+            os.path.join("asymmetric", *key_path),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), b"123456", backend
+                pemfile.read().encode(), password, backend
             )
         )
         assert key
         assert isinstance(key, interfaces.DSAPrivateKey)
+        if isinstance(key, interfaces.DSAPrivateKeyWithNumbers):
+            _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -179,26 +193,6 @@ class TestTraditionalOpenSSLSerialization(object):
         assert isinstance(key, interfaces.RSAPrivateKey)
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
-
-    @pytest.mark.parametrize(
-        ("key_file", "password"),
-        [
-            ("dsa.1024.pem", None),
-            ("dsa.2048.pem", None),
-            ("dsa.3072.pem", None),
-        ]
-    )
-    def test_load_pem_dsa_private_key(self, key_file, password, backend):
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            )
-        )
-
-        assert key
-        assert isinstance(key, interfaces.DSAPrivateKey)
 
     def test_key1_pem_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
