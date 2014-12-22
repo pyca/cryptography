@@ -31,12 +31,30 @@ from ...utils import raises_unsupported_algorithm
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPEMSerialization(object):
-    def test_load_pem_rsa_private_key(self, backend):
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            (["PEM_Serialization", "rsa_private_key.pem"], b"123456"),
+            (["PKCS8", "unenc-rsa-pkcs8.pem"], None),
+            (["PKCS8", "enc-rsa-pkcs8.pem"], b"foobar"),
+            (["PKCS8", "enc2-rsa-pkcs8.pem"], b"baz"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9607.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9671.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9925.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9926.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9927.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9928.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9929.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9930.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9931.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9932.pem"], b"123456"),
+        ]
+    )
+    def test_load_pem_rsa_private_key(self, key_file, password, backend):
         key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PEM_Serialization", "rsa_private_key.pem"),
+            os.path.join("asymmetric", *key_file),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), b"123456", backend
+                pemfile.read().encode(), password, backend
             )
         )
 
@@ -360,37 +378,6 @@ class TestTraditionalOpenSSLSerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPKCS8Serialization(object):
-    @pytest.mark.parametrize(
-        ("key_file", "password"),
-        [
-            ("unenc-rsa-pkcs8.pem", None),
-            ("enc-rsa-pkcs8.pem", b"foobar"),
-            ("enc2-rsa-pkcs8.pem", b"baz"),
-            ("pkcs12_s2k_pem-X_9607.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9671.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9925.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9926.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9927.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9928.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9929.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9930.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9931.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9932.pem", b"123456"),
-        ]
-    )
-    def test_load_pem_rsa_private_key(self, key_file, password, backend):
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            )
-        )
-
-        assert key
-        assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
-            _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
