@@ -52,6 +52,11 @@ class TestPEMSerialization(object):
             (["PKCS8", "pkcs12_s2k_pem-X_9930.pem"], b"123456"),
             (["PKCS8", "pkcs12_s2k_pem-X_9931.pem"], b"123456"),
             (["PKCS8", "pkcs12_s2k_pem-X_9932.pem"], b"123456"),
+            (["Traditional_OpenSSL_Serialization", "key1.pem"], b"123456"),
+            (["Traditional_OpenSSL_Serialization", "key2.pem"], b"a123456"),
+            (["Traditional_OpenSSL_Serialization", "testrsa.pem"], None),
+            (["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
+             b"password"),
         ]
     )
     def test_load_pem_rsa_private_key(self, key_file, password, backend):
@@ -171,29 +176,6 @@ class TestPEMSerialization(object):
     interface=PEMSerializationBackend
 )
 class TestTraditionalOpenSSLSerialization(object):
-    @pytest.mark.parametrize(
-        ("key_file", "password"),
-        [
-            ("key1.pem", b"123456"),
-            ("key2.pem", b"a123456"),
-            ("testrsa.pem", None),
-            ("testrsa-encrypted.pem", b"password"),
-        ]
-    )
-    def test_load_pem_rsa_private_key(self, key_file, password, backend):
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            )
-        )
-
-        assert key
-        assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
-            _check_rsa_private_numbers(key.private_numbers())
-
     def test_key1_pem_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
             os.path.join(
