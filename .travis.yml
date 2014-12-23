@@ -43,6 +43,7 @@ notifications:
 
 matrix:
     exclude:
+        # excluding pypy3 from linux configs until the ubuntu ppa has pypy3 available.
         - os: linux
           env: TOXENV=pypy3
         - os: linux
