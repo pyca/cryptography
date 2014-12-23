@@ -45,6 +45,8 @@ matrix:
     exclude:
         - os: linux
           env: TOXENV=pypy3
+        - os: linux
+          env: TOXENV=pypy3 OPENSSL=0.9.8
         - os: osx
           compiler: gcc
         - os: osx
