@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import itertools
 import os
 import textwrap
 
@@ -25,18 +26,44 @@ from cryptography.hazmat.primitives.serialization import (
 
 
 from .test_ec import _skip_curve_unsupported
-from .utils import _check_rsa_private_numbers, load_vectors_from_file
+from .utils import (
+    _check_dsa_private_numbers, _check_rsa_private_numbers,
+    load_vectors_from_file
+)
 from ...utils import raises_unsupported_algorithm
 
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPEMSerialization(object):
-    def test_load_pem_rsa_private_key(self, backend):
+    @pytest.mark.parametrize(
+        ("key_file", "password"),
+        [
+            (["PEM_Serialization", "rsa_private_key.pem"], b"123456"),
+            (["PKCS8", "unenc-rsa-pkcs8.pem"], None),
+            (["PKCS8", "enc-rsa-pkcs8.pem"], b"foobar"),
+            (["PKCS8", "enc2-rsa-pkcs8.pem"], b"baz"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9607.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9671.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9925.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9926.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9927.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9928.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9929.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9930.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9931.pem"], b"123456"),
+            (["PKCS8", "pkcs12_s2k_pem-X_9932.pem"], b"123456"),
+            (["Traditional_OpenSSL_Serialization", "key1.pem"], b"123456"),
+            (["Traditional_OpenSSL_Serialization", "key2.pem"], b"a123456"),
+            (["Traditional_OpenSSL_Serialization", "testrsa.pem"], None),
+            (["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
+             b"password"),
+        ]
+    )
+    def test_load_pem_rsa_private_key(self, key_file, password, backend):
         key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PEM_Serialization", "rsa_private_key.pem"),
+            os.path.join("asymmetric", *key_file),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), b"123456", backend
+                pemfile.read().encode(), password, backend
             )
         )
 
@@ -45,16 +72,27 @@ class TestPEMSerialization(object):
         if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
-    def test_load_dsa_private_key(self, backend):
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (["Traditional_OpenSSL_Serialization", "dsa.1024.pem"], None),
+            (["Traditional_OpenSSL_Serialization", "dsa.2048.pem"], None),
+            (["Traditional_OpenSSL_Serialization", "dsa.3072.pem"], None),
+            (["PKCS8", "unenc-dsa-pkcs8.pem"], None),
+            (["PEM_Serialization", "dsa_private_key.pem"], b"123456"),
+        ]
+    )
+    def test_load_dsa_private_key(self, key_path, password, backend):
         key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PEM_Serialization", "dsa_private_key.pem"),
+            os.path.join("asymmetric", *key_path),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), b"123456", backend
+                pemfile.read().encode(), password, backend
             )
         )
         assert key
         assert isinstance(key, interfaces.DSAPrivateKey)
+        if isinstance(key, interfaces.DSAPrivateKeyWithNumbers):
+            _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -138,49 +176,6 @@ class TestPEMSerialization(object):
     interface=PEMSerializationBackend
 )
 class TestTraditionalOpenSSLSerialization(object):
-    @pytest.mark.parametrize(
-        ("key_file", "password"),
-        [
-            ("key1.pem", b"123456"),
-            ("key2.pem", b"a123456"),
-            ("testrsa.pem", None),
-            ("testrsa-encrypted.pem", b"password"),
-        ]
-    )
-    def test_load_pem_rsa_private_key(self, key_file, password, backend):
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            )
-        )
-
-        assert key
-        assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
-            _check_rsa_private_numbers(key.private_numbers())
-
-    @pytest.mark.parametrize(
-        ("key_file", "password"),
-        [
-            ("dsa.1024.pem", None),
-            ("dsa.2048.pem", None),
-            ("dsa.3072.pem", None),
-        ]
-    )
-    def test_load_pem_dsa_private_key(self, key_file, password, backend):
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "Traditional_OpenSSL_Serialization", key_file),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            )
-        )
-
-        assert key
-        assert isinstance(key, interfaces.DSAPrivateKey)
-
     def test_key1_pem_encrypted_values(self, backend):
         pkey = load_vectors_from_file(
             os.path.join(
@@ -224,9 +219,15 @@ class TestTraditionalOpenSSLSerialization(object):
             16
         )
 
-    def test_unused_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric", "Traditional_OpenSSL_Serialization", "testrsa.pem")
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["Traditional_OpenSSL_Serialization", "testrsa.pem"],
+            ["PKCS8", "unenc-rsa-pkcs8.pem"]
+        ]
+    )
+    def test_unused_password(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
         password = b"this password will not be used"
 
         with pytest.raises(TypeError):
@@ -237,12 +238,15 @@ class TestTraditionalOpenSSLSerialization(object):
                 )
             )
 
-    def test_wrong_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric",
-            "Traditional_OpenSSL_Serialization",
-            "testrsa-encrypted.pem"
-        )
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
+            ["PKCS8", "enc-rsa-pkcs8.pem"]
+        ]
+    )
+    def test_wrong_password(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
         password = b"this password is wrong"
 
         with pytest.raises(ValueError):
@@ -253,13 +257,19 @@ class TestTraditionalOpenSSLSerialization(object):
                 )
             )
 
-    @pytest.mark.parametrize("password", [None, b""])
-    def test_missing_password(self, backend, password):
-        key_file = os.path.join(
-            "asymmetric",
-            "Traditional_OpenSSL_Serialization",
-            "testrsa-encrypted.pem"
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        itertools.product(
+            [
+                ["Traditional_OpenSSL_Serialization",
+                 "testrsa-encrypted.pem"],
+                ["PKCS8", "enc-rsa-pkcs8.pem"],
+            ],
+            [b"", None]
         )
+    )
+    def test_missing_password(self, key_path, password, backend):
+        key_file = os.path.join("asymmetric", *key_path)
 
         with pytest.raises(TypeError):
             load_vectors_from_file(
@@ -360,37 +370,6 @@ class TestTraditionalOpenSSLSerialization(object):
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestPKCS8Serialization(object):
-    @pytest.mark.parametrize(
-        ("key_file", "password"),
-        [
-            ("unenc-rsa-pkcs8.pem", None),
-            ("enc-rsa-pkcs8.pem", b"foobar"),
-            ("enc2-rsa-pkcs8.pem", b"baz"),
-            ("pkcs12_s2k_pem-X_9607.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9671.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9925.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9926.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9927.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9928.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9929.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9930.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9931.pem", b"123456"),
-            ("pkcs12_s2k_pem-X_9932.pem", b"123456"),
-        ]
-    )
-    def test_load_pem_rsa_private_key(self, key_file, password, backend):
-        key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PKCS8", key_file),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            )
-        )
-
-        assert key
-        assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
-            _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
         ("key_file", "password"),
@@ -413,48 +392,6 @@ class TestPKCS8Serialization(object):
         assert isinstance(key, interfaces.EllipticCurvePrivateKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
-
-    def test_unused_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem")
-        password = b"this password will not be used"
-
-        with pytest.raises(TypeError):
-            load_vectors_from_file(
-                key_file,
-                lambda pemfile: load_pem_private_key(
-                    pemfile.read().encode(), password, backend
-                )
-            )
-
-    def test_wrong_password(self, backend):
-        key_file = os.path.join(
-            "asymmetric", "PKCS8", "enc-rsa-pkcs8.pem")
-        password = b"this password is wrong"
-
-        with pytest.raises(ValueError):
-            load_vectors_from_file(
-                key_file,
-                lambda pemfile: load_pem_private_key(
-                    pemfile.read().encode(), password, backend
-                )
-            )
-
-    @pytest.mark.parametrize("password", [None, b""])
-    def test_missing_password(self, backend, password):
-        key_file = os.path.join(
-            "asymmetric",
-            "PKCS8",
-            "enc-rsa-pkcs8.pem"
-        )
-
-        with pytest.raises(TypeError):
-            load_vectors_from_file(
-                key_file,
-                lambda pemfile: load_pem_private_key(
-                    pemfile.read().encode(), password, backend
-                )
-            )
 
     def test_wrong_format(self, backend):
         key_data = b"---- NOT A KEY ----\n"

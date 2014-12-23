@@ -10,11 +10,30 @@ RSA
 Generation
 ~~~~~~~~~~
 
+Unlike symmetric cryptography, where the key is typically just a random series
+of bytes, RSA keys have a complex internal structure with `specific
+mathematical properties`_.
+
 .. function:: generate_private_key(public_exponent, key_size, backend)
 
     .. versionadded:: 0.5
 
-    Generate an RSA private key using the provided ``backend``.
+    Generates a new RSA private key using the provided ``backend``.
+    ``key_size`` describes how many bits long the key should be, larger keys
+    provide more security, currently ``1024`` and below are considered
+    breakable, and ``2048`` or ``4096`` are reasonable default key sizes for
+    new keys. The ``public_exponent`` indicates what one mathematical property
+    of the key generation will be, ``65537`` should almost always be used.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
 
     :param int public_exponent: The public exponent of the new key.
         Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
@@ -23,32 +42,55 @@ Generation
         generated in 2014 it is strongly recommended to be
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-        provider.
-    :return: A :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-        provider.
+    :param backend: A backend which provides
+        :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+    :return: An instance of
+        :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
 
+Key loading
+~~~~~~~~~~~
+
+If you already have an on-disk key in the PEM format (which are recognizable by
+the distinctive ``-----BEGIN {format}-----`` and ``-----END {format}-----``
+markers), you can load it:
+
+.. code-block:: pycon
+
+    >>> from cryptography.hazmat.primitives import serialization
+
+    >>> with open("path/to/key.pem", "rb") as key_file:
+    ...     private_key = serialization.load_pem_private_key(
+    ...         key_file.read(),
+    ...         password=None,
+    ...         backend=default_backend()
+    ...     )
+
+Serialized keys may optionally be encrypted on disk using a password. In this
+example we loaded an unencrypted key, and therefore we did not provide a
+password. If the key is encrypted we can pass a ``bytes`` object as the
+``password`` argument.
+
+There is also support for :func:`loading public keys in the SSH format
+<cryptography.hazmat.primitives.serialization.load_ssh_public_key>`.
+
 Signing
 ~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-provider.
+A private key can be used to sign a message. This allows anyone with the public
+key to verify that the message was created by someone who possesses the
+corresponding private key. RSA signatures require a specific hash function, and
+padding to be used. Here is an example of signing ``message`` using RSA, with a
+secure hash function and padding:
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import rsa, padding
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
+    >>> from cryptography.hazmat.primitives.asymmetric import padding
+
     >>> signer = private_key.signer(
     ...     padding.PSS(
     ...         mgf=padding.MGF1(hashes.SHA256()),
@@ -56,16 +98,23 @@ provider.
     ...     ),
     ...     hashes.SHA256()
     ... )
-    >>> signer.update(b"this is some data I'd like")
-    >>> signer.update(b" to sign")
+    >>> message = b"A message I want to sign"
+    >>> signer.update(message)
     >>> signature = signer.finalize()
 
+Valid paddings for signatures are
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``PSS``
+is the recommended choice for any new protocols or applications, ``PKCS1v15``
+should only be used to support legacy protocols.
 
 Verification
 ~~~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-provider.
+The previous section describes what to do if you have a private key and want to
+sign something. If you have a public key, a message, and a signature, you can
+check that the public key genuinely was used to sign that specific message. You
+also need to know which signing algorithm was used:
 
 .. doctest::
 
@@ -78,32 +127,27 @@ provider.
     ...     ),
     ...     hashes.SHA256()
     ... )
-    >>> data = b"this is some data I'd like to sign"
-    >>> verifier.update(data)
+    >>> verifier.update(message)
     >>> verifier.verify()
+
+If the signature does not match, ``verify()`` will raise an
+:class:`~cryptography.exceptions.InvalidSignature` exception.
 
 Encryption
 ~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
-provider.
+RSA encryption is interesting because encryption is performed using the
+**public** key, meaning anyone can encrypt data. The data is then decrypted
+using the **private** key.
+
+Like signatures, RSA supports encryption with several different padding
+options. Here's an example using a secure padding and hash function:
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import padding
-
-    >>> # Generate a key
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
-    >>> public_key = private_key.public_key()
-    >>> # encrypt some data
+    >>> message = b"encrypted data"
     >>> ciphertext = public_key.encrypt(
-    ...     b"encrypted data",
+    ...     message,
     ...     padding.OAEP(
     ...         mgf=padding.MGF1(algorithm=hashes.SHA1()),
     ...         algorithm=hashes.SHA1(),
@@ -111,11 +155,17 @@ provider.
     ...     )
     ... )
 
+Valid paddings for encryption are
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` and
+:class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``OAEP``
+is the recommended choice for any new protocols or applications, ``PKCS1v15``
+should only be used to support legacy protocols.
+
+
 Decryption
 ~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
-provider.
+Once you have an encrypted message, it can be decrypted using the private key:
 
 .. doctest::
 
@@ -127,9 +177,85 @@ provider.
     ...         label=None
     ...     )
     ... )
+    >>> plaintext == message
+    True
+
+Padding
+~~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.asymmetric.padding
+
+.. class:: PSS(mgf, salt_length)
+
+    .. versionadded:: 0.3
+
+    .. versionchanged:: 0.4
+        Added ``salt_length`` parameter.
+
+    PSS (Probabilistic Signature Scheme) is a signature scheme defined in
+    :rfc:`3447`. It is more complex than PKCS1 but possesses a `security proof`_.
+    This is the `recommended padding algorithm`_ for RSA signatures. It cannot
+    be used with RSA encryption.
+
+    :param mgf: A mask generation function object. At this time the only
+        supported MGF is :class:`MGF1`.
+
+    :param int salt_length: The length of the salt. It is recommended that this
+        be set to ``PSS.MAX_LENGTH``.
+
+    .. attribute:: MAX_LENGTH
+
+        Pass this attribute to ``salt_length`` to get the maximum salt length
+        available.
+
+.. class:: OAEP(mgf, label)
+
+    .. versionadded:: 0.4
+
+    OAEP (Optimal Asymmetric Encryption Padding) is a padding scheme defined in
+    :rfc:`3447`. It provides probabilistic encryption and is `proven secure`_
+    against several attack types. This is the `recommended padding algorithm`_
+    for RSA encryption. It cannot be used with RSA signing.
+
+    :param mgf: A mask generation function object. At this time the only
+        supported MGF is :class:`MGF1`.
+
+    :param bytes label: A label to apply. This is a rarely used field and
+        should typically be set to ``None`` or ``b""``, which are equivalent.
+
+.. class:: PKCS1v15()
+
+    .. versionadded:: 0.3
+
+    PKCS1 v1.5 (also known as simply PKCS1) is a simple padding scheme
+    developed for use with RSA keys. It is defined in :rfc:`3447`. This padding
+    can be used for signing and encryption.
+
+    It is not recommended that ``PKCS1v15`` be used for new applications,
+    :class:`OAEP` should be preferred for encryption and :class:`PSS` should be
+    preferred for signatures.
+
+Mask generation functions
+-------------------------
+
+.. class:: MGF1(algorithm)
+
+    .. versionadded:: 0.3
+
+    .. versionchanged:: 0.6
+        Removed the deprecated ``salt_length`` parameter.
+
+    MGF1 (Mask Generation Function 1) is used as the mask generation function
+    in :class:`PSS` padding. It takes a hash algorithm and a salt length.
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        provider.
 
 Numbers
 ~~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.asymmetric.rsa
 
 These classes hold the constituent components of an RSA key. They are useful
 only when more traditional :doc:`/hazmat/primitives/asymmetric/serialization`
@@ -248,27 +374,31 @@ this without having to do the math themselves.
 
     .. versionadded:: 0.4
 
-    Generates the ``iqmp`` (also known as ``qInv``) parameter from the RSA
+    Computes the ``iqmp`` (also known as ``qInv``) parameter from the RSA
     primes ``p`` and ``q``.
 
 .. function:: rsa_crt_dmp1(private_exponent, p)
 
     .. versionadded:: 0.4
 
-    Generates the ``dmp1`` parameter from the RSA private exponent and prime
+    Computes the ``dmp1`` parameter from the RSA private exponent and prime
     ``p``.
 
 .. function:: rsa_crt_dmq1(private_exponent, q)
 
     .. versionadded:: 0.4
 
-    Generates the ``dmq1`` parameter from the RSA private exponent and prime
+    Computes the ``dmq1`` parameter from the RSA private exponent and prime
     ``q``.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
+.. _`specific mathematical properties`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Key_generation
 .. _`use 65537`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`at least 2048`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
 .. _`OpenPGP`: https://en.wikipedia.org/wiki/Pretty_Good_Privacy
 .. _`Chinese Remainder Theorem`: https://en.wikipedia.org/wiki/RSA_%28cryptosystem%29#Using_the_Chinese_remainder_algorithm
+.. _`security proof`: http://eprint.iacr.org/2001/062.pdf
+.. _`recommended padding algorithm`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
+.. _`proven secure`: http://cseweb.ucsd.edu/users/mihir/papers/oae.pdf

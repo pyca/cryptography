@@ -49,6 +49,11 @@ if [[ "$DARWIN" = true ]]; then
             pyenv install pypy-2.4.0
             pyenv global pypy-2.4.0
             ;;
+        pypy3)
+            brew upgrade pyenv
+            pyenv install pypy3-2.4.0
+            pyenv global pypy3-2.4.0
+            ;;
         docs)
             curl -O https://bootstrap.pypa.io/get-pip.py
             sudo python get-pip.py
