@@ -117,25 +117,25 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 Serializers
 ~~~~~~~~~~~
 
-.. class:: PKCS8(enctype)
+.. class:: PKCS8(encryption_algorithm)
 
     .. versionadded:: 0.7
 
     A serializer for the PKCS #8 format.
 
-    :param enctype: An object conforming to the
-        :class:`~cryptography.hazmat.primitives.asymmetric.serialization.KeySerializationEncryption`
+    :param encryption_algorithm: An object conforming to the
+        :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
         interface.
 
-.. class:: TraditionalOpenSSL(enctype)
+.. class:: TraditionalOpenSSL(encryption_algorithm)
 
     .. versionadded:: 0.7
 
     A serializer for the traditional OpenSSL (sometimes known as PKCS #1)
     format.
 
-    :param enctype: An object conforming to the
-        :class:`~cryptography.hazmat.primitives.asymmetric.serialization.KeySerializationEncryption`
+    :param encryption_algorithm: An object conforming to the
+        :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
         interface.
 
 
