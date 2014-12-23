@@ -95,18 +95,19 @@ class TestPEMSerialization(object):
             _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
-        ("key_file", "password"),
+        ("key_path", "password"),
         [
-            ("ec_private_key.pem", None),
-            ("ec_private_key_encrypted.pem", b"123456"),
+            (["PKCS8", "ec_private_key.pem"], None),
+            (["PKCS8", "ec_private_key_encrypted.pem"], b"123456"),
+            (["PEM_Serialization", "ec_private_key.pem"], None),
+            (["PEM_Serialization", "ec_private_key_encrypted.pem"], b"123456"),
         ]
     )
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-    def test_load_pem_ec_private_key(self, key_file, password, backend):
+    def test_load_pem_ec_private_key(self, key_path, password, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "PEM_Serialization", key_file),
+            os.path.join("asymmetric", *key_path),
             lambda pemfile: load_pem_private_key(
                 pemfile.read().encode(), password, backend
             )
