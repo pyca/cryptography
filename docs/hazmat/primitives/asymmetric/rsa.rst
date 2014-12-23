@@ -88,16 +88,18 @@ to serialize the key.
 
 .. doctest::
 
-    >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import serialization
-    >>> from cryptography.hazmat.primitives.asymmetric import rsa
-    >>> private_key = rsa.generate_private_key(
-    ...     public_exponent=65537,
-    ...     key_size=2048,
-    ...     backend=default_backend()
-    ... )
     >>> pem = private_key.dump_pem(
     ...    serialization.PKCS8(serialization.BestAvailable(b'passwordgoeshere'))
+    ... )
+
+It is also possible to serialize without encryption using
+:class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+.. doctest::
+
+    >>> pem = private_key.dump_pem(
+    ...    serialization.PKCS8(serialization.NoEncryption())
     ... )
 
 Signing
