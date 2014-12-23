@@ -907,16 +907,16 @@ class TestECDSASSHSerialization(object):
     [PKCS8, TraditionalOpenSSL]
 )
 class TestSerializers(object):
-    def test_invalid_enctype(self, serializer):
+    def test_invalid_encryption_algorithm(self, serializer):
         with pytest.raises(TypeError):
             serializer("thing")
 
     def test_valid_params(self, serializer):
         no_enc = serializer(NoEncryption())
-        assert isinstance(no_enc.enctype, NoEncryption)
+        assert isinstance(no_enc.encryption_algorithm, NoEncryption)
         best = serializer(BestAvailable(b"password"))
-        assert best.enctype.password == b"password"
-        assert isinstance(best.enctype, BestAvailable)
+        assert best.encryption_algorithm.password == b"password"
+        assert isinstance(best.encryption_algorithm, BestAvailable)
 
 
 class TestKeySerializationEncryptionTypes(object):

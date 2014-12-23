@@ -565,21 +565,20 @@ class _RSAPrivateKey(object):
         )
 
     def dump_pem(self, serializer):
-        if not isinstance(serializer, (TraditionalOpenSSL, PKCS8)):
-            raise TypeError("serializer must be PKCS8 or TraditionalOpenSSL")
-
         if isinstance(serializer, PKCS8):
             write_bio = self._backend._lib.PEM_write_bio_PKCS8PrivateKey
             key = self._evp_pkey
-        else:
+        elif isinstance(serializer, TraditionalOpenSSL):
             write_bio = self._backend._lib.PEM_write_bio_RSAPrivateKey
             key = self._rsa_cdata
+        else:
+            raise TypeError("serializer must be PKCS8 or TraditionalOpenSSL")
 
-        if isinstance(serializer.enctype, NoEncryption):
+        if isinstance(serializer.encryption_algorithm, NoEncryption):
             password = b""
             passlen = 0
         else:
-            password = serializer.enctype.password
+            password = serializer.encryption_algorithm.password
             passlen = len(password)
             if passlen > 1023:
                 raise ValueError(
@@ -587,12 +586,12 @@ class _RSAPrivateKey(object):
                     "this backend"
                 )
 
-        if isinstance(serializer.enctype, BestAvailable):
+        if isinstance(serializer.encryption_algorithm, BestAvailable):
             # This is a curated value that we will update over time.
             evp_cipher = self._backend._lib.EVP_get_cipherbyname(
                 b"aes-256-cbc"
             )
-        elif isinstance(serializer.enctype, NoEncryption):
+        elif isinstance(serializer.encryption_algorithm, NoEncryption):
             evp_cipher = self._backend._ffi.NULL
 
         bio = self._backend._create_mem_bio()

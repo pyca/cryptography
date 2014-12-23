@@ -141,10 +141,13 @@ Serializers
 
 Serializer Encryption Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. class:: KeySerializationEncryption
 
     Objects with this interface are usable as encryption types for
-    :class:`TraditionalOpenSSL` and :class:`PKCS8` serialization.
+    :class:`TraditionalOpenSSL` and :class:`PKCS8` serialization. All other
+    classes in this section represent the available choices for encryption
+    and have this interface.
 
 .. class:: BestAvailable
 
@@ -152,7 +155,7 @@ Serializer Encryption Types
     This is a curated encryption choice and the algorithm may change over
     time.
 
-    :param bytes password: The password for encryption.
+    :param bytes password: The password to use for encryption.
 
 .. class:: NoEncryption
 

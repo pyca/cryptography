@@ -9,8 +9,9 @@ Changelog
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load elliptic curve public keys.
 * Added
-  :meth:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey.dump_pem`
-  to :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
+  :meth:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKeyWithSerialization.dump_pem`
+  to
+  :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKeyWithSerialization`
   and deprecated

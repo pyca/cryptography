@@ -216,7 +216,7 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey):
         """
 
 
-# DeprecatedIn07
+# DeprecatedIn08
 RSAPrivateKeyWithNumbers = RSAPrivateKeyWithSerialization
 
 

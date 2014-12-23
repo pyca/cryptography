@@ -161,22 +161,24 @@ else:
 
 
 class PKCS8(object):
-    def __init__(self, enctype):
-        if not isinstance(enctype, KeySerializationEncryption):
+    def __init__(self, encryption_algorithm):
+        if not isinstance(encryption_algorithm, KeySerializationEncryption):
             raise TypeError(
-                "Encryption type must be a KeySerializationEncryption object"
+                "Encryption algorithm must be a KeySerializationEncryption "
+                "object"
             )
 
-        self.enctype = enctype
+        self.encryption_algorithm = encryption_algorithm
 
 
 class TraditionalOpenSSL(object):
-    def __init__(self, enctype):
-        if not isinstance(enctype, KeySerializationEncryption):
+    def __init__(self, encryption_algorithm):
+        if not isinstance(encryption_algorithm, KeySerializationEncryption):
             raise TypeError(
-                "Encryption type must be a KeySerializationEncryption object"
+                "Encryption algorithm must be a KeySerializationEncryption "
+                "object"
             )
-        self.enctype = enctype
+        self.encryption_algorithm = encryption_algorithm
 
 
 @six.add_metaclass(abc.ABCMeta)

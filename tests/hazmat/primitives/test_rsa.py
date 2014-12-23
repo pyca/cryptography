@@ -1743,7 +1743,7 @@ class TestRSAPEMWriter(object):
         assert loaded_priv_num == priv_num
 
     @pytest.mark.parametrize(
-        ("serializer"),
+        "serializer",
         (serialization.TraditionalOpenSSL, serialization.PKCS8),
     )
     def test_dump_unencrypted_pem(self, backend, serializer):
