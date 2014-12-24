@@ -116,7 +116,11 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
 
 
 def _read_next_string(data):
-    """Retrieves the next RFC 4251 string value from the data."""
+    """
+    Retrieves the next RFC 4251 string value from the data.
+
+    While the RFC calls these strings, in Python they are bytes objects.
+    """
     str_len, = struct.unpack('>I', data[:4])
     return data[4:4 + str_len], data[4 + str_len:]
 
