@@ -576,7 +576,7 @@ class TestPEMSerialization(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSASSHSerialization(object):
     def test_load_ssh_public_key_unsupported(self, backend):
-        ssh_key = b'ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
+        ssh_key = b'ecdsa-sha2-junk AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
 
         with pytest.raises(UnsupportedAlgorithm):
             load_ssh_public_key(ssh_key, backend)
@@ -784,3 +784,28 @@ class TestDSSSSHSerialization(object):
         )
 
         assert numbers == expected
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECDSASSHSerialization(object):
+    def test_load_ssh_public_key_ecdsa_nist_p256(self, backend):
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+
+        expected_x = int(
+            "44196257377740326295529888716212621920056478823906609851236662550"
+            "785814128027", 10
+        )
+        expected_y = int(
+            "12257763433170736656417248739355923610241609728032203358057767672"
+            "925775019611", 10
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP256R1()
+        )
