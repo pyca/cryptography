@@ -223,6 +223,10 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     Deserialize a public key from OpenSSH (:rfc:`4253`) encoded data to an
     instance of the public key type for the specified backend.
 
+    .. note::
+
+        Currently Ed25519 keys are not supported.
+
     :param bytes data: The OpenSSH encoded key data.
 
     :param backend: A backend providing
