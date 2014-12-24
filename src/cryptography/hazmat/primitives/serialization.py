@@ -29,6 +29,13 @@ def load_ssh_public_key(data, backend):
             'Key is not in the proper format or contains extra data.')
 
     key_type = key_parts[0]
+
+    if key_type not in [
+        b'ssh-rsa', b'ssh-dss', b'ecdsa-sha2-nistp256', b'ecdsa-sha2-nistp384',
+        b'ecdsa-sha2-nistp521',
+    ]:
+        raise UnsupportedAlgorithm('Key type is not supported.')
+
     key_body = key_parts[1]
 
     try:
@@ -36,28 +43,26 @@ def load_ssh_public_key(data, backend):
     except TypeError:
         raise ValueError('Key is not in the proper format.')
 
+    inner_key_type, rest = _read_next_string(decoded_data)
+
+    if inner_key_type != key_type:
+        raise ValueError(
+            'Key header and key body contain different key type values.'
+        )
+
     if key_type == b'ssh-rsa':
-        return _load_ssh_rsa_public_key(decoded_data, backend)
+        return _load_ssh_rsa_public_key(rest, backend)
     elif key_type == b'ssh-dss':
-        return _load_ssh_dss_public_key(decoded_data, backend)
+        return _load_ssh_dss_public_key(rest, backend)
     elif key_type in [
         b'ecdsa-sha2-nistp256', b'ecdsa-sha2-nistp384', b'ecdsa-sha2-nistp521',
     ]:
-        return _load_ssh_ecdsa_public_key(key_type, decoded_data, backend)
-    else:
-        raise UnsupportedAlgorithm(
-            'Only RSA and DSA keys are currently supported.'
-        )
+        return _load_ssh_ecdsa_public_key(key_type, rest, backend)
 
 
 def _load_ssh_rsa_public_key(decoded_data, backend):
-    key_type, rest = _read_next_string(decoded_data)
-    e, rest = _read_next_mpint(rest)
+    e, rest = _read_next_mpint(decoded_data)
     n, rest = _read_next_mpint(rest)
-
-    if key_type != b'ssh-rsa':
-        raise ValueError(
-            'Key header and key body contain different key type values.')
 
     if rest:
         raise ValueError('Key body contains extra bytes.')
@@ -66,16 +71,10 @@ def _load_ssh_rsa_public_key(decoded_data, backend):
 
 
 def _load_ssh_dss_public_key(decoded_data, backend):
-    key_type, rest = _read_next_string(decoded_data)
-    p, rest = _read_next_mpint(rest)
+    p, rest = _read_next_mpint(decoded_data)
     q, rest = _read_next_mpint(rest)
     g, rest = _read_next_mpint(rest)
     y, rest = _read_next_mpint(rest)
-
-    if key_type != b'ssh-dss':
-        raise ValueError(
-            'Key header and key body contain different key type values.'
-        )
 
     if rest:
         raise ValueError('Key body contains extra bytes.')
@@ -87,11 +86,10 @@ def _load_ssh_dss_public_key(decoded_data, backend):
 
 
 def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
-    key_type, rest = _read_next_string(decoded_data)
-    curve_name, rest = _read_next_string(rest)
+    curve_name, rest = _read_next_string(decoded_data)
     data, rest = _read_next_string(rest)
 
-    if key_type != expected_key_type != b"ecdsa-sha2" + curve_name:
+    if expected_key_type != b"ecdsa-sha2-" + curve_name:
         raise ValueError(
             'Key header and key body contain different key type values.'
         )
@@ -99,11 +97,11 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
     if rest:
         raise ValueError('Key body contains extra bytes.')
 
-    if key_type == "ecdsa-sha2-nistp256":
+    if curve_name == "nistp256":
         curve = ec.SECP256R1()
-    elif key_type == "ecdsa-sha2-nistp384":
+    elif curve_name == "nistp384":
         curve = ec.SECP384R1()
-    elif key_type == "ecdsa-sha2-nistp521":
+    elif curve_name == "nistp521":
         curve = ec.SECP521R1()
 
     if len(data) != 1 + 2 * (curve.key_size // 8):
