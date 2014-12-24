@@ -30,10 +30,15 @@ def load_ssh_public_key(data, backend):
 
     key_type = key_parts[0]
 
-    if key_type not in [
-        b'ssh-rsa', b'ssh-dss', b'ecdsa-sha2-nistp256', b'ecdsa-sha2-nistp384',
-        b'ecdsa-sha2-nistp521',
+    if key_type == b'ssh-rsa':
+        loader = _load_ssh_rsa_public_key
+    elif key_type == b'ssh-dss':
+        loader = _load_ssh_dss_public_key
+    elif key_type in [
+        b'ecdsa-sha2-nistp256', b'ecdsa-sha2-nistp384', b'ecdsa-sha2-nistp521',
     ]:
+        loader = _load_ssh_ecdsa_public_key
+    else:
         raise UnsupportedAlgorithm('Key type is not supported.')
 
     key_body = key_parts[1]
@@ -50,17 +55,10 @@ def load_ssh_public_key(data, backend):
             'Key header and key body contain different key type values.'
         )
 
-    if key_type == b'ssh-rsa':
-        return _load_ssh_rsa_public_key(rest, backend)
-    elif key_type == b'ssh-dss':
-        return _load_ssh_dss_public_key(rest, backend)
-    elif key_type in [
-        b'ecdsa-sha2-nistp256', b'ecdsa-sha2-nistp384', b'ecdsa-sha2-nistp521',
-    ]:
-        return _load_ssh_ecdsa_public_key(key_type, rest, backend)
+    return loader(key_type, rest, backend)
 
 
-def _load_ssh_rsa_public_key(decoded_data, backend):
+def _load_ssh_rsa_public_key(key_type, decoded_data, backend):
     e, rest = _read_next_mpint(decoded_data)
     n, rest = _read_next_mpint(rest)
 
@@ -70,7 +68,7 @@ def _load_ssh_rsa_public_key(decoded_data, backend):
     return rsa.RSAPublicNumbers(e, n).public_key(backend)
 
 
-def _load_ssh_dss_public_key(decoded_data, backend):
+def _load_ssh_dss_public_key(key_type, decoded_data, backend):
     p, rest = _read_next_mpint(decoded_data)
     q, rest = _read_next_mpint(rest)
     g, rest = _read_next_mpint(rest)
