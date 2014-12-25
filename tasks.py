@@ -17,9 +17,9 @@ JENKINS_URL = "https://jenkins.cryptography.io/job/cryptography-wheel-builder"
 
 
 def wait_for_build_completed(session):
-    # Wait 3 seconds before actually checking if the build is complete, to
+    # Wait 20 seconds before actually checking if the build is complete, to
     # ensure that it had time to really start.
-    time.sleep(3)
+    time.sleep(20)
     while True:
         response = session.get(
             "{0}/lastBuild/api/json/".format(JENKINS_URL),
