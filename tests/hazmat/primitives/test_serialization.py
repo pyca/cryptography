@@ -889,3 +889,13 @@ class TestECDSASSHSerialization(object):
         )
         with pytest.raises(NotImplementedError):
             load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_bad_curve_name(self, backend):
+        ssh_key = (
+            # The curve name in here is changed to be "nistp255".
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTUAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
