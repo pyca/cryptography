@@ -789,6 +789,8 @@ class TestDSSSSHSerialization(object):
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDSASSHSerialization(object):
     def test_load_ssh_public_key_ecdsa_nist_p256(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
         ssh_key = (
             b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
             b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
