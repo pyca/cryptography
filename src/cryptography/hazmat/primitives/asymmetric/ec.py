@@ -152,10 +152,7 @@ class EllipticCurvePublicNumbers(object):
         self._curve = curve
 
     def public_key(self, backend):
-        try:
-            return backend.load_elliptic_curve_public_numbers(self)
-        except AttributeError:
-            return backend.elliptic_curve_public_key_from_numbers(self)
+        return backend.load_elliptic_curve_public_numbers(self)
 
     curve = utils.read_only_property("_curve")
     x = utils.read_only_property("_x")
@@ -191,10 +188,7 @@ class EllipticCurvePrivateNumbers(object):
         self._public_numbers = public_numbers
 
     def private_key(self, backend):
-        try:
-            return backend.load_elliptic_curve_private_numbers(self)
-        except AttributeError:
-            return backend.elliptic_curve_private_key_from_numbers(self)
+        return backend.load_elliptic_curve_private_numbers(self)
 
     private_value = utils.read_only_property("_private_value")
     public_numbers = utils.read_only_property("_public_numbers")

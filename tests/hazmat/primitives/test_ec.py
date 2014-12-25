@@ -63,14 +63,6 @@ class DummySignatureAlgorithm(object):
     algorithm = None
 
 
-class DeprecatedDummyECBackend(object):
-    def elliptic_curve_private_key_from_numbers(self, numbers):
-        return b"private_key"
-
-    def elliptic_curve_public_key_from_numbers(self, numbers):
-        return b"public_key"
-
-
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
@@ -349,17 +341,6 @@ class TestECDSAVectors(object):
                 verifier.verify()
         else:
             verifier.verify()
-
-    def test_deprecated_public_private_key_load(self):
-        b = DeprecatedDummyECBackend()
-        pub_numbers = ec.EllipticCurvePublicNumbers(
-            2,
-            3,
-            ec.SECT283K1()
-        )
-        numbers = ec.EllipticCurvePrivateNumbers(1, pub_numbers)
-        assert numbers.private_key(b) == b"private_key"
-        assert pub_numbers.public_key(b) == b"public_key"
 
 
 class TestECNumbersEquality(object):
