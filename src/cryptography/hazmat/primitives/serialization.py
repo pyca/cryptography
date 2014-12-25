@@ -102,16 +102,18 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
     elif curve_name == b"nistp521":
         curve = ec.SECP521R1()
 
-    if len(data) != 1 + 2 * (curve.key_size // 8):
-        raise ValueError("Malformed key bytes")
-
     if six.indexbytes(data, 0) != 4:
         raise NotImplementedError(
             "Compressed elliptic curve points are not supported"
         )
 
-    x = _int_from_bytes(data[1:1 + curve.key_size // 8], byteorder='big')
-    y = _int_from_bytes(data[1 + curve.key_size // 8:], byteorder='big')
+    # key_size is in bits, and sometimes it's not evenly divisible by 8, so we
+    # add 7 to round up the number of bytes.
+    if len(data) != 1 + 2 * ((curve.key_size + 7) // 8):
+        raise ValueError("Malformed key bytes")
+
+    x = _int_from_bytes(data[1:1 + (curve.key_size + 7) // 8], byteorder='big')
+    y = _int_from_bytes(data[1 + (curve.key_size + 7) // 8:], byteorder='big')
     return ec.EllipticCurvePublicNumbers(x, y, curve).public_key(backend)
 
 
