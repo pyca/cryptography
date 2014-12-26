@@ -576,7 +576,7 @@ class TestPEMSerialization(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSASSHSerialization(object):
     def test_load_ssh_public_key_unsupported(self, backend):
-        ssh_key = b'ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
+        ssh_key = b'ecdsa-sha2-junk AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY='
 
         with pytest.raises(UnsupportedAlgorithm):
             load_ssh_public_key(ssh_key, backend)
@@ -784,3 +784,118 @@ class TestDSSSSHSerialization(object):
         )
 
         assert numbers == expected
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECDSASSHSerialization(object):
+    def test_load_ssh_public_key_ecdsa_nist_p256(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+
+        expected_x = int(
+            "44196257377740326295529888716212621920056478823906609851236662550"
+            "785814128027", 10
+        )
+        expected_y = int(
+            "12257763433170736656417248739355923610241609728032203358057767672"
+            "925775019611", 10
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP256R1()
+        )
+
+    def test_load_ssh_public_key_ecdsa_nist_p384(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        ssh_key = (
+            b"ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAz"
+            b"ODQAAABhBMzucOm9wbwg4iMr5QL0ya0XNQGXpw4wM5f12E3tWhdcrzyGHyel71t1"
+            b"4bvF9JZ2/WIuSxUr33XDl8jYo+lMQ5N7Vanc7f7i3AR1YydatL3wQfZStQ1I3rBa"
+            b"qQtRSEU8Tg== root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+
+        expected_x = int(
+            "31541830871345183397582554827482786756220448716666815789487537666"
+            "592636882822352575507883817901562613492450642523901", 10
+        )
+        expected_y = int(
+            "15111413269431823234030344298767984698884955023183354737123929430"
+            "995703524272335782455051101616329050844273733614670", 10
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP384R1()
+        )
+
+    def test_load_ssh_public_key_ecdsa_nist_p521(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP521R1())
+        ssh_key = (
+            b"ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1"
+            b"MjEAAACFBAGTrRhMSEgF6Ni+PXNz+5fjS4lw3ypUILVVQ0Av+0hQxOx+MyozELon"
+            b"I8NKbrbBjijEs1GuImsmkTmWsMXS1j2A7wB4Kseh7W9KA9IZJ1+TMrzWUEwvOOXi"
+            b"wT23pbaWWXG4NaM7vssWfZBnvz3S174TCXnJ+DSccvWBFnKP0KchzLKxbg== "
+            b"root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+
+        expected_x = int(
+            "54124123120178189598842622575230904027376313369742467279346415219"
+            "77809037378785192537810367028427387173980786968395921877911964629"
+            "142163122798974160187785455", 10
+        )
+        expected_y = int(
+            "16111775122845033200938694062381820957441843014849125660011303579"
+            "15284560361402515564433711416776946492019498546572162801954089916"
+            "006665939539407104638103918", 10
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP521R1()
+        )
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_trailing_data(self, backend):
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPltB= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_missing_data(self, backend):
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCF= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_compressed(self, backend):
+        # If we ever implement compressed points, note that this is not a valid
+        # one, it just has the compressed marker in the right place.
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBAWG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        with pytest.raises(NotImplementedError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_bad_curve_name(self, backend):
+        ssh_key = (
+            # The curve name in here is changed to be "nistp255".
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTUAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)

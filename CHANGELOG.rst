@@ -6,6 +6,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
+  now load elliptic curve public keys.
+
 0.7 - 2014-12-17
 ~~~~~~~~~~~~~~~~
 
