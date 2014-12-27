@@ -271,8 +271,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             ``private_exponent``, ``public_exponent``, or ``modulus`` do not
             match the bounds specified in :rfc:`3447`.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
-            any backend specific criteria are not met.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
 
     .. method:: load_rsa_public_numbers(numbers)
 
@@ -286,8 +286,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             ``public_exponent`` or ``modulus`` do not match the bounds
             specified in :rfc:`3447`.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
-            any backend specific criteria are not met.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
 
 
 .. class:: DSABackend
@@ -368,8 +368,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A provider of
             :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
-            any backend specific criteria are not met.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
 
     .. method:: load_dsa_private_numbers(numbers)
 
@@ -379,8 +379,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A provider of
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
-            any backend specific criteria are not met.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
 
     .. method:: load_dsa_public_numbers(numbers)
 
@@ -390,8 +390,8 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A provider of
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`.
 
-        :raises cryptography.exceptions.UnsupportedAlgorithm: This raised when
-            any backend specific criteria are not met.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
 
 
 .. class:: EllipticCurveBackend
