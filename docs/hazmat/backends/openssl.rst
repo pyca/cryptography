@@ -16,12 +16,13 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
     * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-    * :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
 
     It also exposes the following:
 
