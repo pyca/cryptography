@@ -8,6 +8,22 @@ import abc
 
 import six
 
+from cryptography.hazmat.primitives.asymmetric.rsa import (
+    RSAPrivateKey, RSAPrivateKeyWithNumbers, RSAPublicKey,
+    RSAPublicKeyWithNumbers
+)
+
+from cryptography.hazmat.primitives.asymmetric.dsa import (
+    DSAPrivateKey, DSAPrivateKeyWithNumbers, DSAPublicKey,
+    DSAPublicKeyWithNumbers
+)
+
+from cryptography.hazmat.primitives.asymmetric.ec import (
+    EllipticCurve, EllipticCurveSignatureAlgorithm, EllipticCurvePrivateKey,
+    EllipticCurvePrivateKeyWithNumbers, EllipticCurvePublicKey,
+    EllipticCurvePublicKeyWithNumbers
+)
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CipherAlgorithm(object):
