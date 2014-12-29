@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.7.1 - 2014-12-28
+~~~~~~~~~~~~~~~~~~
+
+* Fixed an issue preventing compilation on platforms where ``OPENSSL_NO_SSL3``
+  was defined.
+
 0.7 - 2014-12-17
 ~~~~~~~~~~~~~~~~
 
