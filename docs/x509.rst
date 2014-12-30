@@ -129,7 +129,7 @@ X.509 Certificate Object
     .. method:: public_key()
 
         :type:
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
 
@@ -137,9 +137,9 @@ X.509 Certificate Object
 
         .. doctest::
 
-            >>> from cryptography.hazmat.primitives import interfaces
+            >>> from cryptography.hazmat.primitives.asymmetric import rsa
             >>> public_key = cert.public_key()
-            >>> isinstance(public_key, interfaces.RSAPublicKey)
+            >>> isinstance(public_key, rsa.RSAPublicKey)
             True
 
     .. attribute:: not_valid_before
