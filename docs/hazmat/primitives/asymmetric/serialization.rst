@@ -44,10 +44,10 @@ methods.
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives import interfaces
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.hazmat.primitives.serialization import load_pem_private_key
         >>> key = load_pem_private_key(pem_data, password=None, backend=default_backend())
-        >>> if isinstance(key, interfaces.RSAPrivateKey):
+        >>> if isinstance(key, rsa.RSAPrivateKey):
         ...     signature = sign_with_rsa_key(key, message)
         ... elif isinstance(key, interfaces.DSAPrivateKey):
         ...     signature = sign_with_dsa_key(key, message)

@@ -13,6 +13,8 @@ import warnings
 # DeprecatedIn07 objects exist. This comment exists to remind developers to
 # look for them when it's time for the ninth release cycle deprecation dance.
 
+DeprecatedIn08 = PendingDeprecationWarning
+
 
 def read_only_property(name):
     return property(lambda self: getattr(self, name))

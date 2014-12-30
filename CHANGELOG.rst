@@ -8,6 +8,12 @@ Changelog
 
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load elliptic curve public keys.
+* :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithNumbers`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 
 0.7.1 - 2014-12-28
 ~~~~~~~~~~~~~~~~~~

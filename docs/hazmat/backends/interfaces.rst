@@ -234,7 +234,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             at least 2048.
 
         :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
             provider.
 
         :raises ValueError: If the public_exponent is not valid.
@@ -265,7 +265,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
 
         :returns: A provider of
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
 
         :raises ValueError: This is raised when the values of ``p``, ``q``,
             ``private_exponent``, ``public_exponent``, or ``modulus`` do not
@@ -280,7 +280,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`.
 
         :returns: A provider of
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
         :raises ValueError: This is raised when the values of
             ``public_exponent`` or ``modulus`` do not match the bounds
