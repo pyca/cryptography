@@ -35,10 +35,12 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     .. doctest::
 
+        >>> import os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        >>> key = os.urandom(24)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(os.urandom(16)), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
