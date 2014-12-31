@@ -65,3 +65,12 @@ class ModeWithNonce(object):
         """
         The value of the nonce for this mode as bytes.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithAuthenticationTag(object):
+    @abc.abstractproperty
+    def tag(self):
+        """
+        The value of the tag supplied to the constructor of this mode.
+        """

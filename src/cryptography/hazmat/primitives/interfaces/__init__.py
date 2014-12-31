@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.interfaces.ciphers import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
     Mode,
+    ModeWithAuthenticationTag,
     ModeWithInitializationVector,
     ModeWithNonce)
 
@@ -19,18 +20,10 @@ __all__ = [
     "BlockCipherAlgorithm",
     "CipherAlgorithm",
     "Mode",
+    "ModeWithAuthenticationTag",
     "ModeWithInitializationVector",
     "ModeWithNonce"
 ]
-
-
-@six.add_metaclass(abc.ABCMeta)
-class ModeWithAuthenticationTag(object):
-    @abc.abstractproperty
-    def tag(self):
-        """
-        The value of the tag supplied to the constructor of this mode.
-        """
 
 
 @six.add_metaclass(abc.ABCMeta)
