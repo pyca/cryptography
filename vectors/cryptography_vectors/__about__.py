@@ -20,4 +20,4 @@ __author__ = "The cryptography developers"
 __email__ = "cryptography-dev@python.org"
 
 __license__ = "BSD or Apache License, Version 2.0"
-__copyright__ = "Copyright 2013-2014 %s" % __author__
+__copyright__ = "Copyright 2013-2015 %s" % __author__
