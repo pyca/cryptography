@@ -9,12 +9,9 @@ import abc
 import six
 
 from cryptography.hazmat.primitives.interfaces.ciphers import (
-    BlockCipherAlgorithm,
-    CipherAlgorithm,
-    Mode,
-    ModeWithAuthenticationTag,
-    ModeWithInitializationVector,
-    ModeWithNonce)
+    BlockCipherAlgorithm, CipherAlgorithm, Mode,
+    ModeWithAuthenticationTag, ModeWithInitializationVector, ModeWithNonce
+)
 
 __all__ = [
     "BlockCipherAlgorithm",
