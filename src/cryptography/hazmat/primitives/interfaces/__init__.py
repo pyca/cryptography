@@ -4,9 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import six
-
 import abc
+
+import six
 
 from cryptography.hazmat.primitives.interfaces.ciphers import (
     BlockCipherAlgorithm,
