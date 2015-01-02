@@ -28,12 +28,14 @@ class TestDeprecated(object):
             warning_class=PendingDeprecationWarning,
         )
         mod = sys.modules[mod.__name__]
+        mod.Z = 3
 
         with warnings.catch_warnings(record=True) as log:
             warnings.simplefilter("always", PendingDeprecationWarning)
             warnings.simplefilter("always", DeprecationWarning)
             assert mod.X == 1
             assert mod.Y == 2
+            assert mod.Z == 3
 
         [msg1, msg2] = log
         assert msg1.category is DeprecationWarning
@@ -41,3 +43,5 @@ class TestDeprecated(object):
 
         assert msg2.category is PendingDeprecationWarning
         assert msg2.message.args == ("more deprecated text",)
+
+        assert "Y" in dir(mod)
