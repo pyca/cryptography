@@ -8,6 +8,19 @@ import abc
 
 import six
 
+from cryptography.hazmat.primitives.interfaces.asymmetric.dsa import (
+    DSAParameters, DSAParametersWithNumbers, DSAPrivateKey,
+    DSAPrivateKeyWithNumbers, DSAPublicKey, DSAPublicKeyWithNumbers
+)
+from cryptography.hazmat.primitives.interfaces.asymmetric.ec import (
+    EllipticCurve, EllipticCurvePrivateKey, EllipticCurvePrivateKeyWithNumbers,
+    EllipticCurvePublicKey, EllipticCurvePublicKeyWithNumbers,
+    EllipticCurveSignatureAlgorithm
+)
+from cryptography.hazmat.primitives.interfaces.asymmetric.rsa import (
+    RSAPrivateKey, RSAPrivateKeyWithNumbers, RSAPublicKey,
+    RSAPublicKeyWithNumbers
+)
 from cryptography.hazmat.primitives.interfaces.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm, Mode,
     ModeWithAuthenticationTag, ModeWithInitializationVector, ModeWithNonce
@@ -16,10 +29,26 @@ from cryptography.hazmat.primitives.interfaces.ciphers import (
 __all__ = [
     "BlockCipherAlgorithm",
     "CipherAlgorithm",
+    "DSAParameters",
+    "DSAParametersWithNumbers",
+    "DSAPrivateKey",
+    "DSAPrivateKeyWithNumbers",
+    "DSAPublicKey",
+    "DSAPublicKeyWithNumbers",
+    "EllipticCurve",
+    "EllipticCurvePrivateKey",
+    "EllipticCurvePrivateKeyWithNumbers",
+    "EllipticCurvePublicKey",
+    "EllipticCurvePublicKeyWithNumbers",
+    "EllipticCurveSignatureAlgorithm",
     "Mode",
     "ModeWithAuthenticationTag",
     "ModeWithInitializationVector",
-    "ModeWithNonce"
+    "ModeWithNonce",
+    "RSAPrivateKey",
+    "RSAPrivateKeyWithNumbers",
+    "RSAPublicKey",
+    "RSAPublicKeyWithNumbers"
 ]
 
 
@@ -122,156 +151,6 @@ class HashContext(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKey(object):
-    @abc.abstractmethod
-    def signer(self, padding, algorithm):
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
-
-    @abc.abstractmethod
-    def decrypt(self, ciphertext, padding):
-        """
-        Decrypts the provided ciphertext.
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the public modulus.
-        """
-
-    @abc.abstractmethod
-    def public_key(self):
-        """
-        The RSAPublicKey associated with this private key.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKeyWithNumbers(RSAPrivateKey):
-    @abc.abstractmethod
-    def private_numbers(self):
-        """
-        Returns an RSAPrivateNumbers.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPublicKey(object):
-    @abc.abstractmethod
-    def verifier(self, signature, padding, algorithm):
-        """
-        Returns an AsymmetricVerificationContext used for verifying signatures.
-        """
-
-    @abc.abstractmethod
-    def encrypt(self, plaintext, padding):
-        """
-        Encrypts the given plaintext.
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the public modulus.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPublicKeyWithNumbers(RSAPublicKey):
-    @abc.abstractmethod
-    def public_numbers(self):
-        """
-        Returns an RSAPublicNumbers
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAParameters(object):
-    @abc.abstractmethod
-    def generate_private_key(self):
-        """
-        Generates and returns a DSAPrivateKey.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAParametersWithNumbers(DSAParameters):
-    @abc.abstractmethod
-    def parameter_numbers(self):
-        """
-        Returns a DSAParameterNumbers.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAPrivateKey(object):
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the prime modulus.
-        """
-
-    @abc.abstractmethod
-    def public_key(self):
-        """
-        The DSAPublicKey associated with this private key.
-        """
-
-    @abc.abstractmethod
-    def parameters(self):
-        """
-        The DSAParameters object associated with this private key.
-        """
-
-    @abc.abstractmethod
-    def signer(self, signature_algorithm):
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAPrivateKeyWithNumbers(DSAPrivateKey):
-    @abc.abstractmethod
-    def private_numbers(self):
-        """
-        Returns a DSAPrivateNumbers.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAPublicKey(object):
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the prime modulus.
-        """
-
-    @abc.abstractmethod
-    def parameters(self):
-        """
-        The DSAParameters object associated with this public key.
-        """
-
-    @abc.abstractmethod
-    def verifier(self, signature, signature_algorithm):
-        """
-        Returns an AsymmetricVerificationContext used for signing data.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAPublicKeyWithNumbers(DSAPublicKey):
-    @abc.abstractmethod
-    def public_numbers(self):
-        """
-        Returns a DSAPublicNumbers.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
 class AsymmetricSignatureContext(object):
     @abc.abstractmethod
     def update(self, data):
@@ -325,84 +204,6 @@ class KeyDerivationFunction(object):
         """
         Checks whether the key generated by the key material matches the
         expected derived key. Raises an exception if they do not match.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurve(object):
-    @abc.abstractproperty
-    def name(self):
-        """
-        The name of the curve. e.g. secp256r1.
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the base point of the curve.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurveSignatureAlgorithm(object):
-    @abc.abstractproperty
-    def algorithm(self):
-        """
-        The digest algorithm used with this signature.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePrivateKey(object):
-    @abc.abstractmethod
-    def signer(self, signature_algorithm):
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
-
-    @abc.abstractmethod
-    def public_key(self):
-        """
-        The EllipticCurvePublicKey for this private key.
-        """
-
-    @abc.abstractproperty
-    def curve(self):
-        """
-        The EllipticCurve that this key is on.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePrivateKeyWithNumbers(EllipticCurvePrivateKey):
-    @abc.abstractmethod
-    def private_numbers(self):
-        """
-        Returns an EllipticCurvePrivateNumbers.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePublicKey(object):
-    @abc.abstractmethod
-    def verifier(self, signature, signature_algorithm):
-        """
-        Returns an AsymmetricVerificationContext used for signing data.
-        """
-
-    @abc.abstractproperty
-    def curve(self):
-        """
-        The EllipticCurve that this key is on.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePublicKeyWithNumbers(EllipticCurvePublicKey):
-    @abc.abstractmethod
-    def public_numbers(self):
-        """
-        Returns an EllipticCurvePublicNumbers.
         """
 
 
