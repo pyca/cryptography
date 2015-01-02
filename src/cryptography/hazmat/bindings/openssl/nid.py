@@ -211,6 +211,11 @@ static const int NID_organizationalUnitName;
 static const int NID_serialNumber;
 static const int NID_surname;
 static const int NID_givenName;
+static const int NID_title;
+static const int NID_generationQualifier;
+static const int NID_dnQualifier;
+static const int NID_pseudonym;
+static const int NID_domainComponent;
 static const int NID_pkcs9_emailAddress;
 """
 
