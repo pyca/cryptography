@@ -166,6 +166,143 @@ X.509 Certificate Object
             >>> cert.not_valid_after
             datetime.datetime(2030, 12, 31, 8, 30)
 
+    .. attribute:: issuer
+
+        .. versionadded:: 0.8
+
+        :type: :class:`Name`
+
+        The :class:`Name` of the issuer.
+
+    .. attribute:: subject
+
+        .. versionadded:: 0.8
+
+        :type: :class:`Name`
+
+        The :class:`Name` of the subject.
+
+
+.. class:: Name
+
+    .. versionadded:: 0.8
+
+    An X509 Name is an ordered list of attributes. The entire list can be
+    obtained with :attr:`attributes` or you can use the helper properties to
+    obtain the specific type you want. Names are sometimes represented as a
+    slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US``).
+
+    .. attribute:: attributes
+
+        :type: :class:`list`
+
+        A list of all the :class:`NameAttribute` objects.
+
+        .. doctest::
+
+            >>> len(cert.subject.attributes)
+            3
+
+    .. attribute:: country_name
+
+        :type: :class:`list`
+
+        A list of country name :class:`NameAttribute` objects.
+
+        .. doctest::
+
+            >>> cert.subject.country_name == [
+            ...    x509.NameAttribute(
+            ...        x509.OID_COUNTRY_NAME,
+            ...        'US'
+            ...    )
+            ... ]
+            True
+
+    .. attribute:: organization_name
+
+        :type: :class:`list`
+
+        A list of organization name :class:`NameAttribute` objects.
+
+    .. attribute:: organizational_unit_name
+
+        :type: :class:`list`
+
+        A list of organizational unit name :class:`NameAttribute` objects.
+
+    .. attribute:: dn_qualifier
+
+        :type: :class:`list`
+
+        A list of DN qualifier :class:`NameAttribute` objects.
+
+    .. attribute:: state_or_province_name
+
+        :type: :class:`list`
+
+        A list of state or province name :class:`NameAttribute` objects.
+
+    .. attribute:: common_name
+
+        :type: :class:`list`
+
+        A list of common name :class:`NameAttribute` objects.
+
+    .. attribute:: serial_number
+
+        :type: :class:`list`
+
+        A list of serial number :class:`NameAttribute` objects. This is not the
+        same as the certificate's serial number.
+
+    .. attribute:: locality_name
+
+        :type: :class:`list`
+
+        A list of locality name :class:`NameAttribute` objects.
+
+    .. attribute:: title
+
+        :type: :class:`list`
+
+        A list of title :class:`NameAttribute` objects.
+
+    .. attribute:: surname
+
+        :type: :class:`list`
+
+        A list of surname :class:`NameAttribute` objects.
+
+    .. attribute:: given_name
+
+        :type: :class:`list`
+
+        A list of given name :class:`NameAttribute` objects.
+
+    .. attribute:: pseudonym
+
+        :type: :class:`list`
+
+        A list of pseudonym :class:`NameAttribute` objects.
+
+    .. attribute:: generation_qualifier
+
+        :type: :class:`list`
+
+        A list of generation qualifier :class:`NameAttribute` objects.
+
+    .. attribute:: domain_component
+
+        :type: :class:`list`
+
+        A list of domain component :class:`NameAttribute` objects.
+
+    .. attribute:: email_address
+
+        :type: :class:`list`
+
+        A list of email address :class:`NameAttribute` objects.
 
 .. class:: Version
 

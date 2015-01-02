@@ -104,6 +104,87 @@ class ObjectIdentifier(object):
     dotted_string = utils.read_only_property("_dotted_string")
 
 
+class Name(object):
+    def __init__(self, attributes):
+        self._attributes = attributes
+
+    def _filter_attr_list(self, oid):
+        return [i for i in self._attributes if i.oid == oid]
+
+    @property
+    def common_name(self):
+        return self._filter_attr_list(OID_COMMON_NAME)
+
+    @property
+    def country_name(self):
+        return self._filter_attr_list(OID_COUNTRY_NAME)
+
+    @property
+    def locality_name(self):
+        return self._filter_attr_list(OID_LOCALITY_NAME)
+
+    @property
+    def state_or_province_name(self):
+        return self._filter_attr_list(OID_STATE_OR_PROVINCE_NAME)
+
+    @property
+    def organization_name(self):
+        return self._filter_attr_list(OID_ORGANIZATION_NAME)
+
+    @property
+    def organizational_unit_name(self):
+        return self._filter_attr_list(OID_ORGANIZATIONAL_UNIT_NAME)
+
+    @property
+    def serial_number(self):
+        return self._filter_attr_list(OID_SERIAL_NUMBER)
+
+    @property
+    def surname(self):
+        return self._filter_attr_list(OID_SURNAME)
+
+    @property
+    def given_name(self):
+        return self._filter_attr_list(OID_GIVEN_NAME)
+
+    @property
+    def title(self):
+        return self._filter_attr_list(OID_TITLE)
+
+    @property
+    def generation_qualifier(self):
+        return self._filter_attr_list(OID_GENERATION_QUALIFIER)
+
+    @property
+    def dn_qualifier(self):
+        return self._filter_attr_list(OID_DN_QUALIFIER)
+
+    @property
+    def pseudonym(self):
+        return self._filter_attr_list(OID_PSEUDONYM)
+
+    @property
+    def domain_component(self):
+        return self._filter_attr_list(OID_DOMAIN_COMPONENT)
+
+    @property
+    def email_address(self):
+        return self._filter_attr_list(OID_EMAIL_ADDRESS)
+
+    @property
+    def attributes(self):
+        return self._attributes[:]
+
+    def __eq__(self, other):
+        if not isinstance(other, Name):
+            return NotImplemented
+
+        return self.attributes == other.attributes
+
+    def __ne__(self, other):
+        return not self == other
+
+
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
 OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
@@ -157,4 +238,16 @@ class Certificate(object):
     def not_valid_after(self):
         """
         Not after time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def issuer(self):
+        """
+        Returns the issuer name object.
+        """
+
+    @abc.abstractproperty
+    def subject(self):
+        """
+        Returns the subject name object.
         """

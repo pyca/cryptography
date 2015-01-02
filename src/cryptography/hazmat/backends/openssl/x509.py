@@ -91,3 +91,45 @@ class _Certificate(object):
             )
         ).decode("ascii")
         return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+
+    @property
+    def issuer(self):
+        issuer = self._backend._lib.X509_get_issuer_name(self._x509)
+        assert issuer != self._backend._ffi.NULL
+        return self._build_x509_name(issuer)
+
+    @property
+    def subject(self):
+        subject = self._backend._lib.X509_get_subject_name(self._x509)
+        assert subject != self._backend._ffi.NULL
+        return self._build_x509_name(subject)
+
+    def _build_x509_name(self, x509_name):
+        count = self._backend._lib.X509_NAME_entry_count(x509_name)
+        attributes = []
+        for x in range(0, count):
+            entry = self._backend._lib.X509_NAME_get_entry(x509_name, x)
+            obj = self._backend._lib.X509_NAME_ENTRY_get_object(entry)
+            assert obj != self._backend._ffi.NULL
+            data = self._backend._lib.X509_NAME_ENTRY_get_data(entry)
+            assert data != self._backend._ffi.NULL
+            buf = self._backend._ffi.new("unsigned char **")
+            res = self._backend._lib.ASN1_STRING_to_UTF8(buf, data)
+            assert buf[0] != self._backend._ffi.NULL
+            buf = self._backend._ffi.gc(
+                buf, lambda buf: self._backend._lib.OPENSSL_free(buf[0])
+            )
+            value = self._backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+            buf_len = 50
+            buf = self._backend._ffi.new("char[]", buf_len)
+            res = self._backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
+            assert res > 0
+            oid = self._backend._ffi.buffer(buf, res)[:].decode()
+
+            attributes.append(
+                x509.NameAttribute(
+                    x509.ObjectIdentifier(oid), value
+                )
+            )
+
+        return x509.Name(attributes)
