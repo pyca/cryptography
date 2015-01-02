@@ -19,6 +19,25 @@ from cryptography import utils, x509
 from cryptography.hazmat.primitives import hashes
 
 
+_OID_TO_NAME = {
+    "2.5.4.3": "commonName",
+    "2.5.4.6": "countryName",
+    "2.5.4.7": "localityName",
+    "2.5.4.8": "stateOrProvinceName",
+    "2.5.4.10": "organizationName",
+    "2.5.4.11": "organizationalUnitName",
+    "2.5.4.5": "serialNumber",
+    "2.5.4.4": "surname",
+    "2.5.4.42": "givenName",
+    "2.5.4.12": "title",
+    "2.5.4.44": "generationQualifier",
+    "2.5.4.46": "dnQualifier",
+    "2.5.4.65": "pseudonym",
+    "0.9.2342.19200300.100.1.25": "domainComponent",
+    "1.2.840.113549.1.9.1": "emailAddress",
+}
+
+
 @utils.register_interface(x509.Certificate)
 class _Certificate(object):
     def __init__(self, backend, x509):
@@ -91,3 +110,46 @@ class _Certificate(object):
             )
         ).decode("ascii")
         return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+
+    @property
+    def issuer(self):
+        issuer = self._backend._lib.X509_get_issuer_name(self._x509)
+        assert issuer != self._backend._ffi.NULL
+        return self._build_x509_name(issuer)
+
+    @property
+    def subject(self):
+        subject = self._backend._lib.X509_get_subject_name(self._x509)
+        assert subject != self._backend._ffi.NULL
+        return self._build_x509_name(subject)
+
+    def _build_x509_name(self, x509_name):
+        count = self._backend._lib.X509_NAME_entry_count(x509_name)
+        attributes = []
+        for x in range(0, count):
+            entry = self._backend._lib.X509_NAME_get_entry(x509_name, x)
+            obj = self._backend._lib.X509_NAME_ENTRY_get_object(entry)
+            assert obj != self._backend._ffi.NULL
+            data = self._backend._lib.X509_NAME_ENTRY_get_data(entry)
+            assert data != self._backend._ffi.NULL
+            buf = self._backend._ffi.new("unsigned char **")
+            res = self._backend._lib.ASN1_STRING_to_UTF8(buf, data)
+            assert buf[0] != self._backend._ffi.NULL
+            buf = self._backend._ffi.gc(
+                buf, lambda buf: self._backend._lib.OPENSSL_free(buf[0])
+            )
+            value = self._backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+            buf_len = 50
+            buf = self._backend._ffi.new("char[]", buf_len)
+            res = self._backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
+            assert res > 0
+            oid = self._backend._ffi.buffer(buf, res)[:].decode()
+            try:
+                attribute_name = _OID_TO_NAME[oid]
+            except KeyError:
+                # TODO: test this
+                raise x509.UnknownAttribute("Unknown OID: {0}".format(oid))
+
+            attributes.append(x509.Attribute(oid, attribute_name, value))
+
+        return x509.Name(attributes)

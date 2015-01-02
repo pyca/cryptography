@@ -55,6 +55,74 @@ class TestRSACertificate(object):
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
 
+    def test_issuer(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "Validpre2000UTCnotBeforeDateTest3EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        issuer = cert.issuer
+        assert isinstance(issuer, x509.Name)
+        assert issuer.attributes == [
+            x509.Attribute('2.5.4.6', 'countryName', 'US'),
+            x509.Attribute(
+                '2.5.4.10', 'organizationName', 'Test Certificates 2011'
+            ),
+            x509.Attribute('2.5.4.3', 'commonName', 'Good CA')
+        ]
+        assert issuer.common_name == [
+            x509.Attribute('2.5.4.3', 'commonName', 'Good CA')
+        ]
+        assert issuer.country_name == [
+            x509.Attribute('2.5.4.6', 'countryName', 'US'),
+        ]
+        assert issuer.organization_name == [
+            x509.Attribute(
+                '2.5.4.10', 'organizationName', 'Test Certificates 2011'
+            ),
+        ]
+
+    def test_subject(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "Validpre2000UTCnotBeforeDateTest3EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        subject = cert.subject
+        assert isinstance(subject, x509.Name)
+        assert subject.attributes == [
+            x509.Attribute('2.5.4.6', 'countryName', 'US'),
+            x509.Attribute(
+                '2.5.4.10', 'organizationName', 'Test Certificates 2011'
+            ),
+            x509.Attribute(
+                '2.5.4.3',
+                'commonName',
+                'Valid pre2000 UTC notBefore Date EE Certificate Test3'
+            )
+        ]
+        assert subject.common_name == [
+            x509.Attribute(
+                '2.5.4.3',
+                'commonName',
+                'Valid pre2000 UTC notBefore Date EE Certificate Test3'
+            )
+        ]
+        assert subject.country_name == [
+            x509.Attribute('2.5.4.6', 'countryName', 'US'),
+        ]
+        assert subject.organization_name == [
+            x509.Attribute(
+                '2.5.4.10', 'organizationName', 'Test Certificates 2011'
+            ),
+        ]
+
     def test_load_good_ca_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
