@@ -6,12 +6,6 @@ Symmetric encryption
 
 .. currentmodule:: cryptography.hazmat.primitives.ciphers
 
-.. testsetup::
-
-    import binascii
-    key = binascii.unhexlify(b"0" * 32)
-    iv = binascii.unhexlify(b"0" * 32)
-
 
 Symmetric encryption is a way to `encrypt`_ or hide the contents of material
 where the sender and receiver both use the same secret key. Note that symmetric
@@ -39,8 +33,9 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> key = os.urandom(24)
-        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(os.urandom(16)), backend=backend)
+        >>> key = os.urandom(32)
+        >>> iv = os.urandom(16)
+        >>> cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message") + encryptor.finalize()
         >>> decryptor = cipher.decryptor()
