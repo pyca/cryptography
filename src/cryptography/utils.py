@@ -7,10 +7,15 @@ from __future__ import absolute_import, division, print_function
 import abc
 import inspect
 import sys
+import warnings
 
 
 # DeprecatedIn07 objects exist. This comment exists to remind developers to
 # look for them when it's time for the ninth release cycle deprecation dance.
+
+
+def read_only_property(name):
+    return property(lambda self: getattr(self, name))
 
 
 def register_interface(iface):
@@ -19,10 +24,6 @@ def register_interface(iface):
         iface.register(klass)
         return klass
     return register_decorator
-
-
-def read_only_property(name):
-    return property(lambda self: getattr(self, name))
 
 
 class InterfaceNotImplemented(Exception):
@@ -55,3 +56,35 @@ if sys.version_info >= (2, 7):
 else:
     def bit_length(x):
         return len(bin(x)) - (2 + (x <= 0))
+
+
+class _DeprecatedValue(object):
+    def __init__(self, value, message, warning_class):
+        self.value = value
+        self.message = message
+        self.warning_class = warning_class
+
+
+class _ModuleWithDeprecations(object):
+    def __init__(self, module):
+        self.__dict__["_module"] = module
+
+    def __getattr__(self, attr):
+        obj = getattr(self._module, attr)
+        if isinstance(obj, _DeprecatedValue):
+            warnings.warn(obj.message, obj.warning_class, stacklevel=2)
+            obj = obj.value
+        return obj
+
+    def __setattr__(self, attr, value):
+        setattr(self._module, attr, value)
+
+    def __dir__(self):
+        return ["_module"] + dir(self._module)
+
+
+def deprecated(value, module_name, message, warning_class):
+    module = sys.modules[module_name]
+    if not isinstance(module, _ModuleWithDeprecations):
+        sys.modules[module_name] = module = _ModuleWithDeprecations(module)
+    return _DeprecatedValue(value, message, warning_class)
