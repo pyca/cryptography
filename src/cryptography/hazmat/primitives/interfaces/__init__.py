@@ -17,10 +17,6 @@ from cryptography.hazmat.primitives.interfaces.asymmetric.ec import (
     EllipticCurvePublicKey, EllipticCurvePublicKeyWithNumbers,
     EllipticCurveSignatureAlgorithm
 )
-from cryptography.hazmat.primitives.interfaces.asymmetric.rsa import (
-    RSAPrivateKey, RSAPrivateKeyWithNumbers, RSAPublicKey,
-    RSAPublicKeyWithNumbers
-)
 from cryptography.hazmat.primitives.interfaces.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm, Mode,
     ModeWithAuthenticationTag, ModeWithInitializationVector, ModeWithNonce
@@ -44,11 +40,7 @@ __all__ = [
     "Mode",
     "ModeWithAuthenticationTag",
     "ModeWithInitializationVector",
-    "ModeWithNonce",
-    "RSAPrivateKey",
-    "RSAPrivateKeyWithNumbers",
-    "RSAPublicKey",
-    "RSAPublicKeyWithNumbers"
+    "ModeWithNonce"
 ]
 
 
@@ -147,6 +139,72 @@ class HashContext(object):
     def copy(self):
         """
         Return a HashContext that is a copy of the current context.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPrivateKey(object):
+    @abc.abstractmethod
+    def signer(self, padding, algorithm):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
+    @abc.abstractmethod
+    def decrypt(self, ciphertext, padding):
+        """
+        Decrypts the provided ciphertext.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the public modulus.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The RSAPublicKey associated with this private key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns an RSAPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicKey(object):
+    @abc.abstractmethod
+    def verifier(self, signature, padding, algorithm):
+        """
+        Returns an AsymmetricVerificationContext used for verifying signatures.
+        """
+
+    @abc.abstractmethod
+    def encrypt(self, plaintext, padding):
+        """
+        Encrypts the given plaintext.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the public modulus.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicKeyWithNumbers(RSAPublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns an RSAPublicNumbers
         """
 
 
