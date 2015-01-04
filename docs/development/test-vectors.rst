@@ -56,8 +56,8 @@ Custom Asymmetric Vectors
   protected by the secret "123456" with DES3 encryption.
 * ``asymmetric/PEM_Serialization/dsa_public_key.pem`` - Contains a DSA 2048 bit
   key generated using OpenSSL from ``dsa_private_key.pem``.
-* ``asymmetric/PEM_Serialization/unenc-dsa-pkcs8.pem`` - Contains a DSA 1024 bit
-  key generated using OpenSSL.
+* ``asymmetric/PEM_Serialization/unenc-dsa-pkcs8.pem`` - Contains a DSA 1024
+  bit key generated using OpenSSL.
 * ``asymmetric/PEM_Serialization/unenc-dsa-pkcs8.pub.pem`` - Contains a DSA
   2048 bit public key generated using OpenSSL from ``unenc-dsa-pkcs8.pem``.
 
