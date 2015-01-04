@@ -7,14 +7,15 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    RSABackend, X509Backend
+    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
+    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    PEMSerializationBackend, RSABackend, X509Backend
 )
 
 
 @utils.register_interface(CMACBackend)
 @utils.register_interface(CipherBackend)
+@utils.register_interface(DERSerializationBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
 @utils.register_interface(PBKDF2HMACBackend)
@@ -282,6 +283,24 @@ class MultiBackend(object):
     def load_pem_public_key(self, data):
         for b in self._filtered_backends(PEMSerializationBackend):
             return b.load_pem_public_key(data)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this key serialization.",
+            _Reasons.UNSUPPORTED_SERIALIZATION
+        )
+
+    def load_der_private_key(self, data, password):
+        for b in self._filtered_backends(DERSerializationBackend):
+            return b.load_der_private_key(data, password)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this key serialization.",
+            _Reasons.UNSUPPORTED_SERIALIZATION
+        )
+
+    def load_der_public_key(self, data):
+        for b in self._filtered_backends(DERSerializationBackend):
+            return b.load_der_public_key(data)
 
         raise UnsupportedAlgorithm(
             "This backend does not support this key serialization.",
