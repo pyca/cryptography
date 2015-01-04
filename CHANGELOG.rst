@@ -10,6 +10,11 @@ Changelog
   now load elliptic curve public keys.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
+* Added
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key` to
+  support loading of DER encoded private keys and
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key` to
+  support loading DER encoded public keys.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~

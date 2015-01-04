@@ -21,6 +21,14 @@ def load_pem_public_key(data, backend):
     return backend.load_pem_public_key(data)
 
 
+def load_der_private_key(data, password, backend):
+    return backend.load_der_private_key(data, password)
+
+
+def load_der_public_key(data, backend):
+    return backend.load_der_public_key(data)
+
+
 def load_ssh_public_key(data, backend):
     key_parts = data.split(b' ')
 
