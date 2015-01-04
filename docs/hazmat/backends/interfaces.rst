@@ -468,6 +468,30 @@ A specific ``backend`` may provide one or more of these interfaces.
             serialized data contains.
         :raises ValueError: If the data could not be deserialized.
 
+.. class:: DERSerializationBackend
+
+    .. versionadded:: 0.8
+
+    A backend with methods for working with DER encoded keys.
+
+    .. method:: load_der_private_key(data, password)
+
+        :param bytes data: DER data to load.
+        :param bytes password: The password to use if the data is encrypted.
+            Should be ``None`` if the data is not encrypted.
+        :return: A new instance of the appropriate type of private key that the
+            serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the data is
+            encrypted with an unsupported algorithm.
+
+    .. method:: load_der_public_key(data)
+
+        :param bytes data: DER data to load.
+        :return: A new instance of the appropriate type of public key
+            serialized data contains.
+        :raises ValueError: If the data could not be deserialized.
+
 .. class:: X509Backend
 
     .. versionadded:: 0.7
