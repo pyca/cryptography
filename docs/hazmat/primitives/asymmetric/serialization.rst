@@ -136,6 +136,64 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
         is of a type that is not supported by the backend.
 
+DER
+~~~
+
+DER is an ASN.1 encoding type. There are no encapsulation boundaries and the
+data is binary. DER keys may be in a variety of formats, but as long as you
+know whether it is a public or private key the loading functions will handle
+the rest.
+
+.. function:: load_der_private_key(data, password, backend)
+
+    .. versionadded:: 0.8
+
+    Deserialize a private key from DER encoded data to one of the supported
+    asymmetric private key types.
+
+    :param bytes data: The DER encoded key data.
+
+    :param bytes password: The password to use to decrypt the data. Should
+        be ``None`` if the private key is not encrypted.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
+        provider.
+
+    :returns: A new instance of a private key.
+
+    :raises ValueError: If the DER data could not be decrypted or if its
+        structure could not be decoded successfully.
+
+    :raises TypeError: If a ``password`` was given and the private key was
+        not encrypted. Or if the key was encrypted but no
+        password was supplied.
+
+    :raises UnsupportedAlgorithm: If the serialized key is of a type that
+        is not supported by the backend or if the key is encrypted with a
+        symmetric cipher that is not supported by the backend.
+
+.. function:: load_der_public_key(data, backend)
+
+    .. versionadded:: 0.8
+
+    Deserialize a public key from DER encoded data to one of the supported
+    asymmetric public key types.
+
+    :param bytes data: The DER encoded key data.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
+        provider.
+
+    :returns: A new instance of a public key.
+
+    :raises ValueError: If the DER data's structure could not be decoded
+        successfully.
+
+    :raises UnsupportedAlgorithm: If the serialized key is of a type that
+        is not supported by the backend.
+
 
 OpenSSH Public Key
 ~~~~~~~~~~~~~~~~~~

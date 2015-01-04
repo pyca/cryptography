@@ -15,9 +15,9 @@ from cryptography.exceptions import (
     InternalError, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend, RSABackend,
-    X509Backend
+    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
+    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    PEMSerializationBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -56,6 +56,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
+@utils.register_interface(DERSerializationBackend)
 @utils.register_interface(DSABackend)
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(HashBackend)
@@ -695,6 +696,73 @@ class Backend(object):
             data,
             None,
         )
+
+    def load_der_private_key(self, data, password):
+        # OpenSSL has a function called d2i_AutoPrivateKey that can simplify
+        # this. Unfortunately it doesn't properly support PKCS8 on OpenSSL
+        # 0.9.8 so we can't use it. Instead we sequentially try to load it 3
+        # different ways. First we'll try to load it as a traditional key
+        key = self._evp_pkey_from_der_traditional_key(data, password)
+        if not key:
+            # Okay so it's not a traditional key. Let's try
+            # PKCS8 unencrypted. OpenSSL 0.9.8 can't load unencrypted
+            # PKCS8 keys using d2i_PKCS8PrivateKey_bio so we do this instead.
+            key = self._evp_pkey_from_der_unencrypted_pkcs8(data, password)
+
+        if key:
+            return self._evp_pkey_to_private_key(key)
+        else:
+            # Finally we try to load it with the method that handles encrypted
+            # PKCS8 properly.
+            return self._load_key(
+                self._lib.d2i_PKCS8PrivateKey_bio,
+                self._evp_pkey_to_private_key,
+                data,
+                password,
+            )
+
+    def _evp_pkey_from_der_traditional_key(self, data, password):
+        mem_bio = self._bytes_to_bio(data)
+        key = self._lib.d2i_PrivateKey_bio(mem_bio.bio, self._ffi.NULL)
+        if key != self._ffi.NULL:
+            if password is not None:
+                raise TypeError(
+                    "Password was given but private key is not encrypted."
+                )
+
+            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
+            return key
+        else:
+            self._consume_errors()
+            return None
+
+    def _evp_pkey_from_der_unencrypted_pkcs8(self, data, password):
+        mem_bio = self._bytes_to_bio(data)
+        info = self._lib.d2i_PKCS8_PRIV_KEY_INFO_bio(
+            mem_bio.bio, self._ffi.NULL
+        )
+        if info != self._ffi.NULL:
+            key = self._lib.EVP_PKCS82PKEY(info)
+            assert key != self._ffi.NULL
+            if password is not None:
+                raise TypeError(
+                    "Password was given but private key is not encrypted."
+                )
+            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
+            return key
+        else:
+            self._consume_errors()
+            return None
+
+    def load_der_public_key(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        evp_pkey = self._lib.d2i_PUBKEY_bio(mem_bio.bio, self._ffi.NULL)
+        if evp_pkey == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Could not unserialize key data.")
+
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return self._evp_pkey_to_public_key(evp_pkey)
 
     def load_pem_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)

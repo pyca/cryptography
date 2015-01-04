@@ -15,6 +15,7 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
 
     * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
+    * :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
     * :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
