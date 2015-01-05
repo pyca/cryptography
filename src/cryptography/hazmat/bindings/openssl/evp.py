@@ -119,6 +119,8 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
                               const unsigned char *, int);
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
+
+EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
