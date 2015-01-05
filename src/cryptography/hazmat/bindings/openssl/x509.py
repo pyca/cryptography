@@ -71,6 +71,8 @@ typedef struct {
 
 typedef ... NETSCAPE_SPKI;
 
+typedef ... PKCS8_PRIV_KEY_INFO;
+
 static const int X509_FLAG_COMPAT;
 static const int X509_FLAG_NO_HEADER;
 static const int X509_FLAG_NO_VERSION;
@@ -224,6 +226,9 @@ DSA *d2i_DSA_PUBKEY_bio(BIO *, DSA **);
 int i2d_DSA_PUBKEY_bio(BIO *, DSA *);
 DSA *d2i_DSAPrivateKey_bio(BIO *, DSA **);
 int i2d_DSAPrivateKey_bio(BIO *, DSA *);
+
+PKCS8_PRIV_KEY_INFO *d2i_PKCS8_PRIV_KEY_INFO_bio(BIO *,
+                                                 PKCS8_PRIV_KEY_INFO **);
 """
 
 MACROS = """
