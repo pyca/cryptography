@@ -17,8 +17,8 @@ def _available_backends():
 
     if _available_backends_list is None:
         _available_backends_list = [
-            backend.load(require=False)
-            for backend in pkg_resources.iter_entry_points(
+            ep.resolve() if hasattr(ep, "resolve") else ep.load(require=False)
+            for ep in pkg_resources.iter_entry_points(
                 "cryptography.backends"
             )
         ]
