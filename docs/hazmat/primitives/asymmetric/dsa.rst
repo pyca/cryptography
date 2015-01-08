@@ -18,7 +18,7 @@ Generation
     generate a new set of parameters and key in one step.
 
     :param int key_size: The length of the modulus in bits. It should be
-        either 1024, 2048 or 3072. For keys generated in 2014 this should
+        either 1024, 2048 or 3072. For keys generated in 2015 this should
         be `at least 2048`_ (See page 41).  Note that some applications
         (such as SSH) have not yet gained support for larger key sizes
         specified in FIPS 186-3 and are still restricted to only the
@@ -42,7 +42,7 @@ Generation
     Generate DSA parameters using the provided ``backend``.
 
     :param int key_size: The length of the modulus in bits. It should be
-        either 1024, 2048 or 3072. For keys generated in 2014 this should
+        either 1024, 2048 or 3072. For keys generated in 2015 this should
         be `at least 2048`_ (See page 41).  Note that some applications
         (such as SSH) have not yet gained support for larger key sizes
         specified in FIPS 186-3 and are still restricted to only the
