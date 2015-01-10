@@ -19,7 +19,7 @@ func unhexlify(s string) []byte {
 	return bytes
 }
 
-type VectorArgs struct {
+type vectorArgs struct {
 	count      string
 	key        string
 	iv         string
@@ -27,13 +27,13 @@ type VectorArgs struct {
 	ciphertext string
 }
 
-type VectorVerifier interface {
-	validate(count string, key, iv, plaintext, expected_ciphertext []byte)
+type vectorVerifier interface {
+	validate(count string, key, iv, plaintext, expectedCiphertext []byte)
 }
 
 type ofbVerifier struct{}
 
-func (o ofbVerifier) validate(count string, key, iv, plaintext, expected_ciphertext []byte) {
+func (o ofbVerifier) validate(count string, key, iv, plaintext, expectedCiphertext []byte) {
 	block, err := cast5.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -43,17 +43,17 @@ func (o ofbVerifier) validate(count string, key, iv, plaintext, expected_ciphert
 	stream := cipher.NewOFB(block, iv)
 	stream.XORKeyStream(ciphertext, plaintext)
 
-	if !bytes.Equal(ciphertext, expected_ciphertext) {
+	if !bytes.Equal(ciphertext, expectedCiphertext) {
 		panic(fmt.Errorf("vector mismatch @ COUNT = %s:\n  %s != %s\n",
 			count,
-			hex.EncodeToString(expected_ciphertext),
+			hex.EncodeToString(expectedCiphertext),
 			hex.EncodeToString(ciphertext)))
 	}
 }
 
 type cbcVerifier struct{}
 
-func (o cbcVerifier) validate(count string, key, iv, plaintext, expected_ciphertext []byte) {
+func (o cbcVerifier) validate(count string, key, iv, plaintext, expectedCiphertext []byte) {
 	block, err := cast5.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -63,17 +63,17 @@ func (o cbcVerifier) validate(count string, key, iv, plaintext, expected_ciphert
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(ciphertext, plaintext)
 
-	if !bytes.Equal(ciphertext, expected_ciphertext) {
+	if !bytes.Equal(ciphertext, expectedCiphertext) {
 		panic(fmt.Errorf("vector mismatch @ COUNT = %s:\n  %s != %s\n",
 			count,
-			hex.EncodeToString(expected_ciphertext),
+			hex.EncodeToString(expectedCiphertext),
 			hex.EncodeToString(ciphertext)))
 	}
 }
 
 type cfbVerifier struct{}
 
-func (o cfbVerifier) validate(count string, key, iv, plaintext, expected_ciphertext []byte) {
+func (o cfbVerifier) validate(count string, key, iv, plaintext, expectedCiphertext []byte) {
 	block, err := cast5.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -83,17 +83,17 @@ func (o cfbVerifier) validate(count string, key, iv, plaintext, expected_ciphert
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext, plaintext)
 
-	if !bytes.Equal(ciphertext, expected_ciphertext) {
+	if !bytes.Equal(ciphertext, expectedCiphertext) {
 		panic(fmt.Errorf("vector mismatch @ COUNT = %s:\n  %s != %s\n",
 			count,
-			hex.EncodeToString(expected_ciphertext),
+			hex.EncodeToString(expectedCiphertext),
 			hex.EncodeToString(ciphertext)))
 	}
 }
 
 type ctrVerifier struct{}
 
-func (o ctrVerifier) validate(count string, key, iv, plaintext, expected_ciphertext []byte) {
+func (o ctrVerifier) validate(count string, key, iv, plaintext, expectedCiphertext []byte) {
 	block, err := cast5.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -103,15 +103,15 @@ func (o ctrVerifier) validate(count string, key, iv, plaintext, expected_ciphert
 	stream := cipher.NewCTR(block, iv)
 	stream.XORKeyStream(ciphertext, plaintext)
 
-	if !bytes.Equal(ciphertext, expected_ciphertext) {
+	if !bytes.Equal(ciphertext, expectedCiphertext) {
 		panic(fmt.Errorf("vector mismatch @ COUNT = %s:\n  %s != %s\n",
 			count,
-			hex.EncodeToString(expected_ciphertext),
+			hex.EncodeToString(expectedCiphertext),
 			hex.EncodeToString(ciphertext)))
 	}
 }
 
-func validateVectors(verifier VectorVerifier, filename string) {
+func validateVectors(verifier vectorVerifier, filename string) {
 	vectors, err := os.Open(filename)
 	if err != nil {
 		panic(err)
@@ -119,7 +119,7 @@ func validateVectors(verifier VectorVerifier, filename string) {
 	defer vectors.Close()
 
 	var segments []string
-	var vector *VectorArgs
+	var vector *vectorArgs
 
 	scanner := bufio.NewScanner(vectors)
 	for scanner.Scan() {
@@ -134,7 +134,7 @@ func validateVectors(verifier VectorVerifier, filename string) {
 					unhexlify(vector.plaintext),
 					unhexlify(vector.ciphertext))
 			}
-			vector = &VectorArgs{count: segments[1]}
+			vector = &vectorArgs{count: segments[1]}
 		case strings.ToUpper(segments[0]) == "IV":
 			vector.iv = segments[1][:16]
 		case strings.ToUpper(segments[0]) == "KEY":
@@ -150,15 +150,15 @@ func validateVectors(verifier VectorVerifier, filename string) {
 
 func main() {
 	validateVectors(ofbVerifier{},
-		"tests/hazmat/primitives/vectors/ciphers/CAST5/cast5-ofb.txt")
+		"vectors/cryptography_vectors/ciphers/CAST5/cast5-ofb.txt")
 	fmt.Println("OFB OK.")
 	validateVectors(cfbVerifier{},
-		"tests/hazmat/primitives/vectors/ciphers/CAST5/cast5-cfb.txt")
+		"vectors/cryptography_vectors/ciphers/CAST5/cast5-cfb.txt")
 	fmt.Println("CFB OK.")
 	validateVectors(cbcVerifier{},
-		"tests/hazmat/primitives/vectors/ciphers/CAST5/cast5-cbc.txt")
+		"vectors/cryptography_vectors/ciphers/CAST5/cast5-cbc.txt")
 	fmt.Println("CBC OK.")
 	validateVectors(ctrVerifier{},
-		"tests/hazmat/primitives/vectors/ciphers/CAST5/cast5-ctr.txt")
+		"vectors/cryptography_vectors/ciphers/CAST5/cast5-ctr.txt")
 	fmt.Println("CTR OK.")
 }
