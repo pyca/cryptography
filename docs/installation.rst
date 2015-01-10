@@ -24,15 +24,15 @@ on these operating systems.
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
-* ``OpenSSL 0.9.8k``
-* ``OpenSSL 0.9.8za``
-* ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
-* ``OpenSSL 1.0.1``
-* ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
-* ``OpenSSL 1.0.1e-freebsd``
-* ``OpenSSL 1.0.1-latest`` (The most recent 1.0.1 release)
-* ``OpenSSL 1.0.2 beta``
+* 0.9.8e-fips-rhel5 (RHEL/CentOS 5)
+* 0.9.8k
+* 0.9.8za
+* 1.0.0-fips (RHEL/CentOS 6.4)
+* 1.0.1
+* 1.0.1e-fips (RHEL/CentOS 7)
+* 1.0.1e-freebsd
+* 1.0.1-latest (The most recent 1.0.1 release)
+* 1.0.2 beta
 
 On Windows
 ----------

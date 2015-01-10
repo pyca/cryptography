@@ -22,6 +22,8 @@ deserialized
 Docstrings
 fernet
 Fernet
+fips
+freebsd
 hazmat
 indistinguishability
 initialisms
@@ -41,6 +43,7 @@ preprocessor
 preprocessors
 pseudorandom
 pyOpenSSL
+rhel
 Schneier
 scrypt
 Solaris
@@ -50,3 +53,4 @@ Ubuntu
 unencrypted
 unpadded
 unpadding
+za
