@@ -7,7 +7,6 @@ compiler:
     - gcc
 env:
     matrix:
-        - TOXENV=vectors
         - TOXENV=py26
         - TOXENV=py27
         - TOXENV=py32
@@ -25,6 +24,7 @@ env:
         - TOXENV=docs
         - TOXENV=pep8
         - TOXENV=py3pep8
+        - TOXENV=vectors
 
 install:
     - ./.travis/install.sh
