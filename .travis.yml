@@ -24,6 +24,7 @@ env:
         - TOXENV=docs
         - TOXENV=pep8
         - TOXENV=py3pep8
+        - TOXENV=vectors
 
 install:
     - ./.travis/install.sh
