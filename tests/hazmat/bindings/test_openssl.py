@@ -134,8 +134,9 @@ class TestOpenSSL(object):
         assert resp == expected_options
         assert b.lib.SSL_get_mode(ssl) == expected_options
 
-    def test_libraries(self):
+    def test_libraries(self, monkeypatch):
         assert _get_libraries("darwin") == ["ssl", "crypto"]
+        monkeypatch.setenv('PYCA_WINDOWS_LINK_TYPE', 'static')
         assert "ssleay32mt" in _get_libraries("win32")
 
     def test_windows_static_dynamic_libraries(self):
