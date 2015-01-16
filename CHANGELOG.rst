@@ -9,6 +9,15 @@ Changelog
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load elliptic curve public keys.
 
+0.7.2 - 2015-01-16
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.1l.
+* ``enum34`` is no longer installed on Python 3.4, where it is included in
+  the standard library.
+* Added a new function to the OpenSSL bindings to support additional
+  functionality in pyOpenSSL.
+
 0.7.1 - 2014-12-28
 ~~~~~~~~~~~~~~~~~~
 
