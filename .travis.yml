@@ -60,10 +60,10 @@ matrix:
 
         - os: linux
           env: TOXENV=docs
-          compiler: clang
+          compiler: gcc
         - os: linux
           env: TOXENV=pep8
-          compiler: clang
+          compiler: gcc
         - os: linux
           env: TOXENV=py3pep8
-          compiler: clang
+          compiler: gcc
