@@ -9,9 +9,9 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DSABackend, EllipticCurveBackend, HMACBackend,
-    HashBackend, PBKDF2HMACBackend, PEMSerializationBackend,
-    RSABackend, X509Backend
+    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
+    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
+    PEMSerializationBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -177,6 +177,15 @@ class DummyPEMSerializationBackend(object):
         pass
 
     def load_pem_public_key(self, data):
+        pass
+
+
+@utils.register_interface(DERSerializationBackend)
+class DummyDERSerializationBackend(object):
+    def load_der_private_key(self, data, password):
+        pass
+
+    def load_der_public_key(self, data):
         pass
 
 
@@ -445,6 +454,18 @@ class TestMultiBackend(object):
             backend.load_pem_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pem_public_key(b"keydata")
+
+    def test_der_serialization_backend(self):
+        backend = MultiBackend([DummyDERSerializationBackend()])
+
+        backend.load_der_private_key(b"keydata", None)
+        backend.load_der_public_key(b"keydata")
+
+        backend = MultiBackend([])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_der_private_key(b"keydata", None)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
+            backend.load_der_public_key(b"keydata")
 
     def test_x509_backend(self):
         backend = MultiBackend([DummyX509Backend()])
