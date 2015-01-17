@@ -237,7 +237,7 @@ class DERSerializationBackend(object):
     @abc.abstractmethod
     def load_der_private_key(self, data, password):
         """
-        Loads a priate key from DER encoded data. Uses the provided password
+        Loads a private key from DER encoded data. Uses the provided password
         if the data is encrypted.
         """
 
