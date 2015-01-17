@@ -233,6 +233,22 @@ class PEMSerializationBackend(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class DERSerializationBackend(object):
+    @abc.abstractmethod
+    def load_der_private_key(self, data, password):
+        """
+        Loads a private key from DER encoded data. Uses the provided password
+        if the data is encrypted.
+        """
+
+    @abc.abstractmethod
+    def load_der_public_key(self, data):
+        """
+        Loads a public key from DER encoded data.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class X509Backend(object):
     @abc.abstractmethod
     def load_pem_x509_certificate(self, data):
