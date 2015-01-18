@@ -95,7 +95,8 @@ Custom X.509 Vectors
 * ``all_supported_names.pem`` - An RSA 2048 bit certificate generated using
   OpenSSL that contains a subject and issuer that have two of each supported
   attribute type from :rfc:`5280`.
-* ``unsupported_subject_name.pem`` - An RSA 2048 bit self-signed CA certificate generated using OpenSSL that contains the unsupported "initials" name.
+* ``unsupported_subject_name.pem`` - An RSA 2048 bit self-signed CA certificate
+  generated using OpenSSL that contains the unsupported "initials" name.
 
 Hashes
 ~~~~~~
