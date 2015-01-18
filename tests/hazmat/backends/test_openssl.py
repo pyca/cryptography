@@ -249,19 +249,6 @@ class TestOpenSSLRandomEngine(object):
         assert res == 1
         assert backend._ffi.buffer(buf)[:] != "\x00" * 500
 
-    def test_activate_osrandom_already_default(self):
-        e = backend._lib.ENGINE_get_default_RAND()
-        name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
-        res = backend._lib.ENGINE_free(e)
-        assert res == 1
-        backend.activate_osrandom_engine()
-        e = backend._lib.ENGINE_get_default_RAND()
-        name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
-        res = backend._lib.ENGINE_free(e)
-        assert res == 1
-
     def test_activate_osrandom_no_default(self):
         backend.activate_builtin_random()
         e = backend._lib.ENGINE_get_default_RAND()
@@ -291,6 +278,19 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_builtin_random()
         e = backend._lib.ENGINE_get_default_RAND()
         assert e == backend._ffi.NULL
+
+    def test_activate_osrandom_already_default(self):
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
+        backend.activate_osrandom_engine()
+        e = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(e)
+        assert name == backend._lib.Cryptography_osrandom_engine_name
+        res = backend._lib.ENGINE_free(e)
+        assert res == 1
 
 
 class TestOpenSSLRSA(object):
