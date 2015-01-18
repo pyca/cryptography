@@ -121,6 +121,12 @@ def rsa_crt_dmq1(private_exponent, q):
     return private_exponent % (q - 1)
 
 
+# Controls the number of iterations rsa_recover_prime_factors will perform
+# to obtain the prime factors. Each iteration increments by 2 so the actual
+# maximum attempts is half this number.
+_MAX_RECOVERY_ATTEMPTS = 1000
+
+
 def rsa_recover_prime_factors(n, e, d):
     """
     Compute factors p and q from the private exponent d. We assume that n has
@@ -140,7 +146,7 @@ def rsa_recover_prime_factors(n, e, d):
     # as Factorization", M. Rabin, 1979
     spotted = False
     a = 2
-    while not spotted and a < 1000:
+    while not spotted and a < _MAX_RECOVERY_ATTEMPTS:
         k = t
         # Cycle through all values a^{t*2^i}=a^k
         while k < ktot:
