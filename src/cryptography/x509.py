@@ -90,7 +90,6 @@ class Name(object):
             elif attribute.oid == "1.2.840.113549.1.9.1":
                 self._email_address.append(attribute)
             else:
-                # TODO test this
                 raise UnknownAttribute(
                     "Unknown OID: {0}".format(attribute.oid)
                 )

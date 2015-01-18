@@ -382,6 +382,21 @@ class TestRSACertificate(object):
             ),
         ]
 
+    def test_unsupported_subject_issuer_item(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom",
+                "unsupported_subject_item.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(x509.UnknownAttribute):
+            cert.subject
+
+        with pytest.raises(x509.UnknownAttribute):
+            cert.issuer
+
     def test_load_good_ca_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
@@ -575,3 +590,10 @@ class TestECDSACertificate(object):
         )
         with pytest.raises(NotImplementedError):
             cert.public_key()
+
+
+class TestName(object):
+    def test_unknown_attribute(self):
+        initials = x509.Attribute('2.5.4.43', 'initials', 'PK')
+        with pytest.raises(x509.UnknownAttribute):
+            x509.Name([initials])

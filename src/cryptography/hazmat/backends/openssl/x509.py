@@ -147,7 +147,6 @@ class _Certificate(object):
             try:
                 attribute_name = _OID_TO_NAME[oid]
             except KeyError:
-                # TODO: test this
                 raise x509.UnknownAttribute("Unknown OID: {0}".format(oid))
 
             attributes.append(x509.Attribute(oid, attribute_name, value))
