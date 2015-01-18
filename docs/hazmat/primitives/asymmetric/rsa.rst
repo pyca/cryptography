@@ -395,8 +395,8 @@ this without having to do the math themselves.
 
     .. versionadded:: 0.8
 
-    Computes ``(p, q)`` given the modulus, public exponent, and private
-    exponent.
+    Computes the prime factors ``(p, q)`` given the modulus, public exponent,
+    and private exponent.
 
     .. note::
 
