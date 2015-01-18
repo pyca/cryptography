@@ -8,6 +8,8 @@ Changelog
 
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load elliptic curve public keys.
+* Added
+  :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~
