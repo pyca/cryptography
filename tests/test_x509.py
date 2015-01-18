@@ -621,3 +621,28 @@ class TestName(object):
         initials = x509.Attribute('2.5.4.43', 'initials', 'PK')
         with pytest.raises(x509.UnknownAttribute):
             x509.Name([initials])
+
+    def test_eq(self):
+        assert x509.Attribute(
+            'oid', 'name', 'value'
+        ) == x509.Attribute(
+            'oid', 'name', 'value'
+        )
+
+    def test_ne(self):
+        assert x509.Attribute(
+            'oid', 'name', 'value'
+        ) != x509.Attribute(
+            'oid2', 'name', 'value'
+        )
+        assert x509.Attribute(
+            'oid', 'name', 'value'
+        ) != x509.Attribute(
+            'oid', 'name2', 'value'
+        )
+        assert x509.Attribute(
+            'oid', 'name', 'value'
+        ) != x509.Attribute(
+            'oid', 'name', 'value2'
+        )
+        assert x509.Attribute('oid', 'name', 'value') != object()

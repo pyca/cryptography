@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import collections
 from enum import Enum
 
 import six
@@ -36,7 +35,28 @@ class UnknownAttribute(Exception):
     pass
 
 
-Attribute = collections.namedtuple("Attribute", ["oid", "name", "value"])
+class Attribute(object):
+    def __init__(self, oid, name, value):
+        self._oid = oid
+        self._name = name
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    name = utils.read_only_property("_name")
+    value = utils.read_only_property("_value")
+
+    def __eq__(self, other):
+        if not isinstance(other, Attribute):
+            return NotImplemented
+
+        return (
+            self.oid == other.oid and
+            self.name == other.name and
+            self.value == other.value
+        )
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class Name(object):
