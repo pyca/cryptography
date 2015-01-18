@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from fractions import gcd
+
 import six
 
 from cryptography import utils
@@ -117,6 +119,55 @@ def rsa_crt_dmq1(private_exponent, q):
     private_exponent and q.
     """
     return private_exponent % (q - 1)
+
+
+# Controls the number of iterations rsa_recover_prime_factors will perform
+# to obtain the prime factors. Each iteration increments by 2 so the actual
+# maximum attempts is half this number.
+_MAX_RECOVERY_ATTEMPTS = 1000
+
+
+def rsa_recover_prime_factors(n, e, d):
+    """
+    Compute factors p and q from the private exponent d. We assume that n has
+    no more than two factors. This function is adapted from code in PyCrypto.
+    """
+    # See 8.2.2(i) in Handbook of Applied Cryptography.
+    ktot = d * e - 1
+    # The quantity d*e-1 is a multiple of phi(n), even,
+    # and can be represented as t*2^s.
+    t = ktot
+    while t % 2 == 0:
+        t = t // 2
+    # Cycle through all multiplicative inverses in Zn.
+    # The algorithm is non-deterministic, but there is a 50% chance
+    # any candidate a leads to successful factoring.
+    # See "Digitalized Signatures and Public Key Functions as Intractable
+    # as Factorization", M. Rabin, 1979
+    spotted = False
+    a = 2
+    while not spotted and a < _MAX_RECOVERY_ATTEMPTS:
+        k = t
+        # Cycle through all values a^{t*2^i}=a^k
+        while k < ktot:
+            cand = pow(a, k, n)
+            # Check if a^k is a non-trivial root of unity (mod n)
+            if cand != 1 and cand != (n - 1) and pow(cand, 2, n) == 1:
+                # We have found a number such that (cand-1)(cand+1)=0 (mod n).
+                # Either of the terms divides n.
+                p = gcd(cand + 1, n)
+                spotted = True
+                break
+            k *= 2
+        # This value was not any good... let's try another!
+        a += 2
+    if not spotted:
+        raise ValueError("Unable to compute factors p and q from exponent d.")
+    # Found !
+    q, r = divmod(n, p)
+    assert r == 0
+
+    return (p, q)
 
 
 class RSAPrivateNumbers(object):

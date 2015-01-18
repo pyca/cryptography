@@ -1698,3 +1698,30 @@ class TestRSANumbersEquality(object):
             1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 3)
         )
         assert num != object()
+
+
+class TestRSAPrimeFactorRecovery(object):
+    @pytest.mark.parametrize(
+        "vector",
+        _flatten_pkcs1_examples(load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
+            load_pkcs1_vectors
+        ))
+    )
+    def test_recover_prime_factors(self, vector):
+        private, public, example = vector
+        p, q = rsa.rsa_recover_prime_factors(
+            private["modulus"],
+            private["public_exponent"],
+            private["private_exponent"]
+        )
+        # Unfortunately there is no convention on which prime should be p
+        # and which one q. The function we use always makes p < q, but the
+        # NIST vectors are not so consistent. Accordingly we verify we've
+        # recovered the proper (p, q) by sorting them and asserting on that.
+        assert sorted([p, q]) == sorted([private["p"], private["q"]])
+
+    def test_invalid_recover_prime_factors(self):
+        with pytest.raises(ValueError):
+            rsa.rsa_recover_prime_factors(34, 3, 7)

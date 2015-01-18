@@ -391,6 +391,20 @@ this without having to do the math themselves.
     Computes the ``dmq1`` parameter from the RSA private exponent and prime
     ``q``.
 
+.. function:: rsa_recover_prime_factors(n, e, d)
+
+    .. versionadded:: 0.8
+
+    Computes the prime factors ``(p, q)`` given the modulus, public exponent,
+    and private exponent.
+
+    .. note::
+
+        When recovering prime factors this algorithm will always return ``p``
+        and ``q`` such that ``p < q``.
+
+    :return: A tuple ``(p, q)``
+
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
