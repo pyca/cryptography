@@ -10,6 +10,8 @@ Changelog
   now load elliptic curve public keys.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
+* Added support for parsing X.509 names. See the
+  :doc:`X.509 documentation</x509>` for more information.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~
