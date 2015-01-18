@@ -253,6 +253,30 @@ class TestRSACertificate(object):
             ),
         ]
 
+    def test_unicode_name(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom",
+                "utf8_common_name.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.subject.common_name == [
+            x509.Attribute(
+                '2.5.4.3',
+                'commonName',
+                b'We heart UTF8!\xe2\x84\xa2'.decode('utf8')
+            )
+        ]
+        assert cert.issuer.common_name == [
+            x509.Attribute(
+                '2.5.4.3',
+                'commonName',
+                b'We heart UTF8!\xe2\x84\xa2'.decode('utf8')
+            )
+        ]
+
     def test_all_subject_name_types(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -382,11 +406,11 @@ class TestRSACertificate(object):
             ),
         ]
 
-    def test_unsupported_subject_issuer_item(self, backend):
+    def test_unsupported_subject_issuer_name(self, backend):
         cert = _load_cert(
             os.path.join(
                 "x509", "custom",
-                "unsupported_subject_item.pem"
+                "unsupported_subject_name.pem"
             ),
             x509.load_pem_x509_certificate,
             backend
