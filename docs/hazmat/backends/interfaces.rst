@@ -306,17 +306,17 @@ A specific ``backend`` may provide one or more of these interfaces.
             restricted to only the 1024-bit keys specified in FIPS 186-2.
 
         :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
             provider.
 
     .. method:: generate_dsa_private_key(parameters)
 
         :param parameters: A
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
             provider.
 
         :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
             provider.
 
         :raises ValueError: This is raised if the key size is not one of 1024,
@@ -366,7 +366,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`.
 
         :returns: A provider of
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.
@@ -377,7 +377,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`.
 
         :returns: A provider of
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.
@@ -388,7 +388,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`.
 
         :returns: A provider of
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`.
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
             when any backend specific criteria are not met.

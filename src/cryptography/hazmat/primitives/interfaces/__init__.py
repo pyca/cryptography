@@ -8,10 +8,10 @@ import abc
 
 import six
 
-from cryptography.hazmat.primitives.interfaces.asymmetric.dsa import (
-    DSAParameters, DSAParametersWithNumbers, DSAPrivateKey,
-    DSAPrivateKeyWithNumbers, DSAPublicKey, DSAPublicKeyWithNumbers
-)
+from cryptography import utils
+
+from cryptography.hazmat.primitives.asymmetric import dsa
+
 from cryptography.hazmat.primitives.interfaces.asymmetric.ec import (
     EllipticCurve, EllipticCurvePrivateKey, EllipticCurvePrivateKeyWithNumbers,
     EllipticCurvePublicKey, EllipticCurvePublicKeyWithNumbers,
@@ -25,12 +25,6 @@ from cryptography.hazmat.primitives.interfaces.ciphers import (
 __all__ = [
     "BlockCipherAlgorithm",
     "CipherAlgorithm",
-    "DSAParameters",
-    "DSAParametersWithNumbers",
-    "DSAPrivateKey",
-    "DSAPrivateKeyWithNumbers",
-    "DSAPublicKey",
-    "DSAPublicKeyWithNumbers",
     "EllipticCurve",
     "EllipticCurvePrivateKey",
     "EllipticCurvePrivateKeyWithNumbers",
@@ -42,6 +36,66 @@ __all__ = [
     "ModeWithInitializationVector",
     "ModeWithNonce"
 ]
+
+DSAParameters = utils.deprecated(
+    dsa.DSAParameters,
+    __name__,
+    (
+        "The DSAParameters interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.dsa.module"
+    ),
+    utils.DeprecatedIn08
+)
+
+DSAParametersWithNumbers = utils.deprecated(
+    dsa.DSAParametersWithNumbers,
+    __name__,
+    (
+        "The DSAParametersWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.dsa.module"
+    ),
+    utils.DeprecatedIn08
+)
+
+DSAPrivateKey = utils.deprecated(
+    dsa.DSAPrivateKey,
+    __name__,
+    (
+        "The DSAPrivateKey interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.dsa.module"
+    ),
+    utils.DeprecatedIn08
+)
+
+DSAPrivateKeyWithNumbers = utils.deprecated(
+    dsa.DSAPrivateKeyWithNumbers,
+    __name__,
+    (
+        "The DSAPrivateKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.dsa.module"
+    ),
+    utils.DeprecatedIn08
+)
+
+DSAPublicKey = utils.deprecated(
+    dsa.DSAPublicKey,
+    __name__,
+    (
+        "The DSAPublicKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.dsa.module"
+    ),
+    utils.DeprecatedIn08
+)
+
+DSAPublicKeyWithNumbers = utils.deprecated(
+    dsa.DSAPublicKeyWithNumbers,
+    __name__,
+    (
+        "The DSAPublicKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.dsa.module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)
