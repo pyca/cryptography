@@ -308,7 +308,7 @@ X.509 Certificate Object
 
         :type: :class:`str`
 
-        The name of the OID (e.g. `commonName`)
+        The name of the OID (e.g. "surname")
 
     .. attribute:: value
 
