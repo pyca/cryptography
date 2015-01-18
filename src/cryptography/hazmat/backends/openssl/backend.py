@@ -985,9 +985,6 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        bn_x = self._int_to_bn(x)
-        bn_y = self._int_to_bn(y)
-
         set_func, get_func, group = (
             self._ec_key_determine_group_get_set_funcs(ctx)
         )
@@ -996,18 +993,24 @@ class Backend(object):
         assert point != self._ffi.NULL
         point = self._ffi.gc(point, self._lib.EC_POINT_free)
 
-        with self._tmp_bn_ctx() as bn_ctx:
-            check_x = self._lib.BN_CTX_get(bn_ctx)
-            check_y = self._lib.BN_CTX_get(bn_ctx)
+        bn_x = self._int_to_bn(x)
+        bn_y = self._int_to_bn(y)
 
+        with self._tmp_bn_ctx() as bn_ctx:
             res = set_func(group, point, bn_x, bn_y, bn_ctx)
             assert res == 1
+
+            check_x = self._lib.BN_CTX_get(bn_ctx)
+            check_y = self._lib.BN_CTX_get(bn_ctx)
 
             res = get_func(group, point, check_x, check_y, bn_ctx)
             assert res == 1
 
-            assert self._lib.BN_cmp(bn_x, check_x) == 0
-            assert self._lib.BN_cmp(bn_y, check_y) == 0
+            res = self._lib.BN_cmp(bn_x, check_x) 
+            assert res == 0
+
+            res = self._lib.BN_cmp(bn_y, check_y)
+            assert res == 0
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         assert res == 1

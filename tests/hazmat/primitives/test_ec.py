@@ -63,6 +63,43 @@ class DummySignatureAlgorithm(object):
     algorithm = None
 
 
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECWithNumbers(object):
+    @pytest.mark.parametrize(
+        ("vector", "hash_type"),
+        list(itertools.product(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "ECDSA", "FIPS_186-3", "KeyPair.rsp"),
+                load_fips_ecdsa_key_pair_vectors
+            ),
+            _HASH_TYPES.values()
+        ))
+    )
+    def test_with_numbers(self, backend, vector, hash_type):
+        curve_type = ec._CURVE_TYPES[vector['curve']]
+
+        _skip_ecdsa_vector(backend, curve_type, hash_type)
+
+        key = ec.EllipticCurvePrivateNumbers(
+            vector['d'],
+            ec.EllipticCurvePublicNumbers(
+                vector['x'],
+                vector['y'],
+                curve_type()
+            )
+        ).private_key(backend)
+        assert key
+
+        if isinstance(key, interfaces.EllipticCurvePrivateKeyWithNumbers):
+            priv_num = key.private_numbers()
+            assert priv_num.private_value == vector['d']
+            assert priv_num.public_numbers.x == vector['x']
+            assert priv_num.public_numbers.y == vector['y']
+            assert curve_type().name == priv_num.public_numbers.curve.name
+
+
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
@@ -119,42 +156,6 @@ def test_ec_numbers():
             1,
             None
         )
-
-
-@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECWithNumbers(object):
-    @pytest.mark.parametrize(
-        ("vector", "hash_type"),
-        list(itertools.product(
-            load_vectors_from_file(
-                os.path.join(
-                    "asymmetric", "ECDSA", "FIPS_186-3", "KeyPair.rsp"),
-                load_fips_ecdsa_key_pair_vectors
-            ),
-            _HASH_TYPES.values()
-        ))
-    )
-    def test_with_numbers(self, backend, vector, hash_type):
-        curve_type = ec._CURVE_TYPES[vector['curve']]
-
-        _skip_ecdsa_vector(backend, curve_type, hash_type)
-
-        key = ec.EllipticCurvePrivateNumbers(
-            vector['d'],
-            ec.EllipticCurvePublicNumbers(
-                vector['x'],
-                vector['y'],
-                curve_type()
-            )
-        ).private_key(backend)
-        assert key
-
-        if isinstance(key, interfaces.EllipticCurvePrivateKeyWithNumbers):
-            priv_num = key.private_numbers()
-            assert priv_num.private_value == vector['d']
-            assert priv_num.public_numbers.x == vector['x']
-            assert priv_num.public_numbers.y == vector['y']
-            assert curve_type().name == priv_num.public_numbers.curve.name
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
