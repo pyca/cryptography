@@ -97,6 +97,9 @@ Custom X.509 Vectors
   attribute type from :rfc:`5280`.
 * ``unsupported_subject_name.pem`` - An RSA 2048 bit self-signed CA certificate
   generated using OpenSSL that contains the unsupported "initials" name.
+* ``utf8_common_name.pem`` - An RSA 2048 bit self-signed CA certificate
+  generated using OpenSSL that contains a UTF8String common name with the value
+  "We heart UTF8!™".
 
 Hashes
 ~~~~~~
