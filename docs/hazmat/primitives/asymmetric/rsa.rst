@@ -395,14 +395,13 @@ this without having to do the math themselves.
 
     .. versionadded:: 0.8
 
+    Computes ``(p, q)`` given the modulus, public exponent, and private
+    exponent.
+
     .. note::
 
         When recovering prime factors this algorithm will always return ``p``
         and ``q`` such that ``p < q``.
-
-
-    Computes ``(p, q)`` given the modulus, public exponent, and private
-    exponent.
 
     :return: A tuple ``(p, q)``
 

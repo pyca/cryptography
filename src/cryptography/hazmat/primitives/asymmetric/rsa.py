@@ -138,7 +138,7 @@ def rsa_recover_prime_factors(n, e, d):
     # any candidate a leads to successful factoring.
     # See "Digitalized Signatures and Public Key Functions as Intractable
     # as Factorization", M. Rabin, 1979
-    spotted = 0
+    spotted = False
     a = 2
     while not spotted and a < 1000:
         k = t
@@ -150,11 +150,11 @@ def rsa_recover_prime_factors(n, e, d):
                 # We have found a number such that (cand-1)(cand+1)=0 (mod n).
                 # Either of the terms divides n.
                 p = gcd(cand + 1, n)
-                spotted = 1
+                spotted = True
                 break
-            k = k * 2
+            k *= 2
         # This value was not any good... let's try another!
-        a = a + 2
+        a += 2
     if not spotted:
         raise ValueError("Unable to compute factors p and q from exponent d.")
     # Found !
