@@ -85,6 +85,136 @@ class TestRSACertificate(object):
             ),
         ]
 
+    def test_all_issuer_name_types(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom",
+                "all_supported_names.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        issuer = cert.issuer
+
+        assert isinstance(issuer, x509.Name)
+        assert issuer.attributes == [
+            x509.Attribute('2.5.4.6', 'countryName', 'US'),
+            x509.Attribute('2.5.4.6', 'countryName', 'CA'),
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'Texas'),
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'Illinois'),
+            x509.Attribute('2.5.4.7', 'localityName', 'Chicago'),
+            x509.Attribute('2.5.4.7', 'localityName', 'Austin'),
+            x509.Attribute('2.5.4.10', 'organizationName', 'Zero, LLC'),
+            x509.Attribute('2.5.4.10', 'organizationName', 'One, LLC'),
+            x509.Attribute('2.5.4.3', 'commonName', 'common name 0'),
+            x509.Attribute('2.5.4.3', 'commonName', 'common name 1'),
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'OU 0'
+            ),
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'OU 1'
+            ),
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'dnQualifier0'),
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'dnQualifier1'),
+            x509.Attribute('2.5.4.5', 'serialNumber', '123'),
+            x509.Attribute('2.5.4.5', 'serialNumber', '456'),
+            x509.Attribute('2.5.4.12', 'title', 'Title 0'),
+            x509.Attribute('2.5.4.12', 'title', 'Title 1'),
+            x509.Attribute('2.5.4.4', 'surname', 'Surname 0'),
+            x509.Attribute('2.5.4.4', 'surname', 'Surname 1'),
+            x509.Attribute('2.5.4.42', 'givenName', 'Given Name 0'),
+            x509.Attribute('2.5.4.42', 'givenName', 'Given Name 1'),
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Incognito 0'),
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Incognito 1'),
+            x509.Attribute('2.5.4.44', 'generationQualifier', 'Last Gen'),
+            x509.Attribute('2.5.4.44', 'generationQualifier', 'Next Gen'),
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc0'
+            ),
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc1'
+            ),
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test0@test.local'
+            ),
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test1@test.local'
+            ),
+        ]
+
+        assert issuer.country_name == [
+            x509.Attribute('2.5.4.6', 'countryName', 'US'),
+            x509.Attribute('2.5.4.6', 'countryName', 'CA'),
+        ]
+        assert issuer.state_or_province_name == [
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'Texas'),
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'Illinois'),
+        ]
+        assert issuer.locality_name == [
+            x509.Attribute('2.5.4.7', 'localityName', 'Chicago'),
+            x509.Attribute('2.5.4.7', 'localityName', 'Austin'),
+        ]
+        assert issuer.organization_name == [
+            x509.Attribute('2.5.4.10', 'organizationName', 'Zero, LLC'),
+            x509.Attribute('2.5.4.10', 'organizationName', 'One, LLC'),
+        ]
+        assert issuer.common_name == [
+            x509.Attribute('2.5.4.3', 'commonName', 'common name 0'),
+            x509.Attribute('2.5.4.3', 'commonName', 'common name 1'),
+        ]
+        assert issuer.organizational_unit_name == [
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'OU 0'
+            ),
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'OU 1'
+            ),
+        ]
+        assert issuer.dn_qualifier == [
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'dnQualifier0'),
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'dnQualifier1'),
+        ]
+        assert issuer.serial_number == [
+            x509.Attribute('2.5.4.5', 'serialNumber', '123'),
+            x509.Attribute('2.5.4.5', 'serialNumber', '456'),
+        ]
+        assert issuer.title == [
+            x509.Attribute('2.5.4.12', 'title', 'Title 0'),
+            x509.Attribute('2.5.4.12', 'title', 'Title 1'),
+        ]
+        assert issuer.surname == [
+            x509.Attribute('2.5.4.4', 'surname', 'Surname 0'),
+            x509.Attribute('2.5.4.4', 'surname', 'Surname 1'),
+        ]
+        assert issuer.given_name == [
+            x509.Attribute('2.5.4.42', 'givenName', 'Given Name 0'),
+            x509.Attribute('2.5.4.42', 'givenName', 'Given Name 1'),
+        ]
+        assert issuer.pseudonym == [
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Incognito 0'),
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Incognito 1'),
+        ]
+        assert issuer.generation_qualifier == [
+            x509.Attribute('2.5.4.44', 'generationQualifier', 'Last Gen'),
+            x509.Attribute('2.5.4.44', 'generationQualifier', 'Next Gen'),
+        ]
+        assert issuer.domain_component == [
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc0'
+            ),
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc1'
+            ),
+        ]
+        assert issuer.email_address == [
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test0@test.local'
+            ),
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test1@test.local'
+            ),
+        ]
+
     def test_subject(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -120,6 +250,135 @@ class TestRSACertificate(object):
         assert subject.organization_name == [
             x509.Attribute(
                 '2.5.4.10', 'organizationName', 'Test Certificates 2011'
+            ),
+        ]
+
+    def test_all_subject_name_types(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom",
+                "all_supported_names.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        subject = cert.subject
+        assert isinstance(subject, x509.Name)
+        assert subject.attributes == [
+            x509.Attribute('2.5.4.6', 'countryName', 'AU'),
+            x509.Attribute('2.5.4.6', 'countryName', 'DE'),
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'California'),
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'New York'),
+            x509.Attribute('2.5.4.7', 'localityName', 'San Francisco'),
+            x509.Attribute('2.5.4.7', 'localityName', 'Ithaca'),
+            x509.Attribute('2.5.4.10', 'organizationName', 'Org Zero, LLC'),
+            x509.Attribute('2.5.4.10', 'organizationName', 'Org One, LLC'),
+            x509.Attribute('2.5.4.3', 'commonName', 'CN 0'),
+            x509.Attribute('2.5.4.3', 'commonName', 'CN 1'),
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'Engineering 0'
+            ),
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'Engineering 1'
+            ),
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'qualified0'),
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'qualified1'),
+            x509.Attribute('2.5.4.5', 'serialNumber', '789'),
+            x509.Attribute('2.5.4.5', 'serialNumber', '012'),
+            x509.Attribute('2.5.4.12', 'title', 'Title IX'),
+            x509.Attribute('2.5.4.12', 'title', 'Title X'),
+            x509.Attribute('2.5.4.4', 'surname', 'Last 0'),
+            x509.Attribute('2.5.4.4', 'surname', 'Last 1'),
+            x509.Attribute('2.5.4.42', 'givenName', 'First 0'),
+            x509.Attribute('2.5.4.42', 'givenName', 'First 1'),
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Guy Incognito 0'),
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Guy Incognito 1'),
+            x509.Attribute('2.5.4.44', 'generationQualifier', '32X'),
+            x509.Attribute('2.5.4.44', 'generationQualifier', 'Dreamcast'),
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc2'
+            ),
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc3'
+            ),
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test2@test.local'
+            ),
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test3@test.local'
+            ),
+        ]
+
+        assert subject.country_name == [
+            x509.Attribute('2.5.4.6', 'countryName', 'AU'),
+            x509.Attribute('2.5.4.6', 'countryName', 'DE'),
+        ]
+        assert subject.state_or_province_name == [
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'California'),
+            x509.Attribute('2.5.4.8', 'stateOrProvinceName', 'New York'),
+        ]
+        assert subject.locality_name == [
+            x509.Attribute('2.5.4.7', 'localityName', 'San Francisco'),
+            x509.Attribute('2.5.4.7', 'localityName', 'Ithaca'),
+        ]
+        assert subject.organization_name == [
+            x509.Attribute('2.5.4.10', 'organizationName', 'Org Zero, LLC'),
+            x509.Attribute('2.5.4.10', 'organizationName', 'Org One, LLC'),
+        ]
+        assert subject.common_name == [
+            x509.Attribute('2.5.4.3', 'commonName', 'CN 0'),
+            x509.Attribute('2.5.4.3', 'commonName', 'CN 1'),
+        ]
+        assert subject.organizational_unit_name == [
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'Engineering 0'
+            ),
+            x509.Attribute(
+                '2.5.4.11', 'organizationalUnitName', 'Engineering 1'
+            ),
+        ]
+        assert subject.dn_qualifier == [
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'qualified0'),
+            x509.Attribute('2.5.4.46', 'dnQualifier', 'qualified1'),
+        ]
+        assert subject.serial_number == [
+            x509.Attribute('2.5.4.5', 'serialNumber', '789'),
+            x509.Attribute('2.5.4.5', 'serialNumber', '012'),
+        ]
+        assert subject.title == [
+            x509.Attribute('2.5.4.12', 'title', 'Title IX'),
+            x509.Attribute('2.5.4.12', 'title', 'Title X'),
+        ]
+        assert subject.surname == [
+            x509.Attribute('2.5.4.4', 'surname', 'Last 0'),
+            x509.Attribute('2.5.4.4', 'surname', 'Last 1'),
+        ]
+        assert subject.given_name == [
+            x509.Attribute('2.5.4.42', 'givenName', 'First 0'),
+            x509.Attribute('2.5.4.42', 'givenName', 'First 1'),
+        ]
+        assert subject.pseudonym == [
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Guy Incognito 0'),
+            x509.Attribute('2.5.4.65', 'pseudonym', 'Guy Incognito 1'),
+        ]
+        assert subject.generation_qualifier == [
+            x509.Attribute('2.5.4.44', 'generationQualifier', '32X'),
+            x509.Attribute('2.5.4.44', 'generationQualifier', 'Dreamcast'),
+        ]
+        assert subject.domain_component == [
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc2'
+            ),
+            x509.Attribute(
+                '0.9.2342.19200300.100.1.25', 'domainComponent', 'dc3'
+            ),
+        ]
+        assert subject.email_address == [
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test2@test.local'
+            ),
+            x509.Attribute(
+                '1.2.840.113549.1.9.1', 'emailAddress', 'test3@test.local'
             ),
         ]
 
