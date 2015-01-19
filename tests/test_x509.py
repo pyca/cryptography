@@ -616,12 +616,7 @@ class TestECDSACertificate(object):
             cert.public_key()
 
 
-class TestName(object):
-    def test_unknown_attribute(self):
-        initials = x509.Attribute('2.5.4.43', 'initials', 'PK')
-        with pytest.raises(x509.UnknownAttribute):
-            x509.Name([initials])
-
+class TestAttribute(object):
     def test_eq(self):
         assert x509.Attribute(
             'oid', 'name', 'value'

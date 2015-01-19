@@ -62,80 +62,73 @@ class Attribute(object):
 class Name(object):
     def __init__(self, attributes):
         self._attributes = attributes
-        self._country_name = []
-        self._organization_name = []
-        self._organizational_unit_name = []
-        self._dn_qualifier = []
-        self._state_or_province_name = []
-        self._common_name = []
-        self._serial_number = []
-        self._locality_name = []
-        self._title = []
-        self._surname = []
-        self._given_name = []
-        self._pseudonym = []
-        self._generation_qualifier = []
-        self._domain_component = []
-        self._email_address = []
 
-        for attribute in attributes:
-            if attribute.oid == "2.5.4.3":
-                self._common_name.append(attribute)
-            elif attribute.oid == "2.5.4.6":
-                self._country_name.append(attribute)
-            elif attribute.oid == "2.5.4.7":
-                self._locality_name.append(attribute)
-            elif attribute.oid == "2.5.4.8":
-                self._state_or_province_name.append(attribute)
-            elif attribute.oid == "2.5.4.10":
-                self._organization_name.append(attribute)
-            elif attribute.oid == "2.5.4.11":
-                self._organizational_unit_name.append(attribute)
-            elif attribute.oid == "2.5.4.5":
-                self._serial_number.append(attribute)
-            elif attribute.oid == "2.5.4.4":
-                self._surname.append(attribute)
-            elif attribute.oid == "2.5.4.42":
-                self._given_name.append(attribute)
-            elif attribute.oid == "2.5.4.12":
-                self._title.append(attribute)
-            elif attribute.oid == "2.5.4.44":
-                self._generation_qualifier.append(attribute)
-            elif attribute.oid == "2.5.4.46":
-                self._dn_qualifier.append(attribute)
-            elif attribute.oid == "2.5.4.65":
-                self._pseudonym.append(attribute)
-            elif attribute.oid == "0.9.2342.19200300.100.1.25":
-                self._domain_component.append(attribute)
-            elif attribute.oid == "1.2.840.113549.1.9.1":
-                self._email_address.append(attribute)
-            else:
-                raise UnknownAttribute(
-                    "Unknown OID: {0}".format(attribute.oid)
-                )
+    def _build_list(self, oid):
+        return [i for i in self._attributes if i.oid == oid]
 
-    country_name = utils.read_only_property("_country_name")
-    organization_name = utils.read_only_property("_organization_name")
-    organizational_unit_name = utils.read_only_property(
-        "_organizational_unit_name"
-    )
-    dn_qualifier = utils.read_only_property(
-        "_dn_qualifier"
-    )
-    state_or_province_name = utils.read_only_property(
-        "_state_or_province_name"
-    )
-    common_name = utils.read_only_property("_common_name")
-    serial_number = utils.read_only_property("_serial_number")
-    locality_name = utils.read_only_property("_locality_name")
-    title = utils.read_only_property("_title")
-    surname = utils.read_only_property("_surname")
-    given_name = utils.read_only_property("_given_name")
-    pseudonym = utils.read_only_property("_pseudonym")
-    generation_qualifier = utils.read_only_property("_generation_qualifier")
-    domain_component = utils.read_only_property("_domain_component")
-    email_address = utils.read_only_property("_email_address")
-    attributes = utils.read_only_property("_attributes")
+    @property
+    def common_name(self):
+        return self._build_list("2.5.4.3")
+
+    @property
+    def country_name(self):
+        return self._build_list("2.5.4.6")
+
+    @property
+    def locality_name(self):
+        return self._build_list("2.5.4.7")
+
+    @property
+    def state_or_province_name(self):
+        return self._build_list("2.5.4.8")
+
+    @property
+    def organization_name(self):
+        return self._build_list("2.5.4.10")
+
+    @property
+    def organizational_unit_name(self):
+        return self._build_list("2.5.4.11")
+
+    @property
+    def serial_number(self):
+        return self._build_list("2.5.4.5")
+
+    @property
+    def surname(self):
+        return self._build_list("2.5.4.4")
+
+    @property
+    def given_name(self):
+        return self._build_list("2.5.4.42")
+
+    @property
+    def title(self):
+        return self._build_list("2.5.4.12")
+
+    @property
+    def generation_qualifier(self):
+        return self._build_list("2.5.4.44")
+
+    @property
+    def dn_qualifier(self):
+        return self._build_list("2.5.4.46")
+
+    @property
+    def pseudonym(self):
+        return self._build_list("2.5.4.65")
+
+    @property
+    def domain_component(self):
+        return self._build_list("0.9.2342.19200300.100.1.25")
+
+    @property
+    def email_address(self):
+        return self._build_list("1.2.840.113549.1.9.1")
+
+    @property
+    def attributes(self):
+        return [i for i in self._attributes]
 
 
 @six.add_metaclass(abc.ABCMeta)
