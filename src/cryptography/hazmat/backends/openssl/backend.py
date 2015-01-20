@@ -1006,7 +1006,7 @@ class Backend(object):
             res = get_func(group, point, check_x, check_y, bn_ctx)
             assert res == 1
 
-            res = self._lib.BN_cmp(bn_x, check_x) 
+            res = self._lib.BN_cmp(bn_x, check_x)
             assert res == 0
 
             res = self._lib.BN_cmp(bn_y, check_y)

@@ -17,7 +17,7 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` and
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`
   were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric.dsa
+  :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~

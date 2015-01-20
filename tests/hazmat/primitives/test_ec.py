@@ -63,7 +63,6 @@ class DummySignatureAlgorithm(object):
     algorithm = None
 
 
-
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECWithNumbers(object):
     @pytest.mark.parametrize(

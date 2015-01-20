@@ -83,7 +83,7 @@ DSAPublicKey = utils.deprecated(
     (
         "The DSAPublicKeyWithNumbers interface has moved to the "
         "cryptography.hazmat.primitives.asymmetric.dsa.module"
-        ),
+    ),
     utils.DeprecatedIn08
 )
 
