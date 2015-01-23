@@ -28,7 +28,7 @@ Generation
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
         provider.
 
-    :return: A :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+    :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
         provider.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
@@ -52,7 +52,7 @@ Generation
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
         provider.
 
-    :return: A :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+    :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
         provider.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
@@ -62,7 +62,7 @@ Generation
 Signing
 ~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+Using a :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
 provider.
 
 .. doctest::
@@ -86,7 +86,7 @@ described in :rfc:`6979`. This can be decoded using
 Verification
 ~~~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+Using a :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
 provider.
 
 .. doctest::
@@ -136,7 +136,7 @@ Numbers
             provider.
 
         :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
             provider.
 
 .. class:: DSAPublicNumbers(y, parameter_numbers)
@@ -153,9 +153,9 @@ Numbers
 
     .. attribute:: parameter_numbers
 
-        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
 
-        The :class:`~cryptography.hazmat.primitives.dsa.DSAParameterNumbers`
+        The :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
         associated with the public key.
 
     .. method:: public_key(backend)
@@ -165,7 +165,7 @@ Numbers
             provider.
 
         :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
             provider.
 
 .. class:: DSAPrivateNumbers(x, public_numbers)
@@ -187,9 +187,9 @@ Numbers
 
     .. attribute:: public_numbers
 
-        :type: :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
 
-        The :class:`~cryptography.hazmat.primitives.dsa.DSAPublicNumbers`
+        The :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
         associated with the private key.
 
     .. method:: private_key(backend)
@@ -199,8 +199,163 @@ Numbers
             provider.
 
         :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
             provider.
+
+Key interfaces
+~~~~~~~~~~~~~~
+
+.. class:: DSAParameters
+
+    .. versionadded:: 0.3
+
+    `DSA`_ parameters.
+
+    .. method:: generate_private_key()
+
+        .. versionadded:: 0.5
+
+        Generate a DSA private key. This method can be used to generate many
+        new private keys from a single set of parameters.
+
+        :return: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
+            provider.
+
+
+.. class:: DSAParametersWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAParameters`.
+
+    .. method:: parameter_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+            instance.
+
+
+.. class:: DSAPrivateKey
+
+    .. versionadded:: 0.3
+
+    A `DSA`_ private key.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
+
+        An DSA public key object corresponding to the values of the private key.
+
+    .. method:: parameters()
+
+        :return: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
+
+        The DSAParameters object associated with this private key.
+
+    .. method:: signer(algorithm, backend)
+
+        .. versionadded:: 0.4
+
+        Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`6979`.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
+
+
+.. class:: DSAPrivateKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+            instance.
+
+
+.. class:: DSAPublicKey
+
+    .. versionadded:: 0.3
+
+    A `DSA`_ public key.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
+
+    .. method:: parameters()
+
+        :return: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
+
+        The DSAParameters object associated with this public key.
+
+    .. method:: verifier(signature, algorithm, backend)
+
+        .. versionadded:: 0.4
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+
+.. class:: DSAPublicKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`DSAPublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+            instance.
 
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
