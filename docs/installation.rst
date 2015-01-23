@@ -32,7 +32,7 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
 * ``OpenSSL 1.0.1e-freebsd``
 * ``OpenSSL 1.0.1-latest`` (The most recent 1.0.1 release)
-* ``OpenSSL 1.0.2 beta``
+* ``OpenSSL 1.0.2``
 
 On Windows
 ----------
