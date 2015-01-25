@@ -9,9 +9,8 @@ import abc
 import six
 
 from cryptography import utils
-
 from cryptography.hazmat.primitives.asymmetric import dsa
-
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.interfaces.asymmetric.ec import (
     EllipticCurve, EllipticCurvePrivateKey, EllipticCurvePrivateKeyWithNumbers,
     EllipticCurvePublicKey, EllipticCurvePublicKeyWithNumbers,
@@ -196,70 +195,45 @@ class HashContext(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKey(object):
-    @abc.abstractmethod
-    def signer(self, padding, algorithm):
-        """
-        Returns an AsymmetricSignatureContext used for signing data.
-        """
+RSAPrivateKey = utils.deprecated(
+    rsa.RSAPrivateKey,
+    __name__,
+    (
+        "The RSAPrivateKey interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.rsa module"
+    ),
+    utils.DeprecatedIn08
+)
 
-    @abc.abstractmethod
-    def decrypt(self, ciphertext, padding):
-        """
-        Decrypts the provided ciphertext.
-        """
+RSAPrivateKeyWithNumbers = utils.deprecated(
+    rsa.RSAPrivateKeyWithNumbers,
+    __name__,
+    (
+        "The RSAPrivateKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.rsa module"
+    ),
+    utils.DeprecatedIn08
+)
 
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the public modulus.
-        """
+RSAPublicKey = utils.deprecated(
+    rsa.RSAPublicKey,
+    __name__,
+    (
+        "The RSAPublicKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.rsa module"
+    ),
+    utils.DeprecatedIn08
+)
 
-    @abc.abstractmethod
-    def public_key(self):
-        """
-        The RSAPublicKey associated with this private key.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKeyWithNumbers(RSAPrivateKey):
-    @abc.abstractmethod
-    def private_numbers(self):
-        """
-        Returns an RSAPrivateNumbers.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPublicKey(object):
-    @abc.abstractmethod
-    def verifier(self, signature, padding, algorithm):
-        """
-        Returns an AsymmetricVerificationContext used for verifying signatures.
-        """
-
-    @abc.abstractmethod
-    def encrypt(self, plaintext, padding):
-        """
-        Encrypts the given plaintext.
-        """
-
-    @abc.abstractproperty
-    def key_size(self):
-        """
-        The bit length of the public modulus.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class RSAPublicKeyWithNumbers(RSAPublicKey):
-    @abc.abstractmethod
-    def public_numbers(self):
-        """
-        Returns an RSAPublicNumbers
-        """
+RSAPublicKeyWithNumbers = utils.deprecated(
+    rsa.RSAPublicKeyWithNumbers,
+    __name__,
+    (
+        "The RSAPublicKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.rsa module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)

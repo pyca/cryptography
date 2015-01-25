@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 from fractions import gcd
 
 import six
@@ -11,6 +12,72 @@ import six
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPrivateKey(object):
+    @abc.abstractmethod
+    def signer(self, padding, algorithm):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
+    @abc.abstractmethod
+    def decrypt(self, ciphertext, padding):
+        """
+        Decrypts the provided ciphertext.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the public modulus.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The RSAPublicKey associated with this private key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns an RSAPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicKey(object):
+    @abc.abstractmethod
+    def verifier(self, signature, padding, algorithm):
+        """
+        Returns an AsymmetricVerificationContext used for verifying signatures.
+        """
+
+    @abc.abstractmethod
+    def encrypt(self, plaintext, padding):
+        """
+        Encrypts the given plaintext.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the public modulus.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RSAPublicKeyWithNumbers(RSAPublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns an RSAPublicNumbers
+        """
 
 
 def generate_private_key(public_exponent, key_size, backend):

@@ -38,14 +38,17 @@ mathematical properties`_.
     :param int public_exponent: The public exponent of the new key.
         Usually one of the small Fermat primes 3, 5, 17, 257, 65537. If in
         doubt you should `use 65537`_.
+
     :param int key_size: The length of the modulus in bits. For keys
         generated in 2015 it is strongly recommended to be
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
+
     :param backend: A backend which provides
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
+
     :return: An instance of
-        :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`.
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the provided ``backend`` does not implement
@@ -286,7 +289,7 @@ is unavailable.
             provider.
 
         :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
             provider.
 
 .. class:: RSAPrivateNumbers(p, q, d, dmp1, dmq1, iqmp, public_numbers)
@@ -355,7 +358,7 @@ is unavailable.
             provider.
 
         :returns: A
-            :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
             provider.
 
 Handling partial RSA private keys
@@ -404,6 +407,140 @@ this without having to do the math themselves.
         and ``q`` such that ``p < q``.
 
     :return: A tuple ``(p, q)``
+
+
+Key interfaces
+~~~~~~~~~~~~~~
+
+.. class:: RSAPrivateKey
+
+    .. versionadded:: 0.2
+
+    An `RSA`_ private key.
+
+    .. method:: signer(padding, algorithm)
+
+        .. versionadded:: 0.3
+
+        Sign data which can be verified later by others using the public key.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+    .. method:: decrypt(ciphertext, padding)
+
+        .. versionadded:: 0.4
+
+        Decrypt data that was encrypted with the public key.
+
+        :param bytes ciphertext: The ciphertext to decrypt.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :return bytes: Decrypted data.
+
+    .. method:: public_key()
+
+        :return: :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+
+        An RSA public key object corresponding to the values of the private key.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
+
+
+.. class:: RSAPrivateKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`RSAPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+            instance.
+
+
+.. class:: RSAPublicKey
+
+    .. versionadded:: 0.2
+
+    An `RSA`_ public key.
+
+    .. method:: verifier(signature, padding, algorithm)
+
+        .. versionadded:: 0.3
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+
+    .. method:: encrypt(plaintext, padding)
+
+        .. versionadded:: 0.4
+
+        Encrypt data with the public key.
+
+        :param bytes plaintext: The plaintext to encrypt.
+
+        :param padding: An instance of a
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            provider.
+
+        :return bytes: Encrypted data.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the modulus.
+
+
+.. class:: RSAPublicKeyWithNumbers
+
+    .. versionadded:: 0.5
+
+    Extends :class:`RSAPublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+            instance.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
