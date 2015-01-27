@@ -24,6 +24,14 @@ Key Serialization
     7SGRS1DTUGX4Y70m9dQpguy6Zg+gpHC+o+ERZR06uEQr+w==
     -----END RSA PRIVATE KEY-----
     """.strip()
+    public_pem_data = b"""
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDn09PV9KPE7Q+N5K5UtNLT1DLl
+    8z/pKM2pP5tXqWx2OsEw00lCkDHdHESwzS050s/8rtkERKKyusCzCm9+vC1pQzUl
+    mtibfF4PQAQc1pJL6KHqlidgHw49atYmnC25CaeXt65pAYXoIacOZ8k5X7FW3Eag
+    ex8nG0iMw4ObOtg6CwIDAQAB
+    -----END PUBLIC KEY-----
+    """.strip()
     message = b""
 
     def sign_with_rsa_key(key, message):
@@ -98,6 +106,13 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     Deserialize a public key from PEM encoded data to one of the supported
     asymmetric public key types.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.serialization import load_pem_public_key
+        >>> key = load_pem_public_key(public_pem_data, backend=default_backend())
+        >>> isinstance(key, rsa.RSAPublicKey)
+        True
 
     :param bytes data: The PEM encoded key data.
 
