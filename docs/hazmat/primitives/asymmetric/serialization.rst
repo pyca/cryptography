@@ -71,6 +71,14 @@ don't need to worry about this detail. PEM keys are recognizable because they
 all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 {format}-----``.
 
+.. note::
+
+    A PEM block which starts with ``-----BEGIN CERTIFICATE-----`` is not a
+    public or private key, it's an :doc:`X.509 Certificate </x509>`. You can
+    load it using :func:`~cryptography.x509.load_pem_x509_certificate` and
+    extract the public key with
+    :meth:`Certificate.public_key <cryptography.x509.Certificate.public_key>`.
+
 .. function:: load_pem_private_key(data, password, backend)
 
     .. versionadded:: 0.6
