@@ -5,11 +5,31 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import os.path
 import sys
 import threading
 
 from cffi import FFI
-from cffi.verifier import Verifier
+from cffi.verifier import Verifier as _Verifier
+
+
+class Verifier(_Verifier):
+
+    # We need to figure out if the source file already exists, cffi itself
+    # doesn't actually check if it exists, it just records that it has written
+    # it. This breaks when you invoke setup.py build and setup.py install
+    # seperately. So this will actually figure out if the file exists, not just
+    # record that it has been written.
+    @property
+    def _has_source(self):
+        return os.path.exists(self.sourcefilename)
+
+    # cffi will attempt to set Verifier()._has_source, since we've changed this
+    # so it actually looks to see if the file exists we want to just noop it
+    # when cffi sets Verifier()._has_source to True or False.
+    @_has_source.setter
+    def _has_source(self, value):
+        pass
 
 
 class LazyLibrary(object):
