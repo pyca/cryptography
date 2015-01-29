@@ -9,6 +9,8 @@ from enum import Enum
 
 import six
 
+from cryptography import utils
+
 
 class Version(Enum):
     v1 = 0
@@ -27,6 +29,77 @@ class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
         self.parsed_version = parsed_version
+
+
+class UnknownAttribute(Exception):
+    pass
+
+
+class Attribute(object):
+    def __init__(self, oid, value):
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError("oid argument must be an ObjectIdentifier object")
+
+        self._oid = oid
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    value = utils.read_only_property("_value")
+
+    def __eq__(self, other):
+        if not isinstance(other, Attribute):
+            return NotImplemented
+
+        return (
+            self.oid == other.oid and
+            self.value == other.value
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class ObjectIdentifier(object):
+    def __init__(self, oid, name):
+        self._value = oid
+        self._name = name
+
+    def __eq__(self, other):
+        if not isinstance(other, ObjectIdentifier):
+            return NotImplemented
+
+        return self._value == other._value and self._name == other._name
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        return "<ObjectIdentifier(oid={0}, name={1})>".format(
+            self._value, self._name
+        )
+
+    value = utils.read_only_property("_value")
+
+
+OID_COMMON_NAME = ObjectIdentifier("2.5.4.3", "commonName")
+OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6", "countryName")
+OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7", "localityName")
+OID_STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8", "stateOrProvinceName")
+OID_ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10", "organizationName")
+OID_ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier(
+    "2.5.4.11", "organizationalUnitName"
+)
+OID_SERIAL_NUMBER = ObjectIdentifier("2.5.4.5", "serialNumber")
+OID_SURNAME = ObjectIdentifier("2.5.4.4", "surname")
+OID_GIVEN_NAME = ObjectIdentifier("2.5.4.42", "givenName")
+OID_TITLE = ObjectIdentifier("2.5.4.12", "title")
+OID_GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44", "generationQualifier")
+OID_DN_QUALIFIER = ObjectIdentifier("2.5.4.46", "dnQualifier")
+OID_PSEUDONYM = ObjectIdentifier("2.5.4.65", "pseudonym")
+OID_DOMAIN_COMPONENT = ObjectIdentifier(
+    "0.9.2342.19200300.100.1.25", "domainComponent"
+)
+OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1", "emailAddress")
 
 
 @six.add_metaclass(abc.ABCMeta)

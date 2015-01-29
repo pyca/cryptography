@@ -248,3 +248,50 @@ class TestECDSACertificate(object):
         )
         with pytest.raises(NotImplementedError):
             cert.public_key()
+
+
+class TestAttribute(object):
+    def test_eq(self):
+        assert x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value'
+        ) == x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value'
+        )
+
+    def test_ne(self):
+        assert x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value'
+        ) != x509.Attribute(
+            x509.ObjectIdentifier('oid2', 'name'), 'value'
+        )
+        assert x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value'
+        ) != x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name2'), 'value'
+        )
+        assert x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value'
+        ) != x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value2'
+        )
+        assert x509.Attribute(
+            x509.ObjectIdentifier('oid', 'name'), 'value'
+        ) != object()
+
+
+class TestObjectIdentifier(object):
+    def test_eq(self):
+        oid1 = x509.ObjectIdentifier('oid', 'name')
+        oid2 = x509.ObjectIdentifier('oid', 'name')
+        assert oid1 == oid2
+
+    def test_ne(self):
+        oid1 = x509.ObjectIdentifier('oid', 'name')
+        assert oid1 != x509.ObjectIdentifier('oid1', 'name')
+        assert oid1 != x509.ObjectIdentifier('oid', 'name1')
+        assert oid1 != x509.ObjectIdentifier('oid1', 'name1')
+        assert oid1 != object()
+
+    def test_repr(self):
+        oid = x509.ObjectIdentifier("oid1", "name")
+        assert repr(oid) == "<ObjectIdentifier(oid=oid1, name=name)>"

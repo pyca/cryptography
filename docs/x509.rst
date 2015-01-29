@@ -181,6 +181,71 @@ X.509 Certificate Object
 
         For version 3 X.509 certificates.
 
+.. class:: Attribute
+
+    .. versionadded:: 0.8
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        The attribute OID.
+
+    .. attribute:: value
+
+        :type: :class:`str`
+
+        The value of the attribute.
+
+.. class:: ObjectIdentifier
+
+    .. versionadded:: 0.8
+
+    .. attribute:: value
+
+        :type: :class:`str`
+
+        The dotted string value of the OID (e.g. "2.5.4.3")
+
+Object Identifiers
+~~~~~~~~~~~~~~~~~~
+
+X.509 name elements are identified by :class:`ObjectIdentifier` instances. The
+following common OIDs are available as constants.
+
+.. data:: OID_COMMON_NAME
+
+.. data:: OID_COUNTRY_NAME
+
+.. data:: OID_LOCALITY_NAME
+
+.. data:: OID_STATE_OR_PROVINCE_NAME
+
+.. data:: OID_ORGANIZATION_NAME
+
+.. data:: OID_ORGANIZATIONAL_UNIT_NAME
+
+.. data:: OID_SERIAL_NUMBER
+
+.. data:: OID_SURNAME
+
+.. data:: OID_GIVEN_NAME
+
+.. data:: OID_TITLE
+
+.. data:: OID_GENERATION_QUALIFIER
+
+.. data:: OID_DN_QUALIFIER
+
+.. data:: OID_PSEUDONYM
+
+.. data:: OID_DOMAIN_COMPONENT
+
+.. data:: OID_EMAIL_ADDRESS
+
+Exceptions
+~~~~~~~~~~
+
 .. class:: InvalidVersion
 
     This is raised when an X.509 certificate has an invalid version number.
@@ -190,6 +255,12 @@ X.509 Certificate Object
         :type: int
 
         Returns the raw version that was parsed from the certificate.
+
+.. class:: UnknownAttribute
+
+    This is raised when an X.509 certificate has an unknown attribute in a
+    distinguished name.
+
 
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
