@@ -193,7 +193,7 @@ X.509 Certificate Object
 
     .. attribute:: value
 
-        :type: :class:`str`
+        :type: :term:`text`
 
         The value of the attribute.
 
