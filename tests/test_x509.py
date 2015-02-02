@@ -250,48 +250,43 @@ class TestECDSACertificate(object):
             cert.public_key()
 
 
-class TestAttribute(object):
+class TestNameAttribute(object):
     def test_eq(self):
-        assert x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value'
-        ) == x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value'
+        assert x509.NameAttribute(
+            x509.ObjectIdentifier('oid'), 'value'
+        ) == x509.NameAttribute(
+            x509.ObjectIdentifier('oid'), 'value'
         )
 
     def test_ne(self):
-        assert x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value'
-        ) != x509.Attribute(
-            x509.ObjectIdentifier('oid2', 'name'), 'value'
+        assert x509.NameAttribute(
+            x509.ObjectIdentifier('2.5.4.3'), 'value'
+        ) != x509.NameAttribute(
+            x509.ObjectIdentifier('2.5.4.5'), 'value'
         )
-        assert x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value'
-        ) != x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name2'), 'value'
+        assert x509.NameAttribute(
+            x509.ObjectIdentifier('oid'), 'value'
+        ) != x509.NameAttribute(
+            x509.ObjectIdentifier('oid'), 'value2'
         )
-        assert x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value'
-        ) != x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value2'
-        )
-        assert x509.Attribute(
-            x509.ObjectIdentifier('oid', 'name'), 'value'
+        assert x509.NameAttribute(
+            x509.ObjectIdentifier('oid'), 'value'
         ) != object()
 
 
 class TestObjectIdentifier(object):
     def test_eq(self):
-        oid1 = x509.ObjectIdentifier('oid', 'name')
-        oid2 = x509.ObjectIdentifier('oid', 'name')
+        oid1 = x509.ObjectIdentifier('oid')
+        oid2 = x509.ObjectIdentifier('oid')
         assert oid1 == oid2
 
     def test_ne(self):
-        oid1 = x509.ObjectIdentifier('oid', 'name')
-        assert oid1 != x509.ObjectIdentifier('oid1', 'name')
-        assert oid1 != x509.ObjectIdentifier('oid', 'name1')
-        assert oid1 != x509.ObjectIdentifier('oid1', 'name1')
+        oid1 = x509.ObjectIdentifier('oid')
+        assert oid1 != x509.ObjectIdentifier('oid1')
         assert oid1 != object()
 
     def test_repr(self):
-        oid = x509.ObjectIdentifier("oid1", "name")
-        assert repr(oid) == "<ObjectIdentifier(oid=oid1, name=name)>"
+        oid = x509.ObjectIdentifier("2.5.4.3")
+        assert repr(oid) == "<ObjectIdentifier(oid=2.5.4.3, name=commonName)>"
+        oid = x509.ObjectIdentifier("oid1")
+        assert repr(oid) == "<ObjectIdentifier(oid=oid1, name=Unknown OID)>"

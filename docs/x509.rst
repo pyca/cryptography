@@ -181,11 +181,11 @@ X.509 Certificate Object
 
         For version 3 X.509 certificates.
 
-.. class:: Attribute
+.. class:: NameAttribute
 
     .. versionadded:: 0.8
 
-    An X.509 name consists of a list of Attribute objects.
+    An X.509 name consists of a list of NameAttribute objects.
 
     .. attribute:: oid
 
@@ -204,7 +204,7 @@ X.509 Certificate Object
     .. versionadded:: 0.8
 
     Object identifiers (frequently seen abbreviated as OID) identify the type
-    of a value (see: :class:`Attribute`).
+    of a value (see: :class:`NameAttribute`).
 
     .. attribute:: value
 
@@ -261,9 +261,9 @@ Exceptions
 
         Returns the raw version that was parsed from the certificate.
 
-.. class:: UnknownAttribute
+.. class:: UnknownNameAttribute
 
-    This is raised when an X.509 certificate has an unknown attribute in a
+    This is raised when an X.509 certificate has an unknown name attribute in a
     distinguished name.
 
 

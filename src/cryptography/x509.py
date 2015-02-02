@@ -12,6 +12,25 @@ import six
 from cryptography import utils
 
 
+_OID_NAMES = {
+    "2.5.4.3": "commonName",
+    "2.5.4.6": "countryName",
+    "2.5.4.7": "localityName",
+    "2.5.4.8": "stateOrProvinceName",
+    "2.5.4.10": "organizationName",
+    "2.5.4.11": "organizationalUnitName",
+    "2.5.4.5": "serialNumber",
+    "2.5.4.4": "surname",
+    "2.5.4.42": "givenName",
+    "2.5.4.12": "title",
+    "2.5.4.44": "generationQualifier",
+    "2.5.4.46": "dnQualifier",
+    "2.5.4.65": "pseudonym",
+    "0.9.2342.19200300.100.1.25": "domainComponent",
+    "1.2.840.113549.1.9.1": "emailAddress",
+}
+
+
 class Version(Enum):
     v1 = 0
     v3 = 2
@@ -31,11 +50,11 @@ class InvalidVersion(Exception):
         self.parsed_version = parsed_version
 
 
-class UnknownAttribute(Exception):
+class UnknownNameAttribute(Exception):
     pass
 
 
-class Attribute(object):
+class NameAttribute(object):
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
             raise TypeError("oid argument must be an ObjectIdentifier object")
@@ -47,7 +66,7 @@ class Attribute(object):
     value = utils.read_only_property("_value")
 
     def __eq__(self, other):
-        if not isinstance(other, Attribute):
+        if not isinstance(other, NameAttribute):
             return NotImplemented
 
         return (
@@ -60,46 +79,41 @@ class Attribute(object):
 
 
 class ObjectIdentifier(object):
-    def __init__(self, oid, name):
+    def __init__(self, oid):
         self._value = oid
-        self._name = name
 
     def __eq__(self, other):
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
 
-        return self._value == other._value and self._name == other._name
+        return self._value == other._value
 
     def __ne__(self, other):
         return not self == other
 
     def __repr__(self):
         return "<ObjectIdentifier(oid={0}, name={1})>".format(
-            self._value, self._name
+            self._value, _OID_NAMES.get(self._value, "Unknown OID")
         )
 
     value = utils.read_only_property("_value")
 
 
-OID_COMMON_NAME = ObjectIdentifier("2.5.4.3", "commonName")
-OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6", "countryName")
-OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7", "localityName")
-OID_STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8", "stateOrProvinceName")
-OID_ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10", "organizationName")
-OID_ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier(
-    "2.5.4.11", "organizationalUnitName"
-)
-OID_SERIAL_NUMBER = ObjectIdentifier("2.5.4.5", "serialNumber")
-OID_SURNAME = ObjectIdentifier("2.5.4.4", "surname")
-OID_GIVEN_NAME = ObjectIdentifier("2.5.4.42", "givenName")
-OID_TITLE = ObjectIdentifier("2.5.4.12", "title")
-OID_GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44", "generationQualifier")
-OID_DN_QUALIFIER = ObjectIdentifier("2.5.4.46", "dnQualifier")
-OID_PSEUDONYM = ObjectIdentifier("2.5.4.65", "pseudonym")
-OID_DOMAIN_COMPONENT = ObjectIdentifier(
-    "0.9.2342.19200300.100.1.25", "domainComponent"
-)
-OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1", "emailAddress")
+OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
+OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
+OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
+OID_STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
+OID_ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
+OID_ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
+OID_SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
+OID_SURNAME = ObjectIdentifier("2.5.4.4")
+OID_GIVEN_NAME = ObjectIdentifier("2.5.4.42")
+OID_TITLE = ObjectIdentifier("2.5.4.12")
+OID_GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
+OID_DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
+OID_PSEUDONYM = ObjectIdentifier("2.5.4.65")
+OID_DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
+OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
 
 
 @six.add_metaclass(abc.ABCMeta)
