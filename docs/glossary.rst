@@ -62,5 +62,5 @@ Glossary
         considered a basic, necessary property for a working encryption system.
 
     text
-        This type corresponds to `unicode` on Python 2 and `str` on Python 3.
-        This is equivalent to `six.text_type`.
+        This type corresponds to ``unicode`` on Python 2 and ``str`` on Python
+        3.  This is equivalent to `six.text_type`.
