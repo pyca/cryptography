@@ -75,24 +75,25 @@ class NameAttribute(object):
 
 
 class ObjectIdentifier(object):
-    def __init__(self, oid):
-        self._value = oid
+    def __init__(self, dotted_string):
+        self._dotted_string = dotted_string
 
     def __eq__(self, other):
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
 
-        return self._value == other._value
+        return self._dotted_string == other._dotted_string
 
     def __ne__(self, other):
         return not self == other
 
     def __repr__(self):
         return "<ObjectIdentifier(oid={0}, name={1})>".format(
-            self._value, _OID_NAMES.get(self._value, "Unknown OID")
+            self._dotted_string,
+            _OID_NAMES.get(self._dotted_string, "Unknown OID")
         )
 
-    value = utils.read_only_property("_value")
+    dotted_string = utils.read_only_property("_dotted_string")
 
 
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")

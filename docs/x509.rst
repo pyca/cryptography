@@ -206,7 +206,7 @@ X.509 Certificate Object
     Object identifiers (frequently seen abbreviated as OID) identify the type
     of a value (see: :class:`NameAttribute`).
 
-    .. attribute:: value
+    .. attribute:: dotted_string
 
         :type: :class:`str`
 
