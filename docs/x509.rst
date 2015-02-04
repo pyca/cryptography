@@ -261,12 +261,6 @@ Exceptions
 
         Returns the raw version that was parsed from the certificate.
 
-.. class:: UnknownNameAttribute
-
-    This is raised when an X.509 certificate has an unknown name attribute in a
-    distinguished name.
-
-
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
 .. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security

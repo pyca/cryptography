@@ -50,10 +50,6 @@ class InvalidVersion(Exception):
         self.parsed_version = parsed_version
 
 
-class UnknownNameAttribute(Exception):
-    pass
-
-
 class NameAttribute(object):
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
