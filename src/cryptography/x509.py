@@ -53,7 +53,9 @@ class InvalidVersion(Exception):
 class NameAttribute(object):
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
-            raise TypeError("oid argument must be an ObjectIdentifier object")
+            raise TypeError(
+                "oid argument must be an ObjectIdentifier instance."
+            )
 
         self._oid = oid
         self._value = value
