@@ -210,7 +210,7 @@ X.509 Certificate Object
 
         :type: :class:`str`
 
-        The dotted string value of the OID (e.g. "``2.5.4.3``")
+        The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
@@ -220,63 +220,63 @@ following common OIDs are available as constants.
 
 .. data:: OID_COMMON_NAME
 
-    Corresponds to the dotted string "``2.5.4.3``".
+    Corresponds to the dotted string ``"2.5.4.3"``.
 
 .. data:: OID_COUNTRY_NAME
 
-    Corresponds to the dotted string "``2.5.4.6``".
+    Corresponds to the dotted string ``"2.5.4.6"``.
 
 .. data:: OID_LOCALITY_NAME
 
-    Corresponds to the dotted string "``2.5.4.7``".
+    Corresponds to the dotted string ``"2.5.4.7"``.
 
 .. data:: OID_STATE_OR_PROVINCE_NAME
 
-    Corresponds to the dotted string "``2.5.4.8``".
+    Corresponds to the dotted string ``"2.5.4.8"``.
 
 .. data:: OID_ORGANIZATION_NAME
 
-    Corresponds to the dotted string "``2.5.4.10``".
+    Corresponds to the dotted string ``"2.5.4.10"``.
 
 .. data:: OID_ORGANIZATIONAL_UNIT_NAME
 
-    Corresponds to the dotted string "``2.5.4.11``".
+    Corresponds to the dotted string ``"2.5.4.11"``.
 
 .. data:: OID_SERIAL_NUMBER
 
-    Corresponds to the dotted string "``2.5.4.5``".
+    Corresponds to the dotted string ``"2.5.4.5"``.
 
 .. data:: OID_SURNAME
 
-    Corresponds to the dotted string "``2.5.4.4``".
+    Corresponds to the dotted string ``"2.5.4.4"``.
 
 .. data:: OID_GIVEN_NAME
 
-    Corresponds to the dotted string "``2.5.4.42``".
+    Corresponds to the dotted string ``"2.5.4.42"``.
 
 .. data:: OID_TITLE
 
-    Corresponds to the dotted string "``2.5.4.12``".
+    Corresponds to the dotted string ``"2.5.4.12"``.
 
 .. data:: OID_GENERATION_QUALIFIER
 
-    Corresponds to the dotted string "``2.5.4.44``".
+    Corresponds to the dotted string ``"2.5.4.44"``.
 
 .. data:: OID_DN_QUALIFIER
 
-    Corresponds to the dotted string "``2.5.4.46``".
+    Corresponds to the dotted string ``"2.5.4.46"``.
 
 .. data:: OID_PSEUDONYM
 
-    Corresponds to the dotted string "``2.5.4.65``".
+    Corresponds to the dotted string ``"2.5.4.65"``.
 
 .. data:: OID_DOMAIN_COMPONENT
 
-    Corresponds to the dotted string "``0.9.2342.19200300.100.1.25``".
+    Corresponds to the dotted string ``"0.9.2342.19200300.100.1.25"``.
 
 .. data:: OID_EMAIL_ADDRESS
 
-    Corresponds to the dotted string "``1.2.840.113549.1.9.1``".
+    Corresponds to the dotted string ``"1.2.840.113549.1.9.1"``.
 
 Exceptions
 ~~~~~~~~~~
