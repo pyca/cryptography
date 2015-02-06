@@ -63,4 +63,4 @@ Glossary
 
     text
         This type corresponds to ``unicode`` on Python 2 and ``str`` on Python
-        3.  This is equivalent to `six.text_type`.
+        3.  This is equivalent to ``six.text_type``.
