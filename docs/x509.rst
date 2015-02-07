@@ -220,7 +220,10 @@ following common OIDs are available as constants.
 
 .. data:: OID_COMMON_NAME
 
-    Corresponds to the dotted string ``"2.5.4.3"``.
+    Corresponds to the dotted string ``"2.5.4.3"``. Historically the domain
+    name would be encoded here for server certificates. :rfc:`2818` deprecates
+    this practice and names of that type should now be located in a
+    SubjectAlternativeName extension.
 
 .. data:: OID_COUNTRY_NAME
 
@@ -244,7 +247,9 @@ following common OIDs are available as constants.
 
 .. data:: OID_SERIAL_NUMBER
 
-    Corresponds to the dotted string ``"2.5.4.5"``.
+    Corresponds to the dotted string ``"2.5.4.5"``. This is distinct from the
+    serial number of the certificate itself (which can be obtained with
+    :func:`Certificate.serial`).
 
 .. data:: OID_SURNAME
 
@@ -264,7 +269,9 @@ following common OIDs are available as constants.
 
 .. data:: OID_DN_QUALIFIER
 
-    Corresponds to the dotted string ``"2.5.4.46"``.
+    Corresponds to the dotted string ``"2.5.4.46"``. This specifies
+    disambiguating information to add to the relative distinguished name of an
+    entry. See :rfc:`2256`.
 
 .. data:: OID_PSEUDONYM
 
@@ -272,7 +279,8 @@ following common OIDs are available as constants.
 
 .. data:: OID_DOMAIN_COMPONENT
 
-    Corresponds to the dotted string ``"0.9.2342.19200300.100.1.25"``.
+    Corresponds to the dotted string ``"0.9.2342.19200300.100.1.25"``. A string
+    holding one component of a domain name. See :rfc:`4519`.
 
 .. data:: OID_EMAIL_ADDRESS
 
