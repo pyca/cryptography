@@ -60,3 +60,7 @@ Glossary
         This is a property of encryption systems whereby two encrypted messages
         aren't distinguishable without knowing the encryption key. This is
         considered a basic, necessary property for a working encryption system.
+
+    text
+        This type corresponds to ``unicode`` on Python 2 and ``str`` on Python
+        3.  This is equivalent to ``six.text_type``.

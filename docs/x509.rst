@@ -181,6 +181,126 @@ X.509 Certificate Object
 
         For version 3 X.509 certificates.
 
+.. class:: NameAttribute
+
+    .. versionadded:: 0.8
+
+    An X.509 name consists of a list of NameAttribute instances.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        The attribute OID.
+
+    .. attribute:: value
+
+        :type: :term:`text`
+
+        The value of the attribute.
+
+.. class:: ObjectIdentifier
+
+    .. versionadded:: 0.8
+
+    Object identifiers (frequently seen abbreviated as OID) identify the type
+    of a value (see: :class:`NameAttribute`).
+
+    .. attribute:: dotted_string
+
+        :type: :class:`str`
+
+        The dotted string value of the OID (e.g. ``"2.5.4.3"``)
+
+Object Identifiers
+~~~~~~~~~~~~~~~~~~
+
+X.509 elements are frequently identified by :class:`ObjectIdentifier`
+instances. The following common OIDs are available as constants.
+
+.. data:: OID_COMMON_NAME
+
+    Corresponds to the dotted string ``"2.5.4.3"``. Historically the domain
+    name would be encoded here for server certificates. :rfc:`2818` deprecates
+    this practice and names of that type should now be located in a
+    SubjectAlternativeName extension. This OID is typically seen in X.509 names.
+
+.. data:: OID_COUNTRY_NAME
+
+    Corresponds to the dotted string ``"2.5.4.6"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_LOCALITY_NAME
+
+    Corresponds to the dotted string ``"2.5.4.7"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_STATE_OR_PROVINCE_NAME
+
+    Corresponds to the dotted string ``"2.5.4.8"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_ORGANIZATION_NAME
+
+    Corresponds to the dotted string ``"2.5.4.10"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_ORGANIZATIONAL_UNIT_NAME
+
+    Corresponds to the dotted string ``"2.5.4.11"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_SERIAL_NUMBER
+
+    Corresponds to the dotted string ``"2.5.4.5"``. This is distinct from the
+    serial number of the certificate itself (which can be obtained with
+    :func:`Certificate.serial`). This OID is typically seen in X.509 names.
+
+.. data:: OID_SURNAME
+
+    Corresponds to the dotted string ``"2.5.4.4"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_GIVEN_NAME
+
+    Corresponds to the dotted string ``"2.5.4.42"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_TITLE
+
+    Corresponds to the dotted string ``"2.5.4.12"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_GENERATION_QUALIFIER
+
+    Corresponds to the dotted string ``"2.5.4.44"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_DN_QUALIFIER
+
+    Corresponds to the dotted string ``"2.5.4.46"``. This specifies
+    disambiguating information to add to the relative distinguished name of an
+    entry. See :rfc:`2256`. This OID is typically seen in X.509 names.
+
+.. data:: OID_PSEUDONYM
+
+    Corresponds to the dotted string ``"2.5.4.65"``. This OID is typically seen
+    in X.509 names.
+
+.. data:: OID_DOMAIN_COMPONENT
+
+    Corresponds to the dotted string ``"0.9.2342.19200300.100.1.25"``. A string
+    holding one component of a domain name. See :rfc:`4519`. This OID is
+    typically seen in X.509 names.
+
+.. data:: OID_EMAIL_ADDRESS
+
+    Corresponds to the dotted string ``"1.2.840.113549.1.9.1"``. This OID is
+    typically seen in X.509 names.
+
+Exceptions
+~~~~~~~~~~
+
 .. class:: InvalidVersion
 
     This is raised when an X.509 certificate has an invalid version number.
