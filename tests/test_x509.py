@@ -251,6 +251,10 @@ class TestECDSACertificate(object):
 
 
 class TestNameAttribute(object):
+    def test_init_bad_oid(self):
+        with pytest.raises(TypeError):
+            x509.NameAttribute(None, 'value')
+
     def test_eq(self):
         assert x509.NameAttribute(
             x509.ObjectIdentifier('oid'), 'value'
