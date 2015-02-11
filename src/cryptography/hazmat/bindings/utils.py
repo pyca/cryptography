@@ -5,11 +5,47 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import os.path
 import sys
 import threading
 
 from cffi import FFI
-from cffi.verifier import Verifier
+from cffi.verifier import Verifier as _Verifier, _ensure_dir
+import six
+
+
+class Verifier(_Verifier):
+
+    def _write_source(self, file=None):
+        # Write our source file to an in memory file.
+        self._vengine._f = six.StringIO()
+        try:
+            self._vengine.write_source_to_f()
+        finally:
+            source_data = self._vengine._f.getvalue()
+            del self._vengine._f
+
+        # Determine if this matches the current file
+        if file is None and os.path.exists(self.sourcefilename):
+            with open(self.sourcefilename, "r") as fp:
+                needs_written = not (fp.read() == source_data)
+        else:
+            needs_written = True
+
+        # Actually write the file out if it doesn't match
+        must_close = (file is None)
+        if needs_written:
+            if must_close:
+                _ensure_dir(self.sourcefilename)
+                file = open(self.sourcefilename, "w")
+            try:
+                file.write(source_data)
+            finally:
+                if must_close:
+                    file.close()
+
+        if must_close:
+            self._has_source = True
 
 
 class LazyLibrary(object):
