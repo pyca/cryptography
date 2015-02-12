@@ -139,6 +139,12 @@ Asymmetric interfaces
 
     .. attribute:: name
 
+DSA
+~~~
+
+In 0.8 the DSA key interfaces were moved to the
+:mod:`cryptography.hazmat.primitives.asymmetric.dsa` module.
+
 
 RSA
 ~~~
