@@ -17,7 +17,7 @@ available on Mac OS X versions 10.8 and above.
 
     .. attribute:: ffi
 
-        This is a :class:`cffi.FFI` instance. It can be used to allocate and
+        This is a ``cffi.FFI`` instance. It can be used to allocate and
         otherwise manipulate CommonCrypto structures.
 
     .. attribute:: lib

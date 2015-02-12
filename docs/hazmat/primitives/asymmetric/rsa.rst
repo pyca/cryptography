@@ -3,7 +3,7 @@
 RSA
 ===
 
-.. currentmodule:: cryptography.hazmat.primitives.asymmetric.rsa
+.. module:: cryptography.hazmat.primitives.asymmetric.rsa
 
 `RSA`_ is a `public-key`_ algorithm for encrypting and signing messages.
 
@@ -307,7 +307,7 @@ is unavailable.
 
     .. attribute:: public_numbers
 
-        :type: :class:`~cryptography.hazmat.primitives.rsa.RSAPublicNumbers`
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
 
         The :class:`RSAPublicNumbers` which makes up the RSA public key
         associated with this RSA private key.
@@ -316,19 +316,19 @@ is unavailable.
 
         :type: int
 
-        ``p``, one of the two primes composing the :attr:`modulus`.
+        ``p``, one of the two primes composing ``n``.
 
     .. attribute:: q
 
         :type: int
 
-        ``q``, one of the two primes composing the :attr:`modulus`.
+        ``q``, one of the two primes composing ``n``.
 
     .. attribute:: d
 
         :type: int
 
-        The private exponent. Alias for :attr:`private_exponent`.
+        The private exponent.
 
     .. attribute:: dmp1
 

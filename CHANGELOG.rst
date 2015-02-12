@@ -100,11 +100,8 @@ Changelog
   ``load_elliptic_curve_private_numbers`` and
   ``load_elliptic_curve_public_numbers`` on
   :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
-* Added
-  :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKeyWithNumbers`
-  and
-  :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKeyWithNumbers`
-  support.
+* Added ``EllipticCurvePrivateKeyWithNumbers`` and
+  ``EllipticCurvePublicKeyWithNumbers`` support.
 * Work around three GCM related bugs in CommonCrypto and OpenSSL.
 
   * On the CommonCrypto backend adding AAD but not subsequently calling update
@@ -133,17 +130,15 @@ Changelog
 0.5.2 - 2014-07-09
 ~~~~~~~~~~~~~~~~~~
 
-* Add
-  :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
-  support to :doc:`/hazmat/backends/multibackend`.
+* Add ``TraditionalOpenSSLSerializationBackend`` support to
+  :doc:`/hazmat/backends/multibackend`.
 * Fix compilation error on OS X 10.8 (Mountain Lion).
 
 0.5.1 - 2014-07-07
 ~~~~~~~~~~~~~~~~~~
 
-* Add
-  :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
-  support to :doc:`/hazmat/backends/multibackend`.
+* Add ``PKCS8SerializationBackend`` support to
+  :doc:`/hazmat/backends/multibackend`.
 
 0.5 - 2014-07-07
 ~~~~~~~~~~~~~~~~
@@ -164,36 +159,24 @@ Changelog
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
 * Added ``AES`` :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`
   support to the OpenSSL backend when linked against 0.9.8.
-* Added
-  :class:`~cryptography.hazmat.backends.interfaces.PKCS8SerializationBackend`
-  and
-  :class:`~cryptography.hazmat.backends.interfaces.TraditionalOpenSSLSerializationBackend`
-  support to the :doc:`/hazmat/backends/openssl`.
+* Added ``PKCS8SerializationBackend`` and
+  ``TraditionalOpenSSLSerializationBackend`` support to the
+  :doc:`/hazmat/backends/openssl`.
 * Added :doc:`/hazmat/primitives/asymmetric/ec` and
   :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.modes.ECB` support
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
-* Deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` in
-  favor of backend specific providers of the
-  :class:`~cryptography.hazmat.primitives.interfaces.RSAPrivateKey` interface.
-* Deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` in favor
-  of backend specific providers of the
-  :class:`~cryptography.hazmat.primitives.interfaces.RSAPublicKey` interface.
-* Deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` in
-  favor of backend specific providers of the
-  :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey` interface.
-* Deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` in favor
-  of backend specific providers of the
-  :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` interface.
-* Deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters` in
-  favor of backend specific providers of the
-  :class:`~cryptography.hazmat.primitives.interfaces.DSAParameters` interface.
+* Deprecated the concrete ``RSAPrivateKey`` class in favor of backend
+  specific providers of the ``RSAPrivateKey`` interface.
+* Deprecated the concrete ``RSAPublicKey`` in favor of backend specific
+  providers of the ``RSAPublicKey`` interface.
+* Deprecated the concrete ``DSAPrivateKey`` class in favor of backend
+  specific providers of the ``DSAPrivateKey`` interface.
+* Deprecated the concrete ``DSAPublicKey`` class in favor of backend specific
+  providers of the ``DSAPublicKey`` interface.
+* Deprecated the concrete ``DSAParameters`` class in favor of backend specific
+  providers of the ``DSAParameters`` interface.
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
   ``create_rsa_verification_ctx`` on
   :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.

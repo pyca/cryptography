@@ -104,9 +104,9 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         not encrypted. Or if the key was encrypted but no
         password was supplied.
 
-    :raises UnsupportedAlgorithm: If the serialized key is of a type that
-        is not supported by the backend or if the key is encrypted with a
-        symmetric cipher that is not supported by the backend.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        is of a type that is not supported by the backend or if the key is
+        encrypted with a symmetric cipher that is not supported by the backend.
 
 .. function:: load_pem_public_key(data, backend)
 
@@ -133,8 +133,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :raises ValueError: If the PEM data's structure could not be decoded
         successfully.
 
-    :raises UnsupportedAlgorithm: If the serialized key is of a type that
-        is not supported by the backend.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
+        is of a type that is not supported by the backend.
 
 
 OpenSSH Public Key
@@ -181,5 +181,5 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :raises ValueError: If the OpenSSH data could not be properly decoded or
         if the key is not in the proper format.
 
-    :raises UnsupportedAlgorithm: If the serialized key is of a type that is
-        not supported.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
+        key is of a type that is not supported.

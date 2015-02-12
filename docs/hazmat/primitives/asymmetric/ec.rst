@@ -3,7 +3,7 @@
 Elliptic curve cryptography
 ===========================
 
-.. currentmodule:: cryptography.hazmat.primitives.asymmetric.ec
+.. module:: cryptography.hazmat.primitives.asymmetric.ec
 
 
 .. function:: generate_private_key(curve, backend)

@@ -58,6 +58,8 @@ if spelling is not None:
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
+nitpicky = True
+
 # The suffix of source filenames.
 source_suffix = '.rst'
 
@@ -268,6 +270,6 @@ texinfo_documents = [
 # texinfo_show_urls = 'footnote'
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'https://docs.python.org/3': None}
 
 epub_theme = 'epub'

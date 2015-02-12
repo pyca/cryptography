@@ -1,5 +1,7 @@
 .. hazmat::
 
+.. module:: cryptography.hazmat.primitives.interfaces
+
 Interfaces
 ==========
 
@@ -14,9 +16,6 @@ to document argument and return types.
 
 Symmetric ciphers
 -----------------
-
-.. currentmodule:: cryptography.hazmat.primitives.interfaces
-
 
 .. class:: CipherAlgorithm
 
@@ -75,9 +74,10 @@ Interfaces used by the symmetric cipher modes described in
         meets any necessary invariants. This should raise an exception if they
         are not met.
 
-        For example, the :class:`~cryptography.hazmat.primitives.modes.CBC`
-        mode uses this method to check that the provided initialization
-        vector's length matches the block size of the algorithm.
+        For example, the
+        :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode uses
+        this method to check that the provided initialization vector's length
+        matches the block size of the algorithm.
 
 
 .. class:: ModeWithInitializationVector

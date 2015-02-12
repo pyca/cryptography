@@ -334,7 +334,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             restricted to only the 1024-bit keys specified in FIPS 186-2.
 
         :return: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
             provider.
 
         :raises ValueError: This is raised if the key size is not supported
@@ -401,7 +401,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: elliptic_curve_supported(curve)
 
         :param curve: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
             provider.
 
         :returns: True if the elliptic curve is supported by this backend.
@@ -409,11 +409,11 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: elliptic_curve_signature_algorithm_supported(signature_algorithm, curve)
 
         :param signature_algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`
             provider.
 
         :param curve: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
             provider.
 
         :returns: True if the signature algorithm and curve are supported by this backend.
@@ -421,27 +421,27 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: generate_elliptic_curve_private_key(curve)
 
         :param curve: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
             provider.
 
     .. method:: load_elliptic_curve_private_numbers(numbers)
 
         :param numbers: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateNumbers`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
             provider.
 
         :returns: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
             provider.
 
     .. method:: load_elliptic_curve_public_numbers(numbers)
 
         :param numbers: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicNumbers`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
             provider.
 
         :returns: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
             provider.
 
 .. class:: PEMSerializationBackend
