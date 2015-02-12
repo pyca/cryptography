@@ -18,6 +18,15 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`
   were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
+* :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithNumbers`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric.ec`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`,
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
