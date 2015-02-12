@@ -28,6 +28,19 @@ _OID_NAMES = {
     "2.5.4.65": "pseudonym",
     "0.9.2342.19200300.100.1.25": "domainComponent",
     "1.2.840.113549.1.9.1": "emailAddress",
+    "1.2.840.113549.1.1.4": "md5WithRSA",
+    "1.2.840.113549.1.1.5": "sha1WithRSA",
+    "1.2.840.113549.1.1.14": "sha224WithRSAEncryption",
+    "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
+    "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
+    "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
+    "1.2.840.10045.4.3.1": "ecdsa_with_SHA224",
+    "1.2.840.10045.4.3.2": "ecdsa_with_SHA256",
+    "1.2.840.10045.4.3.3": "ecdsa_with_SHA384",
+    "1.2.840.10045.4.3.4": "ecdsa_with_SHA512",
+    "1.2.840.10040.4.3": "dsaWithSHA1",
+    "2.16.840.1.101.3.4.3.1": "dsa_with_SHA224",
+    "2.16.840.1.101.3.4.3.2": "dsa_with_SHA256",
 }
 
 
@@ -143,6 +156,20 @@ OID_PSEUDONYM = ObjectIdentifier("2.5.4.65")
 OID_DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
 OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
 
+OID_MD5_WITH_RSA = ObjectIdentifier("1.2.840.113549.1.1.4")
+OID_SHA1_WITH_RSA = ObjectIdentifier("1.2.840.113549.1.1.5")
+OID_SHA224_WITH_RSA = ObjectIdentifier("1.2.840.113549.1.1.14")
+OID_SHA256_WITH_RSA = ObjectIdentifier("1.2.840.113549.1.1.11")
+OID_SHA384_WITH_RSA = ObjectIdentifier("1.2.840.113549.1.1.12")
+OID_SHA512_WITH_RSA = ObjectIdentifier("1.2.840.113549.1.1.13")
+OID_ECDSA_WITH_SHA224 = ObjectIdentifier("1.2.840.10045.4.3.1")
+OID_ECDSA_WITH_SHA256 = ObjectIdentifier("1.2.840.10045.4.3.2")
+OID_ECDSA_WITH_SHA384 = ObjectIdentifier("1.2.840.10045.4.3.3")
+OID_ECDSA_WITH_SHA512 = ObjectIdentifier("1.2.840.10045.4.3.4")
+OID_DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
+OID_DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
+OID_DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
+
 
 @six.add_metaclass(abc.ABCMeta)
 class Certificate(object):
@@ -192,4 +219,11 @@ class Certificate(object):
     def subject(self):
         """
         Returns the subject name object.
+        """
+
+    @abc.abstractproperty
+    def signature_algorithm(self):
+        """
+        Returns an ObjectIdentifier corresponding to the signature algorithm of
+        the certificate.
         """

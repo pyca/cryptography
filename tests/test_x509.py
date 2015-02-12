@@ -45,6 +45,7 @@ class TestRSACertificate(object):
         assert cert.serial == 11559813051657483483
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"2b619ed04bfc9c3b08eb677d272192286a0947a8"
+        assert cert.signature_algorithm == x509.OID_SHA1_WITH_RSA
 
     def test_load_der_cert(self, backend):
         cert = _load_cert(
@@ -56,6 +57,7 @@ class TestRSACertificate(object):
         assert cert.serial == 2
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
+        assert cert.signature_algorithm == x509.OID_SHA256_WITH_RSA
 
     def test_issuer(self, backend):
         cert = _load_cert(
@@ -338,6 +340,7 @@ class TestDSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
+        assert cert.signature_algorithm == x509.OID_DSA_WITH_SHA1
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.DSAPublicKey)
         if isinstance(public_key, interfaces.DSAPublicKeyWithNumbers):
@@ -390,6 +393,7 @@ class TestECDSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
+        assert cert.signature_algorithm == x509.OID_ECDSA_WITH_SHA384
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.EllipticCurvePublicKey)
         if isinstance(

@@ -136,3 +136,14 @@ class _Certificate(object):
             )
 
         return x509.Name(attributes)
+
+    @property
+    def signature_algorithm(self):
+        buf_len = 50
+        buf = self._backend._ffi.new("char[]", buf_len)
+        res = self._backend._lib.OBJ_obj2txt(
+            buf, buf_len, self._x509.sig_alg.algorithm, 1
+        )
+        assert res <= 50 and res > 0
+        oid = self._backend._ffi.buffer(buf, res)[:].decode()
+        return x509.ObjectIdentifier(oid)

@@ -65,6 +65,7 @@ typedef struct {
 } X509_CRL;
 
 typedef struct {
+    X509_ALGOR *sig_alg;
     X509_CINF *cert_info;
     ...;
 } X509;
