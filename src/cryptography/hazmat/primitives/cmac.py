@@ -10,6 +10,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import CMACBackend
 from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.ciphers import base
 
 
 @utils.register_interface(interfaces.MACContext)
@@ -21,9 +22,9 @@ class CMAC(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        if not isinstance(algorithm, interfaces.BlockCipherAlgorithm):
+        if not isinstance(algorithm, base.BlockCipherAlgorithm):
             raise TypeError(
-                "Expected instance of interfaces.BlockCipherAlgorithm."
+                "Expected instance of BlockCipherAlgorithm."
             )
         self._algorithm = algorithm
 

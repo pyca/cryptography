@@ -11,19 +11,106 @@ import six
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
-from cryptography.hazmat.primitives.interfaces.ciphers import (
-    BlockCipherAlgorithm, CipherAlgorithm, Mode,
-    ModeWithAuthenticationTag, ModeWithInitializationVector, ModeWithNonce
+from cryptography.hazmat.primitives.ciphers import base, modes
+
+
+BlockCipherAlgorithm = utils.deprecated(
+    base.BlockCipherAlgorithm,
+    __name__,
+    (
+        "The BlockCipherAlgorithm interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.base module"
+    ),
+    utils.DeprecatedIn08
 )
 
-__all__ = [
-    "BlockCipherAlgorithm",
-    "CipherAlgorithm",
-    "Mode",
-    "ModeWithAuthenticationTag",
-    "ModeWithInitializationVector",
-    "ModeWithNonce"
-]
+
+CipherAlgorithm = utils.deprecated(
+    base.CipherAlgorithm,
+    __name__,
+    (
+        "The CipherAlgorithm interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.base module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+Mode = utils.deprecated(
+    modes.Mode,
+    __name__,
+    (
+        "The Mode interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.modes module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+ModeWithAuthenticationTag = utils.deprecated(
+    modes.ModeWithAuthenticationTag,
+    __name__,
+    (
+        "The ModeWithAuthenticationTag interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.modes module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+ModeWithInitializationVector = utils.deprecated(
+    modes.ModeWithInitializationVector,
+    __name__,
+    (
+        "The ModeWithInitializationVector interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.modes module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+ModeWithNonce = utils.deprecated(
+    modes.ModeWithNonce,
+    __name__,
+    (
+        "The ModeWithNonce interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.modes module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+CipherContext = utils.deprecated(
+    base.CipherContext,
+    __name__,
+    (
+        "The CipherContext interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.base module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+AEADCipherContext = utils.deprecated(
+    base.AEADCipherContext,
+    __name__,
+    (
+        "The AEADCipherContext interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.base module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+AEADEncryptionContext = utils.deprecated(
+    base.AEADEncryptionContext,
+    __name__,
+    (
+        "The AEADEncryptionContext interface has moved to the "
+        "cryptography.hazmat.primitives.ciphers.base module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 EllipticCurve = utils.deprecated(
@@ -151,41 +238,6 @@ DSAPublicKeyWithNumbers = utils.deprecated(
     ),
     utils.DeprecatedIn08
 )
-
-
-@six.add_metaclass(abc.ABCMeta)
-class CipherContext(object):
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Processes the provided bytes through the cipher and returns the results
-        as bytes.
-        """
-
-    @abc.abstractmethod
-    def finalize(self):
-        """
-        Returns the results of processing the final block as bytes.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class AEADCipherContext(object):
-    @abc.abstractmethod
-    def authenticate_additional_data(self, data):
-        """
-        Authenticates the provided bytes.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class AEADEncryptionContext(object):
-    @abc.abstractproperty
-    def tag(self):
-        """
-        Returns tag bytes. This is only available after encryption is
-        finalized.
-        """
 
 
 @six.add_metaclass(abc.ABCMeta)

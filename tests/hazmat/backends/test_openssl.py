@@ -23,14 +23,16 @@ from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
-from cryptography.hazmat.primitives.interfaces import BlockCipherAlgorithm
+from cryptography.hazmat.primitives.ciphers.base import (
+    BlockCipherAlgorithm, CipherAlgorithm
+)
+from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
 
 from ..primitives.fixtures_rsa import RSA_KEY_512
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
-@utils.register_interface(interfaces.Mode)
+@utils.register_interface(Mode)
 class DummyMode(object):
     name = "dummy-mode"
 
@@ -38,7 +40,7 @@ class DummyMode(object):
         pass
 
 
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
     key_size = None

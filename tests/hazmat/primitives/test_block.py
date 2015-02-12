@@ -13,9 +13,8 @@ from cryptography.exceptions import (
     AlreadyFinalized, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import CipherBackend
-from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.ciphers import (
-    Cipher, algorithms, modes
+    Cipher, algorithms, base, modes
 )
 
 from .utils import (
@@ -24,7 +23,7 @@ from .utils import (
 from ...utils import raises_unsupported_algorithm
 
 
-@utils.register_interface(interfaces.Mode)
+@utils.register_interface(modes.Mode)
 class DummyMode(object):
     name = "dummy-mode"
 
@@ -32,7 +31,7 @@ class DummyMode(object):
         pass
 
 
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(base.CipherAlgorithm)
 class DummyCipher(object):
     name = "dummy-cipher"
     key_size = None
@@ -46,7 +45,7 @@ class TestCipher(object):
             modes.CBC(binascii.unhexlify(b"0" * 32)),
             backend
         )
-        assert isinstance(cipher.encryptor(), interfaces.CipherContext)
+        assert isinstance(cipher.encryptor(), base.CipherContext)
 
     def test_creates_decryptor(self, backend):
         cipher = Cipher(
@@ -54,7 +53,7 @@ class TestCipher(object):
             modes.CBC(binascii.unhexlify(b"0" * 32)),
             backend
         )
-        assert isinstance(cipher.decryptor(), interfaces.CipherContext)
+        assert isinstance(cipher.decryptor(), base.CipherContext)
 
     def test_instantiate_with_non_algorithm(self, backend):
         algorithm = object()

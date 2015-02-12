@@ -6,13 +6,12 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import interfaces
-from cryptography.hazmat.primitives.ciphers.modes import GCM
+from cryptography.hazmat.primitives.ciphers import base, modes
 
 
-@utils.register_interface(interfaces.CipherContext)
-@utils.register_interface(interfaces.AEADCipherContext)
-@utils.register_interface(interfaces.AEADEncryptionContext)
+@utils.register_interface(base.CipherContext)
+@utils.register_interface(base.AEADCipherContext)
+@utils.register_interface(base.AEADEncryptionContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
@@ -24,7 +23,7 @@ class _CipherContext(object):
         self._operation = operation
         self._tag = None
 
-        if isinstance(self._cipher, interfaces.BlockCipherAlgorithm):
+        if isinstance(self._cipher, base.BlockCipherAlgorithm):
             self._block_size = self._cipher.block_size
         else:
             self._block_size = 1
@@ -54,9 +53,9 @@ class _CipherContext(object):
                 _Reasons.UNSUPPORTED_CIPHER
             )
 
-        if isinstance(mode, interfaces.ModeWithInitializationVector):
+        if isinstance(mode, modes.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
-        elif isinstance(mode, interfaces.ModeWithNonce):
+        elif isinstance(mode, modes.ModeWithNonce):
             iv_nonce = mode.nonce
         else:
             iv_nonce = self._backend._ffi.NULL
@@ -72,7 +71,7 @@ class _CipherContext(object):
             ctx, len(cipher.key)
         )
         assert res != 0
-        if isinstance(mode, GCM):
+        if isinstance(mode, modes.GCM):
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 ctx, self._backend._lib.EVP_CTRL_GCM_SET_IVLEN,
                 len(iv_nonce), self._backend._ffi.NULL
@@ -107,7 +106,7 @@ class _CipherContext(object):
         # should be taken only when length is zero and mode is not GCM because
         # AES GCM can return improper tag values if you don't call update
         # with empty plaintext when authenticating AAD for ...reasons.
-        if len(data) == 0 and not isinstance(self._mode, GCM):
+        if len(data) == 0 and not isinstance(self._mode, modes.GCM):
             return b""
 
         buf = self._backend._ffi.new("unsigned char[]",
@@ -124,7 +123,7 @@ class _CipherContext(object):
         # even if you are only using authenticate_additional_data or the
         # GCM tag will be wrong. An (empty) call to update resolves this
         # and is harmless for all other versions of OpenSSL.
-        if isinstance(self._mode, GCM):
+        if isinstance(self._mode, modes.GCM):
             self.update(b"")
 
         buf = self._backend._ffi.new("unsigned char[]", self._block_size)
@@ -133,7 +132,7 @@ class _CipherContext(object):
         if res == 0:
             errors = self._backend._consume_errors()
 
-            if not errors and isinstance(self._mode, GCM):
+            if not errors and isinstance(self._mode, modes.GCM):
                 raise InvalidTag
 
             assert errors
@@ -154,7 +153,7 @@ class _CipherContext(object):
             else:
                 raise self._backend._unknown_error(errors[0])
 
-        if (isinstance(self._mode, GCM) and
+        if (isinstance(self._mode, modes.GCM) and
            self._operation == self._ENCRYPT):
             block_byte_size = self._block_size // 8
             tag_buf = self._backend._ffi.new(
@@ -181,7 +180,7 @@ class _CipherContext(object):
     tag = utils.read_only_property("_tag")
 
 
-@utils.register_interface(interfaces.CipherContext)
+@utils.register_interface(base.CipherContext)
 class _AESCTRCipherContext(object):
     """
     This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can

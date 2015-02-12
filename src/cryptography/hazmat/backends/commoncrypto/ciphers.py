@@ -8,13 +8,14 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.primitives import constant_time, interfaces
+from cryptography.hazmat.primitives import constant_time
+from cryptography.hazmat.primitives.ciphers import base, modes
 from cryptography.hazmat.primitives.ciphers.modes import (
     CFB, CFB8, CTR, OFB
 )
 
 
-@utils.register_interface(interfaces.CipherContext)
+@utils.register_interface(base.CipherContext)
 class _CipherContext(object):
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
@@ -31,7 +32,7 @@ class _CipherContext(object):
         # treat RC4 and other stream cipher block sizes).
         # This bug has been filed as rdar://15589470
         self._bytes_processed = 0
-        if (isinstance(cipher, interfaces.BlockCipherAlgorithm) and not
+        if (isinstance(cipher, base.BlockCipherAlgorithm) and not
                 isinstance(mode, (OFB, CFB, CFB8, CTR))):
             self._byte_block_size = cipher.block_size // 8
         else:
@@ -51,9 +52,9 @@ class _CipherContext(object):
         ctx = self._backend._ffi.new("CCCryptorRef *")
         ctx = self._backend._ffi.gc(ctx, self._backend._release_cipher_ctx)
 
-        if isinstance(mode, interfaces.ModeWithInitializationVector):
+        if isinstance(mode, modes.ModeWithInitializationVector):
             iv_nonce = mode.initialization_vector
-        elif isinstance(mode, interfaces.ModeWithNonce):
+        elif isinstance(mode, modes.ModeWithNonce):
             iv_nonce = mode.nonce
         else:
             iv_nonce = self._backend._ffi.NULL
@@ -101,8 +102,8 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
-@utils.register_interface(interfaces.AEADCipherContext)
-@utils.register_interface(interfaces.AEADEncryptionContext)
+@utils.register_interface(base.AEADCipherContext)
+@utils.register_interface(base.AEADEncryptionContext)
 class _GCMCipherContext(object):
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend

@@ -43,10 +43,10 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         'a secret message'
 
     :param algorithms: A
-        :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+        :class:`~cryptography.hazmat.primitives.ciphers.base.CipherAlgorithm`
         provider such as those described
         :ref:`below <symmetric-encryption-algorithms>`.
-    :param mode: A :class:`~cryptography.hazmat.primitives.interfaces.Mode`
+    :param mode: A :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`
         provider such as those described
         :ref:`below <symmetric-encryption-modes>`.
     :param backend: A
@@ -60,7 +60,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: encryptor()
 
         :return: An encrypting
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
+            :class:`~cryptography.hazmat.primitives.ciphers.base.CipherContext`
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
@@ -70,7 +70,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: decryptor()
 
         :return: A decrypting
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
+            :class:`~cryptography.hazmat.primitives.ciphers.base.CipherContext`
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
@@ -293,7 +293,7 @@ Modes
     .. danger::
 
         When using this mode you **must** not use the decrypted data until
-        :meth:`~cryptography.hazmat.primitives.interfaces.CipherContext.finalize`
+        :meth:`~cryptography.hazmat.primitives.ciphers.base.CipherContext.finalize`
         has been called. GCM provides **no** guarantees of ciphertext integrity
         until decryption is complete.
 
@@ -422,7 +422,8 @@ Insecure modes
 
 Interfaces
 ----------
-.. currentmodule:: cryptography.hazmat.primitives.interfaces
+
+.. currentmodule:: cryptography.hazmat.primitives.ciphers.base
 
 .. class:: CipherContext
 
@@ -504,6 +505,91 @@ Interfaces
         :return bytes: Returns the tag value as bytes.
         :raises: :class:`~cryptography.exceptions.NotYetFinalized` if called
             before the context is finalized.
+
+.. class:: CipherAlgorithm
+
+    A named symmetric encryption algorithm.
+
+    .. attribute:: name
+
+        :type: str
+
+        The standard name for the mode, for example, "AES", "Camellia", or
+        "Blowfish".
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The number of bits in the key being used.
+
+
+.. class:: BlockCipherAlgorithm
+
+    A block cipher algorithm.
+
+    .. attribute:: block_size
+
+        :type: int
+
+        The number of bits in a block.
+
+Interfaces used by the symmetric cipher modes described in
+:ref:`Symmetric Encryption Modes <symmetric-encryption-modes>`.
+
+.. currentmodule:: cryptography.hazmat.primitives.ciphers.modes
+
+.. class:: Mode
+
+    A named cipher mode.
+
+    .. attribute:: name
+
+        :type: str
+
+        This should be the standard shorthand name for the mode, for example
+        Cipher-Block Chaining mode is "CBC".
+
+        The name may be used by a backend to influence the operation of a
+        cipher in conjunction with the algorithm's name.
+
+    .. method:: validate_for_algorithm(algorithm)
+
+        :param CipherAlgorithm algorithm:
+
+        Checks that the combination of this mode with the provided algorithm
+        meets any necessary invariants. This should raise an exception if they
+        are not met.
+
+        For example, the
+        :class:`~cryptography.hazmat.primitives.ciphers.modes.CBC` mode uses
+        this method to check that the provided initialization vector's length
+        matches the block size of the algorithm.
+
+
+.. class:: ModeWithInitializationVector
+
+    A cipher mode with an initialization vector.
+
+    .. attribute:: initialization_vector
+
+        :type: bytes
+
+        Exact requirements of the initialization are described by the
+        documentation of individual modes.
+
+
+.. class:: ModeWithNonce
+
+    A cipher mode with a nonce.
+
+    .. attribute:: nonce
+
+        :type: bytes
+
+        Exact requirements of the nonce are described by the documentation of
+        individual modes.
+
 
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
