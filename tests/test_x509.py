@@ -277,6 +277,13 @@ class TestNameAttribute(object):
             x509.ObjectIdentifier('oid'), 'value'
         ) != object()
 
+    def test_repr(self):
+        na = x509.NameAttribute(x509.ObjectIdentifier('2.5.4.3'), 'value')
+        assert repr(na) == (
+            "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName"
+            ")>, value='value')>"
+        )
+
 
 class TestObjectIdentifier(object):
     def test_eq(self):
