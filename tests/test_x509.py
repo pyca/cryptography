@@ -73,16 +73,8 @@ class TestRSACertificate(object):
             ),
             x509.NameAttribute(x509.OID_COMMON_NAME, 'Good CA')
         ]
-        assert issuer.common_name == [
+        assert issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(x509.OID_COMMON_NAME, 'Good CA')
-        ]
-        assert issuer.country_name == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-        ]
-        assert issuer.organization_name == [
-            x509.NameAttribute(
-                x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
-            ),
         ]
 
     def test_all_issuer_name_types(self, backend):
@@ -130,67 +122,6 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test1@test.local'),
         ]
 
-        assert issuer.country_name == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'CA'),
-        ]
-        assert issuer.state_or_province_name == [
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Illinois'),
-        ]
-        assert issuer.locality_name == [
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Chicago'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-        ]
-        assert issuer.organization_name == [
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'Zero, LLC'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'One, LLC'),
-        ]
-        assert issuer.common_name == [
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'common name 0'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'common name 1'),
-        ]
-        assert issuer.organizational_unit_name == [
-            x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, 'OU 0'),
-            x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, 'OU 1'),
-        ]
-        assert issuer.dn_qualifier == [
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, 'dnQualifier0'),
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, 'dnQualifier1'),
-        ]
-        assert issuer.serial_number == [
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, '123'),
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, '456'),
-        ]
-        assert issuer.title == [
-            x509.NameAttribute(x509.OID_TITLE, 'Title 0'),
-            x509.NameAttribute(x509.OID_TITLE, 'Title 1'),
-        ]
-        assert issuer.surname == [
-            x509.NameAttribute(x509.OID_SURNAME, 'Surname 0'),
-            x509.NameAttribute(x509.OID_SURNAME, 'Surname 1'),
-        ]
-        assert issuer.given_name == [
-            x509.NameAttribute(x509.OID_GIVEN_NAME, 'Given Name 0'),
-            x509.NameAttribute(x509.OID_GIVEN_NAME, 'Given Name 1'),
-        ]
-        assert issuer.pseudonym == [
-            x509.NameAttribute(x509.OID_PSEUDONYM, 'Incognito 0'),
-            x509.NameAttribute(x509.OID_PSEUDONYM, 'Incognito 1'),
-        ]
-        assert issuer.generation_qualifier == [
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, 'Last Gen'),
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, 'Next Gen'),
-        ]
-        assert issuer.domain_component == [
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, 'dc0'),
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, 'dc1'),
-        ]
-        assert issuer.email_address == [
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test0@test.local'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test1@test.local'),
-        ]
-
     def test_subject(self, backend):
         cert = _load_cert(
             os.path.join(
@@ -212,19 +143,11 @@ class TestRSACertificate(object):
                 'Valid pre2000 UTC notBefore Date EE Certificate Test3'
             )
         ]
-        assert subject.common_name == [
+        assert subject.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
                 'Valid pre2000 UTC notBefore Date EE Certificate Test3'
             )
-        ]
-        assert subject.country_name == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-        ]
-        assert subject.organization_name == [
-            x509.NameAttribute(
-                x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
-            ),
         ]
 
     def test_unicode_name(self, backend):
@@ -236,13 +159,13 @@ class TestRSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        assert cert.subject.common_name == [
+        assert cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
                 b'We heart UTF8!\xe2\x84\xa2'.decode('utf8')
             )
         ]
-        assert cert.issuer.common_name == [
+        assert cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
                 b'We heart UTF8!\xe2\x84\xa2'.decode('utf8')
@@ -293,71 +216,6 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, 'Dreamcast'),
             x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, 'dc2'),
             x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, 'dc3'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test2@test.local'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test3@test.local'),
-        ]
-
-        assert subject.country_name == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'AU'),
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'DE'),
-        ]
-        assert subject.state_or_province_name == [
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'California'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'New York'),
-        ]
-        assert subject.locality_name == [
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'San Francisco'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Ithaca'),
-        ]
-        assert subject.organization_name == [
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'Org Zero, LLC'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'Org One, LLC'),
-        ]
-        assert subject.common_name == [
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'CN 0'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'CN 1'),
-        ]
-        assert subject.organizational_unit_name == [
-            x509.NameAttribute(
-                x509.OID_ORGANIZATIONAL_UNIT_NAME, 'Engineering 0'
-            ),
-            x509.NameAttribute(
-                x509.OID_ORGANIZATIONAL_UNIT_NAME, 'Engineering 1'
-            ),
-        ]
-        assert subject.dn_qualifier == [
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, 'qualified0'),
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, 'qualified1'),
-        ]
-        assert subject.serial_number == [
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, '789'),
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, '012'),
-        ]
-        assert subject.title == [
-            x509.NameAttribute(x509.OID_TITLE, 'Title IX'),
-            x509.NameAttribute(x509.OID_TITLE, 'Title X'),
-        ]
-        assert subject.surname == [
-            x509.NameAttribute(x509.OID_SURNAME, 'Last 0'),
-            x509.NameAttribute(x509.OID_SURNAME, 'Last 1'),
-        ]
-        assert subject.given_name == [
-            x509.NameAttribute(x509.OID_GIVEN_NAME, 'First 0'),
-            x509.NameAttribute(x509.OID_GIVEN_NAME, 'First 1'),
-        ]
-        assert subject.pseudonym == [
-            x509.NameAttribute(x509.OID_PSEUDONYM, 'Guy Incognito 0'),
-            x509.NameAttribute(x509.OID_PSEUDONYM, 'Guy Incognito 1'),
-        ]
-        assert subject.generation_qualifier == [
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, '32X'),
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, 'Dreamcast'),
-        ]
-        assert subject.domain_component == [
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, 'dc2'),
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, 'dc3'),
-        ]
-        assert subject.email_address == [
             x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test2@test.local'),
             x509.NameAttribute(x509.OID_EMAIL_ADDRESS, 'test3@test.local'),
         ]

@@ -107,7 +107,7 @@ class _Certificate(object):
     def _build_x509_name(self, x509_name):
         count = self._backend._lib.X509_NAME_entry_count(x509_name)
         attributes = []
-        for x in range(0, count):
+        for x in range(count):
             entry = self._backend._lib.X509_NAME_get_entry(x509_name, x)
             obj = self._backend._lib.X509_NAME_ENTRY_get_object(entry)
             assert obj != self._backend._ffi.NULL
