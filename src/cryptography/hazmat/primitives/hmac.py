@@ -9,11 +9,11 @@ from cryptography.exceptions import (
     AlreadyFinalized, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes, interfaces
 
 
 @utils.register_interface(interfaces.MACContext)
-@utils.register_interface(interfaces.HashContext)
+@utils.register_interface(hashes.HashContext)
 class HMAC(object):
     def __init__(self, key, algorithm, backend, ctx=None):
         if not isinstance(backend, HMACBackend):
@@ -22,8 +22,8 @@ class HMAC(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        if not isinstance(algorithm, interfaces.HashAlgorithm):
-            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
         self._algorithm = algorithm
 
         self._backend = backend

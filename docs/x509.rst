@@ -103,7 +103,7 @@ X.509 Certificate Object
     .. method:: fingerprint(algorithm)
 
         :param algorithm: The
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the fingerprint.
 
         :return bytes: The fingerprint using the supplied hash algorithm as

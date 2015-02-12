@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes, interfaces
 
 
 @utils.register_interface(interfaces.AsymmetricPadding)
@@ -38,8 +38,8 @@ class OAEP(object):
     name = "EME-OAEP"
 
     def __init__(self, mgf, algorithm, label):
-        if not isinstance(algorithm, interfaces.HashAlgorithm):
-            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         self._mgf = mgf
         self._algorithm = algorithm
@@ -50,7 +50,7 @@ class MGF1(object):
     MAX_LENGTH = object()
 
     def __init__(self, algorithm):
-        if not isinstance(algorithm, interfaces.HashAlgorithm):
-            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         self._algorithm = algorithm

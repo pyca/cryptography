@@ -8,11 +8,11 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.primitives import constant_time, interfaces
+from cryptography.hazmat.primitives import constant_time, hashes, interfaces
 
 
 @utils.register_interface(interfaces.MACContext)
-@utils.register_interface(interfaces.HashContext)
+@utils.register_interface(hashes.HashContext)
 class _HMACContext(object):
     def __init__(self, backend, key, algorithm, ctx=None):
         self._algorithm = algorithm

@@ -160,52 +160,6 @@ In 0.8 the EC key interfaces were moved to the
 :mod:`cryptography.hazmat.primitives.asymmetric.ec` module.
 
 
-Hash algorithms
----------------
-
-.. class:: HashAlgorithm
-
-    .. attribute:: name
-
-        :type: str
-
-        The standard name for the hash algorithm, for example: ``"sha256"`` or
-        ``"whirlpool"``.
-
-    .. attribute:: digest_size
-
-        :type: int
-
-        The size of the resulting digest in bytes.
-
-    .. attribute:: block_size
-
-        :type: int
-
-        The internal block size of the hash algorithm in bytes.
-
-
-.. class:: HashContext
-
-    .. attribute:: algorithm
-
-        A :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm` that
-        will be used by this context.
-
-    .. method:: update(data)
-
-        :param bytes data: The data you want to hash.
-
-    .. method:: finalize()
-
-        :return: The final digest as bytes.
-
-    .. method:: copy()
-
-        :return: A :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
-             that is a copy of the current context.
-
-
 Key derivation functions
 ------------------------
 

@@ -9,6 +9,7 @@ import abc
 import six
 
 from cryptography import utils
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.interfaces.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm, Mode,
@@ -202,52 +203,26 @@ class PaddingContext(object):
         """
 
 
-@six.add_metaclass(abc.ABCMeta)
-class HashAlgorithm(object):
-    @abc.abstractproperty
-    def name(self):
-        """
-        A string naming this algorithm (e.g. "sha256", "md5").
-        """
-
-    @abc.abstractproperty
-    def digest_size(self):
-        """
-        The size of the resulting digest in bytes.
-        """
-
-    @abc.abstractproperty
-    def block_size(self):
-        """
-        The internal block size of the hash algorithm in bytes.
-        """
+HashContext = utils.deprecated(
+    hashes.HashContext,
+    __name__,
+    (
+        "The HashContext interface has moved to the "
+        "cryptography.hazmat.primitives.hashes module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class HashContext(object):
-    @abc.abstractproperty
-    def algorithm(self):
-        """
-        A HashAlgorithm that will be used by this context.
-        """
-
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Processes the provided bytes through the hash.
-        """
-
-    @abc.abstractmethod
-    def finalize(self):
-        """
-        Finalizes the hash context and returns the hash digest as bytes.
-        """
-
-    @abc.abstractmethod
-    def copy(self):
-        """
-        Return a HashContext that is a copy of the current context.
-        """
+HashAlgorithm = utils.deprecated(
+    hashes.HashAlgorithm,
+    __name__,
+    (
+        "The HashAlgorithm interface has moved to the "
+        "cryptography.hazmat.primitives.hashes module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 RSAPrivateKey = utils.deprecated(

@@ -49,7 +49,7 @@ class DummyPadding(object):
     name = "dummy-cipher"
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(hashes.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
     block_size = None

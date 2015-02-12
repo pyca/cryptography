@@ -32,7 +32,7 @@ Elliptic Curve Signature Algorithms
     `FIPS 186-3`_, and later in `FIPS 186-4`_.
 
     :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         provider.
 
     .. doctest::
@@ -282,7 +282,7 @@ Key Interfaces
 
     .. attribute:: algorithm
 
-        :type: :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
         The digest algorithm to be used with the signature scheme.
 

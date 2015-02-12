@@ -91,7 +91,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         Check if the specified ``algorithm`` is supported by this backend.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns: ``True`` if the specified ``algorithm`` is supported by this
@@ -101,15 +101,15 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_hash_ctx(algorithm)
 
         Create a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashContext` that
+        :class:`~cryptography.hazmat.primitives.hashes.HashContext` that
         uses the specified ``algorithm`` to calculate a message digest.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
+            :class:`~cryptography.hazmat.primitives.hashes.HashContext`
 
 
 .. class:: HMACBackend
@@ -127,7 +127,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         Check if the specified ``algorithm`` is supported by this backend.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns: ``True`` if the specified ``algorithm`` is supported for HMAC
@@ -136,16 +136,16 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_hmac_ctx(algorithm)
 
         Create a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashContext` that
+        :class:`~cryptography.hazmat.primitives.hashes.HashContext` that
         uses the specified ``algorithm`` to calculate a hash-based message
         authentication code.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.HashContext`
+            :class:`~cryptography.hazmat.primitives.hashes.HashContext`
 
 
 .. class:: CMACBackend
@@ -191,7 +191,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         Check if the specified ``algorithm`` is supported by this backend.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns: ``True`` if the specified ``algorithm`` is supported for
@@ -200,7 +200,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: derive_pbkdf2_hmac(self, algorithm, length, salt, iterations, key_material)
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :param int length: The desired length of the derived key. Maximum is
@@ -343,7 +343,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: dsa_hash_supported(algorithm)
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns: ``True`` if the specified ``algorithm`` is supported by this
