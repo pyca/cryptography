@@ -11,7 +11,7 @@ import pytest
 
 from cryptography import exceptions, utils
 from cryptography.hazmat.backends.interfaces import EllipticCurveBackend
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_rfc6979_signature
@@ -52,13 +52,13 @@ def _skip_curve_unsupported(backend, curve):
         )
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(ec.EllipticCurve)
 class DummyCurve(object):
     name = "dummy-curve"
     key_size = 1
 
 
-@utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
+@utils.register_interface(ec.EllipticCurveSignatureAlgorithm)
 class DummySignatureAlgorithm(object):
     algorithm = None
 
@@ -149,7 +149,7 @@ class TestECWithNumbers(object):
         ).private_key(backend)
         assert key
 
-        if isinstance(key, interfaces.EllipticCurvePrivateKeyWithNumbers):
+        if isinstance(key, ec.EllipticCurvePrivateKeyWithNumbers):
             priv_num = key.private_numbers()
             assert priv_num.private_value == vector['d']
             assert priv_num.public_numbers.x == vector['x']

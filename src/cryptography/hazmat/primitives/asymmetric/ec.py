@@ -4,97 +4,176 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import interfaces
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurve(object):
+    @abc.abstractproperty
+    def name(self):
+        """
+        The name of the curve. e.g. secp256r1.
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the base point of the curve.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurveSignatureAlgorithm(object):
+    @abc.abstractproperty
+    def algorithm(self):
+        """
+        The digest algorithm used with this signature.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePrivateKey(object):
+    @abc.abstractmethod
+    def signer(self, signature_algorithm):
+        """
+        Returns an AsymmetricSignatureContext used for signing data.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The EllipticCurvePublicKey for this private key.
+        """
+
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePrivateKeyWithNumbers(EllipticCurvePrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns an EllipticCurvePrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePublicKey(object):
+    @abc.abstractmethod
+    def verifier(self, signature, signature_algorithm):
+        """
+        Returns an AsymmetricVerificationContext used for signing data.
+        """
+
+    @abc.abstractproperty
+    def curve(self):
+        """
+        The EllipticCurve that this key is on.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurvePublicKeyWithNumbers(EllipticCurvePublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns an EllipticCurvePublicNumbers.
+        """
+
+
+@utils.register_interface(EllipticCurve)
 class SECT571R1(object):
     name = "sect571r1"
     key_size = 571
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT409R1(object):
     name = "sect409r1"
     key_size = 409
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT283R1(object):
     name = "sect283r1"
     key_size = 283
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT233R1(object):
     name = "sect233r1"
     key_size = 233
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT163R2(object):
     name = "sect163r2"
     key_size = 163
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT571K1(object):
     name = "sect571k1"
     key_size = 571
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT409K1(object):
     name = "sect409k1"
     key_size = 409
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT283K1(object):
     name = "sect283k1"
     key_size = 283
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT233K1(object):
     name = "sect233k1"
     key_size = 233
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECT163K1(object):
     name = "sect163k1"
     key_size = 163
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECP521R1(object):
     name = "secp521r1"
     key_size = 521
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECP384R1(object):
     name = "secp384r1"
     key_size = 384
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECP256R1(object):
     name = "secp256r1"
     key_size = 256
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECP224R1(object):
     name = "secp224r1"
     key_size = 224
 
 
-@utils.register_interface(interfaces.EllipticCurve)
+@utils.register_interface(EllipticCurve)
 class SECP192R1(object):
     name = "secp192r1"
     key_size = 192
@@ -124,7 +203,7 @@ _CURVE_TYPES = {
 }
 
 
-@utils.register_interface(interfaces.EllipticCurveSignatureAlgorithm)
+@utils.register_interface(EllipticCurveSignatureAlgorithm)
 class ECDSA(object):
     def __init__(self, algorithm):
         self._algorithm = algorithm
@@ -144,7 +223,7 @@ class EllipticCurvePublicNumbers(object):
         ):
             raise TypeError("x and y must be integers.")
 
-        if not isinstance(curve, interfaces.EllipticCurve):
+        if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must provide the EllipticCurve interface.")
 
         self._y = y

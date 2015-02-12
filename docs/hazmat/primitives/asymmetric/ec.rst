@@ -12,17 +12,13 @@ Elliptic curve cryptography
 
     Generate a new private key on ``curve`` for use with ``backend``.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
-        provider.
+    :param backend: A :class:`EllipticCurve` provider.
 
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
         provider.
 
-    :returns: A new instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
-        provider.
+    :returns: A new instance of a :class:`EllipticCurvePrivateKey` provider.
 
 
 Elliptic Curve Signature Algorithms
@@ -86,8 +82,7 @@ Elliptic Curve Signature Algorithms
             :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
             provider.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePrivateKey`
+        :returns: A new instance of a :class:`EllipticCurvePrivateKey`
             provider.
 
 
@@ -99,7 +94,7 @@ Elliptic Curve Signature Algorithms
 
      .. attribute:: curve
 
-        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
+        :type: :class:`EllipticCurve`
 
         The elliptic curve for this key.
 
@@ -124,8 +119,7 @@ Elliptic Curve Signature Algorithms
             :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
             provider.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+        :returns: A new instance of a :class:`EllipticCurvePublicKey`
             provider.
 
 Elliptic Curves
@@ -151,8 +145,7 @@ Currently `cryptography` only supports NIST curves, none of which are
 considered "safe" by the `SafeCurves`_ project run by Daniel J. Bernstein and
 Tanja Lange.
 
-All named curves are providers of
-:class:`~cryptography.hazmat.primtives.interfaces.EllipticCurve`.
+All named curves are providers of :class:`EllipticCurve`.
 
 .. class:: SECT571K1
 
@@ -258,6 +251,119 @@ All named curves are providers of
 
     SECG curve ``secp192r1``. Also called NIST P-192.
 
+Key Interfaces
+~~~~~~~~~~~~~~
+
+.. class:: EllipticCurve
+
+    .. versionadded:: 0.5
+
+    A named elliptic curve.
+
+    .. attribute:: name
+
+        :type: string
+
+        The name of the curve. Usually the name used for the ASN.1 OID such as
+        ``secp256k1``.
+
+    .. attribute:: key_size
+
+        :type: int
+
+        The bit length of the curve's base point.
+
+
+.. class:: EllipticCurveSignatureAlgorithm
+
+    .. versionadded:: 0.5
+
+    A signature algorithm for use with elliptic curve keys.
+
+    .. attribute:: algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+
+        The digest algorithm to be used with the signature scheme.
+
+
+.. class:: EllipticCurvePrivateKey
+
+    .. versionadded:: 0.5
+
+    An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
+    `EdDSA`_.
+
+    .. method:: signer(signature_algorithm)
+
+        Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`6979`.
+
+        :param signature_algorithm: An instance of a
+            :class:`EllipticCurveSignatureAlgorithm` provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+    .. method:: public_key()
+
+        :return: :class:`EllipticCurvePublicKey`
+
+        The EllipticCurvePublicKey object for this private key.
+
+
+.. class:: EllipticCurvePrivateKeyWithNumbers
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a :class:`EllipticCurvePrivateNumbers` object.
+
+        :returns: An :class:`EllipticCurvePrivateNumbers` instance.
+
+
+.. class:: EllipticCurvePublicKey
+
+    .. versionadded:: 0.5
+
+    An elliptic curve public key.
+
+    .. method:: verifier(signature, signature_algorithm)
+
+        Verify data was signed by the private key associated with this public
+        key.
+
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`6979`.
+
+        :param signature_algorithm: An instance of a
+            :class:`EllipticCurveSignatureAlgorithm` provider.
+
+        :returns:
+            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+
+     .. attribute:: curve
+
+        :type: :class:`EllipticCurve`
+
+        The elliptic curve for this key.
+
+
+.. class:: EllipticCurvePublicKeyWithNumbers
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a :class:`EllipticCurvePublicNumbers` object.
+
+        :returns: An :class:`EllipticCurvePublicNumbers` instance.
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
@@ -267,3 +373,5 @@ All named curves are providers of
 .. _`64x lower computational cost than DH`: http://www.nsa.gov/business/programs/elliptic_curve.shtml
 .. _`minimize the number of security concerns for elliptic-curve cryptography`: http://cr.yp.to/ecdh/curve25519-20060209.pdf
 .. _`SafeCurves`: http://safecurves.cr.yp.to/
+.. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
+.. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA
