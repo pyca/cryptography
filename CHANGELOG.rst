@@ -168,15 +168,25 @@ Changelog
   for :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES` on
   :doc:`/hazmat/backends/commoncrypto` and :doc:`/hazmat/backends/openssl`.
 * Deprecated the concrete ``RSAPrivateKey`` class in favor of backend
-  specific providers of the ``RSAPrivateKey`` interface.
+  specific providers of the
+  :class:`cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+  interface.
 * Deprecated the concrete ``RSAPublicKey`` in favor of backend specific
-  providers of the ``RSAPublicKey`` interface.
+  providers of the
+  :class:`cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+  interface.
 * Deprecated the concrete ``DSAPrivateKey`` class in favor of backend
-  specific providers of the ``DSAPrivateKey`` interface.
+  specific providers of the
+  :class:`cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
+  interface.
 * Deprecated the concrete ``DSAPublicKey`` class in favor of backend specific
-  providers of the ``DSAPublicKey`` interface.
+  providers of the
+  :class:`cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
+  interface.
 * Deprecated the concrete ``DSAParameters`` class in favor of backend specific
-  providers of the ``DSAParameters`` interface.
+  providers of the
+  :class:`cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
+  interface.
 * Deprecated ``encrypt_rsa``, ``decrypt_rsa``, ``create_rsa_signature_ctx`` and
   ``create_rsa_verification_ctx`` on
   :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
