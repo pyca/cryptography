@@ -152,132 +152,12 @@ RSA
 In 0.8 the RSA key interfaces were moved to the
 :mod:`cryptography.hazmat.primitives.asymmetric.rsa` module.
 
-.. class:: EllipticCurve
-
-    .. versionadded:: 0.5
-
-    A named elliptic curve.
-
-    .. attribute:: name
-
-        :type: string
-
-        The name of the curve. Usually the name used for the ASN.1 OID such as
-        ``secp256k1``.
-
-    .. attribute:: key_size
-
-        :type: int
-
-        The bit length of the curve's base point.
-
 
 Elliptic Curve
 ~~~~~~~~~~~~~~
 
-.. class:: EllipticCurveSignatureAlgorithm
-
-    .. versionadded:: 0.5
-
-    A signature algorithm for use with elliptic curve keys.
-
-    .. attribute:: algorithm
-
-        :type: :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
-
-        The digest algorithm to be used with the signature scheme.
-
-
-.. class:: EllipticCurvePrivateKey
-
-    .. versionadded:: 0.5
-
-    An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
-    `EdDSA`_.
-
-    .. method:: signer(signature_algorithm)
-
-        Sign data which can be verified later by others using the public key.
-        The signature is formatted as DER-encoded bytes, as specified in
-        :rfc:`6979`.
-
-        :param signature_algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
-
-
-        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
-
-    .. method:: public_key()
-
-        :return: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
-
-        The EllipticCurvePublicKey object for this private key.
-
-
-.. class:: EllipticCurvePrivateKeyWithNumbers
-
-    .. versionadded:: 0.6
-
-    Extends :class:`EllipticCurvePrivateKey`.
-
-    .. method:: private_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers`
-            instance.
-
-
-.. class:: EllipticCurvePublicKey
-
-    .. versionadded:: 0.5
-
-    An elliptic curve public key.
-
-    .. method:: verifier(signature, signature_algorithm)
-
-        Verify data was signed by the private key associated with this public
-        key.
-
-        :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`6979`.
-
-        :param signature_algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurveSignatureAlgorithm`
-            provider.
-
-        :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
-
-     .. attribute:: curve
-
-        :type: :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurve`
-
-        The elliptic curve for this key.
-
-
-.. class:: EllipticCurvePublicKeyWithNumbers
-
-    .. versionadded:: 0.6
-
-    Extends :class:`EllipticCurvePublicKey`.
-
-    .. method:: public_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`
-            instance.
+In 0.8 the EC key interfaces were moved to the
+:mod:`cryptography.hazmat.primitives.asymmetric.ec` module.
 
 
 Hash algorithms
@@ -419,9 +299,4 @@ Key derivation functions
             the provided signature does not match the expected signature.
 
 
-.. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
-.. _`Chinese remainder theorem`: https://en.wikipedia.org/wiki/Chinese_remainder_theorem
-.. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
-.. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
-.. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA

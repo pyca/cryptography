@@ -9,13 +9,7 @@ import abc
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives.asymmetric import dsa
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.interfaces.asymmetric.ec import (
-    EllipticCurve, EllipticCurvePrivateKey, EllipticCurvePrivateKeyWithNumbers,
-    EllipticCurvePublicKey, EllipticCurvePublicKeyWithNumbers,
-    EllipticCurveSignatureAlgorithm
-)
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.interfaces.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm, Mode,
     ModeWithAuthenticationTag, ModeWithInitializationVector, ModeWithNonce
@@ -24,17 +18,78 @@ from cryptography.hazmat.primitives.interfaces.ciphers import (
 __all__ = [
     "BlockCipherAlgorithm",
     "CipherAlgorithm",
-    "EllipticCurve",
-    "EllipticCurvePrivateKey",
-    "EllipticCurvePrivateKeyWithNumbers",
-    "EllipticCurvePublicKey",
-    "EllipticCurvePublicKeyWithNumbers",
-    "EllipticCurveSignatureAlgorithm",
     "Mode",
     "ModeWithAuthenticationTag",
     "ModeWithInitializationVector",
     "ModeWithNonce"
 ]
+
+
+EllipticCurve = utils.deprecated(
+    ec.EllipticCurve,
+    __name__,
+    (
+        "The EllipticCurve interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.ec module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+EllipticCurvePrivateKey = utils.deprecated(
+    ec.EllipticCurvePrivateKey,
+    __name__,
+    (
+        "The EllipticCurvePrivateKey interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.ec module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+EllipticCurvePrivateKeyWithNumbers = utils.deprecated(
+    ec.EllipticCurvePrivateKeyWithNumbers,
+    __name__,
+    (
+        "The EllipticCurvePrivateKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.ec module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+EllipticCurvePublicKey = utils.deprecated(
+    ec.EllipticCurvePublicKey,
+    __name__,
+    (
+        "The EllipticCurvePublicKey interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.ec module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+EllipticCurvePublicKeyWithNumbers = utils.deprecated(
+    ec.EllipticCurvePublicKeyWithNumbers,
+    __name__,
+    (
+        "The EllipticCurvePublicKeyWithNumbers interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.ec module"
+    ),
+    utils.DeprecatedIn08
+)
+
+
+EllipticCurveSignatureAlgorithm = utils.deprecated(
+    ec.EllipticCurveSignatureAlgorithm,
+    __name__,
+    (
+        "The EllipticCurveSignatureAlgorithm interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.ec module"
+    ),
+    utils.DeprecatedIn08
+)
+
 
 DSAParameters = utils.deprecated(
     dsa.DSAParameters,
