@@ -7,6 +7,8 @@ Key Serialization
 
 .. testsetup::
 
+    import base64
+
     pem_data = b"""
     -----BEGIN RSA PRIVATE KEY-----
     MIICXgIBAAKBgQDn09PV9KPE7Q+N5K5UtNLT1DLl8z/pKM2pP5tXqWx2OsEw00lC
@@ -32,6 +34,27 @@ Key Serialization
     ex8nG0iMw4ObOtg6CwIDAQAB
     -----END PUBLIC KEY-----
     """.strip()
+    der_data = base64.b64decode(
+        b"MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBALskegl+DrI3Msw5Z63x"
+        b"nj1rgoPR0KykwBi+jZgAwHv/B0TJyhy6NuEnaf+x442L7lepOqoWQzlUGXyuaSQU9mT/"
+        b"vHTGZ2xM8QJJaccr4eGho0MU9HePyNCFWjWVrGKpwSEAd6CLlzC0Wiy4kC9IoAUoS/IP"
+        b"jeyLTQNCddatgcARAgMBAAECgYAA/LlKJgeJUStTcpHgGD6mXjHvnAwWJELQKDP5+tA8"
+        b"VAQGwBX1G5qzJDGrPGtHQ7DSqdwF4YFZtgTpZmGq1wsAjz3lv6L4XiVsHiIPtP1B4gMx"
+        b"X9ogxcDzVQ7hyezXPioMAcp7Isus9Csn8HhftcL56BRabn6GvWqbIAy6zJcgEQJBAMlZ"
+        b"nymKW5/jKth+wkCfqEXlPhGNPO1uq87QZUbYxwdjtSM09J9+HMfH+WXR9ARCOL46DJ0I"
+        b"JfyjcdmuDDlh9IkCQQDt76up1Tmc7lkb/89IRBu2MudGJPMEf96VCG11nmcXulyk1OLi"
+        b"TXfO62YpxZbgYrvlrNxEYlSG7WQMztBgA51JAkBU2RhyJ+S+drsaaigvlVgSxCyotszi"
+        b"/Q0XZMgY18bfPUwanvkqsLkuEv3sw1HB7an9t3aTQdjIIpQad/acw8OJAkEAjvmnCK21"
+        b"KgTbjQShtQYgNNLPwImxcjG4OYvP4o6l2k9FHlNCZsQwSymOwWkXKYyK5g+CaKFBs7Zw"
+        b"mXWpJxjk6QJBAInqbm1w3yVfGD9I2mMQi/6oDJQP3pdWU4mU4h4sdDyRgTQLpkD4yypg"
+        b"jOACt4mTzxifSVT9fT+a79SkT8FFmZE="
+    )
+    public_der_data = base64.b64decode(
+        b"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7JHoJfg6yNzLMOWet8Z49a4KD0dCs"
+        b"pMAYvo2YAMB7/wdEycocujbhJ2n/seONi+5XqTqqFkM5VBl8rmkkFPZk/7x0xmdsTPEC"
+        b"SWnHK+HhoaNDFPR3j8jQhVo1laxiqcEhAHegi5cwtFosuJAvSKAFKEvyD43si00DQnXW"
+        b"rYHAEQIDAQAB"
+    )
     message = b""
 
     def sign_with_rsa_key(key, message):
@@ -173,6 +196,15 @@ the rest.
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
 
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> from cryptography.hazmat.primitives.serialization import load_der_private_key
+        >>> key = load_der_private_key(der_data, password=None, backend=default_backend())
+        >>> isinstance(key, rsa.RSAPrivateKey)
+        True
+
 .. function:: load_der_public_key(data, backend)
 
     .. versionadded:: 0.8
@@ -193,6 +225,15 @@ the rest.
 
     :raises UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> from cryptography.hazmat.primitives.serialization import load_der_public_key
+        >>> key = load_der_public_key(public_der_data, backend=default_backend())
+        >>> isinstance(key, rsa.RSAPublicKey)
+        True
 
 
 OpenSSH Public Key
