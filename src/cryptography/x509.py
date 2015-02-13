@@ -75,6 +75,12 @@ class NameAttribute(object):
     def __ne__(self, other):
         return not self == other
 
+    def __repr__(self):
+        return "<NameAttribute(oid={oid}, value={value!r})>".format(
+            oid=self.oid,
+            value=self.value
+        )
+
 
 class ObjectIdentifier(object):
     def __init__(self, dotted_string):
