@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 
 from cryptography import utils, x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 
 
@@ -138,7 +139,16 @@ class _Certificate(object):
         return x509.Name(attributes)
 
     @property
-    def signature_algorithm(self):
+    def signature_hash_algorithm(self):
+        oid = self._signature_algorithm()
+        try:
+            return x509._SIG_OIDS_TO_HASH[oid.dotted_string]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm {0} not recognized".format(oid)
+            )
+
+    def _signature_algorithm(self):
         buf_len = 50
         buf = self._backend._ffi.new("char[]", buf_len)
         res = self._backend._lib.OBJ_obj2txt(

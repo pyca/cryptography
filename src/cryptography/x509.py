@@ -10,6 +10,7 @@ from enum import Enum
 import six
 
 from cryptography import utils
+from cryptography.hazmat.primitives import hashes
 
 
 _OID_NAMES = {
@@ -170,6 +171,22 @@ OID_DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
 OID_DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
 OID_DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
+_SIG_OIDS_TO_HASH = {
+    "1.2.840.113549.1.1.4": hashes.MD5(),
+    "1.2.840.113549.1.1.5": hashes.SHA1(),
+    "1.2.840.113549.1.1.14": hashes.SHA224(),
+    "1.2.840.113549.1.1.11": hashes.SHA256(),
+    "1.2.840.113549.1.1.12": hashes.SHA384(),
+    "1.2.840.113549.1.1.13": hashes.SHA512(),
+    "1.2.840.10045.4.3.1": hashes.SHA224(),
+    "1.2.840.10045.4.3.2": hashes.SHA256(),
+    "1.2.840.10045.4.3.3": hashes.SHA384(),
+    "1.2.840.10045.4.3.4": hashes.SHA512(),
+    "1.2.840.10040.4.3": hashes.SHA1(),
+    "2.16.840.1.101.3.4.3.1": hashes.SHA224(),
+    "2.16.840.1.101.3.4.3.2": hashes.SHA256()
+}
+
 
 @six.add_metaclass(abc.ABCMeta)
 class Certificate(object):
@@ -222,8 +239,8 @@ class Certificate(object):
         """
 
     @abc.abstractproperty
-    def signature_algorithm(self):
+    def signature_hash_algorithm(self):
         """
-        Returns an ObjectIdentifier corresponding to the signature algorithm of
-        the certificate.
+        Returns a HashAlgorithm corresponding to the type of the digest signed
+        in the certificate.
         """

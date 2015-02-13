@@ -182,18 +182,19 @@ X.509 Certificate Object
 
         The :class:`Name` of the subject.
 
-    .. attribute:: signature_algorithm
+    .. attribute:: signature_hash_algorithm
 
-        :type: :class:`ObjectIdentifier`
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
-        An :class:`ObjectIdentifier` instance corresponding to the signature
-        algorithm used to sign the certificate. This is both the digest
-        used as well as the asymmetric type.
+        A :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        corresponding to the hash algorithm used within the certificate
+        signature.
 
         .. doctest::
 
-            >>> cert.signature_algorithm
-            <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+            True
 
 .. class:: Name
 
