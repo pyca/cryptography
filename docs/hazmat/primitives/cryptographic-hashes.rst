@@ -3,7 +3,7 @@
 Message digests
 ===============
 
-.. currentmodule:: cryptography.hazmat.primitives.hashes
+.. module:: cryptography.hazmat.primitives.hashes
 
 .. class:: Hash(algorithm, backend)
 

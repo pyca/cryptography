@@ -130,8 +130,8 @@ X.509 Certificate Object
 
         :type:
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.interfaces.DSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.interfaces.EllipticCurvePublicKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
 
         The public key associated with the certificate.
 

@@ -3,7 +3,7 @@
 DSA
 ===
 
-.. currentmodule:: cryptography.hazmat.primitives.asymmetric.dsa
+.. module:: cryptography.hazmat.primitives.asymmetric.dsa
 
 `DSA`_ is a `public-key`_ algorithm for signing messages.
 

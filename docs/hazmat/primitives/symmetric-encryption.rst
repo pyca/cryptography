@@ -422,6 +422,7 @@ Insecure modes
 
 Interfaces
 ----------
+.. currentmodule:: cryptography.hazmat.primitives.interfaces
 
 .. class:: CipherContext
 
@@ -438,8 +439,8 @@ Interfaces
     recommended padding is
     :class:`~cryptography.hazmat.primitives.padding.PKCS7`. If you are using a
     stream cipher mode (such as
-    :class:`~cryptography.hazmat.primitives.modes.CTR`) you don't have to worry
-    about this.
+    :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR`) you don't have
+    to worry about this.
 
     .. method:: update(data)
 

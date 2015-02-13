@@ -3,7 +3,7 @@
 Bindings
 ========
 
-.. currentmodule:: cryptography.hazmat.bindings
+.. module:: cryptography.hazmat.bindings
 
 ``cryptography`` aims to provide low-level CFFI based bindings to multiple
 native C libraries. These provide no automatic initialization of the library
