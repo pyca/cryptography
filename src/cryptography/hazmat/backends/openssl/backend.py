@@ -725,12 +725,12 @@ class Backend(object):
         mem_bio = self._bytes_to_bio(data)
         key = self._lib.d2i_PrivateKey_bio(mem_bio.bio, self._ffi.NULL)
         if key != self._ffi.NULL:
+            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
                 raise TypeError(
                     "Password was given but private key is not encrypted."
                 )
 
-            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             return key
         else:
             self._consume_errors()
@@ -744,11 +744,11 @@ class Backend(object):
         if info != self._ffi.NULL:
             key = self._lib.EVP_PKCS82PKEY(info)
             assert key != self._ffi.NULL
+            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
                 raise TypeError(
                     "Password was given but private key is not encrypted."
                 )
-            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             return key
         else:
             self._consume_errors()
