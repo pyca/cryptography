@@ -193,7 +193,7 @@ Weak ciphers
 Modes
 ~~~~~
 
-.. currentmodule:: cryptography.hazmat.primitives.ciphers.modes
+.. module:: cryptography.hazmat.primitives.ciphers.modes
 
 .. class:: CBC(initialization_vector)
 
@@ -423,7 +423,7 @@ Insecure modes
 Interfaces
 ----------
 
-.. currentmodule:: cryptography.hazmat.primitives.ciphers.base
+.. module:: cryptography.hazmat.primitives.ciphers.base
 
 .. class:: CipherContext
 
