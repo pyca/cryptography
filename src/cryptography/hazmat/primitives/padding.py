@@ -4,12 +4,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
 import six
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings.utils import LazyLibrary, build_ffi
-from cryptography.hazmat.primitives import interfaces
 
 
 TYPES = """
@@ -59,6 +60,21 @@ _ffi = build_ffi(cdef_source=TYPES, verify_source=FUNCTIONS)
 _lib = LazyLibrary(_ffi)
 
 
+@six.add_metaclass(abc.ABCMeta)
+class PaddingContext(object):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Pads the provided bytes and returns any available data as bytes.
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        Finalize the padding, returns bytes.
+        """
+
+
 class PKCS7(object):
     def __init__(self, block_size):
         if not (0 <= block_size < 256):
@@ -76,7 +92,7 @@ class PKCS7(object):
         return _PKCS7UnpaddingContext(self.block_size)
 
 
-@utils.register_interface(interfaces.PaddingContext)
+@utils.register_interface(PaddingContext)
 class _PKCS7PaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
@@ -109,7 +125,7 @@ class _PKCS7PaddingContext(object):
         return result
 
 
-@utils.register_interface(interfaces.PaddingContext)
+@utils.register_interface(PaddingContext)
 class _PKCS7UnpaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size

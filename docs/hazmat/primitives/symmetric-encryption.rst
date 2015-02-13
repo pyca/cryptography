@@ -591,6 +591,18 @@ Interfaces used by the symmetric cipher modes described in
         individual modes.
 
 
+.. class:: ModeWithAuthenticationTag
+
+    A cipher mode with an authentication tag.
+
+    .. attribute:: tag
+
+        :type: bytes
+
+        Exact requirements of the tag are described by the documentation of
+        individual modes.
+
+
 
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`recommends a 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf

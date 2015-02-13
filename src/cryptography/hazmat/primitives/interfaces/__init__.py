@@ -9,7 +9,7 @@ import abc
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.ciphers import base, modes
 
@@ -240,19 +240,15 @@ DSAPublicKeyWithNumbers = utils.deprecated(
 )
 
 
-@six.add_metaclass(abc.ABCMeta)
-class PaddingContext(object):
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Pads the provided bytes and returns any available data as bytes.
-        """
-
-    @abc.abstractmethod
-    def finalize(self):
-        """
-        Finalize the padding, returns bytes.
-        """
+PaddingContext = utils.deprecated(
+    padding.PaddingContext,
+    __name__,
+    (
+        "The PaddingContext interface has moved to the "
+        "cryptography.hazmat.primitives.padding module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 HashContext = utils.deprecated(

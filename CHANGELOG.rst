@@ -14,6 +14,22 @@ Changelog
   :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
   :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.hashes`.
+* :class:`~cryptography.hazmat.primitives.ciphers.base.CipherContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.base.AEADCipherContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.base.AEADEncryptionContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.base.CipherAlgorithm`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.base.BlockCipherAlgorithm`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.ciphers.base`.
+* :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`,
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithInitializationVector`,
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithNonce`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithAuthenticationTag`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.ciphers.modes`.
+* :class:`~cryptography.hazmat.primitives.padding.PaddingContext` was moved
+  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.padding`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
