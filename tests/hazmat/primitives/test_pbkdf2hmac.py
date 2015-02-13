@@ -13,13 +13,13 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
 )
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from ...utils import raises_unsupported_algorithm
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(hashes.HashAlgorithm)
 class DummyHash(object):
     name = "dummy-hash"
     block_size = None

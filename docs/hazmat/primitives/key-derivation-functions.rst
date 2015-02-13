@@ -69,7 +69,7 @@ Different KDFs are suitable for different tasks such as:
         >>> kdf.verify(b"my great password", key)
 
     :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         provider.
     :param int length: The desired length of the derived key. Maximum is
         (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
@@ -169,7 +169,7 @@ Different KDFs are suitable for different tasks such as:
         >>> hkdf.verify(b"input key", key)
 
     :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         provider.
 
     :param int length: The desired length of the derived key. Maximum is
@@ -270,7 +270,7 @@ Different KDFs are suitable for different tasks such as:
         >>> hkdf.verify(key_material, key)
 
     :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         provider.
 
     :param int length: The desired length of the derived key. Maximum is

@@ -7,10 +7,10 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives import hashes
 
 
-@utils.register_interface(interfaces.HashContext)
+@utils.register_interface(hashes.HashContext)
 class _HashContext(object):
     def __init__(self, backend, algorithm, ctx=None):
         self._algorithm = algorithm

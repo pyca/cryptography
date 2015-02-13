@@ -4,15 +4,66 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
+import six
+
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HashBackend
-from cryptography.hazmat.primitives import interfaces
 
 
-@utils.register_interface(interfaces.HashContext)
+@six.add_metaclass(abc.ABCMeta)
+class HashAlgorithm(object):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this algorithm (e.g. "sha256", "md5").
+        """
+
+    @abc.abstractproperty
+    def digest_size(self):
+        """
+        The size of the resulting digest in bytes.
+        """
+
+    @abc.abstractproperty
+    def block_size(self):
+        """
+        The internal block size of the hash algorithm in bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class HashContext(object):
+    @abc.abstractproperty
+    def algorithm(self):
+        """
+        A HashAlgorithm that will be used by this context.
+        """
+
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Processes the provided bytes through the hash.
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        Finalizes the hash context and returns the hash digest as bytes.
+        """
+
+    @abc.abstractmethod
+    def copy(self):
+        """
+        Return a HashContext that is a copy of the current context.
+        """
+
+
+@utils.register_interface(HashContext)
 class Hash(object):
     def __init__(self, algorithm, backend, ctx=None):
         if not isinstance(backend, HashBackend):
@@ -21,8 +72,8 @@ class Hash(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        if not isinstance(algorithm, interfaces.HashAlgorithm):
-            raise TypeError("Expected instance of interfaces.HashAlgorithm.")
+        if not isinstance(algorithm, HashAlgorithm):
+            raise TypeError("Expected instance of hashes.HashAlgorithm.")
         self._algorithm = algorithm
 
         self._backend = backend
@@ -56,56 +107,56 @@ class Hash(object):
         return digest
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class SHA1(object):
     name = "sha1"
     digest_size = 20
     block_size = 64
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class SHA224(object):
     name = "sha224"
     digest_size = 28
     block_size = 64
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class SHA256(object):
     name = "sha256"
     digest_size = 32
     block_size = 64
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class SHA384(object):
     name = "sha384"
     digest_size = 48
     block_size = 128
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class SHA512(object):
     name = "sha512"
     digest_size = 64
     block_size = 128
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class RIPEMD160(object):
     name = "ripemd160"
     digest_size = 20
     block_size = 64
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class Whirlpool(object):
     name = "whirlpool"
     digest_size = 64
     block_size = 64
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(HashAlgorithm)
 class MD5(object):
     name = "md5"
     digest_size = 16

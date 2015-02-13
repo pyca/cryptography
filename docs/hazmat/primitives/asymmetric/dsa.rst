@@ -267,7 +267,7 @@ Key interfaces
         :rfc:`6979`.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :param backend: A
@@ -330,7 +330,7 @@ Key interfaces
             specified in :rfc:`6979`.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :param backend: A

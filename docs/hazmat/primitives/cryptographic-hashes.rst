@@ -12,9 +12,9 @@ Message digests
     results (with a high probability) in different digests.
 
     This is an implementation of
-    :class:`~cryptography.hazmat.primitives.interfaces.HashContext` meant to
+    :class:`~cryptography.hazmat.primitives.hashes.HashContext` meant to
     be used with
-    :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+    :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
     implementations to provide an incremental interface to calculating
     various message digests.
 
@@ -39,7 +39,7 @@ Message digests
     `Lifetimes of cryptographic hash functions`_.
 
     :param algorithm: A
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         provider such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
     :param backend: A
@@ -144,6 +144,50 @@ MD5
 
     MD5 is a deprecated cryptographic hash function. It produces a 128-bit
     message digest and has practical known collision attacks.
+
+
+Interfaces
+~~~~~~~~~~
+
+.. class:: HashAlgorithm
+
+    .. attribute:: name
+
+        :type: str
+
+        The standard name for the hash algorithm, for example: ``"sha256"`` or
+        ``"whirlpool"``.
+
+    .. attribute:: digest_size
+
+        :type: int
+
+        The size of the resulting digest in bytes.
+
+    .. attribute:: block_size
+
+        :type: int
+
+        The internal block size of the hash algorithm in bytes.
+
+
+.. class:: HashContext
+
+    .. attribute:: algorithm
+
+        A :class:`HashAlgorithm` that will be used by this context.
+
+    .. method:: update(data)
+
+        :param bytes data: The data you want to hash.
+
+    .. method:: finalize()
+
+        :return: The final digest as bytes.
+
+    .. method:: copy()
+
+        :return: A :class:`HashContext` that is a copy of the current context.
 
 
 .. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html

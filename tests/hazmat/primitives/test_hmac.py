@@ -15,14 +15,14 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import hashes, hmac, interfaces
+from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
 from ..backends.test_multibackend import DummyHMACBackend
 from ...utils import raises_unsupported_algorithm
 
 
-@utils.register_interface(interfaces.HashAlgorithm)
+@utils.register_interface(hashes.HashAlgorithm)
 class UnsupportedDummyHash(object):
     name = "unsupported-dummy-hash"
     block_size = None

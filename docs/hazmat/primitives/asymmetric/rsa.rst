@@ -252,7 +252,7 @@ Mask generation functions
     in :class:`PSS` padding. It takes a hash algorithm and a salt length.
 
     :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
         provider.
 
 Numbers
@@ -429,7 +429,7 @@ Key interfaces
             provider.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns:
@@ -499,7 +499,7 @@ Key interfaces
             provider.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
         :returns:
