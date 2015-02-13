@@ -80,6 +80,8 @@ X.509
 * ``v1_cert.pem`` from the OpenSSL source tree (`testx509.pem`_).
 * ``ecdsa_root.pem`` - `DigiCert Global Root G3`_, a ``secp384r1`` ECDSA root
   certificate.
+* ``verisign-md2-root.pem`` - A legacy Verisign public root signed using the
+  MD2 algorithm.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
