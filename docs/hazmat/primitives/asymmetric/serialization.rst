@@ -192,7 +192,7 @@ the rest.
         not encrypted. Or if the key was encrypted but no
         password was supplied.
 
-    :raises UnsupportedAlgorithm: If the serialized key is of a type that
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend or if the key is encrypted with a
         symmetric cipher that is not supported by the backend.
 
@@ -223,7 +223,7 @@ the rest.
     :raises ValueError: If the DER data's structure could not be decoded
         successfully.
 
-    :raises UnsupportedAlgorithm: If the serialized key is of a type that
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key is of a type that
         is not supported by the backend.
 
     .. doctest::
