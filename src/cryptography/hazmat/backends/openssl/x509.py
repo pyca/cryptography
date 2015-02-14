@@ -120,7 +120,9 @@ class _Certificate(object):
                 buf, lambda buf: self._backend._lib.OPENSSL_free(buf[0])
             )
             value = self._backend._ffi.buffer(buf[0], res)[:].decode('utf8')
-            buf_len = 50
+            # Set to 80 on the recommendation of
+            # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html
+            buf_len = 80
             buf = self._backend._ffi.new("char[]", buf_len)
             res = self._backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
             assert res > 0
