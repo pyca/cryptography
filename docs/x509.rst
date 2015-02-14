@@ -188,7 +188,7 @@ X.509 Certificate Object
     .. versionadded:: 0.8
 
     An X509 Name is an ordered list of attributes. The object is iterable to
-    get every attribute or you can use the helper properties to
+    get every attribute or you can use :meth:`Name.get_attributes_for_oid` to
     obtain the specific type you want. Names are sometimes represented as a
     slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US`` or
     ``CN=mydomain.com, O=My Org, C=US``).
