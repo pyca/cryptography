@@ -68,10 +68,7 @@ class TestRSACertificate(object):
         )
         issuer = cert.issuer
         assert isinstance(issuer, x509.Name)
-        attributes = []
-        for attrs in issuer:
-            attributes.append(attrs)
-        assert attributes == [
+        assert list(issuer) == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(
                 x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
@@ -94,10 +91,7 @@ class TestRSACertificate(object):
         issuer = cert.issuer
 
         assert isinstance(issuer, x509.Name)
-        attributes = []
-        for attrs in issuer:
-            attributes.append(attrs)
-        assert attributes == [
+        assert list(issuer) == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'CA'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
@@ -141,10 +135,7 @@ class TestRSACertificate(object):
         )
         subject = cert.subject
         assert isinstance(subject, x509.Name)
-        attributes = []
-        for attrs in subject:
-            attributes.append(attrs)
-        assert attributes == [
+        assert list(subject) == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(
                 x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
@@ -194,10 +185,7 @@ class TestRSACertificate(object):
         )
         subject = cert.subject
         assert isinstance(subject, x509.Name)
-        attributes = []
-        for attrs in subject:
-            attributes.append(attrs)
-        assert attributes == [
+        assert list(subject) == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'AU'),
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'DE'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'California'),

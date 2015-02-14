@@ -195,12 +195,13 @@ X.509 Certificate Object
 
     .. doctest::
 
-        >>> assert len(cert.subject) == 3
-        >>> attributes = []
-        >>> for attribute in cert.subject:
-        ...     attributes.append(attribute)
-        >>> len(attributes)
+        >>> len(cert.subject)
         3
+        >>> for attribute in cert.subject:
+        ...     print(attribute)
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value=u'Test Certificates 2011')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>
 
     .. method:: get_attributes_for_oid(oid)
 

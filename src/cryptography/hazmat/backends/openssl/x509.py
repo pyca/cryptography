@@ -115,6 +115,7 @@ class _Certificate(object):
             assert data != self._backend._ffi.NULL
             buf = self._backend._ffi.new("unsigned char **")
             res = self._backend._lib.ASN1_STRING_to_UTF8(buf, data)
+            assert res >= 0
             assert buf[0] != self._backend._ffi.NULL
             buf = self._backend._ffi.gc(
                 buf, lambda buf: self._backend._lib.OPENSSL_free(buf[0])

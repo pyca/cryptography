@@ -121,7 +121,7 @@ class Name(object):
         return not self == other
 
     def __iter__(self):
-        return iter(self._attributes[:])
+        return iter(self._attributes)
 
     def __len__(self):
         return len(self._attributes)
