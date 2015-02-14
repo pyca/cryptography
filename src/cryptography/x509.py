@@ -111,18 +111,20 @@ class Name(object):
     def get_attributes_for_oid(self, oid):
         return [i for i in self._attributes if i.oid == oid]
 
-    @property
-    def attributes(self):
-        return self._attributes[:]
-
     def __eq__(self, other):
         if not isinstance(other, Name):
             return NotImplemented
 
-        return self.attributes == other.attributes
+        return self._attributes == other._attributes
 
     def __ne__(self, other):
         return not self == other
+
+    def __iter__(self):
+        return iter(self._attributes[:])
+
+    def __len__(self):
+        return len(self._attributes)
 
 
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")

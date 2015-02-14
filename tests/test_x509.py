@@ -10,6 +10,8 @@ import os
 
 import pytest
 
+import six
+
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
@@ -66,7 +68,10 @@ class TestRSACertificate(object):
         )
         issuer = cert.issuer
         assert isinstance(issuer, x509.Name)
-        assert issuer.attributes == [
+        attributes = []
+        for attrs in issuer:
+            attributes.append(attrs)
+        assert attributes == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(
                 x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
@@ -89,7 +94,10 @@ class TestRSACertificate(object):
         issuer = cert.issuer
 
         assert isinstance(issuer, x509.Name)
-        assert issuer.attributes == [
+        attributes = []
+        for attrs in issuer:
+            attributes.append(attrs)
+        assert attributes == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'CA'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
@@ -133,7 +141,10 @@ class TestRSACertificate(object):
         )
         subject = cert.subject
         assert isinstance(subject, x509.Name)
-        assert subject.attributes == [
+        attributes = []
+        for attrs in subject:
+            attributes.append(attrs)
+        assert attributes == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(
                 x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
@@ -162,13 +173,13 @@ class TestRSACertificate(object):
         assert cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
-                b'We heart UTF8!\xe2\x84\xa2'.decode('utf8')
+                six.u('We heart UTF8!\u2122')
             )
         ]
         assert cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
-                b'We heart UTF8!\xe2\x84\xa2'.decode('utf8')
+                six.u('We heart UTF8!\u2122')
             )
         ]
 
@@ -183,7 +194,10 @@ class TestRSACertificate(object):
         )
         subject = cert.subject
         assert isinstance(subject, x509.Name)
-        assert subject.attributes == [
+        attributes = []
+        for attrs in subject:
+            attributes.append(attrs)
+        assert attributes == [
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'AU'),
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'DE'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'California'),
