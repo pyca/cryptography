@@ -172,19 +172,19 @@ OID_DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
 OID_DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
 _SIG_OIDS_TO_HASH = {
-    "1.2.840.113549.1.1.4": hashes.MD5(),
-    "1.2.840.113549.1.1.5": hashes.SHA1(),
-    "1.2.840.113549.1.1.14": hashes.SHA224(),
-    "1.2.840.113549.1.1.11": hashes.SHA256(),
-    "1.2.840.113549.1.1.12": hashes.SHA384(),
-    "1.2.840.113549.1.1.13": hashes.SHA512(),
-    "1.2.840.10045.4.3.1": hashes.SHA224(),
-    "1.2.840.10045.4.3.2": hashes.SHA256(),
-    "1.2.840.10045.4.3.3": hashes.SHA384(),
-    "1.2.840.10045.4.3.4": hashes.SHA512(),
-    "1.2.840.10040.4.3": hashes.SHA1(),
-    "2.16.840.1.101.3.4.3.1": hashes.SHA224(),
-    "2.16.840.1.101.3.4.3.2": hashes.SHA256()
+    OID_MD5_WITH_RSA.dotted_string: hashes.MD5(),
+    OID_SHA1_WITH_RSA.dotted_string: hashes.SHA1(),
+    OID_SHA224_WITH_RSA.dotted_string: hashes.SHA224(),
+    OID_SHA256_WITH_RSA.dotted_string: hashes.SHA256(),
+    OID_SHA384_WITH_RSA.dotted_string: hashes.SHA384(),
+    OID_SHA512_WITH_RSA.dotted_string: hashes.SHA512(),
+    OID_ECDSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    OID_ECDSA_WITH_SHA256.dotted_string: hashes.SHA256(),
+    OID_ECDSA_WITH_SHA384.dotted_string: hashes.SHA384(),
+    OID_ECDSA_WITH_SHA512.dotted_string: hashes.SHA512(),
+    OID_DSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    OID_DSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    OID_DSA_WITH_SHA256.dotted_string: hashes.SHA256()
 }
 
 

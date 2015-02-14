@@ -140,15 +140,6 @@ class _Certificate(object):
 
     @property
     def signature_hash_algorithm(self):
-        oid = self._signature_algorithm()
-        try:
-            return x509._SIG_OIDS_TO_HASH[oid.dotted_string]
-        except KeyError:
-            raise UnsupportedAlgorithm(
-                "Signature algorithm {0} not recognized".format(oid)
-            )
-
-    def _signature_algorithm(self):
         buf_len = 50
         buf = self._backend._ffi.new("char[]", buf_len)
         res = self._backend._lib.OBJ_obj2txt(
@@ -156,4 +147,9 @@ class _Certificate(object):
         )
         assert res <= 50 and res > 0
         oid = self._backend._ffi.buffer(buf, res)[:].decode()
-        return x509.ObjectIdentifier(oid)
+        try:
+            return x509._SIG_OIDS_TO_HASH[oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm OID:{0} not recognized".format(oid)
+            )
