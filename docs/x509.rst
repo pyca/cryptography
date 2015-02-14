@@ -166,6 +166,54 @@ X.509 Certificate Object
             >>> cert.not_valid_after
             datetime.datetime(2030, 12, 31, 8, 30)
 
+    .. attribute:: issuer
+
+        .. versionadded:: 0.8
+
+        :type: :class:`Name`
+
+        The :class:`Name` of the issuer.
+
+    .. attribute:: subject
+
+        .. versionadded:: 0.8
+
+        :type: :class:`Name`
+
+        The :class:`Name` of the subject.
+
+
+.. class:: Name
+
+    .. versionadded:: 0.8
+
+    An X509 Name is an ordered list of attributes. The object is iterable to
+    get every attribute or you can use :meth:`Name.get_attributes_for_oid` to
+    obtain the specific type you want. Names are sometimes represented as a
+    slash or comma delimited string (e.g. ``/CN=mydomain.com/O=My Org/C=US`` or
+    ``CN=mydomain.com, O=My Org, C=US``).
+
+    .. doctest::
+
+        >>> len(cert.subject)
+        3
+        >>> for attribute in cert.subject:
+        ...     print(attribute)
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, value=u'Test Certificates 2011')>
+        <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>
+
+    .. method:: get_attributes_for_oid(oid)
+
+        :param oid: An :class:`ObjectIdentifier` instance.
+
+        :returns: A list of :class:`NameAttribute` instances that match the
+            OID provided. If nothing matches an empty list will be returned.
+
+        .. doctest::
+
+            >>> cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME)
+            [<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'Good CA')>]
 
 .. class:: Version
 

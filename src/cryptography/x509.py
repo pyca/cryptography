@@ -104,6 +104,29 @@ class ObjectIdentifier(object):
     dotted_string = utils.read_only_property("_dotted_string")
 
 
+class Name(object):
+    def __init__(self, attributes):
+        self._attributes = attributes
+
+    def get_attributes_for_oid(self, oid):
+        return [i for i in self._attributes if i.oid == oid]
+
+    def __eq__(self, other):
+        if not isinstance(other, Name):
+            return NotImplemented
+
+        return self._attributes == other._attributes
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __iter__(self):
+        return iter(self._attributes)
+
+    def __len__(self):
+        return len(self._attributes)
+
+
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
 OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
@@ -157,4 +180,16 @@ class Certificate(object):
     def not_valid_after(self):
         """
         Not after time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def issuer(self):
+        """
+        Returns the issuer name object.
+        """
+
+    @abc.abstractproperty
+    def subject(self):
+        """
+        Returns the subject name object.
         """

@@ -29,6 +29,7 @@ interoperable
 introspectability
 invariants
 iOS
+iterable
 Koblitz
 Lange
 metadata
