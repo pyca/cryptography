@@ -21,11 +21,10 @@ from cryptography.hazmat.backends.openssl.backend import (
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import dsa, padding
-from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.base import (
-    BlockCipherAlgorithm, CipherAlgorithm
+from cryptography.hazmat.primitives.ciphers import (
+    BlockCipherAlgorithm, Cipher, CipherAlgorithm
 )
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
 
 from ..primitives.fixtures_rsa import RSA_KEY_512

@@ -4,7 +4,7 @@
 Symmetric encryption
 ====================
 
-.. currentmodule:: cryptography.hazmat.primitives.ciphers
+.. module:: cryptography.hazmat.primitives.ciphers
 
 
 Symmetric encryption is a way to `encrypt`_ or hide the contents of material
@@ -43,7 +43,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
         'a secret message'
 
     :param algorithms: A
-        :class:`~cryptography.hazmat.primitives.ciphers.base.CipherAlgorithm`
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
         provider such as those described
         :ref:`below <symmetric-encryption-algorithms>`.
     :param mode: A :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`
@@ -60,7 +60,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: encryptor()
 
         :return: An encrypting
-            :class:`~cryptography.hazmat.primitives.ciphers.base.CipherContext`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
@@ -70,7 +70,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
     .. method:: decryptor()
 
         :return: A decrypting
-            :class:`~cryptography.hazmat.primitives.ciphers.base.CipherContext`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
             provider.
 
         If the backend doesn't support the requested combination of ``cipher``
@@ -293,7 +293,7 @@ Modes
     .. danger::
 
         When using this mode you **must** not use the decrypted data until
-        :meth:`~cryptography.hazmat.primitives.ciphers.base.CipherContext.finalize`
+        :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.finalize`
         has been called. GCM provides **no** guarantees of ciphertext integrity
         until decryption is complete.
 
@@ -423,7 +423,7 @@ Insecure modes
 Interfaces
 ----------
 
-.. module:: cryptography.hazmat.primitives.ciphers.base
+.. currentmodule:: cryptography.hazmat.primitives.ciphers
 
 .. class:: CipherContext
 

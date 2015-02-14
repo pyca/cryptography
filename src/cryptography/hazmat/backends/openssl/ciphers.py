@@ -6,12 +6,13 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
-from cryptography.hazmat.primitives.ciphers import base, modes
+from cryptography.hazmat.primitives import ciphers
+from cryptography.hazmat.primitives.ciphers import modes
 
 
-@utils.register_interface(base.CipherContext)
-@utils.register_interface(base.AEADCipherContext)
-@utils.register_interface(base.AEADEncryptionContext)
+@utils.register_interface(ciphers.CipherContext)
+@utils.register_interface(ciphers.AEADCipherContext)
+@utils.register_interface(ciphers.AEADEncryptionContext)
 class _CipherContext(object):
     _ENCRYPT = 1
     _DECRYPT = 0
@@ -23,7 +24,7 @@ class _CipherContext(object):
         self._operation = operation
         self._tag = None
 
-        if isinstance(self._cipher, base.BlockCipherAlgorithm):
+        if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
             self._block_size = self._cipher.block_size
         else:
             self._block_size = 1
@@ -180,7 +181,7 @@ class _CipherContext(object):
     tag = utils.read_only_property("_tag")
 
 
-@utils.register_interface(base.CipherContext)
+@utils.register_interface(ciphers.CipherContext)
 class _AESCTRCipherContext(object):
     """
     This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can

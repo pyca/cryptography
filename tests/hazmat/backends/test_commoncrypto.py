@@ -9,8 +9,8 @@ import pytest
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends import _available_backends
+from cryptography.hazmat.primitives.ciphers import Cipher, CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.base import Cipher, CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers.modes import CBC, GCM
 
 from ...utils import raises_unsupported_algorithm

@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.hazmat.primitives.ciphers.base import (
+from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm, CipherAlgorithm
 )
 

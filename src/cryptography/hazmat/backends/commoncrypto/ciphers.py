@@ -8,14 +8,14 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.primitives import constant_time
-from cryptography.hazmat.primitives.ciphers import base, modes
+from cryptography.hazmat.primitives import ciphers, constant_time
+from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.modes import (
     CFB, CFB8, CTR, OFB
 )
 
 
-@utils.register_interface(base.CipherContext)
+@utils.register_interface(ciphers.CipherContext)
 class _CipherContext(object):
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend
@@ -32,7 +32,7 @@ class _CipherContext(object):
         # treat RC4 and other stream cipher block sizes).
         # This bug has been filed as rdar://15589470
         self._bytes_processed = 0
-        if (isinstance(cipher, base.BlockCipherAlgorithm) and not
+        if (isinstance(cipher, ciphers.BlockCipherAlgorithm) and not
                 isinstance(mode, (OFB, CFB, CFB8, CTR))):
             self._byte_block_size = cipher.block_size // 8
         else:
@@ -102,8 +102,8 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
 
-@utils.register_interface(base.AEADCipherContext)
-@utils.register_interface(base.AEADEncryptionContext)
+@utils.register_interface(ciphers.AEADCipherContext)
+@utils.register_interface(ciphers.AEADEncryptionContext)
 class _GCMCipherContext(object):
     def __init__(self, backend, cipher, mode, operation):
         self._backend = backend

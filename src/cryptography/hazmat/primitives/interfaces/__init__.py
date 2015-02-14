@@ -9,28 +9,28 @@ import abc
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import hashes, padding
+from cryptography.hazmat.primitives import ciphers, hashes, padding
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
-from cryptography.hazmat.primitives.ciphers import base, modes
+from cryptography.hazmat.primitives.ciphers import modes
 
 
 BlockCipherAlgorithm = utils.deprecated(
-    base.BlockCipherAlgorithm,
+    ciphers.BlockCipherAlgorithm,
     __name__,
     (
         "The BlockCipherAlgorithm interface has moved to the "
-        "cryptography.hazmat.primitives.ciphers.base module"
+        "cryptography.hazmat.primitives.ciphers module"
     ),
     utils.DeprecatedIn08
 )
 
 
 CipherAlgorithm = utils.deprecated(
-    base.CipherAlgorithm,
+    ciphers.CipherAlgorithm,
     __name__,
     (
         "The CipherAlgorithm interface has moved to the "
-        "cryptography.hazmat.primitives.ciphers.base module"
+        "cryptography.hazmat.primitives.ciphers module"
     ),
     utils.DeprecatedIn08
 )
@@ -81,33 +81,33 @@ ModeWithNonce = utils.deprecated(
 
 
 CipherContext = utils.deprecated(
-    base.CipherContext,
+    ciphers.CipherContext,
     __name__,
     (
         "The CipherContext interface has moved to the "
-        "cryptography.hazmat.primitives.ciphers.base module"
+        "cryptography.hazmat.primitives.ciphers module"
     ),
     utils.DeprecatedIn08
 )
 
 
 AEADCipherContext = utils.deprecated(
-    base.AEADCipherContext,
+    ciphers.AEADCipherContext,
     __name__,
     (
         "The AEADCipherContext interface has moved to the "
-        "cryptography.hazmat.primitives.ciphers.base module"
+        "cryptography.hazmat.primitives.ciphers module"
     ),
     utils.DeprecatedIn08
 )
 
 
 AEADEncryptionContext = utils.deprecated(
-    base.AEADEncryptionContext,
+    ciphers.AEADEncryptionContext,
     __name__,
     (
         "The AEADEncryptionContext interface has moved to the "
-        "cryptography.hazmat.primitives.ciphers.base module"
+        "cryptography.hazmat.primitives.ciphers module"
     ),
     utils.DeprecatedIn08
 )

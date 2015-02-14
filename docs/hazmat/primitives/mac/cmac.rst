@@ -22,7 +22,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     .. versionadded:: 0.4
 
     CMAC objects take a
-    :class:`~cryptography.hazmat.primitives.ciphers.base.BlockCipherAlgorithm` provider.
+    :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm` provider.
 
     .. doctest::
 
@@ -39,7 +39,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     raised.
 
     If ``algorithm`` isn't a
-    :class:`~cryptography.hazmat.primitives.ciphers.base.BlockCipherAlgorithm`
+    :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
     provider then ``TypeError`` will be raised.
 
     To check that a given signature is correct use the :meth:`verify` method.
@@ -55,13 +55,13 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
         cryptography.exceptions.InvalidSignature: Signature did not match digest.
 
     :param algorithm: An
-        :class:`~cryptography.hazmat.primitives.ciphers.base.BlockCipherAlgorithm`
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
         provider.
     :param backend: An
         :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
         provider.
     :raises TypeError: This is raised if the provided ``algorithm`` is not an instance of
-        :class:`~cryptography.hazmat.primitives.ciphers.base.BlockCipherAlgorithm`
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
         :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`

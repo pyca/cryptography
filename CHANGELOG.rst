@@ -14,13 +14,13 @@ Changelog
   :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
   :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.hashes`.
-* :class:`~cryptography.hazmat.primitives.ciphers.base.CipherContext`,
-  :class:`~cryptography.hazmat.primitives.ciphers.base.AEADCipherContext`,
-  :class:`~cryptography.hazmat.primitives.ciphers.base.AEADEncryptionContext`,
-  :class:`~cryptography.hazmat.primitives.ciphers.base.CipherAlgorithm`, and
-  :class:`~cryptography.hazmat.primitives.ciphers.base.BlockCipherAlgorithm`
+* :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.AEADCipherContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.AEADEncryptionContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
   were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.ciphers.base`.
+  :mod:`~cryptography.hazmat.primitives.ciphers`.
 * :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`,
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithInitializationVector`,
   :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithNonce`, and
