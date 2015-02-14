@@ -64,6 +64,12 @@ class DSAPrivateKeyWithNumbers(DSAPrivateKey):
         Returns a DSAPrivateNumbers.
         """
 
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns a DSAPublicNumbers.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DSAPublicKey(object):
@@ -92,6 +98,12 @@ class DSAPublicKeyWithNumbers(DSAPublicKey):
     def public_numbers(self):
         """
         Returns a DSAPublicNumbers.
+        """
+
+    @abc.abstractmethod
+    def parameter_numbers(self):
+        """
+        Returns a DSAParameterNumbers.
         """
 
 

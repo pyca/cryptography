@@ -94,6 +94,7 @@ class TestRSA(object):
         if isinstance(skey, interfaces.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(skey.private_numbers())
             pkey = skey.public_key()
+            assert pkey.public_numbers() == skey.public_numbers()
             assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
 
     def test_generate_bad_public_exponent(self, backend):

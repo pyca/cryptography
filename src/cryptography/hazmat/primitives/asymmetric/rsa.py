@@ -49,6 +49,12 @@ class RSAPrivateKeyWithNumbers(RSAPrivateKey):
         Returns an RSAPrivateNumbers.
         """
 
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns an RSAPublicNumbers.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPublicKey(object):

@@ -136,6 +136,9 @@ class _DSAPrivateKey(object):
             x=self._backend._bn_to_int(self._dsa_cdata.priv_key)
         )
 
+    def public_numbers(self):
+        return self.private_numbers().public_numbers
+
     def public_key(self):
         dsa_cdata = self._backend._lib.DSA_new()
         assert dsa_cdata != self._backend._ffi.NULL
@@ -183,6 +186,9 @@ class _DSAPublicKey(object):
             ),
             y=self._backend._bn_to_int(self._dsa_cdata.pub_key)
         )
+
+    def parameter_numbers(self):
+        return self.public_numbers().parameter_numbers
 
     def parameters(self):
         dsa_cdata = self._backend._lib.DSA_new()
