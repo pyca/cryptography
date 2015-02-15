@@ -37,7 +37,7 @@ from ...utils import (
 )
 
 
-@utils.register_interface(interfaces.AsymmetricPadding)
+@utils.register_interface(padding.AsymmetricPadding)
 class DummyPadding(object):
     name = "UNSUPPORTED-PADDING"
 
