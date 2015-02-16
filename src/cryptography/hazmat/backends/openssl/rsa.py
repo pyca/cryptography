@@ -10,8 +10,10 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import (
+    AsymmetricSignatureContext, AsymmetricVerificationContext, rsa
+)
 from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS
 )
@@ -144,7 +146,7 @@ def _handle_rsa_enc_dec_error(backend, key):
         raise ValueError("Decryption failed.")
 
 
-@utils.register_interface(interfaces.AsymmetricSignatureContext)
+@utils.register_interface(AsymmetricSignatureContext)
 class _RSASignatureContext(object):
     def __init__(self, backend, private_key, padding, algorithm):
         self._backend = backend
@@ -331,7 +333,7 @@ class _RSASignatureContext(object):
         return self._backend._ffi.buffer(sig_buf)[:sig_len]
 
 
-@utils.register_interface(interfaces.AsymmetricVerificationContext)
+@utils.register_interface(AsymmetricVerificationContext)
 class _RSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, padding, algorithm):
         self._backend = backend

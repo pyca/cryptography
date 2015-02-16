@@ -275,7 +275,7 @@ Key interfaces
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
 
     .. attribute:: key_size
 
@@ -338,7 +338,7 @@ Key interfaces
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
 
 .. class:: DSAPublicKeyWithNumbers
