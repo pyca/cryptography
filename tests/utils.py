@@ -83,8 +83,8 @@ def load_nist_vectors(vector_data):
         line = line.strip()
 
         # Blank lines, comments, and section headers are ignored
-        if not line or line.startswith("#") or (line.startswith("[")
-                                                and line.endswith("]")):
+        if not line or line.startswith("#") or (line.startswith("[") and
+                                                line.endswith("]")):
             continue
 
         if line.strip() == "FAIL":
