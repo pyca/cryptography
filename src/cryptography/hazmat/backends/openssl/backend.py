@@ -225,8 +225,8 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES)
-                and not self._evp_cipher_supported(cipher, mode)):
+        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
+                not self._evp_cipher_supported(cipher, mode)):
             # This is needed to provide support for AES CTR mode in OpenSSL
             # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
             # extended life ends 2020).
@@ -235,8 +235,8 @@ class Backend(object):
             return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES)
-                and not self._evp_cipher_supported(cipher, mode)):
+        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
+                not self._evp_cipher_supported(cipher, mode)):
             # This is needed to provide support for AES CTR mode in OpenSSL
             # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
             # extended life ends 2020).
@@ -671,9 +671,10 @@ class Backend(object):
 
     def cmac_algorithm_supported(self, algorithm):
         return (
-            self._lib.Cryptography_HAS_CMAC == 1
-            and self.cipher_supported(algorithm, CBC(
-                b"\x00" * algorithm.block_size))
+            self._lib.Cryptography_HAS_CMAC == 1 and
+            self.cipher_supported(
+                algorithm, CBC(b"\x00" * algorithm.block_size)
+            )
         )
 
     def create_cmac_ctx(self, algorithm):
