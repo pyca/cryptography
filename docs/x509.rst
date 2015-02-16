@@ -186,9 +186,9 @@ X.509 Certificate Object
 
         :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
-        A :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        corresponding to the hash algorithm used within the certificate
-        signature.
+        Returns the
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` used in
+        the signature.
 
         .. doctest::
 
