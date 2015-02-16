@@ -4,8 +4,54 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
+import six
+
 from cryptography import utils
-from cryptography.hazmat.primitives import interfaces
+
+
+@six.add_metaclass(abc.ABCMeta)
+class Mode(object):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode (e.g. "ECB", "CBC").
+        """
+
+    @abc.abstractmethod
+    def validate_for_algorithm(self, algorithm):
+        """
+        Checks that all the necessary invariants of this (mode, algorithm)
+        combination are met.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithInitializationVector(object):
+    @abc.abstractproperty
+    def initialization_vector(self):
+        """
+        The value of the initialization vector for this mode as bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithNonce(object):
+    @abc.abstractproperty
+    def nonce(self):
+        """
+        The value of the nonce for this mode as bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithAuthenticationTag(object):
+    @abc.abstractproperty
+    def tag(self):
+        """
+        The value of the tag supplied to the constructor of this mode.
+        """
 
 
 def _check_iv_length(self, algorithm):
@@ -15,8 +61,8 @@ def _check_iv_length(self, algorithm):
         ))
 
 
-@utils.register_interface(interfaces.Mode)
-@utils.register_interface(interfaces.ModeWithInitializationVector)
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithInitializationVector)
 class CBC(object):
     name = "CBC"
 
@@ -27,7 +73,7 @@ class CBC(object):
     validate_for_algorithm = _check_iv_length
 
 
-@utils.register_interface(interfaces.Mode)
+@utils.register_interface(Mode)
 class ECB(object):
     name = "ECB"
 
@@ -35,8 +81,8 @@ class ECB(object):
         pass
 
 
-@utils.register_interface(interfaces.Mode)
-@utils.register_interface(interfaces.ModeWithInitializationVector)
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithInitializationVector)
 class OFB(object):
     name = "OFB"
 
@@ -47,8 +93,8 @@ class OFB(object):
     validate_for_algorithm = _check_iv_length
 
 
-@utils.register_interface(interfaces.Mode)
-@utils.register_interface(interfaces.ModeWithInitializationVector)
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithInitializationVector)
 class CFB(object):
     name = "CFB"
 
@@ -59,8 +105,8 @@ class CFB(object):
     validate_for_algorithm = _check_iv_length
 
 
-@utils.register_interface(interfaces.Mode)
-@utils.register_interface(interfaces.ModeWithInitializationVector)
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithInitializationVector)
 class CFB8(object):
     name = "CFB8"
 
@@ -71,8 +117,8 @@ class CFB8(object):
     validate_for_algorithm = _check_iv_length
 
 
-@utils.register_interface(interfaces.Mode)
-@utils.register_interface(interfaces.ModeWithNonce)
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithNonce)
 class CTR(object):
     name = "CTR"
 
@@ -88,9 +134,9 @@ class CTR(object):
             ))
 
 
-@utils.register_interface(interfaces.Mode)
-@utils.register_interface(interfaces.ModeWithInitializationVector)
-@utils.register_interface(interfaces.ModeWithAuthenticationTag)
+@utils.register_interface(Mode)
+@utils.register_interface(ModeWithInitializationVector)
+@utils.register_interface(ModeWithAuthenticationTag)
 class GCM(object):
     name = "GCM"
 

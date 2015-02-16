@@ -30,10 +30,10 @@ A specific ``backend`` may provide one or more of these interfaces.
         this backend.
 
         :param cipher: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
             provider.
         :param mode: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider.
+            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode` provider.
 
         :returns: ``True`` if the specified ``cipher`` and ``mode`` combination
             is supported by this backend, otherwise ``False``
@@ -42,18 +42,18 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_symmetric_encryption_ctx(cipher, mode)
 
         Create a
-        :class:`~cryptography.hazmat.primitives.interfaces.CipherContext` that
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherContext` that
         can be used for encrypting data with the symmetric ``cipher`` using
         the given ``mode``.
 
         :param cipher: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
             provider.
         :param mode: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider.
+            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode` provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
 
         :raises ValueError: When tag is not None in an AEAD mode
 
@@ -61,18 +61,18 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: create_symmetric_decryption_ctx(cipher, mode)
 
         Create a
-        :class:`~cryptography.hazmat.primitives.interfaces.CipherContext` that
+        :class:`~cryptography.hazmat.primitives.ciphers.CipherContext` that
         can be used for decrypting data with the symmetric ``cipher`` using
         the given ``mode``.
 
         :param cipher: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherAlgorithm`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
             provider.
         :param mode: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.Mode` provider.
+            :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode` provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.CipherContext`
+            :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
 
         :raises ValueError: When tag is None in an AEAD mode
 
@@ -157,7 +157,7 @@ A specific ``backend`` may provide one or more of these interfaces.
     .. method:: cmac_algorithm_supported(algorithm)
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+            :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
             provider.
         :return: Returns True if the block cipher is supported for CMAC by this backend
 
@@ -168,7 +168,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         uses the specified ``algorithm`` to calculate a message authentication code.
 
         :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.BlockCipherAlgorithm`
+            :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
             provider.
 
         :returns:

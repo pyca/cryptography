@@ -4,13 +4,76 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
+import six
+
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, AlreadyUpdated, NotYetFinalized, UnsupportedAlgorithm,
     _Reasons
 )
 from cryptography.hazmat.backends.interfaces import CipherBackend
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.ciphers import modes
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CipherAlgorithm(object):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this mode (e.g. "AES", "Camellia").
+        """
+
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The size of the key being used as an integer in bits (e.g. 128, 256).
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BlockCipherAlgorithm(object):
+    @abc.abstractproperty
+    def block_size(self):
+        """
+        The size of a block as an integer in bits (e.g. 64, 128).
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CipherContext(object):
+    @abc.abstractmethod
+    def update(self, data):
+        """
+        Processes the provided bytes through the cipher and returns the results
+        as bytes.
+        """
+
+    @abc.abstractmethod
+    def finalize(self):
+        """
+        Returns the results of processing the final block as bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class AEADCipherContext(object):
+    @abc.abstractmethod
+    def authenticate_additional_data(self, data):
+        """
+        Authenticates the provided bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class AEADEncryptionContext(object):
+    @abc.abstractproperty
+    def tag(self):
+        """
+        Returns tag bytes. This is only available after encryption is
+        finalized.
+        """
 
 
 class Cipher(object):
@@ -21,10 +84,8 @@ class Cipher(object):
                 _Reasons.BACKEND_MISSING_INTERFACE
             )
 
-        if not isinstance(algorithm, interfaces.CipherAlgorithm):
-            raise TypeError(
-                "Expected interface of interfaces.CipherAlgorithm."
-            )
+        if not isinstance(algorithm, CipherAlgorithm):
+            raise TypeError("Expected interface of CipherAlgorithm.")
 
         if mode is not None:
             mode.validate_for_algorithm(algorithm)
@@ -34,7 +95,7 @@ class Cipher(object):
         self._backend = backend
 
     def encryptor(self):
-        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
+        if isinstance(self.mode, modes.ModeWithAuthenticationTag):
             if self.mode.tag is not None:
                 raise ValueError(
                     "Authentication tag must be None when encrypting."
@@ -45,7 +106,7 @@ class Cipher(object):
         return self._wrap_ctx(ctx, encrypt=True)
 
     def decryptor(self):
-        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
+        if isinstance(self.mode, modes.ModeWithAuthenticationTag):
             if self.mode.tag is None:
                 raise ValueError(
                     "Authentication tag must be provided when decrypting."
@@ -56,7 +117,7 @@ class Cipher(object):
         return self._wrap_ctx(ctx, encrypt=False)
 
     def _wrap_ctx(self, ctx, encrypt):
-        if isinstance(self.mode, interfaces.ModeWithAuthenticationTag):
+        if isinstance(self.mode, modes.ModeWithAuthenticationTag):
             if encrypt:
                 return _AEADEncryptionContext(ctx)
             else:
@@ -65,7 +126,7 @@ class Cipher(object):
             return _CipherContext(ctx)
 
 
-@utils.register_interface(interfaces.CipherContext)
+@utils.register_interface(CipherContext)
 class _CipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
@@ -83,8 +144,8 @@ class _CipherContext(object):
         return data
 
 
-@utils.register_interface(interfaces.AEADCipherContext)
-@utils.register_interface(interfaces.CipherContext)
+@utils.register_interface(AEADCipherContext)
+@utils.register_interface(CipherContext)
 class _AEADCipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
@@ -113,7 +174,7 @@ class _AEADCipherContext(object):
         self._ctx.authenticate_additional_data(data)
 
 
-@utils.register_interface(interfaces.AEADEncryptionContext)
+@utils.register_interface(AEADEncryptionContext)
 class _AEADEncryptionContext(_AEADCipherContext):
     @property
     def tag(self):

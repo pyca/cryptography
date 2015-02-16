@@ -3,7 +3,7 @@
 Padding
 =======
 
-.. currentmodule:: cryptography.hazmat.primitives.padding
+.. module:: cryptography.hazmat.primitives.padding
 
 Padding is a way to take data that may or may not be a multiple of the block
 size for a cipher and extend it out so that it is. This is required for many
@@ -44,17 +44,15 @@ multiple of the block size.
     .. method:: padder()
 
         :returns: A padding
-            :class:`~cryptography.hazmat.primitives.interfaces.PaddingContext`
+            :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
             provider.
 
     .. method:: unpadder()
 
         :returns: An unpadding
-            :class:`~cryptography.hazmat.primitives.interfaces.PaddingContext`
+            :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
             provider.
 
-
-.. currentmodule:: cryptography.hazmat.primitives.interfaces
 
 .. class:: PaddingContext
 

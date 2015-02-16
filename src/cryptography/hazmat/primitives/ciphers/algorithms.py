@@ -5,7 +5,9 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
-from cryptography.hazmat.primitives import interfaces
+from cryptography.hazmat.primitives.ciphers import (
+    BlockCipherAlgorithm, CipherAlgorithm
+)
 
 
 def _verify_key_size(algorithm, key):
@@ -17,8 +19,8 @@ def _verify_key_size(algorithm, key):
     return key
 
 
-@utils.register_interface(interfaces.BlockCipherAlgorithm)
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class AES(object):
     name = "AES"
     block_size = 128
@@ -32,8 +34,8 @@ class AES(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.BlockCipherAlgorithm)
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class Camellia(object):
     name = "camellia"
     block_size = 128
@@ -47,8 +49,8 @@ class Camellia(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.BlockCipherAlgorithm)
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class TripleDES(object):
     name = "3DES"
     block_size = 64
@@ -66,8 +68,8 @@ class TripleDES(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.BlockCipherAlgorithm)
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class Blowfish(object):
     name = "Blowfish"
     block_size = 64
@@ -81,8 +83,8 @@ class Blowfish(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.BlockCipherAlgorithm)
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class CAST5(object):
     name = "CAST5"
     block_size = 64
@@ -96,7 +98,7 @@ class CAST5(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class ARC4(object):
     name = "RC4"
     key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
@@ -109,7 +111,7 @@ class ARC4(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class IDEA(object):
     name = "IDEA"
     block_size = 64
@@ -123,8 +125,8 @@ class IDEA(object):
         return len(self.key) * 8
 
 
-@utils.register_interface(interfaces.BlockCipherAlgorithm)
-@utils.register_interface(interfaces.CipherAlgorithm)
+@utils.register_interface(BlockCipherAlgorithm)
+@utils.register_interface(CipherAlgorithm)
 class SEED(object):
     name = "SEED"
     block_size = 128
