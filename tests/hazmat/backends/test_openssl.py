@@ -19,7 +19,7 @@ from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, padding
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm, Cipher, CipherAlgorithm
@@ -45,7 +45,7 @@ class DummyCipher(object):
     key_size = None
 
 
-@utils.register_interface(interfaces.AsymmetricPadding)
+@utils.register_interface(padding.AsymmetricPadding)
 class DummyPadding(object):
     name = "dummy-cipher"
 

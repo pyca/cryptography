@@ -9,9 +9,12 @@ import abc
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import ciphers, hashes, padding
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.hazmat.primitives import ciphers, hashes
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa, ec, padding, rsa
+)
 from cryptography.hazmat.primitives.ciphers import modes
+from cryptography.hazmat.primitives.padding import PaddingContext
 
 
 BlockCipherAlgorithm = utils.deprecated(
@@ -241,7 +244,7 @@ DSAPublicKeyWithNumbers = utils.deprecated(
 
 
 PaddingContext = utils.deprecated(
-    padding.PaddingContext,
+    PaddingContext,
     __name__,
     (
         "The PaddingContext interface has moved to the "
@@ -313,6 +316,16 @@ RSAPublicKeyWithNumbers = utils.deprecated(
     utils.DeprecatedIn08
 )
 
+AsymmetricPadding = utils.deprecated(
+    padding.AsymmetricPadding,
+    __name__,
+    (
+        "The AsymmetricPadding interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric.padding module"
+    ),
+    utils.DeprecatedIn08
+)
+
 
 @six.add_metaclass(abc.ABCMeta)
 class AsymmetricSignatureContext(object):
@@ -342,15 +355,6 @@ class AsymmetricVerificationContext(object):
         """
         Raises an exception if the bytes provided to update do not match the
         signature or the signature does not match the public key.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class AsymmetricPadding(object):
-    @abc.abstractproperty
-    def name(self):
-        """
-        A string naming this padding (e.g. "PSS", "PKCS1").
         """
 
 

@@ -244,7 +244,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         Check if the specified ``padding`` is supported by the backend.
 
         :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
             provider.
 
         :returns: ``True`` if the specified ``padding`` is supported by this

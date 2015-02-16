@@ -13,7 +13,7 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, interfaces
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    MGF1, OAEP, PKCS1v15, PSS
+    AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.interfaces import (
     RSAPrivateKeyWithNumbers, RSAPublicKeyWithNumbers
@@ -34,7 +34,7 @@ def _get_rsa_pss_salt_length(pss, key_size, digest_size):
 
 
 def _enc_dec_rsa(backend, key, data, padding):
-    if not isinstance(padding, interfaces.AsymmetricPadding):
+    if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Padding must be an instance of AsymmetricPadding.")
 
     if isinstance(padding, PKCS1v15):
@@ -150,9 +150,8 @@ class _RSASignatureContext(object):
         self._backend = backend
         self._private_key = private_key
 
-        if not isinstance(padding, interfaces.AsymmetricPadding):
-            raise TypeError(
-                "Expected provider of interfaces.AsymmetricPadding.")
+        if not isinstance(padding, AsymmetricPadding):
+            raise TypeError("Expected provider of AsymmetricPadding.")
 
         self._pkey_size = self._backend._lib.EVP_PKEY_size(
             self._private_key._evp_pkey
@@ -339,9 +338,8 @@ class _RSAVerificationContext(object):
         self._public_key = public_key
         self._signature = signature
 
-        if not isinstance(padding, interfaces.AsymmetricPadding):
-            raise TypeError(
-                "Expected provider of interfaces.AsymmetricPadding.")
+        if not isinstance(padding, AsymmetricPadding):
+            raise TypeError("Expected provider of AsymmetricPadding.")
 
         self._pkey_size = self._backend._lib.EVP_PKEY_size(
             self._public_key._evp_pkey

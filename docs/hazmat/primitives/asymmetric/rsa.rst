@@ -186,7 +186,13 @@ Once you have an encrypted message, it can be decrypted using the private key:
 Padding
 ~~~~~~~
 
-.. currentmodule:: cryptography.hazmat.primitives.asymmetric.padding
+.. module:: cryptography.hazmat.primitives.asymmetric.padding
+
+.. class:: AsymmetricPadding
+
+    .. versionadded:: 0.2
+
+    .. attribute:: name
 
 .. class:: PSS(mgf, salt_length)
 
@@ -425,7 +431,7 @@ Key interfaces
         Sign data which can be verified later by others using the public key.
 
         :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
             provider.
 
         :param algorithm: An instance of a
@@ -444,7 +450,7 @@ Key interfaces
         :param bytes ciphertext: The ciphertext to decrypt.
 
         :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
             provider.
 
         :return bytes: Decrypted data.
@@ -495,7 +501,7 @@ Key interfaces
         :param bytes signature: The signature to verify.
 
         :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
             provider.
 
         :param algorithm: An instance of a
@@ -514,7 +520,7 @@ Key interfaces
         :param bytes plaintext: The plaintext to encrypt.
 
         :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricPadding`
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
             provider.
 
         :return bytes: Encrypted data.

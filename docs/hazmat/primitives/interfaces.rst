@@ -44,11 +44,8 @@ Asymmetric interfaces
             not validate.
 
 
-.. class:: AsymmetricPadding
-
-    .. versionadded:: 0.2
-
-    .. attribute:: name
+In 0.8 the asymmetric padding interface was moved to the
+:mod:`cryptography.hazmat.primitives.asymmetric.padding` module.
 
 DSA
 ~~~

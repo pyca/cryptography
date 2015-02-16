@@ -4,18 +4,29 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
+
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 
 
-@utils.register_interface(interfaces.AsymmetricPadding)
+@six.add_metaclass(abc.ABCMeta)
+class AsymmetricPadding(object):
+    @abc.abstractproperty
+    def name(self):
+        """
+        A string naming this padding (e.g. "PSS", "PKCS1").
+        """
+
+
+@utils.register_interface(AsymmetricPadding)
 class PKCS1v15(object):
     name = "EMSA-PKCS1-v1_5"
 
 
-@utils.register_interface(interfaces.AsymmetricPadding)
+@utils.register_interface(AsymmetricPadding)
 class PSS(object):
     MAX_LENGTH = object()
     name = "EMSA-PSS"
@@ -33,7 +44,7 @@ class PSS(object):
         self._salt_length = salt_length
 
 
-@utils.register_interface(interfaces.AsymmetricPadding)
+@utils.register_interface(AsymmetricPadding)
 class OAEP(object):
     name = "EME-OAEP"
 
