@@ -607,7 +607,7 @@ Interfaces used by the symmetric cipher modes described in
 .. _`described by Colin Percival`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
 .. _`recommends a 96-bit IV length`: http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
 .. _`NIST SP-800-38D`: http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf
-.. _`Communications Security Establishment`: http://www.cse-cst.gc.ca
+.. _`Communications Security Establishment`: https://www.cse-cst.gc.ca
 .. _`encrypt`: https://ssd.eff.org/en/module/what-encryption
 .. _`CRYPTREC`: http://www.cryptrec.go.jp/english/
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29

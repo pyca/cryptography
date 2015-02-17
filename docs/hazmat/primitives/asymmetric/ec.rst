@@ -370,7 +370,7 @@ Key Interfaces
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/documents/D.SPA.20.pdf
-.. _`64x lower computational cost than DH`: http://www.nsa.gov/business/programs/elliptic_curve.shtml
+.. _`64x lower computational cost than DH`: https://www.nsa.gov/business/programs/elliptic_curve.shtml
 .. _`minimize the number of security concerns for elliptic-curve cryptography`: http://cr.yp.to/ecdh/curve25519-20060209.pdf
 .. _`SafeCurves`: http://safecurves.cr.yp.to/
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
