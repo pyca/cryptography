@@ -10,6 +10,9 @@ Changelog
   now load elliptic curve public keys.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
+* :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction` was moved
+  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.kdf`.
 * :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and
   :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
   :mod:`~cryptography.hazmat.primitives.interfaces` to

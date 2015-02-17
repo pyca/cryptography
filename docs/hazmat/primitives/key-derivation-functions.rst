@@ -3,7 +3,7 @@
 Key derivation functions
 ========================
 
-.. currentmodule:: cryptography.hazmat.primitives.kdf
+.. module:: cryptography.hazmat.primitives.kdf
 
 Key derivation functions derive bytes suitable for cryptographic operations
 from passwords or other data sources using a pseudo-random function (PRF).
@@ -38,7 +38,7 @@ Different KDFs are suitable for different tasks such as:
     considered a better solution.
 
     This class conforms to the
-    :class:`~cryptography.hazmat.primitives.interfaces.KeyDerivationFunction`
+    :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
     interface.
 
     .. doctest::
@@ -323,6 +323,53 @@ Different KDFs are suitable for different tasks such as:
         This checks whether deriving a new key from the supplied
         ``key_material`` generates the same key as the ``expected_key``, and
         raises an exception if they do not match.
+
+Interface
+~~~~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.kdf
+
+.. class:: KeyDerivationFunction
+
+    .. versionadded:: 0.2
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material. Depending on what
+                                   key derivation function you are using this
+                                   could be either random bytes, or a user
+                                   supplied password.
+        :return: The new key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This generates and returns a new key from the supplied key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match. This can be used for
+        something like checking whether a user's password attempt matches the
+        stored derived key.
+
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet

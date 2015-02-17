@@ -11,10 +11,11 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import constant_time, hmac, interfaces
+from cryptography.hazmat.primitives import constant_time, hmac
+from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-@utils.register_interface(interfaces.KeyDerivationFunction)
+@utils.register_interface(KeyDerivationFunction)
 class HKDF(object):
     def __init__(self, algorithm, length, salt, info, backend):
         if not isinstance(backend, HMACBackend):
@@ -53,7 +54,7 @@ class HKDF(object):
             raise InvalidKey
 
 
-@utils.register_interface(interfaces.KeyDerivationFunction)
+@utils.register_interface(KeyDerivationFunction)
 class HKDFExpand(object):
     def __init__(self, algorithm, length, info, backend):
         if not isinstance(backend, HMACBackend):

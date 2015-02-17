@@ -9,10 +9,11 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import PBKDF2HMACBackend
-from cryptography.hazmat.primitives import constant_time, interfaces
+from cryptography.hazmat.primitives import constant_time
+from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
-@utils.register_interface(interfaces.KeyDerivationFunction)
+@utils.register_interface(KeyDerivationFunction)
 class PBKDF2HMAC(object):
     def __init__(self, algorithm, length, salt, iterations, backend):
         if not isinstance(backend, PBKDF2HMACBackend):
