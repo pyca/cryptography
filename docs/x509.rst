@@ -188,7 +188,11 @@ X.509 Certificate Object
 
         Returns the
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` used in
-        the signature.
+        the certificate's signature.
+
+        .. note::
+            Items signed by the parsed certificate do not have to use the same
+            hash algorithm.
 
         .. doctest::
 
