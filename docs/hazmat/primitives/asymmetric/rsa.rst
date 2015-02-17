@@ -484,6 +484,16 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
 
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+            instance.
+
 
 .. class:: RSAPublicKey
 

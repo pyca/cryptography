@@ -200,6 +200,9 @@ class _EllipticCurvePrivateKey(object):
             public_numbers=self.public_key().public_numbers()
         )
 
+    def public_numbers(self):
+        return self.private_numbers().public_numbers
+
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithNumbers)
 class _EllipticCurvePublicKey(object):

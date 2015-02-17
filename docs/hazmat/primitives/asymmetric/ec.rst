@@ -325,6 +325,11 @@ Key Interfaces
 
         :returns: An :class:`EllipticCurvePrivateNumbers` instance.
 
+    .. method:: public_numbers()
+
+        Create a :class:`EllipticCurvePublicNumbers` object.
+
+        :returns: An :class:`EllipticCurvePublicNumbers` instance.
 
 .. class:: EllipticCurvePublicKey
 

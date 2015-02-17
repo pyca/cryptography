@@ -300,6 +300,16 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
             instance.
 
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+            instance.
+
 
 .. class:: DSAPublicKey
 
@@ -355,6 +365,16 @@ Key interfaces
 
         :returns: A
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+            instance.
+
+    .. method:: parameter_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameterNumbers`
             instance.
 
 
