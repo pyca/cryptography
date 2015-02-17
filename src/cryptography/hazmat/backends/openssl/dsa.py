@@ -7,8 +7,10 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import _truncate_digest
-from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import (
+    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
+)
 from cryptography.hazmat.primitives.interfaces import (
     DSAParametersWithNumbers, DSAPrivateKeyWithNumbers, DSAPublicKeyWithNumbers
 )
@@ -27,7 +29,7 @@ def _truncate_digest_for_dsa(dsa_cdata, digest, backend):
     return _truncate_digest(digest, order_bits)
 
 
-@utils.register_interface(interfaces.AsymmetricVerificationContext)
+@utils.register_interface(AsymmetricVerificationContext)
 class _DSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, algorithm):
         self._backend = backend
@@ -61,7 +63,7 @@ class _DSAVerificationContext(object):
             raise InvalidSignature
 
 
-@utils.register_interface(interfaces.AsymmetricSignatureContext)
+@utils.register_interface(AsymmetricSignatureContext)
 class _DSASignatureContext(object):
     def __init__(self, backend, private_key, algorithm):
         self._backend = backend

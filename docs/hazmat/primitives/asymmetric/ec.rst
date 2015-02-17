@@ -304,7 +304,7 @@ Key Interfaces
             :class:`EllipticCurveSignatureAlgorithm` provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
 
     .. method:: public_key()
 
@@ -344,7 +344,7 @@ Key Interfaces
             :class:`EllipticCurveSignatureAlgorithm` provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
      .. attribute:: curve
 

@@ -11,7 +11,8 @@ import six
 from cryptography import utils
 from cryptography.hazmat.primitives import ciphers, hashes
 from cryptography.hazmat.primitives.asymmetric import (
-    dsa, ec, padding, rsa
+    AsymmetricSignatureContext, AsymmetricVerificationContext, dsa, ec,
+    padding, rsa
 )
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.padding import PaddingContext
@@ -326,36 +327,25 @@ AsymmetricPadding = utils.deprecated(
     utils.DeprecatedIn08
 )
 
+AsymmetricSignatureContext = utils.deprecated(
+    AsymmetricSignatureContext,
+    __name__,
+    (
+        "The AsymmetricPadding interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric module"
+    ),
+    utils.DeprecatedIn08
+)
 
-@six.add_metaclass(abc.ABCMeta)
-class AsymmetricSignatureContext(object):
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Processes the provided bytes and returns nothing.
-        """
-
-    @abc.abstractmethod
-    def finalize(self):
-        """
-        Returns the signature as bytes.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class AsymmetricVerificationContext(object):
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Processes the provided bytes and returns nothing.
-        """
-
-    @abc.abstractmethod
-    def verify(self):
-        """
-        Raises an exception if the bytes provided to update do not match the
-        signature or the signature does not match the public key.
-        """
+AsymmetricVerificationContext = utils.deprecated(
+    AsymmetricVerificationContext,
+    __name__,
+    (
+        "The AsymmetricVerificationContext interface has moved to the "
+        "cryptography.hazmat.primitives.asymmetric module"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)

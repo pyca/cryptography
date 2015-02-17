@@ -439,7 +439,7 @@ Key interfaces
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricSignatureContext`
+            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
 
     .. method:: decrypt(ciphertext, padding)
 
@@ -509,7 +509,7 @@ Key interfaces
             provider.
 
         :returns:
-            :class:`~cryptography.hazmat.primitives.interfaces.AsymmetricVerificationContext`
+            :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
     .. method:: encrypt(plaintext, padding)
 

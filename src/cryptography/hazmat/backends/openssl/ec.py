@@ -9,8 +9,10 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import _truncate_digest
-from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import (
+    AsymmetricSignatureContext, AsymmetricVerificationContext, ec
+)
 
 
 def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
@@ -80,7 +82,7 @@ def _sn_to_elliptic_curve(backend, sn):
         )
 
 
-@utils.register_interface(interfaces.AsymmetricSignatureContext)
+@utils.register_interface(AsymmetricSignatureContext)
 class _ECDSASignatureContext(object):
     def __init__(self, backend, private_key, algorithm):
         self._backend = backend
@@ -114,7 +116,7 @@ class _ECDSASignatureContext(object):
         return self._backend._ffi.buffer(sigbuf)[:siglen_ptr[0]]
 
 
-@utils.register_interface(interfaces.AsymmetricVerificationContext)
+@utils.register_interface(AsymmetricVerificationContext)
 class _ECDSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, algorithm):
         self._backend = backend

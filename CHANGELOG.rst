@@ -34,6 +34,12 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
   was moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding`.
+*
+  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,

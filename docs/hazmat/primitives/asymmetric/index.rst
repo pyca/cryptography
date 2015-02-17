@@ -30,6 +30,8 @@ and Elliptic Curve.
     ec
     rsa
     serialization
+    interfaces
     utils
+
 
 .. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure
