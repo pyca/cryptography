@@ -610,6 +610,6 @@ Interfaces used by the symmetric cipher modes described in
 .. _`Communications Security Establishment`: http://www.cse-cst.gc.ca
 .. _`encrypt`: https://ssd.eff.org/tech/encryption
 .. _`CRYPTREC`: http://www.cryptrec.go.jp/english/
-.. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Cipher_block_chaining#Electronic_codebook_.28ECB.29
+.. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: http://www.openpgp.org
