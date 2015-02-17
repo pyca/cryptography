@@ -32,6 +32,7 @@ static const long Cryptography_HAS_RELEASE_BUFFERS;
  * supported
  */
 static const long Cryptography_HAS_OP_NO_COMPRESSION;
+static const long Cryptography_HAS_COMPRESSION;
 
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
@@ -189,9 +190,6 @@ int SSL_shutdown(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
-const COMP_METHOD *SSL_get_current_compression(SSL *);
-const COMP_METHOD *SSL_get_current_expansion(SSL *);
-const char *SSL_COMP_get_name(const COMP_METHOD *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
@@ -420,6 +418,18 @@ static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
 #else
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 0;
 const long SSL_OP_NO_COMPRESSION = 0;
+#endif
+
+#ifdef OPENSSL_NO_COMP
+static const long Cryptography_HAS_COMPRESSION = 0;
+const void *SSL_get_current_compression(SSL *s);
+const void *SSL_get_current_expansion(SSL *s);
+const char *SSL_COMP_get_name(const void *comp);
+#else
+static const long Cryptography_HAS_COMPRESSION = 1;
+const COMP_METHOD *SSL_get_current_compression(SSL *);
+const COMP_METHOD *SSL_get_current_expansion(SSL *);
+const char *SSL_COMP_get_name(const COMP_METHOD *);
 #endif
 
 #ifdef SSL_OP_NO_TLSv1_1
