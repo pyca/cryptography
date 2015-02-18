@@ -71,10 +71,13 @@ class TestOpenSSL(object):
 
         Unfortunately, this define does not appear to have a
         formal content definition, so for now we'll test to see
-        if it starts with OpenSSL as that appears to be true
-        for every OpenSSL.
+        if it starts with OpenSSL or LibreSSL as that appears
+        to be true for every OpenSSL-alike.
         """
-        assert backend.openssl_version_text().startswith("OpenSSL")
+        assert (
+            backend.openssl_version_text().startswith("OpenSSL") or
+            backend.openssl_version_text().startswith("LibreSSL")
+        )
 
     def test_supports_cipher(self):
         assert backend.cipher_supported(None, None) is False
