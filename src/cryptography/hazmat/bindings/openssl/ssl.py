@@ -546,13 +546,40 @@ static const long Cryptography_HAS_ALPN = 0;
 #else
 static const long Cryptography_HAS_ALPN = 1;
 #endif
+/* Gather 'round children and I shall tell you a story. A story of how OpenSSL
+   has a feature flag called OPENSSL_NO_COMP. When this flag is defined
+   SSL/TLS compression is disabled. However, rather than not define the symbols
+   for a few functions that no longer have any utility OpenSSL decided to
+   change their signature. This in and of itself was not a serious problem,
+   but the Windows build decided to not actually export those symbols. Thanks
+   to those decisions and cffi's inflexibility here's what we're about to do.
+   If OPENSSL_NO_COMP is defined and we're on Windows we will provide a NULL
+   implementation of the functions. Otherwise we'll just detect that
+   compression is disabled and set Cryptography_HAS_COMPRESSION so we can
+   remove the functions from the cffi lib object via CONDITIONAL_NAMES.
+
+   LibreSSL also doesn't have compression.
+*/
 #if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
 typedef void COMP_METHOD;
+/* On Windows we need to define these functions so we can remove them
+   conditionally. This is necessary because Windows OpenSSL messes up the
+   exports of these functions. See #1622 for more details. */
+#if defined(_WIN32)
+const COMP_METHOD *SSL_get_current_compression(SSL *s) {
+    return NULL;
+}
+const COMP_METHOD *SSL_get_current_expansion(SSL *s) {
+    return NULL;
+}
+const char *SSL_COMP_get_name(const COMP_METHOD *comp) {
+    return NULL;
+}
+#endif
 #else
 static const long Cryptography_HAS_COMPRESSION = 1;
 #endif
-
 """
 
 CONDITIONAL_NAMES = {
