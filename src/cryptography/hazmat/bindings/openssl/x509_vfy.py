@@ -191,7 +191,7 @@ int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 
 CUSTOMIZATIONS = """
 /* OpenSSL 1.0.2+ verification error codes */
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
@@ -207,7 +207,7 @@ static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
 /* OpenSSL 1.0.2+ verification parameters */
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
