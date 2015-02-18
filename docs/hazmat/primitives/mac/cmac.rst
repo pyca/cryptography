@@ -3,7 +3,7 @@
 Cipher-based message authentication code
 ========================================
 
-.. currentmodule:: cryptography.hazmat.primitives.cmac
+.. module:: cryptography.hazmat.primitives.mac.cmac
 
 .. testsetup::
 
@@ -27,7 +27,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives import cmac
+        >>> from cryptography.hazmat.primitives.mac import cmac
         >>> from cryptography.hazmat.primitives.ciphers import algorithms
         >>> c = cmac.CMAC(algorithms.AES(key), backend=default_backend())
         >>> c.update(b"message to authenticate")

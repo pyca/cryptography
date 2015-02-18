@@ -10,6 +10,12 @@ Changelog
   now load elliptic curve public keys.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
+* :mod:`cryptography.hazmat.primitives.mac.hmac` and
+  :mod:`cryptography.hazmat.primitives.mac.cmac` were moved to the
+  :mod:`~cryptography.hazmat.primitives.mac` module.
+* :class:`~cryptography.hazmat.primitives.mac.MACContext` was moved from
+  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.mac`.
 * :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction` was moved
   from :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.kdf`.
@@ -94,7 +100,7 @@ Changelog
   :class:`~cryptography.fernet.MultiFernet`.
 * More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
-* Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
+* Added :class:`~cryptography.hazmat.primitives.mac.MACContext` as a
   common interface for CMAC and HMAC and deprecated
   :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
 * Added support for encoding and decoding :rfc:`6979` signatures in
@@ -238,7 +244,7 @@ Changelog
   policy.
 * Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`
   support.
-* Added :class:`~cryptography.hazmat.primitives.cmac.CMAC`.
+* Added :class:`~cryptography.hazmat.primitives.mac.cmac.CMAC`.
 * Added decryption support to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
   and encryption support to

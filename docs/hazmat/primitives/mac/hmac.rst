@@ -3,7 +3,7 @@
 Hash-based message authentication codes
 =======================================
 
-.. currentmodule:: cryptography.hazmat.primitives.hmac
+.. module:: cryptography.hazmat.primitives.mac.hmac
 
 .. testsetup::
 
@@ -28,7 +28,8 @@ of a message.
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives import hashes, hmac
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.mac import hmac
         >>> h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
         >>> h.update(b"message to hash")
         >>> h.finalize()

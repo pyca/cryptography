@@ -4,12 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import abc
-
-import six
-
 from cryptography import utils
-from cryptography.hazmat.primitives import ciphers, hashes
+from cryptography.hazmat.primitives import ciphers, hashes, mac
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, dsa, ec,
     padding, rsa
@@ -358,33 +354,16 @@ KeyDerivationFunction = utils.deprecated(
     utils.DeprecatedIn08
 )
 
+MACContext = utils.deprecated(
+    mac.MACContext,
+    __name__,
+    (
+        "The MACContext interface has moved to the "
+        "cryptography.hazmat.primitives.mac module"
+    ),
+    utils.DeprecatedIn08
+)
 
-@six.add_metaclass(abc.ABCMeta)
-class MACContext(object):
-    @abc.abstractmethod
-    def update(self, data):
-        """
-        Processes the provided bytes.
-        """
-
-    @abc.abstractmethod
-    def finalize(self):
-        """
-        Returns the message authentication code as bytes.
-        """
-
-    @abc.abstractmethod
-    def copy(self):
-        """
-        Return a MACContext that is a copy of the current context.
-        """
-
-    @abc.abstractmethod
-    def verify(self, signature):
-        """
-        Checks if the generated message authentication code matches the
-        signature.
-        """
 
 # DeprecatedIn07
 CMACContext = MACContext
