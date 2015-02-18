@@ -68,7 +68,7 @@ Changelog
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509>` for more information.
-* Removed support for OpenSSL's cryptodev engine.
+* Removed support for OpenSSL's ``cryptodev`` engine.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~
