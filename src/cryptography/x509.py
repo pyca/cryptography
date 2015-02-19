@@ -109,7 +109,7 @@ class Name(object):
         self._attributes = attributes
 
     def get_attributes_for_oid(self, oid):
-        return [i for i in self._attributes if i.oid == oid]
+        return [i for i in self if i.oid == oid]
 
     def __eq__(self, other):
         if not isinstance(other, Name):
