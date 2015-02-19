@@ -56,7 +56,8 @@ In 0.8 the key derivation function interface was moved to the
 
 .. class:: CMACContext
 
-    :class:`CMACContext` has been deprecated in favor of :class:`MACContext`.
+    :class:`CMACContext` has been deprecated in favor of
+    :class:`~cryptography.hazmat.primitives.mac.MACContext`.
 
     .. versionadded:: 0.4
 
@@ -72,31 +73,6 @@ In 0.8 the key derivation function interface was moved to the
 
         :return: A :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
             that is a copy of the current context.
-
-.. class:: MACContext
-
-    .. versionadded:: 0.7
-
-    .. method:: update(data)
-
-        :param bytes data: The data you want to authenticate.
-
-    .. method:: finalize()
-
-        :return: The message authentication code.
-
-    .. method:: copy()
-
-        :return: A
-            :class:`~cryptography.hazmat.primitives.interfaces.MACContext` that
-            is a copy of the current context.
-
-    .. method:: verify(signature)
-
-        :param bytes signature: The signature to verify.
-
-        :raises cryptography.exceptions.InvalidSignature: This is raised when
-            the provided signature does not match the expected signature.
 
 
 .. _`CMAC`: https://en.wikipedia.org/wiki/CMAC
