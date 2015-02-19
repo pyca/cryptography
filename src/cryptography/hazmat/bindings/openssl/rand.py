@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
 #include <openssl/rand.h>
+#include <openssl/opensslv.h>
 """
 
 TYPES = """
@@ -31,6 +32,11 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
+#if !defined(LIBRESSL_VERSION_NUMBER)
+int RAND_egd(const char *);
+int RAND_egd_bytes(const char *, int);
+int RAND_query_egd_bytes(const char *, unsigned char *, int);
+#endif
 """
 
 CONDITIONAL_NAMES = {}
