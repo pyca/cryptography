@@ -187,12 +187,8 @@ X.509 Certificate Object
         :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
         Returns the
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` used in
-        the certificate's signature.
-
-        .. note::
-            Items signed by the parsed certificate do not have to use the same
-            hash algorithm.
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
+        was used in signing the certificate.
 
         .. doctest::
 
@@ -369,32 +365,32 @@ Name OIDs
 Signature Algorithm OIDs
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. data:: OID_MD5_WITH_RSA
+.. data:: OID_MD5_WITH_RSA_ENCRYPTION
 
     Corresponds to the dotted string ``"1.2.840.113549.1.1.4"``. This is
     an MD5 digest signed by an RSA key.
 
-.. data:: OID_SHA1_WITH_RSA
+.. data:: OID_SHA1_WITH_RSA_ENCRYPTION
 
     Corresponds to the dotted string ``"1.2.840.113549.1.1.5"``. This is
     a SHA1 digest signed by an RSA key.
 
-.. data:: OID_SHA224_WITH_RSA
+.. data:: OID_SHA224_WITH_RSA_ENCRYPTION
 
     Corresponds to the dotted string ``"1.2.840.113549.1.1.14"``. This is
     a SHA224 digest signed by an RSA key.
 
-.. data:: OID_SHA256_WITH_RSA
+.. data:: OID_SHA256_WITH_RSA_ENCRYPTION
 
     Corresponds to the dotted string ``"1.2.840.113549.1.1.11"``. This is
     a SHA256 digest signed by an RSA key.
 
-.. data:: OID_SHA384_WITH_RSA
+.. data:: OID_SHA384_WITH_RSA_ENCRYPTION
 
     Corresponds to the dotted string ``"1.2.840.113549.1.1.12"``. This is
     a SHA384 digest signed by an RSA key.
 
-.. data:: OID_SHA512_WITH_RSA
+.. data:: OID_SHA512_WITH_RSA_ENCRYPTION
 
     Corresponds to the dotted string ``"1.2.840.113549.1.1.13"``. This is
     a SHA512 digest signed by an RSA key.
