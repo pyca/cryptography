@@ -68,6 +68,7 @@ Changelog
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509>` for more information.
+* Fixed building against LibreSSL, a compile-time substitute for OpenSSL.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~

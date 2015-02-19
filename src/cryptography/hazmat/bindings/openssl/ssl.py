@@ -7,6 +7,14 @@ from __future__ import absolute_import, division, print_function
 INCLUDES = """
 #include <openssl/ssl.h>
 
+/* LibreSSL has removed support for compression, and with it the
+ * COMP_METHOD use in ssl.h. This is a hack to make the function types
+ * in this code match those in ssl.h.
+ */
+#ifdef LIBRESSL_VERSION_NUMBER
+#define COMP_METHOD void
+#endif
+
 typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 """
 
