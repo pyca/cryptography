@@ -103,7 +103,7 @@ else
     esac
 fi
 
-sudo pip install virtualenv
+pip install --user virtualenv
 virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox coveralls
