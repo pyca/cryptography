@@ -9,6 +9,8 @@ INCLUDES = """
 """
 
 TYPES = """
+static const long Cryptography_HAS_ENGINE_CRYPTODEV;
+
 typedef ... ENGINE;
 typedef ... RSA_METHOD;
 typedef ... DSA_METHOD;
@@ -49,7 +51,6 @@ int ENGINE_init(ENGINE *);
 int ENGINE_finish(ENGINE *);
 void ENGINE_load_openssl(void);
 void ENGINE_load_dynamic(void);
-void ENGINE_load_cryptodev(void);
 void ENGINE_load_builtin_engines(void);
 void ENGINE_cleanup(void);
 ENGINE *ENGINE_get_default_RSA(void);
@@ -148,9 +149,20 @@ void ENGINE_add_conf_module(void);
 """
 
 MACROS = """
+void ENGINE_load_cryptodev(void);
 """
 
 CUSTOMIZATIONS = """
+#if defined(LIBRESSL_VERSION_NUMBER)
+static const long Cryptography_HAS_ENGINE_CRYPTODEV = 0;
+void (*ENGINE_load_cryptodev)(void) = NULL;
+#else
+static const long Cryptography_HAS_ENGINE_CRYPTODEV = 1;
+#endif
 """
 
-CONDITIONAL_NAMES = {}
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_ENGINE_CRYPTODEV": [
+        "ENGINE_load_cryptodev"
+    ]
+}
