@@ -19,6 +19,7 @@ static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
+static const long Cryptography_HAS_COMPRESSION;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -189,10 +190,6 @@ int SSL_shutdown(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
-const COMP_METHOD *SSL_get_current_compression(SSL *);
-const COMP_METHOD *SSL_get_current_expansion(SSL *);
-const char *SSL_COMP_get_name(const COMP_METHOD *);
-
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
 long SSL_CTX_set_timeout(SSL_CTX *, long);
@@ -232,6 +229,11 @@ size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 """
 
 MACROS = """
+/* not macros, but will be conditionally bound so can't live in functions */
+const COMP_METHOD *SSL_get_current_compression(SSL *);
+const COMP_METHOD *SSL_get_current_expansion(SSL *);
+const char *SSL_COMP_get_name(const COMP_METHOD *);
+
 unsigned long SSL_set_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);
 
@@ -544,6 +546,17 @@ static const long Cryptography_HAS_ALPN = 0;
 #else
 static const long Cryptography_HAS_ALPN = 1;
 #endif
+/* LibreSSL has removed support for compression, and with it the
+ * COMP_METHOD use in ssl.h. This is a hack to make the function types
+ * in this code match those in ssl.h.
+ */
+#ifdef LIBRESSL_VERSION_NUMBER
+static const long Cryptography_HAS_COMPRESSION = 0;
+typedef void COMP_METHOD;
+#else
+static const long Cryptography_HAS_COMPRESSION = 1;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -626,5 +639,11 @@ CONDITIONAL_NAMES = {
         "SSL_set_alpn_protos",
         "SSL_CTX_set_alpn_select_cb",
         "SSL_get0_alpn_selected",
+    ],
+
+    "Cryptography_HAS_COMPRESSION": [
+        "SSL_get_current_compression",
+        "SSL_get_current_expansion",
+        "SSL_COMP_get_name",
     ]
 }
