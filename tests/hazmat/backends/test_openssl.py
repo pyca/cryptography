@@ -234,9 +234,19 @@ class TestOpenSSLRandomEngine(object):
         )
         engine_name = tmpdir.join('engine_name')
 
+        # If we're running tests via ``python setup.py test`` in a clean
+        # environment then all of our dependencies are going to be installed
+        # into either the current directory or the .eggs directory. However the
+        # subprocess won't know to activate these dependencies, so we'll get it
+        # to do so by passing our entire sys.path into the subprocess via the
+        # PYTHONPATH environment variable.
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
+
         with engine_name.open('w') as out:
             subprocess.check_call(
                 [sys.executable, "-c", engine_printer],
+                env=env,
                 stdout=out
             )
 
