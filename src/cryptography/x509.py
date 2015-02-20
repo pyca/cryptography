@@ -157,12 +157,12 @@ OID_PSEUDONYM = ObjectIdentifier("2.5.4.65")
 OID_DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
 OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
 
-OID_MD5_WITH_RSA_ENCRYPTION = ObjectIdentifier("1.2.840.113549.1.1.4")
-OID_SHA1_WITH_RSA_ENCRYPTION = ObjectIdentifier("1.2.840.113549.1.1.5")
-OID_SHA224_WITH_RSA_ENCRYPTION = ObjectIdentifier("1.2.840.113549.1.1.14")
-OID_SHA256_WITH_RSA_ENCRYPTION = ObjectIdentifier("1.2.840.113549.1.1.11")
-OID_SHA384_WITH_RSA_ENCRYPTION = ObjectIdentifier("1.2.840.113549.1.1.12")
-OID_SHA512_WITH_RSA_ENCRYPTION = ObjectIdentifier("1.2.840.113549.1.1.13")
+OID_RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
+OID_RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
+OID_RSA_WITH_SHA224 = ObjectIdentifier("1.2.840.113549.1.1.14")
+OID_RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
+OID_RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
+OID_RSA_WITH_SHA512 = ObjectIdentifier("1.2.840.113549.1.1.13")
 OID_ECDSA_WITH_SHA224 = ObjectIdentifier("1.2.840.10045.4.3.1")
 OID_ECDSA_WITH_SHA256 = ObjectIdentifier("1.2.840.10045.4.3.2")
 OID_ECDSA_WITH_SHA384 = ObjectIdentifier("1.2.840.10045.4.3.3")
@@ -172,12 +172,12 @@ OID_DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
 OID_DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
 _SIG_OIDS_TO_HASH = {
-    OID_MD5_WITH_RSA_ENCRYPTION.dotted_string: hashes.MD5(),
-    OID_SHA1_WITH_RSA_ENCRYPTION.dotted_string: hashes.SHA1(),
-    OID_SHA224_WITH_RSA_ENCRYPTION.dotted_string: hashes.SHA224(),
-    OID_SHA256_WITH_RSA_ENCRYPTION.dotted_string: hashes.SHA256(),
-    OID_SHA384_WITH_RSA_ENCRYPTION.dotted_string: hashes.SHA384(),
-    OID_SHA512_WITH_RSA_ENCRYPTION.dotted_string: hashes.SHA512(),
+    OID_RSA_WITH_MD5.dotted_string: hashes.MD5(),
+    OID_RSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    OID_RSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    OID_RSA_WITH_SHA256.dotted_string: hashes.SHA256(),
+    OID_RSA_WITH_SHA384.dotted_string: hashes.SHA384(),
+    OID_RSA_WITH_SHA512.dotted_string: hashes.SHA512(),
     OID_ECDSA_WITH_SHA224.dotted_string: hashes.SHA224(),
     OID_ECDSA_WITH_SHA256.dotted_string: hashes.SHA256(),
     OID_ECDSA_WITH_SHA384.dotted_string: hashes.SHA384(),
