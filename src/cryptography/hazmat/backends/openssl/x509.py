@@ -16,6 +16,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 
 from cryptography import utils, x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 
 
@@ -121,14 +122,7 @@ class _Certificate(object):
                 buf, lambda buf: self._backend._lib.OPENSSL_free(buf[0])
             )
             value = self._backend._ffi.buffer(buf[0], res)[:].decode('utf8')
-            # Set to 80 on the recommendation of
-            # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html
-            buf_len = 80
-            buf = self._backend._ffi.new("char[]", buf_len)
-            res = self._backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
-            assert res > 0
-            oid = self._backend._ffi.buffer(buf, res)[:].decode()
-
+            oid = self._obj2txt(obj)
             attributes.append(
                 x509.NameAttribute(
                     x509.ObjectIdentifier(oid), value
@@ -136,3 +130,22 @@ class _Certificate(object):
             )
 
         return x509.Name(attributes)
+
+    def _obj2txt(self, obj):
+        # Set to 80 on the recommendation of
+        # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html#return_values
+        buf_len = 80
+        buf = self._backend._ffi.new("char[]", buf_len)
+        res = self._backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
+        assert res > 0
+        return self._backend._ffi.buffer(buf, res)[:].decode()
+
+    @property
+    def signature_hash_algorithm(self):
+        oid = self._obj2txt(self._x509.sig_alg.algorithm)
+        try:
+            return x509._SIG_OIDS_TO_HASH[oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm OID:{0} not recognized".format(oid)
+            )

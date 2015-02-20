@@ -13,6 +13,7 @@ import pytest
 import six
 
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
@@ -45,6 +46,7 @@ class TestRSACertificate(object):
         assert cert.serial == 11559813051657483483
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"2b619ed04bfc9c3b08eb677d272192286a0947a8"
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
 
     def test_load_der_cert(self, backend):
         cert = _load_cert(
@@ -56,6 +58,7 @@ class TestRSACertificate(object):
         assert cert.serial == 2
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
 
     def test_issuer(self, backend):
         cert = _load_cert(
@@ -328,6 +331,15 @@ class TestRSACertificate(object):
         with pytest.raises(ValueError):
             x509.load_der_x509_certificate(b"notacert", backend)
 
+    def test_unsupported_signature_hash_algorithm_cert(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "verisign_md2_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cert.signature_hash_algorithm
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -338,6 +350,7 @@ class TestDSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.DSAPublicKey)
         if isinstance(public_key, interfaces.DSAPublicKeyWithNumbers):
@@ -390,6 +403,7 @@ class TestECDSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA384)
         public_key = cert.public_key()
         assert isinstance(public_key, interfaces.EllipticCurvePublicKey)
         if isinstance(

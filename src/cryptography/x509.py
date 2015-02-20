@@ -10,6 +10,7 @@ from enum import Enum
 import six
 
 from cryptography import utils
+from cryptography.hazmat.primitives import hashes
 
 
 _OID_NAMES = {
@@ -28,6 +29,19 @@ _OID_NAMES = {
     "2.5.4.65": "pseudonym",
     "0.9.2342.19200300.100.1.25": "domainComponent",
     "1.2.840.113549.1.9.1": "emailAddress",
+    "1.2.840.113549.1.1.4": "md5WithRSAEncryption",
+    "1.2.840.113549.1.1.5": "sha1WithRSAEncryption",
+    "1.2.840.113549.1.1.14": "sha224WithRSAEncryption",
+    "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
+    "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
+    "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
+    "1.2.840.10045.4.3.1": "ecdsa-with-SHA224",
+    "1.2.840.10045.4.3.2": "ecdsa-with-SHA256",
+    "1.2.840.10045.4.3.3": "ecdsa-with-SHA384",
+    "1.2.840.10045.4.3.4": "ecdsa-with-SHA512",
+    "1.2.840.10040.4.3": "dsa-with-sha1",
+    "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
+    "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
 }
 
 
@@ -143,6 +157,36 @@ OID_PSEUDONYM = ObjectIdentifier("2.5.4.65")
 OID_DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
 OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
 
+OID_RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
+OID_RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
+OID_RSA_WITH_SHA224 = ObjectIdentifier("1.2.840.113549.1.1.14")
+OID_RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
+OID_RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
+OID_RSA_WITH_SHA512 = ObjectIdentifier("1.2.840.113549.1.1.13")
+OID_ECDSA_WITH_SHA224 = ObjectIdentifier("1.2.840.10045.4.3.1")
+OID_ECDSA_WITH_SHA256 = ObjectIdentifier("1.2.840.10045.4.3.2")
+OID_ECDSA_WITH_SHA384 = ObjectIdentifier("1.2.840.10045.4.3.3")
+OID_ECDSA_WITH_SHA512 = ObjectIdentifier("1.2.840.10045.4.3.4")
+OID_DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
+OID_DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
+OID_DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
+
+_SIG_OIDS_TO_HASH = {
+    OID_RSA_WITH_MD5.dotted_string: hashes.MD5(),
+    OID_RSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    OID_RSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    OID_RSA_WITH_SHA256.dotted_string: hashes.SHA256(),
+    OID_RSA_WITH_SHA384.dotted_string: hashes.SHA384(),
+    OID_RSA_WITH_SHA512.dotted_string: hashes.SHA512(),
+    OID_ECDSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    OID_ECDSA_WITH_SHA256.dotted_string: hashes.SHA256(),
+    OID_ECDSA_WITH_SHA384.dotted_string: hashes.SHA384(),
+    OID_ECDSA_WITH_SHA512.dotted_string: hashes.SHA512(),
+    OID_DSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    OID_DSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    OID_DSA_WITH_SHA256.dotted_string: hashes.SHA256()
+}
+
 
 @six.add_metaclass(abc.ABCMeta)
 class Certificate(object):
@@ -192,4 +236,11 @@ class Certificate(object):
     def subject(self):
         """
         Returns the subject name object.
+        """
+
+    @abc.abstractproperty
+    def signature_hash_algorithm(self):
+        """
+        Returns a HashAlgorithm corresponding to the type of the digest signed
+        in the certificate.
         """

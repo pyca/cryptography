@@ -9,6 +9,9 @@ Changelog
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load elliptic curve public keys.
 * Added
+  :attr:`~cryptography.x509.Certificate.signature_hash_algorithm` support to
+  :class:`~cryptography.x509.Certificate`.
+* Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_prime_factors`
 * :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction` was moved
   from :mod:`~cryptography.hazmat.primitives.interfaces` to

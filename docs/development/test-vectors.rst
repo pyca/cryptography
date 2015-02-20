@@ -80,6 +80,9 @@ X.509
 * ``v1_cert.pem`` from the OpenSSL source tree (`testx509.pem`_).
 * ``ecdsa_root.pem`` - `DigiCert Global Root G3`_, a ``secp384r1`` ECDSA root
   certificate.
+* ``verisign-md2-root.pem`` - A legacy Verisign public root signed using the
+  MD2 algorithm. This is a PEM conversion of the `root data`_ in the NSS source
+  tree.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -219,3 +222,4 @@ header format (substituting the correct information):
 .. _`NIST PKI Testing`: http://csrc.nist.gov/groups/ST/crypto_apps_infra/pki/pkitesting.html
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
+.. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
