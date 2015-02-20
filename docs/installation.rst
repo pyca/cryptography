@@ -14,7 +14,7 @@ Currently we test ``cryptography`` on Python 2.6, 2.7, 3.2, 3.3, 3.4 and PyPy
 on these operating systems.
 
 * x86-64 CentOS 7.x, 6.4 and CentOS 5.x
-* x86-64 FreeBSD 9.2 and FreeBSD 10
+* x86-64 FreeBSD 10
 * OS X 10.10 Yosemite, 10.9 Mavericks, 10.8 Mountain Lion, and 10.7 Lion
 * x86-64 Ubuntu 12.04 LTS
 * x86-64 Debian Wheezy (7.x) and Jessie (8.x)
