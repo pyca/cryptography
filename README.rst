@@ -1,7 +1,7 @@
 Cryptography
 ============
 
-.. image:: https://pypip.in/version/cryptography/badge.svg
+.. image:: https://pypip.in/version/cryptography/badge.svg?style=flat
     :target: https://pypi.python.org/pypi/cryptography/
     :alt: Latest Version
 
