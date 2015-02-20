@@ -135,7 +135,8 @@ class PyTest(test):
     def run_tests(self):
         # Import here because in module scope the eggs are not loaded.
         import pytest
-        errno = pytest.main(self.test_args)
+        test_args = [os.path.join(base_dir, "tests")]
+        errno = pytest.main(test_args)
         sys.exit(errno)
 
 
