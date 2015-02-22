@@ -17,8 +17,13 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS
 )
-from cryptography.hazmat.primitives.interfaces import (
-    RSAPrivateKeyWithNumbers, RSAPublicKeyWithNumbers
+from cryptography.hazmat.primitives.asymmetric.rsa import (
+    RSAPrivateKeyWithNumbers, RSAPrivateKeyWithSerialization,
+    RSAPublicKeyWithNumbers
+)
+from cryptography.hazmat.primitives.serialization import (
+    BestAvailable, Encoding, KeySerializationEncryption, NoEncryption, PKCS8,
+    TraditionalOpenSSL
 )
 
 
@@ -507,6 +512,7 @@ class _RSAVerificationContext(object):
 
 
 @utils.register_interface(RSAPrivateKeyWithNumbers)
+@utils.register_interface(RSAPrivateKeyWithSerialization)
 class _RSAPrivateKey(object):
     def __init__(self, backend, rsa_cdata):
         self._backend = backend
@@ -558,6 +564,57 @@ class _RSAPrivateKey(object):
                 n=self._backend._bn_to_int(self._rsa_cdata.n),
             )
         )
+
+    def dump(self, serializer, encryption_algorithm):
+        if isinstance(serializer, PKCS8):
+            write_bio = self._backend._lib.PEM_write_bio_PKCS8PrivateKey
+            key = self._evp_pkey
+        elif isinstance(serializer, TraditionalOpenSSL):
+            write_bio = self._backend._lib.PEM_write_bio_RSAPrivateKey
+            key = self._rsa_cdata
+        else:
+            raise TypeError("serializer must be PKCS8 or TraditionalOpenSSL")
+
+        if serializer.encoding != Encoding.PEM:
+            raise ValueError("Only PEM encoding is supported by this backend")
+
+        if not isinstance(encryption_algorithm, KeySerializationEncryption):
+            raise TypeError(
+                "Encryption algorithm must be a KeySerializationEncryption "
+                "instance"
+            )
+
+        if isinstance(encryption_algorithm, NoEncryption):
+            password = b""
+            passlen = 0
+            evp_cipher = self._backend._ffi.NULL
+        elif isinstance(encryption_algorithm, BestAvailable):
+            # This is a curated value that we will update over time.
+            evp_cipher = self._backend._lib.EVP_get_cipherbyname(
+                b"aes-256-cbc"
+            )
+            password = encryption_algorithm.password
+            passlen = len(password)
+            if passlen > 1023:
+                raise ValueError(
+                    "Passwords longer than 1023 bytes are not supported by "
+                    "this backend"
+                )
+        else:
+            raise ValueError("Unsupported encryption type")
+
+        bio = self._backend._create_mem_bio()
+        res = write_bio(
+            bio,
+            key,
+            evp_cipher,
+            password,
+            passlen,
+            self._backend._ffi.NULL,
+            self._backend._ffi.NULL
+        )
+        assert res == 1
+        return self._backend._read_mem_bio(bio)
 
 
 @utils.register_interface(RSAPublicKeyWithNumbers)

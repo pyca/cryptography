@@ -78,6 +78,14 @@ Changelog
   support loading DER encoded public keys.
 * Fixed building against LibreSSL, a compile-time substitute for OpenSSL.
 * FreeBSD 9.2 was removed from the continuous integration system.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+  and deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.dump`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~

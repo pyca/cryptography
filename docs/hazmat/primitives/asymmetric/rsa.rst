@@ -80,6 +80,37 @@ password. If the key is encrypted we can pass a ``bytes`` object as the
 There is also support for :func:`loading public keys in the SSH format
 <cryptography.hazmat.primitives.serialization.load_ssh_public_key>`.
 
+Key serialization
+~~~~~~~~~~~~~~~~~
+
+If you have a previously loaded or generated key that has the
+:class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+interface you can use
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.dump`
+to serialize the key.
+
+.. doctest::
+
+    >>> from cryptography.hazmat.primitives import serialization
+    >>> pem = private_key.dump(
+    ...    serialization.PKCS8(serialization.Encoding.PEM),
+    ...    serialization.BestAvailable(b'passwordgoeshere')
+    ... )
+    >>> pem.splitlines()[0]
+    '-----BEGIN ENCRYPTED PRIVATE KEY-----'
+
+It is also possible to serialize without encryption using
+:class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+.. doctest::
+
+    >>> pem = private_key.dump(
+    ...    serialization.TraditionalOpenSSL(serialization.Encoding.PEM),
+    ...    serialization.NoEncryption()
+    ... )
+    >>> pem.splitlines()[0]
+    '-----BEGIN RSA PRIVATE KEY-----'
+
 Signing
 ~~~~~~~
 
@@ -483,6 +514,37 @@ Key interfaces
         :returns: An
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
+
+
+.. class:: RSAPrivateKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Extends :class:`RSAPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
+            instance.
+
+    .. method:: dump(serializer, encryption_type)
+
+        Dump the key to PEM encoded bytes using the serializer provided.
+
+        :param serializer: An instance of
+            :class:`~cryptography.hazmat.primitives.serialization.TraditionalOpenSSL`
+            or :class:`~cryptography.hazmat.primitives.serialization.PKCS8`
+
+        :param encryption_type: An instance of an object conforming to the
+            :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+            interface.
+
+        :return bytes: Serialized key.
 
 
 .. class:: RSAPublicKey

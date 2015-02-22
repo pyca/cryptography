@@ -12,6 +12,7 @@ import warnings
 
 # DeprecatedIn07 objects exist. This comment exists to remind developers to
 # look for them when it's time for the ninth release cycle deprecation dance.
+# DeprecatedIn08 objects also exist.
 
 DeprecatedIn08 = PendingDeprecationWarning
 

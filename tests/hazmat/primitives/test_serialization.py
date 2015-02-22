@@ -18,8 +18,9 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.serialization import (
-    load_der_private_key, load_der_public_key, load_pem_private_key,
-    load_pem_public_key, load_ssh_public_key
+    BestAvailable, Encoding, PKCS8, TraditionalOpenSSL, load_der_private_key,
+    load_der_public_key, load_pem_private_key, load_pem_public_key,
+    load_ssh_public_key
 )
 
 
@@ -1159,3 +1160,27 @@ class TestECDSASSHSerialization(object):
         )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
+
+
+@pytest.mark.parametrize(
+    "serializer",
+    [PKCS8, TraditionalOpenSSL]
+)
+class TestSerializers(object):
+    def test_invalid_encoding(self, serializer):
+        with pytest.raises(TypeError):
+            serializer("thing")
+
+    def test_valid_params(self, serializer):
+        fmt = serializer(Encoding.PEM)
+        assert isinstance(fmt, (PKCS8, TraditionalOpenSSL))
+
+
+class TestKeySerializationEncryptionTypes(object):
+    def test_non_bytes_password(self):
+        with pytest.raises(ValueError):
+            BestAvailable(object())
+
+    def test_encryption_with_zero_length_password(self):
+        with pytest.raises(ValueError):
+            BestAvailable(b"")
