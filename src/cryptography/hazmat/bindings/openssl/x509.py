@@ -229,6 +229,7 @@ int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 
 PKCS8_PRIV_KEY_INFO *d2i_PKCS8_PRIV_KEY_INFO_bio(BIO *,
                                                  PKCS8_PRIV_KEY_INFO **);
+void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """

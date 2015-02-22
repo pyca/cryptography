@@ -702,12 +702,16 @@ class Backend(object):
         # this. Unfortunately it doesn't properly support PKCS8 on OpenSSL
         # 0.9.8 so we can't use it. Instead we sequentially try to load it 3
         # different ways. First we'll try to load it as a traditional key
-        key = self._evp_pkey_from_der_traditional_key(data, password)
+        bio_data = self._bytes_to_bio(data)
+        key = self._evp_pkey_from_der_traditional_key(bio_data, password)
         if not key:
             # Okay so it's not a traditional key. Let's try
             # PKCS8 unencrypted. OpenSSL 0.9.8 can't load unencrypted
             # PKCS8 keys using d2i_PKCS8PrivateKey_bio so we do this instead.
-            key = self._evp_pkey_from_der_unencrypted_pkcs8(data, password)
+            # Reset the memory BIO so we can read the data again.
+            res = self._lib.BIO_reset(bio_data.bio)
+            assert res == 1
+            key = self._evp_pkey_from_der_unencrypted_pkcs8(bio_data, password)
 
         if key:
             return self._evp_pkey_to_private_key(key)
@@ -721,9 +725,8 @@ class Backend(object):
                 password,
             )
 
-    def _evp_pkey_from_der_traditional_key(self, data, password):
-        mem_bio = self._bytes_to_bio(data)
-        key = self._lib.d2i_PrivateKey_bio(mem_bio.bio, self._ffi.NULL)
+    def _evp_pkey_from_der_traditional_key(self, bio_data, password):
+        key = self._lib.d2i_PrivateKey_bio(bio_data.bio, self._ffi.NULL)
         if key != self._ffi.NULL:
             key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
@@ -736,11 +739,11 @@ class Backend(object):
             self._consume_errors()
             return None
 
-    def _evp_pkey_from_der_unencrypted_pkcs8(self, data, password):
-        mem_bio = self._bytes_to_bio(data)
+    def _evp_pkey_from_der_unencrypted_pkcs8(self, bio_data, password):
         info = self._lib.d2i_PKCS8_PRIV_KEY_INFO_bio(
-            mem_bio.bio, self._ffi.NULL
+            bio_data.bio, self._ffi.NULL
         )
+        info = self._ffi.gc(info, self._lib.PKCS8_PRIV_KEY_INFO_free)
         if info != self._ffi.NULL:
             key = self._lib.EVP_PKCS82PKEY(info)
             assert key != self._ffi.NULL
