@@ -232,7 +232,7 @@ class TestDERSerialization(object):
             )
 
     @pytest.mark.parametrize(
-        ("key_file"),
+        "key_file",
         [
             os.path.join(
                 "asymmetric", "DER_Serialization", "unenc-rsa-pkcs8.pub.der"),
@@ -260,7 +260,7 @@ class TestDERSerialization(object):
             load_der_public_key(b"invalid data", backend)
 
     @pytest.mark.parametrize(
-        ("key_file"),
+        "key_file",
         [
             os.path.join(
                 "asymmetric", "DER_Serialization", "unenc-dsa-pkcs8.pub.der"),
