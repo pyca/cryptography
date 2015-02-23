@@ -509,3 +509,11 @@ A specific ``backend`` may provide one or more of these interfaces.
         :param bytes data: DER formatted certificate data.
 
         :returns: An instance of :class:`~cryptography.x509.Certificate`.
+
+    .. method:: load_pem_x509_request(data)
+
+        .. versionadded:: 0.9
+
+        :param bytes data: PEM formatted certificate request data.
+
+        :returns: An instance of :class:`~cryptography.x509.Request`.

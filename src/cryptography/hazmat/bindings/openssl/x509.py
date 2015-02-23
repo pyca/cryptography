@@ -44,7 +44,10 @@ typedef struct {
 
 typedef ... X509_EXTENSIONS;
 
-typedef ... X509_REQ;
+typedef struct {
+    X509_ALGOR *sig_alg;
+    ...;
+} X509_REQ;
 
 typedef struct {
     ASN1_INTEGER *serialNumber;

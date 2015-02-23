@@ -197,6 +197,9 @@ class DummyX509Backend(object):
     def load_der_x509_certificate(self, data):
         pass
 
+    def load_pem_x509_request(self, data):
+        pass
+
 
 class TestMultiBackend(object):
     def test_ciphers(self):
@@ -472,9 +475,12 @@ class TestMultiBackend(object):
 
         backend.load_pem_x509_certificate(b"certdata")
         backend.load_der_x509_certificate(b"certdata")
+        backend.load_pem_x509_request(b"reqdata")
 
         backend = MultiBackend([])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_pem_x509_certificate(b"certdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_der_x509_certificate(b"certdata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_pem_x509_request(b"reqdata")
