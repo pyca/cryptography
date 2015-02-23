@@ -71,6 +71,11 @@ Changelog
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509>` for more information.
+* Added
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key` to
+  support loading of DER encoded private keys and
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key` to
+  support loading DER encoded public keys.
 * Fixed building against LibreSSL, a compile-time substitute for OpenSSL.
 * FreeBSD 9.2 was removed from the continuous integration system.
 

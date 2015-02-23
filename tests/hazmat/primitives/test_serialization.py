@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import itertools
 import os
 import textwrap
@@ -12,7 +13,8 @@ import pytest
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    DSABackend, EllipticCurveBackend, PEMSerializationBackend, RSABackend
+    DERSerializationBackend, DSABackend, EllipticCurveBackend,
+    PEMSerializationBackend, RSABackend
 )
 from cryptography.hazmat.primitives import interfaces
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -21,7 +23,8 @@ from cryptography.hazmat.primitives.asymmetric.dsa import (
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key, load_pem_public_key, load_ssh_public_key
+    load_der_private_key, load_der_public_key, load_pem_private_key,
+    load_pem_public_key, load_ssh_public_key
 )
 
 
@@ -31,6 +34,268 @@ from .utils import (
     load_vectors_from_file
 )
 from ...utils import raises_unsupported_algorithm
+
+
+@pytest.mark.requires_backend_interface(interface=DERSerializationBackend)
+class TestDERSerialization(object):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (["DER_Serialization", "enc-rsa-pkcs8.der"], b"foobar"),
+            (["DER_Serialization", "enc2-rsa-pkcs8.der"], b"baz"),
+            (["DER_Serialization", "unenc-rsa-pkcs8.der"], None),
+            (["DER_Serialization", "testrsa.der"], None),
+        ]
+    )
+    def test_load_der_rsa_private_key(self, key_path, password, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", *key_path),
+            lambda derfile: load_der_private_key(
+                derfile.read(), password, backend
+            ),
+            mode="rb"
+        )
+        assert key
+        assert isinstance(key, interfaces.RSAPrivateKey)
+        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+            _check_rsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (["DER_Serialization", "unenc-dsa-pkcs8.der"], None),
+            (["DER_Serialization", "dsa.1024.der"], None),
+            (["DER_Serialization", "dsa.2048.der"], None),
+            (["DER_Serialization", "dsa.3072.der"], None),
+        ]
+    )
+    def test_load_der_dsa_private_key(self, key_path, password, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", *key_path),
+            lambda derfile: load_der_private_key(
+                derfile.read(), password, backend
+            ),
+            mode="rb"
+        )
+        assert key
+        assert isinstance(key, interfaces.DSAPrivateKey)
+        if isinstance(key, interfaces.DSAPrivateKeyWithNumbers):
+            _check_dsa_private_numbers(key.private_numbers())
+
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        [
+            (["DER_Serialization", "ec_private_key.der"], None),
+            (["DER_Serialization", "ec_private_key_encrypted.der"], b"123456"),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    def test_load_der_ec_private_key(self, key_path, password, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", *key_path),
+            lambda derfile: load_der_private_key(
+                derfile.read(), password, backend
+            ),
+            mode="rb"
+        )
+
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+        assert key.curve.name == "secp256r1"
+        assert key.curve.key_size == 256
+
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["DER_Serialization", "enc-rsa-pkcs8.der"],
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_wrong_password(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+        password = b"this password is wrong"
+
+        with pytest.raises(ValueError):
+            load_vectors_from_file(
+                key_file,
+                lambda derfile: load_der_private_key(
+                    derfile.read(), password, backend
+                ),
+                mode="rb"
+            )
+
+    @pytest.mark.parametrize(
+        "key_path",
+        [
+            ["DER_Serialization", "unenc-rsa-pkcs8.der"]
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_unused_password(self, key_path, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+        password = b"this password will not be used"
+
+        with pytest.raises(TypeError):
+            load_vectors_from_file(
+                key_file,
+                lambda derfile: load_der_private_key(
+                    derfile.read(), password, backend
+                ),
+                mode="rb"
+            )
+
+    @pytest.mark.parametrize(
+        ("key_path", "password"),
+        itertools.product(
+            [
+                ["DER_Serialization", "enc-rsa-pkcs8.der"],
+            ],
+            [b"", None]
+        )
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_missing_password(self, key_path, password, backend):
+        key_file = os.path.join("asymmetric", *key_path)
+
+        with pytest.raises(TypeError):
+            load_vectors_from_file(
+                key_file,
+                lambda derfile: load_der_private_key(
+                    derfile.read(), password, backend
+                ),
+                mode="rb"
+            )
+
+    def test_wrong_format(self, backend):
+        key_data = b"---- NOT A KEY ----\n"
+
+        with pytest.raises(ValueError):
+            load_der_private_key(
+                key_data, None, backend
+            )
+
+        with pytest.raises(ValueError):
+            load_der_private_key(
+                key_data, b"this password will not be used", backend
+            )
+
+    def test_corrupt_der_pkcs8(self, backend):
+        # unenc-rsa-pkcs8 with a bunch of data missing.
+        key_data = textwrap.dedent("""\
+        MIICdQIBADALBgkqhkiG9w0BAQEEggJhMIICXQIBAAKBgQC7JHoJfg6yNzLMOWet
+        8Z49a4KD0dCspMAYvo2YAMB7/wdEycocujbhJ2n/seONi+5XqTqqFkM5VBl8rmkk
+        FPZk/7x0xmdsTPECSWnHK+HhoaNDFPR3j8jQhVo1laxiqcEhAHegi5cwtFosuJAv
+        FiRC0Cgz+frQPFQEBsAV9RuasyQxqzxrR0Ow0qncBeGBWbYE6WZhqtcLAI895b+i
+        +F4lbB4iD7T9QeIDMU/aIMXA81UO4cns1z4qDAHKeyLLrPQrJ/B4X7XC+egUWm5+
+        hr1qmyAMusyXIBECQQDJWZ8piluf4yrYfsJAn6hF5T4RjTztbqvO0GVG2McHY7Uj
+        NPSffhzHx/ll0fQEQji+OgydCCX8o3HZrgw5YfSJAkEA7e+rqdU5nO5ZG//PSEQb
+        tjLnRiTzBH/elQhtdZ5nF7pcpNTi4k13zutmKcWW4GK75azcRGJUhu1kDM7QYAOd
+        SQJAVNkYcifkvna7GmooL5VYEsQsqLbM4v0NF2TIGNfG3z1MGp75KrC5LhL97MNR
+        we2p/bd2k0HYyCKUGnf2nMPDiQJBAI75pwittSoE240EobUGIDTSz8CJsXIxuDmL
+        z+KOpdpPRR5TQmbEMEspjsFpFymMiuYPgmihQbO2cJl1qScY5OkCQQCJ6m5tcN8l
+        Xxg/SNpjEIv+qAyUD96XVlOJlOIeLHQ8kYE0C6ZA+MsqYIzgAreJk88Yn0lU/X0/
+        mu/UpE/BRZmR
+        """).encode()
+        bad_der = base64.b64decode(b"".join(key_data.splitlines()))
+
+        with pytest.raises(ValueError):
+            load_der_private_key(
+                bad_der, None, backend
+            )
+
+        with pytest.raises(ValueError):
+            load_der_private_key(
+                bad_der, b"this password will not be used", backend
+            )
+
+    def test_corrupt_traditional_format_der(self, backend):
+        # privkey with a bunch of data missing.
+        key_data = textwrap.dedent("""\
+        MIIBPAIBAAJBAKrbeqkuRk8VcRmWFmtP+LviMB3+6dizWW3DwaffznyHGAFwUJ/I
+        Tv0XtbsCyl3QoyKGhrOAy3RvPK5M38iuXT0CAwEAAQJAZ3cnzaHXM/bxGaR5CR1R
+        rD1qFBAVfoQFiOH9uPJgMaoAuoQEisPHVcZDKcOv4wEg6/TInAIXBnEigtqvRzuy
+        mvcpHZwQJdmdHHkGKAs37Dfxi67HbkUCIQCeZGliHXFa071Fp06ZeWlR2ADonTZz
+        rJBhdTe0v5pCeQIhAIZfkiGgGBX4cIuuckzEm43g9WMUjxP/0GlK39vIyihxAiEA
+        mymehFRT0MvqW5xAKAx7Pgkt8HVKwVhc2LwGKHE0DZM=
+        """).encode()
+        bad_der = base64.b64decode(b"".join(key_data.splitlines()))
+
+        with pytest.raises(ValueError):
+            load_pem_private_key(bad_der, None, backend)
+
+        with pytest.raises(ValueError):
+            load_pem_private_key(
+                bad_der, b"this password will not be used", backend
+            )
+
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            os.path.join(
+                "asymmetric", "DER_Serialization", "unenc-rsa-pkcs8.pub.der"),
+            os.path.join(
+                "asymmetric", "DER_Serialization", "rsa_public_key.der"),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_load_der_rsa_public_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            key_file,
+            lambda derfile: load_der_public_key(
+                derfile.read(), backend
+            ),
+            mode="rb"
+        )
+        assert key
+        assert isinstance(key, interfaces.RSAPublicKey)
+        if isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+            numbers = key.public_numbers()
+            assert numbers.e == 65537
+
+    def test_load_der_invalid_public_key(self, backend):
+        with pytest.raises(ValueError):
+            load_der_public_key(b"invalid data", backend)
+
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            os.path.join(
+                "asymmetric", "DER_Serialization", "unenc-dsa-pkcs8.pub.der"),
+            os.path.join(
+                "asymmetric", "DER_Serialization", "dsa_public_key.der"),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    def test_load_der_dsa_public_key(self, key_file, backend):
+        key = load_vectors_from_file(
+            key_file,
+            lambda derfile: load_der_public_key(
+                derfile.read(), backend
+            ),
+            mode="rb"
+        )
+        assert key
+        assert isinstance(key, interfaces.DSAPublicKey)
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    def test_load_ec_public_key(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "DER_Serialization",
+                "ec_public_key.der"),
+            lambda derfile: load_der_public_key(
+                derfile.read(), backend
+            ),
+            mode="rb"
+        )
+        assert key
+        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+        assert key.curve.name == "secp256r1"
+        assert key.curve.key_size == 256
 
 
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
