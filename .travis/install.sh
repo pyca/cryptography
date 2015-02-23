@@ -3,13 +3,8 @@
 set -e
 set -x
 
-if [[ "$(uname -s)" == 'Darwin' ]]; then
-    DARWIN=true
-else
-    DARWIN=false
-fi
 
-if [[ "$DARWIN" = true ]]; then
+if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update
 
     if [[ "${OPENSSL}" != "0.9.8" ]]; then
