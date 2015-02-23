@@ -57,6 +57,8 @@ class TestDSA(object):
             pkey = skey.public_key()
             parameters = pkey.parameters()
             parameter_numbers = parameters.parameter_numbers()
+            assert skey.public_numbers() == pkey.public_numbers()
+            assert pkey.parameter_numbers() == parameter_numbers
             assert parameter_numbers.p == skey_parameters.p
             assert parameter_numbers.q == skey_parameters.q
             assert parameter_numbers.g == skey_parameters.g

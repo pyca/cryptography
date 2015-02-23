@@ -71,6 +71,13 @@ Changelog
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509>` for more information.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers.public_numbers`,
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithNumbers.public_numbers`,
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers.parameter_numbers`,
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers.public_numbers`
+  as convenience methods.
 * Fixed building against LibreSSL, a compile-time substitute for OpenSSL.
 * FreeBSD 9.2 was removed from the continuous integration system.
 

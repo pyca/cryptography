@@ -151,6 +151,7 @@ class TestECWithNumbers(object):
 
         if isinstance(key, ec.EllipticCurvePrivateKeyWithNumbers):
             priv_num = key.private_numbers()
+            assert key.public_numbers() == priv_num.public_numbers
             assert priv_num.private_value == vector['d']
             assert priv_num.public_numbers.x == vector['x']
             assert priv_num.public_numbers.y == vector['y']

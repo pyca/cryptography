@@ -64,6 +64,12 @@ class EllipticCurvePrivateKeyWithNumbers(EllipticCurvePrivateKey):
         Returns an EllipticCurvePrivateNumbers.
         """
 
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns an EllipticCurvePublicNumbers.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePublicKey(object):

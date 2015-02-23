@@ -559,6 +559,9 @@ class _RSAPrivateKey(object):
             )
         )
 
+    def public_numbers(self):
+        return self.private_numbers().public_numbers
+
 
 @utils.register_interface(RSAPublicKeyWithNumbers)
 class _RSAPublicKey(object):
