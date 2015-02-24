@@ -50,9 +50,9 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey):
         """
 
     @abc.abstractmethod
-    def dump(self, encoding, fmt, encryption_algorithm):
+    def as_bytes(self, encoding, fmt, encryption_algorithm):
         """
-        Returns the dumped key.
+        Returns the key serialized as bytes.
         """
 
 

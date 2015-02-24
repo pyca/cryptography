@@ -323,7 +323,7 @@ Serialization Encryption Types
 
     Objects with this interface are usable as encryption types with methods
     like
-    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.dump`.
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.as_bytes`.
     All other classes in this section represent the available choices for
     encryption and have this interface.
 

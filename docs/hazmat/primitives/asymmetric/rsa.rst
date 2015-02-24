@@ -86,13 +86,13 @@ Key serialization
 If you have a previously loaded or generated key that has the
 :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
 interface you can use
-:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.dump`
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.as_bytes`
 to serialize the key.
 
 .. doctest::
 
     >>> from cryptography.hazmat.primitives import serialization
-    >>> pem = private_key.dump(
+    >>> pem = private_key.as_bytes(
     ...    encoding=serialization.Encoding.PEM,
     ...    fmt=serialization.Format.PKCS8,
     ...    encryption_algorithm=serialization.BestAvailableEncryption(b'mypassword')
@@ -105,7 +105,7 @@ It is also possible to serialize without encryption using
 
 .. doctest::
 
-    >>> pem = private_key.dump(
+    >>> pem = private_key.as_bytes(
     ...    encoding=serialization.Encoding.PEM,
     ...    fmt=serialization.Format.TraditionalOpenSSL,
     ...    encryption_algorithm=serialization.NoEncryption()
@@ -534,9 +534,9 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
 
-    .. method:: dump(encoding, fmt, encryption_algorithm)
+    .. method:: as_bytes(encoding, fmt, encryption_algorithm)
 
-        Dump the key to PEM encoded bytes using the serializer provided.
+        Serialize the key to bytes.
 
         :param encoding: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
