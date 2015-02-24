@@ -17,8 +17,8 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
-from cryptography.hazmat.primitives import hashes, interfaces
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
@@ -236,7 +236,7 @@ class TestRSACertificate(object):
         assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
         assert cert.serial == 2
         public_key = cert.public_key()
-        assert isinstance(public_key, interfaces.RSAPublicKey)
+        assert isinstance(public_key, rsa.RSAPublicKey)
         assert cert.version is x509.Version.v3
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
@@ -352,8 +352,8 @@ class TestDSACertificate(object):
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         public_key = cert.public_key()
-        assert isinstance(public_key, interfaces.DSAPublicKey)
-        if isinstance(public_key, interfaces.DSAPublicKeyWithNumbers):
+        assert isinstance(public_key, dsa.DSAPublicKey)
+        if isinstance(public_key, dsa.DSAPublicKeyWithNumbers):
             num = public_key.public_numbers()
             assert num.y == int(
                 "4c08bfe5f2d76649c80acf7d431f6ae2124b217abc8c9f6aca776ddfa94"
@@ -405,10 +405,8 @@ class TestECDSACertificate(object):
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA384)
         public_key = cert.public_key()
-        assert isinstance(public_key, interfaces.EllipticCurvePublicKey)
-        if isinstance(
-            public_key, interfaces.EllipticCurvePublicKeyWithNumbers
-        ):
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        if isinstance(public_key, ec.EllipticCurvePublicKeyWithNumbers):
             num = public_key.public_numbers()
             assert num.x == int(
                 "dda7d9bb8ab80bfb0b7f21d2f0bebe73f3335d1abc34eadec69bbcd095f"
