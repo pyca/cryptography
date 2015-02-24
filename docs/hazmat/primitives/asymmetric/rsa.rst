@@ -95,7 +95,7 @@ to serialize the key.
     >>> pem = private_key.dump(
     ...    encoding=serialization.Encoding.PEM,
     ...    fmt=serialization.Format.PKCS8,
-    ...    encryption_type=serialization.BestAvailableEncryption(b'mypassword')
+    ...    encryption_algorithm=serialization.BestAvailableEncryption(b'mypassword')
     ... )
     >>> pem.splitlines()[0]
     '-----BEGIN ENCRYPTED PRIVATE KEY-----'
@@ -107,8 +107,8 @@ It is also possible to serialize without encryption using
 
     >>> pem = private_key.dump(
     ...    encoding=serialization.Encoding.PEM,
-    ...    fmt=serialization.Format.PKCS8,
-    ...    encryption_type=serialization.NoEncryption()
+    ...    fmt=serialization.Format.TraditionalOpenSSL,
+    ...    encryption_algorithm=serialization.NoEncryption()
     ... )
     >>> pem.splitlines()[0]
     '-----BEGIN RSA PRIVATE KEY-----'
@@ -534,7 +534,7 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
 
-    .. method:: dump(encoding, fmt, encryption_type)
+    .. method:: dump(encoding, fmt, encryption_algorithm)
 
         Dump the key to PEM encoded bytes using the serializer provided.
 
@@ -544,7 +544,7 @@ Key interfaces
         :param fmt: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Format` enum.
 
-        :param encryption_type: An instance of an object conforming to the
+        :param encryption_algorithm: An instance of an object conforming to the
             :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
             interface.
 
