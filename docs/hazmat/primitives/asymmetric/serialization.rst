@@ -75,12 +75,12 @@ methods.
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives.asymmetric import dsa, rsa
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
         >>> from cryptography.hazmat.primitives.serialization import load_pem_private_key
         >>> key = load_pem_private_key(pem_data, password=None, backend=default_backend())
         >>> if isinstance(key, rsa.RSAPrivateKey):
         ...     signature = sign_with_rsa_key(key, message)
-        ... elif isinstance(key, dsa.DSAPrivateKey):
+        ... elif isinstance(key, interfaces.DSAPrivateKey):
         ...     signature = sign_with_dsa_key(key, message)
         ... else:
         ...     raise TypeError
@@ -283,30 +283,37 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
 
-Serializers
-~~~~~~~~~~~
+Serialization Formats
+~~~~~~~~~~~~~~~~~~~~~
 
-Instances of these classes can be passed to methods like
-:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.dump`.
-
-.. class:: PKCS8(encoding)
+.. class:: Format
 
     .. versionadded:: 0.8
 
-    A serializer for the PKCS #8 format.
+    An enumeration for key formats.
 
-    :param encoding: A value from the
-        :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+    .. attribute:: TraditionalOpenSSL
 
-.. class:: TraditionalOpenSSL(encoding)
+        Frequently known as PKCS#1 format.
+
+    .. attribute:: PKCS8
+
+Serialization Encodings
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: Encoding
 
     .. versionadded:: 0.8
 
-    A serializer for the traditional OpenSSL (sometimes known as PKCS #1)
-    format.
+    An enumeration for encoding types.
 
-    :param encoding: A value from the
-        :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+    .. attribute:: PEM
+
+        For PEM format. This is a base64 format with delimiters.
+
+    .. attribute:: DER
+
+        For DER format. This is a binary format.
 
 
 Serialization Encryption Types
@@ -320,7 +327,7 @@ Serialization Encryption Types
     All other classes in this section represent the available choices for
     encryption and have this interface.
 
-.. class:: BestAvailable
+.. class:: BestAvailableEncryption(password)
 
     Encrypt using the best available encryption for a given key's backend.
     This is a curated encryption choice and the algorithm may change over
@@ -331,22 +338,3 @@ Serialization Encryption Types
 .. class:: NoEncryption
 
     Do not encrypt.
-
-
-Utility Classes
-~~~~~~~~~~~~~~~
-
-.. class:: Encoding
-
-    .. versionadded:: 0.8
-
-    An enumeration for encoding types. Used by :class:`PKCS8` and
-    :class:`TraditionalOpenSSL`.
-
-    .. attribute:: PEM
-
-        For PEM format. This is a base64 format with delimiters.
-
-    .. attribute:: DER
-
-        For DER format. This is a binary format.

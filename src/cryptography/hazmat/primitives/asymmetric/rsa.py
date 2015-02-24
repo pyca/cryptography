@@ -50,14 +50,21 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey):
         """
 
     @abc.abstractmethod
-    def dump(self, serializer, encryption_algorithm):
+    def dump(self, encoding, fmt, encryption_algorithm):
         """
-        Returns the PEM encoded key.
+        Returns the dumped key.
         """
 
 
-# DeprecatedIn08
-RSAPrivateKeyWithNumbers = RSAPrivateKeyWithSerialization
+RSAPrivateKeyWithNumbers = utils.deprecated(
+    RSAPrivateKeyWithSerialization,
+    __name__,
+    (
+        "The RSAPrivateKeyWithNumbers interface has been renamed to "
+        "RSAPrivateKeyWithSerialization"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)

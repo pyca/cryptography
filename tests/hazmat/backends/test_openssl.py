@@ -503,18 +503,16 @@ class TestRSAPEMSerialization(object):
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(ValueError):
             key.dump(
-                serialization.PKCS8(
-                    serialization.Encoding.PEM
-                ),
-                serialization.BestAvailable(password)
+                serialization.Encoding.PEM,
+                serialization.Format.PKCS8,
+                serialization.BestAvailableEncryption(password)
             )
 
     def test_unsupported_key_encoding(self):
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(ValueError):
             key.dump(
-                serialization.PKCS8(
-                    serialization.Encoding.DER
-                ),
+                serialization.Encoding.DER,
+                serialization.Format.PKCS8,
                 serialization.NoEncryption()
             )

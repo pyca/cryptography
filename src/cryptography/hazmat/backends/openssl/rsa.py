@@ -22,8 +22,8 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPublicKeyWithNumbers
 )
 from cryptography.hazmat.primitives.serialization import (
-    BestAvailable, Encoding, KeySerializationEncryption, NoEncryption, PKCS8,
-    TraditionalOpenSSL
+    BestAvailableEncryption, Encoding, Format, KeySerializationEncryption,
+    NoEncryption
 )
 
 
@@ -565,18 +565,23 @@ class _RSAPrivateKey(object):
             )
         )
 
-    def dump(self, serializer, encryption_algorithm):
-        if isinstance(serializer, PKCS8):
+    def dump(self, encoding, fmt, encryption_algorithm):
+        if not isinstance(encoding, Encoding):
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        if not isinstance(fmt, Format):
+            raise TypeError("format must be an item from the Format enum")
+
+        # This is a temporary check until we land DER serialization.
+        if encoding != Encoding.PEM:
+            raise ValueError("Only PEM encoding is supported by this backend")
+
+        if fmt == Format.PKCS8:
             write_bio = self._backend._lib.PEM_write_bio_PKCS8PrivateKey
             key = self._evp_pkey
-        elif isinstance(serializer, TraditionalOpenSSL):
+        elif fmt == Format.TraditionalOpenSSL:
             write_bio = self._backend._lib.PEM_write_bio_RSAPrivateKey
             key = self._rsa_cdata
-        else:
-            raise TypeError("serializer must be PKCS8 or TraditionalOpenSSL")
-
-        if serializer.encoding != Encoding.PEM:
-            raise ValueError("Only PEM encoding is supported by this backend")
 
         if not isinstance(encryption_algorithm, KeySerializationEncryption):
             raise TypeError(
@@ -588,7 +593,7 @@ class _RSAPrivateKey(object):
             password = b""
             passlen = 0
             evp_cipher = self._backend._ffi.NULL
-        elif isinstance(encryption_algorithm, BestAvailable):
+        elif isinstance(encryption_algorithm, BestAvailableEncryption):
             # This is a curated value that we will update over time.
             evp_cipher = self._backend._lib.EVP_get_cipherbyname(
                 b"aes-256-cbc"

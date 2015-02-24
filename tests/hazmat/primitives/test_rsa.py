@@ -1750,9 +1750,12 @@ class TestRSAPrimeFactorRecovery(object):
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPEMWriter(object):
     @pytest.mark.parametrize(
-        ("serializer", "password"),
+        ("fmt", "password"),
         itertools.product(
-            [serialization.TraditionalOpenSSL, serialization.PKCS8],
+            [
+                serialization.Format.TraditionalOpenSSL,
+                serialization.Format.PKCS8
+            ],
             [
                 b"s",
                 b"longerpassword",
@@ -1761,12 +1764,13 @@ class TestRSAPEMWriter(object):
             ]
         )
     )
-    def test_dump_encrypted_pem(self, backend, serializer, password):
+    def test_dump_encrypted_pem(self, backend, fmt, password):
         key = RSA_KEY_2048.private_key(backend)
         _skip_if_no_serialization(key, backend)
         serialized = key.dump(
-            serializer(serialization.Encoding.PEM),
-            serialization.BestAvailable(password)
+            serialization.Encoding.PEM,
+            fmt,
+            serialization.BestAvailableEncryption(password)
         )
         loaded_key = serialization.load_pem_private_key(
             serialized, password, backend
@@ -1776,14 +1780,15 @@ class TestRSAPEMWriter(object):
         assert loaded_priv_num == priv_num
 
     @pytest.mark.parametrize(
-        "serializer",
-        (serialization.TraditionalOpenSSL, serialization.PKCS8),
+        "fmt",
+        (serialization.Format.TraditionalOpenSSL, serialization.Format.PKCS8),
     )
-    def test_dump_unencrypted_pem(self, backend, serializer):
+    def test_dump_unencrypted_pem(self, backend, fmt):
         key = RSA_KEY_2048.private_key(backend)
         _skip_if_no_serialization(key, backend)
         serialized = key.dump(
-            serializer(serialization.Encoding.PEM),
+            serialization.Encoding.PEM,
+            fmt,
             serialization.NoEncryption()
         )
         loaded_key = serialization.load_pem_private_key(
@@ -1793,20 +1798,33 @@ class TestRSAPEMWriter(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
-    def test_dump_invalid_serializer(self, backend):
+    def test_dump_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend)
         _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
-            key.dump("notaserializer", serialization.NoEncryption())
+            key.dump(
+                "notencoding",
+                serialization.Format.PKCS8,
+                serialization.NoEncryption()
+            )
+
+    def test_dump_invalid_format(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.dump(
+                serialization.Encoding.PEM,
+                "invalidformat",
+                serialization.NoEncryption()
+            )
 
     def test_dump_invalid_encryption_algorithm(self, backend):
         key = RSA_KEY_2048.private_key(backend)
         _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.dump(
-                serialization.TraditionalOpenSSL(
-                    serialization.Encoding.PEM
-                ),
+                serialization.Encoding.PEM,
+                serialization.Format.TraditionalOpenSSL,
                 "notanencalg"
             )
 
@@ -1815,8 +1833,7 @@ class TestRSAPEMWriter(object):
         _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.dump(
-                serialization.TraditionalOpenSSL(
-                    serialization.Encoding.PEM
-                ),
+                serialization.Encoding.PEM,
+                serialization.Format.TraditionalOpenSSL,
                 DummyKeyEncryption()
             )

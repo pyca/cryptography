@@ -174,24 +174,9 @@ class Encoding(Enum):
     DER = "DER"
 
 
-class PKCS8(object):
-    def __init__(self, encoding):
-        if not isinstance(encoding, Encoding):
-            raise TypeError(
-                "Encoding must be an element from the Encoding enum"
-            )
-
-        self.encoding = encoding
-
-
-class TraditionalOpenSSL(object):
-    def __init__(self, encoding):
-        if not isinstance(encoding, Encoding):
-            raise TypeError(
-                "Encoding must be an element from the Encoding enum"
-            )
-
-        self.encoding = encoding
+class Format(Enum):
+    PKCS8 = "PKCS8"
+    TraditionalOpenSSL = "TraditionalOpenSSL"
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -200,7 +185,7 @@ class KeySerializationEncryption(object):
 
 
 @utils.register_interface(KeySerializationEncryption)
-class BestAvailable(object):
+class BestAvailableEncryption(object):
     def __init__(self, password):
         if not isinstance(password, bytes) or len(password) == 0:
             raise ValueError("Password must be 1 or more bytes.")
