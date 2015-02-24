@@ -475,7 +475,7 @@ Interfaces
     ``AEADEncryptionContext`` provider. ``AEADCipherContext`` contains an
     additional method :meth:`authenticate_additional_data` for adding
     additional authenticated but unencrypted data (see note below). You should
-    call this before calls to ``update``. When you are done call `finalize``
+    call this before calls to ``update``. When you are done call ``finalize``
     to finish the operation.
 
     .. note::
