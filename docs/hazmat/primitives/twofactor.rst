@@ -39,7 +39,7 @@ codes (HMAC).
                       and be at least 128 bits. It is recommended that the
                       key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
-    :param HashAlgorithm algorithm: A
+    :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
         provider.
     :param backend: A
@@ -137,7 +137,7 @@ similar to the following code.
                       and be at least 128 bits. It is recommended that the
                       key be 160 bits.
     :param int length: Length of generated one time password as ``int``.
-    :param HashAlgorithm algorithm: A
+    :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
         provider.
     :param int time_step: The time step size. The recommended size is 30.
