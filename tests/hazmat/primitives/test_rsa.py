@@ -1781,7 +1781,7 @@ class TestRSAPEMWriter(object):
 
     @pytest.mark.parametrize(
         "fmt",
-        (serialization.Format.TraditionalOpenSSL, serialization.Format.PKCS8),
+        [serialization.Format.TraditionalOpenSSL, serialization.Format.PKCS8],
     )
     def test_as_bytes_unencrypted_pem(self, backend, fmt):
         key = RSA_KEY_2048.private_key(backend)
