@@ -103,6 +103,15 @@ Custom X.509 Vectors
 * ``utf8_common_name.pem`` - An RSA 2048 bit self-signed CA certificate
   generated using OpenSSL that contains a UTF8String common name with the value
   "We heart UTF8!™".
+* ``dsa_sha1.pem`` - Contains a certificate request using 1024-bit DSA
+  parameters and SHA1 generated using OpenSSL.
+* ``rsa_md4.pem`` - Contains a certificate request using 2048 bit RSA and MD4 generated using OpenSSL.
+* ``rsa_sha1.pem`` - Contains a certificate request using 2048 bit RSA and
+  SHA1 generated using OpenSSL.
+* ``rsa_sha256.pem`` - Contains a certificate request using 2048 bit RSA and
+  SHA256 generated using OpenSSL.
+* ``ec_sha256.pem`` - Contains a certificate request using EC (``secp384r1``)
+  and SHA256 generated using OpenSSL.
 
 Hashes
 ~~~~~~
