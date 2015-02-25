@@ -6,7 +6,6 @@ Symmetric encryption
 
 .. module:: cryptography.hazmat.primitives.ciphers
 
-
 Symmetric encryption is a way to `encrypt`_ or hide the contents of material
 where the sender and receiver both use the same secret key. Note that symmetric
 encryption is **not** sufficient for most applications because it only
@@ -475,7 +474,7 @@ Interfaces
     ``AEADEncryptionContext`` provider. ``AEADCipherContext`` contains an
     additional method :meth:`authenticate_additional_data` for adding
     additional authenticated but unencrypted data (see note below). You should
-    call this before calls to ``update``. When you are done call `finalize``
+    call this before calls to ``update``. When you are done call ``finalize``
     to finish the operation.
 
     .. note::
@@ -555,7 +554,7 @@ Interfaces used by the symmetric cipher modes described in
 
     .. method:: validate_for_algorithm(algorithm)
 
-        :param CipherAlgorithm algorithm:
+        :param cryptography.hazmat.primitives.ciphers.CipherAlgorithm algorithm:
 
         Checks that the combination of this mode with the provided algorithm
         meets any necessary invariants. This should raise an exception if they
