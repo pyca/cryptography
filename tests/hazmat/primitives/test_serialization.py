@@ -16,12 +16,7 @@ from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DSABackend, EllipticCurveBackend,
     PEMSerializationBackend, RSABackend
 )
-from cryptography.hazmat.primitives import interfaces
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.asymmetric.dsa import (
-    DSAParameterNumbers, DSAPublicNumbers
-)
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.serialization import (
     load_der_private_key, load_der_public_key, load_pem_private_key,
     load_pem_public_key, load_ssh_public_key
@@ -57,8 +52,8 @@ class TestDERSerialization(object):
             mode="rb"
         )
         assert key
-        assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+        assert isinstance(key, rsa.RSAPrivateKey)
+        if isinstance(key, rsa.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
@@ -80,8 +75,8 @@ class TestDERSerialization(object):
             mode="rb"
         )
         assert key
-        assert isinstance(key, interfaces.DSAPrivateKey)
-        if isinstance(key, interfaces.DSAPrivateKeyWithNumbers):
+        assert isinstance(key, dsa.DSAPrivateKey)
+        if isinstance(key, dsa.DSAPrivateKeyWithNumbers):
             _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -103,7 +98,7 @@ class TestDERSerialization(object):
         )
 
         assert key
-        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
@@ -250,8 +245,8 @@ class TestDERSerialization(object):
             mode="rb"
         )
         assert key
-        assert isinstance(key, interfaces.RSAPublicKey)
-        if isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+        assert isinstance(key, rsa.RSAPublicKey)
+        if isinstance(key, rsa.RSAPublicKeyWithNumbers):
             numbers = key.public_numbers()
             assert numbers.e == 65537
 
@@ -278,7 +273,7 @@ class TestDERSerialization(object):
             mode="rb"
         )
         assert key
-        assert isinstance(key, interfaces.DSAPublicKey)
+        assert isinstance(key, dsa.DSAPublicKey)
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_ec_public_key(self, backend):
@@ -293,7 +288,7 @@ class TestDERSerialization(object):
             mode="rb"
         )
         assert key
-        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+        assert isinstance(key, ec.EllipticCurvePublicKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
@@ -333,8 +328,8 @@ class TestPEMSerialization(object):
         )
 
         assert key
-        assert isinstance(key, interfaces.RSAPrivateKey)
-        if isinstance(key, interfaces.RSAPrivateKeyWithNumbers):
+        assert isinstance(key, rsa.RSAPrivateKey)
+        if isinstance(key, rsa.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -355,8 +350,8 @@ class TestPEMSerialization(object):
             )
         )
         assert key
-        assert isinstance(key, interfaces.DSAPrivateKey)
-        if isinstance(key, interfaces.DSAPrivateKeyWithNumbers):
+        assert isinstance(key, dsa.DSAPrivateKey)
+        if isinstance(key, dsa.DSAPrivateKeyWithNumbers):
             _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -379,7 +374,7 @@ class TestPEMSerialization(object):
         )
 
         assert key
-        assert isinstance(key, interfaces.EllipticCurvePrivateKey)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
@@ -399,8 +394,8 @@ class TestPEMSerialization(object):
             )
         )
         assert key
-        assert isinstance(key, interfaces.RSAPublicKey)
-        if isinstance(key, interfaces.RSAPublicKeyWithNumbers):
+        assert isinstance(key, rsa.RSAPublicKey)
+        if isinstance(key, rsa.RSAPublicKeyWithNumbers):
             numbers = key.public_numbers()
             assert numbers.e == 65537
 
@@ -421,7 +416,7 @@ class TestPEMSerialization(object):
             )
         )
         assert key
-        assert isinstance(key, interfaces.DSAPublicKey)
+        assert isinstance(key, dsa.DSAPublicKey)
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_load_ec_public_key(self, backend):
@@ -435,7 +430,7 @@ class TestPEMSerialization(object):
             )
         )
         assert key
-        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+        assert isinstance(key, ec.EllipticCurvePublicKey)
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
@@ -762,12 +757,12 @@ class TestPEMSerialization(object):
             )
         )
         assert key
-        assert isinstance(key, interfaces.DSAPrivateKey)
+        assert isinstance(key, dsa.DSAPrivateKey)
 
         params = key.parameters()
-        assert isinstance(params, interfaces.DSAParameters)
+        assert isinstance(params, dsa.DSAParameters)
 
-        if isinstance(params, interfaces.DSAParametersWithNumbers):
+        if isinstance(params, dsa.DSAParametersWithNumbers):
             num = key.private_numbers()
             pub = num.public_numbers
             parameter_numbers = pub.parameter_numbers
@@ -917,7 +912,7 @@ class TestRSASSHSerialization(object):
         key = load_ssh_public_key(ssh_key, backend)
 
         assert key is not None
-        assert isinstance(key, interfaces.RSAPublicKey)
+        assert isinstance(key, rsa.RSAPublicKey)
 
         numbers = key.public_numbers()
 
@@ -934,7 +929,7 @@ class TestRSASSHSerialization(object):
             '46F8706AB88DDADBD9E8204D48B87789081E074024C8996783B31'
             '7076A98ABF0A2D8550EAF2097D8CCC7BE76EF', 16)
 
-        expected = RSAPublicNumbers(expected_e, expected_n)
+        expected = rsa.RSAPublicNumbers(expected_e, expected_n)
 
         assert numbers == expected
 
@@ -1017,7 +1012,7 @@ class TestDSSSSHSerialization(object):
         key = load_ssh_public_key(ssh_key, backend)
 
         assert key is not None
-        assert isinstance(key, interfaces.DSAPublicKey)
+        assert isinstance(key, dsa.DSAPublicKey)
 
         numbers = key.public_numbers()
 
@@ -1043,9 +1038,9 @@ class TestDSSSSHSerialization(object):
             "debb5982fc94d6a8c291f758feae63ad769a5621947221522a2dc31d18ede6f"
             "b656", 16
         )
-        expected = DSAPublicNumbers(
+        expected = dsa.DSAPublicNumbers(
             expected_y,
-            DSAParameterNumbers(expected_p, expected_q, expected_g)
+            dsa.DSAParameterNumbers(expected_p, expected_q, expected_g)
         )
 
         assert numbers == expected
@@ -1062,7 +1057,7 @@ class TestECDSASSHSerialization(object):
             b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
         )
         key = load_ssh_public_key(ssh_key, backend)
-        assert isinstance(key, interfaces.EllipticCurvePublicKey)
+        assert isinstance(key, ec.EllipticCurvePublicKey)
 
         expected_x = int(
             "44196257377740326295529888716212621920056478823906609851236662550"
