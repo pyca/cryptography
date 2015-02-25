@@ -16,7 +16,7 @@ from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import RSABackend
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers
@@ -91,7 +91,7 @@ class TestRSA(object):
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
-        if isinstance(skey, interfaces.RSAPrivateKeyWithNumbers):
+        if isinstance(skey, rsa.RSAPrivateKeyWithNumbers):
             _check_rsa_private_numbers(skey.private_numbers())
             pkey = skey.public_key()
             assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)

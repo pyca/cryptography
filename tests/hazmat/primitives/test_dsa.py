@@ -10,7 +10,7 @@ import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.backends.interfaces import DSABackend
-from cryptography.hazmat.primitives import hashes, interfaces
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_rfc6979_signature
@@ -30,7 +30,7 @@ from ...utils import (
 class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
         parameters = dsa.generate_parameters(1024, backend)
-        assert isinstance(parameters, interfaces.DSAParameters)
+        assert isinstance(parameters, dsa.DSAParameters)
 
     def test_generate_invalid_dsa_parameters(self, backend):
         with pytest.raises(ValueError):
@@ -51,7 +51,7 @@ class TestDSA(object):
             g=vector['g']
         ).parameters(backend)
         skey = parameters.generate_private_key()
-        if isinstance(skey, interfaces.DSAPrivateKeyWithNumbers):
+        if isinstance(skey, dsa.DSAPrivateKeyWithNumbers):
             numbers = skey.private_numbers()
             skey_parameters = numbers.public_numbers.parameter_numbers
             pkey = skey.public_key()
@@ -74,7 +74,7 @@ class TestDSA(object):
     def test_generate_dsa_private_key_and_parameters(self, backend):
         skey = dsa.generate_private_key(1024, backend)
         assert skey
-        if isinstance(skey, interfaces.DSAPrivateKeyWithNumbers):
+        if isinstance(skey, dsa.DSAPrivateKeyWithNumbers):
             numbers = skey.private_numbers()
             skey_parameters = numbers.public_numbers.parameter_numbers
             assert numbers.public_numbers.y == pow(
