@@ -565,21 +565,21 @@ class _RSAPrivateKey(object):
             )
         )
 
-    def as_bytes(self, encoding, fmt, encryption_algorithm):
+    def as_bytes(self, encoding, format, encryption_algorithm):
         if not isinstance(encoding, Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        if not isinstance(fmt, Format):
+        if not isinstance(format, Format):
             raise TypeError("format must be an item from the Format enum")
 
         # This is a temporary check until we land DER serialization.
-        if encoding != Encoding.PEM:
+        if encoding is not Encoding.PEM:
             raise ValueError("Only PEM encoding is supported by this backend")
 
-        if fmt == Format.PKCS8:
+        if format is Format.PKCS8:
             write_bio = self._backend._lib.PEM_write_bio_PKCS8PrivateKey
             key = self._evp_pkey
-        elif fmt == Format.TraditionalOpenSSL:
+        elif format is Format.TraditionalOpenSSL:
             write_bio = self._backend._lib.PEM_write_bio_RSAPrivateKey
             key = self._rsa_cdata
 

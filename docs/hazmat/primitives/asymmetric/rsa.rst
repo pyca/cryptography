@@ -94,7 +94,7 @@ to serialize the key.
     >>> from cryptography.hazmat.primitives import serialization
     >>> pem = private_key.as_bytes(
     ...    encoding=serialization.Encoding.PEM,
-    ...    fmt=serialization.Format.PKCS8,
+    ...    format=serialization.Format.PKCS8,
     ...    encryption_algorithm=serialization.BestAvailableEncryption(b'mypassword')
     ... )
     >>> pem.splitlines()[0]
@@ -107,7 +107,7 @@ It is also possible to serialize without encryption using
 
     >>> pem = private_key.as_bytes(
     ...    encoding=serialization.Encoding.PEM,
-    ...    fmt=serialization.Format.TraditionalOpenSSL,
+    ...    format=serialization.Format.TraditionalOpenSSL,
     ...    encryption_algorithm=serialization.NoEncryption()
     ... )
     >>> pem.splitlines()[0]
@@ -534,14 +534,18 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
             instance.
 
-    .. method:: as_bytes(encoding, fmt, encryption_algorithm)
+    .. method:: as_bytes(encoding, format, encryption_algorithm)
 
-        Serialize the key to bytes.
+        Allows serialization of the key to bytes. Encoding (PEM or DER), format
+        (TraditionalOpenSSL or PKCS8) and encryption algorithm (such as
+        :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
+        or :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`)
+        are chosen to define the exact serialization.
 
         :param encoding: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
 
-        :param fmt: A value from the
+        :param format: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Format` enum.
 
         :param encryption_algorithm: An instance of an object conforming to the
