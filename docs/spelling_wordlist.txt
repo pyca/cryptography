@@ -14,6 +14,7 @@ crypto
 cryptographic
 cryptographically
 Debian
+Diffie
 decrypt
 decrypted
 decrypting
