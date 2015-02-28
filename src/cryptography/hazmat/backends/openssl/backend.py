@@ -1184,6 +1184,32 @@ class Backend(object):
         assert res == 1
         return self._read_mem_bio(bio)
 
+    def _public_key_bytes(self, encoding, format, pkcs1_write_func, evp_pkey,
+                          cdata):
+        if not isinstance(encoding, serialization.Encoding):
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        if not isinstance(format, serialization.PublicFormat):
+            raise TypeError(
+                "format must be an item from the PublicFormat enum"
+            )
+
+        # This is a temporary check until we land DER serialization.
+        if encoding is not serialization.Encoding.PEM:
+            raise ValueError("Only PEM encoding is supported by this backend")
+
+        if format is serialization.PublicFormat.SubjectPublicKeyInfo:
+            write_bio = self._lib.PEM_write_bio_PUBKEY
+            key = evp_pkey
+        elif format is serialization.PublicFormat.PKCS1:
+            write_bio = pkcs1_write_func
+            key = cdata
+
+        bio = self._create_mem_bio()
+        res = write_bio(bio, key)
+        assert res == 1
+        return self._read_mem_bio(bio)
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):

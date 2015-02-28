@@ -309,6 +309,25 @@ Serialization Formats
         encryption. Choose this unless you have explicit legacy compatibility
         requirements.
 
+.. class:: PublicFormat
+
+    .. versionadded:: 0.8
+
+    An enumeration for public key formats. Used with the ``public_bytes``
+    method available on
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`.
+
+    .. attribute:: SubjectPublicKeyInfo
+
+        This is the typical public key format. It consists of an algorithm
+        identifier and the public key as a bit string. Choose this unless
+        you have specific needs.
+
+    .. attribute:: PKCS1
+
+        Just the public key elements (without the algorithm identifier). This
+        format is occasionally used by various systems.
+
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -179,6 +179,11 @@ class PrivateFormat(Enum):
     TraditionalOpenSSL = "TraditionalOpenSSL"
 
 
+class PublicFormat(Enum):
+    SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
+    PKCS1 = "Raw PKCS#1"
+
+
 @six.add_metaclass(abc.ABCMeta)
 class KeySerializationEncryption(object):
     pass
