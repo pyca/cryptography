@@ -1798,6 +1798,23 @@ class TestRSAPEMWriter(object):
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    def test_as_bytes_traditional_openssl_unencrypted_pem(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "testrsa.pem"
+            ),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        serialized = key.as_bytes(
+            serialization.Encoding.PEM,
+            serialization.Format.TraditionalOpenSSL,
+            serialization.NoEncryption()
+        )
+        assert serialized == key_bytes
+
     def test_as_bytes_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend)
         _skip_if_no_serialization(key, backend)
