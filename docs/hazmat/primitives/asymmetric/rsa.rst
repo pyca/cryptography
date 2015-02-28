@@ -536,8 +536,14 @@ Key interfaces
 
     .. method:: as_bytes(encoding, format, encryption_algorithm)
 
-        Allows serialization of the key to bytes. Encoding (PEM or DER), format
-        (TraditionalOpenSSL or PKCS8) and encryption algorithm (such as
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`),
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.Format.TraditionalOpenSSL`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.Format.PKCS8`) and
+        encryption algorithm (such as
         :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
         or :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`)
         are chosen to define the exact serialization.

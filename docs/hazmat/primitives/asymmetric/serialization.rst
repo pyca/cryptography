@@ -75,7 +75,7 @@ methods.
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> from cryptography.hazmat.primitives.asymmetric import dsa, rsa
         >>> from cryptography.hazmat.primitives.serialization import load_pem_private_key
         >>> key = load_pem_private_key(pem_data, password=None, backend=default_backend())
         >>> if isinstance(key, rsa.RSAPrivateKey):
