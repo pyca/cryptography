@@ -80,7 +80,7 @@ methods.
         >>> key = load_pem_private_key(pem_data, password=None, backend=default_backend())
         >>> if isinstance(key, rsa.RSAPrivateKey):
         ...     signature = sign_with_rsa_key(key, message)
-        ... elif isinstance(key, interfaces.DSAPrivateKey):
+        ... elif isinstance(key, dsa.DSAPrivateKey):
         ...     signature = sign_with_dsa_key(key, message)
         ... else:
         ...     raise TypeError
@@ -294,9 +294,14 @@ Serialization Formats
 
     .. attribute:: TraditionalOpenSSL
 
-        Frequently known as PKCS#1 format.
+        Frequently known as PKCS#1 format. Still a widely used format, but
+        generally considered legacy.
 
     .. attribute:: PKCS8
+
+        A more modern format for serializing keys which allows for better
+        encryption. Choose this unless you have explicit legacy compatibility
+        requirements.
 
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~

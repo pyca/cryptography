@@ -83,7 +83,7 @@ There is also support for :func:`loading public keys in the SSH format
 Key serialization
 ~~~~~~~~~~~~~~~~~
 
-If you have a previously loaded or generated key that has the
+If you have a key that you've loaded or generated which implements the
 :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
 interface you can use
 :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.as_bytes`
