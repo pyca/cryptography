@@ -36,7 +36,7 @@ from cryptography.hazmat.backends.openssl.rsa import (
 )
 from cryptography.hazmat.backends.openssl.x509 import _Certificate
 from cryptography.hazmat.bindings.openssl.binding import Binding
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
@@ -1092,6 +1092,65 @@ class Backend(object):
             raise ValueError("Invalid EC key.")
 
         return ctx
+
+    def _private_key_bytes(self, encoding, format, encryption_algorithm,
+                           traditional_write_func, evp_pkey, cdata):
+        if not isinstance(encoding, serialization.Encoding):
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        if not isinstance(format, serialization.Format):
+            raise TypeError("format must be an item from the Format enum")
+
+        # This is a temporary check until we land DER serialization.
+        if encoding is not serialization.Encoding.PEM:
+            raise ValueError("Only PEM encoding is supported by this backend")
+
+        if format is serialization.Format.PKCS8:
+            write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
+            key = evp_pkey
+        elif format is serialization.Format.TraditionalOpenSSL:
+            write_bio = traditional_write_func
+            key = cdata
+
+        if not isinstance(encryption_algorithm,
+                          serialization.KeySerializationEncryption):
+            raise TypeError(
+                "Encryption algorithm must be a KeySerializationEncryption "
+                "instance"
+            )
+
+        if isinstance(encryption_algorithm, serialization.NoEncryption):
+            password = b""
+            passlen = 0
+            evp_cipher = self._ffi.NULL
+        elif isinstance(encryption_algorithm,
+                        serialization.BestAvailableEncryption):
+            # This is a curated value that we will update over time.
+            evp_cipher = self._lib.EVP_get_cipherbyname(
+                b"aes-256-cbc"
+            )
+            password = encryption_algorithm.password
+            passlen = len(password)
+            if passlen > 1023:
+                raise ValueError(
+                    "Passwords longer than 1023 bytes are not supported by "
+                    "this backend"
+                )
+        else:
+            raise ValueError("Unsupported encryption type")
+
+        bio = self._create_mem_bio()
+        res = write_bio(
+            bio,
+            key,
+            evp_cipher,
+            password,
+            passlen,
+            self._ffi.NULL,
+            self._ffi.NULL
+        )
+        assert res == 1
+        return self._read_mem_bio(bio)
 
 
 class GetCipherByName(object):
