@@ -565,7 +565,7 @@ class _RSAPrivateKey(object):
             )
         )
 
-    def as_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(self, encoding, format, encryption_algorithm):
         if not isinstance(encoding, Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 

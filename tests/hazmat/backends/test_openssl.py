@@ -502,7 +502,7 @@ class TestRSAPEMSerialization(object):
         password = b"x" * 1024
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(ValueError):
-            key.as_bytes(
+            key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.Format.PKCS8,
                 serialization.BestAvailableEncryption(password)
@@ -511,7 +511,7 @@ class TestRSAPEMSerialization(object):
     def test_unsupported_key_encoding(self):
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(ValueError):
-            key.as_bytes(
+            key.private_bytes(
                 serialization.Encoding.DER,
                 serialization.Format.PKCS8,
                 serialization.NoEncryption()

@@ -50,7 +50,7 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey):
         """
 
     @abc.abstractmethod
-    def as_bytes(self, encoding, format, encryption_algorithm):
+    def private_bytes(self, encoding, format, encryption_algorithm):
         """
         Returns the key serialized as bytes.
         """
