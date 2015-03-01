@@ -289,11 +289,12 @@ RSAPrivateKey = utils.deprecated(
 )
 
 RSAPrivateKeyWithNumbers = utils.deprecated(
-    rsa.RSAPrivateKeyWithNumbers,
+    rsa.RSAPrivateKeyWithSerialization,
     __name__,
     (
         "The RSAPrivateKeyWithNumbers interface has moved to the "
-        "cryptography.hazmat.primitives.asymmetric.rsa module"
+        "cryptography.hazmat.primitives.asymmetric.rsa module and has been "
+        "renamed RSAPrivateKeyWithSerialization"
     ),
     utils.DeprecatedIn08
 )

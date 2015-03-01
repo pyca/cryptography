@@ -4,11 +4,14 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 import base64
 import struct
+from enum import Enum
 
 import six
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
@@ -164,3 +167,32 @@ else:
             data = data[4:]
 
         return result
+
+
+class Encoding(Enum):
+    PEM = "PEM"
+    DER = "DER"
+
+
+class Format(Enum):
+    PKCS8 = "PKCS8"
+    TraditionalOpenSSL = "TraditionalOpenSSL"
+
+
+@six.add_metaclass(abc.ABCMeta)
+class KeySerializationEncryption(object):
+    pass
+
+
+@utils.register_interface(KeySerializationEncryption)
+class BestAvailableEncryption(object):
+    def __init__(self, password):
+        if not isinstance(password, bytes) or len(password) == 0:
+            raise ValueError("Password must be 1 or more bytes.")
+
+        self.password = password
+
+
+@utils.register_interface(KeySerializationEncryption)
+class NoEncryption(object):
+    pass

@@ -45,6 +45,8 @@ pseudorandom
 pyOpenSSL
 Schneier
 scrypt
+Serializers
+serializer
 Solaris
 Tanja
 testability

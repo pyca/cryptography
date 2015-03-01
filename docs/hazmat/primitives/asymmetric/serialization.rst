@@ -3,7 +3,7 @@
 Key Serialization
 =================
 
-.. currentmodule:: cryptography.hazmat.primitives.serialization
+.. module:: cryptography.hazmat.primitives.serialization
 
 .. testsetup::
 
@@ -282,3 +282,67 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
+
+Serialization Formats
+~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: Format
+
+    .. versionadded:: 0.8
+
+    An enumeration for key formats. Used with
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+
+    .. attribute:: TraditionalOpenSSL
+
+        Frequently known as PKCS#1 format. Still a widely used format, but
+        generally considered legacy.
+
+    .. attribute:: PKCS8
+
+        A more modern format for serializing keys which allows for better
+        encryption. Choose this unless you have explicit legacy compatibility
+        requirements.
+
+Serialization Encodings
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: Encoding
+
+    .. versionadded:: 0.8
+
+    An enumeration for encoding types. Used with
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+
+    .. attribute:: PEM
+
+        For PEM format. This is a base64 format with delimiters.
+
+    .. attribute:: DER
+
+        For DER format. This is a binary format.
+
+
+Serialization Encryption Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: KeySerializationEncryption
+
+    Objects with this interface are usable as encryption types with methods
+    like
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+    All other classes in this section represent the available choices for
+    encryption and have this interface. They are used with
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+
+.. class:: BestAvailableEncryption(password)
+
+    Encrypt using the best available encryption for a given key's backend.
+    This is a curated encryption choice and the algorithm may change over
+    time.
+
+    :param bytes password: The password to use for encryption.
+
+.. class:: NoEncryption
+
+    Do not encrypt.

@@ -15,8 +15,10 @@ from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
-from cryptography.hazmat.backends.interfaces import RSABackend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends.interfaces import (
+    PEMSerializationBackend, RSABackend
+)
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers
@@ -44,6 +46,11 @@ class DummyPadding(object):
 
 class DummyMGF(object):
     _salt_length = 0
+
+
+@utils.register_interface(serialization.KeySerializationEncryption)
+class DummyKeyEncryption(object):
+    pass
 
 
 def _flatten_pkcs1_examples(vectors):
@@ -76,6 +83,18 @@ def test_modular_inverse():
         "772f8b2b41f3e56d88b1e096cdd293eba4eae1e82db815e0fadea0c4ec971bc6fd875"
         "c20e67e48c31a611e98d32c6213ae4c4d7b53023b2f80c538", 16
     )
+
+
+def _skip_if_no_serialization(key, backend):
+    if not isinstance(key, rsa.RSAPrivateKeyWithSerialization):
+        pytest.skip(
+            "{0} does not support RSA key serialization".format(backend)
+        )
+
+
+def test_skip_if_no_serialization():
+    with pytest.raises(pytest.skip.Exception):
+        _skip_if_no_serialization("notakeywithserialization", "backend")
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -1725,3 +1744,113 @@ class TestRSAPrimeFactorRecovery(object):
     def test_invalid_recover_prime_factors(self):
         with pytest.raises(ValueError):
             rsa.rsa_recover_prime_factors(34, 3, 7)
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+class TestRSAPEMWriter(object):
+    @pytest.mark.parametrize(
+        ("fmt", "password"),
+        itertools.product(
+            [
+                serialization.Format.TraditionalOpenSSL,
+                serialization.Format.PKCS8
+            ],
+            [
+                b"s",
+                b"longerpassword",
+                b"!*$&(@#$*&($T@%_somesymbols",
+                b"\x01" * 1000,
+            ]
+        )
+    )
+    def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.private_bytes(
+            serialization.Encoding.PEM,
+            fmt,
+            serialization.BestAvailableEncryption(password)
+        )
+        loaded_key = serialization.load_pem_private_key(
+            serialized, password, backend
+        )
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    @pytest.mark.parametrize(
+        "fmt",
+        [serialization.Format.TraditionalOpenSSL, serialization.Format.PKCS8],
+    )
+    def test_private_bytes_unencrypted_pem(self, backend, fmt):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.private_bytes(
+            serialization.Encoding.PEM,
+            fmt,
+            serialization.NoEncryption()
+        )
+        loaded_key = serialization.load_pem_private_key(
+            serialized, None, backend
+        )
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    def test_private_bytes_traditional_openssl_unencrypted_pem(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "testrsa.pem"
+            ),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        serialized = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.Format.TraditionalOpenSSL,
+            serialization.NoEncryption()
+        )
+        assert serialized == key_bytes
+
+    def test_private_bytes_invalid_encoding(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                "notencoding",
+                serialization.Format.PKCS8,
+                serialization.NoEncryption()
+            )
+
+    def test_private_bytes_invalid_format(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                "invalidformat",
+                serialization.NoEncryption()
+            )
+
+    def test_private_bytes_invalid_encryption_algorithm(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.Format.TraditionalOpenSSL,
+                "notanencalg"
+            )
+
+    def test_private_bytes_unsupported_encryption_type(self, backend):
+        key = RSA_KEY_2048.private_key(backend)
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.Format.TraditionalOpenSSL,
+                DummyKeyEncryption()
+            )

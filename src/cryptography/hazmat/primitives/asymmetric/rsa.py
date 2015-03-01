@@ -42,12 +42,29 @@ class RSAPrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class RSAPrivateKeyWithNumbers(RSAPrivateKey):
+class RSAPrivateKeyWithSerialization(RSAPrivateKey):
     @abc.abstractmethod
     def private_numbers(self):
         """
         Returns an RSAPrivateNumbers.
         """
+
+    @abc.abstractmethod
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        """
+        Returns the key serialized as bytes.
+        """
+
+
+RSAPrivateKeyWithNumbers = utils.deprecated(
+    RSAPrivateKeyWithSerialization,
+    __name__,
+    (
+        "The RSAPrivateKeyWithNumbers interface has been renamed to "
+        "RSAPrivateKeyWithSerialization"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)
