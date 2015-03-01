@@ -290,8 +290,11 @@ Serialization Formats
 
     .. versionadded:: 0.8
 
-    An enumeration for private key formats. Used with
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+    An enumeration for private key formats. Used with the ``private_bytes``
+    method available on
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+    and
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
 
     .. attribute:: TraditionalOpenSSL
 
@@ -311,8 +314,11 @@ Serialization Encodings
 
     .. versionadded:: 0.8
 
-    An enumeration for encoding types. Used with
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+    An enumeration for encoding types. Used with the ``private_bytes`` method
+    available on
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+    and
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
 
     .. attribute:: PEM
 
@@ -329,8 +335,10 @@ Serialization Encryption Types
 .. class:: KeySerializationEncryption
 
     Objects with this interface are usable as encryption types with methods
-    like
-    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
+    like ``private_bytes`` available on
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+    and
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
     All other classes in this section represent the available choices for
     encryption and have this interface. They are used with
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.

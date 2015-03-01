@@ -148,7 +148,7 @@ class _ECDSAVerificationContext(object):
         return True
 
 
-@utils.register_interface(ec.EllipticCurvePrivateKeyWithNumbers)
+@utils.register_interface(ec.EllipticCurvePrivateKeyWithSerialization)
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata):
         self._backend = backend
@@ -198,6 +198,23 @@ class _EllipticCurvePrivateKey(object):
         return ec.EllipticCurvePrivateNumbers(
             private_value=private_value,
             public_numbers=self.public_key().public_numbers()
+        )
+
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = self._backend._ffi.gc(
+            evp_pkey, self._backend._lib.EVP_PKEY_free
+        )
+        res = self._backend._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, self._ec_key)
+        assert res == 1
+        return self._backend._private_key_bytes(
+            encoding,
+            format,
+            encryption_algorithm,
+            self._backend._lib.PEM_write_bio_ECPrivateKey,
+            evp_pkey,
+            self._ec_key
         )
 
 
