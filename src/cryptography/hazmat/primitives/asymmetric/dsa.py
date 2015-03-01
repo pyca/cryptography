@@ -57,12 +57,29 @@ class DSAPrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DSAPrivateKeyWithNumbers(DSAPrivateKey):
+class DSAPrivateKeyWithSerialization(DSAPrivateKey):
     @abc.abstractmethod
     def private_numbers(self):
         """
         Returns a DSAPrivateNumbers.
         """
+
+    @abc.abstractmethod
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        """
+        Returns the key serialized as bytes.
+        """
+
+
+DSAPrivateKeyWithNumbers = utils.deprecated(
+    DSAPrivateKeyWithSerialization,
+    __name__,
+    (
+        "The DSAPrivateKeyWithNumbers interface has been renamed to "
+        "DSAPrivateKeyWithSerialization"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)

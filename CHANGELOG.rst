@@ -94,6 +94,14 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
+  and deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithNumbers`.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization.private_bytes`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~
