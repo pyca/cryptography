@@ -387,5 +387,9 @@ class MACContext(object):
         signature.
         """
 
-# DeprecatedIn07
-CMACContext = MACContext
+CMACContext = utils.deprecated(
+    MACContext,
+    __name__,
+    "The CMACContext interface has been renamed to MACContext",
+    utils.DeprecatedIn07
+)
