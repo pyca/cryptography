@@ -1093,8 +1093,8 @@ class Backend(object):
 
         return ctx
 
-    def _private_bytes(self, encoding, format, encryption_algorithm,
-                       pem_write_func, evp_pkey, cdata):
+    def _private_key_bytes(self, encoding, format, encryption_algorithm,
+                           traditional_write_func, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
@@ -1109,7 +1109,7 @@ class Backend(object):
             write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
             key = evp_pkey
         elif format is serialization.Format.TraditionalOpenSSL:
-            write_bio = pem_write_func
+            write_bio = traditional_write_func
             key = cdata
 
         if not isinstance(encryption_algorithm,

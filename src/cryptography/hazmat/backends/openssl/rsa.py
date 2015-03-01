@@ -562,7 +562,7 @@ class _RSAPrivateKey(object):
         )
 
     def private_bytes(self, encoding, format, encryption_algorithm):
-        return self._backend._private_bytes(
+        return self._backend._private_key_bytes(
             encoding,
             format,
             encryption_algorithm,
