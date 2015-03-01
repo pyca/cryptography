@@ -418,6 +418,7 @@ class TestECSerialization(object):
         )
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "ec_private_key.pem"),
@@ -442,6 +443,7 @@ class TestECSerialization(object):
         [serialization.Format.TraditionalOpenSSL, serialization.Format.PKCS8],
     )
     def test_private_bytes_unencrypted_pem(self, backend, fmt):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "ec_private_key.pem"),
@@ -462,6 +464,7 @@ class TestECSerialization(object):
         assert loaded_priv_num == priv_num
 
     def test_private_bytes_traditional_openssl_unencrypted_pem(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_private_key.pem"),
@@ -476,6 +479,7 @@ class TestECSerialization(object):
         assert serialized == key_bytes
 
     def test_private_bytes_invalid_encoding(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "ec_private_key.pem"),
@@ -492,6 +496,7 @@ class TestECSerialization(object):
             )
 
     def test_private_bytes_invalid_format(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "ec_private_key.pem"),
@@ -508,6 +513,7 @@ class TestECSerialization(object):
             )
 
     def test_private_bytes_invalid_encryption_algorithm(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "ec_private_key.pem"),
@@ -524,6 +530,7 @@ class TestECSerialization(object):
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PKCS8", "ec_private_key.pem"),
