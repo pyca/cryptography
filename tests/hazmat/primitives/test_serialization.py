@@ -233,6 +233,7 @@ class TestDERSerialization(object):
                 "asymmetric", "DER_Serialization", "unenc-rsa-pkcs8.pub.der"),
             os.path.join(
                 "asymmetric", "DER_Serialization", "rsa_public_key.der"),
+            os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.der"),
         ]
     )
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -384,6 +385,7 @@ class TestPEMSerialization(object):
             os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
             os.path.join(
                 "asymmetric", "PEM_Serialization", "rsa_public_key.pem"),
+            os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
         ]
     )
     def test_load_pem_rsa_public_key(self, key_file, backend):
@@ -537,7 +539,7 @@ class TestPEMSerialization(object):
                 )
             )
 
-    def test_wrong_format(self, backend):
+    def test_wrong_private_format(self, backend):
         key_data = b"---- NOT A KEY ----\n"
 
         with pytest.raises(ValueError):
@@ -549,6 +551,12 @@ class TestPEMSerialization(object):
             load_pem_private_key(
                 key_data, b"this password will not be used", backend
             )
+
+    def test_wrong_public_format(self, backend):
+        key_data = b"---- NOT A KEY ----\n"
+
+        with pytest.raises(ValueError):
+            load_pem_public_key(key_data, backend)
 
     def test_corrupt_traditional_format(self, backend):
         # privkey.pem with a bunch of data missing.
