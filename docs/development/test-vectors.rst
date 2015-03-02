@@ -221,7 +221,7 @@ header format (substituting the correct information):
 .. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
 .. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
-.. _`OpenSSL example key`: http://git.openssl.org/gitweb/?p=openssl.git;a=blob;f=test/testrsa.pem;h=aad21067a8f7cb93a52a511eb9162fd83be39135;hb=66e8211c0b1347970096e04b18aa52567c325200
+.. _`OpenSSL example key`: https://github.com/openssl/openssl/blob/d02b48c63a58ea4367a0e905979f140b7d090f86/test/testrsa.pem
 .. _`GnuTLS key parsing tests`: https://gitorious.org/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
 .. _`enc-rsa-pkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/encpkcs8.pem
 .. _`enc2-rsa-pkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/enc2pkcs8.pem
