@@ -72,9 +72,23 @@ int PEM_write_bio_PUBKEY(BIO *, EVP_PKEY *);
 """
 
 MACROS = """
+int PEM_write_bio_ECPrivateKey(BIO *, EC_KEY *, const EVP_CIPHER *,
+                               unsigned char *, int, pem_password_cb *,
+                               void *);
 """
 
 CUSTOMIZATIONS = """
+// Cryptography_HAS_EC is provided by ec.py so we don't need to define it here
+#ifdef OPENSSL_NO_EC
+int (*PEM_write_bio_ECPrivateKey)(BIO *, EC_KEY *, const EVP_CIPHER *,
+                                  unsigned char *, int, pem_password_cb *,
+                                  void *) = NULL;
+#endif
+
 """
 
-CONDITIONAL_NAMES = {}
+CONDITIONAL_NAMES = {
+    "Cryptography_HAS_EC": [
+        "PEM_write_bio_ECPrivateKey"
+    ]
+}

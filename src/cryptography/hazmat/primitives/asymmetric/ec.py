@@ -57,12 +57,29 @@ class EllipticCurvePrivateKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePrivateKeyWithNumbers(EllipticCurvePrivateKey):
+class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
     @abc.abstractmethod
     def private_numbers(self):
         """
         Returns an EllipticCurvePrivateNumbers.
         """
+
+    @abc.abstractmethod
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        """
+        Returns the key serialized as bytes.
+        """
+
+
+EllipticCurvePrivateKeyWithNumbers = utils.deprecated(
+    EllipticCurvePrivateKeyWithSerialization,
+    __name__,
+    (
+        "The EllipticCurvePrivateKeyWithNumbers interface has been renamed to "
+        "EllipticCurvePrivateKeyWithSerialization"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 @six.add_metaclass(abc.ABCMeta)
