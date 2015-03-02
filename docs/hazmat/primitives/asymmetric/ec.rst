@@ -344,10 +344,10 @@ Key Interfaces
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`),
         format (
-        :attr:`~cryptography.hazmat.primitives.serialization.Format.TraditionalOpenSSL`
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.TraditionalOpenSSL`
         or
-        :attr:`~cryptography.hazmat.primitives.serialization.Format.PKCS8`) and
-        encryption algorithm (such as
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`)
+        and encryption algorithm (such as
         :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
         or :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`)
         are chosen to define the exact serialization.
@@ -356,7 +356,7 @@ Key Interfaces
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
 
         :param format: A value from the
-            :class:`~cryptography.hazmat.primitives.serialization.Format` enum.
+            :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat` enum.
 
         :param encryption_algorithm: An instance of an object conforming to the
             :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
