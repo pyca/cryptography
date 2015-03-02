@@ -1098,17 +1098,19 @@ class Backend(object):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        if not isinstance(format, serialization.Format):
-            raise TypeError("format must be an item from the Format enum")
+        if not isinstance(format, serialization.PrivateFormat):
+            raise TypeError(
+                "format must be an item from the PrivateFormat enum"
+            )
 
         # This is a temporary check until we land DER serialization.
         if encoding is not serialization.Encoding.PEM:
             raise ValueError("Only PEM encoding is supported by this backend")
 
-        if format is serialization.Format.PKCS8:
+        if format is serialization.PrivateFormat.PKCS8:
             write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
             key = evp_pkey
-        elif format is serialization.Format.TraditionalOpenSSL:
+        elif format is serialization.PrivateFormat.TraditionalOpenSSL:
             write_bio = traditional_write_func
             key = cdata
 

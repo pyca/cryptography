@@ -504,7 +504,7 @@ class TestRSAPEMSerialization(object):
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                serialization.Format.PKCS8,
+                serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password)
             )
 
@@ -513,6 +513,6 @@ class TestRSAPEMSerialization(object):
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.DER,
-                serialization.Format.PKCS8,
+                serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption()
             )

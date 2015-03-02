@@ -1753,8 +1753,8 @@ class TestRSAPEMWriter(object):
         ("fmt", "password"),
         itertools.product(
             [
-                serialization.Format.TraditionalOpenSSL,
-                serialization.Format.PKCS8
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.PrivateFormat.PKCS8
             ],
             [
                 b"s",
@@ -1781,7 +1781,10 @@ class TestRSAPEMWriter(object):
 
     @pytest.mark.parametrize(
         "fmt",
-        [serialization.Format.TraditionalOpenSSL, serialization.Format.PKCS8],
+        [
+            serialization.PrivateFormat.TraditionalOpenSSL,
+            serialization.PrivateFormat.PKCS8
+        ],
     )
     def test_private_bytes_unencrypted_pem(self, backend, fmt):
         key = RSA_KEY_2048.private_key(backend)
@@ -1810,7 +1813,7 @@ class TestRSAPEMWriter(object):
         key = serialization.load_pem_private_key(key_bytes, None, backend)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
-            serialization.Format.TraditionalOpenSSL,
+            serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
         assert serialized == key_bytes
@@ -1821,7 +1824,7 @@ class TestRSAPEMWriter(object):
         with pytest.raises(TypeError):
             key.private_bytes(
                 "notencoding",
-                serialization.Format.PKCS8,
+                serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption()
             )
 
@@ -1841,7 +1844,7 @@ class TestRSAPEMWriter(object):
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                serialization.Format.TraditionalOpenSSL,
+                serialization.PrivateFormat.TraditionalOpenSSL,
                 "notanencalg"
             )
 
@@ -1851,6 +1854,6 @@ class TestRSAPEMWriter(object):
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                serialization.Format.TraditionalOpenSSL,
+                serialization.PrivateFormat.TraditionalOpenSSL,
                 DummyKeyEncryption()
             )

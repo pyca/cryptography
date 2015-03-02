@@ -174,7 +174,7 @@ class Encoding(Enum):
     DER = "DER"
 
 
-class Format(Enum):
+class PrivateFormat(Enum):
     PKCS8 = "PKCS8"
     TraditionalOpenSSL = "TraditionalOpenSSL"
 

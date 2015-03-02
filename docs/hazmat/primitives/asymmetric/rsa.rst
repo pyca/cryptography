@@ -94,7 +94,7 @@ to serialize the key.
     >>> from cryptography.hazmat.primitives import serialization
     >>> pem = private_key.private_bytes(
     ...    encoding=serialization.Encoding.PEM,
-    ...    format=serialization.Format.PKCS8,
+    ...    format=serialization.PrivateFormat.PKCS8,
     ...    encryption_algorithm=serialization.BestAvailableEncryption(b'mypassword')
     ... )
     >>> pem.splitlines()[0]
@@ -107,7 +107,7 @@ It is also possible to serialize without encryption using
 
     >>> pem = private_key.private_bytes(
     ...    encoding=serialization.Encoding.PEM,
-    ...    format=serialization.Format.TraditionalOpenSSL,
+    ...    format=serialization.PrivateFormat.TraditionalOpenSSL,
     ...    encryption_algorithm=serialization.NoEncryption()
     ... )
     >>> pem.splitlines()[0]
@@ -540,10 +540,10 @@ Key interfaces
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`),
         format (
-        :attr:`~cryptography.hazmat.primitives.serialization.Format.TraditionalOpenSSL`
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.TraditionalOpenSSL`
         or
-        :attr:`~cryptography.hazmat.primitives.serialization.Format.PKCS8`) and
-        encryption algorithm (such as
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`)
+        and encryption algorithm (such as
         :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
         or :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`)
         are chosen to define the exact serialization.
@@ -552,7 +552,8 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
 
         :param format: A value from the
-            :class:`~cryptography.hazmat.primitives.serialization.Format` enum.
+            :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat`
+            enum.
 
         :param encryption_algorithm: An instance of an object conforming to the
             :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
