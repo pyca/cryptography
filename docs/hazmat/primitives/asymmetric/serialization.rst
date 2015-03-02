@@ -286,11 +286,11 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. class:: Format
+.. class:: PrivateFormat
 
     .. versionadded:: 0.8
 
-    An enumeration for key formats. Used with
+    An enumeration for private key formats. Used with
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`.
 
     .. attribute:: TraditionalOpenSSL
