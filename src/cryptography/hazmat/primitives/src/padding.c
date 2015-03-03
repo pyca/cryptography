@@ -5,14 +5,14 @@
 /* Returns the value of the input with the most-significant-bit copied to all
    of the bits. */
 static uint8_t Cryptography_DUPLICATE_MSB_TO_ALL(uint8_t a) {
-	    return (1 - (a >> (sizeof(uint8_t) * 8 - 1))) - 1;
+    return (1 - (a >> (sizeof(uint8_t) * 8 - 1))) - 1;
 }
 
 /* This returns 0xFF if a < b else 0x00, but does so in a constant time
    fashion */
 static uint8_t Cryptography_constant_time_lt(uint8_t a, uint8_t b) {
-	    a -= b;
-	        return Cryptography_DUPLICATE_MSB_TO_ALL(a);
+    a -= b;
+    return Cryptography_DUPLICATE_MSB_TO_ALL(a);
 }
 
 uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
