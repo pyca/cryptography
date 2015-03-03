@@ -16,4 +16,4 @@ Likelihood: unlikely, Remediation Cost: expensive to repair" and we do not
 consider this a high risk for most users.
 
 .. _`Memory wiping`:  http://blogs.msdn.com/b/oldnewthing/archive/2013/05/29/10421912.aspx
-.. _`CERT secure coding guidelines`: https://www.securecoding.cert.org/confluence/display/seccode/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
+.. _`CERT secure coding guidelines`: https://www.securecoding.cert.org/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
