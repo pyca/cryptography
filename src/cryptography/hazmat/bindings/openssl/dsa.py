@@ -48,6 +48,8 @@ int DSA_verify(int, const unsigned char *, int, const unsigned char *, int,
 MACROS = """
 int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
                                int *, unsigned long *, BN_GENCB *);
+// This is a macro in OpenSSL < 1.0.0
+DSA *DSAparams_dup(DSA *);
 """
 
 CUSTOMIZATIONS = """
