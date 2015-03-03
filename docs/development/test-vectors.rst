@@ -74,8 +74,9 @@ Custom Asymmetric Vectors
   `OpenSSL example key`_ for RSA.
 * DER conversions of `enc-rsa-pkcs8.pem`_, `enc2-rsa-pkcs8.pem`_, and
   `unenc-rsa-pkcs8.pem`_.
-* ``asymmetric/public/PKCS1/rsa.pub.pem`` is a PKCS1 conversion of the public
-  key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem``.
+* ``asymmetric/public/PKCS1/rsa.pub.pem`` and
+  ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
+  key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
 
 X.509
 ~~~~~
