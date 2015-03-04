@@ -33,6 +33,9 @@ Asymmetric ciphers
     `unenc-rsa-pkcs8.pem`_, `pkcs12_s2k_pem.c`_. The contents of
     `enc2-rsa-pkcs8.pem`_ was re-encrypted using a stronger PKCS#8 cipher.
   * `Botan's ECC private keys`_.
+* `asymmetric/public/PKCS1/dsa.pub.pem`_ is a PKCS1 DSA public key from the
+  Ruby test suite.
+
 
 Custom Asymmetric Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,7 +74,9 @@ Custom Asymmetric Vectors
   `OpenSSL example key`_ for RSA.
 * DER conversions of `enc-rsa-pkcs8.pem`_, `enc2-rsa-pkcs8.pem`_, and
   `unenc-rsa-pkcs8.pem`_.
-
+* ``asymmetric/public/PKCS1/rsa.pub.pem`` and
+  ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
+  key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
 
 X.509
 ~~~~~
@@ -237,3 +242,4 @@ header format (substituting the correct information):
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
+.. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
