@@ -602,9 +602,12 @@ class Backend(object):
         return _DSAParameters(self, ctx)
 
     def generate_dsa_private_key(self, parameters):
-        ctx = self._lib.DSAparams_dup(parameters._dsa_cdata)
+        ctx = self._lib.DSA_new()
         assert ctx != self._ffi.NULL
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
+        ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
+        ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
+        ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
 
         self._lib.DSA_generate_key(ctx)
 
