@@ -4,13 +4,17 @@
 
 from __future__ import absolute_import, division, print_function
 
+import itertools
 import os
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, InvalidSignature
-from cryptography.hazmat.backends.interfaces import DSABackend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends.interfaces import (
+    DSABackend, PEMSerializationBackend
+)
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_rfc6979_signature
@@ -24,6 +28,23 @@ from ...utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_vectors_from_file,
 )
+
+
+def _skip_if_no_serialization(key, backend):
+    if not isinstance(key, dsa.DSAPrivateKeyWithSerialization):
+        pytest.skip(
+            "{0} does not support DSA key serialization".format(backend)
+        )
+
+
+def test_skip_if_no_serialization():
+    with pytest.raises(pytest.skip.Exception):
+        _skip_if_no_serialization("notakeywithserialization", "backend")
+
+
+@utils.register_interface(serialization.KeySerializationEncryption)
+class DummyKeyEncryption(object):
+    pass
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
@@ -769,3 +790,149 @@ class TestDSANumberEquality(object):
             )
         )
         assert priv != object()
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+class TestDSASerialization(object):
+    @pytest.mark.parametrize(
+        ("fmt", "password"),
+        itertools.product(
+            [
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.PrivateFormat.PKCS8
+            ],
+            [
+                b"s",
+                b"longerpassword",
+                b"!*$&(@#$*&($T@%_somesymbols",
+                b"\x01" * 1000,
+            ]
+        )
+    )
+    def test_private_bytes_encrypted_pem(self, backend, fmt, password):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.private_bytes(
+            serialization.Encoding.PEM,
+            fmt,
+            serialization.BestAvailableEncryption(password)
+        )
+        loaded_key = serialization.load_pem_private_key(
+            serialized, password, backend
+        )
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    @pytest.mark.parametrize(
+        "fmt",
+        [
+            serialization.PrivateFormat.TraditionalOpenSSL,
+            serialization.PrivateFormat.PKCS8
+        ],
+    )
+    def test_private_bytes_unencrypted_pem(self, backend, fmt):
+        key_bytes = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "dsa.1024.pem"
+            ),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.private_bytes(
+            serialization.Encoding.PEM,
+            fmt,
+            serialization.NoEncryption()
+        )
+        loaded_key = serialization.load_pem_private_key(
+            serialized, None, backend
+        )
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    def test_private_bytes_traditional_openssl_unencrypted_pem(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "dsa.1024.pem"
+            ),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.TraditionalOpenSSL,
+            serialization.NoEncryption()
+        )
+        assert serialized == key_bytes
+
+    def test_private_bytes_invalid_encoding(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                "notencoding",
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption()
+            )
+
+    def test_private_bytes_invalid_format(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                "invalidformat",
+                serialization.NoEncryption()
+            )
+
+    def test_private_bytes_invalid_encryption_algorithm(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                "notanencalg"
+            )
+
+    def test_private_bytes_unsupported_encryption_type(self, backend):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                DummyKeyEncryption()
+            )

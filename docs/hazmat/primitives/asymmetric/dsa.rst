@@ -301,6 +301,50 @@ Key interfaces
             instance.
 
 
+.. class:: DSAPrivateKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Extends :class:`DSAPrivateKey`.
+
+    .. method:: private_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
+            instance.
+
+    .. method:: private_bytes(encoding, format, encryption_algorithm)
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`),
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.TraditionalOpenSSL`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8`)
+        and encryption algorithm (such as
+        :class:`~cryptography.hazmat.primitives.serialization.BestAvailableEncryption`
+        or :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat`
+            enum.
+
+        :param encryption_algorithm: An instance of an object conforming to the
+            :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+            interface.
+
+        :return bytes: Serialized key.
+
+
 .. class:: DSAPublicKey
 
     .. versionadded:: 0.3

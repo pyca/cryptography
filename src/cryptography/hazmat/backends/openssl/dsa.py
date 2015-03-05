@@ -11,9 +11,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
 )
-from cryptography.hazmat.primitives.interfaces import (
-    DSAParametersWithNumbers, DSAPrivateKeyWithNumbers, DSAPublicKeyWithNumbers
-)
 
 
 def _truncate_digest_for_dsa(dsa_cdata, digest, backend):
@@ -94,7 +91,7 @@ class _DSASignatureContext(object):
         return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
 
 
-@utils.register_interface(DSAParametersWithNumbers)
+@utils.register_interface(dsa.DSAParametersWithNumbers)
 class _DSAParameters(object):
     def __init__(self, backend, dsa_cdata):
         self._backend = backend
@@ -111,7 +108,7 @@ class _DSAParameters(object):
         return self._backend.generate_dsa_private_key(self)
 
 
-@utils.register_interface(DSAPrivateKeyWithNumbers)
+@utils.register_interface(dsa.DSAPrivateKeyWithSerialization)
 class _DSAPrivateKey(object):
     def __init__(self, backend, dsa_cdata):
         self._backend = backend
@@ -159,8 +156,25 @@ class _DSAPrivateKey(object):
         dsa_cdata.g = self._backend._lib.BN_dup(self._dsa_cdata.g)
         return _DSAParameters(self._backend, dsa_cdata)
 
+    def private_bytes(self, encoding, format, encryption_algorithm):
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = self._backend._ffi.gc(
+            evp_pkey, self._backend._lib.EVP_PKEY_free
+        )
+        res = self._backend._lib.EVP_PKEY_set1_DSA(evp_pkey, self._dsa_cdata)
+        assert res == 1
+        return self._backend._private_key_bytes(
+            encoding,
+            format,
+            encryption_algorithm,
+            self._backend._lib.PEM_write_bio_DSAPrivateKey,
+            evp_pkey,
+            self._dsa_cdata
+        )
 
-@utils.register_interface(DSAPublicKeyWithNumbers)
+
+@utils.register_interface(dsa.DSAPublicKeyWithNumbers)
 class _DSAPublicKey(object):
     def __init__(self, backend, dsa_cdata):
         self._backend = backend
