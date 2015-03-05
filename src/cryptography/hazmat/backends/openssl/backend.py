@@ -708,6 +708,7 @@ class Backend(object):
                 mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
             )
             if rsa_cdata != self._ffi.NULL:
+                rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
                 return _RSAPublicKey(self, rsa_cdata)
             else:
                 self._handle_key_loading_error()
@@ -789,6 +790,7 @@ class Backend(object):
                 mem_bio.bio, self._ffi.NULL
             )
             if rsa_cdata != self._ffi.NULL:
+                rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
                 return _RSAPublicKey(self, rsa_cdata)
             else:
                 self._handle_key_loading_error()
