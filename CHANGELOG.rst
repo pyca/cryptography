@@ -78,6 +78,7 @@ Changelog
   support loading DER encoded public keys.
 * Fixed building against LibreSSL, a compile-time substitute for OpenSSL.
 * FreeBSD 9.2 was removed from the continuous integration system.
+* Updated Windows wheels to be compiled against OpenSSL 1.0.2.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
   and deprecated
