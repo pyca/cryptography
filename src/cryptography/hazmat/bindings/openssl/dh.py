@@ -20,6 +20,14 @@ typedef struct dh_st {
     BIGNUM *pub_key;
     ...;
 } DH;
+
+static const int DH_CHECK_P_NOT_PRIME;
+static const int DH_CHECK_P_NOT_SAFE_PRIME;
+static const int DH_UNABLE_TO_CHECK_GENERATOR;
+static const int DH_NOT_SUITABLE_GENERATOR;
+static const int DH_CHECK_Q_NOT_PRIME;
+static const int DH_CHECK_INVALID_Q_VALUE;
+static const int DH_CHECK_INVALID_J_VALUE;
 """
 
 FUNCTIONS = """
