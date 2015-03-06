@@ -160,3 +160,19 @@ Key interfaces
         Return the numbers that make up this public key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+
+
+Key exchange interface
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: cryptography.hazmat.primitives.asymmetric.kex
+
+.. class:: KeyExchangeContext
+
+    .. versionadded:: 0.9
+
+    .. method:: agree(y)
+
+        :param int y: The ``y`` value from the other parties public key.
+
+        :return bytes: The agreed key.
