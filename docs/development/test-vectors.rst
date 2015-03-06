@@ -227,11 +227,11 @@ header format (substituting the correct information):
 .. _`Specification repository`: https://github.com/fernet/spec
 .. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`OpenSSL example key`: https://github.com/openssl/openssl/blob/d02b48c63a58ea4367a0e905979f140b7d090f86/test/testrsa.pem
-.. _`GnuTLS key parsing tests`: https://gitorious.org/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
-.. _`enc-rsa-pkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/encpkcs8.pem
-.. _`enc2-rsa-pkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/enc2pkcs8.pem
-.. _`unenc-rsa-pkcs8.pem`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs8-decode/unencpkcs8.pem
-.. _`pkcs12_s2k_pem.c`: https://gitorious.org/gnutls/gnutls/source/f8d943b38bf74eaaa11d396112daf43cb8aa82ae:tests/pkcs12_s2k_pem.c
+.. _`GnuTLS key parsing tests`: https://gitlab.com/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
+.. _`enc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/encpkcs8.pem
+.. _`enc2-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/enc2pkcs8.pem
+.. _`unenc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/unencpkcs8.pem
+.. _`pkcs12_s2k_pem.c`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs12_s2k_pem.c
 .. _`Botan's ECC private keys`: https://github.com/randombit/botan/tree/4917f26a2b154e841cd27c1bcecdd41d2bdeb6ce/src/tests/data/ecc
 .. _`GnuTLS example keys`: https://gitorious.org/gnutls/gnutls/commit/ad2061deafdd7db78fd405f9d143b0a7c579da7b
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
