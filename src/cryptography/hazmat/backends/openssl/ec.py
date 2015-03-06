@@ -9,7 +9,7 @@ from cryptography.exceptions import (
     InvalidSignature, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.openssl.utils import _truncate_digest
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, ec
 )
@@ -261,4 +261,25 @@ class _EllipticCurvePublicKey(object):
             x=x,
             y=y,
             curve=self._curve
+        )
+
+    def public_bytes(self, encoding, format):
+        if format is serialization.PublicFormat.PKCS1:
+            raise ValueError(
+                "EC public keys do not support PKCS1 serialization"
+            )
+
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = self._backend._ffi.gc(
+            evp_pkey, self._backend._lib.EVP_PKEY_free
+        )
+        res = self._backend._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, self._ec_key)
+        assert res == 1
+        return self._backend._public_key_bytes(
+            encoding,
+            format,
+            None,
+            evp_pkey,
+            None
         )
