@@ -21,6 +21,7 @@ struct ERR_string_data_st {
 };
 typedef struct ERR_string_data_st ERR_STRING_DATA;
 
+static const int ERR_LIB_DH;
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_EC;
 static const int ERR_LIB_PEM;
@@ -94,6 +95,10 @@ static const int ASN1_R_UNSUPPORTED_PUBLIC_KEY_TYPE;
 static const int ASN1_R_UNSUPPORTED_TYPE;
 static const int ASN1_R_WRONG_TAG;
 static const int ASN1_R_WRONG_TYPE;
+
+static const int DH_F_COMPUTE_KEY;
+
+static const int DH_R_INVALID_PUBKEY;
 
 static const int EVP_F_AES_INIT_KEY;
 static const int EVP_F_D2I_PKEY;
