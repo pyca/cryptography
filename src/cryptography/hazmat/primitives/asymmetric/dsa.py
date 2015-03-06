@@ -104,12 +104,29 @@ class DSAPublicKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DSAPublicKeyWithNumbers(DSAPublicKey):
+class DSAPublicKeyWithSerialization(DSAPublicKey):
     @abc.abstractmethod
     def public_numbers(self):
         """
         Returns a DSAPublicNumbers.
         """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding, format):
+        """
+        Returns the key serialized as bytes.
+        """
+
+
+DSAPublicKeyWithNumbers = utils.deprecated(
+    DSAPublicKeyWithSerialization,
+    __name__,
+    (
+        "The DSAPublicKeyWithNumbers interface has been renamed to "
+        "DSAPublicKeyWithSerialization"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 def generate_parameters(key_size, backend):

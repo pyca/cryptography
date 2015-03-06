@@ -401,6 +401,39 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
             instance.
 
+.. class:: DSAPublicKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Extends :class:`DSAPublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+        object.
+
+        :returns: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
+            instance.
+
+    .. method:: public_bytes(encoding, format)
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
+
+        :return bytes: Serialized key.
+
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
