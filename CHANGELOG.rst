@@ -156,8 +156,7 @@ Changelog
 * More bit-lengths are now supported for ``p`` and ``q`` when loading DSA keys
   from numbers.
 * Added :class:`~cryptography.hazmat.primitives.interfaces.MACContext` as a
-  common interface for CMAC and HMAC and deprecated
-  :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`.
+  common interface for CMAC and HMAC and deprecated ``CMACContext``.
 * Added support for encoding and decoding :rfc:`6979` signatures in
   :doc:`/hazmat/primitives/asymmetric/utils`.
 * Added
