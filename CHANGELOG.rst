@@ -79,6 +79,10 @@ Changelog
 * Fixed building against LibreSSL, a compile-time substitute for OpenSSL.
 * FreeBSD 9.2 was removed from the continuous integration system.
 * Updated Windows wheels to be compiled against OpenSSL 1.0.2.
+* :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`
+  and :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`
+  now support PKCS1 RSA public keys (in addition to the previous support for
+  SubjectPublicKeyInfo format for RSA, EC, and DSA).
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
   and deprecated

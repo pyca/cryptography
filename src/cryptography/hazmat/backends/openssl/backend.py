@@ -692,12 +692,28 @@ class Backend(object):
         )
 
     def load_pem_public_key(self, data):
-        return self._load_key(
-            self._lib.PEM_read_bio_PUBKEY,
-            self._evp_pkey_to_public_key,
-            data,
-            None,
+        mem_bio = self._bytes_to_bio(data)
+        evp_pkey = self._lib.PEM_read_bio_PUBKEY(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
         )
+        if evp_pkey != self._ffi.NULL:
+            evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+            return self._evp_pkey_to_public_key(evp_pkey)
+        else:
+            # It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still
+            # need to check to see if it is a pure PKCS1 RSA public key (not
+            # embedded in a subjectPublicKeyInfo)
+            self._consume_errors()
+            res = self._lib.BIO_reset(mem_bio.bio)
+            assert res == 1
+            rsa_cdata = self._lib.PEM_read_bio_RSAPublicKey(
+                mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+            )
+            if rsa_cdata != self._ffi.NULL:
+                rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+                return _RSAPublicKey(self, rsa_cdata)
+            else:
+                self._handle_key_loading_error()
 
     def load_der_private_key(self, data, password):
         # OpenSSL has a function called d2i_AutoPrivateKey that can simplify
@@ -762,12 +778,24 @@ class Backend(object):
     def load_der_public_key(self, data):
         mem_bio = self._bytes_to_bio(data)
         evp_pkey = self._lib.d2i_PUBKEY_bio(mem_bio.bio, self._ffi.NULL)
-        if evp_pkey == self._ffi.NULL:
+        if evp_pkey != self._ffi.NULL:
+            evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+            return self._evp_pkey_to_public_key(evp_pkey)
+        else:
+            # It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still
+            # need to check to see if it is a pure PKCS1 RSA public key (not
+            # embedded in a subjectPublicKeyInfo)
             self._consume_errors()
-            raise ValueError("Could not unserialize key data.")
-
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        return self._evp_pkey_to_public_key(evp_pkey)
+            res = self._lib.BIO_reset(mem_bio.bio)
+            assert res == 1
+            rsa_cdata = self._lib.d2i_RSAPublicKey_bio(
+                mem_bio.bio, self._ffi.NULL
+            )
+            if rsa_cdata != self._ffi.NULL:
+                rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
+                return _RSAPublicKey(self, rsa_cdata)
+            else:
+                self._handle_key_loading_error()
 
     def load_pem_x509_certificate(self, data):
         mem_bio = self._bytes_to_bio(data)
