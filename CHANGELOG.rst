@@ -1,10 +1,8 @@
 Changelog
 =========
 
-0.8 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+0.8 - 2015-03-08
+~~~~~~~~~~~~~~~~
 
 * :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key` can
   now load elliptic curve public keys.
@@ -16,59 +14,6 @@ Changelog
 * :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction` was moved
   from :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.kdf`.
-* :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and
-  :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
-  :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.hashes`.
-* :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`,
-  :class:`~cryptography.hazmat.primitives.ciphers.AEADCipherContext`,
-  :class:`~cryptography.hazmat.primitives.ciphers.AEADEncryptionContext`,
-  :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`, and
-  :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.ciphers`.
-* :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`,
-  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithInitializationVector`,
-  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithNonce`, and
-  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithAuthenticationTag`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.ciphers.modes`.
-* :class:`~cryptography.hazmat.primitives.padding.PaddingContext` was moved
-  from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.padding`.
-*
-  :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-  was moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric.padding`.
-*
-  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
-  and
-  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric`.
-* :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithNumbers`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` and
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
-* :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-  and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithNumbers`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric.ec`.
-* :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithNumbers`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
-  :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 * Added support for parsing X.509 names. See the
   :doc:`X.509 documentation</x509>` for more information.
 * Added
@@ -131,6 +76,59 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
+* :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and
+  :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
+  :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.hashes`.
+* :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.AEADCipherContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.AEADEncryptionContext`,
+  :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.ciphers`.
+* :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`,
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithInitializationVector`,
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithNonce`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.ModeWithAuthenticationTag`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.ciphers.modes`.
+* :class:`~cryptography.hazmat.primitives.padding.PaddingContext` was moved
+  from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.padding`.
+*
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
+  was moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric.padding`.
+*
+  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric`.
+* :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithNumbers`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` and
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
+* :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithNumbers`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric.ec`.
+* :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithNumbers`
+  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~
