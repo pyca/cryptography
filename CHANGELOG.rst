@@ -123,6 +123,14 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`
+  and deprecated
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`.
+* Added
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization.public_bytes`
+  to
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 
 0.7.2 - 2015-01-16
 ~~~~~~~~~~~~~~~~~~
