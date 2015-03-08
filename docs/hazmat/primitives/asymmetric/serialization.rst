@@ -326,7 +326,7 @@ Serialization Formats
     .. attribute:: PKCS1
 
         Just the public key elements (without the algorithm identifier). This
-        format is occasionally used by various systems.
+        format is RSA only, but is used by some older systems.
 
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
