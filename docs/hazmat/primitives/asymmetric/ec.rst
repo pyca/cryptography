@@ -405,6 +405,36 @@ Key Interfaces
         :returns: An :class:`EllipticCurvePublicNumbers` instance.
 
 
+.. class:: EllipticCurvePublicKeyWithSerialization
+
+    .. versionadded:: 0.6
+
+    Extends :class:`EllipticCurvePublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a :class:`EllipticCurvePublicNumbers` object.
+
+        :returns: An :class:`EllipticCurvePublicNumbers` instance.
+
+    .. method:: public_bytes(encoding, format)
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
+
+        :return bytes: Serialized key.
+
+
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
