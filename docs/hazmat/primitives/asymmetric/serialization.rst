@@ -317,7 +317,7 @@ Serialization Formats
     method available on
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
     and
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.EllipticCurvePublicKeyWithSerialization`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
 
     .. attribute:: SubjectPublicKeyInfo
 
