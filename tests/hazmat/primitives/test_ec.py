@@ -559,6 +559,7 @@ class TestECSerialization(object):
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestEllipticCurvePEMPublicKeySerialization(object):
     def test_public_bytes_unencrypted_pem(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
@@ -574,6 +575,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         assert serialized == key_bytes
 
     def test_public_bytes_invalid_encoding(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
@@ -590,6 +592,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             )
 
     def test_public_bytes_invalid_format(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
@@ -603,6 +606,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             key.public_bytes(serialization.Encoding.PEM, "invalidformat")
 
     def test_public_bytes_pkcs1_unsupported(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
