@@ -83,7 +83,7 @@ There is also support for :func:`loading public keys in the SSH format
 Key serialization
 ~~~~~~~~~~~~~~~~~
 
-If you have a key that you've loaded or generated which implements the
+If you have a private key that you've loaded or generated which implements the
 :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
 interface you can use
 :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`
@@ -112,6 +112,23 @@ It is also possible to serialize without encryption using
     ... )
     >>> pem.splitlines()[0]
     '-----BEGIN RSA PRIVATE KEY-----'
+
+Similarly, if your public key implements
+:class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
+interface you can use
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization.public_bytes`
+to serialize the key.
+
+.. doctest::
+
+    >>> from cryptography.hazmat.primitives import serialization
+    >>> public_key = private_key.public_key()
+    >>> pem = public_key.public_bytes(
+    ...    encoding=serialization.Encoding.PEM,
+    ...    format=serialization.PublicFormat.SubjectPublicKeyInfo
+    ... )
+    >>> pem.splitlines()[0]
+    '-----BEGIN PUBLIC KEY-----'
 
 Signing
 ~~~~~~~
@@ -624,6 +641,42 @@ Key interfaces
         :returns: An
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
             instance.
+
+
+.. class:: RSAPublicKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Extends :class:`RSAPublicKey`.
+
+    .. method:: public_numbers()
+
+        Create a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+        object.
+
+        :returns: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
+            instance.
+
+    .. method:: public_bytes(encoding, format)
+
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.PKCS1`)
+        are chosen to define the exact serialization.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
+
+        :return bytes: Serialized key.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)

@@ -89,12 +89,29 @@ class RSAPublicKey(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class RSAPublicKeyWithNumbers(RSAPublicKey):
+class RSAPublicKeyWithSerialization(RSAPublicKey):
     @abc.abstractmethod
     def public_numbers(self):
         """
         Returns an RSAPublicNumbers
         """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding, format):
+        """
+        Returns the key serialized as bytes.
+        """
+
+
+RSAPublicKeyWithNumbers = utils.deprecated(
+    RSAPublicKeyWithSerialization,
+    __name__,
+    (
+        "The RSAPublicKeyWithNumbers interface has been renamed to "
+        "RSAPublicKeyWithSerialization"
+    ),
+    utils.DeprecatedIn08
+)
 
 
 def generate_private_key(public_exponent, key_size, backend):

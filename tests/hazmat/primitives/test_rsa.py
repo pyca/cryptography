@@ -86,7 +86,10 @@ def test_modular_inverse():
 
 
 def _skip_if_no_serialization(key, backend):
-    if not isinstance(key, rsa.RSAPrivateKeyWithSerialization):
+    if not isinstance(
+        key,
+        (rsa.RSAPrivateKeyWithSerialization, rsa.RSAPublicKeyWithSerialization)
+    ):
         pytest.skip(
             "{0} does not support RSA key serialization".format(backend)
         )
@@ -1748,7 +1751,7 @@ class TestRSAPrimeFactorRecovery(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
-class TestRSAPEMWriter(object):
+class TestRSAPEMPrivateKeySerialization(object):
     @pytest.mark.parametrize(
         ("fmt", "password"),
         itertools.product(
@@ -1857,3 +1860,45 @@ class TestRSAPEMWriter(object):
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 DummyKeyEncryption()
             )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+class TestRSAPEMPublicKeySerialization(object):
+    def test_public_bytes_unencrypted_pem(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_public_key(key_bytes, backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        assert serialized == key_bytes
+
+    def test_public_bytes_pkcs1_unencrypted_pem(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_public_key(key_bytes, backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.PKCS1,
+        )
+        assert serialized == key_bytes
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        key = RSA_KEY_2048.private_key(backend).public_key()
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.public_bytes("notencoding", serialization.PublicFormat.PKCS1)
+
+    def test_public_bytes_invalid_format(self, backend):
+        key = RSA_KEY_2048.private_key(backend).public_key()
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.public_bytes(serialization.Encoding.PEM, "invalidformat")

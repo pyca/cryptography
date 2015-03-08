@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateKeyWithNumbers, RSAPrivateKeyWithSerialization,
-    RSAPublicKeyWithNumbers
+    RSAPublicKeyWithSerialization
 )
 
 
@@ -572,7 +572,7 @@ class _RSAPrivateKey(object):
         )
 
 
-@utils.register_interface(RSAPublicKeyWithNumbers)
+@utils.register_interface(RSAPublicKeyWithSerialization)
 class _RSAPublicKey(object):
     def __init__(self, backend, rsa_cdata):
         self._backend = backend
@@ -603,4 +603,13 @@ class _RSAPublicKey(object):
         return rsa.RSAPublicNumbers(
             e=self._backend._bn_to_int(self._rsa_cdata.e),
             n=self._backend._bn_to_int(self._rsa_cdata.n),
+        )
+
+    def public_bytes(self, encoding, format):
+        return self._backend._public_key_bytes(
+            encoding,
+            format,
+            self._backend._lib.PEM_write_bio_RSAPublicKey,
+            self._evp_pkey,
+            self._rsa_cdata
         )

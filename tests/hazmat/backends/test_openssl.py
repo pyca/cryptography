@@ -508,11 +508,19 @@ class TestRSAPEMSerialization(object):
                 serialization.BestAvailableEncryption(password)
             )
 
-    def test_unsupported_key_encoding(self):
+    def test_unsupported_private_key_encoding(self):
         key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.DER,
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption()
+            )
+
+    def test_unsupported_public_key_encoding(self):
+        key = RSA_KEY_2048.private_key(backend).public_key()
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.DER,
+                serialization.PublicFormat.SubjectPublicKeyInfo
             )
