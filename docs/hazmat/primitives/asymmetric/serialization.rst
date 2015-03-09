@@ -316,8 +316,10 @@ Serialization Formats
     An enumeration for public key formats. Used with the ``public_bytes``
     method available on
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
-    and
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
+    , and
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 
     .. attribute:: SubjectPublicKeyInfo
 

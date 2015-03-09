@@ -31,7 +31,10 @@ from ...utils import (
 
 
 def _skip_if_no_serialization(key, backend):
-    if not isinstance(key, dsa.DSAPrivateKeyWithSerialization):
+    if not isinstance(
+        key,
+        (dsa.DSAPrivateKeyWithSerialization, dsa.DSAPublicKeyWithSerialization)
+    ):
         pytest.skip(
             "{0} does not support DSA key serialization".format(backend)
         )
@@ -935,4 +938,44 @@ class TestDSASerialization(object):
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 DummyKeyEncryption()
+            )
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+@pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
+class TestDSAPEMPublicKeySerialization(object):
+    def test_public_bytes_unencrypted_pem(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_public_key(key_bytes, backend)
+        _skip_if_no_serialization(key, backend)
+        serialized = key.public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        assert serialized == key_bytes
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        key = DSA_KEY_2048.private_key(backend).public_key()
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.public_bytes(
+                "notencoding",
+                serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+
+    def test_public_bytes_invalid_format(self, backend):
+        key = DSA_KEY_2048.private_key(backend).public_key()
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(TypeError):
+            key.public_bytes(serialization.Encoding.PEM, "invalidformat")
+
+    def test_public_bytes_pkcs1_unsupported(self, backend):
+        key = DSA_KEY_2048.private_key(backend).public_key()
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
             )

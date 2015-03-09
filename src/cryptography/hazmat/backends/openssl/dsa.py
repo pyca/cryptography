@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends.openssl.utils import _truncate_digest
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, dsa
 )
@@ -208,3 +208,24 @@ class _DSAPublicKey(object):
         dsa_cdata.q = self._backend._lib.BN_dup(self._dsa_cdata.q)
         dsa_cdata.g = self._backend._lib.BN_dup(self._dsa_cdata.g)
         return _DSAParameters(self._backend, dsa_cdata)
+
+    def public_bytes(self, encoding, format):
+        if format is serialization.PublicFormat.PKCS1:
+            raise ValueError(
+                "DSA public keys do not support PKCS1 serialization"
+            )
+
+        evp_pkey = self._backend._lib.EVP_PKEY_new()
+        assert evp_pkey != self._backend._ffi.NULL
+        evp_pkey = self._backend._ffi.gc(
+            evp_pkey, self._backend._lib.EVP_PKEY_free
+        )
+        res = self._backend._lib.EVP_PKEY_set1_DSA(evp_pkey, self._dsa_cdata)
+        assert res == 1
+        return self._backend._public_key_bytes(
+            encoding,
+            format,
+            None,
+            evp_pkey,
+            None
+        )
