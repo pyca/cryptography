@@ -233,7 +233,7 @@ header format (substituting the correct information):
 .. _`unenc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/unencpkcs8.pem
 .. _`pkcs12_s2k_pem.c`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs12_s2k_pem.c
 .. _`Botan's ECC private keys`: https://github.com/randombit/botan/tree/4917f26a2b154e841cd27c1bcecdd41d2bdeb6ce/src/tests/data/ecc
-.. _`GnuTLS example keys`: https://gitorious.org/gnutls/gnutls/commit/ad2061deafdd7db78fd405f9d143b0a7c579da7b
+.. _`GnuTLS example keys`: https://gitlab.com/gnutls/gnutls/commit/ad2061deafdd7db78fd405f9d143b0a7c579da7b
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
 .. _`Ed25519 website`: http://ed25519.cr.yp.to/software.html
