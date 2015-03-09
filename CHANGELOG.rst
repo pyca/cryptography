@@ -18,6 +18,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`,
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
+* Add support for parsing X.509 requests with
+  :func:`~cryptography.x509.load_pem_x509_request`.
 
 0.8.1 - 2015-03-20
 ~~~~~~~~~~~~~~~~~~
