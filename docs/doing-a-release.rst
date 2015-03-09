@@ -16,7 +16,7 @@ Bumping the version number
 The next step in doing a release is bumping the version number in the
 software.
 
-* Update the version number in ``cryptography/__about__.py``.
+* Update the version number in ``src/cryptography/__about__.py``.
 * Update the version number in ``vectors/cryptography_vectors/__about__.py``.
 * Set the release date in the :doc:`/changelog`.
 * Do a commit indicating this.
