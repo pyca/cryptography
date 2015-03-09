@@ -51,28 +51,6 @@ In 0.8 the key derivation function interface was moved to the
 :mod:`cryptography.hazmat.primitives.kdf` module.
 
 
-`Message Authentication Code`_
-------------------------------
-
-.. class:: CMACContext
-
-    :class:`CMACContext` has been deprecated in favor of :class:`MACContext`.
-
-    .. versionadded:: 0.4
-
-    .. method:: update(data)
-
-        :param bytes data: The data you want to authenticate.
-
-    .. method:: finalize()
-
-        :return: The message authentication code.
-
-    .. method:: copy()
-
-        :return: A :class:`~cryptography.hazmat.primitives.interfaces.CMACContext`
-            that is a copy of the current context.
-
 .. class:: MACContext
 
     .. versionadded:: 0.7

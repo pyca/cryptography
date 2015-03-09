@@ -386,10 +386,3 @@ class MACContext(object):
         Checks if the generated message authentication code matches the
         signature.
         """
-
-CMACContext = utils.deprecated(
-    MACContext,
-    __name__,
-    "The CMACContext interface has been renamed to MACContext",
-    utils.DeprecatedIn07
-)
