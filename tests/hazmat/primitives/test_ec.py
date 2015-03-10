@@ -173,7 +173,7 @@ class TestECWithNumbers(object):
         ).private_key(backend)
         assert key
 
-        if isinstance(key, ec.EllipticCurvePrivateKeyWithNumbers):
+        if isinstance(key, ec.EllipticCurvePrivateKeyWithSerialization):
             priv_num = key.private_numbers()
             assert priv_num.private_value == vector['d']
             assert priv_num.public_numbers.x == vector['x']
