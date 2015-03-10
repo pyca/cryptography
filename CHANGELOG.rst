@@ -6,11 +6,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* Support DER serialization of public keys using the ``public_bytes`` method of
+* Support :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
+  serialization of public keys using the ``public_bytes`` method of
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`,
   and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
 
 0.8 - 2015-03-08
 ~~~~~~~~~~~~~~~~
