@@ -944,16 +944,33 @@ class TestDSASerialization(object):
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestDSAPEMPublicKeySerialization(object):
-    def test_public_bytes_unencrypted_pem(self, backend):
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+                serialization.load_pem_public_key,
+                serialization.Encoding.PEM,
+            ), (
+                os.path.join(
+                    "asymmetric",
+                    "DER_Serialization",
+                    "unenc-dsa-pkcs8.pub.der"
+                ),
+                serialization.load_der_public_key,
+                serialization.Encoding.DER,
+            )
+        ]
+    )
+    def test_public_bytes_match(self, key_path, loader_func, encoding,
+                                backend):
         key_bytes = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
-            lambda pemfile: pemfile.read().encode()
+            key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        key = serialization.load_pem_public_key(key_bytes, backend)
+        key = loader_func(key_bytes, backend)
         _skip_if_no_serialization(key, backend)
         serialized = key.public_bytes(
-            serialization.Encoding.PEM,
-            serialization.PublicFormat.SubjectPublicKeyInfo,
+            encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         assert serialized == key_bytes
 

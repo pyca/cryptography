@@ -1184,8 +1184,7 @@ class Backend(object):
         assert res == 1
         return self._read_mem_bio(bio)
 
-    def _public_key_bytes(self, encoding, format, pkcs1_write_func, evp_pkey,
-                          cdata):
+    def _public_key_bytes(self, encoding, format, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
@@ -1194,15 +1193,21 @@ class Backend(object):
                 "format must be an item from the PublicFormat enum"
             )
 
-        # This is a temporary check until we land DER serialization.
-        if encoding is not serialization.Encoding.PEM:
-            raise ValueError("Only PEM encoding is supported by this backend")
-
         if format is serialization.PublicFormat.SubjectPublicKeyInfo:
-            write_bio = self._lib.PEM_write_bio_PUBKEY
+            if encoding is serialization.Encoding.PEM:
+                write_bio = self._lib.PEM_write_bio_PUBKEY
+            elif encoding is serialization.Encoding.DER:
+                write_bio = self._lib.i2d_PUBKEY_bio
+
             key = evp_pkey
         elif format is serialization.PublicFormat.PKCS1:
-            write_bio = pkcs1_write_func
+            # Only RSA is supported here.
+            assert evp_pkey.type == self._lib.EVP_PKEY_RSA
+            if encoding is serialization.Encoding.PEM:
+                write_bio = self._lib.PEM_write_bio_RSAPublicKey
+            elif encoding is serialization.Encoding.DER:
+                write_bio = self._lib.i2d_RSAPublicKey_bio
+
             key = cdata
 
         bio = self._create_mem_bio()

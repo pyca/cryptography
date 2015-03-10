@@ -1865,30 +1865,44 @@ class TestRSAPEMPrivateKeySerialization(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPEMPublicKeySerialization(object):
-    def test_public_bytes_unencrypted_pem(self, backend):
+    @pytest.mark.parametrize(
+        ("key_path", "loader_func", "encoding", "format"),
+        [
+            (
+                os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
+                serialization.load_pem_public_key,
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.PKCS1,
+            ), (
+                os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.der"),
+                serialization.load_der_public_key,
+                serialization.Encoding.DER,
+                serialization.PublicFormat.PKCS1,
+            ), (
+                os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
+                serialization.load_pem_public_key,
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            ), (
+                os.path.join(
+                    "asymmetric",
+                    "DER_Serialization",
+                    "unenc-rsa-pkcs8.pub.der"
+                ),
+                serialization.load_der_public_key,
+                serialization.Encoding.DER,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
+        ]
+    )
+    def test_public_bytes_match(self, key_path, loader_func, encoding, format,
+                                backend):
         key_bytes = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
-            lambda pemfile: pemfile.read().encode()
+            key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        key = serialization.load_pem_public_key(key_bytes, backend)
+        key = loader_func(key_bytes, backend)
         _skip_if_no_serialization(key, backend)
-        serialized = key.public_bytes(
-            serialization.Encoding.PEM,
-            serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-        assert serialized == key_bytes
-
-    def test_public_bytes_pkcs1_unencrypted_pem(self, backend):
-        key_bytes = load_vectors_from_file(
-            os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
-            lambda pemfile: pemfile.read().encode()
-        )
-        key = serialization.load_pem_public_key(key_bytes, backend)
-        _skip_if_no_serialization(key, backend)
-        serialized = key.public_bytes(
-            serialization.Encoding.PEM,
-            serialization.PublicFormat.PKCS1,
-        )
+        serialized = key.public_bytes(encoding, format)
         assert serialized == key_bytes
 
     def test_public_bytes_invalid_encoding(self, backend):
