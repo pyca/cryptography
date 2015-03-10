@@ -75,7 +75,7 @@ class TestDSA(object):
             g=vector['g']
         ).parameters(backend)
         skey = parameters.generate_private_key()
-        if isinstance(skey, dsa.DSAPrivateKeyWithNumbers):
+        if isinstance(skey, dsa.DSAPrivateKeyWithSerialization):
             numbers = skey.private_numbers()
             skey_parameters = numbers.public_numbers.parameter_numbers
             pkey = skey.public_key()
@@ -98,7 +98,7 @@ class TestDSA(object):
     def test_generate_dsa_private_key_and_parameters(self, backend):
         skey = dsa.generate_private_key(1024, backend)
         assert skey
-        if isinstance(skey, dsa.DSAPrivateKeyWithNumbers):
+        if isinstance(skey, dsa.DSAPrivateKeyWithSerialization):
             numbers = skey.private_numbers()
             skey_parameters = numbers.public_numbers.parameter_numbers
             assert numbers.public_numbers.y == pow(

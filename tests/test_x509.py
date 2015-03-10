@@ -353,7 +353,7 @@ class TestDSACertificate(object):
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         public_key = cert.public_key()
         assert isinstance(public_key, dsa.DSAPublicKey)
-        if isinstance(public_key, dsa.DSAPublicKeyWithNumbers):
+        if isinstance(public_key, dsa.DSAPublicKeyWithSerialization):
             num = public_key.public_numbers()
             assert num.y == int(
                 "4c08bfe5f2d76649c80acf7d431f6ae2124b217abc8c9f6aca776ddfa94"
@@ -406,7 +406,7 @@ class TestECDSACertificate(object):
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA384)
         public_key = cert.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
-        if isinstance(public_key, ec.EllipticCurvePublicKeyWithNumbers):
+        if isinstance(public_key, ec.EllipticCurvePublicKeyWithSerialization):
             num = public_key.public_numbers()
             assert num.x == int(
                 "dda7d9bb8ab80bfb0b7f21d2f0bebe73f3335d1abc34eadec69bbcd095f"

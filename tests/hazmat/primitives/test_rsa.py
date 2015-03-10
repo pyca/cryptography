@@ -113,7 +113,7 @@ class TestRSA(object):
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
-        if isinstance(skey, rsa.RSAPrivateKeyWithNumbers):
+        if isinstance(skey, rsa.RSAPrivateKeyWithSerialization):
             _check_rsa_private_numbers(skey.private_numbers())
             pkey = skey.public_key()
             assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)

@@ -53,7 +53,7 @@ class TestDERSerialization(object):
         )
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
-        if isinstance(key, rsa.RSAPrivateKeyWithNumbers):
+        if isinstance(key, rsa.RSAPrivateKeyWithSerialization):
             _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
@@ -76,7 +76,7 @@ class TestDERSerialization(object):
         )
         assert key
         assert isinstance(key, dsa.DSAPrivateKey)
-        if isinstance(key, dsa.DSAPrivateKeyWithNumbers):
+        if isinstance(key, dsa.DSAPrivateKeyWithSerialization):
             _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -247,7 +247,7 @@ class TestDERSerialization(object):
         )
         assert key
         assert isinstance(key, rsa.RSAPublicKey)
-        if isinstance(key, rsa.RSAPublicKeyWithNumbers):
+        if isinstance(key, rsa.RSAPublicKeyWithSerialization):
             numbers = key.public_numbers()
             assert numbers.e == 65537
 
@@ -330,7 +330,7 @@ class TestPEMSerialization(object):
 
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
-        if isinstance(key, rsa.RSAPrivateKeyWithNumbers):
+        if isinstance(key, rsa.RSAPrivateKeyWithSerialization):
             _check_rsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -352,7 +352,7 @@ class TestPEMSerialization(object):
         )
         assert key
         assert isinstance(key, dsa.DSAPrivateKey)
-        if isinstance(key, dsa.DSAPrivateKeyWithNumbers):
+        if isinstance(key, dsa.DSAPrivateKeyWithSerialization):
             _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -397,7 +397,7 @@ class TestPEMSerialization(object):
         )
         assert key
         assert isinstance(key, rsa.RSAPublicKey)
-        if isinstance(key, rsa.RSAPublicKeyWithNumbers):
+        if isinstance(key, rsa.RSAPublicKeyWithSerialization):
             numbers = key.public_numbers()
             assert numbers.e == 65537
 
