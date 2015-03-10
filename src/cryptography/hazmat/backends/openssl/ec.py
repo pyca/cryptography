@@ -279,7 +279,6 @@ class _EllipticCurvePublicKey(object):
         return self._backend._public_key_bytes(
             encoding,
             format,
-            None,
             evp_pkey,
             None
         )
