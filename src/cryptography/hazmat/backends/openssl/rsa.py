@@ -18,8 +18,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateKeyWithNumbers, RSAPrivateKeyWithSerialization,
-    RSAPublicKeyWithSerialization
+    RSAPrivateKeyWithSerialization, RSAPublicKeyWithSerialization
 )
 
 
@@ -507,7 +506,6 @@ class _RSAVerificationContext(object):
             raise InvalidSignature
 
 
-@utils.register_interface(RSAPrivateKeyWithNumbers)
 @utils.register_interface(RSAPrivateKeyWithSerialization)
 class _RSAPrivateKey(object):
     def __init__(self, backend, rsa_cdata):
