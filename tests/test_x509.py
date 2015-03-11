@@ -343,7 +343,7 @@ class TestRSACertificate(object):
     def test_load_rsa_certificate_request(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
-            x509.load_pem_x509_request,
+            x509.load_pem_x509_csr,
             backend
         )
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
@@ -362,7 +362,7 @@ class TestRSACertificate(object):
     def test_unsupported_signature_hash_algorithm_request(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_md4.pem"),
-            x509.load_pem_x509_request,
+            x509.load_pem_x509_csr,
             backend
         )
         with pytest.raises(UnsupportedAlgorithm):
@@ -423,7 +423,7 @@ class TestDSACertificate(object):
     def test_load_dsa_request(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "dsa_sha1.pem"),
-            x509.load_pem_x509_request,
+            x509.load_pem_x509_csr,
             backend
         )
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
@@ -479,7 +479,7 @@ class TestECDSACertificate(object):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         request = _load_cert(
             os.path.join("x509", "requests", "ec_sha256.pem"),
-            x509.load_pem_x509_request,
+            x509.load_pem_x509_csr,
             backend
         )
         assert isinstance(request.signature_hash_algorithm, hashes.SHA256)

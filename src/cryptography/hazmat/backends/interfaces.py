@@ -263,7 +263,7 @@ class X509Backend(object):
         """
 
     @abc.abstractmethod
-    def load_pem_x509_request(self, data):
+    def load_pem_x509_csr(self, data):
         """
-        Load an X.509 request from PEM encoded data.
+        Load an X.509 CSR from PEM encoded data.
         """

@@ -60,8 +60,8 @@ def load_der_x509_certificate(data, backend):
     return backend.load_der_x509_certificate(data)
 
 
-def load_pem_x509_request(data, backend):
-    return backend.load_pem_x509_request(data)
+def load_pem_x509_csr(data, backend):
+    return backend.load_pem_x509_csr(data)
 
 
 class InvalidVersion(Exception):
@@ -343,7 +343,7 @@ class Certificate(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Request(object):
+class CSR(object):
     @abc.abstractmethod
     def public_key(self):
         """

@@ -510,10 +510,10 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
-    .. method:: load_pem_x509_request(data)
+    .. method:: load_pem_x509_csr(data)
 
         .. versionadded:: 0.9
 
         :param bytes data: PEM formatted certificate request data.
 
-        :returns: An instance of :class:`~cryptography.x509.Request`.
+        :returns: An instance of :class:`~cryptography.x509.CSR`.

@@ -325,11 +325,11 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_X509
         )
 
-    def load_pem_x509_request(self, data):
+    def load_pem_x509_csr(self, data):
         for b in self._filtered_backends(
             X509Backend
         ):
-            return b.load_pem_x509_request(data)
+            return b.load_pem_x509_csr(data)
 
         raise UnsupportedAlgorithm(
             "This backend does not support X.509.",

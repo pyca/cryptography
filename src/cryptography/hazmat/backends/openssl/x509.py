@@ -218,8 +218,8 @@ class _Certificate(object):
         return x509.BasicConstraints(ca, path_length)
 
 
-@utils.register_interface(x509.Request)
-class _Request(object):
+@utils.register_interface(x509.CSR)
+class _CSR(object):
     def __init__(self, backend, x509_req):
         self._backend = backend
         self._x509_req = x509_req

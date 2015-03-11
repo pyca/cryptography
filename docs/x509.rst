@@ -77,10 +77,10 @@ Loading Certificates
     >>> cert.serial
     2
 
-Loading Certificate Requests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Loading CSRs
+~~~~~~~~~~~~
 
-.. function:: load_pem_x509_request(data, backend)
+.. function:: load_pem_x509_csr(data, backend)
 
     .. versionadded:: 0.9
 
@@ -95,7 +95,7 @@ Loading Certificate Requests
         :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
         interface.
 
-    :returns: An instance of :class:`~cryptography.x509.Request`.
+    :returns: An instance of :class:`~cryptography.x509.CSR`.
 
 .. testsetup::
 
@@ -125,7 +125,7 @@ Loading Certificate Requests
     >>> from cryptography import x509
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
-    >>> request = x509.load_pem_x509_request(pem_req_data, default_backend())
+    >>> request = x509.load_pem_x509_csr(pem_req_data, default_backend())
     >>> isinstance(request.signature_hash_algorithm, hashes.SHA1)
     True
 
@@ -263,10 +263,10 @@ X.509 Certificate Object
             ...     print(ext)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
-X.509 Certificate Request Object
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+X.509 CSR Object
+~~~~~~~~~~~~~~~~
 
-.. class:: Request
+.. class:: CSR
 
     .. versionadded:: 0.9
 
