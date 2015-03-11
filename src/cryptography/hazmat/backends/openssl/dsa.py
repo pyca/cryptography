@@ -91,7 +91,7 @@ class _DSASignatureContext(object):
         return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
 
 
-@utils.register_interface(dsa.DSAParametersWithNumbers)
+@utils.register_interface(dsa.DSAParametersWithSerialization)
 class _DSAParameters(object):
     def __init__(self, backend, dsa_cdata):
         self._backend = backend

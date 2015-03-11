@@ -217,7 +217,7 @@ class _EllipticCurvePrivateKey(object):
         )
 
 
-@utils.register_interface(ec.EllipticCurvePublicKeyWithNumbers)
+@utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
 class _EllipticCurvePublicKey(object):
     def __init__(self, backend, ec_key_cdata):
         self._backend = backend
