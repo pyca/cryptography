@@ -168,7 +168,6 @@ class _DSAPrivateKey(object):
             encoding,
             format,
             encryption_algorithm,
-            self._backend._lib.PEM_write_bio_DSAPrivateKey,
             evp_pkey,
             self._dsa_cdata
         )

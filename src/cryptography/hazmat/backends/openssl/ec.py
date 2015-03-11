@@ -212,7 +212,6 @@ class _EllipticCurvePrivateKey(object):
             encoding,
             format,
             encryption_algorithm,
-            self._backend._lib.PEM_write_bio_ECPrivateKey,
             evp_pkey,
             self._ec_key
         )

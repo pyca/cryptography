@@ -566,7 +566,6 @@ class _RSAPrivateKey(object):
             encoding,
             format,
             encryption_algorithm,
-            self._backend._lib.PEM_write_bio_RSAPrivateKey,
             self._evp_pkey,
             self._rsa_cdata
         )
