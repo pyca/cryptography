@@ -308,9 +308,7 @@ class MultiBackend(object):
         )
 
     def load_pem_x509_certificate(self, data):
-        for b in self._filtered_backends(
-            X509Backend
-        ):
+        for b in self._filtered_backends(X509Backend):
             return b.load_pem_x509_certificate(data)
 
         raise UnsupportedAlgorithm(
@@ -319,9 +317,7 @@ class MultiBackend(object):
         )
 
     def load_der_x509_certificate(self, data):
-        for b in self._filtered_backends(
-            X509Backend
-        ):
+        for b in self._filtered_backends(X509Backend):
             return b.load_der_x509_certificate(data)
 
         raise UnsupportedAlgorithm(
