@@ -20,6 +20,43 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 
 
+def _obj2txt(backend, obj):
+    # Set to 80 on the recommendation of
+    # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html#return_values
+    buf_len = 80
+    buf = backend._ffi.new("char[]", buf_len)
+    res = backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
+    assert res > 0
+    return backend._ffi.buffer(buf, res)[:].decode()
+
+
+def _build_x509_name(backend, x509_name):
+    count = backend._lib.X509_NAME_entry_count(x509_name)
+    attributes = []
+    for x in range(count):
+        entry = backend._lib.X509_NAME_get_entry(x509_name, x)
+        obj = backend._lib.X509_NAME_ENTRY_get_object(entry)
+        assert obj != backend._ffi.NULL
+        data = backend._lib.X509_NAME_ENTRY_get_data(entry)
+        assert data != backend._ffi.NULL
+        buf = backend._ffi.new("unsigned char **")
+        res = backend._lib.ASN1_STRING_to_UTF8(buf, data)
+        assert res >= 0
+        assert buf[0] != backend._ffi.NULL
+        buf = backend._ffi.gc(
+            buf, lambda buf: backend._lib.OPENSSL_free(buf[0])
+        )
+        value = backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+        oid = _obj2txt(backend, obj)
+        attributes.append(
+            x509.NameAttribute(
+                x509.ObjectIdentifier(oid), value
+            )
+        )
+
+    return x509.Name(attributes)
+
+
 @utils.register_interface(x509.Certificate)
 class _Certificate(object):
     def __init__(self, backend, x509):
@@ -97,52 +134,17 @@ class _Certificate(object):
     def issuer(self):
         issuer = self._backend._lib.X509_get_issuer_name(self._x509)
         assert issuer != self._backend._ffi.NULL
-        return self._build_x509_name(issuer)
+        return _build_x509_name(self._backend, issuer)
 
     @property
     def subject(self):
         subject = self._backend._lib.X509_get_subject_name(self._x509)
         assert subject != self._backend._ffi.NULL
-        return self._build_x509_name(subject)
-
-    def _build_x509_name(self, x509_name):
-        count = self._backend._lib.X509_NAME_entry_count(x509_name)
-        attributes = []
-        for x in range(count):
-            entry = self._backend._lib.X509_NAME_get_entry(x509_name, x)
-            obj = self._backend._lib.X509_NAME_ENTRY_get_object(entry)
-            assert obj != self._backend._ffi.NULL
-            data = self._backend._lib.X509_NAME_ENTRY_get_data(entry)
-            assert data != self._backend._ffi.NULL
-            buf = self._backend._ffi.new("unsigned char **")
-            res = self._backend._lib.ASN1_STRING_to_UTF8(buf, data)
-            assert res >= 0
-            assert buf[0] != self._backend._ffi.NULL
-            buf = self._backend._ffi.gc(
-                buf, lambda buf: self._backend._lib.OPENSSL_free(buf[0])
-            )
-            value = self._backend._ffi.buffer(buf[0], res)[:].decode('utf8')
-            oid = self._obj2txt(obj)
-            attributes.append(
-                x509.NameAttribute(
-                    x509.ObjectIdentifier(oid), value
-                )
-            )
-
-        return x509.Name(attributes)
-
-    def _obj2txt(self, obj):
-        # Set to 80 on the recommendation of
-        # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html#return_values
-        buf_len = 80
-        buf = self._backend._ffi.new("char[]", buf_len)
-        res = self._backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
-        assert res > 0
-        return self._backend._ffi.buffer(buf, res)[:].decode()
+        return _build_x509_name(self._backend, subject)
 
     @property
     def signature_hash_algorithm(self):
-        oid = self._obj2txt(self._x509.sig_alg.algorithm)
+        oid = _obj2txt(self._backend, self._x509.sig_alg.algorithm)
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
