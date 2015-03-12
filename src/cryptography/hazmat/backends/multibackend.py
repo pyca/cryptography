@@ -326,9 +326,7 @@ class MultiBackend(object):
         )
 
     def load_pem_x509_csr(self, data):
-        for b in self._filtered_backends(
-            X509Backend
-        ):
+        for b in self._filtered_backends(X509Backend):
             return b.load_pem_x509_csr(data)
 
         raise UnsupportedAlgorithm(

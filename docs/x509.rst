@@ -84,8 +84,8 @@ Loading CSRs
 
     .. versionadded:: 0.9
 
-    Deserialize a certificate request from PEM encoded data. PEM requests are
-    base64 decoded and have delimiters that look like
+    Deserialize a certificate signing request from PEM encoded data. PEM
+    requests are base64 decoded and have delimiters that look like
     ``-----BEGIN CERTIFICATE REQUEST-----``. This is also known as PKCS#10
     format.
 
@@ -263,8 +263,8 @@ X.509 Certificate Object
             ...     print(ext)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
-X.509 CSR Object
-~~~~~~~~~~~~~~~~
+X.509 CSR (Certificate Signing Request) Object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: CSR
 
