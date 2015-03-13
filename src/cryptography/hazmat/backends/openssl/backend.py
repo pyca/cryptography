@@ -1207,9 +1207,12 @@ class Backend(object):
     def _private_key_bytes_traditional_der(self, type, cdata):
         if type == self._lib.EVP_PKEY_RSA:
             write_bio = self._lib.i2d_RSAPrivateKey_bio
+        elif (self._lib.Cryptography_HAS_EC == 1 and
+              type == self._lib.EVP_PKEY_EC):
+            write_bio = self._lib.i2d_ECPrivateKey_bio
         else:
             raise TypeError(
-                "Only RSA keys are supported for DER serialization"
+                "Only RSA & EC keys are supported for DER serialization"
             )
 
         bio = self._create_mem_bio()

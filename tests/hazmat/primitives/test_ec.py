@@ -444,13 +444,15 @@ class TestECSerialization(object):
         assert loaded_priv_num == priv_num
 
     @pytest.mark.parametrize(
-        "fmt",
+        ("fmt", "password"),
         [
-            serialization.PrivateFormat.TraditionalOpenSSL,
-            serialization.PrivateFormat.PKCS8
-        ],
+            [serialization.PrivateFormat.PKCS8, b"s"],
+            [serialization.PrivateFormat.PKCS8, b"longerpassword"],
+            [serialization.PrivateFormat.PKCS8, b"!*$&(@#$*&($T@%_somesymbol"],
+            [serialization.PrivateFormat.PKCS8, b"\x01" * 1000]
+        ]
     )
-    def test_private_bytes_unencrypted_pem(self, backend, fmt):
+    def test_private_bytes_encrypted_der(self, backend, fmt, password):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
@@ -460,31 +462,110 @@ class TestECSerialization(object):
         key = serialization.load_pem_private_key(key_bytes, None, backend)
         _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
-            serialization.Encoding.PEM,
+            serialization.Encoding.DER,
             fmt,
-            serialization.NoEncryption()
+            serialization.BestAvailableEncryption(password)
         )
-        loaded_key = serialization.load_pem_private_key(
-            serialized, None, backend
+        loaded_key = serialization.load_der_private_key(
+            serialized, password, backend
         )
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
-    def test_private_bytes_traditional_openssl_unencrypted_pem(self, backend):
+    @pytest.mark.parametrize(
+        ("encoding", "fmt", "loader_func"),
+        [
+            [
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.load_pem_private_key
+            ],
+            [
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.load_der_private_key
+            ],
+            [
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.load_pem_private_key
+            ],
+            [
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.PKCS8,
+                serialization.load_der_private_key
+            ],
+        ]
+    )
+    def test_private_bytes_unencrypted(self, backend, encoding, fmt,
+                                       loader_func):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             os.path.join(
-                "asymmetric", "PEM_Serialization", "ec_private_key.pem"),
+                "asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: pemfile.read().encode()
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
+        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
-            serialization.Encoding.PEM,
+            encoding, fmt, serialization.NoEncryption()
+        )
+        loaded_key = loader_func(serialized, None, backend)
+        loaded_priv_num = loaded_key.private_numbers()
+        priv_num = key.private_numbers()
+        assert loaded_priv_num == priv_num
+
+    @pytest.mark.parametrize(
+        ("key_path", "encoding", "loader_func"),
+        [
+            [
+                os.path.join(
+                    "asymmetric", "PEM_Serialization", "ec_private_key.pem"
+                ),
+                serialization.Encoding.PEM,
+                serialization.load_pem_private_key
+            ],
+            [
+                os.path.join(
+                    "asymmetric", "DER_Serialization", "ec_private_key.der"
+                ),
+                serialization.Encoding.DER,
+                serialization.load_der_private_key
+            ],
+        ]
+    )
+    def test_private_bytes_traditional_openssl_unencrypted(
+        self, backend, key_path, encoding, loader_func
+    ):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key_bytes = load_vectors_from_file(
+            key_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        key = loader_func(key_bytes, None, backend)
+        serialized = key.private_bytes(
+            encoding,
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
         assert serialized == key_bytes
+
+    def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        _skip_if_no_serialization(key, backend)
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.BestAvailableEncryption(b"password")
+            )
 
     def test_private_bytes_invalid_encoding(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
