@@ -15,7 +15,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import RSABackend
+from cryptography.hazmat.backends.interfaces import DSABackend, RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
@@ -508,11 +508,18 @@ class TestRSAPEMSerialization(object):
                 serialization.BestAvailableEncryption(password)
             )
 
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+class TestDSADERSerialization(object):
     def test_unsupported_private_key_encoding(self):
-        key = RSA_KEY_2048.private_key(backend)
-        with pytest.raises(ValueError):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+            lambda pemfile: pemfile.read().encode()
+        )
+        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.DER,
-                serialization.PrivateFormat.PKCS8,
+                serialization.PrivateFormat.TraditionalOpenSSL,
                 serialization.NoEncryption()
             )

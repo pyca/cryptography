@@ -1133,24 +1133,6 @@ class Backend(object):
                 "format must be an item from the PrivateFormat enum"
             )
 
-        # This is a temporary check until we land DER serialization.
-        if encoding is not serialization.Encoding.PEM:
-            raise ValueError("Only PEM encoding is supported by this backend")
-
-        if format is serialization.PrivateFormat.PKCS8:
-            write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
-            key = evp_pkey
-        elif format is serialization.PrivateFormat.TraditionalOpenSSL:
-            if evp_pkey.type == self._lib.EVP_PKEY_RSA:
-                write_bio = self._lib.PEM_write_bio_RSAPrivateKey
-            elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
-                write_bio = self._lib.PEM_write_bio_DSAPrivateKey
-            elif (self._lib.Cryptography_HAS_EC == 1 and
-                  evp_pkey.type == self._lib.EVP_PKEY_EC):
-                write_bio = self._lib.PEM_write_bio_ECPrivateKey
-
-            key = cdata
-
         if not isinstance(encryption_algorithm,
                           serialization.KeySerializationEncryption):
             raise TypeError(
@@ -1178,6 +1160,37 @@ class Backend(object):
         else:
             raise ValueError("Unsupported encryption type")
 
+        if encoding is serialization.Encoding.PEM:
+            if format is serialization.PrivateFormat.PKCS8:
+                write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
+                key = evp_pkey
+            elif format is serialization.PrivateFormat.TraditionalOpenSSL:
+                if evp_pkey.type == self._lib.EVP_PKEY_RSA:
+                    write_bio = self._lib.PEM_write_bio_RSAPrivateKey
+                elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
+                    write_bio = self._lib.PEM_write_bio_DSAPrivateKey
+                elif (self._lib.Cryptography_HAS_EC == 1 and
+                      evp_pkey.type == self._lib.EVP_PKEY_EC):
+                    write_bio = self._lib.PEM_write_bio_ECPrivateKey
+
+                key = cdata
+        elif encoding is serialization.Encoding.DER:
+            if format is serialization.PrivateFormat.TraditionalOpenSSL:
+                if not isinstance(
+                    encryption_algorithm, serialization.NoEncryption
+                ):
+                    raise ValueError(
+                        "Encryption is not supported for DER encoded "
+                        "traditional OpenSSL keys"
+                    )
+
+                return self._private_key_bytes_traditional_der(
+                    evp_pkey.type, cdata
+                )
+            elif format is serialization.PrivateFormat.PKCS8:
+                write_bio = self._lib.i2d_PKCS8PrivateKey_bio
+                key = evp_pkey
+
         bio = self._create_mem_bio()
         res = write_bio(
             bio,
@@ -1188,6 +1201,19 @@ class Backend(object):
             self._ffi.NULL,
             self._ffi.NULL
         )
+        assert res == 1
+        return self._read_mem_bio(bio)
+
+    def _private_key_bytes_traditional_der(self, type, cdata):
+        if type == self._lib.EVP_PKEY_RSA:
+            write_bio = self._lib.i2d_RSAPrivateKey_bio
+        else:
+            raise TypeError(
+                "Only RSA keys are supported for DER serialization"
+            )
+
+        bio = self._create_mem_bio()
+        res = write_bio(bio, cdata)
         assert res == 1
         return self._read_mem_bio(bio)
 
