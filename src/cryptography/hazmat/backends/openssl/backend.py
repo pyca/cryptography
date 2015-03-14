@@ -1210,10 +1210,8 @@ class Backend(object):
         elif (self._lib.Cryptography_HAS_EC == 1 and
               type == self._lib.EVP_PKEY_EC):
             write_bio = self._lib.i2d_ECPrivateKey_bio
-        else:
-            raise TypeError(
-                "Only RSA & EC keys are supported for DER serialization"
-            )
+        elif type == self._lib.EVP_PKEY_DSA:
+            write_bio = self._lib.i2d_DSAPrivateKey_bio
 
         bio = self._create_mem_bio()
         res = write_bio(bio, cdata)
