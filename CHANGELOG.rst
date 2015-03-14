@@ -12,6 +12,12 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`,
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
+* Support :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
+  serialization of private keys using the ``private_bytes`` method of
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
 
 0.8 - 2015-03-08
 ~~~~~~~~~~~~~~~~

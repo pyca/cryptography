@@ -507,19 +507,3 @@ class TestRSAPEMSerialization(object):
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password)
             )
-
-
-@pytest.mark.requires_backend_interface(interface=DSABackend)
-class TestDSADERSerialization(object):
-    def test_unsupported_private_key_encoding(self):
-        key_bytes = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
-            lambda pemfile: pemfile.read().encode()
-        )
-        key = serialization.load_pem_private_key(key_bytes, None, backend)
-        with pytest.raises(TypeError):
-            key.private_bytes(
-                serialization.Encoding.DER,
-                serialization.PrivateFormat.TraditionalOpenSSL,
-                serialization.NoEncryption()
-            )
