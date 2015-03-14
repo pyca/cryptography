@@ -141,7 +141,7 @@ EllipticCurvePrivateKey = utils.deprecated(
 
 
 EllipticCurvePrivateKeyWithNumbers = utils.deprecated(
-    ec.EllipticCurvePrivateKeyWithNumbers,
+    ec.EllipticCurvePrivateKeyWithSerialization,
     __name__,
     (
         "The EllipticCurvePrivateKeyWithNumbers interface has moved to the "
@@ -163,7 +163,7 @@ EllipticCurvePublicKey = utils.deprecated(
 
 
 EllipticCurvePublicKeyWithNumbers = utils.deprecated(
-    ec.EllipticCurvePublicKeyWithNumbers,
+    ec.EllipticCurvePublicKeyWithSerialization,
     __name__,
     (
         "The EllipticCurvePublicKeyWithNumbers interface has moved to the "
@@ -215,7 +215,7 @@ DSAPrivateKey = utils.deprecated(
 )
 
 DSAPrivateKeyWithNumbers = utils.deprecated(
-    dsa.DSAPrivateKeyWithNumbers,
+    dsa.DSAPrivateKeyWithSerialization,
     __name__,
     (
         "The DSAPrivateKeyWithNumbers interface has moved to the "
@@ -235,7 +235,7 @@ DSAPublicKey = utils.deprecated(
 )
 
 DSAPublicKeyWithNumbers = utils.deprecated(
-    dsa.DSAPublicKeyWithNumbers,
+    dsa.DSAPublicKeyWithSerialization,
     __name__,
     (
         "The DSAPublicKeyWithNumbers interface has moved to the "
@@ -310,7 +310,7 @@ RSAPublicKey = utils.deprecated(
 )
 
 RSAPublicKeyWithNumbers = utils.deprecated(
-    rsa.RSAPublicKeyWithNumbers,
+    rsa.RSAPublicKeyWithSerialization,
     __name__,
     (
         "The RSAPublicKeyWithNumbers interface has moved to the "
