@@ -15,7 +15,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
-from cryptography.hazmat.backends.interfaces import DSABackend, RSABackend
+from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
     Backend, backend
 )
