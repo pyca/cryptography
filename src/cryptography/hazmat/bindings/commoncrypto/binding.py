@@ -20,6 +20,7 @@ class Binding(object):
         "common_hmac",
         "common_key_derivation",
         "common_cryptor",
+        "common_symmetric_key_wrap",
         "secimport",
         "secitem",
         "seckey",
