@@ -173,7 +173,7 @@ class _DSAPrivateKey(object):
         )
 
 
-@utils.register_interface(dsa.DSAPublicKeyWithNumbers)
+@utils.register_interface(dsa.DSAPublicKeyWithSerialization)
 class _DSAPublicKey(object):
     def __init__(self, backend, dsa_cdata):
         self._backend = backend
