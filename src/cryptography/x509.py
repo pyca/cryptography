@@ -343,7 +343,7 @@ class Certificate(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class CSR(object):
+class CertificateSigningRequest(object):
     @abc.abstractmethod
     def public_key(self):
         """
