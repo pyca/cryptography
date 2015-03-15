@@ -7,6 +7,29 @@ X.509 is an ITU-T standard for a `public key infrastructure`_. X.509v3 is
 defined in :rfc:`5280` (which obsoletes :rfc:`2459` and :rfc:`3280`). X.509
 certificates are commonly used in protocols like `TLS`_.
 
+.. testsetup::
+
+    pem_req_data = b"""
+    -----BEGIN CERTIFICATE REQUEST-----
+    MIIC0zCCAbsCAQAwWTELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMRAw
+    DgYDVQQHDAdDaGljYWdvMREwDwYDVQQKDAhyNTA5IExMQzESMBAGA1UEAwwJaGVs
+    bG8uY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqhZx+Mo9VRd9
+    vsnWWa6NBCws21rZ0+1B/JGgB4hDsZS7iDE4Bj5z4idheFRtl8bBbdjPknq7BfoF
+    8v15Zq/Zv7i2xMSDL+LUrTBZezRd4bRTGqCm6YJ5EYkhqdcqeZleHCFImguHoq1J
+    Fh0+kObQrTHXw3ZP57a3o1IvyIUA3nNoCBL0QQhwBXaDXOojMKNR+bqB5ve8GS1y
+    Elr0AM/+cJsfaIahNQUgFKx3Eu3GeEOMKYOAG1lycgdQdmTUybLrT3U7vkClTseM
+    xHg1r5En7ALjONIhqRuq3rddYahrP8HXozb3zUy3cJ7P6IeaosuvNzvMXOX9P6HD
+    Ha9urDAJ1wIDAQABoDUwMwYJKoZIhvcNAQkOMSYwJDAiBgNVHREEGzAZggl3b3Js
+    ZC5jb22CDHdoYXRldmVyLmNvbTANBgkqhkiG9w0BAQUFAAOCAQEAS4Ro6h+z52SK
+    YSLCYARpnEu/rmh4jdqndt8naqcNb6uLx9mlKZ2W9on9XDjnSdQD9q+ZP5aZfESw
+    R0+rJhW9ZrNa/g1pt6M24ihclHYDAxYMWxT1z/TXXGM3TmZZ6gfYlNE1kkBuODHa
+    UYsR/1Ht1E1EsmmUimt2n+zQR2K8T9Coa+boaUW/GsTEuz1aaJAkj5ZvTDiIhRG4
+    AOCqFZOLAQmCCNgJnnspD9hDz/Ons085LF5wnYjN4/Nsk5tS6AGs3xjZ3jPoOGGn
+    82WQ9m4dBGoVDZXsobVTaN592JEYwN5iu72zRn7Einb4V4H5y3yD2dD4yWPlt4pk
+    5wFkeYsZEA==
+    -----END CERTIFICATE REQUEST-----
+    """.strip()
+
 
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
@@ -97,29 +120,6 @@ Loading Certificate Signing Requests
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
-
-.. testsetup::
-
-    pem_req_data = b"""
-    -----BEGIN CERTIFICATE REQUEST-----
-    MIIC0zCCAbsCAQAwWTELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMRAw
-    DgYDVQQHDAdDaGljYWdvMREwDwYDVQQKDAhyNTA5IExMQzESMBAGA1UEAwwJaGVs
-    bG8uY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqhZx+Mo9VRd9
-    vsnWWa6NBCws21rZ0+1B/JGgB4hDsZS7iDE4Bj5z4idheFRtl8bBbdjPknq7BfoF
-    8v15Zq/Zv7i2xMSDL+LUrTBZezRd4bRTGqCm6YJ5EYkhqdcqeZleHCFImguHoq1J
-    Fh0+kObQrTHXw3ZP57a3o1IvyIUA3nNoCBL0QQhwBXaDXOojMKNR+bqB5ve8GS1y
-    Elr0AM/+cJsfaIahNQUgFKx3Eu3GeEOMKYOAG1lycgdQdmTUybLrT3U7vkClTseM
-    xHg1r5En7ALjONIhqRuq3rddYahrP8HXozb3zUy3cJ7P6IeaosuvNzvMXOX9P6HD
-    Ha9urDAJ1wIDAQABoDUwMwYJKoZIhvcNAQkOMSYwJDAiBgNVHREEGzAZggl3b3Js
-    ZC5jb22CDHdoYXRldmVyLmNvbTANBgkqhkiG9w0BAQUFAAOCAQEAS4Ro6h+z52SK
-    YSLCYARpnEu/rmh4jdqndt8naqcNb6uLx9mlKZ2W9on9XDjnSdQD9q+ZP5aZfESw
-    R0+rJhW9ZrNa/g1pt6M24ihclHYDAxYMWxT1z/TXXGM3TmZZ6gfYlNE1kkBuODHa
-    UYsR/1Ht1E1EsmmUimt2n+zQR2K8T9Coa+boaUW/GsTEuz1aaJAkj5ZvTDiIhRG4
-    AOCqFZOLAQmCCNgJnnspD9hDz/Ons085LF5wnYjN4/Nsk5tS6AGs3xjZ3jPoOGGn
-    82WQ9m4dBGoVDZXsobVTaN592JEYwN5iu72zRn7Einb4V4H5y3yD2dD4yWPlt4pk
-    5wFkeYsZEA==
-    -----END CERTIFICATE REQUEST-----
-    """.strip()
 
 .. doctest::
 
