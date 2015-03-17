@@ -13,6 +13,7 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
 
     It implements the following interfaces:
 
+    * :class:`~cryptography.hazmat.backends.interfaces.AESKeyWrapBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`

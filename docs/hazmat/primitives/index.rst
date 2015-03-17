@@ -11,6 +11,7 @@ Primitives
     symmetric-encryption
     padding
     key-derivation-functions
+    keywrap
     asymmetric/index
     constant-time
     interfaces

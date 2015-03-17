@@ -518,3 +518,26 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: An instance of
             :class:`~cryptography.x509.CertificateSigningRequest`.
+
+.. class:: AESKeyWrapBackend
+
+    .. versionadded:: 0.9
+
+    A backend with methods for wrapping/unwrapping data using the AES key wrap
+    specification.
+
+    .. method:: aes_key_wrap(wrapping_key, key_to_wrap)
+
+        :param bytes wrapping_key: The wrapping key.
+
+        :param bytes key_to_wrap: The key to wrap.
+
+        :return bytes: The wrapped key.
+
+    .. method:: aes_key_unwrap(wrapping_key, wrapped_key)
+
+        :param bytes wrapping_key: The wrapping key.
+
+        :param bytes wrapped_key: The key to unwrap.
+
+        :return bytes: The unwrapped key.

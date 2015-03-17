@@ -14,7 +14,8 @@ from cryptography.hazmat.backends.commoncrypto.ciphers import (
 from cryptography.hazmat.backends.commoncrypto.hashes import _HashContext
 from cryptography.hazmat.backends.commoncrypto.hmac import _HMACContext
 from cryptography.hazmat.backends.interfaces import (
-    CipherBackend, HMACBackend, HashBackend, PBKDF2HMACBackend
+    AESKeyWrapBackend, CipherBackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend
 )
 from cryptography.hazmat.bindings.commoncrypto.binding import Binding
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -23,6 +24,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
+from cryptography.hazmat.primitives.keywrap import InvalidUnwrap
 
 
 HashMethods = namedtuple(
@@ -30,6 +32,7 @@ HashMethods = namedtuple(
 )
 
 
+@utils.register_interface(AESKeyWrapBackend)
 @utils.register_interface(CipherBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
@@ -143,6 +146,49 @@ class Backend(object):
         self._check_cipher_response(res)
 
         return self._ffi.buffer(buf)[:]
+
+    def aes_key_wrap(self, wrapping_key, key_to_wrap):
+        wraplen = len(wrapping_key)
+        assert wraplen == 16 or wraplen == 24 or wraplen == 32
+        assert len(key_to_wrap) % 8 == 0
+        # This is the iv defined by RFC 3394
+        iv = b'\xa6\xa6\xa6\xa6\xa6\xa6\xa6\xa6'
+        bufsize = self._lib.CCSymmetricWrappedSize(
+            self._lib.kCCWRAPAES, len(key_to_wrap)
+        )
+        buf = self._ffi.new("uint8_t[]", bufsize)
+        buflen = self._ffi.new("size_t *", bufsize)
+        res = self._lib.CCSymmetricKeyWrap(
+            self._lib.kCCWRAPAES, iv, len(iv), wrapping_key,
+            len(wrapping_key), key_to_wrap, len(key_to_wrap), buf, buflen
+        )
+        assert res == self._lib.kCCSuccess
+        assert buflen[0] == bufsize
+        return self._ffi.buffer(buf)[:]
+
+    def aes_key_unwrap(self, wrapping_key, wrapped_key):
+        wraplen = len(wrapping_key)
+        assert wraplen == 16 or wraplen == 24 or wraplen == 32
+        assert len(wrapped_key) % 8 == 0
+        # This is the iv defined by RFC 3394
+        iv = b'\xa6\xa6\xa6\xa6\xa6\xa6\xa6\xa6'
+        bufsize = self._lib.CCSymmetricUnwrappedSize(
+            self._lib.kCCWRAPAES, len(wrapped_key)
+        )
+        buf = self._ffi.new("uint8_t[]", bufsize)
+        buflen = self._ffi.new("size_t *", bufsize)
+        res = self._lib.CCSymmetricKeyUnwrap(
+            self._lib.kCCWRAPAES, iv, len(iv), wrapping_key, len(wrapping_key),
+            wrapped_key, len(wrapped_key), buf, buflen
+        )
+        if res != self._lib.kCCSuccess:
+            raise InvalidUnwrap
+
+        assert buflen[0] == bufsize
+        return self._ffi.buffer(buf)[:]
+
+    def aes_key_wrap_supported(self):
+        return True
 
     def _register_cipher_adapter(self, cipher_cls, cipher_const, mode_cls,
                                  mode_const):

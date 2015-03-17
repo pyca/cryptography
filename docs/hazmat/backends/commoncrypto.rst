@@ -16,6 +16,7 @@ CommonCrypto backend is only supported on OS X versions 10.8 and above.
 
     It implements the following interfaces:
 
+    * :class:`~cryptography.hazmat.backends.interfaces.AESKeyWrapBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
     * :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`

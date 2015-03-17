@@ -20,6 +20,9 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
 * Add support for parsing X.509 certificate signing requests (CSRs) with
   :func:`~cryptography.x509.load_pem_x509_csr`.
+* Add support for AES key wrapping with
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_wrap` and
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap`.
 
 0.8.1 - 2015-03-20
 ~~~~~~~~~~~~~~~~~~

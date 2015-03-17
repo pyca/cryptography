@@ -267,3 +267,24 @@ class X509Backend(object):
         """
         Load an X.509 CSR from PEM encoded data.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class AESKeyWrapBackend(object):
+    @abc.abstractmethod
+    def aes_key_wrap(self, wrapping_key, key_to_wrap):
+        """
+        Wrap a key using the AES Key Wrap (RFC 3394) specification.
+        """
+
+    @abc.abstractmethod
+    def aes_key_unwrap(self, wrapping_key, wrapped_key):
+        """
+        Unwrap a key using the AES Key Wrap (RFC 3394) specification.
+        """
+
+    @abc.abstractmethod
+    def aes_key_wrap_supported(self):
+        """
+        Reports whether the backend's underlying library supports key wrap.
+        """
