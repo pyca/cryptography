@@ -168,13 +168,16 @@ class _Certificate(object):
                 raise x509.DuplicateExtension(
                     "Duplicate {0} extension found".format(oid), oid
                 )
-            elif oid == x509.OID_BASIC_CONSTRAINTS and critical:
+            elif oid == x509.OID_BASIC_CONSTRAINTS:
+                value = self._build_basic_constraints(ext)
+            elif oid == x509.OID_KEY_USAGE and critical:
                 # TODO: remove this obviously.
                 warnings.warn(
-                    "Extension support is not fully implemented. A basic "
-                    "constraints extension with the critical flag was seen and"
-                    " IGNORED."
+                    "Extension support is not fully implemented. A key usage "
+                    "extension with the critical flag was seen and IGNORED."
                 )
+                seen_oids.add(oid)
+                continue
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -185,5 +188,31 @@ class _Certificate(object):
                 continue
 
             seen_oids.add(oid)
+            extensions.append(x509.Extension(oid, critical, value))
 
         return x509.Extensions(extensions)
+
+    def _build_basic_constraints(self, ext):
+        bc_st = self._backend._lib.X509V3_EXT_d2i(ext)
+        assert bc_st != self._backend._ffi.NULL
+        basic_constraints = self._backend._ffi.cast(
+            "BASIC_CONSTRAINTS *", bc_st
+        )
+        basic_constraints = self._backend._ffi.gc(
+            basic_constraints, self._backend._lib.BASIC_CONSTRAINTS_free
+        )
+        # The byte representation of an ASN.1 boolean true is \xff. OpenSSL
+        # chooses to just map this to its ordinal value, so true is 255 and
+        # false is 0.
+        ca = basic_constraints.ca == 255
+        if basic_constraints.pathlen == self._backend._ffi.NULL:
+            path_length = None
+        else:
+            bn = self._backend._lib.ASN1_INTEGER_to_BN(
+                basic_constraints.pathlen, self._backend._ffi.NULL
+            )
+            assert bn != self._backend._ffi.NULL
+            bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
+            path_length = self._backend._bn_to_int(bn)
+
+        return x509.BasicConstraints(ca, path_length)

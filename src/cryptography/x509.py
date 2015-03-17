@@ -78,6 +78,12 @@ class UnsupportedExtension(Exception):
         self.oid = oid
 
 
+class ExtensionNotFound(Exception):
+    def __init__(self, msg, oid):
+        super(ExtensionNotFound, self).__init__(msg)
+        self.oid = oid
+
+
 class NameAttribute(object):
     def __init__(self, oid, value):
         if not isinstance(oid, ObjectIdentifier):
@@ -162,6 +168,13 @@ OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
 class Extensions(object):
     def __init__(self, extensions):
         self._extensions = extensions
+
+    def get_extension_for_oid(self, oid):
+        for ext in self:
+            if ext.oid == oid:
+                return ext
+
+        raise ExtensionNotFound("No {0} extension was found".format(oid), oid)
 
     def __iter__(self):
         return iter(self._extensions)

@@ -74,6 +74,23 @@ class TestExtensions(object):
         ext = cert.extensions
         assert len(ext) == 0
         assert list(ext) == []
+        with pytest.raises(x509.ExtensionNotFound) as exc:
+            ext.get_extension_for_oid(x509.OID_BASIC_CONSTRAINTS)
+
+        assert exc.value.oid == x509.OID_BASIC_CONSTRAINTS
+
+    def test_one_extension(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "basic_constraints_not_critical.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        extensions = cert.extensions
+        ext = extensions.get_extension_for_oid(x509.OID_BASIC_CONSTRAINTS)
+        assert ext is not None
+        assert ext.value.ca is False
 
     def test_duplicate_extension(self, backend):
         cert = _load_cert(
@@ -112,3 +129,94 @@ class TestExtensions(object):
         )
         extensions = cert.extensions
         assert len(extensions) == 0
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestRSABasicConstraintsExtension(object):
+    def test_ca_true_pathlen_6(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs", "pathLenConstraint6CACert.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert ext is not None
+        assert ext.critical is True
+        assert ext.value.ca is True
+        assert ext.value.path_length == 6
+
+    def test_path_length_zero(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "bc_path_length_zero.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert ext is not None
+        assert ext.critical is True
+        assert ext.value.ca is True
+        assert ext.value.path_length == 0
+
+    def test_ca_true_no_pathlen(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert ext is not None
+        assert ext.critical is True
+        assert ext.value.ca is True
+        assert ext.value.path_length is None
+
+    def test_ca_false(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert ext is not None
+        assert ext.critical is True
+        assert ext.value.ca is False
+        assert ext.value.path_length is None
+
+    def test_no_basic_constraints(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509",
+                "PKITS_data",
+                "certs",
+                "ValidCertificatePathTest1EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        with pytest.raises(x509.ExtensionNotFound):
+            cert.extensions.get_extension_for_oid(x509.OID_BASIC_CONSTRAINTS)
+
+    def test_basic_constraint_not_critical(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "basic_constraints_not_critical.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert ext is not None
+        assert ext.critical is False
+        assert ext.value.ca is False
