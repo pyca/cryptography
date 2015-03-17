@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
+import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -151,3 +152,38 @@ class _Certificate(object):
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{0} not recognized".format(oid)
             )
+
+    @property
+    def extensions(self):
+        extensions = []
+        seen_oids = set()
+        extcount = self._backend._lib.X509_get_ext_count(self._x509)
+        for i in range(0, extcount):
+            ext = self._backend._lib.X509_get_ext(self._x509, i)
+            assert ext != self._backend._ffi.NULL
+            crit = self._backend._lib.X509_EXTENSION_get_critical(ext)
+            critical = crit == 1
+            oid = x509.ObjectIdentifier(_obj2txt(self._backend, ext.object))
+            if oid in seen_oids:
+                raise x509.DuplicateExtension(
+                    "Duplicate {0} extension found".format(oid), oid
+                )
+            elif oid == x509.OID_BASIC_CONSTRAINTS and critical:
+                # TODO: remove this obviously.
+                warnings.warn(
+                    "Extension support is not fully implemented. A basic "
+                    "constraints extension with the critical flag was seen and"
+                    " IGNORED."
+                )
+            elif critical:
+                raise x509.UnsupportedExtension(
+                    "{0} is not currently supported".format(oid), oid
+                )
+            else:
+                # Unsupported non-critical extension, silently skipping for now
+                seen_oids.add(oid)
+                continue
+
+            seen_oids.add(oid)
+
+        return x509.Extensions(extensions)
