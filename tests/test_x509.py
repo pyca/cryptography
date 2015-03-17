@@ -359,6 +359,10 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ]
 
+    def test_invalid_certificate_request_pem(self, backend):
+        with pytest.raises(ValueError):
+            x509.load_pem_x509_csr(b"notacsr", backend)
+
     def test_unsupported_signature_hash_algorithm_request(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_md4.pem"),
