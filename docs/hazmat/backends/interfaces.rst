@@ -514,7 +514,7 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         .. versionadded:: 0.9
 
-        :param bytes data: PEM formatted certificate request data.
+        :param bytes data: PEM formatted certificate signing request data.
 
         :returns: An instance of
             :class:`~cryptography.x509.CertificateSigningRequest`.
