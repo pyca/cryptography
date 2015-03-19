@@ -55,6 +55,11 @@ typedef struct {
 } EDIPARTYNAME;
 
 typedef struct {
+    int ca;
+    ASN1_INTEGER *pathlen;
+} BASIC_CONSTRAINTS;
+
+typedef struct {
     int type;
     union {
         char *ptr;
@@ -80,6 +85,12 @@ typedef struct {
 } GENERAL_NAME;
 
 typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
+
+typedef struct {
+    ASN1_OCTET_STRING *keyid;
+    GENERAL_NAMES *issuer;
+    ASN1_INTEGER *serial;
+} AUTHORITY_KEYID;
 
 typedef ... Cryptography_LHASH_OF_CONF_VALUE;
 """

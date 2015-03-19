@@ -139,6 +139,7 @@ int X509_get_ext_count(X509 *);
 int X509_add_ext(X509 *, X509_EXTENSION *, int);
 X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
+int X509_get_ext_by_NID(X509 *, int, int);
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
