@@ -19,6 +19,11 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
 
+0.8.1 - 2015-03-20
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.2a.
+
 0.8 - 2015-03-08
 ~~~~~~~~~~~~~~~~
 
