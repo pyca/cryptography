@@ -88,6 +88,8 @@ X.509
 * ``verisign-md2-root.pem`` - A legacy Verisign public root signed using the
   MD2 algorithm. This is a PEM conversion of the `root data`_ in the NSS source
   tree.
+* ``cryptography.io.pem`` - A leaf certificate issued by RapidSSL for the
+  cryptography website.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -108,6 +110,11 @@ Custom X.509 Vectors
 * ``utf8_common_name.pem`` - An RSA 2048 bit self-signed CA certificate
   generated using OpenSSL that contains a UTF8String common name with the value
   "We heart UTF8!™".
+* ``two_basic_constraints.pem`` - An RSA 2048 bit self-signed certificate
+  containing two basic constraints extensions.
+* ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
+  certificate containing a basic constraints extension that is not marked as
+  critical.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
