@@ -141,6 +141,52 @@ class Name(object):
         return len(self._attributes)
 
 
+OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+
+
+@six.add_metaclass(abc.ABCMeta)
+class Extension(object):
+    @abc.abstractproperty
+    def critical(self):
+        """
+        Returns the boolean value of the critical extension field.
+        """
+
+
+@utils.register_interface(Extension)
+class BasicConstraints(object):
+    oid = OID_BASIC_CONSTRAINTS
+
+    def __init__(self, ca, path_length, critical):
+        if not isinstance(ca, bool):
+            raise TypeError("ca must be a boolean value")
+
+        if not isinstance(critical, bool):
+            raise TypeError("critical must be a boolean value")
+
+        if path_length is not None and ca is False:
+            raise ValueError("path_length must be None when ca is False")
+
+        if path_length is not None and (not isinstance(path_length, int)
+                                        or path_length < 0):
+            raise TypeError(
+                "path_length must be a non-negative integer or None"
+            )
+
+        self._ca = ca
+        self._path_length = path_length
+        self._critical = critical
+
+    ca = utils.read_only_property("_ca")
+    path_length = utils.read_only_property("_path_length")
+    critical = utils.read_only_property("_critical")
+
+    def __repr__(self):
+        return "<BasicConstraints(ca={}, path_length={}, critical={})>".format(
+            self.ca, self.path_length, self.critical
+        )
+
+
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
 OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")

@@ -273,6 +273,49 @@ X.509 Certificate Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
+X.509 Extensions
+~~~~~~~~~~~~~~~~
+
+.. class:: Extension
+
+    .. versionadded:: 0.9
+
+    All X.509 extensions are registered against this interface.
+
+    .. attribute:: critical
+
+        :type: bool
+
+        Determines whether a given extension is critical or not.
+
+.. class:: BasicConstraints
+
+    .. versionadded:: 0.9
+
+    Basic constraints is an X.509 extension that defines whether a given
+    certificate is allowed to sign additional certificates and what path
+    length restrictions may exist.
+
+    .. attribute:: ca
+
+        :type: bool
+
+        Whether the certificate can sign certificates.
+
+    .. attribute:: path_length
+
+        :type: int, None
+
+        The maximum path length for certificates subordinate to this
+        certificate. This attribute only has meaning if ``ca`` is true.
+        If ``ca`` is true then a path length of None means there's no
+        restriction on the number of subordinate CAs in the certificate chain.
+        If it is zero or greater then that number defines the maximum length.
+        For example, a ``path_length`` of 1 means the certificate can sign a
+        subordinate CA, but the subordinate CA is not allowed to create
+        ``ca`` true certificates.
+
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 
