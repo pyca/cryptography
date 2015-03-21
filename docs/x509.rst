@@ -473,6 +473,14 @@ Signature Algorithm OIDs
     Corresponds to the dotted string ``2.16.840.1.101.3.4.3.2"``. This is
     a SHA256 digest signed by a DSA key.
 
+Extension OIDs
+~~~~~~~~~~~~~~
+
+.. data:: OID_BASIC_CONSTRAINTS
+
+    Corresponds to the dotted string ``"2.5.29.19"``. The identifier for the
+    basic constraints extension.
+
 
 Exceptions
 ~~~~~~~~~~
