@@ -182,8 +182,10 @@ class BasicConstraints(object):
     critical = utils.read_only_property("_critical")
 
     def __repr__(self):
-        return "<BasicConstraints(ca={}, path_length={}, critical={})>".format(
-            self.ca, self.path_length, self.critical
+        return ("<BasicConstraints(ca={ca}, "
+                "path_length={path_length}, "
+                "critical={critical})>").format(
+            ca=self.ca, path_length=self.path_length, critical=self.critical
         )
 
 
