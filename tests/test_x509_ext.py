@@ -9,32 +9,49 @@ import pytest
 from cryptography import x509
 
 
+class TestExtension(object):
+    def test_not_an_oid(self):
+        bc = x509.BasicConstraints(False, None)
+        with pytest.raises(TypeError):
+            x509.Extension("notanoid", True, bc)
+
+    def test_critical_not_a_bool(self):
+        bc = x509.BasicConstraints(False, None)
+        with pytest.raises(TypeError):
+            x509.Extension(x509.OID_BASIC_CONSTRAINTS, "notabool", bc)
+
+    def test_repr(self):
+        bc = x509.BasicConstraints(False, None)
+        ext = x509.Extension(x509.OID_BASIC_CONSTRAINTS, True, bc)
+        assert repr(ext) == (
+            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConst"
+            "raints)>, critical=True, value=<BasicConstraints(ca=False, path"
+            "_length=None)>)>"
+        )
+
+
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
         with pytest.raises(TypeError):
-            x509.BasicConstraints("notbool", None, False)
-
-    def test_critical_not_boolean(self):
-        with pytest.raises(TypeError):
-            x509.BasicConstraints(False, None, "notbool")
+            x509.BasicConstraints("notbool", None)
 
     def test_path_length_not_ca(self):
         with pytest.raises(ValueError):
-            x509.BasicConstraints(False, 0, True)
+            x509.BasicConstraints(False, 0)
 
     def test_path_length_not_int(self):
         with pytest.raises(TypeError):
-            x509.BasicConstraints(True, 1.1, True)
+            x509.BasicConstraints(True, 1.1)
 
         with pytest.raises(TypeError):
-            x509.BasicConstraints(True, "notint", True)
+            x509.BasicConstraints(True, "notint")
 
     def test_path_length_negative(self):
         with pytest.raises(TypeError):
-            x509.BasicConstraints(True, -1, True)
+            x509.BasicConstraints(True, -1)
 
     def test_repr(self):
-        na = x509.BasicConstraints(True, None, True)
+        na = x509.BasicConstraints(True, None)
         assert repr(na) == (
-            "<BasicConstraints(ca=True, path_length=None, critical=True)>"
+            "<BasicConstraints(ca=True, path_length=None)>"
         )

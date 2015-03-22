@@ -280,7 +280,11 @@ X.509 Extensions
 
     .. versionadded:: 0.9
 
-    All X.509 extensions are registered against this interface.
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        The attribute OID.
 
     .. attribute:: critical
 
@@ -288,13 +292,18 @@ X.509 Extensions
 
         Determines whether a given extension is critical or not.
 
+    .. attribute:: value
+
+        Returns an instance of the extension type corresponding to the OID.
+
 .. class:: BasicConstraints
 
     .. versionadded:: 0.9
 
-    Basic constraints is an X.509 extension that defines whether a given
+    Basic constraints is an X.509 extension type that defines whether a given
     certificate is allowed to sign additional certificates and what path
-    length restrictions may exist.
+    length restrictions may exist. It corresponds to
+    :data:`OID_BASIC_CONSTRAINTS`.
 
     .. attribute:: ca
 

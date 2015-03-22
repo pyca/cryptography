@@ -42,6 +42,7 @@ _OID_NAMES = {
     "1.2.840.10040.4.3": "dsa-with-sha1",
     "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
     "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
+    "2.5.29.19": "basicConstraints",
 }
 
 
@@ -144,25 +145,35 @@ class Name(object):
 OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
 
 
-@six.add_metaclass(abc.ABCMeta)
 class Extension(object):
-    @abc.abstractproperty
-    def critical(self):
-        """
-        Returns the boolean value of the critical extension field.
-        """
-
-
-@utils.register_interface(Extension)
-class BasicConstraints(object):
-    oid = OID_BASIC_CONSTRAINTS
-
-    def __init__(self, ca, path_length, critical):
-        if not isinstance(ca, bool):
-            raise TypeError("ca must be a boolean value")
+    def __init__(self, oid, critical, value):
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError(
+                "oid argument must be an ObjectIdentifier instance."
+            )
 
         if not isinstance(critical, bool):
             raise TypeError("critical must be a boolean value")
+
+        self._oid = oid
+        self._critical = critical
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    critical = utils.read_only_property("_critical")
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return ("<Extension(oid={oid}, "
+                "critical={critical}, value={value})>").format(
+            oid=self.oid, critical=self.critical, value=self.value
+        )
+
+
+class BasicConstraints(object):
+    def __init__(self, ca, path_length):
+        if not isinstance(ca, bool):
+            raise TypeError("ca must be a boolean value")
 
         if path_length is not None and ca is False:
             raise ValueError("path_length must be None when ca is False")
@@ -175,17 +186,14 @@ class BasicConstraints(object):
 
         self._ca = ca
         self._path_length = path_length
-        self._critical = critical
 
     ca = utils.read_only_property("_ca")
     path_length = utils.read_only_property("_path_length")
-    critical = utils.read_only_property("_critical")
 
     def __repr__(self):
         return ("<BasicConstraints(ca={ca}, "
-                "path_length={path_length}, "
-                "critical={critical})>").format(
-            ca=self.ca, path_length=self.path_length, critical=self.critical
+                "path_length={path_length})>").format(
+            ca=self.ca, path_length=self.path_length
         )
 
 
