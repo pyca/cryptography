@@ -488,7 +488,7 @@ Extension OIDs
 .. data:: OID_BASIC_CONSTRAINTS
 
     Corresponds to the dotted string ``"2.5.29.19"``. The identifier for the
-    basic constraints extension.
+    :class:`BasicConstraints` extension type.
 
 
 Exceptions

@@ -175,7 +175,7 @@ class BasicConstraints(object):
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
 
-        if path_length is not None and ca is False:
+        if path_length is not None and not ca:
             raise ValueError("path_length must be None when ca is False")
 
         if path_length is not None and (not isinstance(path_length, int)
