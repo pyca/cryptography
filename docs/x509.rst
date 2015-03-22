@@ -304,7 +304,7 @@ X.509 Extensions
 
     .. attribute:: path_length
 
-        :type: int, None
+        :type: int or None
 
         The maximum path length for certificates subordinate to this
         certificate. This attribute only has meaning if ``ca`` is true.
@@ -313,7 +313,7 @@ X.509 Extensions
         If it is zero or greater then that number defines the maximum length.
         For example, a ``path_length`` of 1 means the certificate can sign a
         subordinate CA, but the subordinate CA is not allowed to create
-        ``ca`` true certificates.
+        subordinates with ``ca`` set to true.
 
 
 Object Identifiers
