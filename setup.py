@@ -62,6 +62,10 @@ test_requirements = [
     "iso8601",
 ]
 
+if sys.version_info[:2] == (2, 6):
+    test_requirements.append("hypothesis")
+    test_requirements.append("hypothesis-pytest")
+
 # If there's no vectors locally that probably means we are in a tarball and
 # need to go and get the matching vectors package from PyPi
 if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
