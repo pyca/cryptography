@@ -62,7 +62,7 @@ test_requirements = [
     "iso8601",
 ]
 
-if sys.version_info[:2] == (2, 6):
+if sys.version_info[:2] != (2, 6):
     test_requirements.append("hypothesis")
     test_requirements.append("hypothesis-pytest")
 
