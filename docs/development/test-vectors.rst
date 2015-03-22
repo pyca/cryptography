@@ -154,6 +154,11 @@ Key derivation functions
 * PBKDF2 (HMAC-SHA1) from :rfc:`6070`.
 * scrypt from the `draft RFC`_.
 
+Key wrapping
+~~~~~~~~~~~~
+
+* AES key wrap (AESKW) and 3DES key wrap test vectors from `NIST CAVP`_.
+
 Recipes
 ~~~~~~~
 
