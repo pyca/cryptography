@@ -284,13 +284,16 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The attribute OID.
+        The extension OID.
 
     .. attribute:: critical
 
         :type: bool
 
-        Determines whether a given extension is critical or not.
+        Determines whether a given extension is critical or not. :rfc:`5280`
+        requires that "A certificate-using system MUST reject the certificate
+        if it encounters a critical extension it does not recognize or a
+        critical extension that contains information that it cannot process".
 
     .. attribute:: value
 

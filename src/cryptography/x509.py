@@ -164,10 +164,8 @@ class Extension(object):
     value = utils.read_only_property("_value")
 
     def __repr__(self):
-        return ("<Extension(oid={oid}, "
-                "critical={critical}, value={value})>").format(
-            oid=self.oid, critical=self.critical, value=self.value
-        )
+        return ("<Extension(oid={0.oid}, critical={0.critical}, "
+                "value={0.value})>").format(self)
 
 
 class BasicConstraints(object):
@@ -191,10 +189,8 @@ class BasicConstraints(object):
     path_length = utils.read_only_property("_path_length")
 
     def __repr__(self):
-        return ("<BasicConstraints(ca={ca}, "
-                "path_length={path_length})>").format(
-            ca=self.ca, path_length=self.path_length
-        )
+        return ("<BasicConstraints(ca={0.ca}, "
+                "path_length={0.path_length})>").format(self)
 
 
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
