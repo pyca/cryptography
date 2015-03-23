@@ -90,10 +90,7 @@ class NameAttribute(object):
         return not self == other
 
     def __repr__(self):
-        return "<NameAttribute(oid={oid}, value={value!r})>".format(
-            oid=self.oid,
-            value=self.value
-        )
+        return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
 
 
 class ObjectIdentifier(object):
