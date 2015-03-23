@@ -348,7 +348,7 @@ class RSAPublicNumbers(object):
         return backend.load_rsa_public_numbers(self)
 
     def __repr__(self):
-        return "<RSAPublicNumbers(e={0}, n={1})>".format(self._e, self._n)
+        return "<RSAPublicNumbers(e={0.e}, n={0.n})>".format(self)
 
     def __eq__(self, other):
         if not isinstance(other, RSAPublicNumbers):
