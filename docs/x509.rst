@@ -273,6 +273,61 @@ X.509 Certificate Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
+X.509 Extensions
+~~~~~~~~~~~~~~~~
+
+.. class:: Extension
+
+    .. versionadded:: 0.9
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        The :ref:`extension OID <extension_oids>`.
+
+    .. attribute:: critical
+
+        :type: bool
+
+        Determines whether a given extension is critical or not. :rfc:`5280`
+        requires that "A certificate-using system MUST reject the certificate
+        if it encounters a critical extension it does not recognize or a
+        critical extension that contains information that it cannot process".
+
+    .. attribute:: value
+
+        Returns an instance of the extension type corresponding to the OID.
+
+.. class:: BasicConstraints
+
+    .. versionadded:: 0.9
+
+    Basic constraints is an X.509 extension type that defines whether a given
+    certificate is allowed to sign additional certificates and what path
+    length restrictions may exist. It corresponds to
+    :data:`OID_BASIC_CONSTRAINTS`.
+
+    .. attribute:: ca
+
+        :type: bool
+
+        Whether the certificate can sign certificates.
+
+    .. attribute:: path_length
+
+        :type: int or None
+
+        The maximum path length for certificates subordinate to this
+        certificate. This attribute only has meaning if ``ca`` is true.
+        If ``ca`` is true then a path length of None means there's no
+        restriction on the number of subordinate CAs in the certificate chain.
+        If it is zero or greater then that number defines the maximum length.
+        For example, a ``path_length`` of 1 means the certificate can sign a
+        subordinate CA, but the subordinate CA is not allowed to create
+        subordinates with ``ca`` set to true.
+
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 
@@ -429,6 +484,16 @@ Signature Algorithm OIDs
 
     Corresponds to the dotted string ``2.16.840.1.101.3.4.3.2"``. This is
     a SHA256 digest signed by a DSA key.
+
+.. _extension_oids:
+
+Extension OIDs
+~~~~~~~~~~~~~~
+
+.. data:: OID_BASIC_CONSTRAINTS
+
+    Corresponds to the dotted string ``"2.5.29.19"``. The identifier for the
+    :class:`BasicConstraints` extension type.
 
 
 Exceptions

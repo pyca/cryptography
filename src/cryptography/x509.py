@@ -42,6 +42,7 @@ _OID_NAMES = {
     "1.2.840.10040.4.3": "dsa-with-sha1",
     "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
     "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
+    "2.5.29.19": "basicConstraints",
 }
 
 
@@ -136,6 +137,59 @@ class Name(object):
 
     def __len__(self):
         return len(self._attributes)
+
+
+OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+
+
+class Extension(object):
+    def __init__(self, oid, critical, value):
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError(
+                "oid argument must be an ObjectIdentifier instance."
+            )
+
+        if not isinstance(critical, bool):
+            raise TypeError("critical must be a boolean value")
+
+        self._oid = oid
+        self._critical = critical
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    critical = utils.read_only_property("_critical")
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return ("<Extension(oid={0.oid}, critical={0.critical}, "
+                "value={0.value})>").format(self)
+
+
+class BasicConstraints(object):
+    def __init__(self, ca, path_length):
+        if not isinstance(ca, bool):
+            raise TypeError("ca must be a boolean value")
+
+        if path_length is not None and not ca:
+            raise ValueError("path_length must be None when ca is False")
+
+        if (
+            path_length is not None and
+            (not isinstance(path_length, six.integer_types) or path_length < 0)
+        ):
+            raise TypeError(
+                "path_length must be a non-negative integer or None"
+            )
+
+        self._ca = ca
+        self._path_length = path_length
+
+    ca = utils.read_only_property("_ca")
+    path_length = utils.read_only_property("_path_length")
+
+    def __repr__(self):
+        return ("<BasicConstraints(ca={0.ca}, "
+                "path_length={0.path_length})>").format(self)
 
 
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
