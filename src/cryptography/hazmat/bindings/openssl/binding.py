@@ -98,6 +98,7 @@ class Binding(object):
 
     _locks = None
     _lock_cb_handle = None
+    _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
 
     ffi = build_ffi_for_binding(
@@ -117,14 +118,16 @@ class Binding(object):
         if cls.lib is not None:
             return
 
-        cls.lib = load_library_for_binding(
-            cls.ffi,
-            cls._module_prefix,
-            cls._modules,
-        )
+        with self._init_lock:
+            if cls.lib is None:
+                cls.lib = load_library_for_binding(
+                    cls.ffi,
+                    cls._module_prefix,
+                    cls._modules,
+                )
 
-        res = cls.lib.Cryptography_add_osrandom_engine()
-        assert res != 0
+                res = cls.lib.Cryptography_add_osrandom_engine()
+                assert res != 0
 
     @classmethod
     def init_static_locks(cls):
