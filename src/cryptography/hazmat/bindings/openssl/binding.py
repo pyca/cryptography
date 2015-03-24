@@ -118,7 +118,7 @@ class Binding(object):
         if cls.lib is not None:
             return
 
-        with self._init_lock:
+        with cls._init_lock:
             if cls.lib is None:
                 cls.lib = load_library_for_binding(
                     cls.ffi,
