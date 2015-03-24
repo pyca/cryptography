@@ -7,8 +7,8 @@ from __future__ import absolute_import, division, print_function
 import os
 
 with open(os.path.join(
-    os.path.dirname(__file__), "src/osrandom_engine.h")
-) as f:
+    os.path.dirname(__file__), "src/osrandom_engine.h"
+)) as f:
     INCLUDES = f.read()
 
 TYPES = """
@@ -24,8 +24,8 @@ MACROS = """
 """
 
 with open(os.path.join(
-    os.path.dirname(__file__), "src/osrandom_engine.c")
-) as f:
+    os.path.dirname(__file__), "src/osrandom_engine.c"
+)) as f:
     CUSTOMIZATIONS = f.read()
 
 CONDITIONAL_NAMES = {}
