@@ -284,7 +284,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The extension OID.
+        The :ref:`extension OID <extension_oids>`.
 
     .. attribute:: critical
 
@@ -484,6 +484,8 @@ Signature Algorithm OIDs
 
     Corresponds to the dotted string ``2.16.840.1.101.3.4.3.2"``. This is
     a SHA256 digest signed by a DSA key.
+
+.. _extension_oids:
 
 Extension OIDs
 ~~~~~~~~~~~~~~
