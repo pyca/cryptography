@@ -176,8 +176,11 @@ class BasicConstraints(object):
         if path_length is not None and not ca:
             raise ValueError("path_length must be None when ca is False")
 
-        if path_length is not None and (not isinstance(path_length, int)
-                                        or path_length < 0):
+        if (
+            path_length is not None and (not isinstance(
+                path_length, six.integer_types
+            ) or path_length < 0)
+        ):
             raise TypeError(
                 "path_length must be a non-negative integer or None"
             )
