@@ -327,7 +327,8 @@ class Backend(object):
             bn_num_bytes = (self._lib.BN_num_bits(bn) + 7) // 8
             bin_ptr = self._ffi.new("unsigned char[]", bn_num_bytes)
             bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
-            assert bin_len > 0
+            # A zero length means the BN has value 0
+            assert bin_len >= 0
             assert bin_ptr != self._ffi.NULL
             return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
 
