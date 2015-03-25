@@ -210,6 +210,10 @@ class TestOpenSSL(object):
         assert bn == bn_ptr
         assert backend._bn_to_int(bn_ptr) == value
 
+    def test_bn_to_int(self):
+        bn = backend._int_to_bn(0)
+        assert backend._bn_to_int(bn) == 0
+
 
 class TestOpenSSLRandomEngine(object):
     def teardown_method(self, method):
