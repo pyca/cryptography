@@ -115,6 +115,9 @@ Custom X.509 Vectors
 * ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
   certificate containing a basic constraints extension that is not marked as
   critical.
+* ``bc_path_length_zero.pem`` - An RSA 2048 bit self-signed
+  certificate containing a basic constraints extension with a path length of
+  zero.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
