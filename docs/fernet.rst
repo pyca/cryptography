@@ -92,8 +92,10 @@ has support for implementing key rotation via :class:`MultiFernet`.
         >>> f.decrypt(token)
         'Secret message!'
 
-    Fernet performs all encryption options using the *first* key in the
-    ``list`` provided. Decryption supports using *any* of constituent keys.
+    MultiFernet performs all encryption options using the *first* key in the
+    ``list`` provided. MultiFernet attempts to decrypt tokens with each key in
+    turn . A :class:`cryptography.fernet.InvalidToken` exception is raised if
+    the correct key is not found in the ``list`` provided.
 
     Key rotation makes it easy to replace old keys. You can add your new key at
     the front of the list to start encrypting new messages, and remove old keys
