@@ -1,29 +1,115 @@
-language: c
-os:
-    - osx
-    - linux
-compiler:
-    - clang
-    - gcc
-env:
-    matrix:
-        - TOXENV=py26
-        - TOXENV=py27
-        - TOXENV=py32
-        - TOXENV=py33
-        - TOXENV=py34
-        - TOXENV=pypy
-        - TOXENV=pypy3
-        - TOXENV=py26 OPENSSL=0.9.8
-        - TOXENV=py27 OPENSSL=0.9.8
-        - TOXENV=py32 OPENSSL=0.9.8
-        - TOXENV=py33 OPENSSL=0.9.8
-        - TOXENV=py34 OPENSSL=0.9.8
-        - TOXENV=pypy OPENSSL=0.9.8
-        - TOXENV=pypy3 OPENSSL=0.9.8
-        - TOXENV=docs
-        - TOXENV=pep8
-        - TOXENV=py3pep8
+sudo: false
+language: python
+cache:
+    directories:
+        - $HOME/.cache/pip
+matrix:
+    include:
+        - python: 2.6 # these are just to make travis's UI a bit prettier
+          env: TOXENV=py26
+        - python: 2.7
+          env: TOXENV=py27
+        - python: 3.2
+          env: TOXENV=py32
+        - python: 3.3
+          env: TOXENV=py33
+        - python: 3.4
+          env: TOXENV=py34
+        - python: 2.6
+          env: TOXENV=py26 OPENSSL=0.9.8
+          addons:
+              apt:
+                  sources:
+                      - lucid
+                  packages:
+                      - libssl-dev/lucid
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=0.9.8
+          addons:
+              apt:
+                  sources:
+                      - lucid
+                  packages:
+                      - libssl-dev/lucid
+        - python: 3.2
+          env: TOXENV=py32 OPENSSL=0.9.8
+          addons:
+              apt:
+                  sources:
+                      - lucid
+                  packages:
+                      - libssl-dev/lucid
+        - python: 3.3
+          env: TOXENV=py33 OPENSSL=0.9.8
+          addons:
+              apt:
+                  sources:
+                      - lucid
+                  packages:
+                      - libssl-dev/lucid
+        - python: 3.4
+          env: TOXENV=py34 OPENSSL=0.9.8
+          addons:
+              apt:
+                  sources:
+                      - lucid
+                  packages:
+                      - libssl-dev/lucid
+        - python: 2.7
+          env: TOXENV=docs
+          addons:
+              apt:
+                  packages:
+                      - libenchant-dev
+        - python: 2.7
+          env: TOXENV=pep8
+        - python: 3.3
+          env: TOXENV=py3pep8
+        - language: generic
+          os: osx
+          env: TOXENV=py26
+        - language: generic
+          os: osx
+          env: TOXENV=py27
+        - language: generic
+          os: osx
+          env: TOXENV=py32
+        - language: generic
+          os: osx
+          env: TOXENV=py33
+        - language: generic
+          os: osx
+          env: TOXENV=py34
+        - language: generic
+          os: osx
+          env: TOXENV=pypy
+        - language: generic
+          os: osx
+          env: TOXENV=pypy3
+        - language: generic
+          os: osx
+          env: TOXENV=py26 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=py27 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=py32 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=py33 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=py34 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=pypy OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=pypy3 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          env: TOXENV=docs
 
 install:
     - ./.travis/install.sh
@@ -40,31 +126,3 @@ notifications:
             - "irc.freenode.org#cryptography-dev"
         use_notice: true
         skip_join: true
-    webhooks:
-        - https://buildtimetrend.herokuapp.com/travis
-
-matrix:
-    exclude:
-        # excluding pypy3 from linux configs until the ubuntu ppa has pypy3 available.
-        - os: linux
-          env: TOXENV=pypy3
-        - os: linux
-          env: TOXENV=pypy3 OPENSSL=0.9.8
-        - os: osx
-          compiler: gcc
-        - os: osx
-          env: TOXENV=pep8
-          compiler: clang
-        - os: osx
-          env: TOXENV=py3pep8
-          compiler: clang
-
-        - os: linux
-          env: TOXENV=docs
-          compiler: clang
-        - os: linux
-          env: TOXENV=pep8
-          compiler: clang
-        - os: linux
-          env: TOXENV=py3pep8
-          compiler: clang
