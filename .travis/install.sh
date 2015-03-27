@@ -3,7 +3,7 @@
 set -e
 set -x
 
-export PATH="~/.local/bin;$PATH"
+export PATH="~/.local/bin:$PATH"
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update
