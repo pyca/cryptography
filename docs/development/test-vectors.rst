@@ -124,6 +124,14 @@ Custom X.509 Vectors
 * ``unsupported_extension_critical.pem`` - An RSA 2048 bit self-signed
   certificate containing an unsupported extension type marked critical. The OID
   was encoded as "1.2.3.4" with an ``extnValue`` of "value".
+* ``san_email_dns_ip_dirname_uri.pem`` - An RSA 2048 bit self-signed
+  certificate containing a subject alternative name extension with the
+  following general names: ``rfc822Name``, ``dNSName``, ``iPAddress``,
+  ``directoryName``, and ``uniformResourceIdentifier``.
+* ``san_other_name.pem`` - An RSA 2048 bit self-signed certificate containing
+  a subject alternative name extension with the ``otherName`` general name.
+* ``san_registered_id.pem`` - An RSA 1024 bit certificate containing a
+  subject alternative name extension with the ``registeredID`` general name.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
