@@ -133,7 +133,7 @@ class TestExtensions(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestRSABasicConstraintsExtension(object):
+class TestBasicConstraintsExtension(object):
     def test_ca_true_pathlen_6(self, backend):
         cert = _load_cert(
             os.path.join(
