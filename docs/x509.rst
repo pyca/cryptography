@@ -196,6 +196,15 @@ X.509 Certificate Object
             >>> isinstance(cert.signature_hash_algorithm, hashes.SHA256)
             True
 
+    .. attribute:: extensions
+
+        :type: :class:`Extensions`
+
+        The extensions encoded in the certificate.
+
+        :raises cryptography.x509.DuplicateExtension: If more than one
+            extension of the same type is found within the certificate.
+
 .. class:: Name
 
     .. versionadded:: 0.8
@@ -275,6 +284,13 @@ X.509 Certificate Object
 
 X.509 Extensions
 ~~~~~~~~~~~~~~~~
+
+.. class:: Extensions
+
+    .. versionadded:: 0.9
+
+    An X.509 Extensions instance is an ordered list of extensions.  The object
+    is iterable to get every extension.
 
 .. class:: Extension
 
@@ -482,7 +498,7 @@ Signature Algorithm OIDs
 
 .. data:: OID_DSA_WITH_SHA256
 
-    Corresponds to the dotted string ``2.16.840.1.101.3.4.3.2"``. This is
+    Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.2"``. This is
     a SHA256 digest signed by a DSA key.
 
 .. _extension_oids:
@@ -508,6 +524,27 @@ Exceptions
         :type: int
 
         Returns the raw version that was parsed from the certificate.
+
+.. class:: DuplicateExtension
+
+    This is raised when more than one X.509 extension of the same type is
+    found within a certificate.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID.
+
+.. class:: UnsupportedExtension
+
+    This is raised when a certificate contains an unsupported extension type.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID.
 
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure

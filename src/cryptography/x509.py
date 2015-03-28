@@ -43,6 +43,7 @@ _OID_NAMES = {
     "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
     "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
     "2.5.29.19": "basicConstraints",
+    "2.5.29.15": "keyUsage",
 }
 
 
@@ -63,6 +64,18 @@ class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
         self.parsed_version = parsed_version
+
+
+class DuplicateExtension(Exception):
+    def __init__(self, msg, oid):
+        super(DuplicateExtension, self).__init__(msg)
+        self.oid = oid
+
+
+class UnsupportedExtension(Exception):
+    def __init__(self, msg, oid):
+        super(UnsupportedExtension, self).__init__(msg)
+        self.oid = oid
 
 
 class NameAttribute(object):
@@ -113,6 +126,9 @@ class ObjectIdentifier(object):
             _OID_NAMES.get(self._dotted_string, "Unknown OID")
         )
 
+    def __hash__(self):
+        return hash(self.dotted_string)
+
     dotted_string = utils.read_only_property("_dotted_string")
 
 
@@ -139,7 +155,19 @@ class Name(object):
         return len(self._attributes)
 
 
+OID_KEY_USAGE = ObjectIdentifier("2.5.29.15")
 OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+
+
+class Extensions(object):
+    def __init__(self, extensions):
+        self._extensions = extensions
+
+    def __iter__(self):
+        return iter(self._extensions)
+
+    def __len__(self):
+        return len(self._extensions)
 
 
 class Extension(object):

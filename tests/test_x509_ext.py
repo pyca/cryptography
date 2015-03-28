@@ -4,9 +4,14 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import pytest
 
 from cryptography import x509
+from cryptography.hazmat.backends.interfaces import RSABackend, X509Backend
+
+from .test_x509 import _load_cert
 
 
 class TestExtension(object):
@@ -55,3 +60,55 @@ class TestBasicConstraints(object):
         assert repr(na) == (
             "<BasicConstraints(ca=True, path_length=None)>"
         )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestExtensions(object):
+    def test_no_extensions(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "verisign_md2_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions
+        assert len(ext) == 0
+        assert list(ext) == []
+
+    def test_duplicate_extension(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "two_basic_constraints.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(x509.DuplicateExtension) as exc:
+            cert.extensions
+
+        assert exc.value.oid == x509.OID_BASIC_CONSTRAINTS
+
+    def test_unsupported_critical_extension(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "unsupported_extension_critical.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(x509.UnsupportedExtension) as exc:
+            cert.extensions
+
+        assert exc.value.oid == x509.ObjectIdentifier("1.2.3.4")
+
+    def test_unsupported_extension(self, backend):
+        # TODO: this will raise an exception when all extensions are complete
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "unsupported_extension.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        extensions = cert.extensions
+        assert len(extensions) == 0
