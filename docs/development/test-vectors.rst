@@ -121,6 +121,9 @@ Custom X.509 Vectors
 * ``unsupported_extension.pem`` - An RSA 2048 bit self-signed certificate
   containing an unsupported extension type. The OID was encoded as
   "1.2.3.4" with an ``extnValue`` of "value".
+* ``unsupported_extension_critical.pem`` - An RSA 2048 bit self-signed
+  certificate containing an unsupported extension type marked critical. The OID
+  was encoded as "1.2.3.4" with an ``extnValue`` of "value".
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
