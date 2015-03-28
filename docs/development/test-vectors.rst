@@ -118,6 +118,9 @@ Custom X.509 Vectors
 * ``bc_path_length_zero.pem`` - An RSA 2048 bit self-signed
   certificate containing a basic constraints extension with a path length of
   zero.
+* ``unsupported_extension.pem`` - An RSA 2048 bit self-signed certificate
+  containing an unsupported extension type. The OID was encoded as
+  "1.2.3.4" with an ``extnValue`` of "value".
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
