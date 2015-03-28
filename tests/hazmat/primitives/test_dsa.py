@@ -930,7 +930,7 @@ class TestDSASerialization(object):
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
-        assert serialized == key_bytes
+        assert serialized.strip() == key_bytes.strip()
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         key = DSA_KEY_1024.private_key(backend)
@@ -1034,7 +1034,7 @@ class TestDSAPEMPublicKeySerialization(object):
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        assert serialized == key_bytes
+        assert serialized.strip() == key_bytes.strip()
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()

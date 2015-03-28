@@ -1874,7 +1874,7 @@ class TestRSAPrivateKeySerialization(object):
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
-        assert serialized == key_bytes
+        assert serialized.strip() == key_bytes.strip()
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         key = RSA_KEY_2048.private_key(backend)
@@ -1968,7 +1968,7 @@ class TestRSAPEMPublicKeySerialization(object):
         key = loader_func(key_bytes, backend)
         _skip_if_no_serialization(key, backend)
         serialized = key.public_bytes(encoding, format)
-        assert serialized == key_bytes
+        assert serialized.strip() == key_bytes.strip()
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()

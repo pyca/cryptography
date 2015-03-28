@@ -548,7 +548,7 @@ class TestECSerialization(object):
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
-        assert serialized == key_bytes
+        assert serialized.strip() == key_bytes.strip()
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -668,7 +668,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        assert serialized == key_bytes
+        assert serialized.strip() == key_bytes.strip()
 
     def test_public_bytes_invalid_encoding(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
