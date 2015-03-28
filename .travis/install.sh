@@ -41,8 +41,8 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             ;;
         pypy)
             brew upgrade pyenv
-            pyenv install pypy-2.5.0
-            pyenv global pypy-2.5.0
+            pyenv install pypy-2.5.1
+            pyenv global pypy-2.5.1
             ;;
         pypy3)
             brew upgrade pyenv
