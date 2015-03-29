@@ -1069,7 +1069,13 @@ class Backend(object):
         return self._ffi.buffer(buf)[:]
 
     def aes_key_wrap_supported(self):
-        return self._lib.Cryptography_HAS_AES_WRAP == 1
+        # There was a bug in OpenSSL 0.9.8h through 0.9.8o that causes
+        # incorrect wrap/unwrap. We solve this by disabling key wrap for
+        # versions less than 0.9.8p.
+        return (
+            self._lib.Cryptography_HAS_AES_WRAP == 1 and
+            self._lib.SSLeay() > 0x0090810f
+        )
 
     def _elliptic_curve_to_nid(self, curve):
         """
