@@ -669,7 +669,7 @@ class Backend(object):
 
     def dsa_parameters_supported(self, p, q, g):
         if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return (utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160)
+            return utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160
         else:
             return True
 
