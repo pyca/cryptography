@@ -45,7 +45,7 @@ def _build_x509_name(backend, x509_name):
         assert res >= 0
         assert buf[0] != backend._ffi.NULL
         buf = backend._ffi.gc(
-            buf, lambda buf: backend._lib.OPENSSL_free(buf[0])
+            buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
         )
         value = backend._ffi.buffer(buf[0], res)[:].decode('utf8')
         oid = _obj2txt(backend, obj)

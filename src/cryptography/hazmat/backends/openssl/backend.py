@@ -477,20 +477,20 @@ class Backend(object):
         pointer.
         """
 
-        type = evp_pkey.type
+        key_type = evp_pkey.type
 
-        if type == self._lib.EVP_PKEY_RSA:
+        if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             assert rsa_cdata != self._ffi.NULL
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
             return _RSAPrivateKey(self, rsa_cdata)
-        elif type == self._lib.EVP_PKEY_DSA:
+        elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPrivateKey(self, dsa_cdata)
         elif (self._lib.Cryptography_HAS_EC == 1 and
-              type == self._lib.EVP_PKEY_EC):
+              key_type == self._lib.EVP_PKEY_EC):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
@@ -504,20 +504,20 @@ class Backend(object):
         pointer.
         """
 
-        type = evp_pkey.type
+        key_type = evp_pkey.type
 
-        if type == self._lib.EVP_PKEY_RSA:
+        if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             assert rsa_cdata != self._ffi.NULL
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
             return _RSAPublicKey(self, rsa_cdata)
-        elif type == self._lib.EVP_PKEY_DSA:
+        elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
             return _DSAPublicKey(self, dsa_cdata)
         elif (self._lib.Cryptography_HAS_EC == 1 and
-              type == self._lib.EVP_PKEY_EC):
+              key_type == self._lib.EVP_PKEY_EC):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
@@ -671,7 +671,7 @@ class Backend(object):
 
     def dsa_parameters_supported(self, p, q, g):
         if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return (utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160)
+            return utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160
         else:
             return True
 
@@ -1219,13 +1219,13 @@ class Backend(object):
         assert res == 1
         return self._read_mem_bio(bio)
 
-    def _private_key_bytes_traditional_der(self, type, cdata):
-        if type == self._lib.EVP_PKEY_RSA:
+    def _private_key_bytes_traditional_der(self, key_type, cdata):
+        if key_type == self._lib.EVP_PKEY_RSA:
             write_bio = self._lib.i2d_RSAPrivateKey_bio
         elif (self._lib.Cryptography_HAS_EC == 1 and
-              type == self._lib.EVP_PKEY_EC):
+              key_type == self._lib.EVP_PKEY_EC):
             write_bio = self._lib.i2d_ECPrivateKey_bio
-        elif type == self._lib.EVP_PKEY_DSA:
+        elif key_type == self._lib.EVP_PKEY_DSA:
             write_bio = self._lib.i2d_DSAPrivateKey_bio
 
         bio = self._create_mem_bio()
