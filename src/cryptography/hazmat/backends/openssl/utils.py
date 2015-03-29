@@ -16,7 +16,7 @@ def _truncate_digest(digest, order_bits):
 
     if 8 * digest_len > order_bits:
         rshift = 8 - (order_bits & 0x7)
-        assert rshift > 0 and rshift < 8
+        assert 0 < rshift < 8
 
         mask = 0xFF >> rshift << rshift
 
