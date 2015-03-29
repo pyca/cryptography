@@ -68,7 +68,7 @@ else
     fi
 
     # Retry `update` on failure, some of the servers aren't super reliable.
-    sudo apt-get -y update || sudo apt-get -y update
+    sudo apt-get -y update || sudo apt-get -y update || sudo apt-get -y update
 
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
         sudo apt-get install -y --force-yes libssl-dev/lucid
