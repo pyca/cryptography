@@ -60,6 +60,10 @@ def load_der_x509_certificate(data, backend):
     return backend.load_der_x509_certificate(data)
 
 
+def load_pem_x509_csr(data, backend):
+    return backend.load_pem_x509_csr(data)
+
+
 class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
@@ -322,6 +326,28 @@ class Certificate(object):
     def issuer(self):
         """
         Returns the issuer name object.
+        """
+
+    @abc.abstractproperty
+    def subject(self):
+        """
+        Returns the subject name object.
+        """
+
+    @abc.abstractproperty
+    def signature_hash_algorithm(self):
+        """
+        Returns a HashAlgorithm corresponding to the type of the digest signed
+        in the certificate.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CertificateSigningRequest(object):
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        Returns the public key
         """
 
     @abc.abstractproperty

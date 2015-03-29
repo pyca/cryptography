@@ -340,6 +340,38 @@ class TestRSACertificate(object):
         with pytest.raises(UnsupportedAlgorithm):
             cert.signature_hash_algorithm
 
+    def test_load_rsa_certificate_request(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]
+
+    def test_invalid_certificate_request_pem(self, backend):
+        with pytest.raises(ValueError):
+            x509.load_pem_x509_csr(b"notacsr", backend)
+
+    def test_unsupported_signature_hash_algorithm_request(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_md4.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            request.signature_hash_algorithm
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -392,6 +424,25 @@ class TestDSACertificate(object):
                 "822ff5d234e073b901cf5941f58e1f538e71d40d", 16
             )
 
+    def test_load_dsa_request(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "dsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, dsa.DSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+        ]
+
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -427,6 +478,26 @@ class TestECDSACertificate(object):
         )
         with pytest.raises(NotImplementedError):
             cert.public_key()
+
+    def test_load_ecdsa_certificate_request(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        request = _load_cert(
+            os.path.join("x509", "requests", "ec_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
+        public_key = request.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+        ]
 
 
 class TestNameAttribute(object):

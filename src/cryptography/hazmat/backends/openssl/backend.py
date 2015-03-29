@@ -34,7 +34,9 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
-from cryptography.hazmat.backends.openssl.x509 import _Certificate
+from cryptography.hazmat.backends.openssl.x509 import (
+    _Certificate, _CertificateSigningRequest
+)
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -819,6 +821,18 @@ class Backend(object):
 
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
+
+    def load_pem_x509_csr(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509_req = self._lib.PEM_read_bio_X509_REQ(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+        if x509_req == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load request")
+
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
+        return _CertificateSigningRequest(self, x509_req)
 
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)

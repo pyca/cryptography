@@ -216,3 +216,32 @@ class _Certificate(object):
             path_length = self._backend._bn_to_int(bn)
 
         return x509.BasicConstraints(ca, path_length)
+
+
+@utils.register_interface(x509.CertificateSigningRequest)
+class _CertificateSigningRequest(object):
+    def __init__(self, backend, x509_req):
+        self._backend = backend
+        self._x509_req = x509_req
+
+    def public_key(self):
+        pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
+        assert pkey != self._backend._ffi.NULL
+        pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
+        return self._backend._evp_pkey_to_public_key(pkey)
+
+    @property
+    def subject(self):
+        subject = self._backend._lib.X509_REQ_get_subject_name(self._x509_req)
+        assert subject != self._backend._ffi.NULL
+        return _build_x509_name(self._backend, subject)
+
+    @property
+    def signature_hash_algorithm(self):
+        oid = _obj2txt(self._backend, self._x509_req.sig_alg.algorithm)
+        try:
+            return x509._SIG_OIDS_TO_HASH[oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm OID:{0} not recognized".format(oid)
+            )
