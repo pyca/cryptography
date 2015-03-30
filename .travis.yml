@@ -1,14 +1,14 @@
 language: c
 os:
-    - osx
     - linux
+    - osx
 compiler:
     - clang
     - gcc
 sudo: false
 addons:
     apt:
-        sources::
+        sources:
             - deadsnakes
             - pypy
         packages:
