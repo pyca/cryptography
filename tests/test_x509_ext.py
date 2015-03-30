@@ -35,6 +35,103 @@ class TestExtension(object):
         )
 
 
+class TestKeyUsage(object):
+    def test_key_agreement_false_encipher_decipher_true(self):
+        with pytest.raises(ValueError):
+            x509.KeyUsage(
+                digital_signature=False,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=True,
+                decipher_only=False
+            )
+
+        with pytest.raises(ValueError):
+            x509.KeyUsage(
+                digital_signature=False,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=True,
+                decipher_only=True
+            )
+
+        with pytest.raises(ValueError):
+            x509.KeyUsage(
+                digital_signature=False,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=True
+            )
+
+    def test_properties_key_agreement_true(self):
+        ku = x509.KeyUsage(
+            digital_signature=True,
+            content_commitment=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=True,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False
+        )
+        assert ku.digital_signature is True
+        assert ku.content_commitment is True
+        assert ku.key_encipherment is False
+        assert ku.data_encipherment is False
+        assert ku.key_agreement is False
+        assert ku.key_cert_sign is True
+        assert ku.crl_sign is False
+
+    def test_key_agreement_true_properties(self):
+        ku = x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=False,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=True,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=True
+        )
+        assert ku.key_agreement is True
+        assert ku.encipher_only is False
+        assert ku.decipher_only is True
+
+    def test_key_agreement_false_properties(self):
+        ku = x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=False,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=False,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False
+        )
+        assert ku.key_agreement is False
+        with pytest.raises(ValueError):
+            ku.encipher_only
+
+        with pytest.raises(ValueError):
+            ku.decipher_only
+
+
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
         with pytest.raises(TypeError):

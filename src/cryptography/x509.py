@@ -266,6 +266,54 @@ class BasicConstraints(object):
                 "path_length={0.path_length})>").format(self)
 
 
+class KeyUsage(object):
+    def __init__(self, digital_signature, content_commitment, key_encipherment,
+                 data_encipherment, key_agreement, key_cert_sign, crl_sign,
+                 encipher_only, decipher_only):
+        if not key_agreement and (encipher_only or decipher_only):
+            raise ValueError(
+                "encipher_only and decipher_only can only be true when "
+                "key_agreement is true"
+            )
+
+        self._digital_signature = digital_signature
+        self._content_commitment = content_commitment
+        self._key_encipherment = key_encipherment
+        self._data_encipherment = data_encipherment
+        self._key_agreement = key_agreement
+        self._key_cert_sign = key_cert_sign
+        self._crl_sign = crl_sign
+        self._encipher_only = encipher_only
+        self._decipher_only = decipher_only
+
+    digital_signature = utils.read_only_property("_digital_signature")
+    content_commitment = utils.read_only_property("_content_commitment")
+    key_encipherment = utils.read_only_property("_key_encipherment")
+    data_encipherment = utils.read_only_property("_data_encipherment")
+    key_agreement = utils.read_only_property("_key_agreement")
+    key_cert_sign = utils.read_only_property("_key_cert_sign")
+    crl_sign = utils.read_only_property("_crl_sign")
+
+    @property
+    def encipher_only(self):
+        if not self.key_agreement:
+            raise ValueError(
+                "encipher_only is undefined unless key_agreement is true"
+            )
+        else:
+            return self._encipher_only
+
+    @property
+    def decipher_only(self):
+        if not self.key_agreement:
+            raise ValueError(
+                "decipher_only is undefined unless key_agreement is true"
+            )
+        else:
+            return self._decipher_only
+
+
+
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
 OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
