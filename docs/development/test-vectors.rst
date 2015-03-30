@@ -136,16 +136,16 @@ Custom X.509 Vectors
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``dsa_sha1.pem`` - Contains a certificate request using 1024-bit DSA
-  parameters and SHA1 generated using OpenSSL.
-* ``rsa_md4.pem`` - Contains a certificate request using 2048 bit RSA and MD4
-  generated using OpenSSL.
-* ``rsa_sha1.pem`` - Contains a certificate request using 2048 bit RSA and
-  SHA1 generated using OpenSSL.
-* ``rsa_sha256.pem`` - Contains a certificate request using 2048 bit RSA and
-  SHA256 generated using OpenSSL.
-* ``ec_sha256.pem`` - Contains a certificate request using EC (``secp384r1``)
-  and SHA256 generated using OpenSSL.
+* ``dsa_sha1.pem`` and ``dsa_sha1.der`` - Contain a certificate request using
+  1024-bit DSA parameters and SHA1 generated using OpenSSL.
+* ``rsa_md4.pem`` and ``rsa_md4.der`` - Contain a certificate request using
+  2048 bit RSA and MD4 generated using OpenSSL.
+* ``rsa_sha1.pem`` and ``rsa_sha1.der`` - Contain a certificate request using
+  2048 bit RSA and SHA1 generated using OpenSSL.
+* ``rsa_sha256.pem`` and ``rsa_sha256.der`` - Contain a certificate request
+  using 2048 bit RSA and SHA256 generated using OpenSSL.
+* ``ec_sha256.pem`` and ``ec_sha256.der`` - Contain a certificate request
+  using EC (``secp384r1``) and SHA256 generated using OpenSSL.
 
 Hashes
 ~~~~~~
