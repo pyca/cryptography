@@ -1072,9 +1072,12 @@ class Backend(object):
         # There was a bug in OpenSSL 0.9.8h through 0.9.8o that causes
         # incorrect wrap/unwrap. We solve this by disabling key wrap for
         # versions less than 0.9.8p.
+        # Unfortunately this same bug is present in OpenSSL 1.0.0 and 1.0.0a so
+        # we have to verify it's >= 0.9.8p but < 1.0.0 OR >= 1.0.0b
+        version = self._lib.SSLeay()
         return (
-            self._lib.Cryptography_HAS_AES_WRAP == 1 and
-            self._lib.SSLeay() > 0x0090810f
+            self._lib.Cryptography_HAS_AES_WRAP and
+            (0x1000000f > version > 0x0090810f or version >= 0x1000002f)
         )
 
     def _elliptic_curve_to_nid(self, curve):
