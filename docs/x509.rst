@@ -118,6 +118,22 @@ Loading Certificate Signing Requests
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
 
+.. function:: load_der_x509_csr(data, backend)
+
+    .. versionadded:: 0.9
+
+    Deserialize a certificate signing request (CSR) from DER encoded data. DER
+    is a binary format and is not commonly used with CSRs.
+
+    :param bytes data: The DER encoded request data.
+
+    :param backend: A backend supporting the
+        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+        interface.
+
+    :returns: An instance of
+        :class:`~cryptography.x509.CertificateSigningRequest`.
+
 .. doctest::
 
     >>> from cryptography import x509
