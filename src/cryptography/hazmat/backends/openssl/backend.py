@@ -15,9 +15,9 @@ from cryptography.exceptions import (
     InternalError, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
-    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    AESKeyWrapBackend, CMACBackend, CipherBackend, DERSerializationBackend,
+    DSABackend, EllipticCurveBackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -38,7 +38,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateSigningRequest
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes, keywrap, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
@@ -56,6 +56,7 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
                                        ["code", "lib", "func", "reason"])
 
 
+@utils.register_interface(AESKeyWrapBackend)
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DERSerializationBackend)
@@ -1026,6 +1027,58 @@ class Backend(object):
             ec_cdata, numbers.x, numbers.y)
 
         return _EllipticCurvePublicKey(self, ec_cdata)
+
+    def aes_key_wrap(self, wrapping_key, key_to_wrap):
+        wraplen = len(wrapping_key)
+        assert wraplen == 16 or wraplen == 24 or wraplen == 32
+        key = self._ffi.new("AES_KEY *")
+        res = self._lib.AES_set_encrypt_key(
+            wrapping_key, len(wrapping_key) * 8, key
+        )
+        assert res == 0
+        buflen = len(key_to_wrap) + 8
+        buf = self._ffi.new("char[]", buflen)
+        # This is the iv defined by RFC 3394. If we don't set it OpenSSL
+        # will default it. But let's not take that on trust.
+        iv = b'\xa6\xa6\xa6\xa6\xa6\xa6\xa6\xa6'
+        res = self._lib.AES_wrap_key(
+            key, iv, buf, key_to_wrap, len(key_to_wrap)
+        )
+        assert res == buflen
+        return self._ffi.buffer(buf)[:]
+
+    def aes_key_unwrap(self, wrapping_key, wrapped_key):
+        wraplen = len(wrapping_key)
+        assert wraplen == 16 or wraplen == 24 or wraplen == 32
+        assert len(wrapped_key) % 8 == 0
+        key = self._ffi.new("AES_KEY *")
+        res = self._lib.AES_set_decrypt_key(
+            wrapping_key, len(wrapping_key) * 8, key
+        )
+        assert res == 0
+        buflen = len(wrapped_key) - 8
+        buf = self._ffi.new("char[]", buflen)
+        # This is the iv defined by RFC 3394. If we don't set it OpenSSL
+        # will default it. But let's not take that on trust.
+        iv = b'\xa6\xa6\xa6\xa6\xa6\xa6\xa6\xa6'
+        res = self._lib.AES_unwrap_key(
+            key, iv, buf, wrapped_key, len(wrapped_key)
+        )
+        if res == 0:
+            raise keywrap.InvalidUnwrap
+        return self._ffi.buffer(buf)[:]
+
+    def aes_key_wrap_supported(self):
+        # There was a bug in OpenSSL 0.9.8h through 0.9.8o that causes
+        # incorrect wrap/unwrap. We solve this by disabling key wrap for
+        # versions less than 0.9.8p.
+        # Unfortunately this same bug is present in OpenSSL 1.0.0 and 1.0.0a so
+        # we have to verify it's >= 0.9.8p but < 1.0.0 OR >= 1.0.0b
+        version = self._lib.SSLeay()
+        return (
+            self._lib.Cryptography_HAS_AES_WRAP and
+            (0x1000000f > version > 0x0090810f or version >= 0x1000002f)
+        )
 
     def _elliptic_curve_to_nid(self, curve):
         """
