@@ -3,8 +3,6 @@
 set -e
 set -x
 
-export PATH="~/.local/bin:$PATH"
-
 if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update
 
@@ -59,6 +57,6 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
 fi
 
 pip install --user virtualenv
-virtualenv ~/.venv
+python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox coveralls
