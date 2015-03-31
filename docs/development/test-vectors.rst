@@ -146,6 +146,9 @@ Custom X.509 Request Vectors
   using 2048 bit RSA and SHA256 generated using OpenSSL.
 * ``ec_sha256.pem`` and ``ec_sha256.der`` - Contain a certificate request
   using EC (``secp384r1``) and SHA256 generated using OpenSSL.
+* ``san_rsa_sha1.pem`` and ``san_rsa_sha1.der`` - Contain a certificate
+  request using RSA and SHA1 with a subject alternative name extension
+  generated using OpenSSL.
 
 Hashes
 ~~~~~~
