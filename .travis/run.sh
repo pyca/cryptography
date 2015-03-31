@@ -16,6 +16,6 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         # CommonCrypto when we test against brew OpenSSL
         export TOX_FLAGS="--backend=openssl"
     fi
+    source ~/.venv/bin/activate
 fi
-source ~/.venv/bin/activate
 tox -- $TOX_FLAGS

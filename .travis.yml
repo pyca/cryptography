@@ -1,10 +1,12 @@
-language: c
+language: python
+sudo: false
+cache:
+    # see https://github.com/travis-ci/travis-ci/issues/3239
+    directories:
+        - ~/.cache/pip
 os:
-    - osx
     - linux
-compiler:
-    - clang
-    - gcc
+    - osx
 env:
     matrix:
         - TOXENV=py26
@@ -45,6 +47,18 @@ notifications:
 
 matrix:
     exclude:
+        - os: linux
+          env: TOXENV=pypy OPENSSL=0.9.8
+        - os: linux
+          env: TOXENV=py34 OPENSSL=0.9.8
+        - os: linux
+          env: TOXENV=py33 OPENSSL=0.9.8
+        - os: linux
+          env: TOXENV=py32 OPENSSL=0.9.8
+        - os: linux
+          env: TOXENV=py27 OPENSSL=0.9.8
+        - os: linux
+          env: TOXENV=py26 OPENSSL=0.9.8
         # excluding pypy3 from linux configs until the ubuntu ppa has pypy3 available.
         - os: linux
           env: TOXENV=pypy3
