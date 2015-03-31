@@ -62,6 +62,23 @@ class TestBasicConstraints(object):
         )
 
 
+class TestExtendedKeyUsage(object):
+    def test_not_all_oids(self):
+        with pytest.raises(TypeError):
+            x509.ExtendedKeyUsage(["notoid"])
+
+    def test_iter_len(self):
+        eku = x509.ExtendedKeyUsage([
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.1"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.2"),
+        ])
+        assert len(eku) == 2
+        assert list(eku) == [
+            x509.OID_SERVER_AUTH,
+            x509.OID_CLIENT_AUTH
+        ]
+
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestExtensions(object):

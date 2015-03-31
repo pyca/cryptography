@@ -475,6 +475,15 @@ X.509 Extensions
         subordinate CA, but the subordinate CA is not allowed to create
         subordinates with ``ca`` set to true.
 
+.. class:: ExtendedKeyUsage
+
+    .. versionadded:: 0.9
+
+    This extension indicates one or more purposes for which the certified
+    public key may be used, in addition to or in place of the basic
+    purposes indicated in the key usage extension. The object is
+    iterable to obtain the list of :ref:`extended key usage OIDs <eku_oids>`.
+
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
@@ -632,6 +641,8 @@ Signature Algorithm OIDs
 
     Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.2"``. This is
     a SHA256 digest signed by a DSA key.
+
+.. _eku_oids:
 
 Extended Key Usage OIDs
 ~~~~~~~~~~~~~~~~~~~~~~~

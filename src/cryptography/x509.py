@@ -222,6 +222,23 @@ class Extension(object):
                 "value={0.value})>").format(self)
 
 
+class ExtendedKeyUsage(object):
+    def __init__(self, usages):
+        for oid in usages:
+            if not isinstance(oid, ObjectIdentifier):
+                raise TypeError(
+                    "Every item in the usages list must be an ObjectIdentifier"
+                )
+
+        self._usages = usages
+
+    def __iter__(self):
+        return iter(self._usages)
+
+    def __len__(self):
+        return len(self._usages)
+
+
 class BasicConstraints(object):
     def __init__(self, ca, path_length):
         if not isinstance(ca, bool):
