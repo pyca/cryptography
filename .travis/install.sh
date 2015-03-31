@@ -54,9 +54,9 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             ;;
     esac
     pyenv rehash
+    pip install --user virtualenv
+    python -m virtualenv ~/.venv
+    source ~/.venv/bin/activate
 fi
 
-pip install --user virtualenv
-python -m virtualenv ~/.venv
-source ~/.venv/bin/activate
 pip install tox coveralls
