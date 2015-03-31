@@ -42,8 +42,15 @@ _OID_NAMES = {
     "1.2.840.10040.4.3": "dsa-with-sha1",
     "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
     "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
+    "1.3.6.1.5.5.7.3.1": "serverAuth",
+    "1.3.6.1.5.5.7.3.2": "clientAuth",
+    "1.3.6.1.5.5.7.3.3": "codeSigning",
+    "1.3.6.1.5.5.7.3.4": "emailProtection",
+    "1.3.6.1.5.5.7.3.8": "timeStamping",
+    "1.3.6.1.5.5.7.3.9": "OCSPSigning",
     "2.5.29.19": "basicConstraints",
     "2.5.29.15": "keyUsage",
+    "2.5.29.37": "extendedKeyUsage",
 }
 
 
@@ -170,6 +177,7 @@ class Name(object):
 
 
 OID_KEY_USAGE = ObjectIdentifier("2.5.29.15")
+OID_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
 OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
 
 
@@ -286,6 +294,13 @@ _SIG_OIDS_TO_HASH = {
     OID_DSA_WITH_SHA224.dotted_string: hashes.SHA224(),
     OID_DSA_WITH_SHA256.dotted_string: hashes.SHA256()
 }
+
+OID_SERVER_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.1")
+OID_CLIENT_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.2")
+OID_CODE_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.3")
+OID_EMAIL_PROTECTION = ObjectIdentifier("1.3.6.1.5.5.7.3.4")
+OID_TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
+OID_OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
 
 
 @six.add_metaclass(abc.ABCMeta)
