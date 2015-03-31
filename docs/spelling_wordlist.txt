@@ -21,6 +21,7 @@ decrypting
 deserialize
 deserialized
 Docstrings
+Encodings
 fernet
 Fernet
 hazmat
@@ -37,12 +38,14 @@ metadata
 naïve
 namespace
 namespaces
+paddings
 pickleable
 plaintext
 preprocessor
 preprocessors
 pseudorandom
 pyOpenSSL
+relicensed
 Schneier
 scrypt
 Serializers
