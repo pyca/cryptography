@@ -1,8 +1,12 @@
 language: python
+sudo: false
+cache:
+    # see https://github.com/travis-ci/travis-ci/issues/3239
+    directories:
+        - ~/.cache/pip
 os:
     - linux
     - osx
-sudo: false
 env:
     matrix:
         - TOXENV=py26
