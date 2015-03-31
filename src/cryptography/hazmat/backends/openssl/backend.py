@@ -834,6 +834,16 @@ class Backend(object):
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return _CertificateSigningRequest(self, x509_req)
 
+    def load_der_x509_csr(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
+        if x509_req == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load request")
+
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
+        return _CertificateSigningRequest(self, x509_req)
+
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 

@@ -340,12 +340,21 @@ class TestRSACertificate(object):
         with pytest.raises(UnsupportedAlgorithm):
             cert.signature_hash_algorithm
 
-    def test_load_rsa_certificate_request(self, backend):
-        request = _load_cert(
-            os.path.join("x509", "requests", "rsa_sha1.pem"),
-            x509.load_pem_x509_csr,
-            backend
-        )
+    @pytest.mark.parametrize(
+        ("path", "loader_func"),
+        [
+            [
+                os.path.join("x509", "requests", "rsa_sha1.pem"),
+                x509.load_pem_x509_csr
+            ],
+            [
+                os.path.join("x509", "requests", "rsa_sha1.der"),
+                x509.load_der_x509_csr
+            ],
+        ]
+    )
+    def test_load_rsa_certificate_request(self, path, loader_func, backend):
+        request = _load_cert(path, loader_func, backend)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -359,9 +368,13 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ]
 
-    def test_invalid_certificate_request_pem(self, backend):
+    @pytest.mark.parametrize(
+        "loader_func",
+        [x509.load_pem_x509_csr, x509.load_der_x509_csr]
+    )
+    def test_invalid_certificate_request(self, loader_func, backend):
         with pytest.raises(ValueError):
-            x509.load_pem_x509_csr(b"notacsr", backend)
+            loader_func(b"notacsr", backend)
 
     def test_unsupported_signature_hash_algorithm_request(self, backend):
         request = _load_cert(
@@ -424,12 +437,21 @@ class TestDSACertificate(object):
                 "822ff5d234e073b901cf5941f58e1f538e71d40d", 16
             )
 
-    def test_load_dsa_request(self, backend):
-        request = _load_cert(
-            os.path.join("x509", "requests", "dsa_sha1.pem"),
-            x509.load_pem_x509_csr,
-            backend
-        )
+    @pytest.mark.parametrize(
+        ("path", "loader_func"),
+        [
+            [
+                os.path.join("x509", "requests", "dsa_sha1.pem"),
+                x509.load_pem_x509_csr
+            ],
+            [
+                os.path.join("x509", "requests", "dsa_sha1.der"),
+                x509.load_der_x509_csr
+            ],
+        ]
+    )
+    def test_load_dsa_request(self, path, loader_func, backend):
+        request = _load_cert(path, loader_func, backend)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
         assert isinstance(public_key, dsa.DSAPublicKey)
@@ -479,13 +501,22 @@ class TestECDSACertificate(object):
         with pytest.raises(NotImplementedError):
             cert.public_key()
 
-    def test_load_ecdsa_certificate_request(self, backend):
+    @pytest.mark.parametrize(
+        ("path", "loader_func"),
+        [
+            [
+                os.path.join("x509", "requests", "ec_sha256.pem"),
+                x509.load_pem_x509_csr
+            ],
+            [
+                os.path.join("x509", "requests", "ec_sha256.der"),
+                x509.load_der_x509_csr
+            ],
+        ]
+    )
+    def test_load_ecdsa_certificate_request(self, path, loader_func, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
-        request = _load_cert(
-            os.path.join("x509", "requests", "ec_sha256.pem"),
-            x509.load_pem_x509_csr,
-            backend
-        )
+        request = _load_cert(path, loader_func, backend)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
