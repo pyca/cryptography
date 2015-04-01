@@ -275,6 +275,7 @@ X.509 Certificate Object
 
             >>> for ext in cert.extensions:
             ...     print(ext)
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(value=580184241bbc2b52944a3da510721451f5af3ac9)>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
 X.509 CSR (Certificate Signing Request) Object
@@ -575,6 +576,25 @@ X.509 Extensions
     public key may be used, in addition to or in place of the basic
     purposes indicated in the key usage extension. The object is
     iterable to obtain the list of :ref:`extended key usage OIDs <eku_oids>`.
+
+.. class:: SubjectKeyIdentifier
+
+    .. versionadded:: 0.9
+
+    The subject key identifier extension provides a means of identifying
+    certificates that contain a particular public key.
+
+    .. attribute:: digest
+
+        :type: bytes
+
+        The binary value of the identifier.
+
+    .. attribute:: hexdigest
+
+        :type: :term:`text`
+
+        The hexadecimal value of the identifier.
 
 
 Object Identifiers
