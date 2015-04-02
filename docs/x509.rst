@@ -447,6 +447,98 @@ X.509 Extensions
 
         Returns an instance of the extension type corresponding to the OID.
 
+.. class:: KeyUsage
+
+    .. versionadded:: 0.9
+
+    The key usage extension defines the purpose of the key contained in the
+    certificate.  The usage restriction might be employed when a key that could
+    be used for more than one operation is to be restricted. It corresponds to
+    :data:`OID_KEY_USAGE`.
+
+    .. attribute:: digital_signature
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for verifying
+        digital signatures, other than signatures on certificates
+        (``key_cert_sign``) and CRLs (``crl_sign``).
+
+    .. attribute:: content_commitment
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for verifying
+        digital signatures, other than signatures on certificates
+        (``key_cert_sign``) and CRLs (``crl_sign``). It is used to provide a
+        non-repudiation service that protects against the signing entity
+        falsely denying some action. In the case of later conflict, a
+        reliable third party may determine the authenticity of the signed
+        data. This was called ``non_repudiation`` in older revisions of the
+        X.509 specification.
+
+    .. attribute:: key_encipherment
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for
+        enciphering private or secret keys.
+
+    .. attribute:: data_encipherment
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for
+        directly enciphering raw user data without the use of an intermediate
+        symmetric cipher.
+
+    .. attribute:: key_agreement
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for key
+        agreement.  For example, when a Diffie-Hellman key is to be used for
+        key management, then this purpose is set to true.
+
+    .. attribute:: key_cert_sign
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for
+        verifying signatures on public key certificates. If this purpose is set
+        to true then ``ca`` must be true in the :class:`BasicConstraints`
+        extension.
+
+    .. attribute:: crl_sign
+
+        :type: bool
+
+        This purpose is set to true when the subject public key is used for
+        verifying signatures on certificate revocation lists.
+
+    .. attribute:: encipher_only
+
+        :type: bool
+
+        When this purposes is set to true and the ``key_agreement`` purpose is
+        also set, the subject public key may be used only for enciphering data
+        while performing key agreement.
+
+        :raises ValueError: This is raised if accessed when ``key_agreement``
+            is false.
+
+    .. attribute:: decipher_only
+
+        :type: bool
+
+        When this purposes is set to true and the ``key_agreement`` purpose is
+        also set, the subject public key may be used only for deciphering data
+        while performing key agreement.
+
+        :raises ValueError: This is raised if accessed when ``key_agreement``
+            is false.
+
+
 .. class:: BasicConstraints
 
     .. versionadded:: 0.9
@@ -686,6 +778,11 @@ Extension OIDs
 
     Corresponds to the dotted string ``"2.5.29.19"``. The identifier for the
     :class:`BasicConstraints` extension type.
+
+.. data:: OID_KEY_USAGE
+
+    Corresponds to the dotted string ``"2.5.29.15"``. The identifier for the
+    :class:`KeyUsage` extension type.
 
 
 Exceptions
