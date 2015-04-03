@@ -238,6 +238,9 @@ class ExtendedKeyUsage(object):
     def __len__(self):
         return len(self._usages)
 
+    def __repr__(self):
+        return "<ExtendedKeyUsage({0})>".format(self._usages)
+
 
 class BasicConstraints(object):
     def __init__(self, ca, path_length):
