@@ -131,6 +131,44 @@ class TestKeyUsage(object):
         with pytest.raises(ValueError):
             ku.decipher_only
 
+    def test_repr_key_agreement_false(self):
+        ku = x509.KeyUsage(
+            digital_signature=True,
+            content_commitment=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=True,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False
+        )
+        assert repr(ku) == (
+            "<KeyUsage(digital_signature=True, content_commitment=True, key_en"
+            "cipherment=False, data_encipherment=False, key_agreement=False, k"
+            "ey_cert_sign=True, crl_sign=False, encipher_only=N/A, decipher_on"
+            "ly=N/A)>"
+        )
+
+    def test_repr_key_agreement_true(self):
+        ku = x509.KeyUsage(
+            digital_signature=True,
+            content_commitment=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=True,
+            key_cert_sign=True,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False
+        )
+        assert repr(ku) == (
+            "<KeyUsage(digital_signature=True, content_commitment=True, key_en"
+            "cipherment=False, data_encipherment=False, key_agreement=True, k"
+            "ey_cert_sign=True, crl_sign=False, encipher_only=False, decipher_"
+            "only=False)>"
+        )
+
 
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
