@@ -463,3 +463,63 @@ class TestSubjectKeyIdentifierExtension(object):
             cert.extensions.get_extension_for_oid(
                 x509.OID_SUBJECT_KEY_IDENTIFIER
             )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestKeyUsageExtension(object):
+    def test_no_key_usage(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "verisign_md2_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions
+        with pytest.raises(x509.ExtensionNotFound) as exc:
+            ext.get_extension_for_oid(x509.OID_KEY_USAGE)
+
+        assert exc.value.oid == x509.OID_KEY_USAGE
+
+    def test_all_purposes(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "all_key_usages.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        extensions = cert.extensions
+        ext = extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        assert ext is not None
+
+        ku = ext.value
+        assert ku.digital_signature is True
+        assert ku.content_commitment is True
+        assert ku.key_encipherment is True
+        assert ku.data_encipherment is True
+        assert ku.key_agreement is True
+        assert ku.key_cert_sign is True
+        assert ku.crl_sign is True
+        assert ku.encipher_only is True
+        assert ku.decipher_only is True
+
+    def test_key_cert_sign_crl_sign(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs", "pathLenConstraint6CACert.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        assert ext is not None
+        assert ext.critical is True
+
+        ku = ext.value
+        assert ku.digital_signature is False
+        assert ku.content_commitment is False
+        assert ku.key_encipherment is False
+        assert ku.data_encipherment is False
+        assert ku.key_agreement is False
+        assert ku.key_cert_sign is True
+        assert ku.crl_sign is True

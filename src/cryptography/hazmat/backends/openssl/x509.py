@@ -14,7 +14,6 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
-import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -172,14 +171,8 @@ class _Certificate(object):
                 value = self._build_basic_constraints(ext)
             elif oid == x509.OID_SUBJECT_KEY_IDENTIFIER:
                 value = self._build_subject_key_identifier(ext)
-            elif oid == x509.OID_KEY_USAGE and critical:
-                # TODO: remove this obviously.
-                warnings.warn(
-                    "Extension support is not fully implemented. A key usage "
-                    "extension with the critical flag was seen and IGNORED."
-                )
-                seen_oids.add(oid)
-                continue
+            elif oid == x509.OID_KEY_USAGE:
+                value = self._build_key_usage(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -230,6 +223,32 @@ class _Certificate(object):
         )
         return x509.SubjectKeyIdentifier(
             self._backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+        )
+
+    def _build_key_usage(self, ext):
+        bit_string = self._backend._lib.X509V3_EXT_d2i(ext)
+        assert bit_string != self._backend._ffi.NULL
+        bit_string = self._backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
+        get_bit = self._backend._lib.ASN1_BIT_STRING_get_bit
+        digital_signature = get_bit(bit_string, 0) == 1
+        content_commitment = get_bit(bit_string, 1) == 1
+        key_encipherment = get_bit(bit_string, 2) == 1
+        data_encipherment = get_bit(bit_string, 3) == 1
+        key_agreement = get_bit(bit_string, 4) == 1
+        key_cert_sign = get_bit(bit_string, 5) == 1
+        crl_sign = get_bit(bit_string, 6) == 1
+        encipher_only = get_bit(bit_string, 7) == 1
+        decipher_only = get_bit(bit_string, 8) == 1
+        return x509.KeyUsage(
+            digital_signature,
+            content_commitment,
+            key_encipherment,
+            data_encipherment,
+            key_agreement,
+            key_cert_sign,
+            crl_sign,
+            encipher_only,
+            decipher_only
         )
 
 
