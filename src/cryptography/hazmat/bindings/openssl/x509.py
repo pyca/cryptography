@@ -262,6 +262,12 @@ void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
+Cryptography_STACK_OF_X509_CRL *sk_X509_CRL_new_null(void);
+void sk_X509_CRL_free(Cryptography_STACK_OF_X509_CRL *);
+int sk_X509_CRL_num(Cryptography_STACK_OF_X509_CRL *);
+int sk_X509_CRL_push(Cryptography_STACK_OF_X509_CRL *, X509_CRL *);
+X509_CRL *sk_X509_CRL_value(Cryptography_STACK_OF_X509_CRL *, int);
+
 int i2d_RSAPublicKey(RSA *, unsigned char **);
 int i2d_RSAPrivateKey(RSA *, unsigned char **);
 int i2d_DSAPublicKey(DSA *, unsigned char **);
