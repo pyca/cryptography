@@ -168,6 +168,9 @@ void X509_REVOKED_free(X509_REVOKED *);
 
 int X509_REVOKED_set_serialNumber(X509_REVOKED *, ASN1_INTEGER *);
 
+int X509_REVOKED_get_ext_count(X509_REVOKED *);
+X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
+int X509_REVOKED_add_ext(X509_REVOKED *, X509_EXTENSION*, int);
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
 
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
@@ -178,6 +181,9 @@ int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
+int X509_CRL_get_ext_count(X509_CRL *);
+X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
+int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
 
 int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *, EVP_PKEY *);
 int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *, EVP_PKEY *, const EVP_MD *);
@@ -266,6 +272,11 @@ int i2d_RSAPublicKey(RSA *, unsigned char **);
 int i2d_RSAPrivateKey(RSA *, unsigned char **);
 int i2d_DSAPublicKey(DSA *, unsigned char **);
 int i2d_DSAPrivateKey(DSA *, unsigned char **);
+
+int X509_CRL_get_version(X509_CRL *);
+ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
+ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
+X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
