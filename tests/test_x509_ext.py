@@ -175,6 +175,17 @@ class TestExtendedKeyUsage(object):
             x509.OID_CLIENT_AUTH
         ]
 
+    def test_repr(self):
+        eku = x509.ExtendedKeyUsage([
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.1"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.2"),
+        ])
+        assert repr(eku) == (
+            "<ExtendedKeyUsage([<ObjectIdentifier(oid=1.3.6.1.5.5.7.3.1, name="
+            "serverAuth)>, <ObjectIdentifier(oid=1.3.6.1.5.5.7.3.2, name=clien"
+            "tAuth)>])>"
+        )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
