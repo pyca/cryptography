@@ -11,3 +11,4 @@ src/cryptography/_Cryptography_cffi_*
 *.egg
 .eggs/
 *.py[co]
+setup.cfg
