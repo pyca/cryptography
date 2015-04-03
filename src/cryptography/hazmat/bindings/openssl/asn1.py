@@ -40,6 +40,7 @@ struct asn1_string_st {
 
 typedef struct asn1_string_st ASN1_OCTET_STRING;
 typedef struct asn1_string_st ASN1_IA5STRING;
+typedef ... ASN1_BIT_STRING;
 typedef ... ASN1_OBJECT;
 typedef ... ASN1_STRING;
 typedef ... ASN1_TYPE;
@@ -115,9 +116,12 @@ int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
 
 ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
                           const ASN1_ITEM *);
+int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
 """
 
 MACROS = """
+/* This is not a macro, but is const on some versions of OpenSSL */
+int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
 ASN1_TIME *M_ASN1_TIME_dup(void *);
 const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
