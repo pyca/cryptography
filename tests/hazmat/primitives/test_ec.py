@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import itertools
+import operator
 import os
 
 import pytest
@@ -18,11 +19,12 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_rfc6979_signature
 )
-
+from .utils import pem_univ_newline_eq
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_vectors_from_file, raises_unsupported_algorithm
 )
+
 
 _HASH_TYPES = {
     "SHA-1": hashes.SHA1,
@@ -548,7 +550,7 @@ class TestECSerialization(object):
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
-        assert serialized == key_bytes
+        assert pem_univ_newline_eq(serialized, key_bytes)
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -640,7 +642,7 @@ class TestECSerialization(object):
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestEllipticCurvePEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
-        ("key_path", "loader_func", "encoding"),
+        ("key_path", "loader_func", "encoding", "compare"),
         [
             (
                 os.path.join(
@@ -648,17 +650,19 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 ),
                 serialization.load_pem_public_key,
                 serialization.Encoding.PEM,
+                pem_univ_newline_eq,
             ), (
                 os.path.join(
                     "asymmetric", "DER_Serialization", "ec_public_key.der"
                 ),
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
+                operator.eq
             )
         ]
     )
     def test_public_bytes_match(self, key_path, loader_func, encoding,
-                                backend):
+                                backend, compare):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
@@ -668,7 +672,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        assert serialized == key_bytes
+        assert compare(serialized, key_bytes)
 
     def test_public_bytes_invalid_encoding(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
