@@ -132,6 +132,8 @@ Custom X.509 Vectors
   a subject alternative name extension with the ``otherName`` general name.
 * ``san_registered_id.pem`` - An RSA 1024 bit certificate containing a
   subject alternative name extension with the ``registeredID`` general name.
+* ``all_key_usages.pem`` - An RSA 2048 bit self-signed certificate containing
+  a key usage extension with all nine purposes set to true.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
