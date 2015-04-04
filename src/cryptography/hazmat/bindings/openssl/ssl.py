@@ -546,11 +546,7 @@ static const long Cryptography_HAS_ALPN = 0;
 #else
 static const long Cryptography_HAS_ALPN = 1;
 #endif
-/* LibreSSL has removed support for compression, and with it the
- * COMP_METHOD use in ssl.h. This is a hack to make the function types
- * in this code match those in ssl.h.
- */
-#ifdef LIBRESSL_VERSION_NUMBER
+#if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
 typedef void COMP_METHOD;
 #else
