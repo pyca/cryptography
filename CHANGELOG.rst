@@ -10,6 +10,8 @@ Changelog
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2.6 no longer receives support from the Python core
   team.
+* Fixed compilation when using an OpenSSL which was compiled with the
+  ``no-comp`` (``OPENSSL_NO_COMP``) option.
 * Support :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
   serialization of public keys using the ``public_bytes`` method of
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`,
