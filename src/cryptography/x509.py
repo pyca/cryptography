@@ -48,9 +48,24 @@ _OID_NAMES = {
     "1.3.6.1.5.5.7.3.4": "emailProtection",
     "1.3.6.1.5.5.7.3.8": "timeStamping",
     "1.3.6.1.5.5.7.3.9": "OCSPSigning",
-    "2.5.29.19": "basicConstraints",
+    "2.5.29.9": "subjectDirectoryAttributes",
+    "2.5.29.14": "subjectKeyIdentifier",
     "2.5.29.15": "keyUsage",
+    "2.5.29.17": "subjectAltName",
+    "2.5.29.18": "issuerAltName",
+    "2.5.29.19": "basicConstraints",
+    "2.5.29.30": "nameConstraints",
+    "2.5.29.31": "cRLDistributionPoints",
+    "2.5.29.32": "certificatePolicies",
+    "2.5.29.33": "policyMappings",
+    "2.5.29.35": "authorityKeyIdentifier",
+    "2.5.29.36": "policyConstraints",
     "2.5.29.37": "extendedKeyUsage",
+    "2.5.29.46": "freshestCRL",
+    "2.5.29.54": "inhibitAnyPolicy",
+    "1.3.6.1.5.5.7.1.1": "authorityInfoAccess",
+    "1.3.6.1.5.5.7.1.11": "subjectInfoAccess",
+    "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
 }
 
 
@@ -176,9 +191,24 @@ class Name(object):
         return len(self._attributes)
 
 
+OID_SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
+OID_SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
 OID_KEY_USAGE = ObjectIdentifier("2.5.29.15")
-OID_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
+OID_SUBJECT_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.17")
+OID_ISSUER_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.18")
 OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+OID_NAME_CONSTRAINTS = ObjectIdentifier("2.5.29.30")
+OID_CRL_DISTRIBUTION_POINTS = ObjectIdentifier("2.5.29.31")
+OID_CERTIFICATE_POLICIES = ObjectIdentifier("2.5.29.32")
+OID_POLICY_MAPPINGS = ObjectIdentifier("2.5.29.33")
+OID_AUTHORITY_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.35")
+OID_POLICY_CONSTRAINTS = ObjectIdentifier("2.5.29.36")
+OID_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
+OID_FRESHEST_CRL = ObjectIdentifier("2.5.29.46")
+OID_INHIBIT_ANY_POLICY = ObjectIdentifier("2.5.29.54")
+OID_AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
+OID_SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
+OID_OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
 
 
 class Extensions(object):
