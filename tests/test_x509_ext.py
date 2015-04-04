@@ -136,14 +136,14 @@ class TestKeyUsage(object):
 class TestSubjectKeyIdentifier(object):
     def test_properties(self):
         hexdigest = "092384932230498bc980aa8098456f6ff7ff3ac9"
-        value = binascii.unhexlify(hexdigest)
+        value = binascii.unhexlify(hexdigest.encode('ascii'))
         ski = x509.SubjectKeyIdentifier(value)
         assert ski.digest == value
         assert ski.hexdigest == hexdigest
 
     def test_repr(self):
         ski = x509.SubjectKeyIdentifier(
-            binascii.unhexlify("092384932230498bc980aa8098456f6ff7ff3ac9")
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         ext = x509.Extension(x509.OID_SUBJECT_KEY_IDENTIFIER, False, ski)
         assert repr(ext) == (
@@ -154,19 +154,19 @@ class TestSubjectKeyIdentifier(object):
 
     def test_eq(self):
         ski = x509.SubjectKeyIdentifier(
-            binascii.unhexlify("092384932230498bc980aa8098456f6ff7ff3ac9")
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         ski2 = x509.SubjectKeyIdentifier(
-            binascii.unhexlify("092384932230498bc980aa8098456f6ff7ff3ac9")
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         assert ski == ski2
 
     def test_ne(self):
         ski = x509.SubjectKeyIdentifier(
-            binascii.unhexlify("092384932230498bc980aa8098456f6ff7ff3ac9")
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         ski2 = x509.SubjectKeyIdentifier(
-            binascii.unhexlify("aa8098456f6ff7ff3ac9092384932230498bc980")
+            binascii.unhexlify(b"aa8098456f6ff7ff3ac9092384932230498bc980")
         )
         assert ski != ski2
         assert ski != object()
@@ -404,7 +404,7 @@ class TestSubjectKeyIdentifierExtension(object):
         assert ext.critical is False
         assert ski.hexdigest == "580184241bbc2b52944a3da510721451f5af3ac9"
         assert ski.digest == binascii.unhexlify(
-            "580184241bbc2b52944a3da510721451f5af3ac9"
+            b"580184241bbc2b52944a3da510721451f5af3ac9"
         )
 
     def test_no_subject_key_identifier(self, backend):
