@@ -21,12 +21,10 @@ static const int PKCS7_NOCERTS;
 static const int PKCS7_NOCHAIN;
 static const int PKCS7_NOINTERN;
 static const int PKCS7_NOSIGS;
+static const int PKCS7_NOSMIMECAP;
 static const int PKCS7_NOVERIFY;
 static const int PKCS7_STREAM;
 static const int PKCS7_TEXT;
-
-static const int Cryptography_HAS_PKCS7_NOSMIMECAP;
-static const int PKCS7_NOSMIMECAP;
 """
 
 FUNCTIONS = """
@@ -55,17 +53,6 @@ int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
 int PKCS7_type_is_data(PKCS7 *);
 """
 
-CUSTOMIZATIONS = """
-#ifdef PKCS7_NOSMIMECAP
-static const int Cryptography_HAS_PKCS7_NOSMIMECAP = 1;
-#else
-static const int Cryptography_HAS_PKCS7_NOSMIMECAP = 0;
-static const int PKCS7_NOSMIMECAP = 0;
-#endif
-"""
+CUSTOMIZATIONS = ""
 
-CONDITIONAL_NAMES = {
-    'Cryptography_HAS_PKCS7_NOSMIMECAP': [
-        'PKCS7_NOSMIMECAP',
-    ]
-}
+CONDITIONAL_NAMES = {}
