@@ -43,7 +43,7 @@ Cryptography_STACK_OF_X509 *PKCS7_get0_signers(PKCS7 *,
                                                Cryptography_STACK_OF_X509 *,
                                                int);
 
-PKCS7 *PKCS7_encrypt(Cryptography_STACK_OF_X509 *certs, BIO *,
+PKCS7 *PKCS7_encrypt(Cryptography_STACK_OF_X509 *, BIO *,
                      const EVP_CIPHER *, int);
 int PKCS7_decrypt(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int);
 """
