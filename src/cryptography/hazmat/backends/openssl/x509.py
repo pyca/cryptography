@@ -225,6 +225,9 @@ class _Certificate(object):
         asn1_string = self._backend._ffi.cast(
             "ASN1_OCTET_STRING *", asn1_string
         )
+        asn1_string = self._backend._ffi.gc(
+            asn1_string, self._backend._lib.ASN1_OCTET_STRING_free
+        )
         return x509.SubjectKeyIdentifier(
             self._backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
         )
