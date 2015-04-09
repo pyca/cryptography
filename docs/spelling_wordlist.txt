@@ -20,6 +20,7 @@ decrypted
 decrypting
 deserialize
 deserialized
+Diffie
 Docstrings
 Encodings
 fernet

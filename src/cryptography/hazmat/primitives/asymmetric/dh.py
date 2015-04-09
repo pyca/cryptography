@@ -1,17 +1,10 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
+
+import abc
 
 import six
 
@@ -99,3 +92,75 @@ class DHParameterNumbers(object):
 
     p = utils.read_only_property("_p")
     g = utils.read_only_property("_g")
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHParameters(object):
+    @abc.abstractmethod
+    def generate_private_key(self):
+        """
+        Generates and returns a DHPrivateKey.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHParametersWithSerialization(DHParameters):
+    @abc.abstractmethod
+    def parameter_numbers(self):
+        """
+        Returns a DHParameterNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPrivateKey(object):
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the prime modulus.
+        """
+
+    @abc.abstractmethod
+    def public_key(self):
+        """
+        The DHPublicKey associated with this private key.
+        """
+
+    @abc.abstractmethod
+    def parameters(self):
+        """
+        The DHParameters object associated with this private key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPrivateKeyWithSerialization(DHPrivateKey):
+    @abc.abstractmethod
+    def private_numbers(self):
+        """
+        Returns a DHPrivateNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPublicKey(object):
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        The bit length of the prime modulus.
+        """
+
+    @abc.abstractmethod
+    def parameters(self):
+        """
+        The DHParameters object associated with this public key.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DHPublicKeyWithSerialization(DHPublicKey):
+    @abc.abstractmethod
+    def public_numbers(self):
+        """
+        Returns a DHPublicNumbers.
+        """

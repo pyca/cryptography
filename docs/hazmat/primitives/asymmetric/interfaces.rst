@@ -30,4 +30,3 @@ Signature Interfaces
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
-
