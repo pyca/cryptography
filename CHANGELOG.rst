@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.8.2 - 2015-04-10
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a race condition when initializing the OpenSSL or CommonCrypto backends
+  in a multi-threaded scenario.
+
 0.8.1 - 2015-03-20
 ~~~~~~~~~~~~~~~~~~
 
