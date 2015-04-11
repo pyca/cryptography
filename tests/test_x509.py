@@ -615,7 +615,8 @@ class TestName(object):
         ])
 
         assert repr(name) == (
-            "[<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonN"
-            "ame)>, value='cryptography.io')>, <NameAttribute(oid=<ObjectIde"
-            "ntifier(oid=2.5.4.10, name=organizationName)>, value='PyCA')>]"
+            "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=com"
+            "monName)>, value='cryptography.io')>, <NameAttribute(oid=<ObjectI"
+            "dentifier(oid=2.5.4.10, name=organizationName)>, value='PyCA')>])"
+            ">"
         )

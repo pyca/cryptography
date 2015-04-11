@@ -191,7 +191,7 @@ class Name(object):
         return len(self._attributes)
 
     def __repr__(self):
-        return repr(self._attributes)
+        return "<Name({0})>".format(self._attributes)
 
 
 OID_SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
