@@ -346,6 +346,27 @@ class KeyUsage(object):
             return self._decipher_only
 
 
+class SubjectKeyIdentifier(object):
+    def __init__(self, digest):
+        self._digest = digest
+
+    digest = utils.read_only_property("_digest")
+
+    def __repr__(self):
+        return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
+
+    def __eq__(self, other):
+        if not isinstance(other, SubjectKeyIdentifier):
+            return NotImplemented
+
+        return (
+            self.digest == other.digest
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
 OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")

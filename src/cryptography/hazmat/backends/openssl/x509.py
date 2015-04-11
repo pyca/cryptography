@@ -170,6 +170,8 @@ class _Certificate(object):
                 )
             elif oid == x509.OID_BASIC_CONSTRAINTS:
                 value = self._build_basic_constraints(ext)
+            elif oid == x509.OID_SUBJECT_KEY_IDENTIFIER:
+                value = self._build_subject_key_identifier(ext)
             elif oid == x509.OID_KEY_USAGE and critical:
                 # TODO: remove this obviously.
                 warnings.warn(
@@ -216,6 +218,19 @@ class _Certificate(object):
             path_length = self._backend._bn_to_int(bn)
 
         return x509.BasicConstraints(ca, path_length)
+
+    def _build_subject_key_identifier(self, ext):
+        asn1_string = self._backend._lib.X509V3_EXT_d2i(ext)
+        assert asn1_string != self._backend._ffi.NULL
+        asn1_string = self._backend._ffi.cast(
+            "ASN1_OCTET_STRING *", asn1_string
+        )
+        asn1_string = self._backend._ffi.gc(
+            asn1_string, self._backend._lib.ASN1_OCTET_STRING_free
+        )
+        return x509.SubjectKeyIdentifier(
+            self._backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+        )
 
 
 @utils.register_interface(x509.CertificateSigningRequest)

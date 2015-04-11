@@ -4,9 +4,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+import binascii
 import os
 
 import pytest
+
+import six
 
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import RSABackend, X509Backend
@@ -130,6 +133,52 @@ class TestKeyUsage(object):
 
         with pytest.raises(ValueError):
             ku.decipher_only
+
+
+class TestSubjectKeyIdentifier(object):
+    def test_properties(self):
+        value = binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        ski = x509.SubjectKeyIdentifier(value)
+        assert ski.digest == value
+
+    def test_repr(self):
+        ski = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        ext = x509.Extension(x509.OID_SUBJECT_KEY_IDENTIFIER, False, ski)
+        if six.PY3:
+            assert repr(ext) == (
+                "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
+                "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
+                "igest=b\'\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
+                "\\xf7\\xff:\\xc9\')>)>"
+            )
+        else:
+            assert repr(ext) == (
+                "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
+                "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
+                "igest=\'\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
+                "\\xf7\\xff:\\xc9\')>)>"
+            )
+
+    def test_eq(self):
+        ski = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        ski2 = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        assert ski == ski2
+
+    def test_ne(self):
+        ski = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        ski2 = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"aa8098456f6ff7ff3ac9092384932230498bc980")
+        )
+        assert ski != ski2
+        assert ski != object()
 
 
 class TestBasicConstraints(object):
@@ -345,3 +394,34 @@ class TestBasicConstraintsExtension(object):
         assert ext is not None
         assert ext.critical is False
         assert ext.value.ca is False
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestSubjectKeyIdentifierExtension(object):
+    def test_subject_key_identifier(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_KEY_IDENTIFIER
+        )
+        ski = ext.value
+        assert ext is not None
+        assert ext.critical is False
+        assert ski.digest == binascii.unhexlify(
+            b"580184241bbc2b52944a3da510721451f5af3ac9"
+        )
+
+    def test_no_subject_key_identifier(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "bc_path_length_zero.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(x509.ExtensionNotFound):
+            cert.extensions.get_extension_for_oid(
+                x509.OID_SUBJECT_KEY_IDENTIFIER
+            )
