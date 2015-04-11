@@ -275,7 +275,7 @@ X.509 Certificate Object
 
             >>> for ext in cert.extensions:
             ...     print(ext)
-            <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(value=580184241bbc2b52944a3da510721451f5af3ac9)>)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(digest='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
 X.509 CSR (Certificate Signing Request) Object
@@ -589,12 +589,6 @@ X.509 Extensions
         :type: bytes
 
         The binary value of the identifier.
-
-    .. attribute:: hexdigest
-
-        :type: :term:`text`
-
-        The hexadecimal value of the identifier.
 
 
 Object Identifiers

@@ -9,6 +9,8 @@ import os
 
 import pytest
 
+import six
+
 from cryptography import x509
 from cryptography.hazmat.backends.interfaces import RSABackend, X509Backend
 
@@ -135,22 +137,29 @@ class TestKeyUsage(object):
 
 class TestSubjectKeyIdentifier(object):
     def test_properties(self):
-        hexdigest = "092384932230498bc980aa8098456f6ff7ff3ac9"
-        value = binascii.unhexlify(hexdigest.encode('ascii'))
+        value = binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         ski = x509.SubjectKeyIdentifier(value)
         assert ski.digest == value
-        assert ski.hexdigest == hexdigest
 
     def test_repr(self):
         ski = x509.SubjectKeyIdentifier(
             binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
         ext = x509.Extension(x509.OID_SUBJECT_KEY_IDENTIFIER, False, ski)
-        assert repr(ext) == (
-            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKey"
-            "Identifier)>, critical=False, value=<SubjectKeyIdentifier("
-            "value=092384932230498bc980aa8098456f6ff7ff3ac9)>)>"
-        )
+        if six.PY3:
+            assert repr(ext) == (
+                "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
+                "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
+                "igest=b\'\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
+                "\\xf7\\xff:\\xc9\')>)>"
+            )
+        else:
+            assert repr(ext) == (
+                "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
+                "eyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(d"
+                "igest=\'\\t#\\x84\\x93\"0I\\x8b\\xc9\\x80\\xaa\\x80\\x98Eoo"
+                "\\xf7\\xff:\\xc9\')>)>"
+            )
 
     def test_eq(self):
         ski = x509.SubjectKeyIdentifier(
@@ -402,7 +411,6 @@ class TestSubjectKeyIdentifierExtension(object):
         ski = ext.value
         assert ext is not None
         assert ext.critical is False
-        assert ski.hexdigest == "580184241bbc2b52944a3da510721451f5af3ac9"
         assert ski.digest == binascii.unhexlify(
             b"580184241bbc2b52944a3da510721451f5af3ac9"
         )

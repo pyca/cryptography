@@ -353,12 +353,8 @@ class SubjectKeyIdentifier(object):
 
     digest = utils.read_only_property("_digest")
 
-    @property
-    def hexdigest(self):
-        return binascii.hexlify(self.digest).decode("ascii")
-
     def __repr__(self):
-        return "<SubjectKeyIdentifier(value={0})>".format(self.hexdigest)
+        return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
 
     def __eq__(self, other):
         if not isinstance(other, SubjectKeyIdentifier):
