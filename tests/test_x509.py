@@ -607,3 +607,15 @@ class TestName(object):
         ])
         assert name1 != name2
         assert name1 != object()
+
+    def test_repr(self):
+        name = x509.Name([
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+        ])
+
+        assert repr(name) == (
+            "[<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonN"
+            "ame)>, value='cryptography.io')>, <NameAttribute(oid=<ObjectIde"
+            "ntifier(oid=2.5.4.10, name=organizationName)>, value='PyCA')>]"
+        )

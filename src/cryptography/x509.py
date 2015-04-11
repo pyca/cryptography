@@ -190,6 +190,9 @@ class Name(object):
     def __len__(self):
         return len(self._attributes)
 
+    def __repr__(self):
+        return repr(self._attributes)
+
 
 OID_SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
 OID_SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
