@@ -28,6 +28,12 @@ Changelog
   :func:`~cryptography.x509.load_pem_x509_csr` and
   :func:`~cryptography.x509.load_der_x509_csr`.
 
+0.8.2 - 2015-04-10
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a race condition when initializing the OpenSSL or CommonCrypto backends
+  in a multi-threaded scenario.
+
 0.8.1 - 2015-03-20
 ~~~~~~~~~~~~~~~~~~
 
