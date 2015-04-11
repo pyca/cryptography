@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import binascii
 from enum import Enum
 
 import six
