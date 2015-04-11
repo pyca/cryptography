@@ -652,6 +652,25 @@ X.509 Extensions
     purposes indicated in the key usage extension. The object is
     iterable to obtain the list of :ref:`extended key usage OIDs <eku_oids>`.
 
+.. class:: AuthorityKeyIdentifier
+
+    .. versionadded:: 0.9
+
+    The authority key identifier extension provides a means of identifying the
+    public key corresponding to the private key used to sign a certificate.
+
+    .. attribute:: key_identifier
+
+        :type: bytes
+
+    .. attribute:: authority_cert_issuer
+
+        :type: :class:`Name` or None
+
+    .. attribute:: authority_cert_serial_number
+
+        :type: int or None
+
 .. class:: SubjectKeyIdentifier
 
     .. versionadded:: 0.9

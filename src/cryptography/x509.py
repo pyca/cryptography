@@ -557,6 +557,43 @@ class SubjectAlternativeName(object):
         return "<SubjectAlternativeName({0})>".format(self._general_names)
 
 
+class AuthorityKeyIdentifier(object):
+    def __init__(self, key_identifier, authority_cert_issuer,
+                 authority_cert_serial_number):
+        if authority_cert_issuer or authority_cert_serial_number:
+            if not authority_cert_issuer or not authority_cert_serial_number:
+                raise ValueError(
+                    "authority_cert_issuer and authority_cert_serial_number "
+                    "must both be present or both None"
+                )
+
+            if not isinstance(authority_cert_issuer, Name):
+                raise TypeError("authority_cert_issuer must be a Name")
+
+            if not isinstance(authority_cert_serial_number, six.integer_types):
+                raise TypeError(
+                    "authority_cert_serial_number must be an integer"
+                )
+
+        self._key_identifier = key_identifier
+        self._authority_cert_issuer = authority_cert_issuer
+        self._authority_cert_serial_number = authority_cert_serial_number
+
+    def __repr__(self):
+        return (
+            "<AuthorityKeyIdentifier(key_identifier={0.key_identifier!r}, "
+            "authority_cert_issuer={0.authority_cert_issuer}, "
+            "authority_cert_serial_number={0.authority_cert_serial_number}"
+            ")>".format(self)
+        )
+
+    key_identifier = utils.read_only_property("_key_identifier")
+    authority_cert_issuer = utils.read_only_property("_authority_cert_issuer")
+    authority_cert_serial_number = utils.read_only_property(
+        "_authority_cert_serial_number"
+    )
+
+
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
 OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
