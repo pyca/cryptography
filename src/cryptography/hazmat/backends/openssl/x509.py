@@ -229,6 +229,9 @@ class _Certificate(object):
         bit_string = self._backend._lib.X509V3_EXT_d2i(ext)
         assert bit_string != self._backend._ffi.NULL
         bit_string = self._backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
+        bit_string = self._backend._ffi.gc(
+            bit_string, self._backend._lib.ASN1_BIT_STRING_free
+        )
         get_bit = self._backend._lib.ASN1_BIT_STRING_get_bit
         digital_signature = get_bit(bit_string, 0) == 1
         content_commitment = get_bit(bit_string, 1) == 1
