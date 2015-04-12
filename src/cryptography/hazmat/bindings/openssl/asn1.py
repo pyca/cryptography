@@ -120,6 +120,7 @@ int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
 """
 
 MACROS = """
+void ASN1_BIT_STRING_free(ASN1_BIT_STRING *);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
 ASN1_TIME *M_ASN1_TIME_dup(void *);
