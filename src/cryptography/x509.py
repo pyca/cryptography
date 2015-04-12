@@ -348,6 +348,23 @@ class KeyUsage(object):
         else:
             return self._decipher_only
 
+    def __repr__(self):
+        try:
+            encipher_only = self.encipher_only
+            decipher_only = self.decipher_only
+        except ValueError:
+            encipher_only = "N/A"
+            decipher_only = "N/A"
+
+        return ("<KeyUsage(digital_signature={0.digital_signature}, "
+                "content_commitment={0.content_commitment}, "
+                "key_encipherment={0.key_encipherment}, "
+                "data_encipherment={0.data_encipherment}, "
+                "key_agreement={0.key_agreement}, "
+                "key_cert_sign={0.key_cert_sign}, crl_sign={0.crl_sign}, "
+                "encipher_only={1}, decipher_only={2})>").format(
+                    self, encipher_only, decipher_only)
+
 
 class SubjectKeyIdentifier(object):
     def __init__(self, digest):
