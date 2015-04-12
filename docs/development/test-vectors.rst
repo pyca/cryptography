@@ -78,6 +78,12 @@ Custom Asymmetric Vectors
   ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
   key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
 
+Key exchange
+~~~~~~~~~~~~
+
+* ``vectors/cryptography_vectors/asymmetric/DH/RFC5114.txt`` contains
+  Diffie-Hellman examples from appendix A.1, A.2 and A.3 of :rfc:`5114`.
+
 X.509
 ~~~~~
 
