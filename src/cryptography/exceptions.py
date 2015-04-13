@@ -63,5 +63,5 @@ InvalidToken = utils.deprecated(
         "The InvalidToken exception has moved to the "
         "cryptography.hazmat.primitives.twofactor module"
     ),
-    utils.DeprecatedIn08
+    utils.DeprecatedIn09
 )
