@@ -34,8 +34,10 @@ class TestCamelliaModeECB(object):
             "camellia-192-ecb.txt",
             "camellia-256-ecb.txt"
         ],
-        lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda **kwargs: modes.ECB(),
+        lambda cryptrec_vector: algorithms.Camellia(
+            binascii.unhexlify(cryptrec_vector.key)
+        ),
+        lambda cryptrec_vector: modes.ECB(),
     )
 
 

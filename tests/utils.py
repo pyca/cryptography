@@ -22,6 +22,9 @@ HashVector = collections.namedtuple("HashVector", ["message", "digest"])
 KeyedHashVector = collections.namedtuple(
     "KeyedHashVector", ["message", "digest", "key"]
 )
+CRYPTRECVector = collections.namedtuple(
+    "CRYPTRECVector", ["key", "plaintext", "ciphertext"]
+)
 
 
 def select_backends(names, backend_list):
@@ -129,11 +132,7 @@ def load_cryptrec_vectors(vector_data):
             ct = line.split(" : ")[1].replace(" ", "").encode("ascii")
             # after a C is found the K+P+C tuple is complete
             # there are many P+C pairs for each K
-            cryptrec_list.append({
-                "key": key,
-                "plaintext": pt,
-                "ciphertext": ct
-            })
+            cryptrec_list.append(CRYPTRECVector(key, pt, ct))
         else:
             raise ValueError("Invalid line in file '{}'".format(line))
     return cryptrec_list
