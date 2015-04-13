@@ -15,6 +15,8 @@ Asymmetric Utilities
 
     :returns: The decoded tuple ``(r, s)``.
 
+    :raises ValueError: Raised if the signature is malformed.
+
 .. function:: encode_rfc6979_signature(r, s)
 
     Creates an :rfc:`6979` byte string from raw signature values.
