@@ -15,7 +15,7 @@ Asymmetric Utilities
 
     :returns: The decoded tuple ``(r, s)``.
 
-    :raises ValueError: Raised if the signature is malformed in any way.
+    :raises ValueError: Raised if the signature is malformed.
 
 .. function:: encode_rfc6979_signature(r, s)
 
