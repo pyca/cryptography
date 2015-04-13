@@ -44,13 +44,22 @@ def generate_encrypt_test(param_loader, path, file_names, cipher_factory,
 
 
 def encrypt_test(backend, cipher_factory, mode_factory, params):
-    plaintext = params["plaintext"]
-    ciphertext = params["ciphertext"]
-    cipher = Cipher(
-        cipher_factory(**params),
-        mode_factory(**params),
-        backend=backend
-    )
+    if isinstance(params, tuple):
+        plaintext = params.plaintext
+        ciphertext = params.ciphertext
+        cipher = Cipher(
+            cipher_factory(params),
+            mode_factory(params),
+            backend=backend
+        )
+    else:
+        plaintext = params["plaintext"]
+        ciphertext = params["ciphertext"]
+        cipher = Cipher(
+            cipher_factory(**params),
+            mode_factory(**params),
+            backend=backend
+        )
     encryptor = cipher.encryptor()
     actual_ciphertext = encryptor.update(binascii.unhexlify(plaintext))
     actual_ciphertext += encryptor.finalize()
