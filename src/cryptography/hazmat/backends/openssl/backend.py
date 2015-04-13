@@ -973,13 +973,6 @@ class Backend(object):
         if not isinstance(signature_algorithm, ec.ECDSA):
             return False
 
-        # Before 0.9.8m OpenSSL can't cope with digests longer than the curve.
-        if (
-            self._lib.OPENSSL_VERSION_NUMBER < 0x009080df and
-            curve.key_size < signature_algorithm.algorithm.digest_size * 8
-        ):
-            return False
-
         return self.elliptic_curve_supported(curve)
 
     def generate_elliptic_curve_private_key(self, curve):

@@ -21,6 +21,9 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
     curve key's length so they can be signed. Since elliptic curve keys are
     much shorter than RSA keys many digests (e.g. SHA-512) may require
     truncation.
+
+    OpenSSL > 0.9.8m does this automatically and some day we can probably
+    remove this function.
     """
 
     _lib = backend._lib
