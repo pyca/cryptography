@@ -155,6 +155,8 @@ class CTR(object):
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
 @utils.register_interface(ModeWithAuthenticationTag)
+@utils.register_interface(ModeWithPlaintextBitLimit)
+@utils.register_interface(ModeWithAADBitLimit)
 class GCM(object):
     name = "GCM"
 
@@ -172,9 +174,13 @@ class GCM(object):
 
         self._initialization_vector = initialization_vector
         self._tag = tag
+        self._plaintext_bit_limit = 2 ** 39 - 256
+        self._aad_bit_limit = 2 ** 64 - 1
 
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")
+    plaintext_bit_limit = utils.read_only_property("_plaintext_bit_limit")
+    aad_bit_limit = utils.read_only_property("_aad_bit_limit")
 
     def validate_for_algorithm(self, algorithm):
         pass
