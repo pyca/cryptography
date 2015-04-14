@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 
-class GcmSizeValidator(object):
+class _GCMSizeValidator(object):
     """
     GCM may only encrypt up to 2**39 - 256 bits of plaintext, so we
     must track the number of bytes we see.

@@ -8,7 +8,7 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, UnsupportedAlgorithm, _Reasons
 )
-from cryptography.hazmat.backends.utils import GcmSizeValidator
+from cryptography.hazmat.backends.utils import _GCMSizeValidator
 from cryptography.hazmat.primitives import ciphers, constant_time
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.modes import (
@@ -112,7 +112,7 @@ class _GCMCipherContext(object):
         self._mode = mode
         self._operation = operation
         self._tag = None
-        self._gcm_size_validator = GcmSizeValidator()
+        self._gcm_size_validator = _GCMSizeValidator()
 
         registry = self._backend._cipher_registry
         try:
