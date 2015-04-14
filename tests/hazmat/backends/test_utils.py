@@ -10,6 +10,21 @@ from cryptography.hazmat.backends.utils import _GCMSizeValidator
 
 
 class TestGcmSizeValidator(object):
+    def test_update_and_validate_valid(self):
+        gcm_size_validator = _GCMSizeValidator()
+        assert gcm_size_validator.update_and_validate_plaintext(b"") is None
+        assert gcm_size_validator.update_and_validate_plaintext(b"0") is None
+        gcm_size_validator._plaintext_len = (
+            _GCMSizeValidator._PLAINTEXT_BIT_LIMIT)
+        assert gcm_size_validator.update_and_validate_plaintext(b"") is None
+
+    def test_update_and_validate_invalid(self):
+        gcm_size_validator = _GCMSizeValidator()
+        gcm_size_validator._plaintext_len = (
+            _GCMSizeValidator._PLAINTEXT_BIT_LIMIT)
+        with pytest.raises(ValueError):
+            gcm_size_validator.update_and_validate_plaintext(b"0")
+
     def test_validate_plaintext_len_valid(self):
         gcm_size_validator = _GCMSizeValidator()
         assert gcm_size_validator.validate_plaintext_len() is None
