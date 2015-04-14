@@ -54,6 +54,24 @@ class ModeWithAuthenticationTag(object):
         """
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithPlaintextBitLimit(object):
+    @abc.abstractproperty
+    def plaintext_bit_limit(self):
+        """
+        The maximum plaintext size in bits.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithAADBitLimit(object):
+    @abc.abstractproperty
+    def aad_bit_limit(self):
+        """
+        The maximum aad size in bits.
+        """
+
+
 def _check_iv_length(self, algorithm):
     if len(self.initialization_vector) * 8 != algorithm.block_size:
         raise ValueError("Invalid IV size ({0}) for {1}.".format(
