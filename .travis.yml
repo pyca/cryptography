@@ -9,8 +9,6 @@ matrix:
           env: TOXENV=py26
         - python: 2.7
           env: TOXENV=py27
-        - python: 3.2
-          env: TOXENV=py32
         - python: 3.3
           env: TOXENV=py33
         - python: 3.4
@@ -27,14 +25,6 @@ matrix:
                       - libssl-dev/lucid
         - python: 2.7
           env: TOXENV=py27 OPENSSL=0.9.8
-          addons:
-              apt:
-                  sources:
-                      - lucid
-                  packages:
-                      - libssl-dev/lucid
-        - python: 3.2
-          env: TOXENV=py32 OPENSSL=0.9.8
           addons:
               apt:
                   sources:
@@ -83,9 +73,6 @@ matrix:
           env: TOXENV=py27
         - language: generic
           os: osx
-          env: TOXENV=py32
-        - language: generic
-          os: osx
           env: TOXENV=py33
         - language: generic
           os: osx
@@ -102,9 +89,6 @@ matrix:
         - language: generic
           os: osx
           env: TOXENV=py27 OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          env: TOXENV=py32 OPENSSL=0.9.8
         - language: generic
           os: osx
           env: TOXENV=py33 OPENSSL=0.9.8
