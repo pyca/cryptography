@@ -37,9 +37,3 @@ Exceptions
 
     This is raised when the verify method of a key derivation function's
     computed key does not match the expected key.
-
-
-.. class:: InvalidToken
-
-    This is raised when the verify method of a one time password function's
-    computed token does not match the expected token.

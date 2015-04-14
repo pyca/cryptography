@@ -6,9 +6,10 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.exceptions import InvalidToken, _Reasons
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 
 from ....utils import (

@@ -11,6 +11,11 @@ Currently, it contains an algorithm for generating and verifying
 one time password values based on Hash-based message authentication
 codes (HMAC).
 
+.. class:: InvalidToken
+
+    This is raised when the verify method of a one time password function's
+    computed token does not match the expected token.
+
 .. currentmodule:: cryptography.hazmat.primitives.twofactor.hotp
 
 .. class:: HOTP(key, length, algorithm, backend)
@@ -66,8 +71,8 @@ codes (HMAC).
 
         :param bytes hotp: The one time password value to validate.
         :param int counter: The counter value to validate against.
-        :raises cryptography.exceptions.InvalidToken: This is raised when the
-            supplied HOTP does not match the expected HOTP.
+        :raises cryptography.hazmat.primitives.twofactor.InvalidToken: This
+             is raised when the supplied HOTP does not match the expected HOTP.
 
 Throttling
 ~~~~~~~~~~
@@ -164,5 +169,5 @@ similar to the following code.
 
         :param bytes totp: The one time password value to validate.
         :param int time: The time value to validate against.
-        :raises cryptography.exceptions.InvalidToken: This is raised when the
-            supplied TOTP does not match the expected TOTP.
+        :raises cryptography.hazmat.primitives.twofactor.InvalidToken: This
+             is raised when the supplied TOTP does not match the expected TOTP.

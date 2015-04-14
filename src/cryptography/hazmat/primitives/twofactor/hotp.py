@@ -9,11 +9,12 @@ import struct
 import six
 
 from cryptography.exceptions import (
-    InvalidToken, UnsupportedAlgorithm, _Reasons
+    UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
+from cryptography.hazmat.primitives.twofactor import InvalidToken
 
 
 class HOTP(object):
