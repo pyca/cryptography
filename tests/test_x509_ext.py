@@ -39,6 +39,123 @@ class TestExtension(object):
         )
 
 
+class TestNoticeReference(object):
+    def test_notice_numbers_not_all_int(self):
+        with pytest.raises(TypeError):
+            x509.NoticeReference("org", [1, 2, "three"])
+
+    def test_notice_numbers_none(self):
+        nr = x509.NoticeReference("org", None)
+        assert nr.organization == "org"
+        assert nr.notice_numbers is None
+
+    def test_repr(self):
+        nr = x509.NoticeReference("org", [1, 3, 4])
+
+        assert repr(nr) == (
+            "<NoticeReference(organization=org, notice_numbers=[1, 3, 4])>"
+        )
+
+
+class TestUserNotice(object):
+    def test_notice_reference_invalid(self):
+        with pytest.raises(TypeError):
+            x509.UserNotice("invalid", None)
+
+    def test_notice_reference_none(self):
+        un = x509.UserNotice(None, "text")
+        assert un.notice_reference is None
+        assert un.explicit_text == "text"
+
+    def test_repr(self):
+        un = x509.UserNotice(x509.NoticeReference("org", None), "text")
+        assert repr(un) == (
+            "<UserNotice(notice_reference=<NoticeReference(organization=org, "
+            "notice_numbers=None)>, explicit_text=text)>"
+        )
+
+
+class TestPolicyQualifierInfo(object):
+    def test_invalid_qualifier(self):
+        with pytest.raises(ValueError):
+            x509.PolicyQualifierInfo(None)
+
+    def test_string_qualifier(self):
+        pqi = x509.PolicyQualifierInfo("1.2.3")
+        assert pqi.policy_qualifier_id == x509.OID_CPS_QUALIFIER
+        assert pqi.qualifier == "1.2.3"
+
+    def test_user_notice_qualifier(self):
+        pqi = x509.PolicyQualifierInfo(x509.UserNotice(None, "text"))
+        assert pqi.policy_qualifier_id == x509.OID_CPS_USER_NOTICE
+        assert isinstance(pqi.qualifier, x509.UserNotice)
+
+    def test_repr(self):
+        pqi = x509.PolicyQualifierInfo("1.2.3.4")
+        assert repr(pqi) == (
+            "<PolicyQualifierInfo(policy_qualifier_id=<ObjectIdentifier(oid=1."
+            "3.6.1.5.5.7.2.1, name=id-qt-cps)>, qualifier=1.2.3.4)>"
+        )
+
+
+class TestPolicyInformation(object):
+    def test_invalid_policy_identifier(self):
+        with pytest.raises(TypeError):
+            x509.PolicyInformation("notanoid", None)
+
+    def test_none_policy_qualifiers(self):
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), None)
+        assert pi.policy_identifier == x509.ObjectIdentifier("1.2.3")
+        assert pi.policy_qualifiers is None
+
+    def test_policy_qualifiers(self):
+        pq = [x509.PolicyQualifierInfo("string")]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        assert pi.policy_identifier == x509.ObjectIdentifier("1.2.3")
+        assert pi.policy_qualifiers == pq
+
+    def test_invalid_policy_identifiers(self):
+        with pytest.raises(TypeError):
+            x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [1, 2])
+
+    def test_repr(self):
+        pq = [x509.PolicyQualifierInfo("string")]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        assert repr(pi) == (
+            "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1.2.3,"
+            " name=Unknown OID)>, policy_qualifiers=[<PolicyQualifierInfo(poli"
+            "cy_qualifier_id=<ObjectIdentifier(oid=1.3.6.1.5.5.7.2.1, name=id-"
+            "qt-cps)>, qualifier=string)>])>"
+        )
+
+
+class TestCertificatePolicies(object):
+    def test_invalid_policies(self):
+        pq = [x509.PolicyQualifierInfo("string")]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        with pytest.raises(TypeError):
+            x509.CertificatePolicies([1, pi])
+
+    def test_iter_len(self):
+        pq = [x509.PolicyQualifierInfo("string")]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        cp = x509.CertificatePolicies([pi])
+        assert len(cp) == 1
+        for policyinfo in cp:
+            assert policyinfo == pi
+
+    def test_repr(self):
+        pq = [x509.PolicyQualifierInfo("string")]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        cp = x509.CertificatePolicies([pi])
+        assert repr(cp) == (
+            "<CertificatePolicies([<PolicyInformation(policy_identifier=<Objec"
+            "tIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifiers=[<Po"
+            "licyQualifierInfo(policy_qualifier_id=<ObjectIdentifier(oid=1.3.6"
+            ".1.5.5.7.2.1, name=id-qt-cps)>, qualifier=string)>])>])>"
+        )
+
+
 class TestKeyUsage(object):
     def test_key_agreement_false_encipher_decipher_true(self):
         with pytest.raises(ValueError):

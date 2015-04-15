@@ -69,6 +69,8 @@ _OID_NAMES = {
     "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
     "1.3.6.1.5.5.7.48.1": "OCSP",
     "1.3.6.1.5.5.7.48.2": "caIssuers",
+    "1.3.6.1.5.5.7.2.1": "id-qt-cps",
+    "1.3.6.1.5.5.7.2.2": "id-qt-unotice",
 }
 
 
@@ -458,6 +460,120 @@ class AccessDescription(object):
 
     access_method = utils.read_only_property("_access_method")
     access_location = utils.read_only_property("_access_location")
+
+
+class CertificatePolicies(object):
+    def __init__(self, policies):
+        if not all(map(lambda x: isinstance(x, PolicyInformation), policies)):
+            raise TypeError(
+                "Every item in the policies list must be a "
+                "PolicyInformation"
+            )
+
+        self._policies = policies
+
+    def __iter__(self):
+        return iter(self._policies)
+
+    def __len__(self):
+        return len(self._policies)
+
+    def __repr__(self):
+        return "<CertificatePolicies({0})>".format(self._policies)
+
+
+class PolicyInformation(object):
+    def __init__(self, policy_identifier, policy_qualifiers):
+        if not isinstance(policy_identifier, ObjectIdentifier):
+            raise TypeError("policy_identifier must be an ObjectIdentifier")
+
+        self._policy_identifier = policy_identifier
+        if policy_qualifiers and not all(
+            map(
+                lambda x: isinstance(x, PolicyQualifierInfo), policy_qualifiers
+            )
+        ):
+            raise TypeError(
+                "policy_qualifiers must be a list of PolicyQualifierInfo "
+                "objects or None"
+            )
+
+        self._policy_qualifiers = policy_qualifiers
+
+    def __repr__(self):
+        return (
+            "<PolicyInformation(policy_identifier={0.policy_identifier}, polic"
+            "y_qualifiers={0.policy_qualifiers})>".format(self)
+        )
+
+    policy_identifier = utils.read_only_property("_policy_identifier")
+    policy_qualifiers = utils.read_only_property("_policy_qualifiers")
+
+
+class PolicyQualifierInfo(object):
+    def __init__(self, qualifier):
+        if not isinstance(qualifier, (six.string_types, UserNotice)):
+            raise ValueError("qualifier must be string or UserNotice")
+
+        if isinstance(qualifier, six.string_types):
+            self._policy_qualifier_id = OID_CPS_QUALIFIER
+        else:
+            self._policy_qualifier_id = OID_CPS_USER_NOTICE
+
+        self._qualifier = qualifier
+
+    def __repr__(self):
+        return (
+            "<PolicyQualifierInfo(policy_qualifier_id={0.policy_qualifier_id}"
+            ", qualifier={0.qualifier})>".format(self)
+        )
+
+    policy_qualifier_id = utils.read_only_property("_policy_qualifier_id")
+    qualifier = utils.read_only_property("_qualifier")
+
+
+class UserNotice(object):
+    def __init__(self, notice_reference, explicit_text):
+        if notice_reference and not isinstance(
+            notice_reference, NoticeReference
+        ):
+            raise TypeError(
+                "notice_reference must be None or a NoticeReference"
+            )
+
+        self._notice_reference = notice_reference
+        self._explicit_text = explicit_text
+
+    def __repr__(self):
+        return (
+            "<UserNotice(notice_reference={0.notice_reference}, explicit_text="
+            "{0.explicit_text})>".format(self)
+        )
+
+    notice_reference = utils.read_only_property("_notice_reference")
+    explicit_text = utils.read_only_property("_explicit_text")
+
+
+class NoticeReference(object):
+    def __init__(self, organization, notice_numbers):
+        self._organization = organization
+        if notice_numbers and not all(
+            map(lambda x: isinstance(x, int), notice_numbers)
+        ):
+            raise TypeError(
+                "notice_numbers must be a list of integers or None"
+            )
+
+        self._notice_numbers = notice_numbers
+
+    def __repr__(self):
+        return (
+            "<NoticeReference(organization={0.organization}, notice_numbers="
+            "{0.notice_numbers})>".format(self)
+        )
+
+    organization = utils.read_only_property("_organization")
+    notice_numbers = utils.read_only_property("_notice_numbers")
 
 
 class SubjectKeyIdentifier(object):
@@ -873,6 +989,9 @@ OID_OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
 
 OID_CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
 OID_OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
+
+OID_CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
+OID_CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
 
 
 @six.add_metaclass(abc.ABCMeta)
