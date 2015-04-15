@@ -526,7 +526,7 @@ static const long Cryptography_HAS_NEXTPROTONEG = 1;
 #endif
 
 /* ALPN was added in OpenSSL 1.0.2. */
-#if OPENSSL_VERSION_NUMBER < 0x10002001L
+#if OPENSSL_VERSION_NUMBER < 0x10002001L && !defined(LIBRESSL_VERSION_NUMBER)
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
                                const unsigned char *,
                                unsigned) = NULL;
