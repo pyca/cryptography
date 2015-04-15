@@ -353,8 +353,8 @@ class KeyUsage(object):
             encipher_only = self.encipher_only
             decipher_only = self.decipher_only
         except ValueError:
-            encipher_only = "N/A"
-            decipher_only = "N/A"
+            encipher_only = None
+            decipher_only = None
 
         return ("<KeyUsage(digital_signature={0.digital_signature}, "
                 "content_commitment={0.content_commitment}, "
