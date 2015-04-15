@@ -27,6 +27,10 @@ Changelog
 * Add support for parsing X.509 certificate signing requests (CSRs) with
   :func:`~cryptography.x509.load_pem_x509_csr` and
   :func:`~cryptography.x509.load_der_x509_csr`.
+* Moved ``cryptography.exceptions.InvalidToken`` to
+  :class:`cryptography.hazmat.primitives.twofactor.InvalidToken` and deprecated
+  the old location. This was moved to minimize confusion between this exception
+  and :class:`cryptography.fernet.InvalidToken`.
 
 0.8.2 - 2015-04-10
 ~~~~~~~~~~~~~~~~~~
