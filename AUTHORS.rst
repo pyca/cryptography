@@ -21,3 +21,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Mark Adams <mark@markadams.me> (A18A 7DD3 283C CF2A B0CE FE0E C7A0 5E3F C972 098C)
 * Gregory Haynes <greg@greghaynes.net> (6FB6 44BF 9FD0 EBA2 1CE9  471F B08F 42F9 0DC6 599F)
 * Chelsea Winfree <chelsea.winfree@gmail.com>
+* Steven Buss <steven.buss@gmail.com> (1FB9 2EC1 CF93 DFD6 B47F F583 B1A5 6C22 290D A4C3)
