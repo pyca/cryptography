@@ -688,4 +688,4 @@ Key interfaces
 .. _`Chinese Remainder Theorem`: https://en.wikipedia.org/wiki/RSA_%28cryptosystem%29#Using_the_Chinese_remainder_algorithm
 .. _`security proof`: http://eprint.iacr.org/2001/062.pdf
 .. _`recommended padding algorithm`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
-.. _`proven secure`: http://cseweb.ucsd.edu/users/mihir/papers/oae.pdf
+.. _`proven secure`: http://cseweb.ucsd.edu/~mihir/papers/oae.pdf
