@@ -15,13 +15,13 @@ class TestGcmSizeValidator(object):
         assert gcm_size_validator.update_and_validate_plaintext(b"") is None
         assert gcm_size_validator.update_and_validate_plaintext(b"0") is None
         gcm_size_validator._plaintext_len = (
-            _GCMSizeValidator._PLAINTEXT_BIT_LIMIT)
+            _GCMSizeValidator._PLAINTEXT_BYTE_LIMIT)
         assert gcm_size_validator.update_and_validate_plaintext(b"") is None
 
     def test_update_and_validate_invalid(self):
         gcm_size_validator = _GCMSizeValidator()
         gcm_size_validator._plaintext_len = (
-            _GCMSizeValidator._PLAINTEXT_BIT_LIMIT)
+            _GCMSizeValidator._PLAINTEXT_BYTE_LIMIT)
         with pytest.raises(ValueError):
             gcm_size_validator.update_and_validate_plaintext(b"0")
 
@@ -31,13 +31,13 @@ class TestGcmSizeValidator(object):
         gcm_size_validator._plaintext_len = 1024
         assert gcm_size_validator.validate_plaintext_len() is None
         gcm_size_validator._plaintext_len = (
-            _GCMSizeValidator._PLAINTEXT_BIT_LIMIT)
+            _GCMSizeValidator._PLAINTEXT_BYTE_LIMIT)
         assert gcm_size_validator.validate_plaintext_len() is None
 
     def test_validate_plaintext_len_invalid(self):
         gcm_size_validator = _GCMSizeValidator()
         gcm_size_validator._plaintext_len = (
-            _GCMSizeValidator._PLAINTEXT_BIT_LIMIT + 1)
+            _GCMSizeValidator._PLAINTEXT_BYTE_LIMIT + 1)
         with pytest.raises(ValueError):
             gcm_size_validator.validate_plaintext_len()
         gcm_size_validator._plaintext_len = -1
@@ -49,12 +49,12 @@ class TestGcmSizeValidator(object):
         assert gcm_size_validator.validate_aad_len(0) is None
         assert gcm_size_validator.validate_aad_len(1024) is None
         assert gcm_size_validator.validate_aad_len(
-            _GCMSizeValidator._AAD_BIT_LIMIT) is None
+            _GCMSizeValidator._AAD_BYTE_LIMIT) is None
 
     def test_validate_aad_len_invalid(self):
         gcm_size_validator = _GCMSizeValidator()
         with pytest.raises(ValueError):
             gcm_size_validator.validate_aad_len(
-                _GCMSizeValidator._AAD_BIT_LIMIT + 1)
+                _GCMSizeValidator._AAD_BYTE_LIMIT + 1)
         with pytest.raises(ValueError):
             gcm_size_validator.validate_aad_len(-1)
