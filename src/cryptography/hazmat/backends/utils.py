@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 class _SizeValidator(object):
     def __init__(self, max_bytes, label):
-        self._max_bytes = max_bytes
+        self._max_bytes = int(max_bytes)
         self._len = 0
         self._label = label
 
