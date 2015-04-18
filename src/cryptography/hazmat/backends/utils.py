@@ -17,3 +17,7 @@ class _SizeValidator(object):
     def validate(self):
         if self._len > self._max_bits:
             raise ValueError("Exceeded %s bit limit." % self._label)
+
+    def update_and_validate(self, data):
+        self.update(data)
+        self.validate()

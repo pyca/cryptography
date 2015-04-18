@@ -160,8 +160,7 @@ class _GCMCipherContext(object):
         self.authenticate_additional_data(b"")
 
     def update(self, data):
-        self._plaintext_size_validator.update(data)
-        self._plaintext_size_validator.validate()
+        self._plaintext_size_validator.update_and_validate(data)
         buf = self._backend._ffi.new("unsigned char[]", len(data))
         args = (self._ctx[0], data, len(data), buf)
         if self._operation == self._backend._lib.kCCEncrypt:
@@ -196,8 +195,7 @@ class _GCMCipherContext(object):
         return b""
 
     def authenticate_additional_data(self, data):
-        self._aad_size_validator.update(data)
-        self._aad_size_validator.validate()
+        self._aad_size_validator.update_and_validate(data)
         res = self._backend._lib.CCCryptorGCMAddAAD(
             self._ctx[0], data, len(data)
         )

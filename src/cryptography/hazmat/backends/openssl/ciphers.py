@@ -125,8 +125,7 @@ class _CipherContext(object):
         # in GCM mode when the byte limit of 2**39 - 256 bits is reached.
         # See #1821
         if isinstance(self._mode, modes.ModeWithPlaintextBitLimit):
-            self._plaintext_size_validator.update(data)
-            self._plaintext_size_validator.validate()
+            self._plaintext_size_validator.update_and_validate(data)
 
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
@@ -191,8 +190,7 @@ class _CipherContext(object):
 
     def authenticate_additional_data(self, data):
         if isinstance(self._mode, modes.ModeWithAADBitLimit):
-            self._aad_size_validator.update(data)
-            self._aad_size_validator.validate()
+            self._aad_size_validator.update_and_validate(data)
 
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
