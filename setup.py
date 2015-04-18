@@ -40,6 +40,9 @@ requirements = [
 if sys.version_info < (3, 4):
     requirements.append("enum34")
 
+if sys.version_info < (3, 3):
+    requirements.append("ipaddress")
+
 if platform.python_implementation() != "PyPy":
     requirements.append("cffi>=0.8")
 

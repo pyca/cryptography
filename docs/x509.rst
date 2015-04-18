@@ -399,6 +399,80 @@ X.509 CSR (Certificate Signing Request) Object
 
         The dotted string value of the OID (e.g. ``"2.5.4.3"``)
 
+.. _general_name_classes:
+
+General Name Classes
+~~~~~~~~~~~~~~~~~~~~
+
+.. class:: GeneralName
+
+    .. versionadded:: 0.9
+
+    This is the generic interface that all the following classes are registered
+    against.
+
+.. class:: RFC822Name
+
+    .. versionadded:: 0.9
+
+    This corresponds to an email address. For example, ``user@example.com``.
+
+    .. attribute:: value
+
+        :type: :term:`text`
+
+.. class:: DNSName
+
+    .. versionadded:: 0.9
+
+    This corresponds to a domain name. For example, ``cryptography.io``.
+
+    .. attribute:: value
+
+        :type: :term:`text`
+
+.. class:: DirectoryName
+
+    .. versionadded:: 0.9
+
+    This corresponds to a directory name.
+
+    .. attribute:: value
+
+        :type: :class:`Name`
+
+.. class:: UniformResourceIdentifier
+
+    .. versionadded:: 0.9
+
+    This corresponds to a uniform resource identifier.  For example,
+    ``https://cryptography.io``.
+
+    .. attribute:: value
+
+        :type: :term:`text`
+
+.. class:: IPAddress
+
+    .. versionadded:: 0.9
+
+    This corresponds to an IP address.
+
+    .. attribute:: value
+
+        :type: :class:`~ipaddress.IPv4Address` or
+            :class:`~ipaddress.IPv6Address`.
+
+.. class:: RegisteredID
+
+    .. versionadded:: 0.9
+
+    This corresponds to a registered ID.
+
+    .. attribute:: value
+
+        :type: :class:`ObjectIdentifier`
+
 X.509 Extensions
 ~~~~~~~~~~~~~~~~
 
@@ -590,6 +664,22 @@ X.509 Extensions
         :type: bytes
 
         The binary value of the identifier.
+
+.. class:: SubjectAlternativeName
+
+    .. versionadded:: 0.9
+
+    Subject alternative name is an X.509 extension that provides a list of
+    :ref:`general name <general_name_classes>` instances that provide a set
+    of identities for which the certificate is valid. The object is iterable to
+    get every element.
+
+    .. method:: get_values_for_type(type)
+
+        :param type: A :class:`GeneralName` provider. This is one of the
+            :ref:`general name classes <general_name_classes>`.
+
+        :returns: A list of values extracted from the matched general names.
 
 
 Object Identifiers

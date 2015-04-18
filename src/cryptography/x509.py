@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import ipaddress
 from enum import Enum
 
 import six
@@ -385,6 +386,175 @@ class SubjectKeyIdentifier(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+@six.add_metaclass(abc.ABCMeta)
+class GeneralName(object):
+    @abc.abstractproperty
+    def value(self):
+        """
+        Return the value of the object
+        """
+
+
+@utils.register_interface(GeneralName)
+class RFC822Name(object):
+    def __init__(self, value):
+        if not isinstance(value, six.text_type):
+            raise TypeError("value must be a unicode string")
+
+        self._value = value
+
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<RFC822Name(value={0})>".format(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, RFC822Name):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(GeneralName)
+class DNSName(object):
+    def __init__(self, value):
+        if not isinstance(value, six.text_type):
+            raise TypeError("value must be a unicode string")
+
+        self._value = value
+
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<DNSName(value={0})>".format(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, DNSName):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(GeneralName)
+class UniformResourceIdentifier(object):
+    def __init__(self, value):
+        if not isinstance(value, six.text_type):
+            raise TypeError("value must be a unicode string")
+
+        self._value = value
+
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<UniformResourceIdentifier(value={0})>".format(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, UniformResourceIdentifier):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(GeneralName)
+class DirectoryName(object):
+    def __init__(self, value):
+        if not isinstance(value, Name):
+            raise TypeError("value must be a Name")
+
+        self._value = value
+
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<DirectoryName(value={0})>".format(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, DirectoryName):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(GeneralName)
+class RegisteredID(object):
+    def __init__(self, value):
+        if not isinstance(value, ObjectIdentifier):
+            raise TypeError("value must be an ObjectIdentifier")
+
+        self._value = value
+
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<RegisteredID(value={0})>".format(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, RegisteredID):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(GeneralName)
+class IPAddress(object):
+    def __init__(self, value):
+        if not isinstance(
+            value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+        ):
+            raise TypeError(
+                "value must be an instance of ipaddress.IPv4Address or "
+                "ipaddress.IPv6Address"
+            )
+
+        self._value = value
+
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<IPAddress(value={0})>".format(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, IPAddress):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class SubjectAlternativeName(object):
+    def __init__(self, general_names):
+        self._general_names = general_names
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return [i.value for i in self if isinstance(i, type)]
+
+    def __repr__(self):
+        return "<SubjectAlternativeName({0})>".format(self._general_names)
 
 
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")

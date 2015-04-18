@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import ipaddress
 import os
 
 import pytest
@@ -523,3 +524,158 @@ class TestKeyUsageExtension(object):
         assert ku.key_agreement is False
         assert ku.key_cert_sign is True
         assert ku.crl_sign is True
+
+
+@pytest.mark.parametrize(
+    "name", [
+        x509.RFC822Name,
+        x509.DNSName,
+        x509.UniformResourceIdentifier
+    ]
+)
+class TestTextGeneralNames(object):
+    def test_not_text(self, name):
+        with pytest.raises(TypeError):
+            name(b"notaunicodestring")
+
+        with pytest.raises(TypeError):
+            name(1.3)
+
+    def test_repr(self, name):
+        gn = name(six.u("string"))
+        assert repr(gn) == "<{0}(value=string)>".format(name.__name__)
+
+    def test_eq(self, name):
+        gn = name(six.u("string"))
+        gn2 = name(six.u("string"))
+        assert gn == gn2
+
+    def test_ne(self, name):
+        gn = name(six.u("string"))
+        gn2 = name(six.u("string2"))
+        assert gn != gn2
+        assert gn != object()
+
+
+class TestDirectoryName(object):
+    def test_not_name(self):
+        with pytest.raises(TypeError):
+            x509.DirectoryName(b"notaname")
+
+        with pytest.raises(TypeError):
+            x509.DirectoryName(1.3)
+
+    def test_repr(self):
+        name = x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'value1')])
+        gn = x509.DirectoryName(x509.Name([name]))
+        assert repr(gn) == (
+            "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<ObjectIden"
+            "tifier(oid=2.5.4.3, name=commonName)>, value='value1')>])>])>)>"
+        )
+
+    def test_eq(self):
+        name = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1')
+        ])
+        name2 = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1')
+        ])
+        gn = x509.DirectoryName(x509.Name([name]))
+        gn2 = x509.DirectoryName(x509.Name([name2]))
+        assert gn == gn2
+
+    def test_ne(self):
+        name = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1')
+        ])
+        name2 = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value2')
+        ])
+        gn = x509.DirectoryName(x509.Name([name]))
+        gn2 = x509.DirectoryName(x509.Name([name2]))
+        assert gn != gn2
+        assert gn != object()
+
+
+class TestRegisteredID(object):
+    def test_not_oid(self):
+        with pytest.raises(TypeError):
+            x509.RegisteredID(b"notanoid")
+
+        with pytest.raises(TypeError):
+            x509.RegisteredID(1.3)
+
+    def test_repr(self):
+        gn = x509.RegisteredID(x509.OID_COMMON_NAME)
+        assert repr(gn) == (
+            "<RegisteredID(value=<ObjectIdentifier(oid=2.5.4.3, name=commonNam"
+            "e)>)>"
+        )
+
+    def test_eq(self):
+        gn = x509.RegisteredID(x509.OID_COMMON_NAME)
+        gn2 = x509.RegisteredID(x509.OID_COMMON_NAME)
+        assert gn == gn2
+
+    def test_ne(self):
+        gn = x509.RegisteredID(x509.OID_COMMON_NAME)
+        gn2 = x509.RegisteredID(x509.OID_BASIC_CONSTRAINTS)
+        assert gn != gn2
+        assert gn != object()
+
+
+class TestIPAddress(object):
+    def test_not_ipaddress(self):
+        with pytest.raises(TypeError):
+            x509.IPAddress(b"notanipaddress")
+
+        with pytest.raises(TypeError):
+            x509.IPAddress(1.3)
+
+    def test_repr(self):
+        gn = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
+        assert repr(gn) == "<IPAddress(value=127.0.0.1)>"
+
+        gn2 = x509.IPAddress(ipaddress.IPv6Address(six.u("ff::")))
+        assert repr(gn2) == "<IPAddress(value=ff::)>"
+
+    def test_eq(self):
+        gn = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
+        gn2 = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
+        assert gn == gn2
+
+    def test_ne(self):
+        gn = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
+        gn2 = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.2")))
+        assert gn != gn2
+        assert gn != object()
+
+
+class TestSubjectAlternativeName(object):
+    def test_get_values_for_type(self):
+        san = x509.SubjectAlternativeName(
+            [x509.DNSName(six.u("cryptography.io"))]
+        )
+        names = san.get_values_for_type(x509.DNSName)
+        assert names == [six.u("cryptography.io")]
+
+    def test_iter_names(self):
+        san = x509.SubjectAlternativeName([
+            x509.DNSName(six.u("cryptography.io")),
+            x509.DNSName(six.u("crypto.local")),
+        ])
+        assert len(san) == 2
+        assert list(san) == [
+            x509.DNSName(six.u("cryptography.io")),
+            x509.DNSName(six.u("crypto.local")),
+        ]
+
+    def test_repr(self):
+        san = x509.SubjectAlternativeName(
+            [
+                x509.DNSName(six.u("cryptography.io"))
+            ]
+        )
+        assert repr(san) == (
+            "<SubjectAlternativeName([<DNSName(value=cryptography.io)>])>"
+        )
