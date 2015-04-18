@@ -39,3 +39,9 @@ class TestSizeValidator(object):
         validator._len = 1025
         with pytest.raises(ValueError):
             validator.validate()
+
+    def test_validate_large_num(self):
+        validator = _SizeValidator((2 ** 64) / 8, "test")
+        validator._len = validator._max_bytes
+        with pytest.raises(ValueError):
+            validator.update_and_validate(b"0")
