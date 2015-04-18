@@ -10,8 +10,8 @@ class _GCMSizeValidator(object):
     GCM may only encrypt up to 2**39 - 256 bits of plaintext, so we
     must track the number of bytes we see.
     """
-    _PLAINTEXT_BYTE_LIMIT = (2 ** 39 - 256) / 8
-    _AAD_BYTE_LIMIT = (2 ** 64) / 8
+    _PLAINTEXT_BYTE_LIMIT = int((2 ** 39 - 256) / 8)
+    _AAD_BYTE_LIMIT = int((2 ** 64) / 8)
 
     def __init__(self):
         self._plaintext_len = 0
