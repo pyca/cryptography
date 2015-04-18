@@ -663,13 +663,20 @@ X.509 Extensions
 
         :type: bytes
 
+        A value derived from the public key used to verify the certificate's
+        signature.
+
     .. attribute:: authority_cert_issuer
 
         :type: :class:`Name` or None
 
+        The :class:`Name` of the issuer's issuer.
+
     .. attribute:: authority_cert_serial_number
 
         :type: int or None
+
+        The serial number of the issuer's issuer.
 
 .. class:: SubjectKeyIdentifier
 
