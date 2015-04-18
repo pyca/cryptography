@@ -174,11 +174,11 @@ class GCM(object):
 
         self._initialization_vector = initialization_vector
         self._tag = tag
-        self._plaintext_byte_limit = (2 ** 39 - 256) / 8
+        self._plaintext_byte_limit = (2 ** 39 - 256) >> 3
         # Technically, the AAD limit is 2 ** 64 - 1 bits, but cryptography
         # requires that all data be passed in as bits, so it's ok to round
         # this to the nearest byte.
-        self._aad_byte_limit = (2 ** 64) / 8
+        self._aad_byte_limit = (2 ** 64) >> 3
 
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")
