@@ -24,14 +24,14 @@ class _CipherContext(object):
         self._mode = mode
         self._operation = operation
         self._tag = None
-        if isinstance(mode, modes.ModeWithPlaintextBitLimit):
+        if isinstance(mode, modes.ModeWithPlaintextByteLimit):
             self._plaintext_size_validator = _SizeValidator(
-                max_bits=mode.plaintext_bit_limit,
+                max_bytes=mode.plaintext_byte_limit,
                 label="%s mode plaintext" % mode.name
             )
-        if isinstance(mode, modes.ModeWithAADBitLimit):
+        if isinstance(mode, modes.ModeWithAADByteLimit):
             self._aad_size_validator = _SizeValidator(
-                max_bits=mode.aad_bit_limit,
+                max_bytes=mode.aad_byte_limit,
                 label="%s mode AAD" % mode.name
             )
 
@@ -124,7 +124,7 @@ class _CipherContext(object):
         # OpenSSL does not properly handle the case when encrypting plaintext
         # in GCM mode when the byte limit of 2**39 - 256 bits is reached.
         # See #1821
-        if isinstance(self._mode, modes.ModeWithPlaintextBitLimit):
+        if isinstance(self._mode, modes.ModeWithPlaintextByteLimit):
             self._plaintext_size_validator.update_and_validate(data)
 
         buf = self._backend._ffi.new("unsigned char[]",
@@ -189,7 +189,7 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def authenticate_additional_data(self, data):
-        if isinstance(self._mode, modes.ModeWithAADBitLimit):
+        if isinstance(self._mode, modes.ModeWithAADByteLimit):
             self._aad_size_validator.update_and_validate(data)
 
         outlen = self._backend._ffi.new("int *")

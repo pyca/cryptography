@@ -113,11 +113,11 @@ class _GCMCipherContext(object):
         self._operation = operation
         self._tag = None
         self._plaintext_size_validator = _SizeValidator(
-            max_bits=mode.plaintext_bit_limit,
+            max_bytes=mode.plaintext_byte_limit,
             label="%s mode plaintext" % mode.name
         )
         self._aad_size_validator = _SizeValidator(
-            max_bits=mode.aad_bit_limit,
+            max_bytes=mode.aad_byte_limit,
             label="%s mode AAD" % mode.name
         )
 

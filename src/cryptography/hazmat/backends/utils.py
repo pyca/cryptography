@@ -6,17 +6,17 @@ from __future__ import absolute_import, division, print_function
 
 
 class _SizeValidator(object):
-    def __init__(self, max_bits, label):
-        self._max_bits = max_bits
+    def __init__(self, max_bytes, label):
+        self._max_bytes = max_bytes
         self._len = 0
         self._label = label
 
     def update(self, data):
-        self._len += len(data) * 8
+        self._len += len(data)
 
     def validate(self):
-        if self._len > self._max_bits:
-            raise ValueError("Exceeded %s bit limit." % self._label)
+        if self._len > self._max_bytes:
+            raise ValueError("Exceeded %s byte limit." % self._label)
 
     def update_and_validate(self, data):
         self.update(data)

@@ -55,20 +55,20 @@ class ModeWithAuthenticationTag(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ModeWithPlaintextBitLimit(object):
+class ModeWithPlaintextByteLimit(object):
     @abc.abstractproperty
-    def plaintext_bit_limit(self):
+    def plaintext_byte_limit(self):
         """
-        The maximum plaintext size in bits.
+        The maximum plaintext size in bytes.
         """
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ModeWithAADBitLimit(object):
+class ModeWithAADByteLimit(object):
     @abc.abstractproperty
-    def aad_bit_limit(self):
+    def aad_byte_limit(self):
         """
-        The maximum aad size in bits.
+        The maximum aad size in bytes.
         """
 
 
@@ -155,8 +155,8 @@ class CTR(object):
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
 @utils.register_interface(ModeWithAuthenticationTag)
-@utils.register_interface(ModeWithPlaintextBitLimit)
-@utils.register_interface(ModeWithAADBitLimit)
+@utils.register_interface(ModeWithPlaintextByteLimit)
+@utils.register_interface(ModeWithAADByteLimit)
 class GCM(object):
     name = "GCM"
 
@@ -174,13 +174,16 @@ class GCM(object):
 
         self._initialization_vector = initialization_vector
         self._tag = tag
-        self._plaintext_bit_limit = 2 ** 39 - 256
-        self._aad_bit_limit = 2 ** 64 - 1
+        self._plaintext_byte_limit = (2 ** 39 - 256) / 8
+        # Technically, the AAD limit is 2 ** 64 - 1 bits, but cryptography
+        # requires that all data be passed in as bits, so it's ok to round
+        # this to the nearest byte.
+        self._aad_byte_limit = (2 ** 64) / 8
 
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")
-    plaintext_bit_limit = utils.read_only_property("_plaintext_bit_limit")
-    aad_bit_limit = utils.read_only_property("_aad_bit_limit")
+    plaintext_byte_limit = utils.read_only_property("_plaintext_byte_limit")
+    aad_byte_limit = utils.read_only_property("_aad_byte_limit")
 
     def validate_for_algorithm(self, algorithm):
         pass

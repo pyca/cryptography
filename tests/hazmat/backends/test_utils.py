@@ -13,13 +13,13 @@ class TestSizeValidator(object):
     def test_update(self):
         validator = _SizeValidator(1024, "test")
         assert validator.update(b"1234") is None
-        assert validator._len == 4 * 8
+        assert validator._len == 4
         assert validator.update(b"1234") is None
-        assert validator._len == (4 + 4) * 8
+        assert validator._len == (4 + 4)
 
     def test_update_invalid(self):
         validator = _SizeValidator(1024, "test")
-        assert validator.update(b"0" * 128) is None
+        assert validator.update(b"0" * 1024) is None
         assert validator.validate() is None
         with pytest.raises(ValueError) as e:
             validator.update(b"1")
