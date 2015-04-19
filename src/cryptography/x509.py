@@ -464,7 +464,7 @@ class AccessDescription(object):
 
 class CertificatePolicies(object):
     def __init__(self, policies):
-        if not all(map(lambda x: isinstance(x, PolicyInformation), policies)):
+        if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
                 "Every item in the policies list must be a "
                 "PolicyInformation"
@@ -489,9 +489,7 @@ class PolicyInformation(object):
 
         self._policy_identifier = policy_identifier
         if policy_qualifiers and not all(
-            map(
-                lambda x: isinstance(x, PolicyQualifierInfo), policy_qualifiers
-            )
+            isinstance(x, PolicyQualifierInfo) for x in policy_qualifiers
         ):
             raise TypeError(
                 "policy_qualifiers must be a list of PolicyQualifierInfo "
@@ -558,7 +556,7 @@ class NoticeReference(object):
     def __init__(self, organization, notice_numbers):
         self._organization = organization
         if notice_numbers and not all(
-            map(lambda x: isinstance(x, int), notice_numbers)
+            isinstance(x, int) for x in notice_numbers
         ):
             raise TypeError(
                 "notice_numbers must be a list of integers or None"
