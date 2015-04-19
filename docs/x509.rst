@@ -658,14 +658,16 @@ X.509 Extensions
 
     The authority key identifier extension provides a means of identifying the
     public key corresponding to the private key used to sign a certificate.
+    This extension is typically used to assist in determining the appropriate
+    certificate chain. For more information about generation and use of this
+    extension see `RFC 5280 section 4.2.1.1`_.
 
     .. attribute:: key_identifier
 
         :type: bytes
 
         A value derived from the public key used to verify the certificate's
-        signature. See :rfc:`5280` section 4.2.1.2 for more details on the
-        recommended way to compute this value.
+        signature.
 
     .. attribute:: authority_cert_issuer
 
@@ -965,3 +967,4 @@ Exceptions
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
 .. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security
+.. _`RFC 5280 section 4.2.1.1`: http://tools.ietf.org/html/rfc5280#section-4.2.1.1
