@@ -23,11 +23,6 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             curl -O https://bootstrap.pypa.io/get-pip.py
             python get-pip.py --user
             ;;
-        py32)
-            brew upgrade pyenv
-            pyenv install 3.2.6
-            pyenv global 3.2.6
-            ;;
         py33)
             brew upgrade pyenv
             pyenv install 3.3.6

@@ -44,7 +44,6 @@ each supported Python version and run the tests. For example:
     ERROR:   py26: InterpreterNotFound: python2.6
      py27: commands succeeded
     ERROR:   pypy: InterpreterNotFound: pypy
-    ERROR:   py32: InterpreterNotFound: python3.2
      py33: commands succeeded
      docs: commands succeeded
      pep8: commands succeeded
