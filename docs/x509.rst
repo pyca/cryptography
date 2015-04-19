@@ -664,7 +664,8 @@ X.509 Extensions
         :type: bytes
 
         A value derived from the public key used to verify the certificate's
-        signature.
+        signature. See :rfc:`5280` section 4.2.1.2 for more details on the
+        recommended way to compute this value.
 
     .. attribute:: authority_cert_issuer
 
