@@ -652,6 +652,35 @@ X.509 Extensions
     purposes indicated in the key usage extension. The object is
     iterable to obtain the list of :ref:`extended key usage OIDs <eku_oids>`.
 
+.. class:: AuthorityKeyIdentifier
+
+    .. versionadded:: 0.9
+
+    The authority key identifier extension provides a means of identifying the
+    public key corresponding to the private key used to sign a certificate.
+    This extension is typically used to assist in determining the appropriate
+    certificate chain. For more information about generation and use of this
+    extension see `RFC 5280 section 4.2.1.1`_.
+
+    .. attribute:: key_identifier
+
+        :type: bytes
+
+        A value derived from the public key used to verify the certificate's
+        signature.
+
+    .. attribute:: authority_cert_issuer
+
+        :type: :class:`Name` or None
+
+        The :class:`Name` of the issuer's issuer.
+
+    .. attribute:: authority_cert_serial_number
+
+        :type: int or None
+
+        The serial number of the issuer's issuer.
+
 .. class:: SubjectKeyIdentifier
 
     .. versionadded:: 0.9
@@ -938,3 +967,4 @@ Exceptions
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
 .. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security
+.. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1

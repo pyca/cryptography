@@ -220,6 +220,57 @@ class TestSubjectKeyIdentifier(object):
         assert ski != object()
 
 
+class TestAuthorityKeyIdentifier(object):
+    def test_authority_cert_issuer_not_name(self):
+        with pytest.raises(TypeError):
+            x509.AuthorityKeyIdentifier(b"identifier", "notname", 3)
+
+    def test_authority_cert_serial_number_not_integer(self):
+        name = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('oid2'), 'value2'),
+        ])
+        with pytest.raises(TypeError):
+            x509.AuthorityKeyIdentifier(b"identifier", name, "notanint")
+
+    def test_authority_issuer_none_serial_not_none(self):
+        with pytest.raises(ValueError):
+            x509.AuthorityKeyIdentifier(b"identifier", None, 3)
+
+    def test_authority_issuer_not_none_serial_none(self):
+        name = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('oid2'), 'value2'),
+        ])
+        with pytest.raises(ValueError):
+            x509.AuthorityKeyIdentifier(b"identifier", name, None)
+
+    def test_authority_cert_serial_and_issuer_none(self):
+        aki = x509.AuthorityKeyIdentifier(b"id", None, None)
+        assert aki.key_identifier == b"id"
+        assert aki.authority_cert_issuer is None
+        assert aki.authority_cert_serial_number is None
+
+    def test_repr(self):
+        name = x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+        aki = x509.AuthorityKeyIdentifier(b"digest", name, 1234)
+
+        if six.PY3:
+            assert repr(aki) == (
+                "<AuthorityKeyIdentifier(key_identifier=b'digest', authority_"
+                "cert_issuer=<Name([<NameAttribute(oid=<ObjectIdentifier(oid="
+                "2.5.4.3, name=commonName)>, value='myCN')>])>, authority_cer"
+                "t_serial_number=1234)>"
+            )
+        else:
+            assert repr(aki) == (
+                "<AuthorityKeyIdentifier(key_identifier='digest', authority_ce"
+                "rt_issuer=<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5"
+                ".4.3, name=commonName)>, value='myCN')>])>, authority_cert_se"
+                "rial_number=1234)>"
+            )
+
+
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
         with pytest.raises(TypeError):
