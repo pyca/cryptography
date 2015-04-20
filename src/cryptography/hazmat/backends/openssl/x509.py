@@ -15,6 +15,8 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 
+import idna
+
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
@@ -55,6 +57,14 @@ def _build_x509_name(backend, x509_name):
         )
 
     return x509.Name(attributes)
+
+
+def _build_general_name(backend, gn):
+    if gn.type == backend._lib.GEN_DNS:
+        data = backend._ffi.buffer(
+            gn.d.dNSName.data, gn.d.dNSName.length
+        )[:].decode("ascii")
+        return x509.DNSName(idna.decode(data))
 
 
 @utils.register_interface(x509.Certificate)
@@ -173,6 +183,8 @@ class _Certificate(object):
                 value = self._build_subject_key_identifier(ext)
             elif oid == x509.OID_KEY_USAGE:
                 value = self._build_key_usage(ext)
+            elif oid == x509.OID_SUBJECT_ALTERNATIVE_NAME:
+                value = self._build_subject_alt_name(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -253,6 +265,24 @@ class _Certificate(object):
             encipher_only,
             decipher_only
         )
+
+    def _build_subject_alt_name(self, ext):
+        gns = self._backend._ffi.cast(
+            "GENERAL_NAMES *", self._backend._lib.X509V3_EXT_d2i(ext)
+        )
+        assert gns != self._backend._ffi.NULL
+        gns = self._backend._ffi.gc(gns, self._backend._lib.GENERAL_NAMES_free)
+        num = self._backend._lib.sk_GENERAL_NAME_num(gns)
+        general_names = []
+
+        for i in range(0, num):
+            gn = self._backend._lib.sk_GENERAL_NAME_value(gns, i)
+            assert gn != self._backend._ffi.NULL
+            value = _build_general_name(self._backend, gn)
+
+            general_names.append(value)
+
+        return x509.SubjectAlternativeName(general_names)
 
 
 @utils.register_interface(x509.CertificateSigningRequest)
