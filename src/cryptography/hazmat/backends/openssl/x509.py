@@ -68,7 +68,8 @@ def _build_general_name(backend, gn):
         raise x509.UnsupportedGeneralNameType(
             "{0} is not a supported type".format(
                 x509._GENERAL_NAMES.get(gn.type, gn.type)
-            )
+            ),
+            x509._GENERAL_NAMES.get(gn.type, gn.type)
         )
 
 

@@ -129,7 +129,9 @@ class ExtensionNotFound(Exception):
 
 
 class UnsupportedGeneralNameType(Exception):
-    pass
+    def __init__(self, msg, type):
+        super(UnsupportedGeneralNameType, self).__init__(msg)
+        self.type = type
 
 
 class NameAttribute(object):

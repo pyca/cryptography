@@ -766,5 +766,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        with pytest.raises(x509.UnsupportedGeneralNameType):
+        with pytest.raises(x509.UnsupportedGeneralNameType) as exc:
             cert.extensions
+
+        assert exc.value.type == "otherName"
