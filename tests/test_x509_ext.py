@@ -757,3 +757,14 @@ class TestRSASubjectAlternativeNameExtension(object):
 
         dns = san.get_values_for_type(x509.DNSName)
         assert dns == [u"www.cryptography.io", u"cryptography.io"]
+
+    def test_unsupported_other_name(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_other_name.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(x509.UnsupportedGeneralNameType):
+            cert.extensions

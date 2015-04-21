@@ -964,6 +964,11 @@ Exceptions
 
         Returns the OID.
 
+.. class:: UnsupportedGeneralNameType
+
+    This is raised when a certificate contains an unsupported general name
+    type in an extension.
+
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
 .. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security
