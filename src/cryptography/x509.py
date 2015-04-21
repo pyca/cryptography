@@ -542,6 +542,12 @@ class IPAddress(object):
 
 class SubjectAlternativeName(object):
     def __init__(self, general_names):
+        if not all(isinstance(x, GeneralName) for x in general_names):
+            raise TypeError(
+                "Every item in the general_names list must be an "
+                "object conforming to the GeneralName interface"
+            )
+
         self._general_names = general_names
 
     def __iter__(self):
