@@ -271,6 +271,9 @@ X.509 Certificate Object
         :raises cryptography.x509.DuplicateExtension: If more than one
             extension of the same type is found within the certificate.
 
+        :raises cryptography.x509.UnsupportedExtension: If the certificate
+            contains an extension that is not supported.
+
         .. doctest::
 
             >>> for ext in cert.extensions:
@@ -491,9 +494,6 @@ X.509 Extensions
 
         :raises cryptography.x509.ExtensionNotFound: If the certificate does
             not have the extension requested.
-
-        :raises cryptography.x509.UnsupportedExtension: If the certificate
-            contains an extension that is not supported.
 
         .. doctest::
 
