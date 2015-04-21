@@ -63,6 +63,9 @@ def _build_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
         return x509.DNSName(idna.decode(data))
+    elif gn.type == backend._lib.GEN_RID:
+        oid = _obj2txt(backend, gn.d.registeredID)
+        return x509.RegisteredID(x509.ObjectIdentifier(oid))
     else:
         # otherName, x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
