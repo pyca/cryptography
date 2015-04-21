@@ -61,9 +61,7 @@ def _build_x509_name(backend, x509_name):
 
 def _build_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
-        data = backend._ffi.buffer(
-            gn.d.dNSName.data, gn.d.dNSName.length
-        )[:].decode("ascii")
+        data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
         return x509.DNSName(idna.decode(data))
 
 
@@ -275,7 +273,7 @@ class _Certificate(object):
         num = self._backend._lib.sk_GENERAL_NAME_num(gns)
         general_names = []
 
-        for i in range(0, num):
+        for i in range(num):
             gn = self._backend._lib.sk_GENERAL_NAME_value(gns, i)
             assert gn != self._backend._ffi.NULL
             value = _build_general_name(self._backend, gn)
