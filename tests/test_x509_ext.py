@@ -769,4 +769,4 @@ class TestRSASubjectAlternativeNameExtension(object):
         with pytest.raises(x509.UnsupportedGeneralNameType) as exc:
             cert.extensions
 
-        assert exc.value.type == "otherName"
+        assert exc.value.type == 0
