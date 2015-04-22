@@ -721,6 +721,12 @@ class TestSubjectAlternativeName(object):
             x509.DNSName(six.u("crypto.local")),
         ]
 
+    def test_invalid_general_names(self):
+        with pytest.raises(TypeError):
+            x509.SubjectAlternativeName(
+                [x509.DNSName(six.u("cryptography.io")), "invalid"]
+            )
+
     def test_repr(self):
         san = x509.SubjectAlternativeName(
             [
