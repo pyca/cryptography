@@ -63,6 +63,14 @@ def _build_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
         return x509.DNSName(idna.decode(data))
+    else:
+        # otherName, x400Address or ediPartyName
+        raise x509.UnsupportedGeneralNameType(
+            "{0} is not a supported type".format(
+                x509._GENERAL_NAMES.get(gn.type, gn.type)
+            ),
+            gn.type
+        )
 
 
 @utils.register_interface(x509.Certificate)

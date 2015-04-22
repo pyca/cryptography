@@ -70,6 +70,19 @@ _OID_NAMES = {
 }
 
 
+_GENERAL_NAMES = {
+    0: "otherName",
+    1: "rfc822Name",
+    2: "dNSName",
+    3: "x400Address",
+    4: "directoryName",
+    5: "ediPartyName",
+    6: "uniformResourceIdentifier",
+    7: "iPAddress",
+    8: "registeredID",
+}
+
+
 class Version(Enum):
     v1 = 0
     v3 = 2
@@ -113,6 +126,12 @@ class ExtensionNotFound(Exception):
     def __init__(self, msg, oid):
         super(ExtensionNotFound, self).__init__(msg)
         self.oid = oid
+
+
+class UnsupportedGeneralNameType(Exception):
+    def __init__(self, msg, type):
+        super(UnsupportedGeneralNameType, self).__init__(msg)
+        self.type = type
 
 
 class NameAttribute(object):
