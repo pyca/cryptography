@@ -770,3 +770,21 @@ class TestRSASubjectAlternativeNameExtension(object):
             cert.extensions
 
         assert exc.value.type == 0
+
+    def test_registered_id(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_registered_id.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        san = ext.value
+        rid = san.get_values_for_type(x509.RegisteredID)
+        assert rid == [x509.ObjectIdentifier("1.2.3.4")]
