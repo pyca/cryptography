@@ -11,6 +11,10 @@ import six
 from cryptography import utils
 
 
+def generate_parameters(generator, key_size, backend):
+    return backend.generate_dh_parameters(generator, key_size)
+
+
 class DHPrivateNumbers(object):
     def __init__(self, x, public_numbers):
         if not isinstance(x, six.integer_types):
@@ -34,6 +38,9 @@ class DHPrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def private_key(self, backend):
+        return backend.load_dh_private_numbers(self)
 
     public_numbers = utils.read_only_property("_public_numbers")
     x = utils.read_only_property("_x")
@@ -63,6 +70,9 @@ class DHPublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def public_key(self, backend):
+        return backend.load_dh_public_numbers(self)
+
     y = utils.read_only_property("_y")
     parameter_numbers = utils.read_only_property("_parameter_numbers")
 
@@ -89,6 +99,9 @@ class DHParameterNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def parameters(self, backend):
+        return backend.load_dh_parameter_numbers(self)
 
     p = utils.read_only_property("_p")
     g = utils.read_only_property("_g")
@@ -163,4 +176,13 @@ class DHPublicKeyWithSerialization(DHPublicKey):
     def public_numbers(self):
         """
         Returns a DHPublicNumbers.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class KeyExchangeContext(object):
+    @abc.abstractmethod
+    def agree(self, public_value):
+        """
+        Returns the agreed key.
         """
