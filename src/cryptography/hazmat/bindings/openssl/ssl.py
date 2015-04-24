@@ -20,6 +20,8 @@ static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_COMPRESSION;
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
+static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -315,6 +317,12 @@ void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *));
 
+/* These were added in OpenSSL 0.9.8h, but since version testing in OpenSSL
+   is fraught with peril thanks to OS distributions we check some constants
+   to determine if they are supported or not */
+long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
+long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
+
 long SSL_session_reused(SSL *);
 
 /* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
@@ -408,6 +416,20 @@ const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
 void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *)) = NULL;
+#endif
+
+#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
+#else
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 0;
+long (*SSL_CTX_set_tlsext_status_cb)(SSL_CTX *, int(*)(SSL *, void *)) = NULL;
+#endif
+
+#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP
+static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
+#else
+static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 0;
+long (*SSL_set_tlsext_status_ocsp_resp)(SSL *, unsigned char *, int) = NULL;
 #endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
@@ -586,6 +608,14 @@ CONDITIONAL_NAMES = {
         "SSL_set_tlsext_host_name",
         "SSL_get_servername",
         "SSL_CTX_set_tlsext_servername_callback",
+    ],
+
+    "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": [
+        "SSL_CTX_set_tlsext_status_cb",
+    ],
+
+    "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
+        "SSL_set_tlsext_status_ocsp_resp",
     ],
 
     "Cryptography_HAS_RELEASE_BUFFERS": [
