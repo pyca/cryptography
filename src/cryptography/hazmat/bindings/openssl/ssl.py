@@ -306,6 +306,7 @@ SSL_CTX *SSL_CTX_new(SSL_METHOD *);
 long SSL_CTX_get_timeout(const SSL_CTX *);
 
 const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
+const char *SSL_get_version(const SSL *);
 int SSL_version(const SSL *);
 
 /* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
