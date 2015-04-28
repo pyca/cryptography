@@ -99,9 +99,9 @@ class TestFernet(object):
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
-            f.encrypt(six.u(""))
+            f.encrypt(u"")
         with pytest.raises(TypeError):
-            f.decrypt(six.u(""))
+            f.decrypt(u"")
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
