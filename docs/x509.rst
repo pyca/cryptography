@@ -892,6 +892,69 @@ X.509 Extensions
         removed from the CRL. This reason cannot be used as a reason flag
         in a :class:`DistributionPoint`.
 
+.. class:: CertificatePolicies
+
+    .. versionadded:: 0.9
+
+    The certificate policies extension is a list of one or more
+    :class:`PolicyInformation` instances. The object is iterable to get every
+    instance.
+
+Certificate Policies Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These classes may be present within a :class:`CertificatePolicies` instance.
+
+.. class:: PolicyInformation
+
+    .. versionadded:: 0.9
+
+    Contains a policy identifier and an optional list of qualifiers.
+
+    .. attribute:: policy_identifier
+
+        :type: :class:`ObjectIdentifier`
+
+    .. attribute:: policy_qualifiers
+
+        :type: list
+
+        A list of :class:`PolicyQualifierInfo` objects.
+
+.. class:: PolicyQualifierInfo
+
+    .. versionadded:: 0.9
+
+    .. attribute:: qualifier
+
+        :type: :term:`text` or :class:`UserNotice`
+
+.. class:: UserNotice
+
+    .. versionadded:: 0.9
+
+    .. attribute:: notice_reference
+
+        :type: :class:`NoticeReference` or None
+
+    .. attribute:: explicit_text
+
+        :type: :term:`text`
+
+.. class:: NoticeReference
+
+    .. versionadded:: 0.9
+
+    .. attribute:: organization
+
+        :type: :term:`text` or None
+
+    .. attribute :: notice_numbers
+
+        :type: list or None
+
+        A list of integers or None.
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 
