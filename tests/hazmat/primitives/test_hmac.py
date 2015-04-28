@@ -43,7 +43,7 @@ class TestHMAC(object):
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update("\u00FC")
+            h.update(u"\u00FC")
 
     def test_copy_backend_object(self):
         backend = DummyHMACBackend([hashes.SHA1])
