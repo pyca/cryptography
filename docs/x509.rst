@@ -452,7 +452,12 @@ General Name Classes
     .. versionadded:: 0.9
 
     This corresponds to a uniform resource identifier.  For example,
-    ``https://cryptography.io``.
+    ``https://cryptography.io``. The URI is parsed and IDNA decoded (see
+    :rfc:`5895`).
+
+    .. note::
+
+        URIs that do not contain ``://`` in them will not be decoded.
 
     .. attribute:: value
 

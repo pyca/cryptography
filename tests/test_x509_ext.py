@@ -788,3 +788,24 @@ class TestRSASubjectAlternativeNameExtension(object):
         san = ext.value
         rid = san.get_values_for_type(x509.RegisteredID)
         assert rid == [x509.ObjectIdentifier("1.2.3.4")]
+
+    def test_uri(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_uri_with_port.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        uri = ext.value.get_values_for_type(
+            x509.UniformResourceIdentifier
+        )
+        assert uri == [
+            u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/path?q=s#hel"
+            u"lo",
+            u"http://someregulardomain.com",
+        ]

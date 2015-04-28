@@ -17,6 +17,10 @@ import datetime
 
 import idna
 
+import six
+
+from six.moves import urllib_parse
+
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
@@ -63,6 +67,30 @@ def _build_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
         return x509.DNSName(idna.decode(data))
+    elif gn.type == backend._lib.GEN_URI:
+        data = backend._ffi.buffer(
+            gn.d.uniformResourceIdentifier.data,
+            gn.d.uniformResourceIdentifier.length
+        )[:].decode("ascii")
+        parsed = urllib_parse.urlparse(data)
+        hostname = idna.decode(parsed.hostname)
+        if parsed.port:
+            netloc = hostname + u":" + six.text_type(parsed.port)
+        else:
+            netloc = hostname
+
+        # Note that building a URL in this fashion means it should be
+        # semantically indistinguishable from the original but is not
+        # guaranteed to be exactly the same.
+        uri = urllib_parse.urlunparse((
+            parsed.scheme,
+            netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment
+        ))
+        return x509.UniformResourceIdentifier(uri)
     elif gn.type == backend._lib.GEN_RID:
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
