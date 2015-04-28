@@ -14,6 +14,7 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
+import ipaddress
 
 import idna
 
@@ -94,6 +95,14 @@ def _build_general_name(backend, gn):
     elif gn.type == backend._lib.GEN_RID:
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
+    elif gn.type == backend._lib.GEN_IPADD:
+        return x509.IPAddress(
+            ipaddress.ip_address(
+                backend._ffi.buffer(
+                    gn.d.iPAddress.data, gn.d.iPAddress.length
+                )[:]
+            )
+        )
     else:
         # otherName, x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
