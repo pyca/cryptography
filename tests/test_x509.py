@@ -10,8 +10,6 @@ import os
 
 import pytest
 
-import six
-
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
