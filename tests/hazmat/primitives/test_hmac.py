@@ -8,8 +8,6 @@ import pretend
 
 import pytest
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
@@ -45,7 +43,7 @@ class TestHMAC(object):
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update(six.u("\u00FC"))
+            h.update(u"\u00FC")
 
     def test_copy_backend_object(self):
         backend = DummyHMACBackend([hashes.SHA1])
@@ -93,7 +91,7 @@ class TestHMAC(object):
     def test_verify_reject_unicode(self, backend):
         h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.verify(six.u(''))
+            h.verify(u'')
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):

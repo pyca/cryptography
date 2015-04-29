@@ -8,8 +8,6 @@ import binascii
 
 import pytest
 
-import six
-
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
 )
@@ -97,7 +95,7 @@ class TestHKDF(object):
             HKDF(
                 hashes.SHA256(),
                 16,
-                salt=six.u("foo"),
+                salt=u"foo",
                 info=None,
                 backend=backend
             )
@@ -107,7 +105,7 @@ class TestHKDF(object):
                 hashes.SHA256(),
                 16,
                 salt=None,
-                info=six.u("foo"),
+                info=u"foo",
                 backend=backend
             )
 
@@ -120,7 +118,7 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.derive(six.u("foo"))
+            hkdf.derive(u"foo")
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -131,7 +129,7 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.verify(six.u("foo"), b"bar")
+            hkdf.verify(u"foo", b"bar")
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
@@ -142,7 +140,7 @@ class TestHKDF(object):
                 backend=backend
             )
 
-            hkdf.verify(b"foo", six.u("bar"))
+            hkdf.verify(b"foo", u"bar")
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
@@ -198,7 +196,7 @@ class TestHKDFExpand(object):
         hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         with pytest.raises(TypeError):
-            hkdf.derive(six.u("first"))
+            hkdf.derive(u"first")
 
 
 def test_invalid_backend():
