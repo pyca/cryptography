@@ -6,8 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-import six
-
 from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
@@ -57,12 +55,12 @@ class TestPBKDF2HMAC(object):
 
     def test_unicode_error_with_salt(self):
         with pytest.raises(TypeError):
-            PBKDF2HMAC(hashes.SHA1(), 20, six.u("salt"), 10, default_backend())
+            PBKDF2HMAC(hashes.SHA1(), 20, u"salt", 10, default_backend())
 
     def test_unicode_error_with_key_material(self):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())
         with pytest.raises(TypeError):
-            kdf.derive(six.u("unicode here"))
+            kdf.derive(u"unicode here")
 
 
 def test_invalid_backend():

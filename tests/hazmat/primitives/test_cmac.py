@@ -10,8 +10,6 @@ import pretend
 
 import pytest
 
-import six
-
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -170,10 +168,10 @@ class TestCMAC(object):
         cmac = CMAC(AES(key), backend)
 
         with pytest.raises(TypeError):
-            cmac.update(six.u(''))
+            cmac.update(u'')
 
         with pytest.raises(TypeError):
-            cmac.verify(six.u(''))
+            cmac.verify(u'')
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
