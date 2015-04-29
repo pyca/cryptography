@@ -593,17 +593,17 @@ class TestTextGeneralNames(object):
             name(1.3)
 
     def test_repr(self, name):
-        gn = name(six.u("string"))
+        gn = name(u"string")
         assert repr(gn) == "<{0}(value=string)>".format(name.__name__)
 
     def test_eq(self, name):
-        gn = name(six.u("string"))
-        gn2 = name(six.u("string"))
+        gn = name(u"string")
+        gn2 = name(u"string")
         assert gn == gn2
 
     def test_ne(self, name):
-        gn = name(six.u("string"))
-        gn2 = name(six.u("string2"))
+        gn = name(u"string")
+        gn2 = name(u"string2")
         assert gn != gn2
         assert gn != object()
 
@@ -684,20 +684,20 @@ class TestIPAddress(object):
             x509.IPAddress(1.3)
 
     def test_repr(self):
-        gn = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
+        gn = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
         assert repr(gn) == "<IPAddress(value=127.0.0.1)>"
 
-        gn2 = x509.IPAddress(ipaddress.IPv6Address(six.u("ff::")))
+        gn2 = x509.IPAddress(ipaddress.IPv6Address(u"ff::"))
         assert repr(gn2) == "<IPAddress(value=ff::)>"
 
     def test_eq(self):
-        gn = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
-        gn2 = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
+        gn = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
+        gn2 = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
         assert gn == gn2
 
     def test_ne(self):
-        gn = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.1")))
-        gn2 = x509.IPAddress(ipaddress.IPv4Address(six.u("127.0.0.2")))
+        gn = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
+        gn2 = x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.2"))
         assert gn != gn2
         assert gn != object()
 
@@ -705,32 +705,32 @@ class TestIPAddress(object):
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName(
-            [x509.DNSName(six.u("cryptography.io"))]
+            [x509.DNSName(u"cryptography.io")]
         )
         names = san.get_values_for_type(x509.DNSName)
-        assert names == [six.u("cryptography.io")]
+        assert names == [u"cryptography.io"]
 
     def test_iter_names(self):
         san = x509.SubjectAlternativeName([
-            x509.DNSName(six.u("cryptography.io")),
-            x509.DNSName(six.u("crypto.local")),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ])
         assert len(san) == 2
         assert list(san) == [
-            x509.DNSName(six.u("cryptography.io")),
-            x509.DNSName(six.u("crypto.local")),
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
         ]
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.SubjectAlternativeName(
-                [x509.DNSName(six.u("cryptography.io")), "invalid"]
+                [x509.DNSName(u"cryptography.io"), "invalid"]
             )
 
     def test_repr(self):
         san = x509.SubjectAlternativeName(
             [
-                x509.DNSName(six.u("cryptography.io"))
+                x509.DNSName(u"cryptography.io")
             ]
         )
         assert repr(san) == (

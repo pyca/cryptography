@@ -10,8 +10,6 @@ import os
 
 import pytest
 
-import six
-
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
@@ -167,13 +165,13 @@ class TestRSACertificate(object):
         assert cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
-                six.u('We heart UTF8!\u2122')
+                u'We heart UTF8!\u2122'
             )
         ]
         assert cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
             x509.NameAttribute(
                 x509.OID_COMMON_NAME,
-                six.u('We heart UTF8!\u2122')
+                u'We heart UTF8!\u2122'
             )
         ]
 
