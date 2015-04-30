@@ -140,6 +140,7 @@ int X509_set_issuer_name(X509 *, X509_NAME *);
 
 int X509_get_ext_count(X509 *);
 int X509_add_ext(X509 *, X509_EXTENSION *, int);
+X509_EXTENSION *X509_delete_ext(X509 *, int);
 X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_get_ext_by_NID(X509 *, int, int);
