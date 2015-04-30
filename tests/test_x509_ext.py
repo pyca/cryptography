@@ -856,3 +856,91 @@ class TestRSASubjectAlternativeNameExtension(object):
                 x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
             ])
         ] == dirname
+
+    def test_rfc822name(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_rfc822_idna.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        san = ext.value
+
+        rfc822name = san.get_values_for_type(x509.RFC822Name)
+        assert [u"email@em\xe5\xefl.com"] == rfc822name
+
+    def test_unicode_rfc822_name_dns_name_uri(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_idna_names.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        rfc822_name = ext.value.get_values_for_type(x509.RFC822Name)
+        dns_name = ext.value.get_values_for_type(x509.DNSName)
+        uri = ext.value.get_values_for_type(x509.UniformResourceIdentifier)
+        assert rfc822_name == [u"email@\u043f\u044b\u043a\u0430.cryptography"]
+        assert dns_name == [u"\u043f\u044b\u043a\u0430.cryptography"]
+        assert uri == [u"https://www.\u043f\u044b\u043a\u0430.cryptography"]
+
+    def test_rfc822name_dnsname_ipaddress_directoryname_uri(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_email_dns_ip_dirname_uri.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        san = ext.value
+
+        rfc822_name = san.get_values_for_type(x509.RFC822Name)
+        uri = san.get_values_for_type(x509.UniformResourceIdentifier)
+        dns = san.get_values_for_type(x509.DNSName)
+        ip = san.get_values_for_type(x509.IPAddress)
+        dirname = san.get_values_for_type(x509.DirectoryName)
+        assert [u"user@cryptography.io"] == rfc822_name
+        assert ["https://cryptography.io"] == uri
+        assert [u"cryptography.io"] == dns
+        assert [
+            x509.Name([
+                x509.NameAttribute(x509.OID_COMMON_NAME, 'dirCN'),
+                x509.NameAttribute(
+                    x509.OID_ORGANIZATION_NAME, 'Cryptographic Authority'
+                ),
+            ])
+        ] == dirname
+        assert [
+            ipaddress.ip_address(u"127.0.0.1"),
+            ipaddress.ip_address(u"ff::")
+        ] == ip
+
+    def test_invalid_rfc822name(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_rfc822_names.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(ValueError) as exc:
+            cert.extensions
+
+        assert 'Invalid rfc822name value' in str(exc.value)

@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import ipaddress
+from email.utils import parseaddr
 
 import idna
 
@@ -107,6 +108,21 @@ def _build_general_name(backend, gn):
         return x509.DirectoryName(
             _build_x509_name(backend, gn.d.directoryName)
         )
+    elif gn.type == backend._lib.GEN_EMAIL:
+        data = backend._ffi.buffer(
+            gn.d.rfc822Name.data, gn.d.rfc822Name.length
+        )[:].decode("ascii")
+        name, address = parseaddr(data)
+        parts = address.split("@")
+        if name or len(parts) > 2:
+            raise ValueError("Invalid rfc822name value")
+        else:
+            if len(parts) == 1:
+                return x509.RFC822Name(address)
+            else:
+                return x509.RFC822Name(
+                    parts[0] + u"@" + idna.decode(parts[1])
+                )
     else:
         # otherName, x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
