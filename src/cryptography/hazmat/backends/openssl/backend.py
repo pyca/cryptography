@@ -1679,6 +1679,18 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return evp_pkey
 
+    def elliptic_curve_exchange_algorithm_supported(
+        self, exchange_algorithm, curve
+    ):
+        if self._lib.Cryptography_HAS_EC != 1:
+            return False
+
+        # We only support ECDH right now.
+        if not isinstance(exchange_algorithm, ec.ECDH):
+            return False
+
+        return self.elliptic_curve_supported(curve)
+
     def _elliptic_curve_to_nid(self, curve):
         """
         Get the NID for a curve name.

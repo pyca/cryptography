@@ -9,6 +9,7 @@ import abc
 import six
 
 from cryptography import utils
+from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -32,6 +33,15 @@ class EllipticCurveSignatureAlgorithm(object):
     def algorithm(self):
         """
         The digest algorithm used with this signature.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class EllipticCurveKeyExchangeAlgorithm(object):
+    @abc.abstractproperty
+    def algorithm(self):
+        """
+        The optional KDF algorithm used with this key exchange.
         """
 
 
@@ -225,6 +235,16 @@ _CURVE_TYPES = {
 @utils.register_interface(EllipticCurveSignatureAlgorithm)
 class ECDSA(object):
     def __init__(self, algorithm):
+        self._algorithm = algorithm
+
+    algorithm = utils.read_only_property("_algorithm")
+
+
+@utils.register_interface(EllipticCurveKeyExchangeAlgorithm)
+class ECDH(object):
+    def __init__(self, algorithm):
+        if not isinstance(algorithm, KeyDerivationFunction):
+            raise TypeError("Algorithm must be a KeyDerivationFunction")
         self._algorithm = algorithm
 
     algorithm = utils.read_only_property("_algorithm")

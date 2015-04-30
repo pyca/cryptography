@@ -271,6 +271,16 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
+    def elliptic_curve_exchange_algorithm_supported(
+        self, exchange_algorithm, curve
+    ):
+        return any(
+            b.elliptic_curve_exchange_algorithm_supported(
+                exchange_algorithm, curve
+            )
+            for b in self._filtered_backends(EllipticCurveBackend)
+        )
+
     def load_pem_private_key(self, data, password):
         for b in self._filtered_backends(PEMSerializationBackend):
             return b.load_pem_private_key(data, password)

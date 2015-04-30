@@ -551,6 +551,13 @@ class TestOpenSSLEllipticCurve(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
 
+    def test_elliptic_curve_exchange_algorithm_supported(self, monkeypatch):
+        monkeypatch.setattr(backend, "_lib", DummyLibrary())
+
+        assert backend.elliptic_curve_exchange_algorithm_supported(
+            None, None
+        ) is False
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPEMSerialization(object):
