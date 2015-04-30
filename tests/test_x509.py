@@ -313,6 +313,36 @@ class TestRSACertificate(object):
 
         assert exc.value.parsed_version == 7
 
+    def test_eq(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        cert2 = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert == cert2
+
+    def test_ne(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        cert2 = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs",
+                "ValidGeneralizedTimenotAfterDateTest8EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        assert cert != cert2
+        assert cert != object()
+
     def test_version_1_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "v1_cert.pem"),
