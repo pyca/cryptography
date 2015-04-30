@@ -138,8 +138,9 @@ class DummyCMACBackend(object):
 
 @utils.register_interface(EllipticCurveBackend)
 class DummyEllipticCurveBackend(object):
-    def __init__(self, supported_curves):
+    def __init__(self, supported_curves, exchange_supported):
         self._curves = supported_curves
+        self.exchange_supported = exchange_supported
 
     def elliptic_curve_supported(self, curve):
         return any(
@@ -169,6 +170,9 @@ class DummyEllipticCurveBackend(object):
     def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def elliptic_curve_exchange_algorithm_supported(self):
+        return self.exchange_supported
 
 
 @utils.register_interface(PEMSerializationBackend)
@@ -400,7 +404,7 @@ class TestMultiBackend(object):
         backend = MultiBackend([
             DummyEllipticCurveBackend([
                 ec.SECT283K1
-            ])
+            ], True)
         ])
 
         assert backend.elliptic_curve_supported(ec.SECT283K1()) is True
@@ -461,6 +465,10 @@ class TestMultiBackend(object):
                     ec.SECT163K1()
                 )
             )
+
+        assert backend.elliptic_curve_exchange_algorithm_supported() is True
+        backend2 = MultiBackend([DummyEllipticCurveBackend([], False)])
+        assert backend2.elliptic_curve_exchange_algorithm_supported() is False
 
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])

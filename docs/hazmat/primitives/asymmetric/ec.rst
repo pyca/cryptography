@@ -122,6 +122,48 @@ Elliptic Curve Signature Algorithms
         :returns: A new instance of a :class:`EllipticCurvePublicKey`
             provider.
 
+Elliptic Curve Key Exchange algorithm
+-------------------------------------
+
+.. class:: ECDH(private_key)
+
+    .. versionadded:: 1.1
+
+    The ECDH Key Exchange algorithm first standardized in NIST publication
+    `800-56A`_, and later in `800-56Ar2`_.
+
+    :param private_key: An instance of :class:`EllipticCurvePrivateKey`.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> private_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> peer_public_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... ).public_key()
+        >>> ecdh = ec.ECDH(private_key)
+        >>> sharedkey = ecdh.compute_key(peer_public_key)
+
+    .. attribute:: private_key
+
+        :type: :class:`EllipticCurvePrivateKey`
+
+        The private key associated to this object
+
+    .. method:: public_key()
+
+        The public key associated to the object's private key.
+
+    .. method:: compute_key(peer_public_key)
+
+        :param peer_public_key: A :class:`EllipticCurvePublicKey` object.
+
+        :returns: A ``bytes`` object containing the computed key.
+
+
 Elliptic Curves
 ---------------
 
@@ -419,6 +461,8 @@ Key Interfaces
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+.. _`800-56A`: http://csrc.nist.gov/publications/nistpubs/800-56A/SP800-56A_Revision1_Mar08-2007.pdf
+.. _`800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
 .. _`elliptic curve diffie-hellman is faster than diffie-hellman`: http://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork

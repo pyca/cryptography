@@ -8,6 +8,7 @@ import abc
 
 import six
 
+from cryptography import exceptions
 from cryptography import utils
 
 
@@ -302,3 +303,27 @@ class EllipticCurvePrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+class ECDH(object):
+    def __init__(self, private_key):
+        if not isinstance(private_key, EllipticCurvePrivateKey):
+            raise TypeError("Private Key must be a EllipticCurvePrivateKey")
+        self._private_key = private_key
+        self._backend = private_key._backend
+        if not self._backend.elliptic_curve_exchange_algorithm_supported():
+            raise exceptions.UnsupportedAlgorithm(
+                "This backend does not support the ECDH algorithm.",
+                exceptions._Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
+            )
+
+    private_key = utils.read_only_property("_private_key")
+
+    def public_key(self):
+        return self._private_key.public_key()
+
+    def compute_key(self, peer_public_key):
+        if not isinstance(peer_public_key, EllipticCurvePublicKey):
+            raise TypeError("Peer Public Key must be a EllipticCurvePublicKey")
+        return self._backend.ecdh_compute_key(self._private_key,
+                                              peer_public_key)
