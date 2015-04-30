@@ -809,3 +809,25 @@ class TestRSASubjectAlternativeNameExtension(object):
             u"lo",
             u"http://someregulardomain.com",
         ]
+
+    def test_ipaddress(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_ipaddr.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        san = ext.value
+
+        ip = san.get_values_for_type(x509.IPAddress)
+        assert [
+            ipaddress.ip_address(u"127.0.0.1"),
+            ipaddress.ip_address(u"ff::")
+        ] == ip
