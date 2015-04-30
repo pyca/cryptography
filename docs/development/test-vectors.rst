@@ -150,6 +150,10 @@ Custom X.509 Vectors
 * ``san_uri_with_port.pem`` - An RSA 2048 bit self-signed certificate
   containing a subject alternative name extension with various
   ``uniformResourceIdentifier`` values.
+* ``san_ipaddr.pem`` - An RSA 2048 bit self-signed certificate containing a
+  subject alternative name extension with an ``iPAddress`` value.
+* ``san_dirname.pem`` - An RSA 2048 bit self-signed certificate containing a
+  subject alternative name extension with a ``directoryName`` value.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
