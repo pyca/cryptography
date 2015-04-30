@@ -123,6 +123,16 @@ class _Certificate(object):
         self._backend = backend
         self._x509 = x509
 
+    def __eq__(self, other):
+        if not isinstance(other, x509.Certificate):
+            return NotImplemented
+
+        res = self._backend._lib.X509_cmp(self._x509, other._x509)
+        return res == 0
+
+    def __ne__(self, other):
+        return not self == other
+
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
         bio = self._backend._create_mem_bio()

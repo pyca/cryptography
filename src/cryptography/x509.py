@@ -730,6 +730,18 @@ class Certificate(object):
         in the certificate.
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other):
+        """
+        Checks equality.
+        """
+
+    @abc.abstractmethod
+    def __ne__(self, other):
+        """
+        Checks not equal.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
