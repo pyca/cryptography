@@ -55,6 +55,13 @@ class EllipticCurvePrivateKey(object):
         The EllipticCurve that this key is on.
         """
 
+    @abc.abstractmethod
+    def ecdh_compute_key(self, peer_public_key):
+        """
+        Computes the ECDH exchange with the peer_public_key provided.
+        Returns the computed key.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):

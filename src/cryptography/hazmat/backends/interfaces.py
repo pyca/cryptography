@@ -215,6 +215,12 @@ class EllipticCurveBackend(object):
         Return an EllipticCurvePublicKey provider using the given numbers.
         """
 
+    @abc.abstractmethod
+    def elliptic_curve_exchange_algorithm_supported(self):
+        """
+        Returns whether the exchange algorithm is supported by this backend.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class PEMSerializationBackend(object):

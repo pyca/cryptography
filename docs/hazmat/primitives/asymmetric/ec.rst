@@ -122,6 +122,7 @@ Elliptic Curve Signature Algorithms
         :returns: A new instance of a :class:`EllipticCurvePublicKey`
             provider.
 
+
 Elliptic Curves
 ---------------
 
@@ -320,6 +321,14 @@ Key Interfaces
 
         The EllipticCurvePublicKey object for this private key.
 
+    .. method:: ecdh_compute_key(peer_public_key)
+
+        .. versionadded:: 1.1
+
+        :param peer_public_key: A :class:`EllipticCurvePublicKey` object.
+
+        :returns: A ``bytes`` object containing the key computed via ECDH.
+
 
 .. class:: EllipticCurvePrivateKeyWithSerialization
 
@@ -419,6 +428,8 @@ Key Interfaces
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+.. _`800-56A`: http://csrc.nist.gov/publications/nistpubs/800-56A/SP800-56A_Revision1_Mar08-2007.pdf
+.. _`800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
 .. _`elliptic curve diffie-hellman is faster than diffie-hellman`: http://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork

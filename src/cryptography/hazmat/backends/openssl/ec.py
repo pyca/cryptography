@@ -210,6 +210,30 @@ class _EllipticCurvePrivateKey(object):
             self._ec_key
         )
 
+    def ecdh_compute_key(self, peer_public_key):
+        if not isinstance(peer_public_key, _EllipticCurvePublicKey):
+            raise TypeError("Peer Public Key must be a EllipticCurvePublicKey")
+
+        if not self._backend.elliptic_curve_exchange_algorithm_supported():
+            raise UnsupportedAlgorithm(
+                "Unsupported elliptic curve exchange algorithm.",
+                _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM)
+
+        b = self._backend
+
+        group = b._lib.EC_KEY_get0_group(self._ec_key)
+        z_len = (b._lib.EC_GROUP_get_degree(group) + 7) // 8
+        b.openssl_assert(z_len > 0)
+
+        z_buf = b._ffi.new("uint8_t[]", z_len)
+        peerpubkey = b._lib.EC_KEY_get0_public_key(peer_public_key._ec_key)
+
+        r = b._lib.ECDH_compute_key(z_buf, z_len, peerpubkey, self._ec_key,
+                                    b._ffi.NULL)
+        b.openssl_assert(r > 0)
+
+        return b._ffi.buffer(z_buf)[:z_len]
+
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
 class _EllipticCurvePublicKey(object):

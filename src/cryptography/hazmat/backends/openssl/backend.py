@@ -1671,6 +1671,10 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
+    def elliptic_curve_exchange_algorithm_supported(self):
+        return (self._lib.Cryptography_HAS_EC == 1 and
+                self._lib.Cryptography_HAS_ECDH == 1)
+
     def _ec_cdata_to_evp_pkey(self, ec_cdata):
         evp_pkey = self._lib.EVP_PKEY_new()
         self.openssl_assert(evp_pkey != self._ffi.NULL)
