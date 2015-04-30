@@ -122,6 +122,42 @@ Elliptic Curve Signature Algorithms
         :returns: A new instance of a :class:`EllipticCurvePublicKey`
             provider.
 
+Elliptic Curve Key Exchange algorithm
+-------------------------------------
+
+.. class:: ECDH(algorithm)
+
+    .. versionadded:: 1.1
+
+    The ECDH Key Exchange algorithm first standardized in NIST publication
+    `800-56A`_, and later in `800-56Ar2`_.
+
+    :param private_key: An instance of :class:`EllipticCurvePrivateKey`.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+        >>> from cryptography.hazmat.primitives.asymmetric.keyex import ECDH
+        >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> private_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> peer_public_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... ).public_key()
+        >>> ecdh = ECDH(private_key, default_backend())
+        >>> hkdf = HKDF(algorithm=hashes.SHA384(),
+        ...             length=48, salt=None, info=None,
+        ...             backend=default_backend())
+        >>> sharedkey = ecdh.compute_key(peer_public_key, hkdf)
+
+    The ``sharedkey`` is a ``bytes`` object of length determined by the KDF
+    function.
+
+
+
 Elliptic Curves
 ---------------
 
@@ -419,6 +455,8 @@ Key Interfaces
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+.. _`800-56A`: http://csrc.nist.gov/publications/nistpubs/800-56A/SP800-56A_Revision1_Mar08-2007.pdf
+.. _`800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
 .. _`elliptic curve diffie-hellman is faster than diffie-hellman`: http://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
