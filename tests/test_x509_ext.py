@@ -831,3 +831,28 @@ class TestRSASubjectAlternativeNameExtension(object):
             ipaddress.ip_address(u"127.0.0.1"),
             ipaddress.ip_address(u"ff::")
         ] == ip
+
+    def test_dirname(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_dirname.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        san = ext.value
+
+        dirname = san.get_values_for_type(x509.DirectoryName)
+        assert [
+            x509.Name([
+                x509.NameAttribute(x509.OID_COMMON_NAME, 'test'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'Org'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            ])
+        ] == dirname

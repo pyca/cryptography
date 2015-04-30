@@ -103,6 +103,10 @@ def _build_general_name(backend, gn):
                 )[:]
             )
         )
+    elif gn.type == backend._lib.GEN_DIRNAME:
+        return x509.DirectoryName(
+            _build_x509_name(backend, gn.d.directoryName)
+        )
     else:
         # otherName, x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
