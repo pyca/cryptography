@@ -145,6 +145,8 @@ Custom X.509 Vectors
   ``uniformResourceIdentifier`` general names with IDNA (:rfc:`5895`) encoding.
 * ``san_rfc822_names.pem`` - An RSA 2048 bit self-signed certificate containing
   a subject alternative name extension with various ``rfc822Name`` values.
+* ``san_rfc822_idna.pem`` - An RSA 2048 bit self-signed certificate containing
+  a subject alternative name extension with an IDNA ``rfc822Name``.
 * ``san_uri_with_port.pem`` - An RSA 2048 bit self-signed certificate
   containing a subject alternative name extension with various
   ``uniformResourceIdentifier`` values.
