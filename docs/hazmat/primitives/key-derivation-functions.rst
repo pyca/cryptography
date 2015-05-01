@@ -324,6 +324,192 @@ Different KDFs are suitable for different tasks such as:
         ``key_material`` generates the same key as the ``expected_key``, and
         raises an exception if they do not match.
 
+.. currentmodule:: cryptography.hazmat.primitives.kdf.concatkdf
+
+.. class:: ConcatKDFHash(algorithm, length, otherinfo, backend)
+
+    .. versionadded:: 1.0
+
+    ConcatKDFHash (Concatenation Key Derivation Function) is defined by the
+    NIST Special Publication `NIST SP 800-56Ar2`_ document, to be used to
+    derive keys for use after a Key Exchange negotiation operation.
+
+    .. warning::
+
+        ConcatKDFHash should not be used for password storage.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> salt = os.urandom(16)
+        >>> otherinfo = b"concatkdf-example"
+        >>> ckdf = ConcatKDFHash(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=256,
+        ...     otherinfo=otherinfo,
+        ...     backend=backend
+        ... )
+        >>> key = ckdf.derive(b"input key")
+        >>> ckdf = ConcatKDFHash(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=256,
+        ...     otherinfo=otherinfo,
+        ...     backend=backend
+        ... )
+        >>> ckdf.verify(b"input key", key)
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider
+
+    :param int length: The desired length of the derived key in bytes.
+        Maximum is ``hashlen * (2^32 -1)``.
+
+    :param bytes otherinfo: Application specific context information.
+        If ``None`` is explicitly passed an empty byte string will be used.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+        if the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+
+    :raises TypeError: This exception is raised if ``otherinfo`` is not
+        ``bytes``.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is
+                            not ``bytes``.
+
+        Derives a new key from the input key material by performing both the
+        extract and expand operations.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
+
+.. class:: ConcatKDFHMAC(algorithm, length, salt, otherinfo, backend)
+
+    .. versionadded:: 1.0
+
+    Similar to ConcatKFDHash but uses an HMAC function instead.
+
+    .. warning::
+
+        ConcatKDFHMAC should not be used for password storage.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHMAC
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> salt = os.urandom(16)
+        >>> otherinfo = b"concatkdf-example"
+        >>> ckdf = ConcatKDFHMAC(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=256,
+        ...     salt=salt,
+        ...     otherinfo=otherinfo,
+        ...     backend=backend
+        ... )
+        >>> key = ckdf.derive(b"input key")
+        >>> ckdf = ConcatKDFHMAC(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=256,
+        ...     salt=salt,
+        ...     otherinfo=otherinfo,
+        ...     backend=backend
+        ... )
+        >>> ckdf.verify(b"input key", key)
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider
+
+    :param int length: The desired length of the derived key in bytes. Maximum
+        is ``hashlen * (2^32 -1)``.
+
+    :param bytes salt: A salt. Randomizes the KDF's output. Optional, but
+        highly recommended. Ideally as many bits of entropy as the security
+        level of the hash: often that means cryptographically random and as
+        long as the hash output. Does not have to be secret, but may cause
+        stronger security guarantees if secret; If ``None`` is explicitly
+        passed a default salt of ``algorithm.block_size`` null bytes will be
+        used.
+
+    :param bytes otherinfo: Application specific context information.
+        If ``None`` is explicitly passed an empty byte string will be used.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
+        provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
+
+    :raises TypeError: This exception is raised if ``salt`` or ``otherinfo``
+        is not ``bytes``.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is not
+                           ``bytes``.
+
+        Derives a new key from the input key material by performing both the
+        extract and expand operations.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
+
 Interface
 ~~~~~~~~~
 
@@ -372,6 +558,7 @@ Interface
 
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
+.. _`NIST SP 800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: https://en.wikipedia.org/wiki/Scrypt
