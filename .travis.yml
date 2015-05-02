@@ -120,3 +120,5 @@ notifications:
             - "irc.freenode.org#cryptography-dev"
         use_notice: true
         skip_join: true
+    webhooks:
+        - https://buildtimetrend.herokuapp.com/travis
