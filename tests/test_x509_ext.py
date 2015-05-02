@@ -917,7 +917,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         ip = san.get_values_for_type(x509.IPAddress)
         dirname = san.get_values_for_type(x509.DirectoryName)
         assert [u"user@cryptography.io"] == rfc822_name
-        assert ["https://cryptography.io"] == uri
+        assert [u"https://cryptography.io"] == uri
         assert [u"cryptography.io"] == dns
         assert [
             x509.Name([
