@@ -115,14 +115,19 @@ def _build_general_name(backend, gn):
         name, address = parseaddr(data)
         parts = address.split("@")
         if name or len(parts) > 2:
+            # parseaddr has found a name (e.g. Name <email>) or the split
+            # has found more than 2 parts (which means more than one @ sign)
             raise ValueError("Invalid rfc822name value")
+        elif len(parts) == 1:
+            # Single label email name. This is valid for local delivery. No
+            # IDNA decoding can be done since there is no domain component.
+            return x509.RFC822Name(address)
         else:
-            if len(parts) == 1:
-                return x509.RFC822Name(address)
-            else:
-                return x509.RFC822Name(
-                    parts[0] + u"@" + idna.decode(parts[1])
-                )
+            # A normal email of the form user@domain.com. Let's attempt to
+            # decode the domain component and return the entire address.
+            return x509.RFC822Name(
+                parts[0] + u"@" + idna.decode(parts[1])
+            )
     else:
         # otherName, x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
