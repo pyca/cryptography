@@ -140,6 +140,8 @@ Custom X.509 Vectors
   subject alternative name extension with the ``registeredID`` general name.
 * ``all_key_usages.pem`` - An RSA 2048 bit self-signed certificate containing
   a key usage extension with all nine purposes set to true.
+* ``extended_key_usage.pem`` - An RSA 2048 bit self-signed certificate
+  containing an extended key usage extension with eight usages.
 * ``san_idna_names.pem`` - An RSA 2048 bit self-signed certificate containing
   a subject alternative name extension with ``rfc822Name``, ``dNSName``, and
   ``uniformResourceIdentifier`` general names with IDNA (:rfc:`5895`) encoding.
