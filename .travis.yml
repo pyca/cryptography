@@ -1,8 +1,12 @@
 sudo: false
+osx_image: beta-xcode6.2
+
 language: python
+
 cache:
     directories:
         - $HOME/.cache/pip
+
 matrix:
     include:
         - python: 2.6 # these are just to make travis's UI a bit prettier
