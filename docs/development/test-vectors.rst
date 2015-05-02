@@ -156,6 +156,10 @@ Custom X.509 Vectors
   subject alternative name extension with an ``iPAddress`` value.
 * ``san_dirname.pem`` - An RSA 2048 bit self-signed certificate containing a
   subject alternative name extension with a ``directoryName`` value.
+* ``inhibit_any_policy_5.pem`` - An RSA 2048 bit self-signed certificate
+  containing an inhibit any policy extension with the value 5.
+* ``inhibit_any_policy_negative.pem`` - An RSA 2048 bit self-signed certificate
+  containing an inhibit any policy extension with the value -1.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
