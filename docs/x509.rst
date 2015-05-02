@@ -930,6 +930,24 @@ X.509 Extensions
         removed from the CRL. This reason cannot be used as a reason flag
         in a :class:`DistributionPoint`.
 
+.. class:: InhibitAnyPolicy
+
+    .. versionadded:: 1.0
+
+    The inhibit ``anyPolicy`` extension indicates that the special OID
+    :data:`OID_ANY_POLICY`, is not considered an explicit match for other
+    :class:`CertificatePolicies` except when it appears in an intermediate
+    self-issued CA certificate.  The value indicates the number of additional
+    non-self-issued certificates that may appear in the path before
+    :data:`OID_ANY_POLICY` is no longer permitted.  For example, a value
+    of one indicates that :data:`OID_ANY_POLICY` may be processed in
+    certificates issued by the subject of this certificate, but not in
+    additional certificates in the path.
+
+    .. attribute:: skip_certs
+
+        :type: int
+
 .. class:: CertificatePolicies
 
     .. versionadded:: 0.9
@@ -1220,6 +1238,10 @@ Policy Qualifier OIDs
 .. data:: OID_CPS_USER_NOTICE
 
     Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.2"``.
+
+.. data:: OID_ANY_POLICY
+
+    Corresponds to the dotted string ``"2.5.29.32.0"``.
 
 .. _extension_oids:
 
