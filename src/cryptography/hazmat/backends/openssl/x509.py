@@ -113,7 +113,7 @@ def _build_general_name(backend, gn):
             gn.d.rfc822Name.data, gn.d.rfc822Name.length
         )[:].decode("ascii")
         name, address = parseaddr(data)
-        parts = address.split("@")
+        parts = address.split(u"@")
         if name or len(parts) > 2:
             # parseaddr has found a name (e.g. Name <email>) or the split
             # has found more than 2 parts (which means more than one @ sign)
