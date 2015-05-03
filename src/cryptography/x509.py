@@ -297,9 +297,7 @@ class ExtendedKeyUsage(object):
         if not isinstance(other, ExtendedKeyUsage):
             return NotImplemented
 
-        return (
-            self._usages == other._usages
-        )
+        return self._usages == other._usages
 
     def __ne__(self, other):
         return not self == other
