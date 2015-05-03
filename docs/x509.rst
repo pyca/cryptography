@@ -736,11 +736,18 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        Either :data:`OID_OCSP` or :data:`OID_CA_ISSUERS`
+        The access method defines what the ``access_location`` means. It must
+        be either :data:`OID_OCSP` or :data:`OID_CA_ISSUERS`. If it is
+        :data:`OID_OCSP` the access location will be where to obtain OCSP
+        information for the certificate. If it is :data:`OID_CA_ISSUERS` the
+        access location will provide additional information about the issuing
+        certificate.
 
     .. attribute:: access_location
 
         :type: :class:`GeneralName`
+
+        Where to access the information defined by the access method.
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~

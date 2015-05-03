@@ -67,8 +67,8 @@ _OID_NAMES = {
     "1.3.6.1.5.5.7.1.1": "authorityInfoAccess",
     "1.3.6.1.5.5.7.1.11": "subjectInfoAccess",
     "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
-    "1.3.6.1.5.5.7.48.2": "caIssuers",
     "1.3.6.1.5.5.7.48.1": "OCSP",
+    "1.3.6.1.5.5.7.48.2": "caIssuers",
 }
 
 
@@ -428,7 +428,9 @@ class AuthorityInformationAccess(object):
 class AccessDescription(object):
     def __init__(self, access_method, access_location):
         if not (access_method == OID_OCSP or access_method == OID_CA_ISSUERS):
-            raise TypeError("access_method must be OID_OCSP or OID_CA_ISSUERS")
+            raise ValueError(
+                "access_method must be OID_OCSP or OID_CA_ISSUERS"
+            )
 
         if not isinstance(access_location, GeneralName):
             raise TypeError("access_location must be a GeneralName")

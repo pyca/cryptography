@@ -992,7 +992,7 @@ class TestExtendedKeyUsageExtension(object):
 
 class TestAccessDescription(object):
     def test_invalid_access_method(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             x509.AccessDescription("notanoid", x509.DNSName(u"test"))
 
     def test_invalid_access_location(self):
