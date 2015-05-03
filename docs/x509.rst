@@ -896,9 +896,8 @@ X.509 Extensions
 
     .. versionadded:: 0.9
 
-    The certificate policies extension is a list of one or more
-    :class:`PolicyInformation` instances. The object is iterable to get every
-    instance.
+    The certificate policies extension is an iterable, containing one or more
+    :class:`PolicyInformation` instances.
 
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -925,23 +924,55 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
     .. versionadded:: 0.9
 
+    .. attribute:: policy_qualifier_id
+
+        :type: :class:`ObjectIdentifier`
+
+        This attribute can have two possible values: :data:`OID_CPS_QUALIFIER`
+        or :data:`OID_CPS_USER_NOTICE`. If it is :data:`OID_CPS_QUALIFIER` then
+        ``qualifier`` will be :term:`text` and should contain a pointer to
+        a certification practice statement (CPS) published by the CA. This
+        text should be in the form of a URI. If it is
+        :data:`OID_CPS_USER_NOTICE` then ``qualifier`` will be
+        :class:`UserNotice`.
+
     .. attribute:: qualifier
 
         :type: :term:`text` or :class:`UserNotice`
+
+        The type of this attribute is determined by checking the
+        ``policy_qualifier_id``.
 
 .. class:: UserNotice
 
     .. versionadded:: 0.9
 
+    User notices are intended for display to a relying party when a certificate
+    is used. In practice, few if any UIs expose this data and it is a rarely
+    encoded component.
+
     .. attribute:: notice_reference
 
         :type: :class:`NoticeReference` or None
 
+        The notice reference field names an organization and identifies,
+        by number, a particular statement prepared by that organization.
+
     .. attribute:: explicit_text
+
+        This field includes an arbitrary textual statement directly in the
+        certificate.
 
         :type: :term:`text`
 
 .. class:: NoticeReference
+
+    Notice reference can name an organization and provide information about
+    notices related to the certificate. For example, it might identify the
+    organization name and notice number 1. Application software could
+    have a notice file containing the current set of notices for the named
+    organization; the application would then extract the notice text from the
+    file and display it. In practice this is rarely seen.
 
     .. versionadded:: 0.9
 
@@ -1159,6 +1190,19 @@ Authority Information Access OIDs
 
     Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.2"``. Used as the
     identifier for CA issuer data in :class:`AccessDescription` objects.
+
+Policy Qualifier OIDs
+~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: OID_CPS_QUALIFIER
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.1"``. Used as an
+    identifier in :class:`PolicyQualifierInfo` objects.
+
+.. data:: OID_CPS_USER_NOTICE
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.2"``. Used as an
+    identifier in :class:`PolicyQualifierInfo` objects.
 
 .. _extension_oids:
 
