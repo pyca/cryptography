@@ -325,6 +325,21 @@ class TestExtendedKeyUsage(object):
             "tAuth)>])>"
         )
 
+    def test_eq(self):
+        eku = x509.ExtendedKeyUsage([
+            x509.ObjectIdentifier("1.3.6"), x509.ObjectIdentifier("1.3.7")
+        ])
+        eku2 = x509.ExtendedKeyUsage([
+            x509.ObjectIdentifier("1.3.6"), x509.ObjectIdentifier("1.3.7")
+        ])
+        assert eku == eku2
+
+    def test_ne(self):
+        eku = x509.ExtendedKeyUsage([x509.ObjectIdentifier("1.3.6")])
+        eku2 = x509.ExtendedKeyUsage([x509.ObjectIdentifier("1.3.6.1")])
+        assert eku != eku2
+        assert eku != object()
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

@@ -277,11 +277,10 @@ class Extension(object):
 
 class ExtendedKeyUsage(object):
     def __init__(self, usages):
-        for oid in usages:
-            if not isinstance(oid, ObjectIdentifier):
-                raise TypeError(
-                    "Every item in the usages list must be an ObjectIdentifier"
-                )
+        if not all(isinstance(x, ObjectIdentifier) for x in usages):
+            raise TypeError(
+                "Every item in the usages list must be an ObjectIdentifier"
+            )
 
         self._usages = usages
 
@@ -293,6 +292,15 @@ class ExtendedKeyUsage(object):
 
     def __repr__(self):
         return "<ExtendedKeyUsage({0})>".format(self._usages)
+
+    def __eq__(self, other):
+        if not isinstance(other, ExtendedKeyUsage):
+            return NotImplemented
+
+        return self._usages == other._usages
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class BasicConstraints(object):
