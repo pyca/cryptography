@@ -267,6 +267,8 @@ class _Certificate(object):
                 value = self._build_key_usage(ext)
             elif oid == x509.OID_SUBJECT_ALTERNATIVE_NAME:
                 value = self._build_subject_alt_name(ext)
+            elif oid == x509.OID_EXTENDED_KEY_USAGE:
+                value = self._build_extended_key_usage(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -365,6 +367,24 @@ class _Certificate(object):
             general_names.append(value)
 
         return x509.SubjectAlternativeName(general_names)
+
+    def _build_extended_key_usage(self, ext):
+        sk = self._backend._ffi.cast(
+            "Cryptography_STACK_OF_ASN1_OBJECT *",
+            self._backend._lib.X509V3_EXT_d2i(ext)
+        )
+        assert sk != self._backend._ffi.NULL
+        sk = self._backend._ffi.gc(sk, self._backend._lib.sk_ASN1_OBJECT_free)
+        num = self._backend._lib.sk_ASN1_OBJECT_num(sk)
+        ekus = []
+
+        for i in range(num):
+            obj = self._backend._lib.sk_ASN1_OBJECT_value(sk, i)
+            assert obj != self._backend._ffi.NULL
+            oid = x509.ObjectIdentifier(_obj2txt(self._backend, obj))
+            ekus.append(oid)
+
+        return x509.ExtendedKeyUsage(ekus)
 
 
 @utils.register_interface(x509.CertificateSigningRequest)

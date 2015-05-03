@@ -959,3 +959,32 @@ class TestRSASubjectAlternativeNameExtension(object):
             cert.extensions
 
         assert 'Invalid rfc822name value' in str(exc.value)
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestExtendedKeyUsageExtension(object):
+    def test_eku(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "extended_key_usage.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_EXTENDED_KEY_USAGE
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert [
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.1"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.2"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.3"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.4"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.9"),
+            x509.ObjectIdentifier("1.3.6.1.5.5.7.3.8"),
+            x509.ObjectIdentifier("2.5.29.37.0"),
+            x509.ObjectIdentifier("2.16.840.1.113730.4.1"),
+        ] == list(ext.value)
