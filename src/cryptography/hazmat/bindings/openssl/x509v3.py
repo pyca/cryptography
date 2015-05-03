@@ -109,6 +109,9 @@ MACROS = """
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
 void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
+/* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
+   x509v3.h header. */
+void AUTHORITY_KEYID_free(AUTHORITY_KEYID *);
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
