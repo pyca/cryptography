@@ -666,8 +666,13 @@ class AuthorityKeyIdentifier(object):
                     "must both be present or both None"
                 )
 
-            if not isinstance(authority_cert_issuer, Name):
-                raise TypeError("authority_cert_issuer must be a Name")
+            if not all(
+                isinstance(x, GeneralName) for x in authority_cert_issuer
+            ):
+                raise TypeError(
+                    "authority_cert_issuer must be a list of GeneralName "
+                    "objects"
+                )
 
             if not isinstance(authority_cert_serial_number, six.integer_types):
                 raise TypeError(
