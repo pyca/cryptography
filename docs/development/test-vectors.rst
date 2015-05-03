@@ -160,6 +160,9 @@ Custom X.509 Vectors
   containing an inhibit any policy extension with the value 5.
 * ``inhibit_any_policy_negative.pem`` - An RSA 2048 bit self-signed certificate
   containing an inhibit any policy extension with the value -1.
+* ``authority_key_identifier.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority key identifier extension with key identifier,
+  authority certificate issuer, and authority certificate serial number fields.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
