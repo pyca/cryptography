@@ -37,8 +37,13 @@ Asymmetric ciphers
   Ruby test suite.
 
 
-Custom Asymmetric Vectors
+Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+    :maxdepth: 1
+
+    custom-vectors/secp256k1
 
 * ``asymmetric/PEM_Serialization/ec_private_key.pem`` and
   ``asymmetric/DER_Serialization/ec_private_key.der`` - Contains an Elliptic
@@ -77,6 +82,7 @@ Custom Asymmetric Vectors
 * ``asymmetric/public/PKCS1/rsa.pub.pem`` and
   ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
   key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
+
 
 Key exchange
 ~~~~~~~~~~~~
