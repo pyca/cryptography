@@ -67,6 +67,8 @@ _OID_NAMES = {
     "1.3.6.1.5.5.7.1.1": "authorityInfoAccess",
     "1.3.6.1.5.5.7.1.11": "subjectInfoAccess",
     "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
+    "1.3.6.1.5.5.7.48.2": "caIssuers",
+    "1.3.6.1.5.5.7.48.1": "OCSP",
 }
 
 
@@ -394,6 +396,68 @@ class KeyUsage(object):
                     self, encipher_only, decipher_only)
 
 
+class AuthorityInformationAccess(object):
+    def __init__(self, descriptions):
+        if not all(isinstance(x, AccessDescription) for x in descriptions):
+            raise TypeError(
+                "Every item in the descriptions list must be an "
+                "AccessDescription"
+            )
+
+        self._descriptions = descriptions
+
+    def __iter__(self):
+        return iter(self._descriptions)
+
+    def __len__(self):
+        return len(self._descriptions)
+
+    def __repr__(self):
+        return "<AuthorityInformationAccess({0})>".format(self._descriptions)
+
+    def __eq__(self, other):
+        if not isinstance(other, AuthorityInformationAccess):
+            return NotImplemented
+
+        return self._descriptions == other._descriptions
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class AccessDescription(object):
+    def __init__(self, access_method, access_location):
+        if not (access_method == OID_OCSP or access_method == OID_CA_ISSUERS):
+            raise TypeError("access_method must be OID_OCSP or OID_CA_ISSUERS")
+
+        if not isinstance(access_location, GeneralName):
+            raise TypeError("access_location must be a GeneralName")
+
+        self._access_method = access_method
+        self._access_location = access_location
+
+    def __repr__(self):
+        return (
+            "<AccessDescription(access_method={0.access_method}, access_locati"
+            "on={0.access_location})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, AccessDescription):
+            return NotImplemented
+
+        return (
+            self.access_method == other.access_method and
+            self.access_location == other.access_location
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    access_method = utils.read_only_property("_access_method")
+    access_location = utils.read_only_property("_access_location")
+
+
 class SubjectKeyIdentifier(object):
     def __init__(self, digest):
         self._digest = digest
@@ -679,6 +743,9 @@ OID_CODE_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.3")
 OID_EMAIL_PROTECTION = ObjectIdentifier("1.3.6.1.5.5.7.3.4")
 OID_TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
 OID_OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
+
+OID_CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
+OID_OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
 
 
 @six.add_metaclass(abc.ABCMeta)

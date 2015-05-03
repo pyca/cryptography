@@ -988,3 +988,145 @@ class TestExtendedKeyUsageExtension(object):
             x509.ObjectIdentifier("2.5.29.37.0"),
             x509.ObjectIdentifier("2.16.840.1.113730.4.1"),
         ] == list(ext.value)
+
+
+class TestAccessDescription(object):
+    def test_invalid_access_method(self):
+        with pytest.raises(TypeError):
+            x509.AccessDescription("notanoid", x509.DNSName(u"test"))
+
+    def test_invalid_access_location(self):
+        with pytest.raises(TypeError):
+            x509.AccessDescription(x509.OID_CA_ISSUERS, "invalid")
+
+    def test_repr(self):
+        ad = x509.AccessDescription(
+            x509.OID_OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        assert repr(ad) == (
+            "<AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6.1.5."
+            "5.7.48.1, name=OCSP)>, access_location=<UniformResourceIdentifier"
+            "(value=http://ocsp.domain.com)>)>"
+        )
+
+    def test_eq(self):
+        ad = x509.AccessDescription(
+            x509.OID_OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad2 = x509.AccessDescription(
+            x509.OID_OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        assert ad == ad2
+
+    def test_ne(self):
+        ad = x509.AccessDescription(
+            x509.OID_OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad2 = x509.AccessDescription(
+            x509.OID_CA_ISSUERS,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad3 = x509.AccessDescription(
+            x509.OID_OCSP,
+            x509.UniformResourceIdentifier(u"http://notthesame")
+        )
+        assert ad != ad2
+        assert ad != ad3
+        assert ad != object()
+
+
+class TestAuthorityInformationAccess(object):
+    def test_invalid_descriptions(self):
+        with pytest.raises(TypeError):
+            x509.AuthorityInformationAccess(["notanAccessDescription"])
+
+    def test_iter_len(self):
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            )
+        ])
+        assert len(aia) == 2
+        assert list(aia) == [
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            )
+        ]
+
+    def test_repr(self):
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            )
+        ])
+        assert repr(aia) == (
+            "<AuthorityInformationAccess([<AccessDescription(access_method=<Ob"
+            "jectIdentifier(oid=1.3.6.1.5.5.7.48.1, name=OCSP)>, access_locati"
+            "on=<UniformResourceIdentifier(value=http://ocsp.domain.com)>)>, <"
+            "AccessDescription(access_method=<ObjectIdentifier(oid=1.3.6.1.5.5"
+            ".7.48.2, name=caIssuers)>, access_location=<UniformResourceIdenti"
+            "fier(value=http://domain.com/ca.crt)>)>])>"
+        )
+
+    def test_eq(self):
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            )
+        ])
+        aia2 = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            )
+        ])
+        assert aia == aia2
+
+    def test_ne(self):
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            )
+        ])
+        aia2 = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+        ])
+
+        assert aia != aia2
+        assert aia != object()
