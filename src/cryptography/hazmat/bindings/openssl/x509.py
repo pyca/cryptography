@@ -17,6 +17,7 @@ INCLUDES = """
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 typedef STACK_OF(X509_CRL) Cryptography_STACK_OF_X509_CRL;
 typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
+typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
 """
 
 TYPES = """
@@ -303,6 +304,11 @@ EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
 EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
+
+// declared in safestack
+int sk_ASN1_OBJECT_num(Cryptography_STACK_OF_ASN1_OBJECT *);
+ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
+void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
 """
 
 CUSTOMIZATIONS = """
