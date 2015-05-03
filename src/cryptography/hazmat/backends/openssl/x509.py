@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import ipaddress
+from email.utils import parseaddr
 
 import idna
 
@@ -107,6 +108,27 @@ def _build_general_name(backend, gn):
         return x509.DirectoryName(
             _build_x509_name(backend, gn.d.directoryName)
         )
+    elif gn.type == backend._lib.GEN_EMAIL:
+        data = backend._ffi.buffer(
+            gn.d.rfc822Name.data, gn.d.rfc822Name.length
+        )[:].decode("ascii")
+        name, address = parseaddr(data)
+        parts = address.split(u"@")
+        if name or len(parts) > 2 or not address:
+            # parseaddr has found a name (e.g. Name <email>) or the split
+            # has found more than 2 parts (which means more than one @ sign)
+            # or the entire value is an empty string.
+            raise ValueError("Invalid rfc822name value")
+        elif len(parts) == 1:
+            # Single label email name. This is valid for local delivery. No
+            # IDNA decoding can be done since there is no domain component.
+            return x509.RFC822Name(address)
+        else:
+            # A normal email of the form user@domain.com. Let's attempt to
+            # decode the domain component and return the entire address.
+            return x509.RFC822Name(
+                parts[0] + u"@" + idna.decode(parts[1])
+            )
     else:
         # otherName, x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
