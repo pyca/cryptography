@@ -163,6 +163,9 @@ Custom X.509 Vectors
 * ``authority_key_identifier.pem`` - An RSA 2048 bit self-signed certificate
   containing an authority key identifier extension with key identifier,
   authority certificate issuer, and authority certificate serial number fields.
+* ``authority_key_identifier_no_keyid.pem`` - An RSA 2048 bit self-signed
+  certificate containing an authority key identifier extension with authority
+  certificate issuer and authority certificate serial number fields.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
