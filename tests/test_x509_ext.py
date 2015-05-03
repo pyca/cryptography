@@ -63,6 +63,19 @@ class TestNoticeReference(object):
                 "4])>"
             )
 
+    def test_eq(self):
+        nr = x509.NoticeReference("org", [1, 2])
+        nr2 = x509.NoticeReference("org", [1, 2])
+        assert nr == nr2
+
+    def test_ne(self):
+        nr = x509.NoticeReference("org", [1, 2])
+        nr2 = x509.NoticeReference("org", [1])
+        nr3 = x509.NoticeReference(None, [1, 2])
+        assert nr != nr2
+        assert nr != nr3
+        assert nr != object()
+
 
 class TestUserNotice(object):
     def test_notice_reference_invalid(self):
@@ -86,6 +99,23 @@ class TestUserNotice(object):
                 "<UserNotice(notice_reference=<NoticeReference(organization=u"
                 "'org', notice_numbers=None)>, explicit_text=u'text')>"
             )
+
+    def test_eq(self):
+        nr = x509.NoticeReference("org", [1, 2])
+        nr2 = x509.NoticeReference("org", [1, 2])
+        un = x509.UserNotice(nr, "text")
+        un2 = x509.UserNotice(nr2, "text")
+        assert un == un2
+
+    def test_ne(self):
+        nr = x509.NoticeReference("org", [1, 2])
+        nr2 = x509.NoticeReference("org", [1])
+        un = x509.UserNotice(nr, "text")
+        un2 = x509.UserNotice(nr2, "text")
+        un3 = x509.UserNotice(nr, "text3")
+        assert un != un2
+        assert un != un3
+        assert un != object()
 
 
 class TestPolicyInformation(object):
@@ -124,6 +154,31 @@ class TestPolicyInformation(object):
                 "otice(notice_reference=None, explicit_text=u'hi')>])>"
             )
 
+    def test_eq(self):
+        pi = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"),
+            [u"string", x509.UserNotice(None, u"hi")]
+        )
+        pi2 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"),
+            [u"string", x509.UserNotice(None, u"hi")]
+        )
+        assert pi == pi2
+
+    def test_ne(self):
+        pi = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string"]
+        )
+        pi2 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string2"]
+        )
+        pi3 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3.4"), [u"string"]
+        )
+        assert pi != pi2
+        assert pi != pi3
+        assert pi != object()
+
 
 class TestCertificatePolicies(object):
     def test_invalid_policies(self):
@@ -156,6 +211,29 @@ class TestCertificatePolicies(object):
                 "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
                 "ers=[u'string'])>])>"
             )
+
+    def test_eq(self):
+        pi = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string"]
+        )
+        cp = x509.CertificatePolicies([pi])
+        pi2 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string"]
+        )
+        cp2 = x509.CertificatePolicies([pi2])
+        assert cp == cp2
+
+    def test_ne(self):
+        pi = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string"]
+        )
+        cp = x509.CertificatePolicies([pi])
+        pi2 = x509.PolicyInformation(
+            x509.ObjectIdentifier("1.2.3"), [u"string2"]
+        )
+        cp2 = x509.CertificatePolicies([pi2])
+        assert cp != cp2
+        assert cp != object()
 
 
 class TestKeyUsage(object):
