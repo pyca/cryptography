@@ -498,6 +498,7 @@ _ECDSA_CURVE_NAMES = {
 
     "K-163": "sect163k1",
     "K-233": "sect233k1",
+    "K-256": "secp256k1",
     "K-283": "sect283k1",
     "K-409": "sect409k1",
     "K-571": "sect571k1",
