@@ -17,7 +17,6 @@ INCLUDES = """
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 typedef STACK_OF(X509_CRL) Cryptography_STACK_OF_X509_CRL;
 typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
-typedef STACK_OF(ASN1_OBJECT) Cryptography_STACK_OF_ASN1_OBJECT;
 """
 
 TYPES = """
