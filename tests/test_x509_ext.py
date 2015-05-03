@@ -473,6 +473,35 @@ class TestAuthorityKeyIdentifier(object):
                 "])>)>], authority_cert_serial_number=1234)>"
             )
 
+    def test_eq(self):
+        dirname = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+        )
+        aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
+        dirname2 = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+        )
+        aki2 = x509.AuthorityKeyIdentifier(b"digest", [dirname2], 1234)
+        assert aki == aki2
+
+    def test_ne(self):
+        dirname = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+        )
+        dirname5 = x509.DirectoryName(
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'aCN')])
+        )
+        aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
+        aki2 = x509.AuthorityKeyIdentifier(b"diges", [dirname], 1234)
+        aki3 = x509.AuthorityKeyIdentifier(b"digest", None, None)
+        aki4 = x509.AuthorityKeyIdentifier(b"digest", [dirname], 12345)
+        aki5 = x509.AuthorityKeyIdentifier(b"digest", [dirname5], 12345)
+        assert aki != aki2
+        assert aki != aki3
+        assert aki != aki4
+        assert aki != aki5
+        assert aki != object()
+
 
 class TestBasicConstraints(object):
     def test_ca_not_boolean(self):
