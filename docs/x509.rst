@@ -682,10 +682,10 @@ X.509 Extensions
         certificate. This attribute only has meaning if ``ca`` is true.
         If ``ca`` is true then a path length of None means there's no
         restriction on the number of subordinate CAs in the certificate chain.
-        If it is zero or greater then that number defines the maximum length.
-        For example, a ``path_length`` of 1 means the certificate can sign a
-        subordinate CA, but the subordinate CA is not allowed to create
-        subordinates with ``ca`` set to true.
+        If it is zero or greater then it defines the maximum length for a
+        subordinate CA's certificate chain. For example, a ``path_length`` of 1
+        means the certificate can sign a subordinate CA, but the subordinate CA
+        is not allowed to create subordinates with ``ca`` set to true.
 
 .. class:: ExtendedKeyUsage
 
