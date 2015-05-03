@@ -760,9 +760,10 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> from cryptography.hazmat.primitives import hashes
             >>> cert = x509.load_pem_x509_certificate(cryptography_cert_pem, default_backend())
+            >>> # Get the subjectAltName extension from the certificate
             >>> ext = cert.extensions.get_extension_for_oid(x509.OID_SUBJECT_ALTERNATIVE_NAME)
-            >>> san = ext.value
-            >>> san.get_values_for_type(x509.DNSName)
+            >>> # Get the dNSName entries from the SAN extension
+            >>> ext.value.get_values_for_type(x509.DNSName)
             [u'www.cryptography.io', u'cryptography.io']
 
 
