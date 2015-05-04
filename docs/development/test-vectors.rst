@@ -172,6 +172,13 @@ Custom X.509 Vectors
 * ``authority_key_identifier_no_keyid.pem`` - An RSA 2048 bit self-signed
   certificate containing an authority key identifier extension with authority
   certificate issuer and authority certificate serial number fields.
+* ``aia_ocsp_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with two OCSP and one
+  CA issuers entry.
+* ``aia_ocsp.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with an OCSP entry.
+* ``aia_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with a CA issuers entry.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
