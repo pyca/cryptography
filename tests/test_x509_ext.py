@@ -1140,6 +1140,104 @@ class TestAuthorityInformationAccess(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestAuthorityInformationAccessExtension(object):
+    def test_aia_ocsp_ca_issuers(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_INFORMATION_ACCESS
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://gv.symcd.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://gv.symcb.com/gv.crt")
+            ),
+        ])
+
+    def test_aia_multiple_ocsp_ca_issuers(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "aia_ocsp_ca_issuers.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_INFORMATION_ACCESS
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp2.domain.com")
+            ),
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.DirectoryName(x509.Name([
+                    x509.NameAttribute(x509.OID_COMMON_NAME, "myCN"),
+                    x509.NameAttribute(x509.OID_ORGANIZATION_NAME, "some Org"),
+                ]))
+            ),
+        ])
+
+    def test_aia_ocsp_only(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "aia_ocsp.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_INFORMATION_ACCESS
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+        ])
+
+    def test_aia_ca_issuers_only(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "aia_ca_issuers.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_INFORMATION_ACCESS
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.OID_CA_ISSUERS,
+                x509.DirectoryName(x509.Name([
+                    x509.NameAttribute(x509.OID_COMMON_NAME, "myCN"),
+                    x509.NameAttribute(x509.OID_ORGANIZATION_NAME, "some Org"),
+                ]))
+            ),
+        ])
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestAuthorityKeyIdentifierExtension(object):
     def test_aki_keyid(self, backend):
         cert = _load_cert(
