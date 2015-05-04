@@ -325,6 +325,7 @@ void SSL_CTX_set_tlsext_servername_callback(
    is fraught with peril thanks to OS distributions we check some constants
    to determine if they are supported or not */
 long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
+long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
 long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
 
 long SSL_session_reused(SSL *);
@@ -434,6 +435,7 @@ static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
 #else
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 0;
 long (*SSL_set_tlsext_status_ocsp_resp)(SSL *, unsigned char *, int) = NULL;
+long (*SSL_get_tlsext_status_ocsp_resp)(SSL *, const unsigned char **) = NULL;
 #endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
@@ -620,6 +622,7 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
         "SSL_set_tlsext_status_ocsp_resp",
+        "SSL_get_tlsext_status_ocsp_resp",
     ],
 
     "Cryptography_HAS_RELEASE_BUFFERS": [
