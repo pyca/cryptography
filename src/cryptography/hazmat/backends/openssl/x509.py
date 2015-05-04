@@ -269,6 +269,8 @@ class _Certificate(object):
                 value = self._build_subject_alt_name(ext)
             elif oid == x509.OID_EXTENDED_KEY_USAGE:
                 value = self._build_extended_key_usage(ext)
+            elif oid == x509.OID_AUTHORITY_KEY_IDENTIFIER:
+                value = self._build_authority_key_identifier(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -319,6 +321,45 @@ class _Certificate(object):
         )
         return x509.SubjectKeyIdentifier(
             self._backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+        )
+
+    def _build_authority_key_identifier(self, ext):
+        akid = self._backend._lib.X509V3_EXT_d2i(ext)
+        assert akid != self._backend._ffi.NULL
+        akid = self._backend._ffi.cast("AUTHORITY_KEYID *", akid)
+        akid = self._backend._ffi.gc(
+            akid, self._backend._lib.AUTHORITY_KEYID_free
+        )
+        key_identifier = None
+        authority_cert_issuer = None
+        authority_cert_serial_number = None
+
+        if akid.keyid != self._backend._ffi.NULL:
+            key_identifier = self._backend._ffi.buffer(
+                akid.keyid.data, akid.keyid.length
+            )[:]
+
+        if akid.issuer != self._backend._ffi.NULL:
+            authority_cert_issuer = []
+
+            num = self._backend._lib.sk_GENERAL_NAME_num(akid.issuer)
+            for i in range(num):
+                gn = self._backend._lib.sk_GENERAL_NAME_value(akid.issuer, i)
+                assert gn != self._backend._ffi.NULL
+                value = _build_general_name(self._backend, gn)
+
+                authority_cert_issuer.append(value)
+
+        if akid.serial != self._backend._ffi.NULL:
+            bn = self._backend._lib.ASN1_INTEGER_to_BN(
+                akid.serial, self._backend._ffi.NULL
+            )
+            assert bn != self._backend._ffi.NULL
+            bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
+            authority_cert_serial_number = self._backend._bn_to_int(bn)
+
+        return x509.AuthorityKeyIdentifier(
+            key_identifier, authority_cert_issuer, authority_cert_serial_number
         )
 
     def _build_key_usage(self, ext):

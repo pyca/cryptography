@@ -1136,3 +1136,87 @@ class TestAuthorityInformationAccess(object):
 
         assert aia != aia2
         assert aia != object()
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestAuthorityKeyIdentifierExtension(object):
+    def test_aki_keyid(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "cryptography.io.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_KEY_IDENTIFIER
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value.key_identifier == (
+            b"\xc3\x9c\xf3\xfc\xd3F\x084\xbb\xceF\x7f\xa0|[\xf3\xe2\x08\xcbY"
+        )
+        assert ext.value.authority_cert_issuer is None
+        assert ext.value.authority_cert_serial_number is None
+
+    def test_aki_all_fields(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "authority_key_identifier.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_KEY_IDENTIFIER
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value.key_identifier == (
+            b"9E>\xca=b\x1d\xea\x86I\xf6Z\xab@\xb7\xa4p\x98\xf1\xec"
+        )
+        assert ext.value.authority_cert_issuer == [
+            x509.DirectoryName(
+                x509.Name([
+                    x509.NameAttribute(
+                        x509.OID_ORGANIZATION_NAME, u"PyCA"
+                    ),
+                    x509.NameAttribute(
+                        x509.OID_COMMON_NAME, u"cryptography.io"
+                    )
+                ])
+            )
+        ]
+        assert ext.value.authority_cert_serial_number == 3
+
+    def test_aki_no_keyid(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "authority_key_identifier_no_keyid.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_KEY_IDENTIFIER
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value.key_identifier is None
+        assert ext.value.authority_cert_issuer == [
+            x509.DirectoryName(
+                x509.Name([
+                    x509.NameAttribute(
+                        x509.OID_ORGANIZATION_NAME, u"PyCA"
+                    ),
+                    x509.NameAttribute(
+                        x509.OID_COMMON_NAME, u"cryptography.io"
+                    )
+                ])
+            )
+        ]
+        assert ext.value.authority_cert_serial_number == 3
