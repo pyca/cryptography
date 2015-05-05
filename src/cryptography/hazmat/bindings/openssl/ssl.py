@@ -22,6 +22,7 @@ static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -326,6 +327,7 @@ void SSL_CTX_set_tlsext_servername_callback(
    to determine if they are supported or not */
 long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
 long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
+long SSL_set_tlsext_status_type(SSL *, long);
 long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
 
 long SSL_session_reused(SSL *);
@@ -436,6 +438,13 @@ static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 0;
 long (*SSL_set_tlsext_status_ocsp_resp)(SSL *, unsigned char *, int) = NULL;
 long (*SSL_get_tlsext_status_ocsp_resp)(SSL *, const unsigned char **) = NULL;
+#endif
+
+#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
+#else
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 0;
+long (*SSL_set_tlsext_status_type)(SSL *, long) = NULL;
 #endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
@@ -623,6 +632,10 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
         "SSL_set_tlsext_status_ocsp_resp",
         "SSL_get_tlsext_status_ocsp_resp",
+    ],
+
+    "Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE": [
+        "SSL_set_tlsext_status_type",
     ],
 
     "Cryptography_HAS_RELEASE_BUFFERS": [
