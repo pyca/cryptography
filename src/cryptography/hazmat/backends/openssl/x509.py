@@ -271,6 +271,8 @@ class _Certificate(object):
                 value = self._build_extended_key_usage(ext)
             elif oid == x509.OID_AUTHORITY_KEY_IDENTIFIER:
                 value = self._build_authority_key_identifier(ext)
+            elif oid == x509.OID_AUTHORITY_INFORMATION_ACCESS:
+                value = self._build_authority_information_access(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -361,6 +363,27 @@ class _Certificate(object):
         return x509.AuthorityKeyIdentifier(
             key_identifier, authority_cert_issuer, authority_cert_serial_number
         )
+
+    def _build_authority_information_access(self, ext):
+        aia = self._backend._lib.X509V3_EXT_d2i(ext)
+        assert aia != self._backend._ffi.NULL
+        aia = self._backend._ffi.cast(
+            "Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia
+        )
+        aia = self._backend._ffi.gc(
+            aia, self._backend._lib.sk_ACCESS_DESCRIPTION_free
+        )
+        num = self._backend._lib.sk_ACCESS_DESCRIPTION_num(aia)
+        access_descriptions = []
+        for i in range(num):
+            ad = self._backend._lib.sk_ACCESS_DESCRIPTION_value(aia, i)
+            assert ad.method != self._backend._ffi.NULL
+            oid = x509.ObjectIdentifier(_obj2txt(self._backend, ad.method))
+            assert ad.location != self._backend._ffi.NULL
+            gn = _build_general_name(self._backend, ad.location)
+            access_descriptions.append(x509.AccessDescription(oid, gn))
+
+        return x509.AuthorityInformationAccess(access_descriptions)
 
     def _build_key_usage(self, ext):
         bit_string = self._backend._lib.X509V3_EXT_d2i(ext)

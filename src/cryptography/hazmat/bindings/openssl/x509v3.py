@@ -19,9 +19,12 @@ typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
 #else
 typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
 #endif
+typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 """
 
 TYPES = """
+typedef ... Cryptography_STACK_OF_ACCESS_DESCRIPTION;
+
 typedef struct {
     X509 *issuer_cert;
     X509 *subject_cert;
@@ -92,6 +95,11 @@ typedef struct {
     ASN1_INTEGER *serial;
 } AUTHORITY_KEYID;
 
+typedef struct {
+    ASN1_OBJECT *method;
+    GENERAL_NAME *location;
+} ACCESS_DESCRIPTION;
+
 typedef ... Cryptography_LHASH_OF_CONF_VALUE;
 """
 
@@ -116,6 +124,12 @@ void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
+
+int sk_ACCESS_DESCRIPTION_num(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
+ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_value(
+    Cryptography_STACK_OF_ACCESS_DESCRIPTION *, int
+);
+void sk_ACCESS_DESCRIPTION_free(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
 
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
