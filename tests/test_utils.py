@@ -3336,6 +3336,75 @@ f47021022a6c9b45ed791d09d9540eb81ea065fc1959eca365001ee39928c343d75
     assert expected == load_kasvs_ecdh_vectors(vector_data)
 
 
+def test_load_kasvs_ecdh_kdf_vectors():
+    vector_data = textwrap.dedent("""
+    #  Parameter set(s) supported: EB EC ED EE
+    #  CAVSid: CAVSid (in hex: 434156536964)
+    #  IUTid: In hex: a1b2c3d4e5
+    [EB]
+
+    [Curve selected:  P-224]
+    [SHA(s) supported (Used in the KDF function):  SHA224 SHA256 SHA384 SHA512]
+    [MAC algorithm supported:  HMAC]
+    [HMAC SHAs supported:  SHA512]
+    [HMACKeySize(in bits):  112]
+    [HMAC Tag length(in bits):  64]
+
+    #  Generated on Mon Dec 22 11:45:18 2014
+
+
+
+    [EB - SHA224]
+
+
+    COUNT = 0
+    dsCAVS = 540904b67b3716823dd621ed72ad3dbc615887b4f56f910b78a57199
+    QsCAVSx = 28e5f3a72d8f6b8499dd1bcdfceafcecec68a0d715789bcf4b55fe15
+    QsCAVSy = 8c8006a7da7c1a19f5328d7e865522b0c0dfb9a29b2c46dc96590d2a
+    Nonce = 4eefb2a29a0e89c3898a7affdfa60dd7
+    dsIUT = 5e717ae889fc8d67be11c2ebe1a7d3550051448d68a040b2dee8e327
+    QsIUTx = ae7f3db340b647d61713f5374c019f1be2b28573cb6219bb7b747223
+    QsIUTy = 800e6bffcf97c15864ec6e5673fb83359b45f89b8a26a27f6f3dfbff
+    NonceDKMIUT = bb7f1b40d14ebd70443393990b57
+    OI = a1b2c3d4e5bb7f1b40d14ebd70443393990b574341565369645b1582daab9cc6c30d6\
+1fdcf1cdfc7e9a304651e0fdb
+    CAVSTag = 84de198c3a958c62
+    Z = 43f23b2c760d686fc99cc008b63aea92f866e224265af60d2d8ae540
+    MacData = 5374616e646172642054657374204d6573736167654eefb2a29a0e89c3898a7a\
+ffdfa60dd7
+    DKM = ad65fa2d12541c3a21f3cd223efb
+    Result = F (12 - Tag changed )
+    """).splitlines()
+
+    expected = [
+        {'errno': 12,
+         'fail': True,
+         'COUNT': 0,
+         'CAVS': {
+             'd': int("540904b67b3716823dd621ed72ad3dbc615887b4f56f910b"
+                      "78a57199", 16),
+             'x': int("28e5f3a72d8f6b8499dd1bcdfceafcecec68a0d715789bcf"
+                      "4b55fe15", 16),
+             'y': int("8c8006a7da7c1a19f5328d7e865522b0c0dfb9a29b2c46dc"
+                      "96590d2a", 16)},
+         'IUT': {
+             'd': int("5e717ae889fc8d67be11c2ebe1a7d3550051448d68a040b2"
+                      "dee8e327", 16),
+             'x': int("ae7f3db340b647d61713f5374c019f1be2b28573cb6219bb"
+                      "7b747223", 16),
+             'y': int("800e6bffcf97c15864ec6e5673fb83359b45f89b8a26a27f"
+                      "6f3dfbff", 16)},
+         'OI': int("a1b2c3d4e5bb7f1b40d14ebd70443393990b574341565369"
+                   "645b1582daab9cc6c30d61fdcf1cdfc7e9a304651e0fdb", 16),
+         'Z': int("43f23b2c760d686fc99cc008b63aea92f866e224265af60d"
+                  "2d8ae540", 16),
+         'DKM': int("ad65fa2d12541c3a21f3cd223efb", 16),
+         'curve': 'secp224r1'}
+    ]
+
+    assert expected == load_kasvs_ecdh_vectors(vector_data)
+
+
 def test_vector_version():
     assert cryptography.__version__ == cryptography_vectors.__version__
 

@@ -739,8 +739,12 @@ def load_kasvs_ecdh_vectors(vector_data):
             data["IUT"]["x"] = int(line.split("=")[1], 16)
         elif line.startswith("QsIUTy = "):
             data["IUT"]["y"] = int(line.split("=")[1], 16)
+        elif line.startswith("OI = "):
+            data["OI"] = int(line.split("=")[1], 16)
         elif line.startswith("Z = "):
             data["Z"] = int(line.split("=")[1], 16)
+        elif line.startswith("DKM = "):
+            data["DKM"] = int(line.split("=")[1], 16)
         elif line.startswith("Result = "):
             result_str = line.split("=")[1].strip()
             match = result_rx.match(result_str)
