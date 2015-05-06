@@ -781,6 +781,8 @@ X.509 Extensions
 
 .. class:: AccessDescription
 
+    .. versionadded:: 0.9
+
     .. attribute:: access_method
 
         :type: :class:`ObjectIdentifier`
@@ -797,6 +799,76 @@ X.509 Extensions
         :type: :class:`GeneralName`
 
         Where to access the information defined by the access method.
+
+.. class:: CRLDistributionPoints
+
+    .. versionadded:: 0.9
+
+    The CRL distribution points extension identifies how CRL information is
+    obtained. It is an iterable, containing one or more
+    :class:`DistributionPoint` instances.
+
+.. class:: DistributionPoint
+
+    .. versionadded:: 0.9
+
+    .. attribute:: distribution_point
+
+        :type: list of :class:`GeneralName` instances, :class:`Name`, or None
+
+        This field describes methods to retrieve the CRL.
+
+    .. attribute:: crl_issuer
+
+        :type: list of :class:`GeneralName` instances or None
+
+        Information about the issuer of the CRL.
+
+    .. attribute:: reasons
+
+        :type: :class:`ReasonFlags` or None
+
+        The reasons a given distribution point may be used for when performing
+        revocation checks.
+
+.. class:: ReasonFlags
+
+    .. versionadded:: 0.9
+
+    This class holds reasons a distribution point may be used for when
+    performing revocation checks.
+
+    .. attribute:: key_compromise
+
+        :type: bool
+
+    .. attribute:: ca_compromise
+
+        :type: bool
+
+    .. attribute:: affiliation_changed
+
+        :type: bool
+
+    .. attribute:: superseded
+
+        :type: bool
+
+    .. attribute:: cessation_of_operation
+
+        :type: bool
+
+    .. attribute:: certificate_hold
+
+        :type: bool
+
+    .. attribute:: privilege_withdrawn
+
+        :type: bool
+
+    .. attribute:: aa_compromise
+
+        :type: bool
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~

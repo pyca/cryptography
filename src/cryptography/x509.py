@@ -481,6 +481,150 @@ class SubjectKeyIdentifier(object):
         return not self == other
 
 
+class CRLDistributionPoints(object):
+    def __init__(self, distribution_points):
+        if not all(
+            isinstance(x, DistributionPoint) for x in distribution_points
+        ):
+            raise TypeError(
+                "distribution_points must be a list of DistributionPoint "
+                "objects"
+            )
+
+        self._distribution_points = distribution_points
+
+    def __iter__(self):
+        return iter(self._distribution_points)
+
+    def __len__(self):
+        return len(self._distribution_points)
+
+    def __repr__(self):
+        return "<CRLDistributionPoints({0})>".format(self._distribution_points)
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLDistributionPoints):
+            return NotImplemented
+
+        return self._distribution_points == other._distribution_points
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class DistributionPoint(object):
+    def __init__(self, distribution_point, reasons, crl_issuer):
+        if distribution_point:
+            if (
+                (
+                    isinstance(distribution_point, list) and
+                    not all(
+                        isinstance(x, GeneralName) for x in distribution_point
+                    )
+                ) or not isinstance(distribution_point, (list, Name))
+            ):
+                raise TypeError(
+                    "distribution_point must be None, a list of general names"
+                    ", or a Name"
+                )
+
+        if crl_issuer and not all(
+            isinstance(x, GeneralName) for x in crl_issuer
+        ):
+            raise TypeError(
+                "crl_issuer must be None or a list of general names"
+            )
+
+        if reasons and not isinstance(reasons, ReasonFlags):
+            raise TypeError("reasons must be None or ReasonFlags")
+
+        if reasons and not crl_issuer and not distribution_point:
+            raise ValueError(
+                "You must supply crl_issuer or distribution_point when "
+                "reasons is not None"
+            )
+
+        self._distribution_point = distribution_point
+        self._reasons = reasons
+        self._crl_issuer = crl_issuer
+
+    def __repr__(self):
+        return (
+            "<DistributionPoint(distribution_point={0.distribution_point}, rea"
+            "sons={0.reasons}, crl_issuer={0.crl_issuer})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, DistributionPoint):
+            return NotImplemented
+
+        return (
+            self.distribution_point == other.distribution_point and
+            self.reasons == other.reasons and
+            self.crl_issuer == other.crl_issuer
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    distribution_point = utils.read_only_property("_distribution_point")
+    reasons = utils.read_only_property("_reasons")
+    crl_issuer = utils.read_only_property("_crl_issuer")
+
+
+class ReasonFlags(object):
+    def __init__(self, key_compromise, ca_compromise, affiliation_changed,
+                 superseded, cessation_of_operation, certificate_hold,
+                 privilege_withdrawn, aa_compromise):
+        self._key_compromise = key_compromise
+        self._ca_compromise = ca_compromise
+        self._affiliation_changed = affiliation_changed
+        self._superseded = superseded
+        self._cessation_of_operation = cessation_of_operation
+        self._certificate_hold = certificate_hold
+        self._privilege_withdrawn = privilege_withdrawn
+        self._aa_compromise = aa_compromise
+
+    def __repr__(self):
+        return (
+            "<ReasonFlags(key_compromise={0.key_compromise}, ca_compromise"
+            "={0.ca_compromise}, affiliation_changed={0.affiliation_changed},"
+            "superseded={0.superseded}, cessation_of_operation={0.cessation_o"
+            "f_operation}, certificate_hold={0.certificate_hold}, privilege_w"
+            "ithdrawn={0.privilege_withdrawn}, aa_compromise={0.aa_compromise"
+            "})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, ReasonFlags):
+            return NotImplemented
+
+        return (
+            self.key_compromise == other.key_compromise and
+            self.ca_compromise == other.ca_compromise and
+            self.affiliation_changed == other.affiliation_changed and
+            self.superseded == other.superseded and
+            self.cessation_of_operation == other.cessation_of_operation and
+            self.certificate_hold == other.certificate_hold and
+            self.privilege_withdrawn == other.privilege_withdrawn and
+            self.aa_compromise == other.aa_compromise
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    key_compromise = utils.read_only_property("_key_compromise")
+    ca_compromise = utils.read_only_property("_ca_compromise")
+    affiliation_changed = utils.read_only_property("_affiliation_changed")
+    superseded = utils.read_only_property("_superseded")
+    cessation_of_operation = utils.read_only_property(
+        "_cessation_of_operation"
+    )
+    certificate_hold = utils.read_only_property("_certificate_hold")
+    privilege_withdrawn = utils.read_only_property("_privilege_withdrawn")
+    aa_compromise = utils.read_only_property("_aa_compromise")
+
+
 @six.add_metaclass(abc.ABCMeta)
 class GeneralName(object):
     @abc.abstractproperty
