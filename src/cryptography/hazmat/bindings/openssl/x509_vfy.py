@@ -29,8 +29,22 @@ static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 
 typedef ... X509_STORE;
-typedef ... X509_STORE_CTX;
 typedef ... X509_VERIFY_PARAM;
+
+typedef struct x509_store_ctx_st X509_STORE_CTX;
+struct x509_store_ctx_st {
+    X509_STORE *ctx;
+    int current_method;
+    X509 *cert;
+    Cryptography_STACK_OF_X509 *untrusted;
+    Cryptography_STACK_OF_X509_CRL *crls;
+    X509_VERIFY_PARAM *param;
+    void *other_ctx;
+    int (*verify)(X509_STORE_CTX *);
+    int (*verify_cb)(int, X509_STORE_CTX *);
+    int (*get_issuer)(X509 **, X509_STORE_CTX *, X509 *);
+    ...;
+};
 
 /* While these are defined in the source as ints, they're tagged here
    as longs, just in case they ever grow to large, such as what we saw
