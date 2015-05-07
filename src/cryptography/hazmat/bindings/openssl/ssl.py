@@ -165,6 +165,7 @@ const char *SSL_state_string_long(const SSL *);
 SSL_SESSION *SSL_get1_session(SSL *);
 int SSL_set_session(SSL *, SSL_SESSION *);
 int SSL_get_verify_mode(const SSL *);
+void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
 void SSL_set_verify_depth(SSL *, int);
 int SSL_get_verify_depth(const SSL *);
 int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
