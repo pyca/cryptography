@@ -251,6 +251,14 @@ All named curves are providers of :class:`EllipticCurve`.
 
     SECG curve ``secp192r1``. Also called NIST P-192.
 
+
+.. class:: SECP256K1
+
+    .. versionadded:: 0.9
+
+    SECG curve ``secp256k1``.
+
+
 Key Interfaces
 ~~~~~~~~~~~~~~
 

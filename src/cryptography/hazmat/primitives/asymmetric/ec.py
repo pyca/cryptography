@@ -202,6 +202,12 @@ class SECP256R1(object):
 
 
 @utils.register_interface(EllipticCurve)
+class SECP256K1(object):
+    name = "secp256k1"
+    key_size = 256
+
+
+@utils.register_interface(EllipticCurve)
 class SECP224R1(object):
     name = "secp224r1"
     key_size = 224
@@ -222,6 +228,7 @@ _CURVE_TYPES = {
     "secp256r1": SECP256R1,
     "secp384r1": SECP384R1,
     "secp521r1": SECP521R1,
+    "secp256k1": SECP256K1,
 
     "sect163k1": SECT163K1,
     "sect233k1": SECT233K1,

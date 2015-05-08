@@ -305,10 +305,17 @@ class TestECDSAVectors(object):
 
     @pytest.mark.parametrize(
         "vector",
-        load_vectors_from_file(
-            os.path.join(
-                "asymmetric", "ECDSA", "FIPS_186-3", "SigGen.txt"),
-            load_fips_ecdsa_signing_vectors
+        itertools.chain(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "ECDSA", "FIPS_186-3", "SigGen.txt"),
+                load_fips_ecdsa_signing_vectors
+            ),
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "ECDSA", "SECP256K1", "SigGen.txt"),
+                load_fips_ecdsa_signing_vectors
+            ),
         )
     )
     def test_signatures(self, backend, vector):
