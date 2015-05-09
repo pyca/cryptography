@@ -17,6 +17,7 @@ static const int Cryptography_HAS_EC;
 static const int Cryptography_HAS_EC_1_0_1;
 static const int Cryptography_HAS_EC_NISTP_64_GCC_128;
 static const int Cryptography_HAS_EC2M;
+static const int Cryptography_HAS_EC_1_0_2;
 
 static const int OPENSSL_EC_NAMED_CURVE;
 
@@ -188,6 +189,8 @@ const EC_METHOD *EC_GFp_nistp521_method();
 const EC_METHOD *EC_GF2m_simple_method();
 
 int EC_METHOD_get_field_type(const EC_METHOD *);
+
+const char *EC_curve_nid2nist(int);
 """
 
 CUSTOMIZATIONS = """
@@ -385,6 +388,14 @@ EC_GROUP *(*EC_GROUP_new_curve_GF2m)(
 #else
 static const long Cryptography_HAS_EC2M = 1;
 #endif
+
+#if defined(OPENSSL_NO_EC) || OPENSSL_VERSION_NUMBER < 0x1000200f || \
+    defined(LIBRESSL_VERSION_NUMBER)
+static const long Cryptography_HAS_EC_1_0_2 = 0;
+const char *(*EC_curve_nid2nist)(int) = NULL;
+#else
+static const long Cryptography_HAS_EC_1_0_2 = 1;
+#endif
 """
 
 CONDITIONAL_NAMES = {
@@ -477,5 +488,9 @@ CONDITIONAL_NAMES = {
         "EC_GROUP_set_curve_GF2m",
         "EC_GROUP_get_curve_GF2m",
         "EC_GROUP_new_curve_GF2m",
+    ],
+
+    "Cryptography_HAS_EC_1_0_2": [
+        "EC_curve_nid2nist",
     ],
 }
