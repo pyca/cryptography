@@ -64,6 +64,7 @@ typedef struct {
 
 typedef struct {
     X509_CRL_INFO *crl;
+    X509_ALGOR *sig_alg;
     ...;
 } X509_CRL;
 
@@ -183,6 +184,7 @@ int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
+int X509_CRL_verify(X509_CRL *, EVP_PKEY *);
 int X509_CRL_get_ext_count(X509_CRL *);
 X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
@@ -285,6 +287,7 @@ int X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
+Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
