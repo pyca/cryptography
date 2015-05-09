@@ -20,6 +20,7 @@ typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
 typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
 #endif
 typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
+typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
 """
 
 TYPES = """
@@ -101,6 +102,26 @@ typedef struct {
 } ACCESS_DESCRIPTION;
 
 typedef ... Cryptography_LHASH_OF_CONF_VALUE;
+
+
+typedef ... Cryptography_STACK_OF_DIST_POINT;
+
+typedef struct {
+    int type;
+    union {
+        GENERAL_NAMES *fullname;
+        Cryptography_STACK_OF_X509_NAME_ENTRY *relativename;
+    } name;
+    ...;
+} DIST_POINT_NAME;
+
+typedef struct {
+    DIST_POINT_NAME *distpoint;
+    ASN1_BIT_STRING *reasons;
+    GENERAL_NAMES *CRLissuer;
+    ...;
+} DIST_POINT;
+
 """
 
 
@@ -138,6 +159,9 @@ X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
+void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
+int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
+DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
 """
 
 CUSTOMIZATIONS = """
