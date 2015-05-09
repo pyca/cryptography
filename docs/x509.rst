@@ -816,15 +816,16 @@ X.509 Extensions
 
         :type: list of :class:`GeneralName` instances or None
 
-        This field describes methods to retrieve the CRL. If this is not None
-        then ``relative_name`` must be None.
+        This field describes methods to retrieve the CRL. At most one of
+        ``full_name`` or ``relative_name`` will be non-None.
 
     .. attribute:: relative_name
 
         :type: :class:`Name` or None
 
         This field describes methods to retrieve the CRL relative to the CRL
-        issuer. If this is not None then ``full_name`` must be None.
+        issuer. At most one of ``full_name`` or ``relative_name`` will be
+        non-None.
 
     .. attribute:: crl_issuer
 
