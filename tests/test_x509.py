@@ -537,9 +537,9 @@ class TestRSACertificate(object):
         revocation_list = builder.sign(backend, private_key, hashes.SHA1())
 
         # Encode to PEM then load it back.
-#        print(revocation_list.public_bytes(
-#            encoding=serialization.Encoding.PEM,
-#        ))
+        revocation_list = x509.load_pem_x509_crl(revocation_list.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
 
         # Check contents.
         assert revocation_list.issuer == x509.Name([

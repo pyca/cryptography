@@ -1133,6 +1133,28 @@ class Backend(object):
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return _CertificateSigningRequest(self, x509_req)
 
+    def load_pem_x509_crl(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509_crl = self._lib.PEM_read_bio_X509_CRL(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+        if x509_crl == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
+        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_free)
+        return _CertificateRevocationList(self, x509_crl)
+
+    def load_der_x509_crl(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509_crl = self._lib.d2i_X509_CRL_bio(mem_bio.bio, self._ffi.NULL)
+        if x509_crl == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load certificate")
+
+        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_free)
+        return _CertificateRevocationList(self, x509_crl)
+
     def create_x509_csr(self):
         x509_req = self._lib.X509_REQ_new()
         if x509_req == self._ffi.NULL:
