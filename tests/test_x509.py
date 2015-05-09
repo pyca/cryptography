@@ -420,8 +420,8 @@ class TestRSACertificate(object):
             backend=backend,
         )
 
-        builder = x509.new_x509_csr(backend)
-        builder.set_version(2)
+        builder = x509.CertificateSigningRequestBuilder()
+        builder.set_version(x509.Version.v3)
         builder.set_subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
@@ -434,12 +434,13 @@ class TestRSACertificate(object):
             True,
             x509.BasicConstraints(True, 2),
         ))
-        builder.sign(private_key, hashes.SHA1())
+        request = builder.sign(backend, private_key, hashes.SHA1())
 
         # Encode to PEM and then load it back.
-        request = x509.load_pem_x509_csr(builder.public_bytes(
+        request = x509.load_pem_x509_csr(request.public_bytes(
             encoding=serialization.Encoding.PEM,
         ), backend)
+
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -470,23 +471,23 @@ class TestRSACertificate(object):
             backend=backend,
         )
 
-        builder = x509.new_x509_cert(backend)
-        builder.set_version(2)
+        builder = x509.CertificateBuilder()
+        builder.set_version(x509.Version.v3)
         builder.set_serial_number(777)
-        builder.set_issuer_name([
+        builder.set_issuer_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
             x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
             x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
-        ])
-        builder.set_subject_name([
+        ]))
+        builder.set_subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
             x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
             x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
-        ])
+        ]))
         builder.set_public_key(subject_private_key.public_key())
         builder.add_extension(x509.Extension(
             x509.OID_BASIC_CONSTRAINTS,
@@ -497,10 +498,10 @@ class TestRSACertificate(object):
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
         builder.set_not_valid_before(not_valid_before)
         builder.set_not_valid_after(not_valid_after)
-        builder.sign(issuer_private_key, hashes.SHA1())
+        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
 
         # Encode to PEM then load it back.
-        cert = x509.load_pem_x509_certificate(builder.public_bytes(
+        cert = x509.load_pem_x509_certificate(cert.public_bytes(
             encoding=serialization.Encoding.PEM,
         ), backend)
         assert cert.version is x509.Version.v3
@@ -519,26 +520,40 @@ class TestRSACertificate(object):
             backend=backend,
         )
 
-        builder = x509.new_x509_crl(backend)
-        builder.set_issuer_name([
+        builder = x509.CertificateRevocationListBuilder()
+        builder.set_issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]))
+        revocation_date = datetime.datetime(2001, 1, 1, 12, 1)
+        last_update = datetime.datetime.now().replace(microsecond=0)
+        next_update = last_update + datetime.timedelta(days=7)
+        builder.set_last_update(last_update)
+        builder.set_next_update(next_update)
+        builder.add_certificate(5, revocation_date)
+        revocation_list = builder.sign(backend, private_key, hashes.SHA1())
+
+        # Encode to PEM then load it back.
+#        print(revocation_list.public_bytes(
+#            encoding=serialization.Encoding.PEM,
+#        ))
+
+        # Check contents.
+        assert revocation_list.issuer == x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
             x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
             x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ])
-        revocation_date = datetime.datetime(2001, 1, 1, 12, 1)
-        last_update = datetime.datetime(2002, 1, 1, 12, 1)
-        next_update = datetime.datetime(2002, 1, 8, 12, 1)
-        builder.set_last_update(last_update)
-        builder.set_next_update(next_update)
-        builder.add_certificate(5, revocation_date)
-        builder.sign(private_key, hashes.SHA1())
-
-        # Encode to PEM then load it back.
-        builder.public_bytes(
-            encoding=serialization.Encoding.PEM,
-        )
+        assert revocation_list.last_update == last_update
+        assert revocation_list.next_update == next_update
+        assert revocation_list.certificates == [
+            (5, revocation_date),
+        ]
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)

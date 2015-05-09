@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import datetime
 import ipaddress
 from enum import Enum
 
@@ -104,18 +105,6 @@ def load_pem_x509_csr(data, backend):
 
 def load_der_x509_csr(data, backend):
     return backend.load_der_x509_csr(data)
-
-
-def new_x509_csr(backend):
-    return backend.new_x509_csr()
-
-
-def new_x509_cert(backend):
-    return backend.new_x509_cert()
-
-
-def new_x509_crl(backend):
-    return backend.new_x509_crl()
 
 
 class InvalidVersion(Exception):
@@ -836,6 +825,12 @@ class Certificate(object):
         Checks not equal.
         """
 
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Encodes the request to PEM or DER format.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
@@ -858,74 +853,10 @@ class CertificateSigningRequest(object):
         in the certificate.
         """
 
-    # TODO: extensions!
-
-
-@six.add_metaclass(abc.ABCMeta)
-class CertificateBuilder(object):
-    @abc.abstractmethod
-    def set_version(self, version):
-        """."""
-
-    @abc.abstractmethod
-    def set_issuer_name(self, attributes):
-        """."""
-
-    @abc.abstractmethod
-    def set_subject_name(self, attributes):
-        """."""
-
-    @abc.abstractmethod
-    def set_public_key(self, public_key):
-        """."""
-
-    @abc.abstractmethod
-    def set_serial_number(self, serial_number):
-        """."""
-
-    @abc.abstractmethod
-    def set_not_valid_before(self, time):
-        """."""
-
-    @abc.abstractmethod
-    def set_not_valid_after(self, time):
-        """."""
-
-    @abc.abstractmethod
-    def add_extension(self, extension):
-        """."""
-
-    @abc.abstractmethod
-    def sign(self, private_key, algorithm):
+    @abc.abstractproperty
+    def extensions(self):
         """
-        Signs the certificate using the CA's private key.
-        """
-
-    @abc.abstractmethod
-    def public_bytes(self, encoding):
-        """
-        Encodes the certificate to PEM or DER format.
-        """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class CertificateSigningRequestBuilder(object):
-    @abc.abstractmethod
-    def set_version(self, version):
-        """."""
-
-    @abc.abstractmethod
-    def set_subject_name(self, attributes):
-        """."""
-
-    @abc.abstractmethod
-    def add_extension(self, extension):
-        """."""
-
-    @abc.abstractmethod
-    def sign(self, private_key, algorithm):
-        """
-        Signs the request using the requestor's private key.
+        Returns the extensions in the signing request.
         """
 
     @abc.abstractmethod
@@ -934,37 +865,30 @@ class CertificateSigningRequestBuilder(object):
         Encodes the request to PEM or DER format.
         """
 
-
 @six.add_metaclass(abc.ABCMeta)
-class CertificateRevocationListBuilder(object):
-    @abc.abstractmethod
-    def set_version(self, version):
-        """."""
-
-    @abc.abstractmethod
-    def set_issuer_name(self, attributes):
-        """."""
-
-    @abc.abstractmethod
-    def set_last_update(self, time):
-        """."""
-
-    @abc.abstractmethod
-    def set_next_update(self, time):
-        """."""
-
-    @abc.abstractmethod
-    def add_extension(self, extension):
-        """."""
-
-    @abc.abstractmethod
-    def add_certificate(self, serial_number, revocation_date):
-        """."""
-
-    @abc.abstractmethod
-    def sign(self, private_key, algorithm):
+class CertificateRevocationList(object):
+    @abc.abstractproperty
+    def issuer(self):
         """
-        Signs the revocation list using the CA's private key.
+        Returns the issuer name object.
+        """
+
+    @abc.abstractproperty
+    def last_update(self):
+        """
+        Last update time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def next_update(self):
+        """
+        Next update time (represented as UTC datetime)
+        """
+
+    @abc.abstractproperty
+    def certificates(self):
+        """
+        List of (serial number, revocation date) pairs (as UTC time).
         """
 
     @abc.abstractmethod
@@ -972,3 +896,167 @@ class CertificateRevocationListBuilder(object):
         """
         Encodes the revocation list to PEM or DER format.
         """
+
+
+class CertificateBuilder(object):
+    def __init__(self):
+        self._version = Version.v1
+        self._issuer_name = None
+        self._subject_name = None
+        self._public_key = None
+        self._serial_number = None
+        self._not_valid_before = None
+        self._not_valid_after = None
+        self._extensions = []
+
+    def set_version(self, version):
+        """."""
+        if not isinstance(version, Version):
+            raise TypeError('Expecting x509.Version object.')
+        self._version = version
+
+    def set_issuer_name(self, name):
+        """."""
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        self._issuer_name = name
+
+    def set_subject_name(self, name):
+        """."""
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        self._subject_name = name
+
+    def set_public_key(self, public_key):
+        """."""
+        # TODO: check type.
+        self._public_key = public_key
+
+    def set_serial_number(self, serial_number):
+        """."""
+        if not isinstance(serial_number, (int, long)):
+            raise TypeError('Serial number must be of integral type.')
+        self._serial_number = serial_number
+
+    def set_not_valid_before(self, time):
+        """."""
+        # TODO: require UTC datetime?
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        self._not_valid_before = time
+
+    def set_not_valid_after(self, time):
+        """."""
+        # TODO: require UTC datetime?
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        self._not_valid_after = time
+
+    def add_extension(self, extension):
+        """."""
+        if not isinstance(extension, Extension):
+            raise TypeError('Expecting x509.Extension object.')
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        self._extensions.append(extension)
+
+    def sign(self, backend, private_key, algorithm):
+        """
+        Signs the certificate using the CA's private key.
+        """
+        return backend.sign_x509_certificate(self, private_key, algorithm)
+
+
+class CertificateSigningRequestBuilder(object):
+    def __init__(self):
+        self._version = Version.v1
+        self._subject_name = None
+        self._extensions = []
+
+    def set_version(self, version):
+        """."""
+        if not isinstance(version, Version):
+            raise TypeError('Expecting x509.Version object.')
+        self._version = version
+
+    def set_subject_name(self, name):
+        """."""
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        self._subject_name = name
+
+    def add_extension(self, extension):
+        """."""
+        if not isinstance(extension, Extension):
+            raise TypeError('Expecting x509.Extension object.')
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        self._extensions.append(extension)
+
+    def sign(self, backend, private_key, algorithm):
+        """
+        Signs the request using the requestor's private key.
+        """
+        return backend.sign_x509_request(self, private_key, algorithm)
+
+
+class CertificateRevocationListBuilder(object):
+    def __init__(self):
+        self._version = Version.v1
+        self._issuer_name = None
+        self._subject_name = None
+        self._last_update = None
+        self._next_update = None
+        self._extensions = []
+        self._certificates = []
+
+    def set_version(self, version):
+        """."""
+        if not isinstance(version, Version):
+            raise TypeError('Expecting x509.Version object.')
+        self._version = version
+
+    def set_issuer_name(self, name):
+        """."""
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        self._issuer_name = name
+
+    def set_last_update(self, time):
+        """."""
+        # TODO: require UTC datetime?
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        self._last_update = time
+
+    def set_next_update(self, time):
+        """."""
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        self._next_update = time
+
+    def add_extension(self, extension):
+        """."""
+        if not isinstance(extension, Extension):
+            raise TypeError('Expecting x509.Extension object.')
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        self._extensions.append(extension)
+
+    def add_certificate(self, serial_number, revocation_date):
+        """."""
+        # TODO: require UTC datetime?
+        if not isinstance(serial_number, (int, long)):
+            raise TypeError('Serial number must be of integral type.')
+        if not isinstance(revocation_date, datetime.datetime):
+            raise TypeError('Revocation date must be a datetime object.')
+        self._certificates.append((serial_number, revocation_date))
+
+    def sign(self, backend, private_key, algorithm):
+        """
+        Signs the revocation list using the CA's private key.
+        """
+        return backend.sign_x509_revocation_list(self, private_key, algorithm)
