@@ -112,14 +112,14 @@ typedef struct {
         GENERAL_NAMES *fullname;
         Cryptography_STACK_OF_X509_NAME_ENTRY *relativename;
     } name;
-    X509_NAME *dpname;
+    ...;
 } DIST_POINT_NAME;
 
 typedef struct {
     DIST_POINT_NAME *distpoint;
     ASN1_BIT_STRING *reasons;
     GENERAL_NAMES *CRLissuer;
-    int dp_reasons;
+    ...;
 } DIST_POINT;
 
 """
