@@ -453,11 +453,11 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ]
-#        basic_constraints = request.extensions.get_extension_for_oid(
-#            x509.OID_BASIC_CONSTRAINTS
-#        )
-#        assert basic_constraints.value.ca is True
-#        assert basic_constraints.value.path_length == 2
+        basic_constraints = request.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
 
     def test_build_cert(self, backend):
         issuer_private_key = rsa.generate_private_key(

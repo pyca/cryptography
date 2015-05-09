@@ -139,6 +139,31 @@ def _build_general_name(backend, gn):
             gn.type
         )
 
+def _build_basic_constraints(backend, ext):
+    bc_st = backend._lib.X509V3_EXT_d2i(ext)
+    assert bc_st != backend._ffi.NULL
+    basic_constraints = backend._ffi.cast(
+        "BASIC_CONSTRAINTS *", bc_st
+    )
+    basic_constraints = backend._ffi.gc(
+        basic_constraints, backend._lib.BASIC_CONSTRAINTS_free
+    )
+    # The byte representation of an ASN.1 boolean true is \xff. OpenSSL
+    # chooses to just map this to its ordinal value, so true is 255 and
+    # false is 0.
+    ca = basic_constraints.ca == 255
+    if basic_constraints.pathlen == backend._ffi.NULL:
+        path_length = None
+    else:
+        bn = backend._lib.ASN1_INTEGER_to_BN(
+            basic_constraints.pathlen, backend._ffi.NULL
+        )
+        assert bn != backend._ffi.NULL
+        bn = backend._ffi.gc(bn, backend._lib.BN_free)
+        path_length = backend._bn_to_int(bn)
+
+    return x509.BasicConstraints(ca, path_length)
+
 
 def _parse_asn1_time(backend, asn1_time):
     assert asn1_time != backend._ffi.NULL
@@ -276,7 +301,7 @@ class _Certificate(object):
                     "Duplicate {0} extension found".format(oid), oid
                 )
             elif oid == x509.OID_BASIC_CONSTRAINTS:
-                value = self._build_basic_constraints(ext)
+                value = _build_basic_constraints(self._backend, ext)
             elif oid == x509.OID_SUBJECT_KEY_IDENTIFIER:
                 value = self._build_subject_key_identifier(ext)
             elif oid == x509.OID_KEY_USAGE:
@@ -316,29 +341,7 @@ class _Certificate(object):
         return self._backend._read_mem_bio(bio)
 
     def _build_basic_constraints(self, ext):
-        bc_st = self._backend._lib.X509V3_EXT_d2i(ext)
-        assert bc_st != self._backend._ffi.NULL
-        basic_constraints = self._backend._ffi.cast(
-            "BASIC_CONSTRAINTS *", bc_st
-        )
-        basic_constraints = self._backend._ffi.gc(
-            basic_constraints, self._backend._lib.BASIC_CONSTRAINTS_free
-        )
-        # The byte representation of an ASN.1 boolean true is \xff. OpenSSL
-        # chooses to just map this to its ordinal value, so true is 255 and
-        # false is 0.
-        ca = basic_constraints.ca == 255
-        if basic_constraints.pathlen == self._backend._ffi.NULL:
-            path_length = None
-        else:
-            bn = self._backend._lib.ASN1_INTEGER_to_BN(
-                basic_constraints.pathlen, self._backend._ffi.NULL
-            )
-            assert bn != self._backend._ffi.NULL
-            bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
-            path_length = self._backend._bn_to_int(bn)
-
-        return x509.BasicConstraints(ca, path_length)
+        return _build_basic_constraints(self._backend, ext)
 
     def _build_subject_key_identifier(self, ext):
         asn1_string = self._backend._lib.X509V3_EXT_d2i(ext)
@@ -449,7 +452,43 @@ class _CertificateSigningRequest(object):
 
     @property
     def extensions(self):
-        return None
+        extensions = []
+        seen_oids = set()
+        x509_exts = self._backend._lib.X509_REQ_get_extensions(self._x509_req)
+        extcount = self._backend._lib.sk_X509_EXTENSION_num(x509_exts)
+        for i in range(0, extcount):
+            ext = self._backend._lib.sk_X509_EXTENSION_value(x509_exts, i)
+            assert ext != self._backend._ffi.NULL
+            crit = self._backend._lib.X509_EXTENSION_get_critical(ext)
+            critical = crit == 1
+            oid = x509.ObjectIdentifier(_obj2txt(self._backend, ext.object))
+            if oid in seen_oids:
+                raise x509.DuplicateExtension(
+                    "Duplicate {0} extension found".format(oid), oid
+                )
+            elif oid == x509.OID_BASIC_CONSTRAINTS:
+                value = _build_basic_constraints(self._backend, ext)
+            elif oid == x509.OID_SUBJECT_KEY_IDENTIFIER:
+                value = self._build_subject_key_identifier(ext)
+            elif oid == x509.OID_KEY_USAGE:
+                value = self._build_key_usage(ext)
+            elif oid == x509.OID_SUBJECT_ALTERNATIVE_NAME:
+                value = self._build_subject_alt_name(ext)
+            elif oid == x509.OID_EXTENDED_KEY_USAGE:
+                value = self._build_extended_key_usage(ext)
+            elif critical:
+                raise x509.UnsupportedExtension(
+                    "{0} is not currently supported".format(oid), oid
+                )
+            else:
+                # Unsupported non-critical extension, silently skipping for now
+                seen_oids.add(oid)
+                continue
+
+            seen_oids.add(oid)
+            extensions.append(x509.Extension(oid, critical, value))
+
+        return x509.Extensions(extensions)
 
     def public_bytes(self, encoding):
         if not isinstance(encoding, serialization.Encoding):
