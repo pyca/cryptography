@@ -28,6 +28,7 @@ typedef struct evp_pkey_st {
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
+static const int EVP_PKEY_DH;
 static const int EVP_PKEY_EC;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_GCM_SET_IVLEN;
@@ -154,6 +155,7 @@ int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
                     const unsigned char *, size_t);
 int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
 int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
+int EVP_PKEY_id(const EVP_PKEY *);
 
 /* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
    we should move these back to FUNCTIONS. */
@@ -221,6 +223,7 @@ int (*Cryptography_EVP_PKEY_encrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
                                      const unsigned char *, size_t) = NULL;
 int (*Cryptography_EVP_PKEY_decrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
                                      const unsigned char *, size_t) = NULL;
+int (*EVP_PKEY_id)(const EVP_PKEY *) = NULL;
 #endif
 #ifdef OPENSSL_NO_EC
 int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
@@ -252,6 +255,7 @@ CONDITIONAL_NAMES = {
         "Cryptography_EVP_PKEY_decrypt",
         "EVP_PKEY_decrypt_init",
         "EVP_PKEY_CTX_set_signature_md",
+        "EVP_PKEY_id",
     ],
     "Cryptography_HAS_EC": [
         "EVP_PKEY_assign_EC_KEY",

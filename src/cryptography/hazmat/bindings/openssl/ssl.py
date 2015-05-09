@@ -23,6 +23,7 @@ static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
+static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -383,6 +384,8 @@ void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
                                          void *),
                                 void *);
 void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
+
+long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
 """
 
 CUSTOMIZATIONS = """
@@ -584,11 +587,19 @@ static const long Cryptography_HAS_ALPN = 0;
 #else
 static const long Cryptography_HAS_ALPN = 1;
 #endif
+
 #if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
 typedef void COMP_METHOD;
 #else
 static const long Cryptography_HAS_COMPRESSION = 1;
+#endif
+
+#if defined(SSL_CTRL_GET_SERVER_TMP_KEY)
+static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 1;
+#else
+static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
+long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
 """
@@ -692,5 +703,9 @@ CONDITIONAL_NAMES = {
         "SSL_get_current_compression",
         "SSL_get_current_expansion",
         "SSL_COMP_get_name",
-    ]
+    ],
+
+    "Cryptography_HAS_GET_SERVER_TMP_KEY": [
+        "SSL_get_server_tmp_key",
+    ],
 }
