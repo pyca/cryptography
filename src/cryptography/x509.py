@@ -106,6 +106,18 @@ def load_der_x509_csr(data, backend):
     return backend.load_der_x509_csr(data)
 
 
+def new_x509_csr(backend):
+    return backend.new_x509_csr()
+
+
+def new_x509_cert(backend):
+    return backend.new_x509_cert()
+
+
+def new_x509_crl(backend):
+    return backend.new_x509_crl()
+
+
 class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
@@ -844,4 +856,119 @@ class CertificateSigningRequest(object):
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
+        """
+
+    # TODO: extensions!
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CertificateBuilder(object):
+    @abc.abstractmethod
+    def set_version(self, version):
+        """."""
+
+    @abc.abstractmethod
+    def set_issuer_name(self, attributes):
+        """."""
+
+    @abc.abstractmethod
+    def set_subject_name(self, attributes):
+        """."""
+
+    @abc.abstractmethod
+    def set_public_key(self, public_key):
+        """."""
+
+    @abc.abstractmethod
+    def set_serial_number(self, serial_number):
+        """."""
+
+    @abc.abstractmethod
+    def set_not_valid_before(self, time):
+        """."""
+
+    @abc.abstractmethod
+    def set_not_valid_after(self, time):
+        """."""
+
+    @abc.abstractmethod
+    def add_extension(self, extension):
+        """."""
+
+    @abc.abstractmethod
+    def sign(self, private_key, algorithm):
+        """
+        Signs the certificate using the CA's private key.
+        """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Encodes the certificate to PEM or DER format.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CertificateSigningRequestBuilder(object):
+    @abc.abstractmethod
+    def set_version(self, version):
+        """."""
+
+    @abc.abstractmethod
+    def set_subject_name(self, attributes):
+        """."""
+
+    @abc.abstractmethod
+    def add_extension(self, extension):
+        """."""
+
+    @abc.abstractmethod
+    def sign(self, private_key, algorithm):
+        """
+        Signs the request using the requestor's private key.
+        """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Encodes the request to PEM or DER format.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CertificateRevocationListBuilder(object):
+    @abc.abstractmethod
+    def set_version(self, version):
+        """."""
+
+    @abc.abstractmethod
+    def set_issuer_name(self, attributes):
+        """."""
+
+    @abc.abstractmethod
+    def set_last_update(self, time):
+        """."""
+
+    @abc.abstractmethod
+    def set_next_update(self, time):
+        """."""
+
+    @abc.abstractmethod
+    def add_extension(self, extension):
+        """."""
+
+    @abc.abstractmethod
+    def add_certificate(self, serial_number, revocation_date):
+        """."""
+
+    @abc.abstractmethod
+    def sign(self, private_key, algorithm):
+        """
+        Signs the revocation list using the CA's private key.
+        """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Encodes the revocation list to PEM or DER format.
         """

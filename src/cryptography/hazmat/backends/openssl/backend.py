@@ -35,7 +35,10 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _Certificate, _CertificateSigningRequest
+    _Certificate, _CertificateSigningRequest,
+    _CertificateSigningRequestBuilder,
+    _CertificateBuilder,
+    _CertificateRevocationListBuilder,
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -686,6 +689,15 @@ class Backend(object):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
+    def new_x509_csr(self):
+        return _CertificateSigningRequestBuilder(self)
+
+    def new_x509_cert(self):
+        return _CertificateBuilder(self)
+
+    def new_x509_crl(self):
+        return _CertificateRevocationListBuilder(self)
+
     def load_pem_private_key(self, data, password):
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,
@@ -840,6 +852,15 @@ class Backend(object):
         if x509_req == self._ffi.NULL:
             self._consume_errors()
             raise ValueError("Unable to load request")
+
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
+        return _CertificateSigningRequest(self, x509_req)
+
+    def create_x509_csr(self):
+        x509_req = self._lib.X509_REQ_new()
+        if x509_req == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to create request")
 
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return _CertificateSigningRequest(self, x509_req)

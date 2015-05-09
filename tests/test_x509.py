@@ -15,7 +15,7 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
@@ -412,6 +412,133 @@ class TestRSACertificate(object):
         )
         with pytest.raises(UnsupportedAlgorithm):
             request.signature_hash_algorithm
+
+    def test_build_csr(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+
+        builder = x509.new_x509_csr(backend)
+        builder.set_version(2)
+        builder.set_subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]))
+        builder.add_extension(x509.Extension(
+            x509.OID_BASIC_CONSTRAINTS,
+            True,
+            x509.BasicConstraints(True, 2),
+        ))
+        builder.sign(private_key, hashes.SHA1())
+
+        # Encode to PEM and then load it back.
+        request = x509.load_pem_x509_csr(builder.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]
+#        basic_constraints = request.extensions.get_extension_for_oid(
+#            x509.OID_BASIC_CONSTRAINTS
+#        )
+#        assert basic_constraints.value.ca is True
+#        assert basic_constraints.value.path_length == 2
+
+    def test_build_cert(self, backend):
+        issuer_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+        subject_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+
+        builder = x509.new_x509_cert(backend)
+        builder.set_version(2)
+        builder.set_serial_number(777)
+        builder.set_issuer_name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ])
+        builder.set_subject_name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ])
+        builder.set_public_key(subject_private_key.public_key())
+        builder.add_extension(x509.Extension(
+            x509.OID_BASIC_CONSTRAINTS,
+            True,
+            x509.BasicConstraints(False, None),
+        ))
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+        builder.set_not_valid_before(not_valid_before)
+        builder.set_not_valid_after(not_valid_after)
+        builder.sign(issuer_private_key, hashes.SHA1())
+
+        # Encode to PEM then load it back.
+        cert = x509.load_pem_x509_certificate(builder.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+        assert cert.version is x509.Version.v3
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+
+    def test_build_crl(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+
+        builder = x509.new_x509_crl(backend)
+        builder.set_issuer_name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ])
+        revocation_date = datetime.datetime(2001, 1, 1, 12, 1)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2002, 1, 8, 12, 1)
+        builder.set_last_update(last_update)
+        builder.set_next_update(next_update)
+        builder.add_certificate(5, revocation_date)
+        builder.sign(private_key, hashes.SHA1())
+
+        # Encode to PEM then load it back.
+        builder.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        )
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)

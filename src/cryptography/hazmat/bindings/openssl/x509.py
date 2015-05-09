@@ -17,19 +17,24 @@ INCLUDES = """
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
 typedef STACK_OF(X509_CRL) Cryptography_STACK_OF_X509_CRL;
 typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
+typedef STACK_OF(X509_ATTRIBUTE) Cryptography_STACK_OF_X509_ATTRIBUTE;
 """
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_X509;
 typedef ... Cryptography_STACK_OF_X509_CRL;
 typedef ... Cryptography_STACK_OF_X509_REVOKED;
+typedef ... Cryptography_STACK_OF_X509_ATTRIBUTE;
 
 typedef struct {
     ASN1_OBJECT *algorithm;
     ...;
 } X509_ALGOR;
 
-typedef ... X509_ATTRIBUTE;
+typedef struct {
+    ASN1_OBJECT *object;
+    ...;
+} X509_ATTRIBUTE;
 
 typedef struct {
     X509_ALGOR *signature;
@@ -58,6 +63,8 @@ typedef struct {
 } X509_REVOKED;
 
 typedef struct {
+    ASN1_UTCTIME *lastUpdate;
+    ASN1_UTCTIME *nextUpdate;
     Cryptography_STACK_OF_X509_REVOKED *revoked;
     ...;
 } X509_CRL_INFO;
@@ -117,6 +124,7 @@ void X509_free(X509 *);
 X509 *X509_dup(X509 *);
 int X509_cmp(const X509 *, const X509 *);
 
+int X509_print(BIO *, X509 *);
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
 
 int X509_set_version(X509 *, long);
@@ -138,6 +146,8 @@ int X509_set_subject_name(X509 *, X509_NAME *);
 
 X509_NAME *X509_get_issuer_name(X509 *);
 int X509_set_issuer_name(X509 *, X509_NAME *);
+
+X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **, ASN1_OBJECT *, int, ASN1_OCTET_STRING *);
 
 int X509_get_ext_count(X509 *);
 int X509_add_ext(X509 *, X509_EXTENSION *, int);
@@ -161,6 +171,7 @@ int X509_REQ_digest(const X509_REQ *, const EVP_MD *,
                     unsigned char *, unsigned int *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
+int X509_REQ_print(BIO *, X509_REQ *);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
@@ -186,6 +197,10 @@ int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
 int X509_CRL_get_ext_count(X509_CRL *);
 X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
+
+X509_ATTRIBUTE *X509_ATTRIBUTE_new(void);
+void X509_ATTRIBUTE_free(X509_ATTRIBUTE *);
+int X509_REQ_add1_attr(X509_REQ *, X509_ATTRIBUTE *);
 
 int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *, EVP_PKEY *);
 int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *, EVP_PKEY *, const EVP_MD *);
@@ -253,6 +268,7 @@ ASN1_TIME *X509_get_notAfter(X509 *);
 
 long X509_REQ_get_version(X509_REQ *);
 X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
+int X509_REQ_set_subject_name(X509_REQ *, X509_NAME *);
 
 Cryptography_STACK_OF_X509 *sk_X509_new_null(void);
 void sk_X509_free(Cryptography_STACK_OF_X509 *);

@@ -106,9 +106,12 @@ void *X509V3_EXT_d2i(X509_EXTENSION *);
 """
 
 MACROS = """
+int i2d_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS *a, unsigned char **pp);
+BASIC_CONSTRAINTS *BASIC_CONSTRAINTS_new(void);
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
 void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
+
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
@@ -121,9 +124,14 @@ X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
+int __i2d_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS *a, unsigned char **pp);
 """
 
 CUSTOMIZATIONS = """
+int __i2d_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS *a, unsigned char **pp)
+{
+    return i2d_BASIC_CONSTRAINTS(a, pp);
+}
 """
 
 CONDITIONAL_NAMES = {}
