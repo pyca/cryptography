@@ -1442,10 +1442,7 @@ class TestDistributionPoint(object):
             x509.Name([
                 x509.NameAttribute(x509.OID_COMMON_NAME, "myCN")
             ]),
-            frozenset([
-                x509.ReasonFlags.key_compromise,
-                x509.ReasonFlags.ca_compromise,
-            ]),
+            frozenset([x509.ReasonFlags.ca_compromise]),
             [
                 x509.DirectoryName(
                     x509.Name([
@@ -1459,11 +1456,10 @@ class TestDistributionPoint(object):
         assert repr(dp) == (
             "<DistributionPoint(full_name=None, relative_name=<Name([<NameAtt"
             "ribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, val"
-            "ue='myCN')>])>, reasons=frozenset([<ReasonFlags.key_compromise: "
-            "'keyCompromise'>, <ReasonFlags.ca_compromise: 'cACompromise'>]),"
-            " crl_issuer=[<DirectoryName(value=<Name([<NameAttribute(oid=<Obj"
-            "ectIdentifier(oid=2.5.4.3, name=commonName)>, value='Important C"
-            "A')>])>)>])>"
+            "ue='myCN')>])>, reasons=frozenset([<ReasonFlags.ca_compromise: '"
+            "cACompromise'>]), crl_issuer=[<DirectoryName(value=<Name([<NameA"
+            "ttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, v"
+            "alue='Important CA')>])>)>])>"
         )
 
 
@@ -1514,18 +1510,15 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                frozenset([
-                    x509.ReasonFlags.key_compromise,
-                    x509.ReasonFlags.ca_compromise,
-                ]),
+                frozenset([x509.ReasonFlags.key_compromise]),
                 None
             ),
         ])
         assert repr(cdp) == (
             "<CRLDistributionPoints([<DistributionPoint(full_name=[<UniformRes"
             "ourceIdentifier(value=ftp://domain)>], relative_name=None, reason"
-            "s=frozenset([<ReasonFlags.key_compromise: 'keyCompromise'>, <Reas"
-            "onFlags.ca_compromise: 'cACompromise'>]), crl_issuer=None)>])>"
+            "s=frozenset([<ReasonFlags.key_compromise: 'keyCompromise'>]), crl"
+            "_issuer=None)>])>"
         )
 
     def test_eq(self):
