@@ -781,6 +781,8 @@ X.509 Extensions
 
 .. class:: AccessDescription
 
+    .. versionadded:: 0.9
+
     .. attribute:: access_method
 
         :type: :class:`ObjectIdentifier`
@@ -797,6 +799,98 @@ X.509 Extensions
         :type: :class:`GeneralName`
 
         Where to access the information defined by the access method.
+
+.. class:: CRLDistributionPoints
+
+    .. versionadded:: 0.9
+
+    The CRL distribution points extension identifies how CRL information is
+    obtained. It is an iterable, containing one or more
+    :class:`DistributionPoint` instances.
+
+.. class:: DistributionPoint
+
+    .. versionadded:: 0.9
+
+    .. attribute:: full_name
+
+        :type: list of :class:`GeneralName` instances or None
+
+        This field describes methods to retrieve the CRL. At most one of
+        ``full_name`` or ``relative_name`` will be non-None.
+
+    .. attribute:: relative_name
+
+        :type: :class:`Name` or None
+
+        This field describes methods to retrieve the CRL relative to the CRL
+        issuer. At most one of ``full_name`` or ``relative_name`` will be
+        non-None.
+
+    .. attribute:: crl_issuer
+
+        :type: list of :class:`GeneralName` instances or None
+
+        Information about the issuer of the CRL.
+
+    .. attribute:: reasons
+
+        :type: frozenset of :class:`ReasonFlags` or None
+
+        The reasons a given distribution point may be used for when performing
+        revocation checks.
+
+.. class:: ReasonFlags
+
+    .. versionadded:: 0.9
+
+    An enumeration for CRL reasons.
+
+    .. attribute:: unspecified
+
+        It is unspecified why the certificate was revoked. This reason cannot
+        be used as a reason flag in a :class:`DistributionPoint`.
+
+    .. attribute:: key_compromise
+
+        This reason indicates that the private key was compromised.
+
+    .. attribute:: ca_compromise
+
+        This reason indicates that the CA issuing the certificate was
+        compromised.
+
+    .. attribute:: affiliation_changed
+
+        This reason indicates that the subject's name or other information has
+        changed.
+
+    .. attribute:: superseded
+
+        This reason indicates that a certificate has been superseded.
+
+    .. attribute:: cessation_of_operation
+
+        This reason indicates that the certificate is no longer required.
+
+    .. attribute:: certificate_hold
+
+        This reason indicates that the certificate is on hold.
+
+    .. attribute:: privilege_withdrawn
+
+        This reason indicates that the privilege granted by this certificate
+        have been withdrawn.
+
+    .. attribute:: aa_compromise
+
+        When an attribute authority has been compromised.
+
+    .. attribute:: remove_from_crl
+
+        This reason indicates that the certificate was on hold and should be
+        removed from the CRL. This reason cannot be used as a reason flag
+        in a :class:`DistributionPoint`.
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~

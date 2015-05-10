@@ -1318,3 +1318,295 @@ class TestAuthorityKeyIdentifierExtension(object):
             )
         ]
         assert ext.value.authority_cert_serial_number == 3
+
+
+class TestDistributionPoint(object):
+    def test_distribution_point_full_name_not_general_names(self):
+        with pytest.raises(TypeError):
+            x509.DistributionPoint(["notgn"], None, None, None)
+
+    def test_distribution_point_relative_name_not_name(self):
+        with pytest.raises(TypeError):
+            x509.DistributionPoint(None, "notname", None, None)
+
+    def test_distribution_point_full_and_relative_not_none(self):
+        with pytest.raises(ValueError):
+            x509.DistributionPoint("data", "notname", None, None)
+
+    def test_crl_issuer_not_general_names(self):
+        with pytest.raises(TypeError):
+            x509.DistributionPoint(None, None, None, ["notgn"])
+
+    def test_reason_not_reasonflags(self):
+        with pytest.raises(TypeError):
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                None,
+                frozenset(["notreasonflags"]),
+                None
+            )
+
+    def test_reason_not_frozenset(self):
+        with pytest.raises(TypeError):
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                None,
+                [x509.ReasonFlags.ca_compromise],
+                None
+            )
+
+    def test_disallowed_reasons(self):
+        with pytest.raises(ValueError):
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                None,
+                frozenset([x509.ReasonFlags.unspecified]),
+                None
+            )
+
+        with pytest.raises(ValueError):
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                None,
+                frozenset([x509.ReasonFlags.remove_from_crl]),
+                None
+            )
+
+    def test_reason_only(self):
+        with pytest.raises(ValueError):
+            x509.DistributionPoint(
+                None,
+                None,
+                frozenset([x509.ReasonFlags.aa_compromise]),
+                None
+            )
+
+    def test_eq(self):
+        dp = x509.DistributionPoint(
+            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            None,
+            frozenset([x509.ReasonFlags.superseded]),
+            [
+                x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME, "Important CA"
+                        )
+                    ])
+                )
+            ],
+        )
+        dp2 = x509.DistributionPoint(
+            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            None,
+            frozenset([x509.ReasonFlags.superseded]),
+            [
+                x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME, "Important CA"
+                        )
+                    ])
+                )
+            ],
+        )
+        assert dp == dp2
+
+    def test_ne(self):
+        dp = x509.DistributionPoint(
+            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            None,
+            frozenset([x509.ReasonFlags.superseded]),
+            [
+                x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME, "Important CA"
+                        )
+                    ])
+                )
+            ],
+        )
+        dp2 = x509.DistributionPoint(
+            [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+            None,
+            None,
+            None
+        )
+        assert dp != dp2
+        assert dp != object()
+
+    def test_repr(self):
+        dp = x509.DistributionPoint(
+            None,
+            x509.Name([
+                x509.NameAttribute(x509.OID_COMMON_NAME, "myCN")
+            ]),
+            frozenset([x509.ReasonFlags.ca_compromise]),
+            [
+                x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME, "Important CA"
+                        )
+                    ])
+                )
+            ],
+        )
+        if six.PY3:
+            assert repr(dp) == (
+                "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
+                "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
+                ">, value='myCN')>])>, reasons=frozenset({<ReasonFlags.ca_comp"
+                "romise: 'cACompromise'>}), crl_issuer=[<DirectoryName(value=<"
+                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
+                "commonName)>, value='Important CA')>])>)>])>"
+            )
+        else:
+            assert repr(dp) == (
+                "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
+                "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
+                ">, value='myCN')>])>, reasons=frozenset([<ReasonFlags.ca_comp"
+                "romise: 'cACompromise'>]), crl_issuer=[<DirectoryName(value=<"
+                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
+                "commonName)>, value='Important CA')>])>)>])>"
+            )
+
+
+class TestCRLDistributionPoints(object):
+    def test_invalid_distribution_points(self):
+        with pytest.raises(TypeError):
+            x509.CRLDistributionPoints(["notadistributionpoint"])
+
+    def test_iter_len(self):
+        cdp = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://domain")],
+                None,
+                None,
+                None
+            ),
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                None
+            ),
+        ])
+        assert len(cdp) == 2
+        assert list(cdp) == [
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://domain")],
+                None,
+                None,
+                None
+            ),
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                None
+            ),
+        ]
+
+    def test_repr(self):
+        cdp = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([x509.ReasonFlags.key_compromise]),
+                None
+            ),
+        ])
+        if six.PY3:
+            assert repr(cdp) == (
+                "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
+                "rmResourceIdentifier(value=ftp://domain)>], relative_name=No"
+                "ne, reasons=frozenset({<ReasonFlags.key_compromise: 'keyComp"
+                "romise'>}), crl_issuer=None)>])>"
+            )
+        else:
+            assert repr(cdp) == (
+                "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
+                "rmResourceIdentifier(value=ftp://domain)>], relative_name=No"
+                "ne, reasons=frozenset([<ReasonFlags.key_compromise: 'keyComp"
+                "romise'>]), crl_issuer=None)>])>"
+            )
+
+    def test_eq(self):
+        cdp = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(u"uri://thing")],
+            ),
+        ])
+        cdp2 = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(u"uri://thing")],
+            ),
+        ])
+        assert cdp == cdp2
+
+    def test_ne(self):
+        cdp = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(u"uri://thing")],
+            ),
+        ])
+        cdp2 = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain2")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(u"uri://thing")],
+            ),
+        ])
+        cdp3 = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([x509.ReasonFlags.key_compromise]),
+                [x509.UniformResourceIdentifier(u"uri://thing")],
+            ),
+        ])
+        cdp4 = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"ftp://domain")],
+                None,
+                frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                ]),
+                [x509.UniformResourceIdentifier(u"uri://thing2")],
+            ),
+        ])
+        assert cdp != cdp2
+        assert cdp != cdp3
+        assert cdp != cdp4
+        assert cdp != object()

@@ -481,6 +481,126 @@ class SubjectKeyIdentifier(object):
         return not self == other
 
 
+class CRLDistributionPoints(object):
+    def __init__(self, distribution_points):
+        if not all(
+            isinstance(x, DistributionPoint) for x in distribution_points
+        ):
+            raise TypeError(
+                "distribution_points must be a list of DistributionPoint "
+                "objects"
+            )
+
+        self._distribution_points = distribution_points
+
+    def __iter__(self):
+        return iter(self._distribution_points)
+
+    def __len__(self):
+        return len(self._distribution_points)
+
+    def __repr__(self):
+        return "<CRLDistributionPoints({0})>".format(self._distribution_points)
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLDistributionPoints):
+            return NotImplemented
+
+        return self._distribution_points == other._distribution_points
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class DistributionPoint(object):
+    def __init__(self, full_name, relative_name, reasons, crl_issuer):
+        if full_name and relative_name:
+            raise ValueError(
+                "At least one of full_name and relative_name must be None"
+            )
+
+        if full_name and not all(
+            isinstance(x, GeneralName) for x in full_name
+        ):
+            raise TypeError(
+                "full_name must be a list of GeneralName objects"
+            )
+
+        if relative_name and not isinstance(relative_name, Name):
+            raise TypeError("relative_name must be a Name")
+
+        if crl_issuer and not all(
+            isinstance(x, GeneralName) for x in crl_issuer
+        ):
+            raise TypeError(
+                "crl_issuer must be None or a list of general names"
+            )
+
+        if reasons and (not isinstance(reasons, frozenset) or not all(
+            isinstance(x, ReasonFlags) for x in reasons
+        )):
+            raise TypeError("reasons must be None or frozenset of ReasonFlags")
+
+        if reasons and (
+            ReasonFlags.unspecified in reasons or
+            ReasonFlags.remove_from_crl in reasons
+        ):
+            raise ValueError(
+                "unspecified and remove_from_crl are not valid reasons in a "
+                "DistributionPoint"
+            )
+
+        if reasons and not crl_issuer and not (full_name or relative_name):
+            raise ValueError(
+                "You must supply crl_issuer, full_name, or relative_name when "
+                "reasons is not None"
+            )
+
+        self._full_name = full_name
+        self._relative_name = relative_name
+        self._reasons = reasons
+        self._crl_issuer = crl_issuer
+
+    def __repr__(self):
+        return (
+            "<DistributionPoint(full_name={0.full_name}, relative_name={0.rela"
+            "tive_name}, reasons={0.reasons}, crl_issuer={0.crl_is"
+            "suer})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, DistributionPoint):
+            return NotImplemented
+
+        return (
+            self.full_name == other.full_name and
+            self.relative_name == other.relative_name and
+            self.reasons == other.reasons and
+            self.crl_issuer == other.crl_issuer
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    full_name = utils.read_only_property("_full_name")
+    relative_name = utils.read_only_property("_relative_name")
+    reasons = utils.read_only_property("_reasons")
+    crl_issuer = utils.read_only_property("_crl_issuer")
+
+
+class ReasonFlags(Enum):
+    unspecified = "unspecified"
+    key_compromise = "keyCompromise"
+    ca_compromise = "cACompromise"
+    affiliation_changed = "affiliationChanged"
+    superseded = "superseded"
+    cessation_of_operation = "cessationOfOperation"
+    certificate_hold = "certificateHold"
+    privilege_withdrawn = "privilegeWithdrawn"
+    aa_compromise = "aACompromise"
+    remove_from_crl = "removeFromCRL"
+
+
 @six.add_metaclass(abc.ABCMeta)
 class GeneralName(object):
     @abc.abstractproperty
