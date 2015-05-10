@@ -28,6 +28,18 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 
 
+_REASONFLAGS_ENUM_MAPPING = {
+    1: x509.ReasonFlags.key_compromise,
+    2: x509.ReasonFlags.ca_compromise,
+    3: x509.ReasonFlags.affiliation_changed,
+    4: x509.ReasonFlags.superseded,
+    5: x509.ReasonFlags.cessation_of_operation,
+    6: x509.ReasonFlags.certificate_hold,
+    7: x509.ReasonFlags.privilege_withdrawn,
+    8: x509.ReasonFlags.aa_compromise
+}
+
+
 def _obj2txt(backend, obj):
     # Set to 80 on the recommendation of
     # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html#return_values
@@ -56,22 +68,23 @@ def _asn1_string_to_utf8(backend, asn1_string):
     return backend._ffi.buffer(buf[0], res)[:].decode('utf8')
 
 
+def _build_x509_name_entry(backend, x509_name_entry):
+    obj = backend._lib.X509_NAME_ENTRY_get_object(x509_name_entry)
+    assert obj != backend._ffi.NULL
+    data = backend._lib.X509_NAME_ENTRY_get_data(x509_name_entry)
+    assert data != backend._ffi.NULL
+    value = _asn1_string_to_utf8(backend, data)
+    oid = _obj2txt(backend, obj)
+
+    return x509.NameAttribute(x509.ObjectIdentifier(oid), value)
+
+
 def _build_x509_name(backend, x509_name):
     count = backend._lib.X509_NAME_entry_count(x509_name)
     attributes = []
     for x in range(count):
         entry = backend._lib.X509_NAME_get_entry(x509_name, x)
-        obj = backend._lib.X509_NAME_ENTRY_get_object(entry)
-        assert obj != backend._ffi.NULL
-        data = backend._lib.X509_NAME_ENTRY_get_data(entry)
-        assert data != backend._ffi.NULL
-        value = _asn1_string_to_utf8(backend, data)
-        oid = _obj2txt(backend, obj)
-        attributes.append(
-            x509.NameAttribute(
-                x509.ObjectIdentifier(oid), value
-            )
-        )
+        attributes.append(_build_x509_name_entry(backend, entry))
 
     return x509.Name(attributes)
 
@@ -292,6 +305,8 @@ class _Certificate(object):
                 value = self._build_authority_information_access(ext)
             elif oid == x509.OID_CERTIFICATE_POLICIES:
                 value = self._build_certificate_policies(ext)
+            elif oid == x509.OID_CRL_DISTRIBUTION_POINTS:
+                value = self._build_crl_distribution_points(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -517,6 +532,81 @@ class _Certificate(object):
             ekus.append(oid)
 
         return x509.ExtendedKeyUsage(ekus)
+
+    def _build_crl_distribution_points(self, ext):
+        cdps = self._backend._ffi.cast(
+            "Cryptography_STACK_OF_DIST_POINT *",
+            self._backend._lib.X509V3_EXT_d2i(ext)
+        )
+        assert cdps != self._backend._ffi.NULL
+        cdps = self._backend._ffi.gc(
+            cdps, self._backend._lib.sk_DIST_POINT_free)
+        num = self._backend._lib.sk_DIST_POINT_num(cdps)
+
+        dist_points = []
+        for i in range(num):
+            full_name = None
+            relative_name = None
+            crl_issuer = None
+            reasons = None
+            cdp = self._backend._lib.sk_DIST_POINT_value(cdps, i)
+            if cdp.reasons != self._backend._ffi.NULL:
+                reasons = []
+                # We will check each bit from RFC 5280
+                # ReasonFlags ::= BIT STRING {
+                #      unused                  (0),
+                #      keyCompromise           (1),
+                #      cACompromise            (2),
+                #      affiliationChanged      (3),
+                #      superseded              (4),
+                #      cessationOfOperation    (5),
+                #      certificateHold         (6),
+                #      privilegeWithdrawn      (7),
+                #      aACompromise            (8) }
+                for bit in range(1, 9):
+                    if self._backend._lib.ASN1_BIT_STRING_get_bit(
+                        cdp.reasons, bit
+                    ):
+                        reasons.append(_REASONFLAGS_ENUM_MAPPING[bit])
+
+                reasons = frozenset(reasons)
+
+            if cdp.CRLissuer != self._backend._ffi.NULL:
+                crl_issuer = _build_general_names(self._backend, cdp.CRLissuer)
+
+            # Certificates may have a crl_issuer/reasons and no distribution
+            # point so make sure it's not null.
+            if cdp.distpoint != self._backend._ffi.NULL:
+                # Type 0 is fullName, there is no #define for it in the code.
+                if cdp.distpoint.type == 0:
+                    full_name = _build_general_names(
+                        self._backend, cdp.distpoint.name.fullname
+                    )
+                # OpenSSL code doesn't test for a specific type for
+                # relativename, everything that isn't fullname is considered
+                # relativename.
+                else:
+                    rns = cdp.distpoint.name.relativename
+                    rnum = self._backend._lib.sk_X509_NAME_ENTRY_num(rns)
+                    attributes = []
+                    for i in range(rnum):
+                        rn = self._backend._lib.sk_X509_NAME_ENTRY_value(
+                            rns, i
+                        )
+                        assert rn != self._backend._ffi.NULL
+                        attributes.append(
+                            _build_x509_name_entry(self._backend, rn)
+                        )
+
+                    relative_name = x509.Name(attributes)
+
+            dist_points.append(
+                x509.DistributionPoint(
+                    full_name, relative_name, reasons, crl_issuer
+                )
+            )
+
+        return x509.CRLDistributionPoints(dist_points)
 
 
 @utils.register_interface(x509.CertificateSigningRequest)
