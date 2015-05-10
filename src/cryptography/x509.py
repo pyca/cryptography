@@ -536,10 +536,10 @@ class DistributionPoint(object):
                 "crl_issuer must be None or a list of general names"
             )
 
-        if reasons and not all(
+        if reasons and (not isinstance(reasons, frozenset) or not all(
             isinstance(x, ReasonFlags) for x in reasons
-        ):
-            raise TypeError("reasons must be None or list of ReasonFlags")
+        )):
+            raise TypeError("reasons must be None or frozenset of ReasonFlags")
 
         if reasons and (
             ReasonFlags.unspecified in reasons or

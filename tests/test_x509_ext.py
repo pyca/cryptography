@@ -1342,7 +1342,16 @@ class TestDistributionPoint(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
                 None,
-                ["notreasonflags"],
+                frozenset(["notreasonflags"]),
+                None
+            )
+
+    def test_reason_not_frozenset(self):
+        with pytest.raises(TypeError):
+            x509.DistributionPoint(
+                [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
+                None,
+                [x509.ReasonFlags.ca_compromise],
                 None
             )
 
@@ -1351,7 +1360,7 @@ class TestDistributionPoint(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
                 None,
-                [x509.ReasonFlags.unspecified],
+                frozenset([x509.ReasonFlags.unspecified]),
                 None
             )
 
@@ -1359,7 +1368,7 @@ class TestDistributionPoint(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
                 None,
-                [x509.ReasonFlags.remove_from_crl],
+                frozenset([x509.ReasonFlags.remove_from_crl]),
                 None
             )
 
@@ -1368,7 +1377,7 @@ class TestDistributionPoint(object):
             x509.DistributionPoint(
                 None,
                 None,
-                [x509.ReasonFlags.aa_compromise],
+                frozenset([x509.ReasonFlags.aa_compromise]),
                 None
             )
 
@@ -1376,7 +1385,7 @@ class TestDistributionPoint(object):
         dp = x509.DistributionPoint(
             [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
             None,
-            [x509.ReasonFlags.superseded],
+            frozenset([x509.ReasonFlags.superseded]),
             [
                 x509.DirectoryName(
                     x509.Name([
@@ -1390,7 +1399,7 @@ class TestDistributionPoint(object):
         dp2 = x509.DistributionPoint(
             [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
             None,
-            [x509.ReasonFlags.superseded],
+            frozenset([x509.ReasonFlags.superseded]),
             [
                 x509.DirectoryName(
                     x509.Name([
@@ -1407,9 +1416,7 @@ class TestDistributionPoint(object):
         dp = x509.DistributionPoint(
             [x509.UniformResourceIdentifier(u"http://crypt.og/crl")],
             None,
-            [
-                x509.ReasonFlags.superseded,
-            ],
+            frozenset([x509.ReasonFlags.superseded]),
             [
                 x509.DirectoryName(
                     x509.Name([
@@ -1435,10 +1442,10 @@ class TestDistributionPoint(object):
             x509.Name([
                 x509.NameAttribute(x509.OID_COMMON_NAME, "myCN")
             ]),
-            [
+            frozenset([
                 x509.ReasonFlags.key_compromise,
                 x509.ReasonFlags.ca_compromise,
-            ],
+            ]),
             [
                 x509.DirectoryName(
                     x509.Name([
@@ -1452,10 +1459,11 @@ class TestDistributionPoint(object):
         assert repr(dp) == (
             "<DistributionPoint(full_name=None, relative_name=<Name([<NameAtt"
             "ribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, val"
-            "ue='myCN')>])>, reasons=[<ReasonFlags.key_compromise: 'keyCompro"
-            "mise'>, <ReasonFlags.ca_compromise: 'cACompromise'>], crl_issuer"
-            "=[<DirectoryName(value=<Name([<NameAttribute(oid=<ObjectIdentifi"
-            "er(oid=2.5.4.3, name=commonName)>, value='Important CA')>])>)>])>"
+            "ue='myCN')>])>, reasons=frozenset([<ReasonFlags.key_compromise: "
+            "'keyCompromise'>, <ReasonFlags.ca_compromise: 'cACompromise'>]),"
+            " crl_issuer=[<DirectoryName(value=<Name([<NameAttribute(oid=<Obj"
+            "ectIdentifier(oid=2.5.4.3, name=commonName)>, value='Important C"
+            "A')>])>)>])>"
         )
 
 
@@ -1475,10 +1483,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 None
             ),
         ])
@@ -1493,10 +1501,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 None
             ),
         ]
@@ -1506,18 +1514,18 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 None
             ),
         ])
         assert repr(cdp) == (
             "<CRLDistributionPoints([<DistributionPoint(full_name=[<UniformRes"
             "ourceIdentifier(value=ftp://domain)>], relative_name=None, reason"
-            "s=[<ReasonFlags.key_compromise: 'keyCompromise'>, <ReasonFlags.ca"
-            "_compromise: 'cACompromise'>], crl_issuer=None)>])>"
+            "s=frozenset([<ReasonFlags.key_compromise: 'keyCompromise'>, <Reas"
+            "onFlags.ca_compromise: 'cACompromise'>]), crl_issuer=None)>])>"
         )
 
     def test_eq(self):
@@ -1525,10 +1533,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 [x509.UniformResourceIdentifier(u"uri://thing")],
             ),
         ])
@@ -1536,10 +1544,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 [x509.UniformResourceIdentifier(u"uri://thing")],
             ),
         ])
@@ -1550,10 +1558,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 [x509.UniformResourceIdentifier(u"uri://thing")],
             ),
         ])
@@ -1561,10 +1569,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain2")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 [x509.UniformResourceIdentifier(u"uri://thing")],
             ),
         ])
@@ -1572,9 +1580,7 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
-                    x509.ReasonFlags.key_compromise,
-                ],
+                frozenset([x509.ReasonFlags.key_compromise]),
                 [x509.UniformResourceIdentifier(u"uri://thing")],
             ),
         ])
@@ -1582,10 +1588,10 @@ class TestCRLDistributionPoints(object):
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier(u"ftp://domain")],
                 None,
-                [
+                frozenset([
                     x509.ReasonFlags.key_compromise,
                     x509.ReasonFlags.ca_compromise,
-                ],
+                ]),
                 [x509.UniformResourceIdentifier(u"uri://thing2")],
             ),
         ])

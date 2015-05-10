@@ -835,7 +835,7 @@ X.509 Extensions
 
     .. attribute:: reasons
 
-        :type: list of :class:`ReasonFlags` or None
+        :type: frozenset of :class:`ReasonFlags` or None
 
         The reasons a given distribution point may be used for when performing
         revocation checks.
