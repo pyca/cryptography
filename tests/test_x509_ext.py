@@ -75,29 +75,6 @@ class TestUserNotice(object):
         )
 
 
-class TestPolicyQualifierInfo(object):
-    def test_invalid_qualifier(self):
-        with pytest.raises(ValueError):
-            x509.PolicyQualifierInfo(None)
-
-    def test_string_qualifier(self):
-        pqi = x509.PolicyQualifierInfo("1.2.3")
-        assert pqi.policy_qualifier_id == x509.OID_CPS_QUALIFIER
-        assert pqi.qualifier == "1.2.3"
-
-    def test_user_notice_qualifier(self):
-        pqi = x509.PolicyQualifierInfo(x509.UserNotice(None, "text"))
-        assert pqi.policy_qualifier_id == x509.OID_CPS_USER_NOTICE
-        assert isinstance(pqi.qualifier, x509.UserNotice)
-
-    def test_repr(self):
-        pqi = x509.PolicyQualifierInfo("1.2.3.4")
-        assert repr(pqi) == (
-            "<PolicyQualifierInfo(policy_qualifier_id=<ObjectIdentifier(oid=1."
-            "3.6.1.5.5.7.2.1, name=id-qt-cps)>, qualifier=1.2.3.4)>"
-        )
-
-
 class TestPolicyInformation(object):
     def test_invalid_policy_identifier(self):
         with pytest.raises(TypeError):
@@ -109,7 +86,7 @@ class TestPolicyInformation(object):
         assert pi.policy_qualifiers is None
 
     def test_policy_qualifiers(self):
-        pq = [x509.PolicyQualifierInfo("string")]
+        pq = [u"string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         assert pi.policy_identifier == x509.ObjectIdentifier("1.2.3")
         assert pi.policy_qualifiers == pq
@@ -119,25 +96,31 @@ class TestPolicyInformation(object):
             x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [1, 2])
 
     def test_repr(self):
-        pq = [x509.PolicyQualifierInfo("string")]
+        pq = [u"string", x509.UserNotice(None, "hi")]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
-        assert repr(pi) == (
-            "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1.2.3,"
-            " name=Unknown OID)>, policy_qualifiers=[<PolicyQualifierInfo(poli"
-            "cy_qualifier_id=<ObjectIdentifier(oid=1.3.6.1.5.5.7.2.1, name=id-"
-            "qt-cps)>, qualifier=string)>])>"
-        )
+        if six.PY3:
+            assert repr(pi) == (
+                "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
+                "2.3, name=Unknown OID)>, policy_qualifiers=['string', <UserNo"
+                "tice(notice_reference=None, explicit_text=hi)>])>"
+            )
+        else:
+            assert repr(pi) == (
+                "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
+                "2.3, name=Unknown OID)>, policy_qualifiers=[u'string', <UserN"
+                "otice(notice_reference=None, explicit_text=hi)>])>"
+            )
 
 
 class TestCertificatePolicies(object):
     def test_invalid_policies(self):
-        pq = [x509.PolicyQualifierInfo("string")]
+        pq = [u"string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         with pytest.raises(TypeError):
             x509.CertificatePolicies([1, pi])
 
     def test_iter_len(self):
-        pq = [x509.PolicyQualifierInfo("string")]
+        pq = [u"string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         cp = x509.CertificatePolicies([pi])
         assert len(cp) == 1
@@ -145,15 +128,21 @@ class TestCertificatePolicies(object):
             assert policyinfo == pi
 
     def test_repr(self):
-        pq = [x509.PolicyQualifierInfo("string")]
+        pq = [u"string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         cp = x509.CertificatePolicies([pi])
-        assert repr(cp) == (
-            "<CertificatePolicies([<PolicyInformation(policy_identifier=<Objec"
-            "tIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifiers=[<Po"
-            "licyQualifierInfo(policy_qualifier_id=<ObjectIdentifier(oid=1.3.6"
-            ".1.5.5.7.2.1, name=id-qt-cps)>, qualifier=string)>])>])>"
-        )
+        if six.PY3:
+            assert repr(cp) == (
+                "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
+                "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
+                "ers=['string'])>])>"
+            )
+        else:
+            assert repr(cp) == (
+                "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
+                "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
+                "ers=[u'string'])>])>"
+            )
 
 
 class TestKeyUsage(object):

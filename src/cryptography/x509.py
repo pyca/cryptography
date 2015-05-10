@@ -489,11 +489,13 @@ class PolicyInformation(object):
 
         self._policy_identifier = policy_identifier
         if policy_qualifiers and not all(
-            isinstance(x, PolicyQualifierInfo) for x in policy_qualifiers
+            isinstance(
+                x, (six.text_type, UserNotice)
+            ) for x in policy_qualifiers
         ):
             raise TypeError(
-                "policy_qualifiers must be a list of PolicyQualifierInfo "
-                "objects or None"
+                "policy_qualifiers must be a list of strings and/or UserNotice"
+                " objects or None"
             )
 
         self._policy_qualifiers = policy_qualifiers
@@ -506,28 +508,6 @@ class PolicyInformation(object):
 
     policy_identifier = utils.read_only_property("_policy_identifier")
     policy_qualifiers = utils.read_only_property("_policy_qualifiers")
-
-
-class PolicyQualifierInfo(object):
-    def __init__(self, qualifier):
-        if not isinstance(qualifier, (six.string_types, UserNotice)):
-            raise ValueError("qualifier must be string or UserNotice")
-
-        if isinstance(qualifier, six.string_types):
-            self._policy_qualifier_id = OID_CPS_QUALIFIER
-        else:
-            self._policy_qualifier_id = OID_CPS_USER_NOTICE
-
-        self._qualifier = qualifier
-
-    def __repr__(self):
-        return (
-            "<PolicyQualifierInfo(policy_qualifier_id={0.policy_qualifier_id}"
-            ", qualifier={0.qualifier})>".format(self)
-        )
-
-    policy_qualifier_id = utils.read_only_property("_policy_qualifier_id")
-    qualifier = utils.read_only_property("_qualifier")
 
 
 class UserNotice(object):

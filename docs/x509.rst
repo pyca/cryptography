@@ -918,30 +918,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
         :type: list
 
-        A list of :class:`PolicyQualifierInfo` objects.
-
-.. class:: PolicyQualifierInfo
-
-    .. versionadded:: 0.9
-
-    .. attribute:: policy_qualifier_id
-
-        :type: :class:`ObjectIdentifier`
-
-        This attribute can have two possible values: :data:`OID_CPS_QUALIFIER`
-        or :data:`OID_CPS_USER_NOTICE`. If it is :data:`OID_CPS_QUALIFIER` then
-        ``qualifier`` will be :term:`text` and should contain a pointer to
-        a certification practice statement (CPS) published by the CA. This
-        text should be in the form of a URI. If it is
-        :data:`OID_CPS_USER_NOTICE` then ``qualifier`` will be
-        :class:`UserNotice`.
-
-    .. attribute:: qualifier
-
-        :type: :term:`text` or :class:`UserNotice`
-
-        The type of this attribute is determined by checking the
-        ``policy_qualifier_id``.
+        A list consisting of :term:`text` and/or :class:`UserNotice` objects.
 
 .. class:: UserNotice
 
@@ -1196,13 +1173,11 @@ Policy Qualifier OIDs
 
 .. data:: OID_CPS_QUALIFIER
 
-    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.1"``. Used as an
-    identifier in :class:`PolicyQualifierInfo` objects.
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.1"``.
 
 .. data:: OID_CPS_USER_NOTICE
 
-    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.2"``. Used as an
-    identifier in :class:`PolicyQualifierInfo` objects.
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.2"``.
 
 .. _extension_oids:
 
