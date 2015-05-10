@@ -1453,14 +1453,24 @@ class TestDistributionPoint(object):
                 )
             ],
         )
-        assert repr(dp) == (
-            "<DistributionPoint(full_name=None, relative_name=<Name([<NameAtt"
-            "ribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, val"
-            "ue='myCN')>])>, reasons=frozenset([<ReasonFlags.ca_compromise: '"
-            "cACompromise'>]), crl_issuer=[<DirectoryName(value=<Name([<NameA"
-            "ttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, v"
-            "alue='Important CA')>])>)>])>"
-        )
+        if six.PY3:
+            assert repr(dp) == (
+                "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
+                "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
+                ">, value='myCN')>])>, reasons=frozenset({<ReasonFlags.ca_comp"
+                "romise: 'cACompromise'>}), crl_issuer=[<DirectoryName(value=<"
+                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
+                "commonName)>, value='Important CA')>])>)>])>"
+            )
+        else:
+            assert repr(dp) == (
+                "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
+                "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
+                ">, value='myCN')>])>, reasons=frozenset([<ReasonFlags.ca_comp"
+                "romise: 'cACompromise'>]), crl_issuer=[<DirectoryName(value=<"
+                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
+                "commonName)>, value='Important CA')>])>)>])>"
+            )
 
 
 class TestCRLDistributionPoints(object):
@@ -1514,12 +1524,20 @@ class TestCRLDistributionPoints(object):
                 None
             ),
         ])
-        assert repr(cdp) == (
-            "<CRLDistributionPoints([<DistributionPoint(full_name=[<UniformRes"
-            "ourceIdentifier(value=ftp://domain)>], relative_name=None, reason"
-            "s=frozenset([<ReasonFlags.key_compromise: 'keyCompromise'>]), crl"
-            "_issuer=None)>])>"
-        )
+        if six.PY3:
+            assert repr(cdp) == (
+                "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
+                "rmResourceIdentifier(value=ftp://domain)>], relative_name=No"
+                "ne, reasons=frozenset({<ReasonFlags.key_compromise: 'keyComp"
+                "romise'>}), crl_issuer=None)>])>"
+            )
+        else:
+            assert repr(cdp) == (
+                "<CRLDistributionPoints([<DistributionPoint(full_name=[<Unifo"
+                "rmResourceIdentifier(value=ftp://domain)>], relative_name=No"
+                "ne, reasons=frozenset([<ReasonFlags.key_compromise: 'keyComp"
+                "romise'>]), crl_issuer=None)>])>"
+            )
 
     def test_eq(self):
         cdp = x509.CRLDistributionPoints([
