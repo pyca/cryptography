@@ -65,6 +65,17 @@ def _build_x509_name(backend, x509_name):
     return x509.Name(attributes)
 
 
+def _build_general_names(backend, gns):
+    num = backend._lib.sk_GENERAL_NAME_num(gns)
+    names = []
+    for i in range(num):
+        gn = backend._lib.sk_GENERAL_NAME_value(gns, i)
+        assert gn != backend._ffi.NULL
+        names.append(_build_general_name(backend, gn))
+
+    return names
+
+
 def _build_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
@@ -342,15 +353,9 @@ class _Certificate(object):
             )[:]
 
         if akid.issuer != self._backend._ffi.NULL:
-            authority_cert_issuer = []
-
-            num = self._backend._lib.sk_GENERAL_NAME_num(akid.issuer)
-            for i in range(num):
-                gn = self._backend._lib.sk_GENERAL_NAME_value(akid.issuer, i)
-                assert gn != self._backend._ffi.NULL
-                value = _build_general_name(self._backend, gn)
-
-                authority_cert_issuer.append(value)
+            authority_cert_issuer = _build_general_names(
+                self._backend, akid.issuer
+            )
 
         if akid.serial != self._backend._ffi.NULL:
             bn = self._backend._lib.ASN1_INTEGER_to_BN(
@@ -420,15 +425,7 @@ class _Certificate(object):
         )
         assert gns != self._backend._ffi.NULL
         gns = self._backend._ffi.gc(gns, self._backend._lib.GENERAL_NAMES_free)
-        num = self._backend._lib.sk_GENERAL_NAME_num(gns)
-        general_names = []
-
-        for i in range(num):
-            gn = self._backend._lib.sk_GENERAL_NAME_value(gns, i)
-            assert gn != self._backend._ffi.NULL
-            value = _build_general_name(self._backend, gn)
-
-            general_names.append(value)
+        general_names = _build_general_names(self._backend, gns)
 
         return x509.SubjectAlternativeName(general_names)
 
