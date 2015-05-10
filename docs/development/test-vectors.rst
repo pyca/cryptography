@@ -179,6 +179,11 @@ Custom X.509 Vectors
   containing an authority information access extension with an OCSP entry.
 * ``aia_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
   containing an authority information access extension with a CA issuers entry.
+* ``cdp_fullname_reasons_crl_issuer.pem`` - An RSA 1024 bit certificate
+  containing a CRL distribution points extension with ``fullName``,
+  ``cRLIssuer``, and ``reasons`` data.
+* ``cdp_crl_issuer.pem`` - An RSA 1024 bit certificate containing a CRL
+  distribution points extension with ``cRLIssuer`` data.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
