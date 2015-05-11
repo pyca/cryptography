@@ -71,7 +71,7 @@ class TestUserNotice(object):
         un = x509.UserNotice(x509.NoticeReference("org", None), "text")
         assert repr(un) == (
             "<UserNotice(notice_reference=<NoticeReference(organization=org, "
-            "notice_numbers=None)>, explicit_text=text)>"
+            "notice_numbers=None)>, explicit_text='text')>"
         )
 
 
@@ -102,13 +102,13 @@ class TestPolicyInformation(object):
             assert repr(pi) == (
                 "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
                 "2.3, name=Unknown OID)>, policy_qualifiers=['string', <UserNo"
-                "tice(notice_reference=None, explicit_text=hi)>])>"
+                "tice(notice_reference=None, explicit_text='hi')>])>"
             )
         else:
             assert repr(pi) == (
                 "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
                 "2.3, name=Unknown OID)>, policy_qualifiers=[u'string', <UserN"
-                "otice(notice_reference=None, explicit_text=hi)>])>"
+                "otice(notice_reference=None, explicit_text='hi')>])>"
             )
 
 

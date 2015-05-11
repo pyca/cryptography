@@ -525,7 +525,7 @@ class UserNotice(object):
     def __repr__(self):
         return (
             "<UserNotice(notice_reference={0.notice_reference}, explicit_text="
-            "{0.explicit_text})>".format(self)
+            "{0.explicit_text!r})>".format(self)
         )
 
     notice_reference = utils.read_only_property("_notice_reference")
