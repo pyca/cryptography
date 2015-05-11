@@ -919,6 +919,10 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         :type: list
 
         A list consisting of :term:`text` and/or :class:`UserNotice` objects.
+        If the value is text it is a pointer to the practice statement
+        published by the certificate authority. If it is a user notice it is
+        meant for display to the relying party when the certificate is
+        used.
 
 .. class:: UserNotice
 
@@ -957,7 +961,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
         :type: :term:`text` or None
 
-    .. attribute :: notice_numbers
+    .. attribute:: notice_numbers
 
         :type: list or None
 
