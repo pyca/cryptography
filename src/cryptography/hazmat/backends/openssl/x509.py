@@ -38,6 +38,13 @@ def _obj2txt(backend, obj):
     return backend._ffi.buffer(buf, res)[:].decode()
 
 
+def _asn1_integer_to_int(backend, asn1_int):
+    bn = backend._lib.ASN1_INTEGER_to_BN(asn1_int, backend._ffi.NULL)
+    assert bn != backend._ffi.NULL
+    bn = backend._ffi.gc(bn, backend._lib.BN_free)
+    return backend._bn_to_int(bn)
+
+
 def _build_x509_name(backend, x509_name):
     count = backend._lib.X509_NAME_entry_count(x509_name)
     attributes = []
@@ -193,12 +200,7 @@ class _Certificate(object):
     def serial(self):
         asn1_int = self._backend._lib.X509_get_serialNumber(self._x509)
         assert asn1_int != self._backend._ffi.NULL
-        bn = self._backend._lib.ASN1_INTEGER_to_BN(
-            asn1_int, self._backend._ffi.NULL
-        )
-        assert bn != self._backend._ffi.NULL
-        bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
-        return self._backend._bn_to_int(bn)
+        return _asn1_integer_to_int(self._backend, asn1_int)
 
     def public_key(self):
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
@@ -314,12 +316,9 @@ class _Certificate(object):
         if basic_constraints.pathlen == self._backend._ffi.NULL:
             path_length = None
         else:
-            bn = self._backend._lib.ASN1_INTEGER_to_BN(
-                basic_constraints.pathlen, self._backend._ffi.NULL
+            path_length = _asn1_integer_to_int(
+                self._backend, basic_constraints.pathlen
             )
-            assert bn != self._backend._ffi.NULL
-            bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
-            path_length = self._backend._bn_to_int(bn)
 
         return x509.BasicConstraints(ca, path_length)
 
@@ -358,12 +357,9 @@ class _Certificate(object):
             )
 
         if akid.serial != self._backend._ffi.NULL:
-            bn = self._backend._lib.ASN1_INTEGER_to_BN(
-                akid.serial, self._backend._ffi.NULL
+            authority_cert_serial_number = _asn1_integer_to_int(
+                self._backend, akid.serial
             )
-            assert bn != self._backend._ffi.NULL
-            bn = self._backend._ffi.gc(bn, self._backend._lib.BN_free)
-            authority_cert_serial_number = self._backend._bn_to_int(bn)
 
         return x509.AuthorityKeyIdentifier(
             key_identifier, authority_cert_issuer, authority_cert_serial_number
