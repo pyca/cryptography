@@ -57,7 +57,7 @@ fi
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
 
-if [[ "${TOXENV}" == "2.6" ]]; then
+if [[ "${TOXENV}" == "py26" ]]; then
     pip install argparse
 fi
 
