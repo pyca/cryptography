@@ -203,7 +203,7 @@ POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
 
 void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
-int sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
+ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
 """
 
 CUSTOMIZATIONS = """
