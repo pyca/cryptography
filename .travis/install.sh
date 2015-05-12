@@ -56,4 +56,9 @@ fi
 
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
+
+if [[ "${TOXENV}" == "2.6" ]]
+    pip install argparse
+fi
+
 pip install tox coveralls
