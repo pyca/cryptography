@@ -959,13 +959,13 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
     .. attribute:: organization
 
-        :type: :term:`text` or None
+        :type: :term:`text`
 
     .. attribute:: notice_numbers
 
-        :type: list or None
+        :type: list
 
-        A list of integers or None.
+        A list of integers.
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
