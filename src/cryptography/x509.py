@@ -568,11 +568,11 @@ class UserNotice(object):
 class NoticeReference(object):
     def __init__(self, organization, notice_numbers):
         self._organization = organization
-        if notice_numbers and not all(
+        if not isinstance(notice_numbers, list) or not all(
             isinstance(x, int) for x in notice_numbers
         ):
             raise TypeError(
-                "notice_numbers must be a list of integers or None"
+                "notice_numbers must be a list of integers"
             )
 
         self._notice_numbers = notice_numbers
