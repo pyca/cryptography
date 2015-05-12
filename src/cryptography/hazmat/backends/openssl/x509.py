@@ -290,6 +290,8 @@ class _Certificate(object):
                 value = self._build_authority_key_identifier(ext)
             elif oid == x509.OID_AUTHORITY_INFORMATION_ACCESS:
                 value = self._build_authority_information_access(ext)
+            elif oid == x509.OID_CERTIFICATE_POLICIES:
+                value = self._build_certificate_policies(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -303,6 +305,75 @@ class _Certificate(object):
             extensions.append(x509.Extension(oid, critical, value))
 
         return x509.Extensions(extensions)
+
+    def _build_certificate_policies(self, ext):
+        cp = self._backend._ffi.cast(
+            "Cryptography_STACK_OF_POLICYINFO *",
+            self._backend._lib.X509V3_EXT_d2i(ext)
+        )
+        assert cp != self._backend._ffi.NULL
+        cp = self._backend._ffi.gc(cp, self._backend._lib.sk_POLICYINFO_free)
+        num = self._backend._lib.sk_POLICYINFO_num(cp)
+        certificate_policies = []
+        for i in range(num):
+            qualifiers = None
+            pi = self._backend._lib.sk_POLICYINFO_value(cp, i)
+            oid = x509.ObjectIdentifier(_obj2txt(self._backend, pi.policyid))
+            if pi.qualifiers != self._backend._ffi.NULL:
+                qnum = self._backend._lib.sk_POLICYQUALINFO_num(pi.qualifiers)
+                qualifiers = []
+                for j in range(qnum):
+                    pqi = self._backend._lib.sk_POLICYQUALINFO_value(
+                        pi.qualifiers, j
+                    )
+                    pqualid = x509.ObjectIdentifier(
+                        _obj2txt(self._backend, pqi.pqualid)
+                    )
+                    if pqualid == x509.OID_CPS_QUALIFIER:
+                        cpsuri = self._backend._ffi.buffer(
+                            pqi.d.cpsuri.data, pqi.d.cpsuri.length
+                        )[:].decode('ascii')
+                        qualifiers.append(cpsuri)
+                    elif pqualid == x509.OID_CPS_USER_NOTICE:
+                        user_notice = self._build_user_notice(pqi.d.usernotice)
+                        qualifiers.append(user_notice)
+
+            certificate_policies.append(
+                x509.PolicyInformation(oid, qualifiers)
+            )
+
+        return x509.CertificatePolicies(certificate_policies)
+
+    def _build_user_notice(self, un):
+        explicit_text = None
+        notice_reference = None
+
+        if un.exptext != self._backend._ffi.NULL:
+            explicit_text = _asn1_string_to_utf8(self._backend, un.exptext)
+
+        if un.noticeref != self._backend._ffi.NULL:
+            organization = _asn1_string_to_utf8(
+                self._backend, un.noticeref.organization
+            )
+
+            num = self._backend._lib.sk_ASN1_INTEGER_num(
+                un.noticeref.noticenos
+            )
+            notice_numbers = []
+            for i in range(num):
+                asn1_int = self._backend._lib.sk_ASN1_INTEGER_value(
+                    un.noticeref.noticenos, i
+                )
+                notice_num = _asn1_integer_to_int(
+                    self._backend, asn1_int
+                )
+                notice_numbers.append(notice_num)
+
+            notice_reference = x509.NoticeReference(
+                organization, notice_numbers
+            )
+
+        return x509.UserNotice(notice_reference, explicit_text)
 
     def _build_basic_constraints(self, ext):
         bc_st = self._backend._lib.X509V3_EXT_d2i(ext)
