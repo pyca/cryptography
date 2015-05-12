@@ -21,10 +21,16 @@ typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
 #endif
 typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
+typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
+typedef STACK_OF(POLICYINFO) Cryptography_STACK_OF_POLICYINFO;
+typedef STACK_OF(ASN1_INTEGER) Cryptography_STACK_OF_ASN1_INTEGER;
 """
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_ACCESS_DESCRIPTION;
+typedef ... Cryptography_STACK_OF_POLICYQUALINFO;
+typedef ... Cryptography_STACK_OF_POLICYINFO;
+typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
 
 typedef struct {
     X509 *issuer_cert;
@@ -121,6 +127,32 @@ typedef struct {
     GENERAL_NAMES *CRLissuer;
     ...;
 } DIST_POINT;
+
+typedef struct NOTICEREF_st {
+    ASN1_STRING *organization;
+    Cryptography_STACK_OF_ASN1_INTEGER *noticenos;
+} NOTICEREF;
+
+typedef struct USERNOTICE_st {
+    NOTICEREF *noticeref;
+    ASN1_STRING *exptext;
+} USERNOTICE;
+
+typedef struct POLICYQUALINFO_st {
+    ASN1_OBJECT *pqualid;
+    union {
+        ASN1_IA5STRING *cpsuri;
+        USERNOTICE *usernotice;
+        ASN1_TYPE *other;
+    } d;
+} POLICYQUALINFO;
+
+typedef struct POLICYINFO_st {
+    ASN1_OBJECT *policyid;
+    Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
+} POLICYINFO;
+
+typedef Cryptography_STACK_OF_POLICYINFO CERTIFICATEPOLICIES;
 
 """
 
