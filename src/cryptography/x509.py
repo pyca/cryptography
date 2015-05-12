@@ -546,7 +546,7 @@ class NoticeReference(object):
 
     def __repr__(self):
         return (
-            "<NoticeReference(organization={0.organization}, notice_numbers="
+            "<NoticeReference(organization={0.organization!r}, notice_numbers="
             "{0.notice_numbers})>".format(self)
         )
 
