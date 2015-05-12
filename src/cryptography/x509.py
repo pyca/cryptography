@@ -950,6 +950,20 @@ class AuthorityKeyIdentifier(object):
             ")>".format(self)
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, AuthorityKeyIdentifier):
+            return NotImplemented
+
+        return (
+            self.key_identifier == other.key_identifier and
+            self.authority_cert_issuer == other.authority_cert_issuer and
+            self.authority_cert_serial_number ==
+            other.authority_cert_serial_number
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
     key_identifier = utils.read_only_property("_key_identifier")
     authority_cert_issuer = utils.read_only_property("_authority_cert_issuer")
     authority_cert_serial_number = utils.read_only_property(
