@@ -184,6 +184,14 @@ Custom X.509 Vectors
   ``cRLIssuer``, and ``reasons`` data.
 * ``cdp_crl_issuer.pem`` - An RSA 1024 bit certificate containing a CRL
   distribution points extension with ``cRLIssuer`` data.
+* ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with a
+  notice reference in the user notice.
+* ``cp_user_notice_with_explicit_text.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with explicit
+  text and no notice reference.
+* ``cp_cps_uri.pem`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with a CPS URI and no user notice.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
