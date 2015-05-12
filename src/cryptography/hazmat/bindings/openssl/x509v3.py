@@ -128,17 +128,17 @@ typedef struct {
     ...;
 } DIST_POINT;
 
-typedef struct NOTICEREF_st {
+typedef struct {
     ASN1_STRING *organization;
     Cryptography_STACK_OF_ASN1_INTEGER *noticenos;
 } NOTICEREF;
 
-typedef struct USERNOTICE_st {
+typedef struct {
     NOTICEREF *noticeref;
     ASN1_STRING *exptext;
 } USERNOTICE;
 
-typedef struct POLICYQUALINFO_st {
+typedef struct {
     ASN1_OBJECT *pqualid;
     union {
         ASN1_IA5STRING *cpsuri;
@@ -147,7 +147,7 @@ typedef struct POLICYQUALINFO_st {
     } d;
 } POLICYQUALINFO;
 
-typedef struct POLICYINFO_st {
+typedef struct {
     ASN1_OBJECT *policyid;
     Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
 } POLICYINFO;
