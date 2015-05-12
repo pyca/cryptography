@@ -39,6 +39,125 @@ class TestExtension(object):
         )
 
 
+class TestNoticeReference(object):
+    def test_notice_numbers_not_all_int(self):
+        with pytest.raises(TypeError):
+            x509.NoticeReference("org", [1, 2, "three"])
+
+    def test_notice_numbers_none(self):
+        nr = x509.NoticeReference("org", None)
+        assert nr.organization == "org"
+        assert nr.notice_numbers is None
+
+    def test_repr(self):
+        nr = x509.NoticeReference(u"org", [1, 3, 4])
+
+        if six.PY3:
+            assert repr(nr) == (
+                "<NoticeReference(organization='org', notice_numbers=[1, 3, 4"
+                "])>"
+            )
+        else:
+            assert repr(nr) == (
+                "<NoticeReference(organization=u'org', notice_numbers=[1, 3, "
+                "4])>"
+            )
+
+
+class TestUserNotice(object):
+    def test_notice_reference_invalid(self):
+        with pytest.raises(TypeError):
+            x509.UserNotice("invalid", None)
+
+    def test_notice_reference_none(self):
+        un = x509.UserNotice(None, "text")
+        assert un.notice_reference is None
+        assert un.explicit_text == "text"
+
+    def test_repr(self):
+        un = x509.UserNotice(x509.NoticeReference(u"org", None), u"text")
+        if six.PY3:
+            assert repr(un) == (
+                "<UserNotice(notice_reference=<NoticeReference(organization='"
+                "org', notice_numbers=None)>, explicit_text='text')>"
+            )
+        else:
+            assert repr(un) == (
+                "<UserNotice(notice_reference=<NoticeReference(organization=u"
+                "'org', notice_numbers=None)>, explicit_text=u'text')>"
+            )
+
+
+class TestPolicyInformation(object):
+    def test_invalid_policy_identifier(self):
+        with pytest.raises(TypeError):
+            x509.PolicyInformation("notanoid", None)
+
+    def test_none_policy_qualifiers(self):
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), None)
+        assert pi.policy_identifier == x509.ObjectIdentifier("1.2.3")
+        assert pi.policy_qualifiers is None
+
+    def test_policy_qualifiers(self):
+        pq = [u"string"]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        assert pi.policy_identifier == x509.ObjectIdentifier("1.2.3")
+        assert pi.policy_qualifiers == pq
+
+    def test_invalid_policy_identifiers(self):
+        with pytest.raises(TypeError):
+            x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [1, 2])
+
+    def test_repr(self):
+        pq = [u"string", x509.UserNotice(None, u"hi")]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        if six.PY3:
+            assert repr(pi) == (
+                "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
+                "2.3, name=Unknown OID)>, policy_qualifiers=['string', <UserNo"
+                "tice(notice_reference=None, explicit_text='hi')>])>"
+            )
+        else:
+            assert repr(pi) == (
+                "<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=1."
+                "2.3, name=Unknown OID)>, policy_qualifiers=[u'string', <UserN"
+                "otice(notice_reference=None, explicit_text=u'hi')>])>"
+            )
+
+
+class TestCertificatePolicies(object):
+    def test_invalid_policies(self):
+        pq = [u"string"]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        with pytest.raises(TypeError):
+            x509.CertificatePolicies([1, pi])
+
+    def test_iter_len(self):
+        pq = [u"string"]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        cp = x509.CertificatePolicies([pi])
+        assert len(cp) == 1
+        for policyinfo in cp:
+            assert policyinfo == pi
+
+    def test_repr(self):
+        pq = [u"string"]
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
+        cp = x509.CertificatePolicies([pi])
+        if six.PY3:
+            assert repr(cp) == (
+                "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
+                "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
+                "ers=['string'])>])>"
+            )
+        else:
+            assert repr(cp) == (
+                "<CertificatePolicies([<PolicyInformation(policy_identifier=<O"
+                "bjectIdentifier(oid=1.2.3, name=Unknown OID)>, policy_qualifi"
+                "ers=[u'string'])>])>"
+            )
+
+
 class TestKeyUsage(object):
     def test_key_agreement_false_encipher_decipher_true(self):
         with pytest.raises(ValueError):

@@ -892,6 +892,81 @@ X.509 Extensions
         removed from the CRL. This reason cannot be used as a reason flag
         in a :class:`DistributionPoint`.
 
+.. class:: CertificatePolicies
+
+    .. versionadded:: 0.9
+
+    The certificate policies extension is an iterable, containing one or more
+    :class:`PolicyInformation` instances.
+
+Certificate Policies Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These classes may be present within a :class:`CertificatePolicies` instance.
+
+.. class:: PolicyInformation
+
+    .. versionadded:: 0.9
+
+    Contains a policy identifier and an optional list of qualifiers.
+
+    .. attribute:: policy_identifier
+
+        :type: :class:`ObjectIdentifier`
+
+    .. attribute:: policy_qualifiers
+
+        :type: list
+
+        A list consisting of :term:`text` and/or :class:`UserNotice` objects.
+        If the value is text it is a pointer to the practice statement
+        published by the certificate authority. If it is a user notice it is
+        meant for display to the relying party when the certificate is
+        used.
+
+.. class:: UserNotice
+
+    .. versionadded:: 0.9
+
+    User notices are intended for display to a relying party when a certificate
+    is used. In practice, few if any UIs expose this data and it is a rarely
+    encoded component.
+
+    .. attribute:: notice_reference
+
+        :type: :class:`NoticeReference` or None
+
+        The notice reference field names an organization and identifies,
+        by number, a particular statement prepared by that organization.
+
+    .. attribute:: explicit_text
+
+        This field includes an arbitrary textual statement directly in the
+        certificate.
+
+        :type: :term:`text`
+
+.. class:: NoticeReference
+
+    Notice reference can name an organization and provide information about
+    notices related to the certificate. For example, it might identify the
+    organization name and notice number 1. Application software could
+    have a notice file containing the current set of notices for the named
+    organization; the application would then extract the notice text from the
+    file and display it. In practice this is rarely seen.
+
+    .. versionadded:: 0.9
+
+    .. attribute:: organization
+
+        :type: :term:`text` or None
+
+    .. attribute:: notice_numbers
+
+        :type: list or None
+
+        A list of integers or None.
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 
@@ -1096,6 +1171,17 @@ Authority Information Access OIDs
 
     Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.2"``. Used as the
     identifier for CA issuer data in :class:`AccessDescription` objects.
+
+Policy Qualifier OIDs
+~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: OID_CPS_QUALIFIER
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.1"``.
+
+.. data:: OID_CPS_USER_NOTICE
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.2"``.
 
 .. _extension_oids:
 
