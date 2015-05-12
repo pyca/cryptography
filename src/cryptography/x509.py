@@ -481,6 +481,15 @@ class CertificatePolicies(object):
     def __repr__(self):
         return "<CertificatePolicies({0})>".format(self._policies)
 
+    def __eq__(self, other):
+        if not isinstance(other, CertificatePolicies):
+            return NotImplemented
+
+        return self._policies == other._policies
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class PolicyInformation(object):
     def __init__(self, policy_identifier, policy_qualifiers):
@@ -506,6 +515,18 @@ class PolicyInformation(object):
             "y_qualifiers={0.policy_qualifiers})>".format(self)
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, PolicyInformation):
+            return NotImplemented
+
+        return (
+            self.policy_identifier == other.policy_identifier and
+            self.policy_qualifiers == other.policy_qualifiers
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
     policy_identifier = utils.read_only_property("_policy_identifier")
     policy_qualifiers = utils.read_only_property("_policy_qualifiers")
 
@@ -528,6 +549,18 @@ class UserNotice(object):
             "{0.explicit_text!r})>".format(self)
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, UserNotice):
+            return NotImplemented
+
+        return (
+            self.notice_reference == other.notice_reference and
+            self.explicit_text == other.explicit_text
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
     notice_reference = utils.read_only_property("_notice_reference")
     explicit_text = utils.read_only_property("_explicit_text")
 
@@ -549,6 +582,18 @@ class NoticeReference(object):
             "<NoticeReference(organization={0.organization!r}, notice_numbers="
             "{0.notice_numbers})>".format(self)
         )
+
+    def __eq__(self, other):
+        if not isinstance(other, NoticeReference):
+            return NotImplemented
+
+        return (
+            self.organization == other.organization and
+            self.notice_numbers == other.notice_numbers
+        )
+
+    def __ne__(self, other):
+        return not self == other
 
     organization = utils.read_only_property("_organization")
     notice_numbers = utils.read_only_property("_notice_numbers")
