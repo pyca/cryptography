@@ -1077,6 +1077,25 @@ class TestSubjectAlternativeName(object):
             "<SubjectAlternativeName([<DNSName(value=cryptography.io)>])>"
         )
 
+    def test_eq(self):
+        san = x509.SubjectAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        san2 = x509.SubjectAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        assert san == san2
+
+    def test_ne(self):
+        san = x509.SubjectAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        san2 = x509.SubjectAlternativeName(
+            [x509.RFC822Name(u"admin@cryptography.io")]
+        )
+        assert san != san2
+        assert san != object()
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
