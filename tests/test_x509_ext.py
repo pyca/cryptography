@@ -2012,3 +2012,218 @@ class TestCRLDistributionPoints(object):
         assert cdp != cdp3
         assert cdp != cdp4
         assert cdp != object()
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestCRLDistributionPointsExtension(object):
+    def test_fullname_and_crl_issuer(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs", "ValidcRLIssuerTest28EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATION_NAME,
+                            "Test Certificates 2011"
+                        ),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATIONAL_UNIT_NAME,
+                            "indirectCRL CA3 cRLIssuer"
+                        ),
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME,
+                            "indirect CRL for indirectCRL CA3"
+                        ),
+                    ])
+                )],
+                relative_name=None,
+                reasons=None,
+                crl_issuer=[x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATION_NAME,
+                            "Test Certificates 2011"
+                        ),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATIONAL_UNIT_NAME,
+                            "indirectCRL CA3 cRLIssuer"
+                        ),
+                    ])
+                )],
+            )
+        ])
+
+    def test_relativename_and_crl_issuer(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs", "ValidcRLIssuerTest29EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=None,
+                relative_name=x509.Name([
+                    x509.NameAttribute(
+                        x509.OID_COMMON_NAME,
+                        "indirect CRL for indirectCRL CA3"
+                    ),
+                ]),
+                reasons=None,
+                crl_issuer=[x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATION_NAME,
+                            "Test Certificates 2011"
+                        ),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATIONAL_UNIT_NAME,
+                            "indirectCRL CA3 cRLIssuer"
+                        ),
+                    ])
+                )],
+            )
+        ])
+
+    def test_fullname_crl_issuer_reasons(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_fullname_reasons_crl_issuer.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.UniformResourceIdentifier(
+                    u"http://myhost.com/myca.crl"
+                )],
+                relative_name=None,
+                reasons=frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise
+                ]),
+                crl_issuer=[x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(
+                            x509.OID_ORGANIZATION_NAME, "PyCA"
+                        ),
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME, "cryptography CA"
+                        ),
+                    ])
+                )],
+            )
+        ])
+
+    def test_all_reasons(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_all_reasons.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.UniformResourceIdentifier(
+                    u"http://domain.com/some.crl"
+                )],
+                relative_name=None,
+                reasons=frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                    x509.ReasonFlags.affiliation_changed,
+                    x509.ReasonFlags.superseded,
+                    x509.ReasonFlags.privilege_withdrawn,
+                    x509.ReasonFlags.cessation_of_operation,
+                    x509.ReasonFlags.aa_compromise,
+                    x509.ReasonFlags.certificate_hold,
+                ]),
+                crl_issuer=None
+            )
+        ])
+
+    def test_single_reason(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_reason_aa_compromise.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.UniformResourceIdentifier(
+                    u"http://domain.com/some.crl"
+                )],
+                relative_name=None,
+                reasons=frozenset([x509.ReasonFlags.aa_compromise]),
+                crl_issuer=None
+            )
+        ])
+
+    def test_crl_issuer_only(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_crl_issuer.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=None,
+                relative_name=None,
+                reasons=None,
+                crl_issuer=[x509.DirectoryName(
+                    x509.Name([
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME, "cryptography CA"
+                        ),
+                    ])
+                )],
+            )
+        ])
