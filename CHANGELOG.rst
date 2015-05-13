@@ -36,6 +36,23 @@ Changelog
   :class:`cryptography.hazmat.primitives.twofactor.InvalidToken` and deprecated
   the old location. This was moved to minimize confusion between this exception
   and :class:`cryptography.fernet.InvalidToken`.
+* Added support for X.509 extensions in :class:`~cryptography.x509.Certificate`
+  objects. The following extensions are supported as of this release:
+
+  * :class:`~cryptography.x509.BasicConstraints`
+  * :class:`~cryptography.x509.AuthorityKeyIdentifier`
+  * :class:`~cryptography.x509.SubjectKeyIdentifier`
+  * :class:`~cryptography.x509.KeyUsage`
+  * :class:`~cryptography.x509.SubjectAlternativeName`
+  * :class:`~cryptography.x509.ExtendedKeyUsage`
+  * :class:`~cryptography.x509.CRLDistributionPoints`
+  * :class:`~cryptography.x509.AuthorityInformationAccess`
+  * :class:`~cryptography.x509.CertificatePolicies`
+
+  Note that unsupported extensions with the critical flag raise
+  :class:`~cryptography.x509.UnsupportedExtension` while unsupported extensions
+  set to non-critical are silently ignored. Read the
+  :doc:`X.509 documentation</x509>` for more information.
 
 0.8.2 - 2015-04-10
 ~~~~~~~~~~~~~~~~~~
