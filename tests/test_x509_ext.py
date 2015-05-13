@@ -45,9 +45,8 @@ class TestNoticeReference(object):
             x509.NoticeReference("org", [1, 2, "three"])
 
     def test_notice_numbers_none(self):
-        nr = x509.NoticeReference("org", None)
-        assert nr.organization == "org"
-        assert nr.notice_numbers is None
+        with pytest.raises(TypeError):
+            x509.NoticeReference("org", None)
 
     def test_repr(self):
         nr = x509.NoticeReference(u"org", [1, 3, 4])
@@ -88,16 +87,16 @@ class TestUserNotice(object):
         assert un.explicit_text == "text"
 
     def test_repr(self):
-        un = x509.UserNotice(x509.NoticeReference(u"org", None), u"text")
+        un = x509.UserNotice(x509.NoticeReference(u"org", [1]), u"text")
         if six.PY3:
             assert repr(un) == (
                 "<UserNotice(notice_reference=<NoticeReference(organization='"
-                "org', notice_numbers=None)>, explicit_text='text')>"
+                "org', notice_numbers=[1])>, explicit_text='text')>"
             )
         else:
             assert repr(un) == (
                 "<UserNotice(notice_reference=<NoticeReference(organization=u"
-                "'org', notice_numbers=None)>, explicit_text=u'text')>"
+                "'org', notice_numbers=[1])>, explicit_text=u'text')>"
             )
 
     def test_eq(self):
