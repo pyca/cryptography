@@ -933,6 +933,15 @@ class SubjectAlternativeName(object):
     def __repr__(self):
         return "<SubjectAlternativeName({0})>".format(self._general_names)
 
+    def __eq__(self, other):
+        if not isinstance(other, SubjectAlternativeName):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class AuthorityKeyIdentifier(object):
     def __init__(self, key_identifier, authority_cert_issuer,
