@@ -45,6 +45,17 @@ def _asn1_integer_to_int(backend, asn1_int):
     return backend._bn_to_int(bn)
 
 
+def _asn1_string_to_utf8(backend, asn1_string):
+    buf = backend._ffi.new("unsigned char **")
+    res = backend._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
+    assert res >= 0
+    assert buf[0] != backend._ffi.NULL
+    buf = backend._ffi.gc(
+        buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
+    )
+    return backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+
+
 def _build_x509_name(backend, x509_name):
     count = backend._lib.X509_NAME_entry_count(x509_name)
     attributes = []
@@ -54,14 +65,7 @@ def _build_x509_name(backend, x509_name):
         assert obj != backend._ffi.NULL
         data = backend._lib.X509_NAME_ENTRY_get_data(entry)
         assert data != backend._ffi.NULL
-        buf = backend._ffi.new("unsigned char **")
-        res = backend._lib.ASN1_STRING_to_UTF8(buf, data)
-        assert res >= 0
-        assert buf[0] != backend._ffi.NULL
-        buf = backend._ffi.gc(
-            buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
-        )
-        value = backend._ffi.buffer(buf[0], res)[:].decode('utf8')
+        value = _asn1_string_to_utf8(backend, data)
         oid = _obj2txt(backend, obj)
         attributes.append(
             x509.NameAttribute(
