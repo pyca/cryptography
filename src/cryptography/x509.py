@@ -333,6 +333,15 @@ class BasicConstraints(object):
         return ("<BasicConstraints(ca={0.ca}, "
                 "path_length={0.path_length})>").format(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, BasicConstraints):
+            return NotImplemented
+
+        return self.ca == other.ca and self.path_length == other.path_length
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class KeyUsage(object):
     def __init__(self, digital_signature, content_commitment, key_encipherment,

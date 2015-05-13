@@ -673,6 +673,19 @@ class TestBasicConstraints(object):
             "<BasicConstraints(ca=True, path_length=None)>"
         )
 
+    def test_eq(self):
+        na = x509.BasicConstraints(ca=True, path_length=None)
+        na2 = x509.BasicConstraints(ca=True, path_length=None)
+        assert na == na2
+
+    def test_ne(self):
+        na = x509.BasicConstraints(ca=True, path_length=None)
+        na2 = x509.BasicConstraints(ca=True, path_length=1)
+        na3 = x509.BasicConstraints(ca=False, path_length=None)
+        assert na != na2
+        assert na != na3
+        assert na != object()
+
 
 class TestExtendedKeyUsage(object):
     def test_not_all_oids(self):
