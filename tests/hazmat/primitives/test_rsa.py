@@ -7,7 +7,9 @@ from __future__ import absolute_import, division, print_function
 import binascii
 import itertools
 import math
+import operator
 import os
+
 
 import pytest
 
@@ -31,7 +33,8 @@ from .fixtures_rsa import (
     RSA_KEY_768,
 )
 from .utils import (
-    _check_rsa_private_numbers, generate_rsa_verification_test
+    _check_rsa_private_numbers, generate_rsa_verification_test,
+    pem_univ_newline_eq
 )
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
@@ -1874,7 +1877,7 @@ class TestRSAPrivateKeySerialization(object):
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
-        assert serialized == key_bytes
+        assert pem_univ_newline_eq(serialized, key_bytes)
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         key = RSA_KEY_2048.private_key(backend)
@@ -1931,23 +1934,26 @@ class TestRSAPrivateKeySerialization(object):
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestRSAPEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
-        ("key_path", "loader_func", "encoding", "format"),
+        ("key_path", "loader_func", "encoding", "format", "compare"),
         [
             (
                 os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
                 serialization.load_pem_public_key,
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.PKCS1,
+                pem_univ_newline_eq,
             ), (
                 os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.der"),
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
                 serialization.PublicFormat.PKCS1,
+                operator.eq
             ), (
                 os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pub.pem"),
                 serialization.load_pem_public_key,
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.SubjectPublicKeyInfo,
+                pem_univ_newline_eq
             ), (
                 os.path.join(
                     "asymmetric",
@@ -1957,18 +1963,19 @@ class TestRSAPEMPublicKeySerialization(object):
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
                 serialization.PublicFormat.SubjectPublicKeyInfo,
+                operator.eq
             )
         ]
     )
     def test_public_bytes_match(self, key_path, loader_func, encoding, format,
-                                backend):
+                                backend, compare):
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         key = loader_func(key_bytes, backend)
         _skip_if_no_serialization(key, backend)
         serialized = key.public_bytes(encoding, format)
-        assert serialized == key_bytes
+        assert compare(serialized, key_bytes)
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()

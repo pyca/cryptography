@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import itertools
+import operator
 import os
 
 import pytest
@@ -24,6 +25,7 @@ from cryptography.utils import bit_length
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 )
+from .utils import pem_univ_newline_eq
 from ...utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_vectors_from_file,
@@ -930,7 +932,7 @@ class TestDSASerialization(object):
             serialization.PrivateFormat.TraditionalOpenSSL,
             serialization.NoEncryption()
         )
-        assert serialized == key_bytes
+        assert pem_univ_newline_eq(serialized, key_bytes)
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         key = DSA_KEY_1024.private_key(backend)
@@ -1007,12 +1009,13 @@ class TestDSASerialization(object):
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
 class TestDSAPEMPublicKeySerialization(object):
     @pytest.mark.parametrize(
-        ("key_path", "loader_func", "encoding"),
+        ("key_path", "loader_func", "encoding", "compare"),
         [
             (
                 os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
                 serialization.load_pem_public_key,
                 serialization.Encoding.PEM,
+                pem_univ_newline_eq,
             ), (
                 os.path.join(
                     "asymmetric",
@@ -1021,11 +1024,12 @@ class TestDSAPEMPublicKeySerialization(object):
                 ),
                 serialization.load_der_public_key,
                 serialization.Encoding.DER,
+                operator.eq,
             )
         ]
     )
     def test_public_bytes_match(self, key_path, loader_func, encoding,
-                                backend):
+                                backend, compare):
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
@@ -1034,7 +1038,7 @@ class TestDSAPEMPublicKeySerialization(object):
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        assert serialized == key_bytes
+        assert compare(serialized, key_bytes)
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()

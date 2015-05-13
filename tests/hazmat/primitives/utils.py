@@ -421,3 +421,9 @@ def _check_dsa_private_numbers(skey):
     pkey = skey.public_numbers
     params = pkey.parameter_numbers
     assert pow(params.g, skey.x, params.p) == pkey.y
+
+
+def pem_univ_newline_eq(pem1, pem2):
+    normalized_pem1 = pem1.replace(b'\r\n', b'\n')
+    normalized_pem2 = pem2.replace(b'\r\n', b'\n')
+    return normalized_pem1 == normalized_pem2
