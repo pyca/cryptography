@@ -192,6 +192,9 @@ Custom X.509 Vectors
   text and no notice reference.
 * ``cp_cps_uri.pem`` - An RSA 2048 bit self-signed certificate containing a
   certificate policies extension with a CPS URI and no user notice.
+* ``cp_user_notice_no_explicit_text.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with a user notice
+  with no explicit text.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
