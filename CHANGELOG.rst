@@ -1,10 +1,8 @@
 Changelog
 =========
 
-0.9 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+0.9 - 2015-05-13
+~~~~~~~~~~~~~~~~
 
 * Removed support for Python 3.2. This version of Python is rarely used
   and caused support headaches. Users affected by this should upgrade to 3.3+.
