@@ -28,18 +28,6 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 
 
-_REASONFLAGS_ENUM_MAPPING = {
-    1: x509.ReasonFlags.key_compromise,
-    2: x509.ReasonFlags.ca_compromise,
-    3: x509.ReasonFlags.affiliation_changed,
-    4: x509.ReasonFlags.superseded,
-    5: x509.ReasonFlags.cessation_of_operation,
-    6: x509.ReasonFlags.certificate_hold,
-    7: x509.ReasonFlags.privilege_withdrawn,
-    8: x509.ReasonFlags.aa_compromise
-}
-
-
 def _obj2txt(backend, obj):
     # Set to 80 on the recommendation of
     # https://www.openssl.org/docs/crypto/OBJ_nid2ln.html#return_values
@@ -551,7 +539,6 @@ class _Certificate(object):
             reasons = None
             cdp = self._backend._lib.sk_DIST_POINT_value(cdps, i)
             if cdp.reasons != self._backend._ffi.NULL:
-                reasons = []
                 # We will check each bit from RFC 5280
                 # ReasonFlags ::= BIT STRING {
                 #      unused                  (0),
@@ -563,11 +550,31 @@ class _Certificate(object):
                 #      certificateHold         (6),
                 #      privilegeWithdrawn      (7),
                 #      aACompromise            (8) }
-                for bit in range(1, 9):
-                    if self._backend._lib.ASN1_BIT_STRING_get_bit(
-                        cdp.reasons, bit
-                    ):
-                        reasons.append(_REASONFLAGS_ENUM_MAPPING[bit])
+                reasons = []
+                get_bit = self._backend._lib.ASN1_BIT_STRING_get_bit
+                if get_bit(cdp.reasons, 1):
+                    reasons.append(x509.ReasonFlags.key_compromise)
+
+                if get_bit(cdp.reasons, 2):
+                    reasons.append(x509.ReasonFlags.ca_compromise)
+
+                if get_bit(cdp.reasons, 3):
+                    reasons.append(x509.ReasonFlags.affiliation_changed)
+
+                if get_bit(cdp.reasons, 4):
+                    reasons.append(x509.ReasonFlags.superseded)
+
+                if get_bit(cdp.reasons, 5):
+                    reasons.append(x509.ReasonFlags.cessation_of_operation)
+
+                if get_bit(cdp.reasons, 6):
+                    reasons.append(x509.ReasonFlags.certificate_hold)
+
+                if get_bit(cdp.reasons, 7):
+                    reasons.append(x509.ReasonFlags.privilege_withdrawn)
+
+                if get_bit(cdp.reasons, 8):
+                    reasons.append(x509.ReasonFlags.aa_compromise)
 
                 reasons = frozenset(reasons)
 

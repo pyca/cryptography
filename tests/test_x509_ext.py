@@ -2060,6 +2060,63 @@ class TestCRLDistributionPointsExtension(object):
             )
         ])
 
+    def test_all_reasons(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_all_reasons.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.UniformResourceIdentifier(
+                    u"http://domain.com/some.crl"
+                )],
+                relative_name=None,
+                reasons=frozenset([
+                    x509.ReasonFlags.key_compromise,
+                    x509.ReasonFlags.ca_compromise,
+                    x509.ReasonFlags.affiliation_changed,
+                    x509.ReasonFlags.superseded,
+                    x509.ReasonFlags.privilege_withdrawn,
+                    x509.ReasonFlags.cessation_of_operation,
+                    x509.ReasonFlags.aa_compromise,
+                    x509.ReasonFlags.certificate_hold,
+                ]),
+                crl_issuer=None
+            )
+        ])
+
+    def test_single_reason(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_reason_aa_compromise.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.UniformResourceIdentifier(
+                    u"http://domain.com/some.crl"
+                )],
+                relative_name=None,
+                reasons=frozenset([x509.ReasonFlags.aa_compromise]),
+                crl_issuer=None
+            )
+        ])
+
     def test_crl_issuer_only(self, backend):
         cert = _load_cert(
             os.path.join(
