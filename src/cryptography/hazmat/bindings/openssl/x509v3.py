@@ -151,9 +151,6 @@ typedef struct {
     ASN1_OBJECT *policyid;
     Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
 } POLICYINFO;
-
-typedef Cryptography_STACK_OF_POLICYINFO CERTIFICATEPOLICIES;
-
 """
 
 
@@ -194,6 +191,19 @@ const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
 int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
 DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
+
+void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
+int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
+POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
+
+void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
+int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
+POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
+                                        int);
+
+void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
+int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
+ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
 """
 
 CUSTOMIZATIONS = """
