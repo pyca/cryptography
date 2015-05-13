@@ -331,6 +331,7 @@ long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
 long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
 long SSL_set_tlsext_status_type(SSL *, long);
 long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
+long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
 long SSL_session_reused(SSL *);
 
@@ -434,6 +435,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
 #else
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 0;
 long (*SSL_CTX_set_tlsext_status_cb)(SSL_CTX *, int(*)(SSL *, void *)) = NULL;
+long (*SSL_CTX_set_tlsext_status_arg)(SSL_CTX *, void *) = NULL;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP
@@ -639,6 +641,7 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": [
         "SSL_CTX_set_tlsext_status_cb",
+        "SSL_CTX_set_tlsext_status_arg"
     ],
 
     "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
