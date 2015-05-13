@@ -397,6 +397,25 @@ class KeyUsage(object):
                 "encipher_only={1}, decipher_only={2})>").format(
                     self, encipher_only, decipher_only)
 
+    def __eq__(self, other):
+        if not isinstance(other, KeyUsage):
+            return NotImplemented
+
+        return (
+            self.digital_signature == other.digital_signature and
+            self.content_commitment == other.content_commitment and
+            self.key_encipherment == other.key_encipherment and
+            self.data_encipherment == other.data_encipherment and
+            self.key_agreement == other.key_agreement and
+            self.key_cert_sign == other.key_cert_sign and
+            self.crl_sign == other.crl_sign and
+            self._encipher_only == other._encipher_only and
+            self._decipher_only == other._decipher_only
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class AuthorityInformationAccess(object):
     def __init__(self, descriptions):
