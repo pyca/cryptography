@@ -117,6 +117,7 @@ int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
 ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
                           const ASN1_ITEM *);
 int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
+long ASN1_ENUMERATED_get(ASN1_ENUMERATED *);
 """
 
 MACROS = """

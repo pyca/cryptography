@@ -108,6 +108,14 @@ def load_der_x509_csr(data, backend):
     return backend.load_der_x509_csr(data)
 
 
+def load_pem_x509_crl(data, backend):
+    return backend.load_pem_x509_crl(data)
+
+
+def load_der_x509_crl(data, backend):
+    return backend.load_der_x509_crl(data)
+
+
 class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
@@ -224,6 +232,9 @@ OID_KEY_USAGE = ObjectIdentifier("2.5.29.15")
 OID_SUBJECT_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.17")
 OID_ISSUER_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.18")
 OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+OID_CRL_REASON = ObjectIdentifier("2.5.29.21")
+OID_INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
+OID_CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
 OID_NAME_CONSTRAINTS = ObjectIdentifier("2.5.29.30")
 OID_CRL_DISTRIBUTION_POINTS = ObjectIdentifier("2.5.29.31")
 OID_CERTIFICATE_POLICIES = ObjectIdentifier("2.5.29.32")
@@ -777,6 +788,38 @@ class GeneralName(object):
         """
 
 
+class GeneralNames(object):
+    def __init__(self, general_names):
+        if not all(isinstance(x, GeneralName) for x in general_names):
+            raise TypeError(
+                "Every item in the general_names list must be an "
+                "object conforming to the GeneralName interface"
+            )
+
+        self._general_names = general_names
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return [i.value for i in self if isinstance(i, type)]
+
+    def __repr__(self):
+        return "<GeneralNames({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, GeneralNames):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+
 @utils.register_interface(GeneralName)
 class RFC822Name(object):
     def __init__(self, value):
@@ -920,36 +963,9 @@ class IPAddress(object):
         return not self == other
 
 
-class SubjectAlternativeName(object):
-    def __init__(self, general_names):
-        if not all(isinstance(x, GeneralName) for x in general_names):
-            raise TypeError(
-                "Every item in the general_names list must be an "
-                "object conforming to the GeneralName interface"
-            )
-
-        self._general_names = general_names
-
-    def __iter__(self):
-        return iter(self._general_names)
-
-    def __len__(self):
-        return len(self._general_names)
-
-    def get_values_for_type(self, type):
-        return [i.value for i in self if isinstance(i, type)]
-
+class SubjectAlternativeName(GeneralNames):
     def __repr__(self):
         return "<SubjectAlternativeName({0})>".format(self._general_names)
-
-    def __eq__(self, other):
-        if not isinstance(other, SubjectAlternativeName):
-            return NotImplemented
-
-        return self._general_names == other._general_names
-
-    def __ne__(self, other):
-        return not self == other
 
 
 class AuthorityKeyIdentifier(object):
@@ -1157,4 +1173,78 @@ class CertificateSigningRequest(object):
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RevokedCertificate(object):
+    @abc.abstractproperty
+    def serial_number(self):
+        """
+        Returns the serial number of the revoked certificate.
+        """
+
+    @abc.abstractproperty
+    def revocation_date(self):
+        """
+        Returns the date of when this certificate was revoked.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class CertificateRevocationList(object):
+
+    @abc.abstractmethod
+    def fingerprint(self, algorithm):
+        """
+        Returns bytes using digest passed.
+        """
+
+    @abc.abstractproperty
+    def signature_hash_algorithm(self):
+        """
+        Returns a HashAlgorithm corresponding to the type of the digest signed
+        in the certificate.
+        """
+
+    @abc.abstractproperty
+    def issuer(self):
+        """
+        Returns the X509Name with the issuer of this CRL.
+        """
+
+    @abc.abstractproperty
+    def next_update(self):
+        """
+        Returns the date of next update for this CRL.
+        """
+
+    @abc.abstractproperty
+    def last_update(self):
+        """
+        Returns the date of last update for this CRL.
+        """
+
+    @abc.abstractproperty
+    def revoked(self):
+        """
+        Returns a list of RevokedCertificate objects for this CRL.
+        """
+
+    @abc.abstractmethod
+    def verify(self, pubkey):
+        """
+        Verify this CRL against a given 'pubkey'.
+        """
+
+    @abc.abstractmethod
+    def __eq__(self, other):
+        """
+        Checks equality.
+        """
+
+    @abc.abstractmethod
+    def __ne__(self, other):
+        """
+        Checks not equal.
         """
