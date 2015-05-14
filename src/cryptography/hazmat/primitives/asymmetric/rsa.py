@@ -56,17 +56,6 @@ class RSAPrivateKeyWithSerialization(RSAPrivateKey):
         """
 
 
-RSAPrivateKeyWithNumbers = utils.deprecated(
-    RSAPrivateKeyWithSerialization,
-    __name__,
-    (
-        "The RSAPrivateKeyWithNumbers interface has been renamed to "
-        "RSAPrivateKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class RSAPublicKey(object):
     @abc.abstractmethod
@@ -101,17 +90,6 @@ class RSAPublicKeyWithSerialization(RSAPublicKey):
         """
         Returns the key serialized as bytes.
         """
-
-
-RSAPublicKeyWithNumbers = utils.deprecated(
-    RSAPublicKeyWithSerialization,
-    __name__,
-    (
-        "The RSAPublicKeyWithNumbers interface has been renamed to "
-        "RSAPublicKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
 
 
 def generate_private_key(public_exponent, key_size, backend):

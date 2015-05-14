@@ -71,17 +71,6 @@ class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
         """
 
 
-EllipticCurvePrivateKeyWithNumbers = utils.deprecated(
-    EllipticCurvePrivateKeyWithSerialization,
-    __name__,
-    (
-        "The EllipticCurvePrivateKeyWithNumbers interface has been renamed to "
-        "EllipticCurvePrivateKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePublicKey(object):
     @abc.abstractmethod
@@ -110,17 +99,6 @@ class EllipticCurvePublicKeyWithSerialization(EllipticCurvePublicKey):
         """
         Returns the key serialized as bytes.
         """
-
-
-EllipticCurvePublicKeyWithNumbers = utils.deprecated(
-    EllipticCurvePublicKeyWithSerialization,
-    __name__,
-    (
-        "The EllipticCurvePublicKeyWithNumbers interface has been renamed to "
-        "EllipticCurvePublicKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
 
 
 @utils.register_interface(EllipticCurve)
