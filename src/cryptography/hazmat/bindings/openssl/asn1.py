@@ -114,6 +114,7 @@ void ASN1_GENERALIZEDTIME_free(ASN1_GENERALIZEDTIME *);
 ASN1_ENUMERATED *ASN1_ENUMERATED_new(void);
 void ASN1_ENUMERATED_free(ASN1_ENUMERATED *);
 int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
+long ASN1_ENUMERATED_get(ASN1_ENUMERATED *);
 
 ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
                           const ASN1_ITEM *);

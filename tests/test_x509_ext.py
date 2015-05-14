@@ -1139,6 +1139,61 @@ class TestIPAddress(object):
         assert gn != object()
 
 
+class TestGeneralNames(object):
+    def test_get_values_for_type(self):
+        gns = x509.GeneralNames(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        names = gns.get_values_for_type(x509.DNSName)
+        assert names == [u"cryptography.io"]
+
+    def test_iter_names(self):
+        gns = x509.GeneralNames([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ])
+        assert len(gns) == 2
+        assert list(gns) == [
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ]
+
+    def test_invalid_general_names(self):
+        with pytest.raises(TypeError):
+            x509.GeneralNames(
+                [x509.DNSName(u"cryptography.io"), "invalid"]
+            )
+
+    def test_repr(self):
+        gns = x509.GeneralNames(
+            [
+                x509.DNSName(u"cryptography.io")
+            ]
+        )
+        assert repr(gns) == (
+            "<GeneralNames([<DNSName(value=cryptography.io)>])>"
+        )
+
+    def test_eq(self):
+        gns = x509.GeneralNames(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        gns2 = x509.GeneralNames(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        assert gns == gns2
+
+    def test_ne(self):
+        gns = x509.GeneralNames(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        gns2 = x509.GeneralNames(
+            [x509.RFC822Name(u"admin@cryptography.io")]
+        )
+        assert gns != gns2
+        assert gns != object()
+
+
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName(
@@ -1171,7 +1226,8 @@ class TestSubjectAlternativeName(object):
             ]
         )
         assert repr(san) == (
-            "<SubjectAlternativeName([<DNSName(value=cryptography.io)>])>"
+            "<SubjectAlternativeName("
+            "<GeneralNames([<DNSName(value=cryptography.io)>])>)>"
         )
 
     def test_eq(self):

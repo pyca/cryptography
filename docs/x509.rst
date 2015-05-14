@@ -208,7 +208,7 @@ X.509 Certificate Object
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the fingerprint.
 
-        :return bytes: The fingerprint using the supplied hash algorithm as
+        :return bytes: The fingerprint using the supplied hash algorithm, as
             bytes.
 
         .. doctest::
@@ -335,6 +335,71 @@ X.509 Certificate Object
         :return bytes: The data that can be written to a file or sent
             over the network to be verified by clients.
 
+X.509 CRL (Certificate Revocation List) Object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateRevocationList
+
+    .. versionadded:: 1.0
+
+    .. method:: fingerprint(algorithm)
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the fingerprint.
+
+        :return bytes: The fingerprint using the supplied hash algorithm, as
+            bytes.
+
+    .. attribute:: signature_hash_algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+
+        Returns the
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
+        was used in signing this CRL.
+
+    .. attribute:: issuer
+
+        :type: :class:`Name`
+
+        The :class:`Name` of the issuer.
+
+    .. attribute:: next_update
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing when the next update to this CRL is
+        expected.
+
+    .. attribute:: last_update
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing when the this CRL was last updated.
+
+    .. attribute:: revoked
+
+        :type: list of :class:`RevokedCertificate`
+
+        The revoked certificates listed in this CRL.
+
+    .. attribute:: extensions
+
+        :type: :class:`Extensions`
+
+        The extensions encoded in the CRL.
+
+    .. method:: verify(pubkey)
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+            that will be used to verify the CRL.
+
+        :return boolean: The result of the verification as boolean value.
+
 X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -388,6 +453,30 @@ X.509 CSR (Certificate Signing Request) Object
             over the network to be signed by the certificate
             authority.
 
+X.509 Revoked Certificate Object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: RevokedCertificate
+
+    .. versionadded:: 1.0
+
+    .. attribute:: serial_number
+
+        :type: :class:`int`
+
+        An integer representing the serial number of the revoked certificate.
+
+    .. attribute:: revocation_date
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the date this certificates was revoked.
+
+    .. attribute:: extensions
+
+        :type: :class:`Extensions`
+
+        The extensions encoded in the revoked certificate.
 
 .. class:: Name
 
