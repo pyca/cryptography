@@ -71,17 +71,6 @@ class DSAPrivateKeyWithSerialization(DSAPrivateKey):
         """
 
 
-DSAPrivateKeyWithNumbers = utils.deprecated(
-    DSAPrivateKeyWithSerialization,
-    __name__,
-    (
-        "The DSAPrivateKeyWithNumbers interface has been renamed to "
-        "DSAPrivateKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class DSAPublicKey(object):
     @abc.abstractproperty
@@ -116,17 +105,6 @@ class DSAPublicKeyWithSerialization(DSAPublicKey):
         """
         Returns the key serialized as bytes.
         """
-
-
-DSAPublicKeyWithNumbers = utils.deprecated(
-    DSAPublicKeyWithSerialization,
-    __name__,
-    (
-        "The DSAPublicKeyWithNumbers interface has been renamed to "
-        "DSAPublicKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
 
 
 def generate_parameters(key_size, backend):
