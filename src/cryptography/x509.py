@@ -1125,6 +1125,12 @@ class Certificate(object):
         in the certificate.
         """
 
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns an Extensions object.
+        """
+
     @abc.abstractmethod
     def __eq__(self, other):
         """
