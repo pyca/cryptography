@@ -37,8 +37,13 @@ Asymmetric ciphers
   Ruby test suite.
 
 
-Custom Asymmetric Vectors
+Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+    :maxdepth: 1
+
+    custom-vectors/secp256k1
 
 * ``asymmetric/PEM_Serialization/ec_private_key.pem`` and
   ``asymmetric/DER_Serialization/ec_private_key.der`` - Contains an Elliptic
@@ -77,6 +82,7 @@ Custom Asymmetric Vectors
 * ``asymmetric/public/PKCS1/rsa.pub.pem`` and
   ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
   key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
+
 
 Key exchange
 ~~~~~~~~~~~~
@@ -160,6 +166,40 @@ Custom X.509 Vectors
   containing an inhibit any policy extension with the value 5.
 * ``inhibit_any_policy_negative.pem`` - An RSA 2048 bit self-signed certificate
   containing an inhibit any policy extension with the value -1.
+* ``authority_key_identifier.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority key identifier extension with key identifier,
+  authority certificate issuer, and authority certificate serial number fields.
+* ``authority_key_identifier_no_keyid.pem`` - An RSA 2048 bit self-signed
+  certificate containing an authority key identifier extension with authority
+  certificate issuer and authority certificate serial number fields.
+* ``aia_ocsp_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with two OCSP and one
+  CA issuers entry.
+* ``aia_ocsp.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with an OCSP entry.
+* ``aia_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with a CA issuers entry.
+* ``cdp_fullname_reasons_crl_issuer.pem`` - An RSA 1024 bit certificate
+  containing a CRL distribution points extension with ``fullName``,
+  ``cRLIssuer``, and ``reasons`` data.
+* ``cdp_crl_issuer.pem`` - An RSA 1024 bit certificate containing a CRL
+  distribution points extension with ``cRLIssuer`` data.
+* ``cdp_all_reasons.pem`` - An RSA 1024 bit certificate containing a CRL
+  distribution points extension with all ``reasons`` bits set.
+* ``cdp_reason_aa_compromise.pem`` - An RSA 1024 bit certificate containing a
+  CRL distribution points extension with the ``AACompromise`` ``reasons`` bit
+  set.
+* ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with a
+  notice reference in the user notice.
+* ``cp_user_notice_with_explicit_text.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with explicit
+  text and no notice reference.
+* ``cp_cps_uri.pem`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with a CPS URI and no user notice.
+* ``cp_user_notice_no_explicit_text.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with a user notice
+  with no explicit text.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

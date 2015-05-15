@@ -22,6 +22,8 @@ static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_COMPRESSION;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
+static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -164,6 +166,7 @@ const char *SSL_state_string_long(const SSL *);
 SSL_SESSION *SSL_get1_session(SSL *);
 int SSL_set_session(SSL *, SSL_SESSION *);
 int SSL_get_verify_mode(const SSL *);
+void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
 void SSL_set_verify_depth(SSL *, int);
 int SSL_get_verify_depth(const SSL *);
 int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
@@ -325,7 +328,10 @@ void SSL_CTX_set_tlsext_servername_callback(
    is fraught with peril thanks to OS distributions we check some constants
    to determine if they are supported or not */
 long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
+long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
+long SSL_set_tlsext_status_type(SSL *, long);
 long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
+long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
 long SSL_session_reused(SSL *);
 
@@ -379,6 +385,8 @@ void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
                                          void *),
                                 void *);
 void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
+
+long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
 """
 
 CUSTOMIZATIONS = """
@@ -427,6 +435,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
 #else
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 0;
 long (*SSL_CTX_set_tlsext_status_cb)(SSL_CTX *, int(*)(SSL *, void *)) = NULL;
+long (*SSL_CTX_set_tlsext_status_arg)(SSL_CTX *, void *) = NULL;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP
@@ -434,6 +443,14 @@ static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
 #else
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 0;
 long (*SSL_set_tlsext_status_ocsp_resp)(SSL *, unsigned char *, int) = NULL;
+long (*SSL_get_tlsext_status_ocsp_resp)(SSL *, const unsigned char **) = NULL;
+#endif
+
+#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
+#else
+static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 0;
+long (*SSL_set_tlsext_status_type)(SSL *, long) = NULL;
 #endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
@@ -572,11 +589,19 @@ static const long Cryptography_HAS_ALPN = 0;
 #else
 static const long Cryptography_HAS_ALPN = 1;
 #endif
+
 #if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
 typedef void COMP_METHOD;
 #else
 static const long Cryptography_HAS_COMPRESSION = 1;
+#endif
+
+#if defined(SSL_CTRL_GET_SERVER_TMP_KEY)
+static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 1;
+#else
+static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
+long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
 """
@@ -616,10 +641,16 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": [
         "SSL_CTX_set_tlsext_status_cb",
+        "SSL_CTX_set_tlsext_status_arg"
     ],
 
     "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
         "SSL_set_tlsext_status_ocsp_resp",
+        "SSL_get_tlsext_status_ocsp_resp",
+    ],
+
+    "Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE": [
+        "SSL_set_tlsext_status_type",
     ],
 
     "Cryptography_HAS_RELEASE_BUFFERS": [
@@ -675,5 +706,9 @@ CONDITIONAL_NAMES = {
         "SSL_get_current_compression",
         "SSL_get_current_expansion",
         "SSL_COMP_get_name",
-    ]
+    ],
+
+    "Cryptography_HAS_GET_SERVER_TMP_KEY": [
+        "SSL_get_server_tmp_key",
+    ],
 }

@@ -64,6 +64,7 @@ typedef struct {
 
 typedef struct {
     X509_CRL_INFO *crl;
+    X509_ALGOR *sig_alg;
     ...;
 } X509_CRL;
 
@@ -145,9 +146,13 @@ X509_EXTENSION *X509_delete_ext(X509 *, int);
 X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_get_ext_by_NID(X509 *, int, int);
+
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
+X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
+                                             ASN1_OBJECT *, int,
+                                             ASN1_OCTET_STRING *);
 
 int i2d_X509(X509 *, unsigned char **);
 
@@ -155,11 +160,13 @@ int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
 int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
+int X509_REQ_set_subject_name(X509_REQ *, X509_NAME *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 int X509_REQ_digest(const X509_REQ *, const EVP_MD *,
                     unsigned char *, unsigned int *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
+int X509_REQ_print(BIO *, X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
@@ -183,6 +190,7 @@ int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
+int X509_CRL_verify(X509_CRL *, EVP_PKEY *);
 int X509_CRL_get_ext_count(X509_CRL *);
 X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
@@ -285,6 +293,7 @@ int X509_CRL_get_version(X509_CRL *);
 ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
 ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
+Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
@@ -303,6 +312,11 @@ EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
 EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
+
+// declared in safestack
+int sk_ASN1_OBJECT_num(Cryptography_STACK_OF_ASN1_OBJECT *);
+ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
+void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
 """
 
 CUSTOMIZATIONS = """

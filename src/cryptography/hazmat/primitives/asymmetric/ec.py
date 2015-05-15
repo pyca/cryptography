@@ -71,17 +71,6 @@ class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
         """
 
 
-EllipticCurvePrivateKeyWithNumbers = utils.deprecated(
-    EllipticCurvePrivateKeyWithSerialization,
-    __name__,
-    (
-        "The EllipticCurvePrivateKeyWithNumbers interface has been renamed to "
-        "EllipticCurvePrivateKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePublicKey(object):
     @abc.abstractmethod
@@ -110,17 +99,6 @@ class EllipticCurvePublicKeyWithSerialization(EllipticCurvePublicKey):
         """
         Returns the key serialized as bytes.
         """
-
-
-EllipticCurvePublicKeyWithNumbers = utils.deprecated(
-    EllipticCurvePublicKeyWithSerialization,
-    __name__,
-    (
-        "The EllipticCurvePublicKeyWithNumbers interface has been renamed to "
-        "EllipticCurvePublicKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
 
 
 @utils.register_interface(EllipticCurve)
@@ -202,6 +180,12 @@ class SECP256R1(object):
 
 
 @utils.register_interface(EllipticCurve)
+class SECP256K1(object):
+    name = "secp256k1"
+    key_size = 256
+
+
+@utils.register_interface(EllipticCurve)
 class SECP224R1(object):
     name = "secp224r1"
     key_size = 224
@@ -222,6 +206,7 @@ _CURVE_TYPES = {
     "secp256r1": SECP256R1,
     "secp384r1": SECP384R1,
     "secp521r1": SECP521R1,
+    "secp256k1": SECP256K1,
 
     "sect163k1": SECT163K1,
     "sect233k1": SECT233K1,

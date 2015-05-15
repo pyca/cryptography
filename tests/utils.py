@@ -498,6 +498,7 @@ _ECDSA_CURVE_NAMES = {
 
     "K-163": "sect163k1",
     "K-233": "sect233k1",
+    "K-256": "secp256k1",
     "K-283": "sect283k1",
     "K-409": "sect409k1",
     "K-571": "sect571k1",
@@ -653,6 +654,110 @@ def load_kasvs_dh_vectors(vector_data):
                 "g": data["g"],
                 "fail_z": False,
                 "fail_agree": False
+            }
+
+    return vectors
+
+
+def load_kasvs_ecdh_vectors(vector_data):
+    """
+    Loads data out of the KASVS key exchange vector data
+    """
+
+    curve_name_map = {
+        "P-192": "secp192r1",
+        "P-224": "secp224r1",
+        "P-256": "secp256r1",
+        "P-384": "secp384r1",
+        "P-521": "secp521r1",
+    }
+
+    result_rx = re.compile(r"([FP]) \(([0-9]+) -")
+
+    tags = []
+    sets = dict()
+    vectors = []
+
+    # find info in header
+    for line in vector_data:
+        line = line.strip()
+
+        if line.startswith("#"):
+            parm = line.split("Parameter set(s) supported:")
+            if len(parm) == 2:
+                names = parm[1].strip().split()
+                for n in names:
+                    tags.append("[%s]" % n)
+                break
+
+    # Sets Metadata
+    tag = None
+    curve = None
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line in tags:
+            tag = line
+            curve = None
+        elif line.startswith("[Curve selected:"):
+            curve = curve_name_map[line.split(':')[1].strip()[:-1]]
+
+        if tag is not None and curve is not None:
+            sets[tag.strip("[]")] = curve
+            tag = None
+        if len(tags) == len(sets):
+            break
+
+    # Data
+    data = {
+        "CAVS": dict(),
+        "IUT": dict(),
+    }
+    tag = None
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("["):
+            tag = line.split()[0][1:]
+        elif line.startswith("COUNT = "):
+            data["COUNT"] = int(line.split("=")[1], 16)
+        elif line.startswith("dsCAVS = "):
+            data["CAVS"]["d"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsCAVSx = "):
+            data["CAVS"]["x"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsCAVSy = "):
+            data["CAVS"]["y"] = int(line.split("=")[1], 16)
+        elif line.startswith("dsIUT = "):
+            data["IUT"]["d"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsIUTx = "):
+            data["IUT"]["x"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsIUTy = "):
+            data["IUT"]["y"] = int(line.split("=")[1], 16)
+        elif line.startswith("Z = "):
+            data["Z"] = int(line.split("=")[1], 16)
+        elif line.startswith("Result = "):
+            result_str = line.split("=")[1].strip()
+            match = result_rx.match(result_str)
+
+            if match.group(1) == "F":
+                data["fail"] = True
+            else:
+                data["fail"] = False
+            data["errno"] = int(match.group(2))
+
+            data["curve"] = sets[tag]
+
+            vectors.append(data)
+
+            data = {
+                "CAVS": dict(),
+                "IUT": dict(),
             }
 
     return vectors

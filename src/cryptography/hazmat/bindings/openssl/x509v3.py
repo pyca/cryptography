@@ -19,9 +19,19 @@ typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
 #else
 typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
 #endif
+typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
+typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
+typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
+typedef STACK_OF(POLICYINFO) Cryptography_STACK_OF_POLICYINFO;
+typedef STACK_OF(ASN1_INTEGER) Cryptography_STACK_OF_ASN1_INTEGER;
 """
 
 TYPES = """
+typedef ... Cryptography_STACK_OF_ACCESS_DESCRIPTION;
+typedef ... Cryptography_STACK_OF_POLICYQUALINFO;
+typedef ... Cryptography_STACK_OF_POLICYINFO;
+typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
+
 typedef struct {
     X509 *issuer_cert;
     X509 *subject_cert;
@@ -92,7 +102,55 @@ typedef struct {
     ASN1_INTEGER *serial;
 } AUTHORITY_KEYID;
 
+typedef struct {
+    ASN1_OBJECT *method;
+    GENERAL_NAME *location;
+} ACCESS_DESCRIPTION;
+
 typedef ... Cryptography_LHASH_OF_CONF_VALUE;
+
+
+typedef ... Cryptography_STACK_OF_DIST_POINT;
+
+typedef struct {
+    int type;
+    union {
+        GENERAL_NAMES *fullname;
+        Cryptography_STACK_OF_X509_NAME_ENTRY *relativename;
+    } name;
+    ...;
+} DIST_POINT_NAME;
+
+typedef struct {
+    DIST_POINT_NAME *distpoint;
+    ASN1_BIT_STRING *reasons;
+    GENERAL_NAMES *CRLissuer;
+    ...;
+} DIST_POINT;
+
+typedef struct {
+    ASN1_STRING *organization;
+    Cryptography_STACK_OF_ASN1_INTEGER *noticenos;
+} NOTICEREF;
+
+typedef struct {
+    NOTICEREF *noticeref;
+    ASN1_STRING *exptext;
+} USERNOTICE;
+
+typedef struct {
+    ASN1_OBJECT *pqualid;
+    union {
+        ASN1_IA5STRING *cpsuri;
+        USERNOTICE *usernotice;
+        ASN1_TYPE *other;
+    } d;
+} POLICYQUALINFO;
+
+typedef struct {
+    ASN1_OBJECT *policyid;
+    Cryptography_STACK_OF_POLICYQUALINFO *qualifiers;
+} POLICYINFO;
 """
 
 
@@ -108,11 +166,22 @@ void *X509V3_EXT_d2i(X509_EXTENSION *);
 MACROS = """
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
+int i2d_BASIC_CONSTRAINTS(BASIC_CONSTRAINTS *, unsigned char **);
+BASIC_CONSTRAINTS *BASIC_CONSTRAINTS_new(void);
 void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
+/* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
+   x509v3.h header. */
+void AUTHORITY_KEYID_free(AUTHORITY_KEYID *);
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
+
+int sk_ACCESS_DESCRIPTION_num(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
+ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_value(
+    Cryptography_STACK_OF_ACCESS_DESCRIPTION *, int
+);
+void sk_ACCESS_DESCRIPTION_free(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
 
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
@@ -121,6 +190,22 @@ X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
+void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
+int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
+DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
+
+void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
+int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
+POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
+
+void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
+int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
+POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
+                                        int);
+
+void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
+int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
+ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
 """
 
 CUSTOMIZATIONS = """

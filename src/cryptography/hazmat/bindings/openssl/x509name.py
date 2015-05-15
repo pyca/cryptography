@@ -11,12 +11,14 @@ INCLUDES = """
  * See the comment above Cryptography_STACK_OF_X509 in x509.py
  */
 typedef STACK_OF(X509_NAME) Cryptography_STACK_OF_X509_NAME;
+typedef STACK_OF(X509_NAME_ENTRY) Cryptography_STACK_OF_X509_NAME_ENTRY;
 """
 
 TYPES = """
 typedef ... X509_NAME;
 typedef ... X509_NAME_ENTRY;
 typedef ... Cryptography_STACK_OF_X509_NAME;
+typedef ... Cryptography_STACK_OF_X509_NAME_ENTRY;
 """
 
 FUNCTIONS = """
@@ -48,6 +50,9 @@ int sk_X509_NAME_num(Cryptography_STACK_OF_X509_NAME *);
 int sk_X509_NAME_push(Cryptography_STACK_OF_X509_NAME *, X509_NAME *);
 X509_NAME *sk_X509_NAME_value(Cryptography_STACK_OF_X509_NAME *, int);
 void sk_X509_NAME_free(Cryptography_STACK_OF_X509_NAME *);
+int sk_X509_NAME_ENTRY_num(Cryptography_STACK_OF_X509_NAME_ENTRY *);
+X509_NAME_ENTRY *sk_X509_NAME_ENTRY_value(
+    Cryptography_STACK_OF_X509_NAME_ENTRY *, int);
 """
 
 CUSTOMIZATIONS = """

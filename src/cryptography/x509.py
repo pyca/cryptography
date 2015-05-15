@@ -67,6 +67,10 @@ _OID_NAMES = {
     "1.3.6.1.5.5.7.1.1": "authorityInfoAccess",
     "1.3.6.1.5.5.7.1.11": "subjectInfoAccess",
     "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
+    "1.3.6.1.5.5.7.48.1": "OCSP",
+    "1.3.6.1.5.5.7.48.2": "caIssuers",
+    "1.3.6.1.5.5.7.2.1": "id-qt-cps",
+    "1.3.6.1.5.5.7.2.2": "id-qt-unotice",
 }
 
 
@@ -277,11 +281,10 @@ class Extension(object):
 
 class ExtendedKeyUsage(object):
     def __init__(self, usages):
-        for oid in usages:
-            if not isinstance(oid, ObjectIdentifier):
-                raise TypeError(
-                    "Every item in the usages list must be an ObjectIdentifier"
-                )
+        if not all(isinstance(x, ObjectIdentifier) for x in usages):
+            raise TypeError(
+                "Every item in the usages list must be an ObjectIdentifier"
+            )
 
         self._usages = usages
 
@@ -293,6 +296,15 @@ class ExtendedKeyUsage(object):
 
     def __repr__(self):
         return "<ExtendedKeyUsage({0})>".format(self._usages)
+
+    def __eq__(self, other):
+        if not isinstance(other, ExtendedKeyUsage):
+            return NotImplemented
+
+        return self._usages == other._usages
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class BasicConstraints(object):
@@ -320,6 +332,15 @@ class BasicConstraints(object):
     def __repr__(self):
         return ("<BasicConstraints(ca={0.ca}, "
                 "path_length={0.path_length})>").format(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, BasicConstraints):
+            return NotImplemented
+
+        return self.ca == other.ca and self.path_length == other.path_length
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class KeyUsage(object):
@@ -385,6 +406,226 @@ class KeyUsage(object):
                 "encipher_only={1}, decipher_only={2})>").format(
                     self, encipher_only, decipher_only)
 
+    def __eq__(self, other):
+        if not isinstance(other, KeyUsage):
+            return NotImplemented
+
+        return (
+            self.digital_signature == other.digital_signature and
+            self.content_commitment == other.content_commitment and
+            self.key_encipherment == other.key_encipherment and
+            self.data_encipherment == other.data_encipherment and
+            self.key_agreement == other.key_agreement and
+            self.key_cert_sign == other.key_cert_sign and
+            self.crl_sign == other.crl_sign and
+            self._encipher_only == other._encipher_only and
+            self._decipher_only == other._decipher_only
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class AuthorityInformationAccess(object):
+    def __init__(self, descriptions):
+        if not all(isinstance(x, AccessDescription) for x in descriptions):
+            raise TypeError(
+                "Every item in the descriptions list must be an "
+                "AccessDescription"
+            )
+
+        self._descriptions = descriptions
+
+    def __iter__(self):
+        return iter(self._descriptions)
+
+    def __len__(self):
+        return len(self._descriptions)
+
+    def __repr__(self):
+        return "<AuthorityInformationAccess({0})>".format(self._descriptions)
+
+    def __eq__(self, other):
+        if not isinstance(other, AuthorityInformationAccess):
+            return NotImplemented
+
+        return self._descriptions == other._descriptions
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class AccessDescription(object):
+    def __init__(self, access_method, access_location):
+        if not (access_method == OID_OCSP or access_method == OID_CA_ISSUERS):
+            raise ValueError(
+                "access_method must be OID_OCSP or OID_CA_ISSUERS"
+            )
+
+        if not isinstance(access_location, GeneralName):
+            raise TypeError("access_location must be a GeneralName")
+
+        self._access_method = access_method
+        self._access_location = access_location
+
+    def __repr__(self):
+        return (
+            "<AccessDescription(access_method={0.access_method}, access_locati"
+            "on={0.access_location})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, AccessDescription):
+            return NotImplemented
+
+        return (
+            self.access_method == other.access_method and
+            self.access_location == other.access_location
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    access_method = utils.read_only_property("_access_method")
+    access_location = utils.read_only_property("_access_location")
+
+
+class CertificatePolicies(object):
+    def __init__(self, policies):
+        if not all(isinstance(x, PolicyInformation) for x in policies):
+            raise TypeError(
+                "Every item in the policies list must be a "
+                "PolicyInformation"
+            )
+
+        self._policies = policies
+
+    def __iter__(self):
+        return iter(self._policies)
+
+    def __len__(self):
+        return len(self._policies)
+
+    def __repr__(self):
+        return "<CertificatePolicies({0})>".format(self._policies)
+
+    def __eq__(self, other):
+        if not isinstance(other, CertificatePolicies):
+            return NotImplemented
+
+        return self._policies == other._policies
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class PolicyInformation(object):
+    def __init__(self, policy_identifier, policy_qualifiers):
+        if not isinstance(policy_identifier, ObjectIdentifier):
+            raise TypeError("policy_identifier must be an ObjectIdentifier")
+
+        self._policy_identifier = policy_identifier
+        if policy_qualifiers and not all(
+            isinstance(
+                x, (six.text_type, UserNotice)
+            ) for x in policy_qualifiers
+        ):
+            raise TypeError(
+                "policy_qualifiers must be a list of strings and/or UserNotice"
+                " objects or None"
+            )
+
+        self._policy_qualifiers = policy_qualifiers
+
+    def __repr__(self):
+        return (
+            "<PolicyInformation(policy_identifier={0.policy_identifier}, polic"
+            "y_qualifiers={0.policy_qualifiers})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, PolicyInformation):
+            return NotImplemented
+
+        return (
+            self.policy_identifier == other.policy_identifier and
+            self.policy_qualifiers == other.policy_qualifiers
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    policy_identifier = utils.read_only_property("_policy_identifier")
+    policy_qualifiers = utils.read_only_property("_policy_qualifiers")
+
+
+class UserNotice(object):
+    def __init__(self, notice_reference, explicit_text):
+        if notice_reference and not isinstance(
+            notice_reference, NoticeReference
+        ):
+            raise TypeError(
+                "notice_reference must be None or a NoticeReference"
+            )
+
+        self._notice_reference = notice_reference
+        self._explicit_text = explicit_text
+
+    def __repr__(self):
+        return (
+            "<UserNotice(notice_reference={0.notice_reference}, explicit_text="
+            "{0.explicit_text!r})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, UserNotice):
+            return NotImplemented
+
+        return (
+            self.notice_reference == other.notice_reference and
+            self.explicit_text == other.explicit_text
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    notice_reference = utils.read_only_property("_notice_reference")
+    explicit_text = utils.read_only_property("_explicit_text")
+
+
+class NoticeReference(object):
+    def __init__(self, organization, notice_numbers):
+        self._organization = organization
+        if not isinstance(notice_numbers, list) or not all(
+            isinstance(x, int) for x in notice_numbers
+        ):
+            raise TypeError(
+                "notice_numbers must be a list of integers"
+            )
+
+        self._notice_numbers = notice_numbers
+
+    def __repr__(self):
+        return (
+            "<NoticeReference(organization={0.organization!r}, notice_numbers="
+            "{0.notice_numbers})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, NoticeReference):
+            return NotImplemented
+
+        return (
+            self.organization == other.organization and
+            self.notice_numbers == other.notice_numbers
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    organization = utils.read_only_property("_organization")
+    notice_numbers = utils.read_only_property("_notice_numbers")
+
 
 class SubjectKeyIdentifier(object):
     def __init__(self, digest):
@@ -405,6 +646,126 @@ class SubjectKeyIdentifier(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+class CRLDistributionPoints(object):
+    def __init__(self, distribution_points):
+        if not all(
+            isinstance(x, DistributionPoint) for x in distribution_points
+        ):
+            raise TypeError(
+                "distribution_points must be a list of DistributionPoint "
+                "objects"
+            )
+
+        self._distribution_points = distribution_points
+
+    def __iter__(self):
+        return iter(self._distribution_points)
+
+    def __len__(self):
+        return len(self._distribution_points)
+
+    def __repr__(self):
+        return "<CRLDistributionPoints({0})>".format(self._distribution_points)
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLDistributionPoints):
+            return NotImplemented
+
+        return self._distribution_points == other._distribution_points
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class DistributionPoint(object):
+    def __init__(self, full_name, relative_name, reasons, crl_issuer):
+        if full_name and relative_name:
+            raise ValueError(
+                "At least one of full_name and relative_name must be None"
+            )
+
+        if full_name and not all(
+            isinstance(x, GeneralName) for x in full_name
+        ):
+            raise TypeError(
+                "full_name must be a list of GeneralName objects"
+            )
+
+        if relative_name and not isinstance(relative_name, Name):
+            raise TypeError("relative_name must be a Name")
+
+        if crl_issuer and not all(
+            isinstance(x, GeneralName) for x in crl_issuer
+        ):
+            raise TypeError(
+                "crl_issuer must be None or a list of general names"
+            )
+
+        if reasons and (not isinstance(reasons, frozenset) or not all(
+            isinstance(x, ReasonFlags) for x in reasons
+        )):
+            raise TypeError("reasons must be None or frozenset of ReasonFlags")
+
+        if reasons and (
+            ReasonFlags.unspecified in reasons or
+            ReasonFlags.remove_from_crl in reasons
+        ):
+            raise ValueError(
+                "unspecified and remove_from_crl are not valid reasons in a "
+                "DistributionPoint"
+            )
+
+        if reasons and not crl_issuer and not (full_name or relative_name):
+            raise ValueError(
+                "You must supply crl_issuer, full_name, or relative_name when "
+                "reasons is not None"
+            )
+
+        self._full_name = full_name
+        self._relative_name = relative_name
+        self._reasons = reasons
+        self._crl_issuer = crl_issuer
+
+    def __repr__(self):
+        return (
+            "<DistributionPoint(full_name={0.full_name}, relative_name={0.rela"
+            "tive_name}, reasons={0.reasons}, crl_issuer={0.crl_is"
+            "suer})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, DistributionPoint):
+            return NotImplemented
+
+        return (
+            self.full_name == other.full_name and
+            self.relative_name == other.relative_name and
+            self.reasons == other.reasons and
+            self.crl_issuer == other.crl_issuer
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    full_name = utils.read_only_property("_full_name")
+    relative_name = utils.read_only_property("_relative_name")
+    reasons = utils.read_only_property("_reasons")
+    crl_issuer = utils.read_only_property("_crl_issuer")
+
+
+class ReasonFlags(Enum):
+    unspecified = "unspecified"
+    key_compromise = "keyCompromise"
+    ca_compromise = "cACompromise"
+    affiliation_changed = "affiliationChanged"
+    superseded = "superseded"
+    cessation_of_operation = "cessationOfOperation"
+    certificate_hold = "certificateHold"
+    privilege_withdrawn = "privilegeWithdrawn"
+    aa_compromise = "aACompromise"
+    remove_from_crl = "removeFromCRL"
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -581,6 +942,15 @@ class SubjectAlternativeName(object):
     def __repr__(self):
         return "<SubjectAlternativeName({0})>".format(self._general_names)
 
+    def __eq__(self, other):
+        if not isinstance(other, SubjectAlternativeName):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class AuthorityKeyIdentifier(object):
     def __init__(self, key_identifier, authority_cert_issuer,
@@ -592,8 +962,13 @@ class AuthorityKeyIdentifier(object):
                     "must both be present or both None"
                 )
 
-            if not isinstance(authority_cert_issuer, Name):
-                raise TypeError("authority_cert_issuer must be a Name")
+            if not all(
+                isinstance(x, GeneralName) for x in authority_cert_issuer
+            ):
+                raise TypeError(
+                    "authority_cert_issuer must be a list of GeneralName "
+                    "objects"
+                )
 
             if not isinstance(authority_cert_serial_number, six.integer_types):
                 raise TypeError(
@@ -611,6 +986,20 @@ class AuthorityKeyIdentifier(object):
             "authority_cert_serial_number={0.authority_cert_serial_number}"
             ")>".format(self)
         )
+
+    def __eq__(self, other):
+        if not isinstance(other, AuthorityKeyIdentifier):
+            return NotImplemented
+
+        return (
+            self.key_identifier == other.key_identifier and
+            self.authority_cert_issuer == other.authority_cert_issuer and
+            self.authority_cert_serial_number ==
+            other.authority_cert_serial_number
+        )
+
+    def __ne__(self, other):
+        return not self == other
 
     key_identifier = utils.read_only_property("_key_identifier")
     authority_cert_issuer = utils.read_only_property("_authority_cert_issuer")
@@ -671,6 +1060,12 @@ OID_CODE_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.3")
 OID_EMAIL_PROTECTION = ObjectIdentifier("1.3.6.1.5.5.7.3.4")
 OID_TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
 OID_OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
+
+OID_CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
+OID_OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
+
+OID_CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
+OID_CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
 
 
 @six.add_metaclass(abc.ABCMeta)

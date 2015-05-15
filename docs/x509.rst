@@ -50,6 +50,42 @@ X.509
     -----END CERTIFICATE-----
     """.strip()
 
+    cryptography_cert_pem = b"""
+    -----BEGIN CERTIFICATE-----
+    MIIFvTCCBKWgAwIBAgICPyAwDQYJKoZIhvcNAQELBQAwRzELMAkGA1UEBhMCVVMx
+    FjAUBgNVBAoTDUdlb1RydXN0IEluYy4xIDAeBgNVBAMTF1JhcGlkU1NMIFNIQTI1
+    NiBDQSAtIEczMB4XDTE0MTAxNTEyMDkzMloXDTE4MTExNjAxMTUwM1owgZcxEzAR
+    BgNVBAsTCkdUNDg3NDI5NjUxMTAvBgNVBAsTKFNlZSB3d3cucmFwaWRzc2wuY29t
+    L3Jlc291cmNlcy9jcHMgKGMpMTQxLzAtBgNVBAsTJkRvbWFpbiBDb250cm9sIFZh
+    bGlkYXRlZCAtIFJhcGlkU1NMKFIpMRwwGgYDVQQDExN3d3cuY3J5cHRvZ3JhcGh5
+    LmlvMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAom/FebKJIot7Sp3s
+    itG1sicpe3thCssjI+g1JDAS7I3GLVNmbms1DOdIIqwf01gZkzzXBN2+9sOnyRaR
+    PPfCe1jTr3dk2y6rPE559vPa1nZQkhlzlhMhlPyjaT+S7g4Tio4qV2sCBZU01DZJ
+    CaksfohN+5BNVWoJzTbOcrHOEJ+M8B484KlBCiSxqf9cyNQKru4W3bHaCVNVJ8eu
+    6i6KyhzLa0L7yK3LXwwXVs583C0/vwFhccGWsFODqD/9xHUzsBIshE8HKjdjDi7Y
+    3BFQzVUQFjBB50NSZfAA/jcdt1blxJouc7z9T8Oklh+V5DDBowgAsrT4b6Z2Fq6/
+    r7D1GqivLK/ypUQmxq2WXWAUBb/Q6xHgxASxI4Br+CByIUQJsm8L2jzc7k+mF4hW
+    ltAIUkbo8fGiVnat0505YJgxWEDKOLc4Gda6d/7GVd5AvKrz242bUqeaWo6e4MTx
+    diku2Ma3rhdcr044Qvfh9hGyjqNjvhWY/I+VRWgihU7JrYvgwFdJqsQ5eiKT4OHi
+    gsejvWwkZzDtiQ+aQTrzM1FsY2swJBJsLSX4ofohlVRlIJCn/ME+XErj553431Lu
+    YQ5SzMd3nXzN78Vj6qzTfMUUY72UoT1/AcFiUMobgIqrrmwuNxfrkbVE2b6Bga74
+    FsJX63prvrJ41kuHK/16RQBM7fcCAwEAAaOCAWAwggFcMB8GA1UdIwQYMBaAFMOc
+    8/zTRgg0u85Gf6B8W/PiCMtZMFcGCCsGAQUFBwEBBEswSTAfBggrBgEFBQcwAYYT
+    aHR0cDovL2d2LnN5bWNkLmNvbTAmBggrBgEFBQcwAoYaaHR0cDovL2d2LnN5bWNi
+    LmNvbS9ndi5jcnQwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMB
+    BggrBgEFBQcDAjAvBgNVHREEKDAmghN3d3cuY3J5cHRvZ3JhcGh5Lmlvgg9jcnlw
+    dG9ncmFwaHkuaW8wKwYDVR0fBCQwIjAgoB6gHIYaaHR0cDovL2d2LnN5bWNiLmNv
+    bS9ndi5jcmwwDAYDVR0TAQH/BAIwADBFBgNVHSAEPjA8MDoGCmCGSAGG+EUBBzYw
+    LDAqBggrBgEFBQcCARYeaHR0cHM6Ly93d3cucmFwaWRzc2wuY29tL2xlZ2FsMA0G
+    CSqGSIb3DQEBCwUAA4IBAQAzIYO2jx7h17FBT74tJ2zbV9OKqGb7QF8y3wUtP4xc
+    dH80vprI/Cfji8s86kr77aAvAqjDjaVjHn7UzebhSUivvRPmfzRgyWBacomnXTSt
+    Xlt2dp2nDQuwGyK2vB7dMfKnQAkxwq1sYUXznB8i0IhhCAoXp01QGPKq51YoIlnF
+    7DRMk6iEaL1SJbkIrLsCQyZFDf0xtfW9DqXugMMLoxeCsBhZJQzNyS2ryirrv9LH
+    aK3+6IZjrcyy9bkpz/gzJucyhU+75c4My/mnRCrtItRbCQuiI5pd5poDowm+HH9i
+    GVI9+0lAFwxOUnOnwsoI40iOoxjLMGB+CgFLKCGUcWxP
+    -----END CERTIFICATE-----
+    """.strip()
+
 X.509 is an ITU-T standard for a `public key infrastructure`_. X.509v3 is
 defined in :rfc:`5280` (which obsoletes :rfc:`2459` and :rfc:`3280`). X.509
 certificates are commonly used in protocols like `TLS`_.
@@ -281,8 +317,10 @@ X.509 Certificate Object
 
             >>> for ext in cert.extensions:
             ...     print(ext)
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.35, name=authorityKeyIdentifier)>, critical=False, value=<AuthorityKeyIdentifier(key_identifier='\xe4}_\xd1\\\x95\x86\x08,\x05\xae\xbeu\xb6e\xa7\xd9]\xa8f', authority_cert_issuer=None, authority_cert_serial_number=None)>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectKeyIdentifier)>, critical=False, value=<SubjectKeyIdentifier(digest='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.15, name=keyUsage)>, critical=True, value=<KeyUsage(digital_signature=False, content_commitment=False, key_encipherment=False, data_encipherment=False, key_agreement=False, key_cert_sign=True, crl_sign=True, encipher_only=None, decipher_only=None)>)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.32, name=certificatePolicies)>, critical=False, value=<CertificatePolicies([<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=2.16.840.1.101.3.2.1.48.1, name=Unknown OID)>, policy_qualifiers=None)>])>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
 X.509 CSR (Certificate Signing Request) Object
@@ -646,10 +684,10 @@ X.509 Extensions
         certificate. This attribute only has meaning if ``ca`` is true.
         If ``ca`` is true then a path length of None means there's no
         restriction on the number of subordinate CAs in the certificate chain.
-        If it is zero or greater then that number defines the maximum length.
-        For example, a ``path_length`` of 1 means the certificate can sign a
-        subordinate CA, but the subordinate CA is not allowed to create
-        subordinates with ``ca`` set to true.
+        If it is zero or greater then it defines the maximum length for a
+        subordinate CA's certificate chain. For example, a ``path_length`` of 1
+        means the certificate can sign a subordinate CA, but the subordinate CA
+        is not allowed to create subordinates with ``ca`` set to true.
 
 .. class:: ExtendedKeyUsage
 
@@ -718,6 +756,217 @@ X.509 Extensions
 
         :returns: A list of values extracted from the matched general names.
 
+        .. doctest::
+
+            >>> from cryptography import x509
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> cert = x509.load_pem_x509_certificate(cryptography_cert_pem, default_backend())
+            >>> # Get the subjectAltName extension from the certificate
+            >>> ext = cert.extensions.get_extension_for_oid(x509.OID_SUBJECT_ALTERNATIVE_NAME)
+            >>> # Get the dNSName entries from the SAN extension
+            >>> ext.value.get_values_for_type(x509.DNSName)
+            [u'www.cryptography.io', u'cryptography.io']
+
+
+.. class:: AuthorityInformationAccess
+
+    .. versionadded:: 0.9
+
+    The authority information access extension indicates how to access
+    information and services for the issuer of the certificate in which
+    the extension appears. Information and services may include online
+    validation services (such as OCSP) and issuer data. It is an iterable,
+    containing one or more :class:`AccessDescription` instances.
+
+
+.. class:: AccessDescription
+
+    .. versionadded:: 0.9
+
+    .. attribute:: access_method
+
+        :type: :class:`ObjectIdentifier`
+
+        The access method defines what the ``access_location`` means. It must
+        be either :data:`OID_OCSP` or :data:`OID_CA_ISSUERS`. If it is
+        :data:`OID_OCSP` the access location will be where to obtain OCSP
+        information for the certificate. If it is :data:`OID_CA_ISSUERS` the
+        access location will provide additional information about the issuing
+        certificate.
+
+    .. attribute:: access_location
+
+        :type: :class:`GeneralName`
+
+        Where to access the information defined by the access method.
+
+.. class:: CRLDistributionPoints
+
+    .. versionadded:: 0.9
+
+    The CRL distribution points extension identifies how CRL information is
+    obtained. It is an iterable, containing one or more
+    :class:`DistributionPoint` instances.
+
+.. class:: DistributionPoint
+
+    .. versionadded:: 0.9
+
+    .. attribute:: full_name
+
+        :type: list of :class:`GeneralName` instances or None
+
+        This field describes methods to retrieve the CRL. At most one of
+        ``full_name`` or ``relative_name`` will be non-None.
+
+    .. attribute:: relative_name
+
+        :type: :class:`Name` or None
+
+        This field describes methods to retrieve the CRL relative to the CRL
+        issuer. At most one of ``full_name`` or ``relative_name`` will be
+        non-None.
+
+    .. attribute:: crl_issuer
+
+        :type: list of :class:`GeneralName` instances or None
+
+        Information about the issuer of the CRL.
+
+    .. attribute:: reasons
+
+        :type: frozenset of :class:`ReasonFlags` or None
+
+        The reasons a given distribution point may be used for when performing
+        revocation checks.
+
+.. class:: ReasonFlags
+
+    .. versionadded:: 0.9
+
+    An enumeration for CRL reasons.
+
+    .. attribute:: unspecified
+
+        It is unspecified why the certificate was revoked. This reason cannot
+        be used as a reason flag in a :class:`DistributionPoint`.
+
+    .. attribute:: key_compromise
+
+        This reason indicates that the private key was compromised.
+
+    .. attribute:: ca_compromise
+
+        This reason indicates that the CA issuing the certificate was
+        compromised.
+
+    .. attribute:: affiliation_changed
+
+        This reason indicates that the subject's name or other information has
+        changed.
+
+    .. attribute:: superseded
+
+        This reason indicates that a certificate has been superseded.
+
+    .. attribute:: cessation_of_operation
+
+        This reason indicates that the certificate is no longer required.
+
+    .. attribute:: certificate_hold
+
+        This reason indicates that the certificate is on hold.
+
+    .. attribute:: privilege_withdrawn
+
+        This reason indicates that the privilege granted by this certificate
+        have been withdrawn.
+
+    .. attribute:: aa_compromise
+
+        When an attribute authority has been compromised.
+
+    .. attribute:: remove_from_crl
+
+        This reason indicates that the certificate was on hold and should be
+        removed from the CRL. This reason cannot be used as a reason flag
+        in a :class:`DistributionPoint`.
+
+.. class:: CertificatePolicies
+
+    .. versionadded:: 0.9
+
+    The certificate policies extension is an iterable, containing one or more
+    :class:`PolicyInformation` instances.
+
+Certificate Policies Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These classes may be present within a :class:`CertificatePolicies` instance.
+
+.. class:: PolicyInformation
+
+    .. versionadded:: 0.9
+
+    Contains a policy identifier and an optional list of qualifiers.
+
+    .. attribute:: policy_identifier
+
+        :type: :class:`ObjectIdentifier`
+
+    .. attribute:: policy_qualifiers
+
+        :type: list
+
+        A list consisting of :term:`text` and/or :class:`UserNotice` objects.
+        If the value is text it is a pointer to the practice statement
+        published by the certificate authority. If it is a user notice it is
+        meant for display to the relying party when the certificate is
+        used.
+
+.. class:: UserNotice
+
+    .. versionadded:: 0.9
+
+    User notices are intended for display to a relying party when a certificate
+    is used. In practice, few if any UIs expose this data and it is a rarely
+    encoded component.
+
+    .. attribute:: notice_reference
+
+        :type: :class:`NoticeReference` or None
+
+        The notice reference field names an organization and identifies,
+        by number, a particular statement prepared by that organization.
+
+    .. attribute:: explicit_text
+
+        This field includes an arbitrary textual statement directly in the
+        certificate.
+
+        :type: :term:`text`
+
+.. class:: NoticeReference
+
+    Notice reference can name an organization and provide information about
+    notices related to the certificate. For example, it might identify the
+    organization name and notice number 1. Application software could
+    have a notice file containing the current set of notices for the named
+    organization; the application would then extract the notice text from the
+    file and display it. In practice this is rarely seen.
+
+    .. versionadded:: 0.9
+
+    .. attribute:: organization
+
+        :type: :term:`text`
+
+    .. attribute:: notice_numbers
+
+        :type: list
+
+        A list of integers.
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
@@ -911,6 +1160,30 @@ Extended Key Usage OIDs
     Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.9"``. This is used to
     denote that a certificate may be used for signing OCSP responses.
 
+Authority Information Access OIDs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: OID_OCSP
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1"``. Used as the
+    identifier for OCSP data in :class:`AccessDescription` objects.
+
+.. data:: OID_CA_ISSUERS
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.2"``. Used as the
+    identifier for CA issuer data in :class:`AccessDescription` objects.
+
+Policy Qualifier OIDs
+~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: OID_CPS_QUALIFIER
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.1"``.
+
+.. data:: OID_CPS_USER_NOTICE
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.2.2"``.
+
 .. _extension_oids:
 
 Extension OIDs
@@ -926,6 +1199,40 @@ Extension OIDs
     Corresponds to the dotted string ``"2.5.29.15"``. The identifier for the
     :class:`KeyUsage` extension type.
 
+.. data:: OID_SUBJECT_ALTERNATIVE_NAME
+
+    Corresponds to the dotted string ``"2.5.29.17"``. The identifier for the
+    :class:`SubjectAlternativeName` extension type.
+
+.. data:: OID_SUBJECT_KEY_IDENTIFIER
+
+    Corresponds to the dotted string ``"2.5.29.14"``. The identifier for the
+    :class:`SubjectKeyIdentifier` extension type.
+
+.. data:: OID_CRL_DISTRIBUTION_POINTS
+
+    Corresponds to the dotted string ``"2.5.29.31"``. The identifier for the
+    :class:`CRLDistributionPoints` extension type.
+
+.. data:: OID_CERTIFICATE_POLICIES
+
+    Corresponds to the dotted string ``"2.5.29.32"``. The identifier for the
+    :class:`CertificatePolicies` extension type.
+
+.. data:: OID_AUTHORITY_KEY_IDENTIFIER
+
+    Corresponds to the dotted string ``"2.5.29.35"``. The identifier for the
+    :class:`AuthorityKeyIdentifier` extension type.
+
+.. data:: OID_EXTENDED_KEY_USAGE
+
+    Corresponds to the dotted string ``"2.5.29.37"``. The identifier for the
+    :class:`ExtendedKeyUsage` extension type.
+
+.. data:: OID_AUTHORITY_INFORMATION_ACCESS
+
+    Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.1"``. The identifier
+    for the :class:`AuthorityInformationAccess` extension type.
 
 Exceptions
 ~~~~~~~~~~

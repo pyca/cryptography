@@ -1,10 +1,13 @@
 Changelog
 =========
 
-0.9 - `master`_
-~~~~~~~~~~~~~~~
+0.10 - `master`_
+~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+0.9 - 2015-05-13
+~~~~~~~~~~~~~~~~
 
 * Removed support for Python 3.2. This version of Python is rarely used
   and caused support headaches. Users affected by this should upgrade to 3.3+.
@@ -12,6 +15,9 @@ Changelog
   actually dropping support, however we strongly encourage all users to upgrade
   their Python, as Python 2.6 no longer receives support from the Python core
   team.
+* Add support for the
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.SECP256K1` elliptic
+  curve.
 * Fixed compilation when using an OpenSSL which was compiled with the
   ``no-comp`` (``OPENSSL_NO_COMP``) option.
 * Support :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
@@ -33,6 +39,23 @@ Changelog
   :class:`cryptography.hazmat.primitives.twofactor.InvalidToken` and deprecated
   the old location. This was moved to minimize confusion between this exception
   and :class:`cryptography.fernet.InvalidToken`.
+* Added support for X.509 extensions in :class:`~cryptography.x509.Certificate`
+  objects. The following extensions are supported as of this release:
+
+  * :class:`~cryptography.x509.BasicConstraints`
+  * :class:`~cryptography.x509.AuthorityKeyIdentifier`
+  * :class:`~cryptography.x509.SubjectKeyIdentifier`
+  * :class:`~cryptography.x509.KeyUsage`
+  * :class:`~cryptography.x509.SubjectAlternativeName`
+  * :class:`~cryptography.x509.ExtendedKeyUsage`
+  * :class:`~cryptography.x509.CRLDistributionPoints`
+  * :class:`~cryptography.x509.AuthorityInformationAccess`
+  * :class:`~cryptography.x509.CertificatePolicies`
+
+  Note that unsupported extensions with the critical flag raise
+  :class:`~cryptography.x509.UnsupportedExtension` while unsupported extensions
+  set to non-critical are silently ignored. Read the
+  :doc:`X.509 documentation</x509>` for more information.
 
 0.8.2 - 2015-04-10
 ~~~~~~~~~~~~~~~~~~
