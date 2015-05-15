@@ -49,7 +49,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             ;;
     esac
     pyenv rehash
-    pip install --user virtualenv
+    python -m pip install --user virtualenv
 else
     pip install virtualenv
 fi
