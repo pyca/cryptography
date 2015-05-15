@@ -1332,6 +1332,17 @@ class TestRSASubjectAlternativeNameExtension(object):
         rfc822name = san.get_values_for_type(x509.RFC822Name)
         assert [u"email@em\xe5\xefl.com"] == rfc822name
 
+    def test_idna2003_invalid(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_idna2003_dnsname.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(UnicodeError):
+            cert.extensions
+
     def test_unicode_rfc822_name_dns_name_uri(self, backend):
         cert = _load_cert(
             os.path.join(
