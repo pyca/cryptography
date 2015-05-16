@@ -124,7 +124,7 @@ Custom X.509 Vectors
   "We heart UTF8!™".
 * ``two_basic_constraints.pem`` - An RSA 2048 bit self-signed certificate
   containing two basic constraints extensions.
-* ``two_basic_constraints_csr.pem`` - A cerfificate sigining request
+* ``two_basic_constraints_csr.pem`` - A certificate signing request
   for a RSA 2048 bit key containing two basic constraints extensions.
 * ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
   certificate containing a basic constraints extension that is not marked as
