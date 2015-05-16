@@ -56,7 +56,7 @@ def _asn1_string_to_utf8(backend, asn1_string):
     return backend._ffi.buffer(buf[0], res)[:].decode('utf8')
 
 
-def _build_x509_name_entry(backend, x509_name_entry):
+def _decode_x509_name_entry(backend, x509_name_entry):
     obj = backend._lib.X509_NAME_ENTRY_get_object(x509_name_entry)
     assert obj != backend._ffi.NULL
     data = backend._lib.X509_NAME_ENTRY_get_data(x509_name_entry)
@@ -67,28 +67,28 @@ def _build_x509_name_entry(backend, x509_name_entry):
     return x509.NameAttribute(x509.ObjectIdentifier(oid), value)
 
 
-def _build_x509_name(backend, x509_name):
+def _decode_x509_name(backend, x509_name):
     count = backend._lib.X509_NAME_entry_count(x509_name)
     attributes = []
     for x in range(count):
         entry = backend._lib.X509_NAME_get_entry(x509_name, x)
-        attributes.append(_build_x509_name_entry(backend, entry))
+        attributes.append(_decode_x509_name_entry(backend, entry))
 
     return x509.Name(attributes)
 
 
-def _build_general_names(backend, gns):
+def _decode_general_names(backend, gns):
     num = backend._lib.sk_GENERAL_NAME_num(gns)
     names = []
     for i in range(num):
         gn = backend._lib.sk_GENERAL_NAME_value(gns, i)
         assert gn != backend._ffi.NULL
-        names.append(_build_general_name(backend, gn))
+        names.append(_decode_general_name(backend, gn))
 
     return names
 
 
-def _build_general_name(backend, gn):
+def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
         return x509.DNSName(idna.decode(data))
@@ -129,7 +129,7 @@ def _build_general_name(backend, gn):
         )
     elif gn.type == backend._lib.GEN_DIRNAME:
         return x509.DirectoryName(
-            _build_x509_name(backend, gn.d.directoryName)
+            _decode_x509_name(backend, gn.d.directoryName)
         )
     elif gn.type == backend._lib.GEN_EMAIL:
         data = backend._ffi.buffer(
@@ -244,13 +244,13 @@ class _Certificate(object):
     def issuer(self):
         issuer = self._backend._lib.X509_get_issuer_name(self._x509)
         assert issuer != self._backend._ffi.NULL
-        return _build_x509_name(self._backend, issuer)
+        return _decode_x509_name(self._backend, issuer)
 
     @property
     def subject(self):
         subject = self._backend._lib.X509_get_subject_name(self._x509)
         assert subject != self._backend._ffi.NULL
-        return _build_x509_name(self._backend, subject)
+        return _decode_x509_name(self._backend, subject)
 
     @property
     def signature_hash_algorithm(self):
@@ -278,23 +278,25 @@ class _Certificate(object):
                     "Duplicate {0} extension found".format(oid), oid
                 )
             elif oid == x509.OID_BASIC_CONSTRAINTS:
-                value = self._build_basic_constraints(ext)
+                value = _decode_basic_constraints(self._backend, ext)
             elif oid == x509.OID_SUBJECT_KEY_IDENTIFIER:
-                value = self._build_subject_key_identifier(ext)
+                value = _decode_subject_key_identifier(self._backend, ext)
             elif oid == x509.OID_KEY_USAGE:
-                value = self._build_key_usage(ext)
+                value = _decode_key_usage(self._backend, ext)
             elif oid == x509.OID_SUBJECT_ALTERNATIVE_NAME:
-                value = self._build_subject_alt_name(ext)
+                value = _decode_subject_alt_name(self._backend, ext)
             elif oid == x509.OID_EXTENDED_KEY_USAGE:
-                value = self._build_extended_key_usage(ext)
+                value = _decode_extended_key_usage(self._backend, ext)
             elif oid == x509.OID_AUTHORITY_KEY_IDENTIFIER:
-                value = self._build_authority_key_identifier(ext)
+                value = _decode_authority_key_identifier(self._backend, ext)
             elif oid == x509.OID_AUTHORITY_INFORMATION_ACCESS:
-                value = self._build_authority_information_access(ext)
+                value = _decode_authority_information_access(
+                    self._backend, ext
+                )
             elif oid == x509.OID_CERTIFICATE_POLICIES:
-                value = self._build_certificate_policies(ext)
+                value = _decode_certificate_policies(self._backend, ext)
             elif oid == x509.OID_CRL_DISTRIBUTION_POINTS:
-                value = self._build_crl_distribution_points(ext)
+                value = _decode_crl_distribution_points(self._backend, ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -309,311 +311,323 @@ class _Certificate(object):
 
         return x509.Extensions(extensions)
 
-    def _build_certificate_policies(self, ext):
-        cp = self._backend._ffi.cast(
-            "Cryptography_STACK_OF_POLICYINFO *",
-            self._backend._lib.X509V3_EXT_d2i(ext)
-        )
-        assert cp != self._backend._ffi.NULL
-        cp = self._backend._ffi.gc(cp, self._backend._lib.sk_POLICYINFO_free)
-        num = self._backend._lib.sk_POLICYINFO_num(cp)
-        certificate_policies = []
-        for i in range(num):
-            qualifiers = None
-            pi = self._backend._lib.sk_POLICYINFO_value(cp, i)
-            oid = x509.ObjectIdentifier(_obj2txt(self._backend, pi.policyid))
-            if pi.qualifiers != self._backend._ffi.NULL:
-                qnum = self._backend._lib.sk_POLICYQUALINFO_num(pi.qualifiers)
-                qualifiers = []
-                for j in range(qnum):
-                    pqi = self._backend._lib.sk_POLICYQUALINFO_value(
-                        pi.qualifiers, j
-                    )
-                    pqualid = x509.ObjectIdentifier(
-                        _obj2txt(self._backend, pqi.pqualid)
-                    )
-                    if pqualid == x509.OID_CPS_QUALIFIER:
-                        cpsuri = self._backend._ffi.buffer(
-                            pqi.d.cpsuri.data, pqi.d.cpsuri.length
-                        )[:].decode('ascii')
-                        qualifiers.append(cpsuri)
-                    elif pqualid == x509.OID_CPS_USER_NOTICE:
-                        user_notice = self._build_user_notice(pqi.d.usernotice)
-                        qualifiers.append(user_notice)
 
-            certificate_policies.append(
-                x509.PolicyInformation(oid, qualifiers)
-            )
-
-        return x509.CertificatePolicies(certificate_policies)
-
-    def _build_user_notice(self, un):
-        explicit_text = None
-        notice_reference = None
-
-        if un.exptext != self._backend._ffi.NULL:
-            explicit_text = _asn1_string_to_utf8(self._backend, un.exptext)
-
-        if un.noticeref != self._backend._ffi.NULL:
-            organization = _asn1_string_to_utf8(
-                self._backend, un.noticeref.organization
-            )
-
-            num = self._backend._lib.sk_ASN1_INTEGER_num(
-                un.noticeref.noticenos
-            )
-            notice_numbers = []
-            for i in range(num):
-                asn1_int = self._backend._lib.sk_ASN1_INTEGER_value(
-                    un.noticeref.noticenos, i
+def _decode_certificate_policies(backend, ext):
+    cp = backend._ffi.cast(
+        "Cryptography_STACK_OF_POLICYINFO *",
+        backend._lib.X509V3_EXT_d2i(ext)
+    )
+    assert cp != backend._ffi.NULL
+    cp = backend._ffi.gc(cp, backend._lib.sk_POLICYINFO_free)
+    num = backend._lib.sk_POLICYINFO_num(cp)
+    certificate_policies = []
+    for i in range(num):
+        qualifiers = None
+        pi = backend._lib.sk_POLICYINFO_value(cp, i)
+        oid = x509.ObjectIdentifier(_obj2txt(backend, pi.policyid))
+        if pi.qualifiers != backend._ffi.NULL:
+            qnum = backend._lib.sk_POLICYQUALINFO_num(pi.qualifiers)
+            qualifiers = []
+            for j in range(qnum):
+                pqi = backend._lib.sk_POLICYQUALINFO_value(
+                    pi.qualifiers, j
                 )
-                notice_num = _asn1_integer_to_int(
-                    self._backend, asn1_int
+                pqualid = x509.ObjectIdentifier(
+                    _obj2txt(backend, pqi.pqualid)
                 )
-                notice_numbers.append(notice_num)
-
-            notice_reference = x509.NoticeReference(
-                organization, notice_numbers
-            )
-
-        return x509.UserNotice(notice_reference, explicit_text)
-
-    def _build_basic_constraints(self, ext):
-        bc_st = self._backend._lib.X509V3_EXT_d2i(ext)
-        assert bc_st != self._backend._ffi.NULL
-        basic_constraints = self._backend._ffi.cast(
-            "BASIC_CONSTRAINTS *", bc_st
-        )
-        basic_constraints = self._backend._ffi.gc(
-            basic_constraints, self._backend._lib.BASIC_CONSTRAINTS_free
-        )
-        # The byte representation of an ASN.1 boolean true is \xff. OpenSSL
-        # chooses to just map this to its ordinal value, so true is 255 and
-        # false is 0.
-        ca = basic_constraints.ca == 255
-        if basic_constraints.pathlen == self._backend._ffi.NULL:
-            path_length = None
-        else:
-            path_length = _asn1_integer_to_int(
-                self._backend, basic_constraints.pathlen
-            )
-
-        return x509.BasicConstraints(ca, path_length)
-
-    def _build_subject_key_identifier(self, ext):
-        asn1_string = self._backend._lib.X509V3_EXT_d2i(ext)
-        assert asn1_string != self._backend._ffi.NULL
-        asn1_string = self._backend._ffi.cast(
-            "ASN1_OCTET_STRING *", asn1_string
-        )
-        asn1_string = self._backend._ffi.gc(
-            asn1_string, self._backend._lib.ASN1_OCTET_STRING_free
-        )
-        return x509.SubjectKeyIdentifier(
-            self._backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
-        )
-
-    def _build_authority_key_identifier(self, ext):
-        akid = self._backend._lib.X509V3_EXT_d2i(ext)
-        assert akid != self._backend._ffi.NULL
-        akid = self._backend._ffi.cast("AUTHORITY_KEYID *", akid)
-        akid = self._backend._ffi.gc(
-            akid, self._backend._lib.AUTHORITY_KEYID_free
-        )
-        key_identifier = None
-        authority_cert_issuer = None
-        authority_cert_serial_number = None
-
-        if akid.keyid != self._backend._ffi.NULL:
-            key_identifier = self._backend._ffi.buffer(
-                akid.keyid.data, akid.keyid.length
-            )[:]
-
-        if akid.issuer != self._backend._ffi.NULL:
-            authority_cert_issuer = _build_general_names(
-                self._backend, akid.issuer
-            )
-
-        if akid.serial != self._backend._ffi.NULL:
-            authority_cert_serial_number = _asn1_integer_to_int(
-                self._backend, akid.serial
-            )
-
-        return x509.AuthorityKeyIdentifier(
-            key_identifier, authority_cert_issuer, authority_cert_serial_number
-        )
-
-    def _build_authority_information_access(self, ext):
-        aia = self._backend._lib.X509V3_EXT_d2i(ext)
-        assert aia != self._backend._ffi.NULL
-        aia = self._backend._ffi.cast(
-            "Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia
-        )
-        aia = self._backend._ffi.gc(
-            aia, self._backend._lib.sk_ACCESS_DESCRIPTION_free
-        )
-        num = self._backend._lib.sk_ACCESS_DESCRIPTION_num(aia)
-        access_descriptions = []
-        for i in range(num):
-            ad = self._backend._lib.sk_ACCESS_DESCRIPTION_value(aia, i)
-            assert ad.method != self._backend._ffi.NULL
-            oid = x509.ObjectIdentifier(_obj2txt(self._backend, ad.method))
-            assert ad.location != self._backend._ffi.NULL
-            gn = _build_general_name(self._backend, ad.location)
-            access_descriptions.append(x509.AccessDescription(oid, gn))
-
-        return x509.AuthorityInformationAccess(access_descriptions)
-
-    def _build_key_usage(self, ext):
-        bit_string = self._backend._lib.X509V3_EXT_d2i(ext)
-        assert bit_string != self._backend._ffi.NULL
-        bit_string = self._backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
-        bit_string = self._backend._ffi.gc(
-            bit_string, self._backend._lib.ASN1_BIT_STRING_free
-        )
-        get_bit = self._backend._lib.ASN1_BIT_STRING_get_bit
-        digital_signature = get_bit(bit_string, 0) == 1
-        content_commitment = get_bit(bit_string, 1) == 1
-        key_encipherment = get_bit(bit_string, 2) == 1
-        data_encipherment = get_bit(bit_string, 3) == 1
-        key_agreement = get_bit(bit_string, 4) == 1
-        key_cert_sign = get_bit(bit_string, 5) == 1
-        crl_sign = get_bit(bit_string, 6) == 1
-        encipher_only = get_bit(bit_string, 7) == 1
-        decipher_only = get_bit(bit_string, 8) == 1
-        return x509.KeyUsage(
-            digital_signature,
-            content_commitment,
-            key_encipherment,
-            data_encipherment,
-            key_agreement,
-            key_cert_sign,
-            crl_sign,
-            encipher_only,
-            decipher_only
-        )
-
-    def _build_subject_alt_name(self, ext):
-        gns = self._backend._ffi.cast(
-            "GENERAL_NAMES *", self._backend._lib.X509V3_EXT_d2i(ext)
-        )
-        assert gns != self._backend._ffi.NULL
-        gns = self._backend._ffi.gc(gns, self._backend._lib.GENERAL_NAMES_free)
-        general_names = _build_general_names(self._backend, gns)
-
-        return x509.SubjectAlternativeName(general_names)
-
-    def _build_extended_key_usage(self, ext):
-        sk = self._backend._ffi.cast(
-            "Cryptography_STACK_OF_ASN1_OBJECT *",
-            self._backend._lib.X509V3_EXT_d2i(ext)
-        )
-        assert sk != self._backend._ffi.NULL
-        sk = self._backend._ffi.gc(sk, self._backend._lib.sk_ASN1_OBJECT_free)
-        num = self._backend._lib.sk_ASN1_OBJECT_num(sk)
-        ekus = []
-
-        for i in range(num):
-            obj = self._backend._lib.sk_ASN1_OBJECT_value(sk, i)
-            assert obj != self._backend._ffi.NULL
-            oid = x509.ObjectIdentifier(_obj2txt(self._backend, obj))
-            ekus.append(oid)
-
-        return x509.ExtendedKeyUsage(ekus)
-
-    def _build_crl_distribution_points(self, ext):
-        cdps = self._backend._ffi.cast(
-            "Cryptography_STACK_OF_DIST_POINT *",
-            self._backend._lib.X509V3_EXT_d2i(ext)
-        )
-        assert cdps != self._backend._ffi.NULL
-        cdps = self._backend._ffi.gc(
-            cdps, self._backend._lib.sk_DIST_POINT_free)
-        num = self._backend._lib.sk_DIST_POINT_num(cdps)
-
-        dist_points = []
-        for i in range(num):
-            full_name = None
-            relative_name = None
-            crl_issuer = None
-            reasons = None
-            cdp = self._backend._lib.sk_DIST_POINT_value(cdps, i)
-            if cdp.reasons != self._backend._ffi.NULL:
-                # We will check each bit from RFC 5280
-                # ReasonFlags ::= BIT STRING {
-                #      unused                  (0),
-                #      keyCompromise           (1),
-                #      cACompromise            (2),
-                #      affiliationChanged      (3),
-                #      superseded              (4),
-                #      cessationOfOperation    (5),
-                #      certificateHold         (6),
-                #      privilegeWithdrawn      (7),
-                #      aACompromise            (8) }
-                reasons = []
-                get_bit = self._backend._lib.ASN1_BIT_STRING_get_bit
-                if get_bit(cdp.reasons, 1):
-                    reasons.append(x509.ReasonFlags.key_compromise)
-
-                if get_bit(cdp.reasons, 2):
-                    reasons.append(x509.ReasonFlags.ca_compromise)
-
-                if get_bit(cdp.reasons, 3):
-                    reasons.append(x509.ReasonFlags.affiliation_changed)
-
-                if get_bit(cdp.reasons, 4):
-                    reasons.append(x509.ReasonFlags.superseded)
-
-                if get_bit(cdp.reasons, 5):
-                    reasons.append(x509.ReasonFlags.cessation_of_operation)
-
-                if get_bit(cdp.reasons, 6):
-                    reasons.append(x509.ReasonFlags.certificate_hold)
-
-                if get_bit(cdp.reasons, 7):
-                    reasons.append(x509.ReasonFlags.privilege_withdrawn)
-
-                if get_bit(cdp.reasons, 8):
-                    reasons.append(x509.ReasonFlags.aa_compromise)
-
-                reasons = frozenset(reasons)
-
-            if cdp.CRLissuer != self._backend._ffi.NULL:
-                crl_issuer = _build_general_names(self._backend, cdp.CRLissuer)
-
-            # Certificates may have a crl_issuer/reasons and no distribution
-            # point so make sure it's not null.
-            if cdp.distpoint != self._backend._ffi.NULL:
-                # Type 0 is fullName, there is no #define for it in the code.
-                if cdp.distpoint.type == 0:
-                    full_name = _build_general_names(
-                        self._backend, cdp.distpoint.name.fullname
+                if pqualid == x509.OID_CPS_QUALIFIER:
+                    cpsuri = backend._ffi.buffer(
+                        pqi.d.cpsuri.data, pqi.d.cpsuri.length
+                    )[:].decode('ascii')
+                    qualifiers.append(cpsuri)
+                elif pqualid == x509.OID_CPS_USER_NOTICE:
+                    user_notice = _decode_user_notice(
+                        backend, pqi.d.usernotice
                     )
-                # OpenSSL code doesn't test for a specific type for
-                # relativename, everything that isn't fullname is considered
-                # relativename.
-                else:
-                    rns = cdp.distpoint.name.relativename
-                    rnum = self._backend._lib.sk_X509_NAME_ENTRY_num(rns)
-                    attributes = []
-                    for i in range(rnum):
-                        rn = self._backend._lib.sk_X509_NAME_ENTRY_value(
-                            rns, i
-                        )
-                        assert rn != self._backend._ffi.NULL
-                        attributes.append(
-                            _build_x509_name_entry(self._backend, rn)
-                        )
+                    qualifiers.append(user_notice)
 
-                    relative_name = x509.Name(attributes)
+        certificate_policies.append(
+            x509.PolicyInformation(oid, qualifiers)
+        )
 
-            dist_points.append(
-                x509.DistributionPoint(
-                    full_name, relative_name, reasons, crl_issuer
-                )
+    return x509.CertificatePolicies(certificate_policies)
+
+
+def _decode_user_notice(backend, un):
+    explicit_text = None
+    notice_reference = None
+
+    if un.exptext != backend._ffi.NULL:
+        explicit_text = _asn1_string_to_utf8(backend, un.exptext)
+
+    if un.noticeref != backend._ffi.NULL:
+        organization = _asn1_string_to_utf8(
+            backend, un.noticeref.organization
+        )
+
+        num = backend._lib.sk_ASN1_INTEGER_num(
+            un.noticeref.noticenos
+        )
+        notice_numbers = []
+        for i in range(num):
+            asn1_int = backend._lib.sk_ASN1_INTEGER_value(
+                un.noticeref.noticenos, i
             )
+            notice_num = _asn1_integer_to_int(
+                backend, asn1_int
+            )
+            notice_numbers.append(notice_num)
 
-        return x509.CRLDistributionPoints(dist_points)
+        notice_reference = x509.NoticeReference(
+            organization, notice_numbers
+        )
+
+    return x509.UserNotice(notice_reference, explicit_text)
+
+
+def _decode_basic_constraints(backend, ext):
+    bc_st = backend._lib.X509V3_EXT_d2i(ext)
+    assert bc_st != backend._ffi.NULL
+    basic_constraints = backend._ffi.cast(
+        "BASIC_CONSTRAINTS *", bc_st
+    )
+    basic_constraints = backend._ffi.gc(
+        basic_constraints, backend._lib.BASIC_CONSTRAINTS_free
+    )
+    # The byte representation of an ASN.1 boolean true is \xff. OpenSSL
+    # chooses to just map this to its ordinal value, so true is 255 and
+    # false is 0.
+    ca = basic_constraints.ca == 255
+    if basic_constraints.pathlen == backend._ffi.NULL:
+        path_length = None
+    else:
+        path_length = _asn1_integer_to_int(
+            backend, basic_constraints.pathlen
+        )
+
+    return x509.BasicConstraints(ca, path_length)
+
+
+def _decode_subject_key_identifier(backend, ext):
+    asn1_string = backend._lib.X509V3_EXT_d2i(ext)
+    assert asn1_string != backend._ffi.NULL
+    asn1_string = backend._ffi.cast(
+        "ASN1_OCTET_STRING *", asn1_string
+    )
+    asn1_string = backend._ffi.gc(
+        asn1_string, backend._lib.ASN1_OCTET_STRING_free
+    )
+    return x509.SubjectKeyIdentifier(
+        backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+    )
+
+
+def _decode_authority_key_identifier(backend, ext):
+    akid = backend._lib.X509V3_EXT_d2i(ext)
+    assert akid != backend._ffi.NULL
+    akid = backend._ffi.cast("AUTHORITY_KEYID *", akid)
+    akid = backend._ffi.gc(
+        akid, backend._lib.AUTHORITY_KEYID_free
+    )
+    key_identifier = None
+    authority_cert_issuer = None
+    authority_cert_serial_number = None
+
+    if akid.keyid != backend._ffi.NULL:
+        key_identifier = backend._ffi.buffer(
+            akid.keyid.data, akid.keyid.length
+        )[:]
+
+    if akid.issuer != backend._ffi.NULL:
+        authority_cert_issuer = _decode_general_names(
+            backend, akid.issuer
+        )
+
+    if akid.serial != backend._ffi.NULL:
+        authority_cert_serial_number = _asn1_integer_to_int(
+            backend, akid.serial
+        )
+
+    return x509.AuthorityKeyIdentifier(
+        key_identifier, authority_cert_issuer, authority_cert_serial_number
+    )
+
+
+def _decode_authority_information_access(backend, ext):
+    aia = backend._lib.X509V3_EXT_d2i(ext)
+    assert aia != backend._ffi.NULL
+    aia = backend._ffi.cast(
+        "Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia
+    )
+    aia = backend._ffi.gc(
+        aia, backend._lib.sk_ACCESS_DESCRIPTION_free
+    )
+    num = backend._lib.sk_ACCESS_DESCRIPTION_num(aia)
+    access_descriptions = []
+    for i in range(num):
+        ad = backend._lib.sk_ACCESS_DESCRIPTION_value(aia, i)
+        assert ad.method != backend._ffi.NULL
+        oid = x509.ObjectIdentifier(_obj2txt(backend, ad.method))
+        assert ad.location != backend._ffi.NULL
+        gn = _decode_general_name(backend, ad.location)
+        access_descriptions.append(x509.AccessDescription(oid, gn))
+
+    return x509.AuthorityInformationAccess(access_descriptions)
+
+
+def _decode_key_usage(backend, ext):
+    bit_string = backend._lib.X509V3_EXT_d2i(ext)
+    assert bit_string != backend._ffi.NULL
+    bit_string = backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
+    bit_string = backend._ffi.gc(
+        bit_string, backend._lib.ASN1_BIT_STRING_free
+    )
+    get_bit = backend._lib.ASN1_BIT_STRING_get_bit
+    digital_signature = get_bit(bit_string, 0) == 1
+    content_commitment = get_bit(bit_string, 1) == 1
+    key_encipherment = get_bit(bit_string, 2) == 1
+    data_encipherment = get_bit(bit_string, 3) == 1
+    key_agreement = get_bit(bit_string, 4) == 1
+    key_cert_sign = get_bit(bit_string, 5) == 1
+    crl_sign = get_bit(bit_string, 6) == 1
+    encipher_only = get_bit(bit_string, 7) == 1
+    decipher_only = get_bit(bit_string, 8) == 1
+    return x509.KeyUsage(
+        digital_signature,
+        content_commitment,
+        key_encipherment,
+        data_encipherment,
+        key_agreement,
+        key_cert_sign,
+        crl_sign,
+        encipher_only,
+        decipher_only
+    )
+
+
+def _decode_subject_alt_name(backend, ext):
+    gns = backend._ffi.cast(
+        "GENERAL_NAMES *", backend._lib.X509V3_EXT_d2i(ext)
+    )
+    assert gns != backend._ffi.NULL
+    gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
+    general_names = _decode_general_names(backend, gns)
+
+    return x509.SubjectAlternativeName(general_names)
+
+
+def _decode_extended_key_usage(backend, ext):
+    sk = backend._ffi.cast(
+        "Cryptography_STACK_OF_ASN1_OBJECT *",
+        backend._lib.X509V3_EXT_d2i(ext)
+    )
+    assert sk != backend._ffi.NULL
+    sk = backend._ffi.gc(sk, backend._lib.sk_ASN1_OBJECT_free)
+    num = backend._lib.sk_ASN1_OBJECT_num(sk)
+    ekus = []
+
+    for i in range(num):
+        obj = backend._lib.sk_ASN1_OBJECT_value(sk, i)
+        assert obj != backend._ffi.NULL
+        oid = x509.ObjectIdentifier(_obj2txt(backend, obj))
+        ekus.append(oid)
+
+    return x509.ExtendedKeyUsage(ekus)
+
+
+def _decode_crl_distribution_points(backend, ext):
+    cdps = backend._ffi.cast(
+        "Cryptography_STACK_OF_DIST_POINT *",
+        backend._lib.X509V3_EXT_d2i(ext)
+    )
+    assert cdps != backend._ffi.NULL
+    cdps = backend._ffi.gc(
+        cdps, backend._lib.sk_DIST_POINT_free)
+    num = backend._lib.sk_DIST_POINT_num(cdps)
+
+    dist_points = []
+    for i in range(num):
+        full_name = None
+        relative_name = None
+        crl_issuer = None
+        reasons = None
+        cdp = backend._lib.sk_DIST_POINT_value(cdps, i)
+        if cdp.reasons != backend._ffi.NULL:
+            # We will check each bit from RFC 5280
+            # ReasonFlags ::= BIT STRING {
+            #      unused                  (0),
+            #      keyCompromise           (1),
+            #      cACompromise            (2),
+            #      affiliationChanged      (3),
+            #      superseded              (4),
+            #      cessationOfOperation    (5),
+            #      certificateHold         (6),
+            #      privilegeWithdrawn      (7),
+            #      aACompromise            (8) }
+            reasons = []
+            get_bit = backend._lib.ASN1_BIT_STRING_get_bit
+            if get_bit(cdp.reasons, 1):
+                reasons.append(x509.ReasonFlags.key_compromise)
+
+            if get_bit(cdp.reasons, 2):
+                reasons.append(x509.ReasonFlags.ca_compromise)
+
+            if get_bit(cdp.reasons, 3):
+                reasons.append(x509.ReasonFlags.affiliation_changed)
+
+            if get_bit(cdp.reasons, 4):
+                reasons.append(x509.ReasonFlags.superseded)
+
+            if get_bit(cdp.reasons, 5):
+                reasons.append(x509.ReasonFlags.cessation_of_operation)
+
+            if get_bit(cdp.reasons, 6):
+                reasons.append(x509.ReasonFlags.certificate_hold)
+
+            if get_bit(cdp.reasons, 7):
+                reasons.append(x509.ReasonFlags.privilege_withdrawn)
+
+            if get_bit(cdp.reasons, 8):
+                reasons.append(x509.ReasonFlags.aa_compromise)
+
+            reasons = frozenset(reasons)
+
+        if cdp.CRLissuer != backend._ffi.NULL:
+            crl_issuer = _decode_general_names(backend, cdp.CRLissuer)
+
+        # Certificates may have a crl_issuer/reasons and no distribution
+        # point so make sure it's not null.
+        if cdp.distpoint != backend._ffi.NULL:
+            # Type 0 is fullName, there is no #define for it in the code.
+            if cdp.distpoint.type == 0:
+                full_name = _decode_general_names(
+                    backend, cdp.distpoint.name.fullname
+                )
+            # OpenSSL code doesn't test for a specific type for
+            # relativename, everything that isn't fullname is considered
+            # relativename.
+            else:
+                rns = cdp.distpoint.name.relativename
+                rnum = backend._lib.sk_X509_NAME_ENTRY_num(rns)
+                attributes = []
+                for i in range(rnum):
+                    rn = backend._lib.sk_X509_NAME_ENTRY_value(
+                        rns, i
+                    )
+                    assert rn != backend._ffi.NULL
+                    attributes.append(
+                        _decode_x509_name_entry(backend, rn)
+                    )
+
+                relative_name = x509.Name(attributes)
+
+        dist_points.append(
+            x509.DistributionPoint(
+                full_name, relative_name, reasons, crl_issuer
+            )
+        )
+
+    return x509.CRLDistributionPoints(dist_points)
 
 
 @utils.register_interface(x509.CertificateSigningRequest)
@@ -632,7 +646,7 @@ class _CertificateSigningRequest(object):
     def subject(self):
         subject = self._backend._lib.X509_REQ_get_subject_name(self._x509_req)
         assert subject != self._backend._ffi.NULL
-        return _build_x509_name(self._backend, subject)
+        return _decode_x509_name(self._backend, subject)
 
     @property
     def signature_hash_algorithm(self):
