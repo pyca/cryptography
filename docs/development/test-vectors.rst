@@ -124,8 +124,6 @@ Custom X.509 Vectors
   "We heart UTF8!™".
 * ``two_basic_constraints.pem`` - An RSA 2048 bit self-signed certificate
   containing two basic constraints extensions.
-* ``two_basic_constraints_csr.pem`` - A certificate signing request
-  for a RSA 2048 bit key containing two basic constraints extensions.
 * ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
   certificate containing a basic constraints extension that is not marked as
   critical.
@@ -135,17 +133,9 @@ Custom X.509 Vectors
 * ``unsupported_extension.pem`` - An RSA 2048 bit self-signed certificate
   containing an unsupported extension type. The OID was encoded as
   "1.2.3.4" with an ``extnValue`` of "value".
-* ``unsupported_extension_csr.pem`` - A certificate signing request
-  for an RSA 2048 bit key containing containing an unsupported
-  extension type. The OID was encoded as "1.2.3.4" with an
-  ``extnValue`` of "value".
 * ``unsupported_extension_critical.pem`` - An RSA 2048 bit self-signed
   certificate containing an unsupported extension type marked critical. The OID
   was encoded as "1.2.3.4" with an ``extnValue`` of "value".
-* ``unsupported_extension_critical_csr.pem`` - A certificate signing
-  request for an RSA 2048 bit key containing containing an unsupported
-  extension type marked critical. The OID was encoded as "1.2.3.4"
-  with an ``extnValue`` of "value".
 * ``san_email_dns_ip_dirname_uri.pem`` - An RSA 2048 bit self-signed
   certificate containing a subject alternative name extension with the
   following general names: ``rfc822Name``, ``dNSName``, ``iPAddress``,
@@ -227,6 +217,16 @@ Custom X.509 Request Vectors
 * ``san_rsa_sha1.pem`` and ``san_rsa_sha1.der`` - Contain a certificate
   request using RSA and SHA1 with a subject alternative name extension
   generated using OpenSSL.
+* ``two_basic_constraints_csr.pem`` - A certificate signing request
+  for a RSA 2048 bit key containing two basic constraints extensions.
+* ``unsupported_extension_csr.pem`` - A certificate signing request
+  for an RSA 2048 bit key containing containing an unsupported
+  extension type. The OID was encoded as "1.2.3.4" with an
+  ``extnValue`` of "value".
+* ``unsupported_extension_critical_csr.pem`` - A certificate signing
+  request for an RSA 2048 bit key containing containing an unsupported
+  extension type marked critical. The OID was encoded as "1.2.3.4"
+  with an ``extnValue`` of "value".
 
 Hashes
 ~~~~~~
