@@ -41,7 +41,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _DISTPOINT_TYPE_FULLNAME, _DISTPOINT_TYPE_RELATIVENAME
 )
 from cryptography.hazmat.bindings.openssl import binding
-from cryptography.hazmat.primitives import hashes, keywrap, serialization
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1, OAEP, PKCS1v15, PSS
