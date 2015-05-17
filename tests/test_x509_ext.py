@@ -38,6 +38,33 @@ class TestExtension(object):
             "_length=None)>)>"
         )
 
+    def test_eq(self):
+        ext1 = x509.Extension(
+            x509.ObjectIdentifier('1.2.3.4'), False, 'value'
+        )
+        ext2 = x509.Extension(
+            x509.ObjectIdentifier('1.2.3.4'), False, 'value'
+        )
+        assert ext1 == ext2
+
+    def test_ne(self):
+        ext1 = x509.Extension(
+            x509.ObjectIdentifier('1.2.3.4'), False, 'value'
+        )
+        ext2 = x509.Extension(
+            x509.ObjectIdentifier('1.2.3.5'), False, 'value'
+        )
+        ext3 = x509.Extension(
+            x509.ObjectIdentifier('1.2.3.4'), True, 'value'
+        )
+        ext4 = x509.Extension(
+            x509.ObjectIdentifier('1.2.3.4'), False, 'value4'
+        )
+        assert ext1 != ext2
+        assert ext1 != ext3
+        assert ext1 != ext4
+        assert ext1 != object()
+
 
 class TestNoticeReference(object):
     def test_notice_numbers_not_all_int(self):

@@ -278,6 +278,19 @@ class Extension(object):
         return ("<Extension(oid={0.oid}, critical={0.critical}, "
                 "value={0.value})>").format(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, Extension):
+            return NotImplemented
+
+        return (
+            self.oid == other.oid and
+            self.critical == other.critical and
+            self.value == other.value
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class ExtendedKeyUsage(object):
     def __init__(self, usages):
