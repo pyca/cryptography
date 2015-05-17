@@ -186,6 +186,14 @@ int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
 int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 
+int SSL_use_certificate(SSL *, X509 *);
+int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
+int SSL_use_certificate_file(SSL *, const char *, int);
+int SSL_use_PrivateKey(SSL *, EVP_PKEY *);
+int SSL_use_PrivateKey_ASN1(int, SSL *, const unsigned char *, long);
+int SSL_use_PrivateKey_file(SSL *, const char *, int);
+int SSL_check_private_key(const SSL *);
+
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
@@ -209,9 +217,11 @@ int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
 void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
 void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
 int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
+int SSL_CTX_use_certificate_ASN1(SSL_CTX *, int, const unsigned char *);
 int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
+int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
@@ -223,6 +233,8 @@ X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
+
+int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
