@@ -227,6 +227,9 @@ Custom X.509 Request Vectors
   request for an RSA 2048 bit key containing containing an unsupported
   extension type marked critical. The OID was encoded as "1.2.3.4"
   with an ``extnValue`` of "value".
+* ``basic_constraints.pem`` - A certificate signing request for a RSA
+  2048 bit key containing a basic constraints extension marked as
+  critical.
 
 Hashes
 ~~~~~~
