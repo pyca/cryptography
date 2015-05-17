@@ -31,6 +31,152 @@ def _load_cert(filename, loader, backend):
     return cert
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestCertificateRevocationList(object):
+    def test_load_pem_crl(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl, x509.CertificateRevocationList)
+        fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
+        assert fingerprint == b"e9048e7948e3a2ec828463c5643b86a85fc1348a"
+        assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+
+    def test_load_der_crl(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl, x509.CertificateRevocationList)
+        fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
+        assert fingerprint == b"dd3db63c50f4c4a13e090f14053227cb1011a5ad"
+        assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+
+    def test_issuer(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl.issuer, x509.Name)
+        assert list(crl.issuer) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(
+                x509.OID_ORGANIZATION_NAME, 'Test Certificates 2011'
+            ),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'Good CA')
+        ]
+        assert crl.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'Good CA')
+        ]
+
+    def test_equality(self, backend):
+        crl1 = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        crl2 = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        crl3 = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert crl1 == crl2
+        assert crl1 != crl3
+
+    def test_update_dates(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl.next_update, datetime.datetime)
+        assert isinstance(crl.last_update, datetime.datetime)
+
+        assert crl.next_update.isoformat() == "2018-02-07T01:00:52"
+        assert crl.last_update.isoformat() == "2015-05-14T01:00:52"
+
+    def test_crl_verify(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # test verify() with key from issuing CA
+        ca = _load_cert(
+            os.path.join("x509", "custom", "crl_ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        assert crl.verify(ca.public_key())
+
+        # now try if it fails with random key
+        pubkey = backend.generate_rsa_private_key(113, 2048).public_key()
+        assert not crl.verify(pubkey)
+
+    def test_revoked_basics(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl.revoked, list)
+        for i in crl.revoked:
+                assert isinstance(i, x509.RevokedCertificate)
+                assert isinstance(i.serial_number, int)
+                assert isinstance(i.revocation_date, datetime.datetime)
+
+        rev0 = crl.revoked[0]
+
+        assert rev0.serial_number == 0x01
+        assert rev0.revocation_date.isoformat() == "2015-05-14T01:00:51"
+
+        assert isinstance(rev0.extensions, x509.Extensions)
+
+        reason = rev0.extensions.get_extension_for_oid(
+            x509.OID_CRL_REASON).value
+        assert reason == x509.ReasonFlags.key_compromise
+
+        date = rev0.extensions.get_extension_for_oid(
+            x509.OID_INVALIDITY_DATE).value
+        assert isinstance(date, datetime.datetime)
+
+        # test convenience functions
+        assert rev0.get_invalidity_date().isoformat() == "2015-01-01T08:00:00"
+
+        for rf in x509.ReasonFlags:
+                # TODO These two are not supported by the openssl ca tool, need
+                # to find a way to create CRL using them.
+                if (rf == x509.ReasonFlags.privilege_withdrawn or
+                        rf == x509.ReasonFlags.aa_compromise):
+                    continue
+
+                found = False
+                for r in crl.revoked:
+                        if r.get_reason() == rf:
+                                found = True
+                                break
+                assert found, "ReasonFlag {0} not in CRL".format(rf)
+
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRSACertificate(object):
