@@ -395,6 +395,9 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ]
+        extensions = request.extensions
+        assert isinstance(extensions, x509.Extensions)
+        assert list(extensions) == []
 
     @pytest.mark.parametrize(
         "loader_func",
@@ -412,6 +415,61 @@ class TestRSACertificate(object):
         )
         with pytest.raises(UnsupportedAlgorithm):
             request.signature_hash_algorithm
+
+    def test_duplicate_extension(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "two_basic_constraints.pem"
+            ),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        with pytest.raises(x509.DuplicateExtension) as exc:
+            request.extensions
+
+        assert exc.value.oid == x509.OID_BASIC_CONSTRAINTS
+
+    def test_unsupported_critical_extension(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "unsupported_extension_critical.pem"
+            ),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        with pytest.raises(x509.UnsupportedExtension) as exc:
+            request.extensions
+
+        assert exc.value.oid == x509.ObjectIdentifier('1.2.3.4')
+
+    def test_unsupported_extension(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "unsupported_extension.pem"
+            ),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        extensions = request.extensions
+        assert len(extensions) == 0
+
+    def test_request_basic_constraints(self, backend):
+        request = _load_cert(
+            os.path.join(
+                "x509", "requests", "basic_constraints.pem"
+            ),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        extensions = request.extensions
+        assert isinstance(extensions, x509.Extensions)
+        assert list(extensions) == [
+            x509.Extension(
+                x509.OID_BASIC_CONSTRAINTS,
+                True,
+                x509.BasicConstraints(True, 1),
+            ),
+        ]
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
