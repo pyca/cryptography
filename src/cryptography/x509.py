@@ -1177,3 +1177,9 @@ class CertificateSigningRequest(object):
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
         """
+
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns the extensions in the signing request.
+        """

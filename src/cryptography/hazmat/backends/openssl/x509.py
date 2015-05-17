@@ -657,3 +657,35 @@ class _CertificateSigningRequest(object):
             raise UnsupportedAlgorithm(
                 "Signature algorithm OID:{0} not recognized".format(oid)
             )
+
+    @property
+    def extensions(self):
+        extensions = []
+        seen_oids = set()
+        x509_exts = self._backend._lib.X509_REQ_get_extensions(self._x509_req)
+        extcount = self._backend._lib.sk_X509_EXTENSION_num(x509_exts)
+        for i in range(0, extcount):
+            ext = self._backend._lib.sk_X509_EXTENSION_value(x509_exts, i)
+            assert ext != self._backend._ffi.NULL
+            crit = self._backend._lib.X509_EXTENSION_get_critical(ext)
+            critical = crit == 1
+            oid = x509.ObjectIdentifier(_obj2txt(self._backend, ext.object))
+            if oid in seen_oids:
+                raise x509.DuplicateExtension(
+                    "Duplicate {0} extension found".format(oid), oid
+                )
+            elif oid == x509.OID_BASIC_CONSTRAINTS:
+                value = _decode_basic_constraints(self._backend, ext)
+            elif critical:
+                raise x509.UnsupportedExtension(
+                    "{0} is not currently supported".format(oid), oid
+                )
+            else:
+                # Unsupported non-critical extension, silently skipping for now
+                seen_oids.add(oid)
+                continue
+
+            seen_oids.add(oid)
+            extensions.append(x509.Extension(oid, critical, value))
+
+        return x509.Extensions(extensions)
