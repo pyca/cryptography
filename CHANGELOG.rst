@@ -12,6 +12,9 @@ Changelog
 * Added support for parsing certificate revocation lists (CRLs) using
   :func:`~cryptography.x509.load_pem_x509_crl` and
   :func:`~cryptography.x509.load_der_x509_crl`.
+* Add support for AES key wrapping with
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_wrap` and
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap`.
 
 1.0.2 - 2015-09-27
 ~~~~~~~~~~~~~~~~~~
