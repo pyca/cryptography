@@ -909,11 +909,18 @@ class RegisteredID(object):
 class IPAddress(object):
     def __init__(self, value):
         if not isinstance(
-            value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+            value,
+            (
+                ipaddress.IPv4Address,
+                ipaddress.IPv6Address,
+                ipaddress.IPv4Network,
+                ipaddress.IPv6Network
+            )
         ):
             raise TypeError(
-                "value must be an instance of ipaddress.IPv4Address or "
-                "ipaddress.IPv6Address"
+                "value must be an instance of ipaddress.IPv4Address, "
+                "ipaddress.IPv6Address, ipaddress.IPv4Network, or "
+                "ipaddress.IPv6Network"
             )
 
         self._value = value

@@ -509,8 +509,9 @@ General Name Classes
 
     .. attribute:: value
 
-        :type: :class:`~ipaddress.IPv4Address` or
-            :class:`~ipaddress.IPv6Address`.
+        :type: :class:`~ipaddress.IPv4Address`,
+            :class:`~ipaddress.IPv6Address`,  :class:`~ipaddress.IPv4Network`,
+            or :class:`~ipaddress.IPv6Network`.
 
 .. class:: RegisteredID
 
