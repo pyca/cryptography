@@ -6,6 +6,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support serialization of certificate signing requests using the
+  ``public_bytes`` method of
+  :class:`~cryptography.x509.CertificateSigningRequest`.
+
 0.9 - 2015-05-13
 ~~~~~~~~~~~~~~~~
 
