@@ -814,6 +814,32 @@ X.509 Extensions
     extension is only relevant when the certificate is an authorized OCSP
     responder.
 
+.. class:: NameConstraints
+
+    .. versionadded:: 1.0
+
+    The name constraints extension, which only has meaning in a CA certificate,
+    defines a name space within which all subject names in certificates issued
+    beneath the CA certificate must (or must not) be in. For specific details
+    on the way this extension should be processed see :rfc:`5280`.
+
+    .. attribute:: permitted_subtrees
+
+        :type: list of :class:`GeneralName` objects or None
+
+        The set of permitted name patterns. If a name matches this and an
+        element in ``excluded_subtrees`` it is invalid. At least one of
+        ``permitted_subtrees`` and ``excluded_subtrees`` will be non-None.
+
+    .. attribute:: excluded_subtrees
+
+        :type: list of :class:`GeneralName` objects or None
+
+        Any name matching a restriction in the ``excluded_subtrees`` field is
+        invalid regardless of information appearing in the
+        ``permitted_subtrees``. At least one of ``permitted_subtrees`` and
+        ``excluded_subtrees`` will be non-None.
+
 .. class:: AuthorityKeyIdentifier
 
     .. versionadded:: 0.9
@@ -1368,6 +1394,11 @@ Extension OIDs
 
     Corresponds to the dotted string ``"2.5.29.14"``. The identifier for the
     :class:`SubjectKeyIdentifier` extension type.
+
+.. data:: OID_NAME_CONSTRAINTS
+
+    Corresponds to the dotted string ``"2.5.29.30"``. The identifier for the
+    :class:`NameConstraints` extension type.
 
 .. data:: OID_CRL_DISTRIBUTION_POINTS
 

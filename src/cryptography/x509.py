@@ -676,6 +676,58 @@ class SubjectKeyIdentifier(object):
         return not self == other
 
 
+class NameConstraints(object):
+    def __init__(self, permitted_subtrees, excluded_subtrees):
+        if permitted_subtrees is not None:
+            if not all(
+                isinstance(x, GeneralName) for x in permitted_subtrees
+            ):
+                raise TypeError(
+                    "permitted_subtrees must be a list of GeneralName objects "
+                    "or None"
+                )
+
+            self._validate_ip_name(permitted_subtrees)
+
+        if excluded_subtrees is not None:
+            if not all(
+                isinstance(x, GeneralName) for x in excluded_subtrees
+            ):
+                raise TypeError(
+                    "excluded_subtrees must be a list of GeneralName objects "
+                    "or None"
+                )
+
+            self._validate_ip_name(excluded_subtrees)
+
+        if permitted_subtrees is None and excluded_subtrees is None:
+            raise ValueError(
+                "At least one of permitted_subtrees and excluded_subtrees "
+                "must not be None"
+            )
+
+        self._permitted_subtrees = permitted_subtrees
+        self._excluded_subtrees = excluded_subtrees
+
+    def _validate_ip_name(self, tree):
+        if any(isinstance(name, IPAddress) and not isinstance(
+            name.value, (ipaddress.IPv4Network, ipaddress.IPv6Network)
+        ) for name in tree):
+            raise TypeError(
+                "IPAddress name constraints must be an IPv4Network or"
+                " IPv6Network object"
+            )
+
+    def __repr__(self):
+        return (
+            u"<NameConstraints(permitted_subtrees={0.permitted_subtrees}, "
+            u"excluded_subtrees={0.excluded_subtrees})>".format(self)
+        )
+
+    permitted_subtrees = utils.read_only_property("_permitted_subtrees")
+    excluded_subtrees = utils.read_only_property("_excluded_subtrees")
+
+
 class CRLDistributionPoints(object):
     def __init__(self, distribution_points):
         if not all(
