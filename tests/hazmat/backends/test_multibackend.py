@@ -170,6 +170,10 @@ class DummyEllipticCurveBackend(object):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        if not self.elliptic_curve_supported(curve):
+            raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
 
 @utils.register_interface(PEMSerializationBackend)
 class DummyPEMSerializationBackend(object):
