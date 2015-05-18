@@ -1190,3 +1190,9 @@ class CertificateSigningRequest(object):
         """
         Returns the extensions in the signing request.
         """
+
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Encodes the request to PEM or DER format.
+        """

@@ -25,7 +25,7 @@ from six.moves import urllib_parse
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 
 
 def _obj2txt(backend, obj):
@@ -689,3 +689,20 @@ class _CertificateSigningRequest(object):
             extensions.append(x509.Extension(oid, critical, value))
 
         return x509.Extensions(extensions)
+
+    def public_bytes(self, encoding):
+        if not isinstance(encoding, serialization.Encoding):
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        # TODO: make text prelude optional.
+        bio = self._backend._create_mem_bio()
+        if encoding is serialization.Encoding.PEM:
+            res = self._backend._lib.X509_REQ_print(bio, self._x509_req)
+            assert res == 1
+            res = self._backend._lib.PEM_write_bio_X509_REQ(
+                bio, self._x509_req
+            )
+        elif encoding is serialization.Encoding.DER:
+            res = self._backend._lib.i2d_X509_REQ_bio(bio, self._x509_req)
+        assert res == 1
+        return self._backend._read_mem_bio(bio)
