@@ -1860,6 +1860,40 @@ X.509 Extensions
 
         :type: int
 
+.. class:: PolicyConstraints
+
+    .. versionadded:: 1.3
+
+    The policy constraints extension can be used in certificates issued
+    to CAs.  The policy constraints extension constrains path validation
+    in two ways.  It can be used to prohibit policy mapping or require
+    that each certificate in a path contain an acceptable policy
+    identifier. For more information about the use of this extension see
+    :rfc:`5280`.
+
+    .. attribute:: require_explicit_policy
+
+        :type: int or None
+
+        If this field is present, the value indicates the number of additional
+        certificates that may appear in the path before an explicit policy is
+        required for the entire path. When an explicit policy is required, it
+        is necessary for all certificates in the path to contain an acceptable
+        policy identifier in the certificate policies extension.  An
+        acceptable policy identifier is the identifier of a policy required
+        by the user of the certification path or the identifier of a policy
+        that has been declared equivalent through policy mapping.
+
+    .. attribute:: inhibit_policy_mapping
+
+        :type: int or None
+
+        If this field is present, the value indicates the number of additional
+        certificates that may appear in the path before policy mapping is no
+        longer permitted.  For example, a value of one indicates that policy
+        mapping may be processed in certificates issued by the subject of this
+        certificate, but not in additional certificates in the path.
+
 .. class:: CRLNumber(crl_number)
 
     .. versionadded:: 1.2
@@ -2391,6 +2425,12 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
         the ``CRLNumber`` extension type. This extension only has meaning
         for certificate revocation lists.
+
+    .. attribute:: POLICY_CONSTRAINTS
+
+        Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
+        :class:`PolicyConstraints` extension type.
+
 
 .. class:: CRLEntryExtensionOID
 

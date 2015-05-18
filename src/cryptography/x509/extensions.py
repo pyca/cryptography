@@ -490,6 +490,60 @@ class ReasonFlags(Enum):
 
 
 @utils.register_interface(ExtensionType)
+class PolicyConstraints(object):
+    def __init__(self, require_explicit_policy, inhibit_policy_mapping):
+        if require_explicit_policy is not None and not isinstance(
+            require_explicit_policy, six.integer_types
+        ):
+            raise TypeError(
+                "require_explicit_policy must be a non-negative integer or "
+                "None"
+            )
+
+        if inhibit_policy_mapping is not None and not isinstance(
+            inhibit_policy_mapping, six.integer_types
+        ):
+            raise TypeError(
+                "inhibit_policy_mapping must be a non-negative integer or None"
+            )
+
+        if inhibit_policy_mapping is None and require_explicit_policy is None:
+            raise ValueError(
+                "At least one of require_explicit_policy and "
+                "inhibit_policy_mapping must not be None"
+            )
+
+        self._require_explicit_policy = require_explicit_policy
+        self._inhibit_policy_mapping = inhibit_policy_mapping
+
+    def __repr__(self):
+        return (
+            u"<PolicyConstraints(require_explicit_policy={0.require_explicit"
+            u"_policy}, inhibit_policy_mapping={0.inhibit_policy_"
+            u"mapping})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, PolicyConstraints):
+            return NotImplemented
+
+        return (
+            self.require_explicit_policy == other.require_explicit_policy and
+            self.inhibit_policy_mapping == other.inhibit_policy_mapping
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    require_explicit_policy = utils.read_only_property(
+        "_require_explicit_policy"
+    )
+    inhibit_policy_mapping = utils.read_only_property(
+        "_inhibit_policy_mapping"
+    )
+
+
+@utils.register_interface(ExtensionType)
 class CertificatePolicies(object):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
