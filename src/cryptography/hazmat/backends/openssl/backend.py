@@ -10,7 +10,7 @@ from contextlib import contextmanager
 
 import six
 
-from cryptography import utils
+from cryptography import utils, x509
 from cryptography.exceptions import (
     InternalError, UnsupportedAlgorithm, _Reasons
 )
@@ -54,6 +54,88 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 _OpenSSLError = collections.namedtuple("_OpenSSLError",
                                        ["code", "lib", "func", "reason"])
+
+
+def _encode_asn1_int(backend, x):
+    i = backend._lib.ASN1_INTEGER_new()
+    # i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
+    backend._lib.ASN1_INTEGER_set(i, x)
+    return i
+
+
+def _encode_asn1_str(backend, x, n):
+    s = backend._lib.ASN1_OCTET_STRING_new()
+    # s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
+    backend._lib.ASN1_OCTET_STRING_set(s, x, n)
+    return s
+
+
+def _encode_name(backend, attributes):
+    resolve = {
+        x509.OID_COMMON_NAME: b'CN',
+        x509.OID_COUNTRY_NAME: b'C',
+        x509.OID_STATE_OR_PROVINCE_NAME: b'ST',
+        x509.OID_LOCALITY_NAME: b'L',
+        x509.OID_ORGANIZATION_NAME: b'O',
+        x509.OID_ORGANIZATIONAL_UNIT_NAME: b'OU',
+    }
+    subject = backend._lib.X509_NAME_new()
+    subject = backend._ffi.gc(subject, backend._lib.X509_NAME_free)
+    for attribute in attributes:
+        value = attribute.value
+        if isinstance(value, six.text_type):
+            value = value.encode('ascii')
+        res = backend._lib.X509_NAME_add_entry_by_txt(
+            subject,
+            resolve[attribute.oid],
+            backend._lib.MBSTRING_ASC,
+            value,
+            -1, -1, 0,
+        )
+        assert res == 1
+    return subject
+
+
+def _txt2obj(backend, name):
+    if isinstance(name, six.text_type):
+        name = name.encode('ascii')
+    obj = backend._lib.OBJ_txt2obj(name, 1)
+    assert obj != backend._ffi.NULL
+    # NOTE: not sure if we should GC...
+    return obj
+
+
+def _encode_basic_constraints(backend, ca=False, pathlen=0, critical=False):
+    obj = _txt2obj(backend, x509.OID_BASIC_CONSTRAINTS.dotted_string)
+    assert obj is not None
+    constraints = backend._lib.BASIC_CONSTRAINTS_new()
+    constraints.ca = 255 if ca else 0
+    if ca:
+        constraints.pathlen = _encode_asn1_int(backend, pathlen)
+
+    # Allocate a buffer for encoded payload.
+    cdata = backend._ffi.new(
+        'unsigned char[]',
+        2048,  # TODO: shrink to fit!
+    )
+    assert cdata != backend._ffi.NULL
+
+    # Fetch the encoded payload.
+    p = backend._ffi.new('unsigned char*[1]')
+    assert p != backend._ffi.NULL
+    p[0] = cdata
+    r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, p)
+    assert r > 0
+
+    # Wrap that in an X509 extension object.
+    extension = backend._lib.X509_EXTENSION_create_by_OBJ(
+        backend._ffi.NULL,
+        obj,
+        1 if critical else 0,
+        _encode_asn1_str(backend, cdata, r),
+    )
+    assert extension != backend._ffi.NULL
+    return extension
 
 
 @utils.register_interface(CipherBackend)
@@ -709,6 +791,67 @@ class Backend(object):
 
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
+
+    def sign_x509_request(self, builder, private_key, algorithm):
+        # TODO: check type of private key parameter.
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        # Resolve the signature algorithm.
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode('ascii')
+        )
+        assert evp_md != self._ffi.NULL
+
+        # Create an empty request.
+        x509_req = self._lib.X509_REQ_new()
+        assert x509_req != self._ffi.NULL
+
+        # Set x509 version.
+        res = self._lib.X509_REQ_set_version(x509_req, builder._version.value)
+        assert res == 1
+
+        # Set subject name.
+        res = self._lib.X509_REQ_set_subject_name(
+            x509_req, _encode_name(self, list(builder._subject_name))
+        )
+        assert res == 1
+
+        # Set subject public key.
+        public_key = private_key.public_key()
+        res = self._lib.X509_REQ_set_pubkey(
+            x509_req, public_key._evp_pkey
+        )
+        assert res == 1
+
+        # Add extensions.
+        extensions = self._lib.sk_X509_EXTENSION_new_null()
+        extensions = self._ffi.gc(
+            extensions,
+            self._lib.sk_X509_EXTENSION_free,
+        )
+        for extension in builder._extensions:
+            if isinstance(extension.value, x509.BasicConstraints):
+                extension = _encode_basic_constraints(
+                    self,
+                    extension.value.ca,
+                    extension.value.path_length,
+                    extension.critical
+                )
+            else:
+                raise ValueError('Extension not yet supported.')
+            res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
+            assert res == 1
+        res = self._lib.X509_REQ_add_extensions(x509_req, extensions)
+        assert res == 1
+
+        # Sign the request using the requester's private key.
+        res = self._lib.X509_REQ_sign(
+            x509_req, private_key._evp_pkey, evp_md
+        )
+        assert res > 0
+
+        return _CertificateSigningRequest(self, x509_req)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(

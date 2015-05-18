@@ -679,6 +679,153 @@ class TestRSACertificateRequest(object):
         assert serialized == request_bytes
 
 
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestCertificateSigningRequestBuilder(object):
+    def test_sign_invalid_hash_algorithm(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+        builder = x509.CertificateSigningRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.sign(backend, private_key, 'NotAHash')
+
+    def test_build_ca_request(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+
+        builder = x509.CertificateSigningRequestBuilder()
+        builder.set_version(x509.Version.v3)
+        builder.set_subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]))
+        builder.add_extension(x509.Extension(
+            x509.OID_BASIC_CONSTRAINTS,
+            True,
+            x509.BasicConstraints(True, 2),
+        ))
+        request = builder.sign(backend, private_key, hashes.SHA1())
+
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+
+    def test_build_nonca_request(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+
+        builder = x509.CertificateSigningRequestBuilder()
+        builder.set_version(x509.Version.v3)
+        builder.set_subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]))
+        builder.add_extension(x509.Extension(
+            x509.OID_BASIC_CONSTRAINTS,
+            True,
+            x509.BasicConstraints(False, None),
+        ))
+        request = builder.sign(backend, private_key, hashes.SHA1())
+
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+
+    def test_add_duplicate_extension(self, backend):
+        builder = x509.CertificateSigningRequestBuilder()
+        builder.add_extension(x509.Extension(
+            x509.OID_BASIC_CONSTRAINTS,
+            True,
+            x509.BasicConstraints(True, 2),
+        ))
+        with pytest.raises(ValueError):
+            builder.add_extension(x509.Extension(
+                x509.OID_BASIC_CONSTRAINTS,
+                True,
+                x509.BasicConstraints(True, 2),
+            ))
+
+    def test_add_invalid_extension(self, backend):
+        builder = x509.CertificateSigningRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.add_extension('NotAnExtension')
+
+    def test_set_invalid_subject(self, backend):
+        builder = x509.CertificateSigningRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.set_subject_name('NotAName')
+
+    def test_set_invalid_version(self, backend):
+        builder = x509.CertificateSigningRequestBuilder()
+        with pytest.raises(TypeError):
+            builder.set_version('NotAVersion')
+
+    def test_add_unsupported_extension(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+        builder = x509.CertificateSigningRequestBuilder()
+        builder.set_subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ]))
+        builder.add_extension(x509.Extension(
+            x509.ObjectIdentifier('1.2.3.4'),
+            False,
+            'value',
+        ))
+        with pytest.raises(ValueError):
+            builder.sign(backend, private_key, hashes.SHA1())
+
+
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestDSACertificate(object):
