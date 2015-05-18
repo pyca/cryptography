@@ -471,7 +471,7 @@ class TestRSACertificate(object):
             ),
         ]
 
-    def test_encode_pem(self, backend):
+    def test_public_bytes_pem(self, backend):
         # Load an existing CSR.
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
@@ -498,7 +498,7 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ]
 
-    def test_encode_der(self, backend):
+    def test_public_bytes_der(self, backend):
         # Load an existing CSR.
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
@@ -525,7 +525,7 @@ class TestRSACertificate(object):
             x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ]
 
-    def test_encode_invalid_encoding(self, backend):
+    def test_public_bytes_invalid_encoding(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
