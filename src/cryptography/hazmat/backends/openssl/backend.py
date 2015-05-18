@@ -1037,6 +1037,41 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata)
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        curve_nid = self._elliptic_curve_to_nid(curve)
+
+        ec_cdata = self._lib.EC_KEY_new_by_curve_name(curve_nid)
+        assert ec_cdata != self._ffi.NULL
+
+        set_func, get_func, group = (
+            self._ec_key_determine_group_get_set_funcs(ec_cdata)
+        )
+
+        point = self._lib.EC_POINT_new(group)
+        assert point != self._ffi.NULL
+
+        value = self._int_to_bn(private_value)
+
+        with self._tmp_bn_ctx() as bn_ctx:
+            res = self._lib.EC_POINT_mul(group, point, value, self._ffi.NULL,
+                                         self._ffi.NULL, bn_ctx)
+            assert res == 1
+
+            bn_x = self._lib.BN_CTX_get(bn_ctx)
+            bn_y = self._lib.BN_CTX_get(bn_ctx)
+
+            res = get_func(group, point, bn_x, bn_y, bn_ctx)
+            assert res == 1
+
+            point_x = self._bn_to_int(bn_x)
+            point_y = self._bn_to_int(bn_y)
+
+        self._lib.BN_free(value)
+        self._lib.EC_POINT_free(point)
+        self._lib.EC_KEY_free(ec_cdata)
+
+        return point_x, point_y
+
     def _elliptic_curve_to_nid(self, curve):
         """
         Get the NID for a curve name.

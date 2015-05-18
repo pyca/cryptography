@@ -285,6 +285,18 @@ class EllipticCurvePrivateNumbers(object):
         self._private_value = private_value
         self._public_numbers = public_numbers
 
+    @classmethod
+    def from_private_value_and_curve(cls, private_value, curve, backend):
+        if not isinstance(private_value, six.integer_types):
+            raise TypeError("private_value must be an integer.")
+
+        if not isinstance(curve, EllipticCurve):
+            raise TypeError("curve must provide the EllipticCurve interface.")
+
+        x, y = backend.derive_elliptic_curve_public_point(private_value, curve)
+        public_numbers = EllipticCurvePublicNumbers(x, y, curve)
+        return cls(private_value, public_numbers)
+
     def private_key(self, backend):
         return backend.load_elliptic_curve_private_numbers(self)
 
