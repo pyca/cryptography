@@ -468,6 +468,47 @@ X.509 Revoked Certificate Object
 
         The extensions encoded in the revoked certificate.
 
+X.509 CSR (Certificate Signing Request) Builder Object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateSigningRequestBuilder
+
+    .. method:: __init__()
+
+        Creates an empty certificate signing request.
+
+    .. method:: set_version(version)
+
+       :param version: The :class:`Version` of the X.509 protocol.
+
+    .. method:: set_subject_name(name)
+
+        :param name: The :class:`Name` of the certificate subject.
+
+    .. method:: add_extension(extension)
+
+        :param extension: The :class:`Extension` to add to the request.
+
+    .. method:: sign(backend, private_key, algorithm)
+
+        :param backend: Backend that will be used to sign the request.
+            Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+            that will be used to sign the request.  When the request is
+            signed by a certificate authority, the private key's associated
+            public key will be stored in the resulting certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the request signature.
+
+        :type: :class:`CertificateSigningRequest`
+
+
 .. class:: Name
 
     .. versionadded:: 0.8
