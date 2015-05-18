@@ -320,6 +320,10 @@ class ExtendedKeyUsage(object):
         return not self == other
 
 
+class OCSPNoCheck(object):
+    pass
+
+
 class BasicConstraints(object):
     def __init__(self, ca, path_length):
         if not isinstance(ca, bool):
