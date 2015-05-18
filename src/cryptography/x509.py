@@ -278,6 +278,19 @@ class Extension(object):
         return ("<Extension(oid={0.oid}, critical={0.critical}, "
                 "value={0.value})>").format(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, Extension):
+            return NotImplemented
+
+        return (
+            self.oid == other.oid and
+            self.critical == other.critical and
+            self.value == other.value
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class ExtendedKeyUsage(object):
     def __init__(self, usages):
@@ -305,6 +318,10 @@ class ExtendedKeyUsage(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+class OCSPNoCheck(object):
+    pass
 
 
 class BasicConstraints(object):
@@ -896,11 +913,18 @@ class RegisteredID(object):
 class IPAddress(object):
     def __init__(self, value):
         if not isinstance(
-            value, (ipaddress.IPv4Address, ipaddress.IPv6Address)
+            value,
+            (
+                ipaddress.IPv4Address,
+                ipaddress.IPv6Address,
+                ipaddress.IPv4Network,
+                ipaddress.IPv6Network
+            )
         ):
             raise TypeError(
-                "value must be an instance of ipaddress.IPv4Address or "
-                "ipaddress.IPv6Address"
+                "value must be an instance of ipaddress.IPv4Address, "
+                "ipaddress.IPv6Address, ipaddress.IPv4Network, or "
+                "ipaddress.IPv6Network"
             )
 
         self._value = value
@@ -1125,6 +1149,12 @@ class Certificate(object):
         in the certificate.
         """
 
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns an Extensions object.
+        """
+
     @abc.abstractmethod
     def __eq__(self, other):
         """
@@ -1157,4 +1187,10 @@ class CertificateSigningRequest(object):
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
+        """
+
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns the extensions in the signing request.
         """

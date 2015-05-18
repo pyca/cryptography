@@ -217,6 +217,19 @@ Custom X.509 Request Vectors
 * ``san_rsa_sha1.pem`` and ``san_rsa_sha1.der`` - Contain a certificate
   request using RSA and SHA1 with a subject alternative name extension
   generated using OpenSSL.
+* ``two_basic_constraints.pem`` - A certificate signing request
+  for a RSA 2048 bit key containing two basic constraints extensions.
+* ``unsupported_extension.pem`` - A certificate signing request
+  for an RSA 2048 bit key containing containing an unsupported
+  extension type. The OID was encoded as "1.2.3.4" with an
+  ``extnValue`` of "value".
+* ``unsupported_extension_critical.pem`` - A certificate signing
+  request for an RSA 2048 bit key containing containing an unsupported
+  extension type marked critical. The OID was encoded as "1.2.3.4"
+  with an ``extnValue`` of "value".
+* ``basic_constraints.pem`` - A certificate signing request for a RSA
+  2048 bit key containing a basic constraints extension marked as
+  critical.
 
 Hashes
 ~~~~~~
