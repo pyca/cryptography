@@ -694,11 +694,8 @@ class _CertificateSigningRequest(object):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        # TODO: make text prelude optional.
         bio = self._backend._create_mem_bio()
         if encoding is serialization.Encoding.PEM:
-            res = self._backend._lib.X509_REQ_print(bio, self._x509_req)
-            assert res == 1
             res = self._backend._lib.PEM_write_bio_X509_REQ(
                 bio, self._x509_req
             )
