@@ -70,55 +70,55 @@ matrix:
           env: TOXENV=py3pep8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py26
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py27
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py33
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py34
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=pypy
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=pypy3
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py26 OPENSSL=0.9.8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py27 OPENSSL=0.9.8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py33 OPENSSL=0.9.8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=py34 OPENSSL=0.9.8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=pypy OPENSSL=0.9.8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=pypy3 OPENSSL=0.9.8
         - language: generic
           os: osx
-          osx_image: beta-xcode6.2
+          osx_image: beta-xcode6.3
           env: TOXENV=docs
 
 install:
