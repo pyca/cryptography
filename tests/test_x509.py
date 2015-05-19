@@ -535,6 +535,30 @@ class TestRSACertificate(object):
         with pytest.raises(TypeError):
             request.public_bytes('NotAnEncoding')
 
+    @pytest.mark.parametrize(
+        ("request_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("x509", "requests", "rsa_sha1.pem"),
+                x509.load_pem_x509_csr,
+                serialization.Encoding.PEM,
+            ),
+            (
+                os.path.join("x509", "requests", "rsa_sha1.der"),
+                x509.load_der_x509_csr,
+                serialization.Encoding.DER,
+            ),
+        ]
+    )
+    def test_public_bytes_match(self, request_path, loader_func, encoding,
+                                backend):
+        request_bytes = load_vectors_from_file(
+            request_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        request = loader_func(request_bytes, backend)
+        serialized = request.public_bytes(encoding)
+        assert serialized == request_bytes
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
