@@ -172,16 +172,19 @@ void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
 /* This is a macro defined by a call to DECLARE_ASN1_FUNCTIONS in the
    x509v3.h header. */
 void AUTHORITY_KEYID_free(AUTHORITY_KEYID *);
+
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
 
+Cryptography_STACK_OF_ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_new_null(void);
 int sk_ACCESS_DESCRIPTION_num(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
 ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_value(
     Cryptography_STACK_OF_ACCESS_DESCRIPTION *, int
 );
 void sk_ACCESS_DESCRIPTION_free(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
+int sk_ACCESS_DESCRIPTION_push(Cryptography_STACK_OF_ACCESS_DESCRIPTION *, ACCESS_DESCRIPTION *);
 
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
@@ -206,6 +209,8 @@ POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
 void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
 ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
+
+X509_EXTENSION *X509V3_EXT_i2d(int ext_nid, int crit, void *ext_struc);
 """
 
 CUSTOMIZATIONS = """
