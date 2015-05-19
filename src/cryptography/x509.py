@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import datetime
 import ipaddress
 from email.utils import parseaddr
 from enum import Enum
@@ -1594,3 +1595,92 @@ class CertificateSigningRequestBuilder(object):
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
         return backend.create_x509_csr(self, private_key, algorithm)
+
+
+class CertificateBuilder(object):
+    def __init__(self):
+        """
+        Creates an empty X.509 certificate (version 1).
+        """
+        self._version = Version.v1
+        self._issuer_name = None
+        self._subject_name = None
+        self._public_key = None
+        self._serial_number = None
+        self._not_valid_before = None
+        self._not_valid_after = None
+        self._extensions = []
+
+    def set_version(self, version):
+        """
+        Sets the X.509 version required by decoders.
+        """
+        if not isinstance(version, Version):
+            raise TypeError('Expecting x509.Version object.')
+        self._version = version
+
+    def set_issuer_name(self, name):
+        """
+        Sets the CA's distinguished name.
+        """
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        self._issuer_name = name
+
+    def set_subject_name(self, name):
+        """
+        Sets the requestor's distinguished name.
+        """
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        self._subject_name = name
+
+    def set_public_key(self, public_key):
+        """
+        Sets the requestor's public key (as found in the signing request).
+        """
+        # TODO: check type.
+        self._public_key = public_key
+
+    def set_serial_number(self, serial_number):
+        """
+        Sets the certificate serial number.
+        """
+        if not isinstance(serial_number, six.integer_types):
+            raise TypeError('Serial number must be of integral type.')
+        self._serial_number = serial_number
+
+    def set_not_valid_before(self, time):
+        """
+        Sets the certificate activation time.
+        """
+        # TODO: require UTC datetime?
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        self._not_valid_before = time
+
+    def set_not_valid_after(self, time):
+        """
+        Sets the certificate expiration time.
+        """
+        # TODO: require UTC datetime?
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        self._not_valid_after = time
+
+    def add_extension(self, extension):
+        """
+        Adds an X.509 extension to the certificate.
+        """
+        if not isinstance(extension, Extension):
+            raise TypeError('Expecting x509.Extension object.')
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        self._extensions.append(extension)
+
+    def sign(self, backend, private_key, algorithm):
+        """
+        Signs the certificate using the CA's private key.
+        """
+        return backend.sign_x509_certificate(self, private_key, algorithm)

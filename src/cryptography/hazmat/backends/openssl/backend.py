@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import calendar
 import collections
 import itertools
 from contextlib import contextmanager
@@ -91,6 +92,22 @@ def _encode_asn1_str(backend, data, length):
 def _encode_asn1_str_gc(backend, data, length):
     s = _encode_asn1_str(backend, data, length)
     s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
+    return s
+
+
+def _make_asn1_int(backend, x):
+    i = backend._lib.ASN1_INTEGER_new()
+    # i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
+    backend._lib.ASN1_INTEGER_set(i, x)
+    return i
+
+
+def _make_asn1_str(backend, x, n=None):
+    if n is None:
+        n = len(x)
+    s = backend._lib.ASN1_OCTET_STRING_new()
+    # s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
+    backend._lib.ASN1_OCTET_STRING_set(s, x, n)
     return s
 
 
@@ -987,6 +1004,85 @@ class Backend(object):
         assert res > 0
 
         return _CertificateSigningRequest(self, x509_req)
+
+    def sign_x509_certificate(self, builder, private_key, algorithm):
+        # TODO: check type of private key parameter.
+        if not isinstance(builder, x509.CertificateBuilder):
+            raise TypeError('Builder type mismatch.')
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        # Resolve the signature algorithm.
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode('ascii')
+        )
+        assert evp_md != self._ffi.NULL
+
+        # Create an empty certificate.
+        x509_cert = self._lib.X509_new()
+        x509_cert = self._ffi.gc(x509_cert, backend._lib.X509_free)
+
+        # Set the x509 version.
+        res = self._lib.X509_set_version(x509_cert, builder._version.value)
+        assert res == 1
+
+        # Set the subject's name.
+        res = self._lib.X509_set_subject_name(
+            x509_cert, _encode_name(self, list(builder._subject_name))
+        )
+        assert res == 1
+
+        # Set the subject's public key.
+        res = self._lib.X509_set_pubkey(
+            x509_cert, builder._public_key._evp_pkey
+        )
+        assert res == 1
+
+        # Set the certificate serial number.
+        serial_number = _make_asn1_int(self, builder._serial_number)
+        self._lib.X509_set_serialNumber(x509_cert, serial_number)
+
+        # Set the "not before" time.
+        res = self._lib.ASN1_TIME_set(
+            self._lib.X509_get_notBefore(x509_cert),
+            calendar.timegm(builder._not_valid_before.timetuple())
+        )
+        assert res != self._ffi.NULL
+
+        # Set the "not after" time.
+        res = self._lib.ASN1_TIME_set(
+            self._lib.X509_get_notAfter(x509_cert),
+            calendar.timegm(builder._not_valid_after.timetuple())
+        )
+        assert res != self._ffi.NULL
+
+        # Add extensions.
+        for i, extension in enumerate(builder._extensions):
+            if isinstance(extension.value, x509.BasicConstraints):
+                extension = _encode_basic_constraints(
+                    self,
+                    extension.value.ca,
+                    extension.value.path_length,
+                    extension.critical
+                )
+            else:
+                raise ValueError('Extension not yet supported.')
+            res = self._lib.X509_add_ext(x509_cert, extension, i)
+            assert res == 1
+
+        # Set the issuer name.
+        res = self._lib.X509_set_issuer_name(
+            x509_cert, _encode_name(self, list(builder._issuer_name))
+        )
+        assert res == 1
+
+        # Sign the certificate with the issuer's private key.
+        res = self._lib.X509_sign(
+            x509_cert, private_key._evp_pkey, evp_md
+        )
+        assert res > 0
+
+        return _Certificate(self, x509_cert)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(

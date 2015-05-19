@@ -388,6 +388,89 @@ X.509 CRL (Certificate Revocation List) Object
 
         The extensions encoded in the CRL.
 
+X.509 Certificate Builder
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateBuilder
+
+    .. method:: __init__()
+
+        Creates an empty certificate (version 1).
+
+    .. method:: set_version(version)
+
+        Sets the X.509 version that will be used in the certificate.
+
+        :param version: The :class:`~cryptography.x509.Version` that will be
+            used by the certificate.
+
+    .. method:: set_issuer_name(name)
+
+        Sets the issuer's distinguished name.
+
+        :param public_key: The :class:`~cryptography.x509.Name` that describes
+            the issuer (CA).
+
+    .. method:: set_subject_name(name)
+
+        Sets the subject's distinguished name.
+
+        :param public_key: The :class:`~cryptography.x509.Name` that describes
+            the subject (requester).
+
+    .. method:: set_public_key(public_key)
+
+        Sets the subject's public key.
+
+        :param public_key: The subject's public key.
+
+    .. method:: set_serial_number(serial_number)
+
+        Sets the certificate's serial number (an integer).  The CA's policy
+        determines how it attributes serial numbers to certificates.  The only
+        requirement is that this number uniquely identify the certificate given
+        the issuer.
+
+        :param serial_number: Integer number that will be used by the CA to
+            identify this certificate (most notably during certificate
+            revocation checking).
+
+    .. method:: set_not_valid_before(time)
+
+        Sets the certificate's activation time.  This is the time from which
+        clients can start trusting the certificate.  It may be different from
+        the time at which the certificate was created.
+
+        :param time: The `datetime.datetime` object (in UTC) that marks the
+            activation time for the certificate.  The certificate may not be
+            trusted clients if it is used before this time.
+
+    .. method:: set_not_valid_after(time)
+
+        Sets the certificate's expiration time.  This is the time from which
+        clients should no longer trust the certificate.  The CA's policy will
+        determine how long the certificate should remain in use.
+
+        :param time: The `datetime.datetime` object (in UTC) that marks the
+            expiration time for the certificate.  The certificate may not be
+            trusted clients if it is used after this time.
+
+    .. method:: add_extension(extension)
+
+        Adds an X.509 extension to the certificate.
+
+        :param extension: The :class:`~cryptography.x509.Extension` to add to
+            the certificate.
+
+    .. method:: sign(backend, private_key, algorithm)
+
+        Sign the certificate using the CA's private key.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
+            will be used to generate the signature.
+
+
 X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

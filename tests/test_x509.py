@@ -775,6 +775,56 @@ class TestRSACertificateRequest(object):
         assert hash(request1) == hash(request2)
         assert hash(request1) != hash(request3)
 
+    def test_build_cert(self, backend):
+        issuer_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+        subject_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=backend,
+        )
+
+        builder = x509.CertificateBuilder()
+        builder.set_version(x509.Version.v3)
+        builder.set_serial_number(777)
+        builder.set_issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]))
+        builder.set_subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]))
+        builder.set_public_key(subject_private_key.public_key())
+        builder.add_extension(x509.Extension(
+            x509.OID_BASIC_CONSTRAINTS,
+            True,
+            x509.BasicConstraints(False, None),
+        ))
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+        builder.set_not_valid_before(not_valid_before)
+        builder.set_not_valid_after(not_valid_after)
+        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
+
+        assert cert.version is x509.Version.v3
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
