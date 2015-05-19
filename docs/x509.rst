@@ -313,6 +313,9 @@ X.509 Certificate Object
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
 
+        :raises UnicodeError: If an extension contains IDNA encoding that is
+            invalid or not compliant with IDNA 2008.
+
         .. doctest::
 
             >>> for ext in cert.extensions:
