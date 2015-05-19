@@ -124,12 +124,9 @@ static const long SSL_MODE_ENABLE_PARTIAL_WRITE;
 static const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const long SSL_MODE_AUTO_RETRY;
 static const long SSL3_RANDOM_SIZE;
+
 typedef ... SSL_METHOD;
-typedef struct ssl_st {
-    int version;
-    int type;
-    ...;
-} SSL_CTX;
+typedef ... SSL_CTX;
 
 typedef struct {
     int master_key_length;
@@ -144,9 +141,10 @@ typedef struct {
 } SSL3_STATE;
 
 typedef struct {
+    int version;
+    int type;
     SSL3_STATE *s3;
     SSL_SESSION *session;
-    int type;
     ...;
 } SSL;
 
