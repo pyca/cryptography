@@ -366,6 +366,17 @@ X.509 CSR (Certificate Signing Request) Object
             >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
             True
 
+    .. method:: public_bytes(encoding)
+
+        :param encoding: The
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding`
+            that will be used to serialize the certificate request.
+
+        :return bytes: The data that can be written to a file or sent
+            over the network to be signed by the certificate
+            authority.
+
+
 .. class:: Name
 
     .. versionadded:: 0.8

@@ -15,7 +15,7 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
@@ -470,6 +470,94 @@ class TestRSACertificate(object):
                 x509.BasicConstraints(True, 1),
             ),
         ]
+
+    def test_public_bytes_pem(self, backend):
+        # Load an existing CSR.
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+
+        # Encode it to PEM and load it back.
+        request = x509.load_pem_x509_csr(request.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+
+        # We should recover what we had to start with.
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]
+
+    def test_public_bytes_der(self, backend):
+        # Load an existing CSR.
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+
+        # Encode it to DER and load it back.
+        request = x509.load_der_x509_csr(request.public_bytes(
+            encoding=serialization.Encoding.DER,
+        ), backend)
+
+        # We should recover what we had to start with.
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ]
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+
+        with pytest.raises(TypeError):
+            request.public_bytes('NotAnEncoding')
+
+    @pytest.mark.parametrize(
+        ("request_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("x509", "requests", "rsa_sha1.pem"),
+                x509.load_pem_x509_csr,
+                serialization.Encoding.PEM,
+            ),
+            (
+                os.path.join("x509", "requests", "rsa_sha1.der"),
+                x509.load_der_x509_csr,
+                serialization.Encoding.DER,
+            ),
+        ]
+    )
+    def test_public_bytes_match(self, request_path, loader_func, encoding,
+                                backend):
+        request_bytes = load_vectors_from_file(
+            request_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        request = loader_func(request_bytes, backend)
+        serialized = request.public_bytes(encoding)
+        assert serialized == request_bytes
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
