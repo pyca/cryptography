@@ -113,18 +113,10 @@ def _encode_basic_constraints(backend, ca=False, pathlen=0, critical=False):
     if ca:
         constraints.pathlen = _encode_asn1_int(backend, pathlen)
 
-    # Allocate a buffer for encoded payload.
-    cdata = backend._ffi.new(
-        'unsigned char[]',
-        2048,  # TODO: shrink to fit!
-    )
-    assert cdata != backend._ffi.NULL
-
     # Fetch the encoded payload.
-    p = backend._ffi.new('unsigned char*[1]')
-    assert p != backend._ffi.NULL
-    p[0] = cdata
-    r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, p)
+    pp = backend._ffi.new('unsigned char**')
+    assert pp != backend._ffi.NULL
+    r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, pp)
     assert r > 0
 
     # Wrap that in an X509 extension object.
@@ -132,7 +124,7 @@ def _encode_basic_constraints(backend, ca=False, pathlen=0, critical=False):
         backend._ffi.NULL,
         obj,
         1 if critical else 0,
-        _encode_asn1_str(backend, cdata, r),
+        _encode_asn1_str(backend, pp[0], r),
     )
     assert extension != backend._ffi.NULL
     return extension
