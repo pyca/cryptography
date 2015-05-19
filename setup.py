@@ -32,7 +32,7 @@ with open(os.path.join(src_dir, "cryptography", "__about__.py")) as f:
 VECTORS_DEPENDENCY = "cryptography_vectors=={0}".format(about['__version__'])
 
 requirements = [
-    "idna",
+    "idna>=2.0",
     "pyasn1",
     "six>=1.4.1",
     "setuptools"
