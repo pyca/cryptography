@@ -6,24 +6,11 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 
-import os
-
 import six
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
-from cryptography.hazmat.bindings.utils import LazyLibrary, build_ffi
-
-
-with open(os.path.join(os.path.dirname(__file__), "src/padding.h")) as f:
-    TYPES = f.read()
-
-with open(os.path.join(os.path.dirname(__file__), "src/padding.c")) as f:
-    FUNCTIONS = f.read()
-
-
-_ffi = build_ffi(cdef_source=TYPES, verify_source=FUNCTIONS)
-_lib = LazyLibrary(_ffi)
+from cryptography.hazmat.bindings._padding import lib
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -124,7 +111,7 @@ class _PKCS7UnpaddingContext(object):
         if len(self._buffer) != self.block_size // 8:
             raise ValueError("Invalid padding bytes.")
 
-        valid = _lib.Cryptography_check_pkcs7_padding(
+        valid = lib.Cryptography_check_pkcs7_padding(
             self._buffer, self.block_size // 8
         )
 

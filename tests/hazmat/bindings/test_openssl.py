@@ -6,9 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _get_libraries, _get_windows_libraries
-)
+from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
 class TestOpenSSL(object):
@@ -133,18 +131,3 @@ class TestOpenSSL(object):
         expected_options = current_options | b.lib.SSL_OP_ALL
         assert resp == expected_options
         assert b.lib.SSL_get_mode(ssl) == expected_options
-
-    def test_libraries(self, monkeypatch):
-        assert _get_libraries("darwin") == ["ssl", "crypto"]
-        monkeypatch.setenv('PYCA_WINDOWS_LINK_TYPE', 'static')
-        assert "ssleay32mt" in _get_libraries("win32")
-
-    def test_windows_static_dynamic_libraries(self):
-        assert "ssleay32mt" in _get_windows_libraries("static")
-
-        assert "ssleay32mt" in _get_windows_libraries("")
-
-        assert "ssleay32" in _get_windows_libraries("dynamic")
-
-        with pytest.raises(ValueError):
-            _get_windows_libraries("notvalid")
