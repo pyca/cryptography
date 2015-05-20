@@ -368,6 +368,90 @@ class TestRSACertificate(object):
         with pytest.raises(UnsupportedAlgorithm):
             cert.signature_hash_algorithm
 
+    def test_public_bytes_pem(self, backend):
+        # Load an existing certificate.
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        # Encode it to PEM and load it back.
+        cert = x509.load_pem_x509_certificate(cert.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+
+        # We should recover what we had to start with.
+        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
+        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        assert cert.serial == 2
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert cert.version is x509.Version.v3
+        fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
+        assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
+
+    def test_public_bytes_der(self, backend):
+        # Load an existing certificate.
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        # Encode it to DER and load it back.
+        cert = x509.load_der_x509_certificate(cert.public_bytes(
+            encoding=serialization.Encoding.DER,
+        ), backend)
+
+        # We should recover what we had to start with.
+        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
+        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        assert cert.serial == 2
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert cert.version is x509.Version.v3
+        fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
+        assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        with pytest.raises(TypeError):
+            cert.public_bytes('NotAnEncoding')
+
+    @pytest.mark.parametrize(
+        ("cert_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("x509", "v1_cert.pem"),
+                x509.load_pem_x509_certificate,
+                serialization.Encoding.PEM,
+            ),
+            (
+                os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+                x509.load_der_x509_certificate,
+                serialization.Encoding.DER,
+            ),
+        ]
+    )
+    def test_public_bytes_match(self, cert_path, loader_func, encoding,
+                                backend):
+        cert_bytes = load_vectors_from_file(
+            cert_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        cert = loader_func(cert_bytes, backend)
+        serialized = cert.public_bytes(encoding)
+        assert serialized == cert_bytes
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestRSACertificateRequest(object):
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [

@@ -1167,6 +1167,10 @@ class Certificate(object):
         Checks not equal.
         """
 
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        pass
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
