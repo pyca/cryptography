@@ -326,6 +326,15 @@ X.509 Certificate Object
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.32, name=certificatePolicies)>, critical=False, value=<CertificatePolicies([<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=2.16.840.1.101.3.2.1.48.1, name=Unknown OID)>, policy_qualifiers=None)>])>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
+    .. method:: public_bytes(encoding)
+
+        :param encoding: The
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding`
+            that will be used to serialize the certificate.
+
+        :return bytes: The data that can be written to a file or sent
+            over the network to be verified by clients.
+
 X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

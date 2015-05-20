@@ -9,6 +9,8 @@ Changelog
 * Support serialization of certificate signing requests using the
   ``public_bytes`` method of
   :class:`~cryptography.x509.CertificateSigningRequest`.
+* Support serialization of certificates using the ``public_bytes`` method of
+  :class:`~cryptography.x509.Certificate`.
 
 0.9 - 2015-05-13
 ~~~~~~~~~~~~~~~~

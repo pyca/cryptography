@@ -1167,6 +1167,12 @@ class Certificate(object):
         Checks not equal.
         """
 
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Serializes the certificate to PEM or DER format.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
