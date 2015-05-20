@@ -1172,7 +1172,6 @@ class Certificate(object):
         """
         Serializes the certificate to PEM or DER format.
         """
-        pass
 
 
 @six.add_metaclass(abc.ABCMeta)
