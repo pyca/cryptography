@@ -1169,6 +1169,9 @@ class Certificate(object):
 
     @abc.abstractmethod
     def public_bytes(self, encoding):
+        """
+        Serializes the certificate to PEM or DER format.
+        """
         pass
 
 
