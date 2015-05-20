@@ -64,3 +64,11 @@ Glossary
     text
         This type corresponds to ``unicode`` on Python 2 and ``str`` on Python
         3.  This is equivalent to ``six.text_type``.
+
+    nonce
+        A nonce is a **n**\ umber used **once**. Nonces are used in many
+        cryptographic protocols. Generally, a nonce does not have to be secret
+        or unpredictable, but it must be unique. A nonce is often a random
+        or pseudo-random number (see :doc:`Random number generation
+        </random-numbers>`). Since a nonce does not have to be unpredictable,
+        it can also take a form of a counter.
