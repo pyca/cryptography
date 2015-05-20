@@ -240,7 +240,7 @@ Modes
 
     **This mode does not require padding.**
 
-    :param bytes nonce: Should be :doc:`random bytes </random-numbers>`. It is
+    :param bytes nonce: Should be unique, a :term:`nonce`. It is
         critical to never reuse a ``nonce`` with a given key.  Any reuse of a
         nonce with the same key compromises the security of every message
         encrypted with that key. Must be the same number of bytes as the
@@ -305,12 +305,11 @@ Modes
 
     **This mode does not require padding.**
 
-    :param bytes initialization_vector: Must be :doc:`random bytes
-        </random-numbers>`. They do not need to be kept secret and they can be
-        included in a transmitted message. NIST `recommends a 96-bit IV
-        length`_ for performance critical situations but it can be up to
-        2\ :sup:`64` - 1 bits. Do not reuse an ``initialization_vector`` with a
-        given ``key``.
+    :param bytes initialization_vector: Must be unique, a :term:`nonce`.
+        They do not need to be kept secret and they can be included in a
+        transmitted message. NIST `recommends a 96-bit IV length`_ for
+        performance critical situations but it can be up to 2\ :sup:`64` - 1
+        bits. Do not reuse an ``initialization_vector`` with a given ``key``.
 
     .. note::
 
