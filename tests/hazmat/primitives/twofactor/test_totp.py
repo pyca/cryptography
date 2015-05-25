@@ -11,6 +11,7 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
+from cryptography.hazmat.primitives.twofactor.utils import get_provisioning_uri
 
 from ....utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
@@ -125,6 +126,19 @@ class TestTOTP(object):
         totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
 
         assert totp.generate(time) == b"94287082"
+
+    def test_get_provisioning_uri(self, backend):
+        secret = b"12345678901234567890"
+        totp = TOTP(secret, 6, hashes.SHA1(), 30, backend=backend)
+
+        assert get_provisioning_uri(totp, "Alice Smith") == (
+            "otpauth://totp/Alice%20Smith?digits=6&secret=GEZDGNBVG"
+            "Y3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&period=30")
+
+        assert get_provisioning_uri(totp, "Alice Smith", 'World') == (
+            "otpauth://totp/World:Alice%20Smith?digits=6&secret=GEZ"
+            "DGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=World"
+            "&period=30")
 
 
 def test_invalid_backend():
