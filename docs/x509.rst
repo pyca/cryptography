@@ -724,7 +724,7 @@ X.509 Extensions
 
 .. class:: OCSPNoCheck
 
-    .. versionadded:: 0.10
+    .. versionadded:: 1.0
 
     This presence of this extension indicates that an OCSP client can trust a
     responder for the lifetime of the responder's certificate. CAs issuing
