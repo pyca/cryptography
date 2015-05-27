@@ -310,8 +310,13 @@ int i2d_EC_PUBKEY(EC_KEY *, unsigned char **);
 EC_KEY *d2i_EC_PUBKEY(EC_KEY **, const unsigned char **, long);
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
 int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
+EC_KEY *d2i_ECPrivateKey(EC_KEY **, const unsigned char **, long);
 EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
+int i2d_ECPrivateKey(EC_KEY *, unsigned char **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
+
+EC_KEY *o2i_ECPublicKey(EC_KEY **, const unsigned char **, long);
+int i2o_ECPublicKey(EC_KEY *, unsigned char **);
 
 // declared in safestack
 int sk_ASN1_OBJECT_num(Cryptography_STACK_OF_ASN1_OBJECT *);
@@ -329,8 +334,13 @@ int (*i2d_EC_PUBKEY)(EC_KEY *, unsigned char **) = NULL;
 EC_KEY *(*d2i_EC_PUBKEY)(EC_KEY **, const unsigned char **, long) = NULL;
 EC_KEY *(*d2i_EC_PUBKEY_bio)(BIO *, EC_KEY **) = NULL;
 int (*i2d_EC_PUBKEY_bio)(BIO *, EC_KEY *) = NULL;
+EC_KEY *(*d2i_ECPrivateKey)(EC_KEY **, const unsigned char **, long) = NULL;
 EC_KEY *(*d2i_ECPrivateKey_bio)(BIO *, EC_KEY **) = NULL;
+int (*i2d_ECPrivateKey)(EC_KEY *, unsigned char **) = NULL;
 int (*i2d_ECPrivateKey_bio)(BIO *, EC_KEY *) = NULL;
+
+EC_KEY *(*o2i_ECPublicKey)(EC_KEY **, const unsigned char **, long) = NULL;
+int (*i2o_ECPublicKey)(EC_KEY *, unsigned char **) = NULL;
 #endif
 """
 
@@ -340,7 +350,11 @@ CONDITIONAL_NAMES = {
         "d2i_EC_PUBKEY",
         "d2i_EC_PUBKEY_bio",
         "i2d_EC_PUBKEY_bio",
+        "d2i_ECPrivateKey",
         "d2i_ECPrivateKey_bio",
+        "i2d_ECPrivateKey",
         "i2d_ECPrivateKey_bio",
+        "i2o_ECPublicKey",
+        "o2i_ECPublicKey",
     ]
 }
