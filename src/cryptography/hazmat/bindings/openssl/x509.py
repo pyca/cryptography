@@ -354,7 +354,7 @@ CONDITIONAL_NAMES = {
         "d2i_ECPrivateKey_bio",
         "i2d_ECPrivateKey",
         "i2d_ECPrivateKey_bio",
-        "i2o_ECPublicKey"
+        "i2o_ECPublicKey",
         "o2i_ECPublicKey",
     ]
 }
