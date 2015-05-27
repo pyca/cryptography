@@ -315,7 +315,7 @@ EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey(EC_KEY *, unsigned char **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 
-EC_KEY *d2o_ECPrivateKey(EC_KEY **, const unsigned char **, long);
+EC_KEY *o2i_ECPrivateKey(EC_KEY **, const unsigned char **, long);
 int i2o_ECPrivateKey(EC_KEY *, unsigned char **);
 
 // declared in safestack
@@ -349,7 +349,7 @@ CONDITIONAL_NAMES = {
         "d2i_ECPrivateKey_bio",
         "i2d_ECPrivateKey",
         "i2d_ECPrivateKey_bio",
-        "i2o_ECPublicKey"
-        "o2i_ECPublicKey",
+        "i2o_ECPrivateKey"
+        "o2i_ECPrivateKey",
     ]
 }
