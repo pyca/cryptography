@@ -334,8 +334,13 @@ int (*i2d_EC_PUBKEY)(EC_KEY *, unsigned char **) = NULL;
 EC_KEY *(*d2i_EC_PUBKEY)(EC_KEY **, const unsigned char **, long) = NULL;
 EC_KEY *(*d2i_EC_PUBKEY_bio)(BIO *, EC_KEY **) = NULL;
 int (*i2d_EC_PUBKEY_bio)(BIO *, EC_KEY *) = NULL;
+EC_KEY *(*d2i_ECPrivateKey)(EC_KEY **, const unsigned char **, long) = NULL;
 EC_KEY *(*d2i_ECPrivateKey_bio)(BIO *, EC_KEY **) = NULL;
+int (*i2d_ECPrivateKey)(EC_KEY *, unsigned char **) = NULL;
 int (*i2d_ECPrivateKey_bio)(BIO *, EC_KEY *) = NULL;
+
+EC_KEY *(*o2i_ECPrivateKey)(EC_KEY **, const unsigned char **, long) = NULL;
+int (*i2o_ECPrivateKey)(EC_KEY *, unsigned char **) = NULL;
 #endif
 """
 
