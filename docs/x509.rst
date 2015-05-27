@@ -378,7 +378,7 @@ X.509 CRL (Certificate Revocation List) Object
 
         A naïve datetime representing when the this CRL was last updated.
 
-    .. attribute:: revoked
+    .. attribute:: revoked_certificates
 
         :type: list of :class:`RevokedCertificate`
 
@@ -390,9 +390,9 @@ X.509 CRL (Certificate Revocation List) Object
 
         The extensions encoded in the CRL.
 
-    .. method:: verify(pubkey)
+    .. method:: verify(public_key)
 
-        :param algorithm: The
+        :param public_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
