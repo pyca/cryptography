@@ -55,9 +55,9 @@ _OID_NAMES = {
     "2.5.29.17": "subjectAltName",
     "2.5.29.18": "issuerAltName",
     "2.5.29.19": "basicConstraints",
-    "2.5.29.21": "CRLReason",
-    "2.5.29.24": "InvalidityDate",
-    "2.5.29.29": "CertificateIssuer",
+    "2.5.29.21": "cRLReason",
+    "2.5.29.24": "invalidityDate",
+    "2.5.29.29": "certificateIssuer",
     "2.5.29.30": "nameConstraints",
     "2.5.29.31": "cRLDistributionPoints",
     "2.5.29.32": "certificatePolicies",
@@ -1250,12 +1250,6 @@ class CertificateRevocationList(object):
     def extensions(self):
         """
         Returns an Extensions object containing a list of CRL extensions.
-        """
-
-    @abc.abstractmethod
-    def verify(self, pubkey):
-        """
-        Verify this CRL against a given 'pubkey'.
         """
 
     @abc.abstractmethod

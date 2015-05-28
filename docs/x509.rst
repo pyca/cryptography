@@ -390,16 +390,6 @@ X.509 CRL (Certificate Revocation List) Object
 
         The extensions encoded in the CRL.
 
-    .. method:: verify(public_key)
-
-        :param public_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-            that will be used to verify the CRL.
-
-        :return boolean: The result of the verification as boolean value.
-
 X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -454,7 +444,7 @@ X.509 CSR (Certificate Signing Request) Object
             authority.
 
 X.509 Revoked Certificate Object
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: RevokedCertificate
 
