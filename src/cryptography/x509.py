@@ -55,6 +55,9 @@ _OID_NAMES = {
     "2.5.29.17": "subjectAltName",
     "2.5.29.18": "issuerAltName",
     "2.5.29.19": "basicConstraints",
+    "2.5.29.21": "cRLReason",
+    "2.5.29.24": "invalidityDate",
+    "2.5.29.29": "certificateIssuer",
     "2.5.29.30": "nameConstraints",
     "2.5.29.31": "cRLDistributionPoints",
     "2.5.29.32": "certificatePolicies",
@@ -224,6 +227,9 @@ OID_KEY_USAGE = ObjectIdentifier("2.5.29.15")
 OID_SUBJECT_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.17")
 OID_ISSUER_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.18")
 OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+OID_CRL_REASON = ObjectIdentifier("2.5.29.21")
+OID_INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
+OID_CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
 OID_NAME_CONSTRAINTS = ObjectIdentifier("2.5.29.30")
 OID_CRL_DISTRIBUTION_POINTS = ObjectIdentifier("2.5.29.31")
 OID_CERTIFICATE_POLICIES = ObjectIdentifier("2.5.29.32")
@@ -944,7 +950,7 @@ class IPAddress(object):
         return not self == other
 
 
-class SubjectAlternativeName(object):
+class GeneralNames(object):
     def __init__(self, general_names):
         if not all(isinstance(x, GeneralName) for x in general_names):
             raise TypeError(
@@ -962,6 +968,32 @@ class SubjectAlternativeName(object):
 
     def get_values_for_type(self, type):
         return [i.value for i in self if isinstance(i, type)]
+
+    def __repr__(self):
+        return "<GeneralNames({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, GeneralNames):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class SubjectAlternativeName(object):
+    def __init__(self, general_names):
+        self._general_names = GeneralNames(general_names)
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return self._general_names.get_values_for_type(type)
 
     def __repr__(self):
         return "<SubjectAlternativeName({0})>".format(self._general_names)
@@ -1175,6 +1207,65 @@ class Certificate(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
+class CertificateRevocationList(object):
+
+    @abc.abstractmethod
+    def fingerprint(self, algorithm):
+        """
+        Returns bytes using digest passed.
+        """
+
+    @abc.abstractproperty
+    def signature_hash_algorithm(self):
+        """
+        Returns a HashAlgorithm corresponding to the type of the digest signed
+        in the certificate.
+        """
+
+    @abc.abstractproperty
+    def issuer(self):
+        """
+        Returns the X509Name with the issuer of this CRL.
+        """
+
+    @abc.abstractproperty
+    def next_update(self):
+        """
+        Returns the date of next update for this CRL.
+        """
+
+    @abc.abstractproperty
+    def last_update(self):
+        """
+        Returns the date of last update for this CRL.
+        """
+
+    @abc.abstractproperty
+    def revoked_certificates(self):
+        """
+        Returns a list of RevokedCertificate objects for this CRL.
+        """
+
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns an Extensions object containing a list of CRL extensions.
+        """
+
+    @abc.abstractmethod
+    def __eq__(self, other):
+        """
+        Checks equality.
+        """
+
+    @abc.abstractmethod
+    def __ne__(self, other):
+        """
+        Checks not equal.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
     @abc.abstractmethod
     def public_key(self):
@@ -1205,4 +1296,25 @@ class CertificateSigningRequest(object):
     def public_bytes(self, encoding):
         """
         Encodes the request to PEM or DER format.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class RevokedCertificate(object):
+    @abc.abstractproperty
+    def serial_number(self):
+        """
+        Returns the serial number of the revoked certificate.
+        """
+
+    @abc.abstractproperty
+    def revocation_date(self):
+        """
+        Returns the date of when this certificate was revoked.
+        """
+
+    @abc.abstractproperty
+    def extensions(self):
+        """
+        Returns an Extensions object containing a list of Revoked extensions.
         """

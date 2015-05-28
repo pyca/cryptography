@@ -194,6 +194,7 @@ int X509_CRL_verify(X509_CRL *, EVP_PKEY *);
 int X509_CRL_get_ext_count(X509_CRL *);
 X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
+int X509_CRL_cmp(const X509_CRL *, const X509_CRL *);
 
 int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *, EVP_PKEY *);
 int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *, EVP_PKEY *, const EVP_MD *);
