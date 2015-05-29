@@ -47,7 +47,16 @@ def download_artifacts(session):
 
     paths = []
 
+    last_build_number = response.json()["number"]
     for run in response.json()["runs"]:
+        if run["number"] != last_build_number:
+            print(
+                "Skipping {0} as it is not from the latest build ({1})".format(
+                    run["url"], last_build_number
+                )
+            )
+            continue
+
         response = session.get(
             run["url"] + "api/json/",
             headers={
