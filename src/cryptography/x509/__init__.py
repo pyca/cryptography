@@ -8,8 +8,8 @@ from cryptography.x509.base import (
     Certificate, CertificateBuilder, CertificateRevocationList,
     CertificateSigningRequest, CertificateSigningRequestBuilder,
     InvalidVersion, RevokedCertificate,
-    Version, load_der_x509_certificate, load_der_x509_csr,
-    load_pem_x509_certificate, load_pem_x509_csr,
+    Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
+    load_pem_x509_certificate, load_pem_x509_crl, load_pem_x509_csr,
 )
 from cryptography.x509.extensions import (
     AccessDescription, AuthorityInformationAccess,
@@ -108,6 +108,8 @@ __all__ = [
     "load_der_x509_certificate",
     "load_pem_x509_csr",
     "load_der_x509_csr",
+    "load_pem_x509_crl",
+    "load_der_x509_crl",
     "InvalidVersion",
     "DuplicateExtension",
     "UnsupportedExtension",
