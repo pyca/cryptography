@@ -791,6 +791,31 @@ class ReasonFlags(Enum):
     remove_from_crl = "removeFromCRL"
 
 
+class InhibitAnyPolicy(object):
+    def __init__(self, skip_certs):
+        if not isinstance(skip_certs, six.integer_types):
+            raise TypeError("skip_certs must be an integer")
+
+        if skip_certs < 0:
+            raise ValueError("skip_certs must be a non-negative integer")
+
+        self._skip_certs = skip_certs
+
+    def __repr__(self):
+        return "<InhibitAnyPolicy(skip_certs={0.skip_certs})>".format(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, InhibitAnyPolicy):
+            return NotImplemented
+
+        return self.skip_certs == other.skip_certs
+
+    def __ne__(self, other):
+        return not self == other
+
+    skip_certs = utils.read_only_property("_skip_certs")
+
+
 @six.add_metaclass(abc.ABCMeta)
 class GeneralName(object):
     @abc.abstractproperty
@@ -1122,6 +1147,7 @@ OID_OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
 
 OID_CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
 OID_CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
+OID_ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
 
 @six.add_metaclass(abc.ABCMeta)

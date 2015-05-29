@@ -2327,3 +2327,28 @@ class TestCRLDistributionPointsExtension(object):
                 )],
             )
         ])
+
+
+class TestInhibitAnyPolicy(object):
+    def test_not_int(self):
+        with pytest.raises(TypeError):
+            x509.InhibitAnyPolicy("notint")
+
+    def test_negative_int(self):
+        with pytest.raises(ValueError):
+            x509.InhibitAnyPolicy(-1)
+
+    def test_repr(self):
+        iap = x509.InhibitAnyPolicy(0)
+        assert repr(iap) == "<InhibitAnyPolicy(skip_certs=0)>"
+
+    def test_eq(self):
+        iap = x509.InhibitAnyPolicy(1)
+        iap2 = x509.InhibitAnyPolicy(1)
+        assert iap == iap2
+
+    def test_ne(self):
+        iap = x509.InhibitAnyPolicy(1)
+        iap2 = x509.InhibitAnyPolicy(4)
+        assert iap != iap2
+        assert iap != object()
