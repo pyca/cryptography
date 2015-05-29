@@ -139,6 +139,8 @@ class CTR(object):
 @utils.register_interface(ModeWithAuthenticationTag)
 class GCM(object):
     name = "GCM"
+    _MAX_ENCRYPTED_BYTES = (2 ** 39 - 256) // 8
+    _MAX_AAD_BYTES = (2 ** 64) // 8
 
     def __init__(self, initialization_vector, tag=None, min_tag_length=16):
         # len(initialization_vector) must in [1, 2 ** 64), but it's impossible

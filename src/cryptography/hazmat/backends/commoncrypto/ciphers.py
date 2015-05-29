@@ -111,6 +111,8 @@ class _GCMCipherContext(object):
         self._mode = mode
         self._operation = operation
         self._tag = None
+        self._bytes_processed = 0
+        self._aad_bytes_processed = 0
 
         registry = self._backend._cipher_registry
         try:
@@ -151,6 +153,14 @@ class _GCMCipherContext(object):
         self.authenticate_additional_data(b"")
 
     def update(self, data):
+        self._bytes_processed += len(data)
+        if self._bytes_processed > modes.GCM._MAX_ENCRYPTED_BYTES:
+            raise ValueError(
+                "GCM has a maximum encrypted byte limit of {0}".format(
+                    modes.GCM._MAX_ENCRYPTED_BYTES
+                )
+            )
+
         buf = self._backend._ffi.new("unsigned char[]", len(data))
         args = (self._ctx[0], data, len(data), buf)
         if self._operation == self._backend._lib.kCCEncrypt:
@@ -185,6 +195,14 @@ class _GCMCipherContext(object):
         return b""
 
     def authenticate_additional_data(self, data):
+        self._aad_bytes_processed += len(data)
+        if self._aad_bytes_processed > modes.GCM._MAX_AAD_BYTES:
+            raise ValueError(
+                "GCM has a maximum AAD byte limit of {0}".format(
+                    modes.GCM._MAX_AAD_BYTES
+                )
+            )
+
         res = self._backend._lib.CCCryptorGCMAddAAD(
             self._ctx[0], data, len(data)
         )

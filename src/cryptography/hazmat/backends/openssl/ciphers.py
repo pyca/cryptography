@@ -18,6 +18,8 @@ class _CipherContext(object):
     _DECRYPT = 0
 
     def __init__(self, backend, cipher, mode, operation):
+        self._bytes_processed = 0
+        self._aad_bytes_processed = 0
         self._backend = backend
         self._cipher = cipher
         self._mode = mode
@@ -110,6 +112,17 @@ class _CipherContext(object):
         if len(data) == 0 and not isinstance(self._mode, modes.GCM):
             return b""
 
+        self._bytes_processed += len(data)
+        if (
+            isinstance(self._mode, modes.GCM) and
+            self._bytes_processed > modes.GCM._MAX_ENCRYPTED_BYTES
+        ):
+            raise ValueError(
+                "GCM has a maximum encrypted byte limit of {0}".format(
+                    modes.GCM._MAX_ENCRYPTED_BYTES
+                )
+            )
+
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
         outlen = self._backend._ffi.new("int *")
@@ -172,6 +185,17 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def authenticate_additional_data(self, data):
+        self._aad_bytes_processed += len(data)
+        if (
+            isinstance(self._mode, modes.GCM) and
+            self._aad_bytes_processed > modes.GCM._MAX_AAD_BYTES
+        ):
+            raise ValueError(
+                "GCM has a maximum AAD byte limit of {0}".format(
+                    modes.GCM._MAX_AAD_BYTES
+                )
+            )
+
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
             self._ctx, self._backend._ffi.NULL, outlen, data, len(data)
