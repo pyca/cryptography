@@ -234,6 +234,22 @@ Custom X.509 Request Vectors
   2048 bit key containing a basic constraints extension marked as
   critical.
 
+Custom X.509 Certificate Revocation List Vectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``crl_all_reasons.pem`` - Contains a CRL with 12 revoked certificates, whose
+  serials match their list position. It includes one revocation without
+  any entry extensions, 10 revocations with every supported reason code and one 
+  revocation with an unsupported, non-critical entry extension with the OID
+  value set to "1.2.3.4".
+* ``crl_dup_entry_ext.pem`` - Contains a CRL with one revocation which has a
+  duplicate entry extension.
+* ``crl_md2_unknown_crit_entry_ext.pem`` - Contains a CRL with one revocation
+  which contains an unsupported critical entry extension with the OID value set
+  to "1.2.3.4". The CRL uses an unsupported MD2 signature algorithm.
+* ``crl_unsupported_reason.pem`` - Contains a CRL with one revocation which has
+  an unsupported reason code.
+
 Hashes
 ~~~~~~
 
