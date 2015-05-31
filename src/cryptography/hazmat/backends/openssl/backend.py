@@ -80,23 +80,16 @@ def _encode_asn1_str(backend, x, n):
 
 
 def _encode_name(backend, attributes):
-    resolve = {
-        x509.OID_COMMON_NAME: b'CN',
-        x509.OID_COUNTRY_NAME: b'C',
-        x509.OID_STATE_OR_PROVINCE_NAME: b'ST',
-        x509.OID_LOCALITY_NAME: b'L',
-        x509.OID_ORGANIZATION_NAME: b'O',
-        x509.OID_ORGANIZATIONAL_UNIT_NAME: b'OU',
-    }
     subject = backend._lib.X509_NAME_new()
     subject = backend._ffi.gc(subject, backend._lib.X509_NAME_free)
     for attribute in attributes:
         value = attribute.value
         if isinstance(value, six.text_type):
             value = value.encode('ascii')
-        res = backend._lib.X509_NAME_add_entry_by_txt(
+        obj = _txt2obj(backend, attribute.oid.dotted_string)
+        res = backend._lib.X509_NAME_add_entry_by_OBJ(
             subject,
-            resolve[attribute.oid],
+            obj,
             backend._lib.MBSTRING_ASC,
             value,
             -1, -1, 0,
