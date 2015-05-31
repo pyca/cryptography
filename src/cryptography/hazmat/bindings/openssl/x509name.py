@@ -34,6 +34,8 @@ unsigned long X509_NAME_hash(X509_NAME *);
 int i2d_X509_NAME(X509_NAME *, unsigned char **);
 int X509_NAME_add_entry_by_txt(X509_NAME *, const char *, int,
                                const unsigned char *, int, int, int);
+int X509_NAME_add_entry_by_OBJ(X509_NAME *, ASN1_OBJECT *, int,
+                               unsigned char *, int, int, int);
 int X509_NAME_add_entry_by_NID(X509_NAME *, int, int, unsigned char *,
                                int, int, int);
 X509_NAME_ENTRY *X509_NAME_delete_entry(X509_NAME *, int);
