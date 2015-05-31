@@ -1386,4 +1386,4 @@ class CertificateSigningRequestBuilder(object):
         """
         Signs the request using the requestor's private key.
         """
-        return backend.sign_x509_request(self, private_key, algorithm)
+        return backend.create_x509_csr(self, private_key, algorithm)
