@@ -479,15 +479,18 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. method:: set_version(version)
 
-       :param version: The :class:`Version` of the X.509 protocol.
+        :param version: The :class:`Version` of the X.509 protocol.
+        :returns: A new `CertificateSigningRequestBuilder`.
 
     .. method:: set_subject_name(name)
 
         :param name: The :class:`Name` of the certificate subject.
+        :returns: A new `CertificateSigningRequestBuilder`.
 
     .. method:: add_extension(extension)
 
         :param extension: The :class:`Extension` to add to the request.
+        :returns: A new `CertificateSigningRequestBuilder`.
 
     .. method:: sign(backend, private_key, algorithm)
 
