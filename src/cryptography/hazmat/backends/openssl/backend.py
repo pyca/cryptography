@@ -784,7 +784,7 @@ class Backend(object):
     def create_cmac_ctx(self, algorithm):
         return _CMACContext(self, algorithm)
 
-    def sign_x509_request(self, builder, private_key, algorithm):
+    def create_x509_csr(self, builder, private_key, algorithm):
         # TODO: check type of private key parameter.
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
