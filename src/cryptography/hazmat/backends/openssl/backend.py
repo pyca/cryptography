@@ -57,15 +57,24 @@ _OpenSSLError = collections.namedtuple("_OpenSSLError",
 
 
 def _encode_asn1_int(backend, x):
+    """
+    Converts a python integer to a ASN1_INTEGER. The returned ASN1_INTEGER will
+    not be garbage collected (to support adding them to structs that take
+    ownership of the object). Be sure to register it for GC if it will be
+    discarded after use.
+
+    """
     i = backend._lib.ASN1_INTEGER_new()
-    # i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
     backend._lib.ASN1_INTEGER_set(i, x)
     return i
 
 
 def _encode_asn1_str(backend, x, n):
+    """
+    Create an ASN1_OCTET_STRING from a Python byte string.
+    """
     s = backend._lib.ASN1_OCTET_STRING_new()
-    # s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
+    s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
     backend._lib.ASN1_OCTET_STRING_set(s, x, n)
     return s
 
@@ -97,11 +106,15 @@ def _encode_name(backend, attributes):
 
 
 def _txt2obj(backend, name):
+    """
+    Converts a Python string with an ASN.1 object ID in dotted form to a
+    ASN1_OBJECT.
+    """
     if isinstance(name, six.text_type):
         name = name.encode('ascii')
     obj = backend._lib.OBJ_txt2obj(name, 1)
     assert obj != backend._ffi.NULL
-    # NOTE: not sure if we should GC...
+    obj = backend._ffi.gc(obj, backend._lib.ASN1_OBJECT_free)
     return obj
 
 
