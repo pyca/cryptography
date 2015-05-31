@@ -1445,13 +1445,13 @@ class RevokedCertificate(object):
 
 
 class CertificateSigningRequestBuilder(object):
-    def __init__(self):
+    def __init__(self, version=Version.v1, subject_name=None, extensions=[]):
         """
         Creates an empty X.509 certificate request (v1).
         """
         self._version = Version.v1
-        self._subject_name = None
-        self._extensions = []
+        self._subject_name = subject_name
+        self._extensions = extensions[:]
 
     def set_version(self, version):
         """
@@ -1459,7 +1459,9 @@ class CertificateSigningRequestBuilder(object):
         """
         if not isinstance(version, Version):
             raise TypeError('Expecting x509.Version object.')
-        self._version = version
+        return CertificateSigningRequestBuilder(
+            version, self._subject_name, self._extensions
+        )
 
     def set_subject_name(self, name):
         """
@@ -1467,7 +1469,9 @@ class CertificateSigningRequestBuilder(object):
         """
         if not isinstance(name, Name):
             raise TypeError('Expecting x509.Name object.')
-        self._subject_name = name
+        return CertificateSigningRequestBuilder(
+            self._version, name, self._extensions
+        )
 
     def add_extension(self, extension):
         """
@@ -1478,7 +1482,9 @@ class CertificateSigningRequestBuilder(object):
         for e in self._extensions:
             if e.oid == extension.oid:
                 raise ValueError('This extension has already been set.')
-        self._extensions.append(extension)
+        return CertificateSigningRequestBuilder(
+            self._version, self._subject_name, self._extensions + [extension]
+        )
 
     def sign(self, backend, private_key, algorithm):
         """
