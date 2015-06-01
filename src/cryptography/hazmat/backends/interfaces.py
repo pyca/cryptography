@@ -277,7 +277,7 @@ class X509Backend(object):
     @abc.abstractmethod
     def create_x509_csr(self, builder, private_key, algorithm):
         """
-        Create and sign an X.509 CSR from a CSR buidler object.
+        Create and sign an X.509 CSR from a CSR builder object.
         """
 
 
