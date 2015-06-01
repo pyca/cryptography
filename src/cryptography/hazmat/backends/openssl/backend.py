@@ -819,7 +819,7 @@ class Backend(object):
         assert x509_req != self._ffi.NULL
 
         # Set x509 version.
-        res = self._lib.X509_REQ_set_version(x509_req, builder._version.value)
+        res = self._lib.X509_REQ_set_version(x509_req, x509.Version.v1.value)
         assert res == 1
 
         # Set subject name.

@@ -699,15 +699,15 @@ class TestCertificateSigningRequestBuilder(object):
             backend=backend,
         )
 
-        request = x509.CertificateSigningRequestBuilder().set_version(
-            x509.Version.v3
-        ).set_subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
-        ])).add_extension(x509.Extension(
+        request = x509.CertificateSigningRequestBuilder().set_subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            ])
+        ).add_extension(x509.Extension(
             x509.OID_BASIC_CONSTRAINTS,
             True,
             x509.BasicConstraints(True, 2),
@@ -740,15 +740,15 @@ class TestCertificateSigningRequestBuilder(object):
             backend=backend,
         )
 
-        request = x509.CertificateSigningRequestBuilder().set_version(
-            x509.Version.v3
-        ).set_subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
-        ])).add_extension(x509.Extension(
+        request = x509.CertificateSigningRequestBuilder().set_subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            ])
+        ).add_extension(x509.Extension(
             x509.OID_BASIC_CONSTRAINTS,
             True,
             x509.BasicConstraints(False, None),
@@ -798,11 +798,6 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
             builder.set_subject_name('NotAName')
-
-    def test_set_invalid_version(self, backend):
-        builder = x509.CertificateSigningRequestBuilder()
-        with pytest.raises(TypeError):
-            builder.set_version('NotAVersion')
 
     def test_add_unsupported_extension(self, backend):
         private_key = rsa.generate_private_key(
