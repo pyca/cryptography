@@ -64,8 +64,15 @@ def _encode_asn1_int(backend, x):
     discarded after use.
 
     """
-    i = backend._lib.ASN1_INTEGER_new()
-    backend._lib.ASN1_INTEGER_set(i, x)
+    # Convert Python integer to OpenSSL "bignum" in case value exceeds
+    # machine's native integer limits (note: `int_to_bn` doesn't automatically
+    # GC).
+    i = backend._int_to_bn(x)
+    i = backend._ffi.gc(i, backend._lib.BN_free)
+
+    # Wrap in a ASN.1 integer.  Don't GC -- as documented.
+    i = backend._lib.BN_to_ASN1_INTEGER(i, backend._ffi.NULL)
+    assert i != backend._ffi.NULL
     return i
 
 
