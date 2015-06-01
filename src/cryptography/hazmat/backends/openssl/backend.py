@@ -140,6 +140,12 @@ def _encode_basic_constraints(backend, ca=False, pathlen=0, critical=False):
         _encode_asn1_str(backend, pp[0], r),
     )
     assert extension != backend._ffi.NULL
+
+    # Release acquired memory.
+    backend._lib.OPENSSL_free(pp[0])
+    pp[0] = backend._ffi.NULL
+
+    # Return the wrapped extension.
     return extension
 
 
