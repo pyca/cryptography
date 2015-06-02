@@ -14,7 +14,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
-from cryptography.hazmat.primitives.twofactor.utils import get_provisioning_uri
 
 from ....utils import (
     load_nist_vectors, load_vectors_from_file, raises_unsupported_algorithm
@@ -97,17 +96,14 @@ class TestHOTP(object):
         secret = b"12345678901234567890"
         hotp = HOTP(secret, 6, SHA1(), backend)
 
-        assert get_provisioning_uri(hotp, "Alice Smith", counter=1) == (
+        assert hotp.get_provisioning_uri("Alice Smith", 1) == (
             "otpauth://hotp/Alice%20Smith?digits=6&secret=GEZDGNBV"
             "GY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&counter=1")
 
-        assert get_provisioning_uri(hotp, "Alice Smith", 'Foo', counter=1) == (
+        assert hotp.get_provisioning_uri("Alice Smith", 1, issuer='Foo') == (
             "otpauth://hotp/Foo:Alice%20Smith?digits=6&secret=GEZD"
             "GNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=Foo"
             "&counter=1")
-
-        with pytest.raises(RuntimeError):
-            get_provisioning_uri(hotp, "Alice Smith", 'World')  # counter lost
 
 
 def test_invalid_backend():
