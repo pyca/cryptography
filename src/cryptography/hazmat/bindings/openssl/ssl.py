@@ -24,6 +24,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
+static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -234,8 +235,6 @@ int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
-int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
-
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
 
@@ -253,6 +252,7 @@ MACROS = """
 const COMP_METHOD *SSL_get_current_compression(SSL *);
 const COMP_METHOD *SSL_get_current_expansion(SSL *);
 const char *SSL_COMP_get_name(const COMP_METHOD *);
+int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 
 unsigned long SSL_set_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);
@@ -616,6 +616,14 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
 long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
+/* Added in 0.9.8i */
+#if OPENSSL_VERSION_NUMBER < 0x0090809fL
+int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
+static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
+# else
+static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -722,5 +730,9 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_GET_SERVER_TMP_KEY": [
         "SSL_get_server_tmp_key",
+    ],
+
+    "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
+        "SSL_CTX_set_client_cert_engine",
     ],
 }
