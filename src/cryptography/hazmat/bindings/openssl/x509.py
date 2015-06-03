@@ -299,8 +299,8 @@ Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
 int X509_CRL_set_lastUpdate(X509_CRL *, ASN1_TIME *);
 int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
-int X509_set_notBefore(X509 *, ASN1_UTCTIME *);
-int X509_set_notAfter(X509 *, ASN1_UTCTIME *);
+int X509_set_notBefore(X509 *, ASN1_TIME *);
+int X509_set_notAfter(X509 *, ASN1_TIME *);
 
 /* These use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
    RHEL/CentOS 5 we should move these back to FUNCTIONS. */
