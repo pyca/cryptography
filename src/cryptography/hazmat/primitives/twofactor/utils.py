@@ -1,11 +1,11 @@
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, print_function
 
 import base64
 
 from six.moves.urllib.parse import quote, urlencode
 
 
-def generate_uri(hotp, type_name, account_name, issuer, extra_parameters):
+def _generate_uri(hotp, type_name, account_name, issuer, extra_parameters):
     parameters = [
         ('digits', hotp._length),
         ('secret', base64.b32encode(hotp._key)),

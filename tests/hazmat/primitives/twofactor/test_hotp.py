@@ -96,11 +96,11 @@ class TestHOTP(object):
         secret = b"12345678901234567890"
         hotp = HOTP(secret, 6, SHA1(), backend)
 
-        assert hotp.get_provisioning_uri("Alice Smith", 1) == (
+        assert hotp.get_provisioning_uri("Alice Smith", 1, None) == (
             "otpauth://hotp/Alice%20Smith?digits=6&secret=GEZDGNBV"
             "GY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&counter=1")
 
-        assert hotp.get_provisioning_uri("Alice Smith", 1, issuer='Foo') == (
+        assert hotp.get_provisioning_uri("Alice Smith", 1, 'Foo') == (
             "otpauth://hotp/Foo:Alice%20Smith?digits=6&secret=GEZD"
             "GNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=Foo"
             "&counter=1")

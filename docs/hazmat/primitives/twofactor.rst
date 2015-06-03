@@ -74,11 +74,12 @@ codes (HMAC).
         :raises cryptography.hazmat.primitives.twofactor.InvalidToken: This
              is raised when the supplied HOTP does not match the expected HOTP.
 
-    .. method:: get_provisioning_uri(account_name, counter, issuer=None)
+    .. method:: get_provisioning_uri(account_name, counter, issuer)
 
         :param str account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
-        :param str issuer: The optional display name of issuer.
+        :param issuer: The optional display name of issuer.
+        :type issuer: `string` or `None`
         :param int counter: The current value of counter.
         :return str: An URI string.
 
@@ -180,11 +181,12 @@ similar to the following code.
         :raises cryptography.hazmat.primitives.twofactor.InvalidToken: This
              is raised when the supplied TOTP does not match the expected TOTP.
 
-    .. method:: get_provisioning_uri(account_name, issuer=None)
+    .. method:: get_provisioning_uri(account_name, issuer)
 
         :param str account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
-        :param str issuer: The optional display name of issuer.
+        :param issuer: The optional display name of issuer.
+        :type issuer: `string` or `None`
         :return str: An URI string.
 
 Provisioning URI

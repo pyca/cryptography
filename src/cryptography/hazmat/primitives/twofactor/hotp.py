@@ -15,7 +15,7 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time, hmac
 from cryptography.hazmat.primitives.hashes import SHA1, SHA256, SHA512
 from cryptography.hazmat.primitives.twofactor import InvalidToken
-from cryptography.hazmat.primitives.twofactor.utils import generate_uri
+from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
 class HOTP(object):
@@ -61,7 +61,7 @@ class HOTP(object):
         p = hmac_value[offset:offset + 4]
         return struct.unpack(">I", p)[0] & 0x7fffffff
 
-    def get_provisioning_uri(self, account_name, counter, issuer=None):
-        return generate_uri(self, 'hotp', account_name, issuer, [
+    def get_provisioning_uri(self, account_name, counter, issuer):
+        return _generate_uri(self, 'hotp', account_name, issuer, [
             ('counter', int(counter)),
         ])

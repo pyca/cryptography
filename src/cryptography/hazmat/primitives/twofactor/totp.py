@@ -11,7 +11,7 @@ from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
-from cryptography.hazmat.primitives.twofactor.utils import generate_uri
+from cryptography.hazmat.primitives.twofactor.utils import _generate_uri
 
 
 class TOTP(object):
@@ -33,7 +33,7 @@ class TOTP(object):
         if not constant_time.bytes_eq(self.generate(time), totp):
             raise InvalidToken("Supplied TOTP value does not match.")
 
-    def get_provisioning_uri(self, account_name, issuer=None):
-        return generate_uri(self._hotp, 'totp', account_name, issuer, [
+    def get_provisioning_uri(self, account_name, issuer):
+        return _generate_uri(self._hotp, 'totp', account_name, issuer, [
             ('period', int(self._time_step)),
         ])

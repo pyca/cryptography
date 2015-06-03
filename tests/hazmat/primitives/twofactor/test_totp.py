@@ -130,7 +130,7 @@ class TestTOTP(object):
         secret = b"12345678901234567890"
         totp = TOTP(secret, 6, hashes.SHA1(), 30, backend=backend)
 
-        assert totp.get_provisioning_uri("Alice Smith") == (
+        assert totp.get_provisioning_uri("Alice Smith", None) == (
             "otpauth://totp/Alice%20Smith?digits=6&secret=GEZDGNBVG"
             "Y3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&period=30")
 
