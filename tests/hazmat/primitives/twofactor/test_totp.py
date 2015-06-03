@@ -126,6 +126,19 @@ class TestTOTP(object):
 
         assert totp.generate(time) == b"94287082"
 
+    def test_get_provisioning_uri(self, backend):
+        secret = b"12345678901234567890"
+        totp = TOTP(secret, 6, hashes.SHA1(), 30, backend=backend)
+
+        assert totp.get_provisioning_uri("Alice Smith", None) == (
+            "otpauth://totp/Alice%20Smith?digits=6&secret=GEZDGNBVG"
+            "Y3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&period=30")
+
+        assert totp.get_provisioning_uri("Alice Smith", 'World') == (
+            "otpauth://totp/World:Alice%20Smith?digits=6&secret=GEZ"
+            "DGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=World"
+            "&period=30")
+
 
 def test_invalid_backend():
     secret = b"12345678901234567890"
