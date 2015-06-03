@@ -193,9 +193,8 @@ Provisioning URI
 ~~~~~~~~~~~~~~~~
 
 The provisioning URI of HOTP and TOTP is not actual the part of RFC 4226 and
-RFC 6238, but a `spec of Google Authenticator <http://git.io/vkvvY>`_. It is
-widely supported by web sites and mobile applications which are using
-Two-Factor authentication.
+RFC 6238, but a `spec of Google Authenticator`_. It is widely supported by web
+sites and mobile applications which are using Two-Factor authentication.
 
 For generating a provisioning URI, you could use the ``get_provisioning_uri``
 method of HOTP/TOTP instances.
@@ -211,3 +210,5 @@ method of HOTP/TOTP instances.
 
 A common usage is encoding the provisioning URI into QR code and guiding users
 to scan it with Two-Factor authentication applications in their mobile devices.
+
+.. _`spec of Google Authenticator`: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
