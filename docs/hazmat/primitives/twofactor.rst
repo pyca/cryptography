@@ -194,8 +194,8 @@ Provisioning URI
 
 The provisioning URI of HOTP and TOTP is not actual the part of RFC 4226 and
 RFC 6238, but a `spec of Google Authenticator <http://git.io/vkvvY>`_. It is
-wide supported by web sites and mobile applications which using Two-Factor
-authentication.
+widely supported by web sites and mobile applications which are using
+Two-Factor authentication.
 
 For generating a provisioning URI, you could use the ``get_provisioning_uri``
 method of HOTP/TOTP instances.
