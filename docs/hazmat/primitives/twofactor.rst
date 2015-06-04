@@ -76,12 +76,15 @@ codes (HMAC).
 
     .. method:: get_provisioning_uri(account_name, counter, issuer)
 
-        :param str account_name: The display name of account, such as
+        :param account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
-        :param issuer: The optional display name of issuer.
-        :type issuer: `string` or `None`
+        :type account_name: :term:`text`
+        :param issuer: The optional display name of issuer. This is typically
+            the provider or service the user wants to access using the OTP
+            token.
+        :type issuer: :term:`text` or `None`
         :param int counter: The current value of counter.
-        :return str: An URI string.
+        :return: A URI string.
 
 Throttling
 ~~~~~~~~~~
@@ -183,11 +186,14 @@ similar to the following code.
 
     .. method:: get_provisioning_uri(account_name, issuer)
 
-        :param str account_name: The display name of account, such as
+        :param account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
-        :param issuer: The optional display name of issuer.
-        :type issuer: `string` or `None`
-        :return str: An URI string.
+        :type: :term:`text`
+        :param issuer: The optional display name of issuer. This is typically
+            the provider or service the user wants to access using the OTP
+            token.
+        :type issuer: :term:`text` or `None`
+        :return: A URI string.
 
 Provisioning URI
 ~~~~~~~~~~~~~~~~
