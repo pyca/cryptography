@@ -45,6 +45,8 @@ static const long Cryptography_HAS_NETBSD_D1_METH;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_ALPN;
 
+static const long Cryptography_HAS_102_SET_CERT_CB;
+
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
 static const long SSL_ERROR_NONE;
@@ -184,6 +186,14 @@ int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
 int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 
+int SSL_use_certificate(SSL *, X509 *);
+int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
+int SSL_use_certificate_file(SSL *, const char *, int);
+int SSL_use_PrivateKey(SSL *, EVP_PKEY *);
+int SSL_use_PrivateKey_ASN1(int,SSL *, const unsigned char *, long);
+int SSL_use_PrivateKey_file(SSL *, const char *, int);
+int SSL_check_private_key(const SSL *);
+
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
@@ -207,9 +217,11 @@ int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
 void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
 void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
 int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
+int SSL_CTX_use_certificate_ASN1(SSL_CTX *, int, const unsigned char *);
 int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
+int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
@@ -221,6 +233,14 @@ X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
+
+void SSL_CTX_set_client_cert_cb(SSL_CTX *,
+    int (*)(SSL *, X509 **, EVP_PKEY **));
+int (*SSL_CTX_get_client_cert_cb(SSL_CTX *))
+    (SSL *, X509 **, EVP_PKEY **);
+
+int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
+
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
@@ -385,6 +405,13 @@ void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
 void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
 
 long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
+
+
+/* cert callbacks were added in OpenSSL 1.0.2 */
+void SSL_set_cert_cb(SSL *s, int (*cert_cb)(SSL *ssl, void *arg), void *arg);
+void SSL_CTX_set_cert_cb(SSL_CTX *c,
+                         int (*cert_cb)(SSL *ssl, void *arg),
+                         void *arg);
 """
 
 CUSTOMIZATIONS = """
@@ -602,6 +629,15 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
 long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
+/* OpenSSL 1.0.2+ cert validation callback */
+#if OPENSSL_VERSION_NUMBER < 0x10002000L || !defined(LIBRESSL_VERSION_NUMBER)
+static const long Cryptography_HAS_102_SET_CERT_CB = 0;
+void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
+void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
+#else
+static const long Cryptography_HAS_102_SET_CERT_CB = 1;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -708,5 +744,10 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_GET_SERVER_TMP_KEY": [
         "SSL_get_server_tmp_key",
+    ],
+
+    "Cryptography_HAS_102_SET_CERT_CB": [
+        "SSL_set_cert_cb",
+        "SSL_CTX_set_cert_cb",
     ],
 }

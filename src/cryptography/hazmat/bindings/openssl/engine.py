@@ -10,6 +10,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_ENGINE_CRYPTODEV;
+static const long Cryptography_HAS_ENGINE_SSL_CLIENT_CERT;
 
 typedef ... ENGINE;
 typedef ... RSA_METHOD;
@@ -22,6 +23,7 @@ typedef ... STORE_METHOD;
 typedef ... *ENGINE_GEN_INT_FUNC_PTR;
 typedef ... *ENGINE_CTRL_FUNC_PTR;
 typedef ... *ENGINE_LOAD_KEY_PTR;
+typedef ... *ENGINE_SSL_CLIENT_CERT_PTR;
 typedef ... *ENGINE_CIPHERS_PTR;
 typedef ... *ENGINE_DIGESTS_PTR;
 typedef ... ENGINE_CMD_DEFN;
@@ -145,11 +147,23 @@ int ENGINE_get_flags(const ENGINE *);
 const ENGINE_CMD_DEFN *ENGINE_get_cmd_defns(const ENGINE *);
 EVP_PKEY *ENGINE_load_private_key(ENGINE *, const char *, UI_METHOD *, void *);
 EVP_PKEY *ENGINE_load_public_key(ENGINE *, const char *, UI_METHOD *, void *);
+
 void ENGINE_add_conf_module(void);
 """
 
 MACROS = """
 void ENGINE_load_cryptodev(void);
+
+/* Engine's client cert functions were added in OpenSSL 0.9.8i */
+int ENGINE_set_load_ssl_client_cert_function(ENGINE *,
+                                             ENGINE_SSL_CLIENT_CERT_PTR);
+ENGINE_SSL_CLIENT_CERT_PTR ENGINE_get_ssl_client_cert_function(
+    const ENGINE *);
+int ENGINE_load_ssl_client_cert(ENGINE *, SSL *,
+                                Cryptography_STACK_OF_X509_NAME *,
+                                X509 **, EVP_PKEY **,
+                                Cryptography_STACK_OF_X509 **,
+                                UI_METHOD *, void *);
 """
 
 CUSTOMIZATIONS = """
@@ -159,10 +173,32 @@ void (*ENGINE_load_cryptodev)(void) = NULL;
 #else
 static const long Cryptography_HAS_ENGINE_CRYPTODEV = 1;
 #endif
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090809fL
+static const long Cryptography_HAS_ENGINE_SSL_CLIENT_CERT = 1;
+#else
+static const long Cryptography_HAS_ENGINE_SSL_CLIENT_CERT = 0;
+int (*ENGINE_set_load_ssl_client_cert_function)
+    (ENGINE *, ENGINE_SSL_CLIENT_CERT_PTR) = NULL;
+ENGINE_SSL_CLIENT_CERT_PTR (*ENGINE_get_ssl_client_cert_function)
+    (const ENGINE *) = NULL;
+int (*ENGINE_load_ssl_client_cert)(ENGINE *, SSL *,
+                                   Cryptography_STACK_OF_X509_NAME *,
+                                   X509 **, EVP_PKEY **,
+                                   Cryptography_STACK_OF_X509 **,
+                                   UI_METHOD *, void *) = NULL;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
+    ],
+
+    "Cryptography_HAS_ENGINE_SSL_CLIENT_CERT": [
+        "ENGINE_set_load_ssl_client_cert_function",
+        "ENGINE_get_load_ssl_client_cert_function",
+        "ENGINE_load_ssl_client_cert",
     ]
 }
