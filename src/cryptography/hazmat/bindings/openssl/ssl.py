@@ -24,6 +24,7 @@ static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
+static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -184,6 +185,14 @@ int SSL_read(SSL *, void *, int);
 X509 *SSL_get_peer_certificate(const SSL *);
 int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 
+int SSL_use_certificate(SSL *, X509 *);
+int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
+int SSL_use_certificate_file(SSL *, const char *, int);
+int SSL_use_PrivateKey(SSL *, EVP_PKEY *);
+int SSL_use_PrivateKey_ASN1(int, SSL *, const unsigned char *, long);
+int SSL_use_PrivateKey_file(SSL *, const char *, int);
+int SSL_check_private_key(const SSL *);
+
 Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
 Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 
@@ -207,9 +216,11 @@ int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
 void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
 void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
 int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
+int SSL_CTX_use_certificate_ASN1(SSL_CTX *, int, const unsigned char *);
 int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
+int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
@@ -239,6 +250,7 @@ MACROS = """
 const COMP_METHOD *SSL_get_current_compression(SSL *);
 const COMP_METHOD *SSL_get_current_expansion(SSL *);
 const char *SSL_COMP_get_name(const COMP_METHOD *);
+int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 
 unsigned long SSL_set_mode(SSL *, unsigned long);
 unsigned long SSL_get_mode(SSL *);
@@ -602,6 +614,14 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
 long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
+/* Added in 0.9.8i */
+#if OPENSSL_VERSION_NUMBER < 0x0090809fL
+int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
+static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
+# else
+static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
+#endif
+
 """
 
 CONDITIONAL_NAMES = {
@@ -708,5 +728,9 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_GET_SERVER_TMP_KEY": [
         "SSL_get_server_tmp_key",
+    ],
+
+    "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
+        "SSL_CTX_set_client_cert_engine",
     ],
 }
