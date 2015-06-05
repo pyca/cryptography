@@ -23,3 +23,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Chelsea Winfree <chelsea.winfree@gmail.com>
 * Steven Buss <steven.buss@gmail.com> (1FB9 2EC1 CF93 DFD6 B47F F583 B1A5 6C22 290D A4C3)
 * Andre Caron <andre.l.caron@gmail.com>
+* Jiangge Zhang <tonyseek@gmail.com> (BBEC 782B 015F 71B1 5FF7  EACA 1A8C AA98 255F 5000)
