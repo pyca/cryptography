@@ -11,6 +11,10 @@ Changelog
   :class:`~cryptography.x509.CertificateSigningRequest`.
 * Support serialization of certificates using the ``public_bytes`` method of
   :class:`~cryptography.x509.Certificate`.
+* Add ``get_provisioning_uri`` method to
+  :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP` and
+  :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP` for generating
+  provisioning URIs.
 
 0.9 - 2015-05-13
 ~~~~~~~~~~~~~~~~
