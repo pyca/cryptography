@@ -40,13 +40,10 @@ class _DSAVerificationContext(object):
         self._hash_ctx.update(data)
 
     def verify(self):
-        self._dsa_cdata = self._backend._ffi.gc(self._public_key._dsa_cdata,
-                                                self._backend._lib.DSA_free)
-
         data_to_verify = self._hash_ctx.finalize()
 
         data_to_verify = _truncate_digest_for_dsa(
-            self._dsa_cdata, data_to_verify, self._backend
+            self._public_key._dsa_cdata, data_to_verify, self._backend
         )
 
         # The first parameter passed to DSA_verify is unused by OpenSSL but
