@@ -62,8 +62,10 @@ enum {
 };
 typedef int CFNumberType;
 
-const CFDictionaryKeyCallBacks kCFTypeDictionaryKeyCallBacks;
-const CFDictionaryValueCallBacks kCFTypeDictionaryValueCallBacks;
+/* TODO: these should both be "const", which can be added back once we switch
+   to cffi 1.0's set_source */
+CFDictionaryKeyCallBacks kCFTypeDictionaryKeyCallBacks;
+CFDictionaryValueCallBacks kCFTypeDictionaryValueCallBacks;
 
 const CFBooleanRef kCFBooleanTrue;
 const CFBooleanRef kCFBooleanFalse;
