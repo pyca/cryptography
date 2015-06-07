@@ -490,11 +490,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
         >>> builder = builder.set_subject_name(x509.Name([
         ...     x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ... ]))
-        >>> buidlder = builder.add_extension(x509.Extension(
-        ...     x509.OID_BASIC_CONSTRAINTS,
-        ...     True,
-        ...     x509.BasicConstraints(False, None),
-        ... ))
+        >>> buidlder = builder.add_extension(
+        ...     x509.BasicConstraints(False, None), critical=True,
+        ... )
         >>> request = builder.sign(
         ...     default_backend(), private_key, hashes.SHA1()
         ... )
@@ -510,9 +508,11 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :param name: The :class:`Name` of the certificate subject.
         :returns: A new `CertificateSigningRequestBuilder`.
 
-    .. method:: add_extension(extension)
+    .. method:: add_extension(extension, critical=False)
 
         :param extension: The :class:`Extension` to add to the request.
+        :param critical: Set to `True` if the extension must be understood and
+             handled by whoever reads the certificate.
         :returns: A new `CertificateSigningRequestBuilder`.
 
     .. method:: sign(backend, private_key, algorithm)
