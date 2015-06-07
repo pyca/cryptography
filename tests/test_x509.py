@@ -699,7 +699,7 @@ class TestCertificateSigningRequestBuilder(object):
             backend=backend,
         )
 
-        request = x509.CertificateSigningRequestBuilder().set_subject_name(
+        request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
                 x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
@@ -738,7 +738,7 @@ class TestCertificateSigningRequestBuilder(object):
             backend=backend,
         )
 
-        request = x509.CertificateSigningRequestBuilder().set_subject_name(
+        request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
                 x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
@@ -782,7 +782,7 @@ class TestCertificateSigningRequestBuilder(object):
     def test_set_invalid_subject(self, backend):
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            builder.set_subject_name('NotAName')
+            builder.subject_name('NotAName')
 
     def test_add_unsupported_extension(self, backend):
         private_key = rsa.generate_private_key(
@@ -790,7 +790,7 @@ class TestCertificateSigningRequestBuilder(object):
             key_size=2048,
             backend=backend,
         )
-        builder = x509.CertificateSigningRequestBuilder().set_subject_name(
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
                 x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),

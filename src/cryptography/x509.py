@@ -1452,7 +1452,7 @@ class CertificateSigningRequestBuilder(object):
         self._subject_name = subject_name
         self._extensions = extensions[:]
 
-    def set_subject_name(self, name):
+    def subject_name(self, name):
         """
         Sets the certificate requestor's distinguished name.
         """

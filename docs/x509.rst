@@ -487,7 +487,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         ...     backend=default_backend()
         ... )
         >>> builder = x509.CertificateSigningRequestBuilder()
-        >>> builder = builder.set_subject_name(x509.Name([
+        >>> builder = builder.subject_name(x509.Name([
         ...     x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ... ]))
         >>> buidlder = builder.add_extension(
@@ -503,7 +503,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         Creates an empty certificate signing request.
 
-    .. method:: set_subject_name(name)
+    .. method:: subject_name(name)
 
         :param name: The :class:`~cryptography.x509.Name` of the certificate
             subject.
