@@ -16,6 +16,13 @@ Changelog
   :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP` for generating
   provisioning URIs.
 
+0.9.1 - 2015-06-06
+~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a double free in the OpenSSL backend when using DSA
+  to verify signatures. Note that this only affects PyPy 2.6.0 and (presently
+  unreleased) CFFI versions greater than 1.1.0.
+
 0.9 - 2015-05-13
 ~~~~~~~~~~~~~~~~
 
