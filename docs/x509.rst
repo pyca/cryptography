@@ -505,15 +505,19 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. method:: set_subject_name(name)
 
-        :param name: The :class:`Name` of the certificate subject.
-        :returns: A new `CertificateSigningRequestBuilder`.
+        :param name: The :class:`~cryptography.x509.Name` of the certificate
+            subject.
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
     .. method:: add_extension(extension, critical=False)
 
-        :param extension: The :class:`Extension` to add to the request.
+        :param extension: The :class:`~cryptography.x509.Extension` to add to
+            the request.
         :param critical: Set to `True` if the extension must be understood and
              handled by whoever reads the certificate.
-        :returns: A new `CertificateSigningRequestBuilder`.
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
     .. method:: sign(backend, private_key, algorithm)
 
@@ -532,7 +536,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the request signature.
 
-        :type: :class:`CertificateSigningRequest`
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequest`.
 
 
 .. class:: Name
