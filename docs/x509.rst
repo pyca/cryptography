@@ -527,7 +527,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
             interface.
 
         :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
             that will be used to sign the request.  When the request is
             signed by a certificate authority, the private key's associated
             public key will be stored in the resulting certificate.
