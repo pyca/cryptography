@@ -785,11 +785,6 @@ class TestCertificateSigningRequestBuilder(object):
             builder.subject_name('NotAName')
 
     def test_add_unsupported_extension(self, backend):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=backend,
-        )
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
