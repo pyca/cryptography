@@ -707,11 +707,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
                 x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
             ])
-        ).add_extension(x509.Extension(
-            x509.OID_BASIC_CONSTRAINTS,
-            True,
-            x509.BasicConstraints(True, 2),
-        )).sign(
+        ).add_extension(
+            x509.BasicConstraints(True, 2), critical=True
+        ).sign(
             backend, private_key, hashes.SHA1()
         )
 
@@ -748,11 +746,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
                 x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
             ])
-        ).add_extension(x509.Extension(
-            x509.OID_BASIC_CONSTRAINTS,
-            True,
-            x509.BasicConstraints(False, None),
-        )).sign(
+        ).add_extension(
+            x509.BasicConstraints(False, None), critical=True,
+        ).sign(
             backend, private_key, hashes.SHA1()
         )
 
@@ -776,23 +772,12 @@ class TestCertificateSigningRequestBuilder(object):
 
     def test_add_duplicate_extension(self, backend):
         builder = x509.CertificateSigningRequestBuilder().add_extension(
-            x509.Extension(
-                x509.OID_BASIC_CONSTRAINTS,
-                True,
-                x509.BasicConstraints(True, 2),
-            )
+            x509.BasicConstraints(True, 2), critical=True,
         )
         with pytest.raises(ValueError):
-            builder.add_extension(x509.Extension(
-                x509.OID_BASIC_CONSTRAINTS,
-                True,
-                x509.BasicConstraints(True, 2),
-            ))
-
-    def test_add_invalid_extension(self, backend):
-        builder = x509.CertificateSigningRequestBuilder()
-        with pytest.raises(TypeError):
-            builder.add_extension('NotAnExtension')
+            builder.add_extension(
+                x509.BasicConstraints(True, 2), critical=True,
+            )
 
     def test_set_invalid_subject(self, backend):
         builder = x509.CertificateSigningRequestBuilder()
@@ -813,13 +798,11 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
                 x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
             ])
-        ).add_extension(x509.Extension(
-            x509.ObjectIdentifier('1.2.3.4'),
-            False,
-            'value',
-        ))
+        )
         with pytest.raises(ValueError):
-            builder.sign(backend, private_key, hashes.SHA1())
+            builder.add_extension(
+                x509.AuthorityKeyIdentifier('keyid', None, None)
+            )
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)

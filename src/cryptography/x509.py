@@ -1460,12 +1460,14 @@ class CertificateSigningRequestBuilder(object):
             raise TypeError('Expecting x509.Name object.')
         return CertificateSigningRequestBuilder(name, self._extensions)
 
-    def add_extension(self, extension):
+    def add_extension(self, extension, critical=False):
         """
         Adds an X.509 extension to the certificate request.
         """
-        if not isinstance(extension, Extension):
-            raise TypeError('Expecting x509.Extension object.')
+        if isinstance(extension, BasicConstraints):
+            extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
+        else:
+            raise ValueError('Unsupported X.509 extension.')
         for e in self._extensions:
             if e.oid == extension.oid:
                 raise ValueError('This extension has already been set.')
