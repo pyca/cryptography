@@ -16,7 +16,7 @@ PGP key fingerprints are enclosed in parentheses.
 * Stephen Holsapple <sholsapp@gmail.com>
 * Terry Chia <terrycwk1994@gmail.com>
 * Matthew Iversen <matt@notevencode.com> (2F04 3DCC D6E6 D5AC D262  2E0B C046 E8A8 7452 2973)
-* Mohammed Attia <skeuomorf@gmail.com> (854A F9C5 9FF5 6E38 B17D 9587 2D70 E1ED 5290 D357)
+* Mohammed Attia <skeuomorf@gmail.com>
 * Michael Hart <michael.hart1994@gmail.com>
 * Mark Adams <mark@markadams.me> (A18A 7DD3 283C CF2A B0CE FE0E C7A0 5E3F C972 098C)
 * Gregory Haynes <greg@greghaynes.net> (6FB6 44BF 9FD0 EBA2 1CE9  471F B08F 42F9 0DC6 599F)
