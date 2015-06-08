@@ -8,7 +8,9 @@ Changelog
 
 * Switched to the new `cffi`_ ``set_source`` out-of-line API mode for
   compilation. This results in significantly faster imports and lowered
-  memory consumption.
+  memory consumption. Due to this change we no longer support PyPy releases
+  older than 2.6 nor do we support any released version of PyPy3 (until a
+  version supporting cffi 1.0 comes out).
 * Support serialization of certificate signing requests using the
   ``public_bytes`` method of
   :class:`~cryptography.x509.CertificateSigningRequest`.
