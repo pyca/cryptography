@@ -20,6 +20,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP` and
   :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP` for generating
   provisioning URIs.
+* Add support for creating certificate signing requests with
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
 0.9.1 - 2015-06-06
 ~~~~~~~~~~~~~~~~~~
