@@ -37,6 +37,7 @@ requirements = [
     "six>=1.4.1",
     "setuptools"
 ]
+setup_requirements = []
 
 if sys.version_info < (3, 4):
     requirements.append("enum34")
@@ -46,6 +47,7 @@ if sys.version_info < (3, 3):
 
 if platform.python_implementation() != "PyPy":
     requirements.append("cffi>=1.1.0")
+    setup_requirements.append("cffi>=1.1.0")
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
@@ -203,7 +205,7 @@ def keywords_with_side_effects(argv):
             cffi_modules.append("src/_cffi_src/build_commoncrypto.py:ffi")
 
         return {
-            "setup_requires": requirements,
+            "setup_requires": setup_requirements,
             "cmdclass": {
                 "test": PyTest,
             },
