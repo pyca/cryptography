@@ -482,14 +482,18 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
             )
 
 
+class DummyLibrary(object):
+    Cryptography_HAS_EC = 0
+
+
 class TestOpenSSLEllipticCurve(object):
     def test_elliptic_curve_supported(self, monkeypatch):
-        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+        monkeypatch.setattr(backend, "_lib", DummyLibrary())
 
         assert backend.elliptic_curve_supported(None) is False
 
     def test_elliptic_curve_signature_algorithm_supported(self, monkeypatch):
-        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+        monkeypatch.setattr(backend, "_lib", DummyLibrary())
 
         assert backend.elliptic_curve_signature_algorithm_supported(
             None, None

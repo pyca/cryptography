@@ -45,7 +45,7 @@ if sys.version_info < (3, 3):
     requirements.append("ipaddress")
 
 if platform.python_implementation() != "PyPy":
-    requirements.append("cffi>=0.8")
+    requirements.append("cffi>=1.1.0")
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
@@ -73,52 +73,6 @@ if cc_is_available():
     backends.append(
         "commoncrypto = cryptography.hazmat.backends.commoncrypto:backend",
     )
-
-
-def get_ext_modules():
-    from cryptography.hazmat.bindings.commoncrypto.binding import (
-        Binding as CommonCryptoBinding
-    )
-    from cryptography.hazmat.bindings.openssl.binding import (
-        Binding as OpenSSLBinding
-    )
-    from cryptography.hazmat.primitives import constant_time, padding
-
-    ext_modules = [
-        OpenSSLBinding.ffi.verifier.get_extension(),
-        constant_time._ffi.verifier.get_extension(),
-        padding._ffi.verifier.get_extension()
-    ]
-    if cc_is_available():
-        ext_modules.append(CommonCryptoBinding.ffi.verifier.get_extension())
-    return ext_modules
-
-
-class CFFIBuild(build):
-    """
-    This class exists, instead of just providing ``ext_modules=[...]`` directly
-    in ``setup()`` because importing cryptography requires we have several
-    packages installed first.
-
-    By doing the imports here we ensure that packages listed in
-    ``setup_requires`` are already installed.
-    """
-
-    def finalize_options(self):
-        self.distribution.ext_modules = get_ext_modules()
-        build.finalize_options(self)
-
-
-class CFFIInstall(install):
-    """
-    As a consequence of CFFIBuild and it's late addition of ext_modules, we
-    need the equivalent for the ``install`` command to install into platlib
-    install-dir rather than purelib.
-    """
-
-    def finalize_options(self):
-        self.distribution.ext_modules = get_ext_modules()
-        install.finalize_options(self)
 
 
 class PyTest(test):
@@ -234,19 +188,26 @@ def keywords_with_side_effects(argv):
            for i in range(1, len(argv))):
         return {
             "cmdclass": {
-                "build": DummyCFFIBuild,
-                "install": DummyCFFIInstall,
+                "build": DummyBuild,
+                "install": DummyInstall,
                 "test": DummyPyTest,
             }
         }
     else:
+        cffi_modules = [
+            "src/_cffi_src/build_openssl.py:ffi",
+            "src/_cffi_src/build_constant_time.py:ffi",
+            "src/_cffi_src/build_padding.py:ffi",
+        ]
+        if cc_is_available():
+            cffi_modules.append("src/_cffi_src/build_commoncrypto.py:ffi")
+
         return {
             "setup_requires": requirements,
             "cmdclass": {
-                "build": CFFIBuild,
-                "install": CFFIInstall,
                 "test": PyTest,
-            }
+            },
+            "cffi_modules": cffi_modules
         }
 
 
@@ -255,7 +216,7 @@ setup_requires_error = ("Requested setup command that needs 'setup_requires' "
                         "free command or option.")
 
 
-class DummyCFFIBuild(build):
+class DummyBuild(build):
     """
     This class makes it very obvious when ``keywords_with_side_effects()`` has
     incorrectly interpreted the command line arguments to ``setup.py build`` as
@@ -266,7 +227,7 @@ class DummyCFFIBuild(build):
         raise RuntimeError(setup_requires_error)
 
 
-class DummyCFFIInstall(install):
+class DummyInstall(install):
     """
     This class makes it very obvious when ``keywords_with_side_effects()`` has
     incorrectly interpreted the command line arguments to ``setup.py install``
@@ -327,7 +288,9 @@ setup(
     ],
 
     package_dir={"": "src"},
-    packages=find_packages(where="src", exclude=["tests", "tests.*"]),
+    packages=find_packages(
+        where="src", exclude=["_cffi_src", "_cffi_src.*", "tests", "tests.*"]
+    ),
     include_package_data=True,
 
     install_requires=requirements,
@@ -335,7 +298,7 @@ setup(
 
     # for cffi
     zip_safe=False,
-    ext_package="cryptography",
+    ext_package="cryptography.hazmat.bindings",
     entry_points={
         "cryptography.backends": backends,
     },

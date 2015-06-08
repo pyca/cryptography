@@ -3,16 +3,3 @@
 # for complete details.
 
 from __future__ import absolute_import, division, print_function
-
-from cryptography.hazmat.bindings._commoncrypto import ffi, lib
-
-
-class Binding(object):
-    """
-    CommonCrypto API wrapper.
-    """
-    lib = lib
-    ffi = ffi
-
-    def __init__(self):
-        pass

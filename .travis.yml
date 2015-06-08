@@ -91,10 +91,6 @@ matrix:
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=pypy3
-        - language: generic
-          os: osx
-          osx_image: beta-xcode6.3
           env: TOXENV=py26 OPENSSL=0.9.8
         - language: generic
           os: osx
@@ -112,10 +108,6 @@ matrix:
           os: osx
           osx_image: beta-xcode6.3
           env: TOXENV=pypy OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          osx_image: beta-xcode6.3
-          env: TOXENV=pypy3 OPENSSL=0.9.8
         - language: generic
           os: osx
           osx_image: beta-xcode6.3

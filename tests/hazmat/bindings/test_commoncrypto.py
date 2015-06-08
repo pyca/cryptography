@@ -6,22 +6,21 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.backends import _available_backends
-from cryptography.hazmat.bindings.commoncrypto.binding import Binding
+
+ccbinding = pytest.importorskip(
+    "cryptography.hazmat.bindings.commoncrypto.binding"
+)
 
 
-@pytest.mark.skipif("commoncrypto" not in
-                    [i.name for i in _available_backends()],
-                    reason="CommonCrypto not available")
 class TestCommonCrypto(object):
     def test_binding_loads(self):
-        binding = Binding()
+        binding = ccbinding.Binding()
         assert binding
         assert binding.lib
         assert binding.ffi
 
     def test_binding_returns_same_lib(self):
-        binding = Binding()
-        binding2 = Binding()
+        binding = ccbinding.Binding()
+        binding2 = ccbinding.Binding()
         assert binding.lib == binding2.lib
         assert binding.ffi == binding2.ffi
