@@ -24,5 +24,12 @@ else
         pyenv global pypy-2.6.0
     fi
 fi
+
+# If we're building on Python 3.5, then we need to use plain asserts until
+# pytest is updated.
+if [[ $TOXENV = "py35" ]]; then
+    export TOX_FLAGS="--assert=plain $TOX_FLAGS"
+fi
+
 source ~/.venv/bin/activate
 tox -- $TOX_FLAGS

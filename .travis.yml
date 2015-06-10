@@ -16,6 +16,8 @@ matrix:
           env: TOXENV=py33
         - python: 3.4
           env: TOXENV=py34
+        - python: nightly
+          env: TOXENV=py35
         - python: pypy
           env: TOXENV=pypy
         - python: 2.6
@@ -44,6 +46,14 @@ matrix:
                       - libssl-dev/lucid
         - python: 3.4
           env: TOXENV=py34 OPENSSL=0.9.8
+          addons:
+              apt:
+                  sources:
+                      - lucid
+                  packages:
+                      - libssl-dev/lucid
+        - python: nightly
+          env: TOXENV=py35 OPENSSL=0.9.8
           addons:
               apt:
                   sources:
@@ -87,6 +97,10 @@ matrix:
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
+          env: TOXENV=py35
+        - language: generic
+          os: osx
+          osx_image: beta-xcode6.3
           env: TOXENV=pypy
         - language: generic
           os: osx
@@ -104,6 +118,10 @@ matrix:
           os: osx
           osx_image: beta-xcode6.3
           env: TOXENV=py34 OPENSSL=0.9.8
+        - language: generic
+          os: osx
+          osx_image: beta-xcode6.3
+          env: TOXENV=py35 OPENSSL=0.9.8
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
