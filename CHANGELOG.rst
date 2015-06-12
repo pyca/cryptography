@@ -20,6 +20,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP` and
   :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP` for generating
   provisioning URIs.
+* Add :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash`
+  and :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHMAC`.
 
 0.9.1 - 2015-06-06
 ~~~~~~~~~~~~~~~~~~

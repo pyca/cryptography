@@ -345,7 +345,6 @@ Different KDFs are suitable for different tasks such as:
         >>> from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
         >>> from cryptography.hazmat.backends import default_backend
         >>> backend = default_backend()
-        >>> salt = os.urandom(16)
         >>> otherinfo = b"concatkdf-example"
         >>> ckdf = ConcatKDFHash(
         ...     algorithm=hashes.SHA256(),
