@@ -885,6 +885,23 @@ X.509 Extensions
             [u'www.cryptography.io', u'cryptography.io']
 
 
+.. class:: IssuerAlternativeName
+
+    .. versionadded:: 1.0
+
+    Issuer alternative name is an X.509 extension that provides a list of
+    :ref:`general name <general_name_classes>` instances that provide a set
+    of identities for the certificate issuer. The object is iterable to
+    get every element.
+
+    .. method:: get_values_for_type(type)
+
+        :param type: A :class:`GeneralName` provider. This is one of the
+            :ref:`general name classes <general_name_classes>`.
+
+        :returns: A list of values extracted from the matched general names.
+
+
 .. class:: AuthorityInformationAccess
 
     .. versionadded:: 0.9
@@ -1341,6 +1358,11 @@ Extension OIDs
 
     Corresponds to the dotted string ``"2.5.29.17"``. The identifier for the
     :class:`SubjectAlternativeName` extension type.
+
+.. data:: OID_ISSUER_ALTERNATIVE_NAME
+
+    Corresponds to the dotted string ``"2.5.29.18"``. The identifier for the
+    :class:`IssuerAlternativeName` extension type.
 
 .. data:: OID_SUBJECT_KEY_IDENTIFIER
 

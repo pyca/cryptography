@@ -1194,6 +1194,62 @@ class TestGeneralNames(object):
         assert gns != object()
 
 
+class TestIssuerAlternativeName(object):
+    def test_get_values_for_type(self):
+        san = x509.IssuerAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        names = san.get_values_for_type(x509.DNSName)
+        assert names == [u"cryptography.io"]
+
+    def test_iter_names(self):
+        san = x509.IssuerAlternativeName([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ])
+        assert len(san) == 2
+        assert list(san) == [
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ]
+
+    def test_invalid_general_names(self):
+        with pytest.raises(TypeError):
+            x509.IssuerAlternativeName(
+                [x509.DNSName(u"cryptography.io"), "invalid"]
+            )
+
+    def test_repr(self):
+        san = x509.IssuerAlternativeName(
+            [
+                x509.DNSName(u"cryptography.io")
+            ]
+        )
+        assert repr(san) == (
+            "<IssuerAlternativeName("
+            "<GeneralNames([<DNSName(value=cryptography.io)>])>)>"
+        )
+
+    def test_eq(self):
+        san = x509.IssuerAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        san2 = x509.IssuerAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        assert san == san2
+
+    def test_ne(self):
+        san = x509.IssuerAlternativeName(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        san2 = x509.IssuerAlternativeName(
+            [x509.RFC822Name(u"admin@cryptography.io")]
+        )
+        assert san != san2
+        assert san != object()
+
+
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName(

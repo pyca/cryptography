@@ -1033,6 +1033,32 @@ class SubjectAlternativeName(object):
         return not self == other
 
 
+class IssuerAlternativeName(object):
+    def __init__(self, general_names):
+        self._general_names = GeneralNames(general_names)
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return self._general_names.get_values_for_type(type)
+
+    def __repr__(self):
+        return "<IssuerAlternativeName({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, IssuerAlternativeName):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+
 class AuthorityKeyIdentifier(object):
     def __init__(self, key_identifier, authority_cert_issuer,
                  authority_cert_serial_number):
