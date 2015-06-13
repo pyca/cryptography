@@ -389,8 +389,7 @@ Different KDFs are suitable for different tasks such as:
         :raises TypeError: This exception is raised if ``key_material`` is
                             not ``bytes``.
 
-        Derives a new key from the input key material by performing both the
-        extract and expand operations.
+        Derives a new key from the input key material.
 
     .. method:: verify(key_material, expected_key)
 
@@ -485,8 +484,7 @@ Different KDFs are suitable for different tasks such as:
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
 
-        Derives a new key from the input key material by performing both the
-        extract and expand operations.
+        Derives a new key from the input key material.
 
     .. method:: verify(key_material, expected_key)
 
