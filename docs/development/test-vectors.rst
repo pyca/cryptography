@@ -203,6 +203,8 @@ Custom X.509 Vectors
 * ``cp_user_notice_no_explicit_text.pem`` - An RSA 2048 bit self-signed
   certificate containing a certificate policies extension with a user notice
   with no explicit text.
+* ``ocsp_nocheck.pem`` - An RSA 2048 bit self-signed certificate containing
+  an ``OCSPNoCheck`` extension.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
