@@ -16,6 +16,10 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         # CommonCrypto when we test against brew OpenSSL
         export TOX_FLAGS="--backend=openssl"
     fi
+    if [[ ${CC} = gcc ]]; then
+        export CC=gcc-4.8
+        export PYCA_OSX_NOCOMMONCRYPTO=1
+    fi
 else
     if [[ "${TOXENV}" == "pypy" ]]; then
         PYENV_ROOT="$HOME/.pyenv"
