@@ -10,6 +10,11 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
         brew outdated openssl || brew upgrade openssl
     fi
 
+    if [[ ${CC} = gcc ]]; then
+        brew tap homebrew/versions
+        brew install gcc48
+    fi
+
     if which pyenv > /dev/null; then
         eval "$(pyenv init -)"
     fi
