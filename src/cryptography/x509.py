@@ -103,6 +103,14 @@ def load_der_x509_certificate(data, backend):
     return backend.load_der_x509_certificate(data)
 
 
+def load_pem_x509_crl(data, backend):
+    return backend.load_pem_x509_crl(data)
+
+
+def load_der_x509_crl(data, backend):
+    return backend.load_der_x509_crl(data)
+
+
 def load_pem_x509_csr(data, backend):
     return backend.load_pem_x509_csr(data)
 

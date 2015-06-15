@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import datetime
 import itertools
 from contextlib import contextmanager
 
@@ -35,7 +36,7 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _Certificate, _CertificateSigningRequest
+    _Certificate, _CertificateRevocationList, _CertificateSigningRequest
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -822,6 +823,28 @@ class Backend(object):
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return _Certificate(self, x509)
 
+    def load_pem_x509_crl(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509_crl = self._lib.PEM_read_bio_X509_CRL(
+            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
+        )
+        if x509_crl == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load CRL")
+
+        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
+        return _CertificateRevocationList(self, x509_crl)
+
+    def load_der_x509_crl(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        x509_crl = self._lib.d2i_X509_CRL_bio(mem_bio.bio, self._ffi.NULL)
+        if x509_crl == self._ffi.NULL:
+            self._consume_errors()
+            raise ValueError("Unable to load CRL")
+
+        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
+        return _CertificateRevocationList(self, x509_crl)
+
     def load_pem_x509_csr(self, data):
         mem_bio = self._bytes_to_bio(data)
         x509_req = self._lib.PEM_read_bio_X509_REQ(
@@ -1273,6 +1296,22 @@ class Backend(object):
         res = write_bio(bio, key)
         assert res == 1
         return self._read_mem_bio(bio)
+
+    def _parse_asn1_time(self, asn1_time):
+        assert asn1_time != self._ffi.NULL
+        generalized_time = self._lib.ASN1_TIME_to_generalizedtime(
+            asn1_time, self._ffi.NULL
+        )
+        assert generalized_time != self._ffi.NULL
+        generalized_time = self._ffi.gc(
+            generalized_time, self._lib.ASN1_GENERALIZEDTIME_free
+        )
+        time = self._ffi.string(
+            self._lib.ASN1_STRING_data(
+                self._ffi.cast("ASN1_STRING *", generalized_time)
+            )
+        ).decode("ascii")
+        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
 class GetCipherByName(object):
