@@ -586,7 +586,7 @@ class TestRSACertificateRequest(object):
             x509.Extension(
                 x509.OID_BASIC_CONSTRAINTS,
                 True,
-                x509.BasicConstraints(True, 1),
+                x509.BasicConstraints(ca=True, path_length=1),
             ),
         ]
 
@@ -747,7 +747,7 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
             ])
         ).add_extension(
-            x509.BasicConstraints(False, None), critical=True,
+            x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ).sign(
             backend, private_key, hashes.SHA1()
         )

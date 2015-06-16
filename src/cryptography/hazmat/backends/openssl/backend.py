@@ -76,13 +76,13 @@ def _encode_asn1_int(backend, x):
     return i
 
 
-def _encode_asn1_str(backend, x, n):
+def _encode_asn1_str(backend, data, length):
     """
     Create an ASN1_OCTET_STRING from a Python byte string.
     """
     s = backend._lib.ASN1_OCTET_STRING_new()
     s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
-    backend._lib.ASN1_OCTET_STRING_set(s, x, n)
+    backend._lib.ASN1_OCTET_STRING_set(s, data, length)
     return s
 
 
@@ -118,17 +118,18 @@ def _txt2obj(backend, name):
     return obj
 
 
-def _encode_basic_constraints(backend, ca=False, pathlen=0, critical=False):
+def _encode_basic_constraints(backend, basic_constraints, critical):
     obj = _txt2obj(backend, x509.OID_BASIC_CONSTRAINTS.dotted_string)
     assert obj is not None
     constraints = backend._lib.BASIC_CONSTRAINTS_new()
-    constraints.ca = 255 if ca else 0
-    if ca:
-        constraints.pathlen = _encode_asn1_int(backend, pathlen)
+    constraints.ca = 255 if basic_constraints.ca else 0
+    if basic_constraints.ca:
+        constraints.pathlen = _encode_asn1_int(
+            backend, basic_constraints.path_length
+        )
 
     # Fetch the encoded payload.
-    pp = backend._ffi.new('unsigned char**')
-    assert pp != backend._ffi.NULL
+    pp = backend._ffi.new('unsigned char **')
     r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, pp)
     assert r > 0
 
@@ -141,8 +142,8 @@ def _encode_basic_constraints(backend, ca=False, pathlen=0, critical=False):
     )
     assert extension != backend._ffi.NULL
 
+    pp[0] = backend._ffi.gc(pp[0], backend._lib.OPENSSL_free)
     # Release acquired memory.
-    backend._lib.OPENSSL_free(pp[0])
     pp[0] = backend._ffi.NULL
 
     # Return the wrapped extension.
@@ -816,6 +817,7 @@ class Backend(object):
 
         # Create an empty request.
         x509_req = self._lib.X509_REQ_new()
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         assert x509_req != self._ffi.NULL
 
         # Set x509 version.
@@ -845,12 +847,11 @@ class Backend(object):
             if isinstance(extension.value, x509.BasicConstraints):
                 extension = _encode_basic_constraints(
                     self,
-                    extension.value.ca,
-                    extension.value.path_length,
+                    extension.value,
                     extension.critical
                 )
             else:
-                raise ValueError('Extension not yet supported.')
+                raise NotImplementedError('Extension not yet supported.')
             res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
             assert res == 1
         res = self._lib.X509_REQ_add_extensions(x509_req, extensions)

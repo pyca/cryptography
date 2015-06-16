@@ -491,17 +491,13 @@ X.509 CSR (Certificate Signing Request) Builder Object
         ...     x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
         ... ]))
         >>> buidlder = builder.add_extension(
-        ...     x509.BasicConstraints(False, None), critical=True,
+        ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ... )
         >>> request = builder.sign(
-        ...     default_backend(), private_key, hashes.SHA1()
+        ...     default_backend(), private_key, hashes.SHA256()
         ... )
         >>> isinstance(request, x509.CertificateSigningRequest)
         True
-
-    .. method:: __init__()
-
-        Creates an empty certificate signing request.
 
     .. method:: subject_name(name)
 
