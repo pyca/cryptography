@@ -132,6 +132,9 @@ def _encode_basic_constraints(backend, basic_constraints, critical):
     pp = backend._ffi.new('unsigned char **')
     r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, pp)
     assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
 
     # Wrap that in an X509 extension object.
     extension = backend._lib.X509_EXTENSION_create_by_OBJ(
@@ -141,10 +144,6 @@ def _encode_basic_constraints(backend, basic_constraints, critical):
         _encode_asn1_str(backend, pp[0], r),
     )
     assert extension != backend._ffi.NULL
-
-    pp[0] = backend._ffi.gc(pp[0], backend._lib.OPENSSL_free)
-    # Release acquired memory.
-    pp[0] = backend._ffi.NULL
 
     # Return the wrapped extension.
     return extension
