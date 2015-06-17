@@ -450,6 +450,39 @@ class TestRSACertificate(object):
         serialized = cert.public_bytes(encoding)
         assert serialized == cert_bytes
 
+    def test_certificate_repr(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "cryptography.io.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        if six.PY3:
+            assert repr(cert) == (
+                "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
+                "ier(oid=2.5.4.11, name=organizationalUnitName)>, value='GT487"
+                "42965')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.11, "
+                "name=organizationalUnitName)>, value='See www.rapidssl.com/re"
+                "sources/cps (c)14')>, <NameAttribute(oid=<ObjectIdentifier(oi"
+                "d=2.5.4.11, name=organizationalUnitName)>, value='Domain Cont"
+                "rol Validated - RapidSSL(R)')>, <NameAttribute(oid=<ObjectIde"
+                "ntifier(oid=2.5.4.3, name=commonName)>, value='www.cryptograp"
+                "hy.io')>])>, ...)>"
+            )
+        else:
+            assert repr(cert) == (
+                "<Certificate(subject=<Name([<NameAttribute(oid=<ObjectIdentif"
+                "ier(oid=2.5.4.11, name=organizationalUnitName)>, value=u'GT48"
+                "742965')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.11,"
+                " name=organizationalUnitName)>, value=u'See www.rapidssl.com/"
+                "resources/cps (c)14')>, <NameAttribute(oid=<ObjectIdentifier("
+                "oid=2.5.4.11, name=organizationalUnitName)>, value=u'Domain C"
+                "ontrol Validated - RapidSSL(R)')>, <NameAttribute(oid=<Object"
+                "Identifier(oid=2.5.4.3, name=commonName)>, value=u'www.crypto"
+                "graphy.io')>])>, ...)>"
+            )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
