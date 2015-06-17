@@ -633,7 +633,7 @@ class TestAuthorityKeyIdentifier(object):
             assert repr(aki) == (
                 "<AuthorityKeyIdentifier(key_identifier=b'digest', authority_"
                 "cert_issuer=[<DirectoryName(value=<Name([<NameAttribute(oid="
-                "<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'myC"
+                "<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value='myC"
                 "N')>])>)>], authority_cert_serial_number=1234)>"
             )
         else:
@@ -1050,10 +1050,18 @@ class TestDirectoryName(object):
     def test_repr(self):
         name = x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'value1')])
         gn = x509.DirectoryName(x509.Name([name]))
-        assert repr(gn) == (
-            "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<ObjectIden"
-            "tifier(oid=2.5.4.3, name=commonName)>, value=u'value1')>])>])>)>"
-        )
+        if six.PY3:
+            assert repr(gn) == (
+                "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<Object"
+                "Identifier(oid=2.5.4.3, name=commonName)>, value='value1')>])"
+                ">])>)>"
+            )
+        else:
+            assert repr(gn) == (
+                "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<Object"
+                "Identifier(oid=2.5.4.3, name=commonName)>, value=u'value1')>]"
+                ")>])>)>"
+            )
 
     def test_eq(self):
         name = x509.Name([
@@ -2017,10 +2025,10 @@ class TestDistributionPoint(object):
             assert repr(dp) == (
                 "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
                 "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
-                ">, value=u'myCN')>])>, reasons=frozenset({<ReasonFlags.ca_com"
-                "promise: 'cACompromise'>}), crl_issuer=[<DirectoryName(value="
-                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
-                "=commonName)>, value=u'Important CA')>])>)>])>"
+                ">, value='myCN')>])>, reasons=frozenset({<ReasonFlags.ca_comp"
+                "romise: 'cACompromise'>}), crl_issuer=[<DirectoryName(value=<"
+                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
+                "commonName)>, value='Important CA')>])>)>])>"
             )
         else:
             assert repr(dp) == (

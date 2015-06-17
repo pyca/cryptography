@@ -10,6 +10,8 @@ import os
 
 import pytest
 
+import six
+
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
@@ -825,10 +827,16 @@ class TestNameAttribute(object):
 
     def test_repr(self):
         na = x509.NameAttribute(x509.ObjectIdentifier('2.5.4.3'), u'value')
-        assert repr(na) == (
-            "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName"
-            ")>, value=u'value')>"
-        )
+        if six.PY3:
+            assert repr(na) == (
+                "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
+                "nName)>, value='value')>"
+            )
+        else:
+            assert repr(na) == (
+                "<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commo"
+                "nName)>, value=u'value')>"
+            )
 
 
 class TestObjectIdentifier(object):
@@ -879,9 +887,17 @@ class TestName(object):
             x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
         ])
 
-        assert repr(name) == (
-            "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=com"
-            "monName)>, value=u'cryptography.io')>, <NameAttribute(oid=<Object"
-            "Identifier(oid=2.5.4.10, name=organizationName)>, value=u'PyCA')>"
-            "])>"
-        )
+        if six.PY3:
+            assert repr(name) == (
+                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
+                "=commonName)>, value='cryptography.io')>, <NameAttribute(oid="
+                "<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, valu"
+                "e='PyCA')>])>"
+            )
+        else:
+            assert repr(name) == (
+                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
+                "=commonName)>, value=u'cryptography.io')>, <NameAttribute(oid"
+                "=<ObjectIdentifier(oid=2.5.4.10, name=organizationName)>, val"
+                "ue=u'PyCA')>])>"
+            )
