@@ -596,8 +596,8 @@ class TestAuthorityKeyIdentifier(object):
     def test_authority_cert_serial_number_not_integer(self):
         dirname = x509.DirectoryName(
             x509.Name([
-                x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1'),
-                x509.NameAttribute(x509.ObjectIdentifier('oid2'), 'value2'),
+                x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+                x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
             ])
         )
         with pytest.raises(TypeError):
@@ -610,8 +610,8 @@ class TestAuthorityKeyIdentifier(object):
     def test_authority_issuer_not_none_serial_none(self):
         dirname = x509.DirectoryName(
             x509.Name([
-                x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1'),
-                x509.NameAttribute(x509.ObjectIdentifier('oid2'), 'value2'),
+                x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+                x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
             ])
         )
         with pytest.raises(ValueError):
@@ -625,7 +625,7 @@ class TestAuthorityKeyIdentifier(object):
 
     def test_repr(self):
         dirname = x509.DirectoryName(
-            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'myCN')])
         )
         aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
 
@@ -640,27 +640,27 @@ class TestAuthorityKeyIdentifier(object):
             assert repr(aki) == (
                 "<AuthorityKeyIdentifier(key_identifier='digest', authority_ce"
                 "rt_issuer=[<DirectoryName(value=<Name([<NameAttribute(oid=<Ob"
-                "jectIdentifier(oid=2.5.4.3, name=commonName)>, value='myCN')>"
-                "])>)>], authority_cert_serial_number=1234)>"
+                "jectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'myCN')"
+                ">])>)>], authority_cert_serial_number=1234)>"
             )
 
     def test_eq(self):
         dirname = x509.DirectoryName(
-            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'myCN')])
         )
         aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
         dirname2 = x509.DirectoryName(
-            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'myCN')])
         )
         aki2 = x509.AuthorityKeyIdentifier(b"digest", [dirname2], 1234)
         assert aki == aki2
 
     def test_ne(self):
         dirname = x509.DirectoryName(
-            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'myCN')])
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'myCN')])
         )
         dirname5 = x509.DirectoryName(
-            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'aCN')])
+            x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'aCN')])
         )
         aki = x509.AuthorityKeyIdentifier(b"digest", [dirname], 1234)
         aki2 = x509.AuthorityKeyIdentifier(b"diges", [dirname], 1234)
@@ -1048,19 +1048,27 @@ class TestDirectoryName(object):
             x509.DirectoryName(1.3)
 
     def test_repr(self):
-        name = x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, 'value1')])
+        name = x509.Name([x509.NameAttribute(x509.OID_COMMON_NAME, u'value1')])
         gn = x509.DirectoryName(x509.Name([name]))
-        assert repr(gn) == (
-            "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<ObjectIden"
-            "tifier(oid=2.5.4.3, name=commonName)>, value='value1')>])>])>)>"
-        )
+        if six.PY3:
+            assert repr(gn) == (
+                "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<Object"
+                "Identifier(oid=2.5.4.3, name=commonName)>, value='value1')>])"
+                ">])>)>"
+            )
+        else:
+            assert repr(gn) == (
+                "<DirectoryName(value=<Name([<Name([<NameAttribute(oid=<Object"
+                "Identifier(oid=2.5.4.3, name=commonName)>, value=u'value1')>]"
+                ")>])>)>"
+            )
 
     def test_eq(self):
         name = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1')
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1')
         ])
         gn = x509.DirectoryName(x509.Name([name]))
         gn2 = x509.DirectoryName(x509.Name([name2]))
@@ -1068,10 +1076,10 @@ class TestDirectoryName(object):
 
     def test_ne(self):
         name = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1')
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), 'value2')
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value2')
         ])
         gn = x509.DirectoryName(x509.Name([name]))
         gn2 = x509.DirectoryName(x509.Name([name2]))
@@ -1419,9 +1427,9 @@ class TestRSASubjectAlternativeNameExtension(object):
         dirname = san.get_values_for_type(x509.DirectoryName)
         assert [
             x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, 'test'),
-                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'Org'),
-                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'test'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'Org'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
             ])
         ] == dirname
 
@@ -1500,9 +1508,9 @@ class TestRSASubjectAlternativeNameExtension(object):
         assert [u"cryptography.io"] == dns
         assert [
             x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, 'dirCN'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'dirCN'),
                 x509.NameAttribute(
-                    x509.OID_ORGANIZATION_NAME, 'Cryptographic Authority'
+                    x509.OID_ORGANIZATION_NAME, u'Cryptographic Authority'
                 ),
             ])
         ] == dirname
@@ -1746,8 +1754,9 @@ class TestAuthorityInformationAccessExtension(object):
             x509.AccessDescription(
                 x509.OID_CA_ISSUERS,
                 x509.DirectoryName(x509.Name([
-                    x509.NameAttribute(x509.OID_COMMON_NAME, "myCN"),
-                    x509.NameAttribute(x509.OID_ORGANIZATION_NAME, "some Org"),
+                    x509.NameAttribute(x509.OID_COMMON_NAME, u"myCN"),
+                    x509.NameAttribute(x509.OID_ORGANIZATION_NAME,
+                                       u"some Org"),
                 ]))
             ),
         ])
@@ -1787,8 +1796,9 @@ class TestAuthorityInformationAccessExtension(object):
             x509.AccessDescription(
                 x509.OID_CA_ISSUERS,
                 x509.DirectoryName(x509.Name([
-                    x509.NameAttribute(x509.OID_COMMON_NAME, "myCN"),
-                    x509.NameAttribute(x509.OID_ORGANIZATION_NAME, "some Org"),
+                    x509.NameAttribute(x509.OID_COMMON_NAME, u"myCN"),
+                    x509.NameAttribute(x509.OID_ORGANIZATION_NAME,
+                                       u"some Org"),
                 ]))
             ),
         ])
@@ -1948,7 +1958,7 @@ class TestDistributionPoint(object):
                 x509.DirectoryName(
                     x509.Name([
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME, "Important CA"
+                            x509.OID_COMMON_NAME, u"Important CA"
                         )
                     ])
                 )
@@ -1962,7 +1972,7 @@ class TestDistributionPoint(object):
                 x509.DirectoryName(
                     x509.Name([
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME, "Important CA"
+                            x509.OID_COMMON_NAME, u"Important CA"
                         )
                     ])
                 )
@@ -1979,7 +1989,7 @@ class TestDistributionPoint(object):
                 x509.DirectoryName(
                     x509.Name([
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME, "Important CA"
+                            x509.OID_COMMON_NAME, u"Important CA"
                         )
                     ])
                 )
@@ -1998,14 +2008,14 @@ class TestDistributionPoint(object):
         dp = x509.DistributionPoint(
             None,
             x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, "myCN")
+                x509.NameAttribute(x509.OID_COMMON_NAME, u"myCN")
             ]),
             frozenset([x509.ReasonFlags.ca_compromise]),
             [
                 x509.DirectoryName(
                     x509.Name([
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME, "Important CA"
+                            x509.OID_COMMON_NAME, u"Important CA"
                         )
                     ])
                 )
@@ -2024,10 +2034,10 @@ class TestDistributionPoint(object):
             assert repr(dp) == (
                 "<DistributionPoint(full_name=None, relative_name=<Name([<Name"
                 "Attribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)"
-                ">, value='myCN')>])>, reasons=frozenset([<ReasonFlags.ca_comp"
-                "romise: 'cACompromise'>]), crl_issuer=[<DirectoryName(value=<"
-                "Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name="
-                "commonName)>, value='Important CA')>])>)>])>"
+                ">, value=u'myCN')>])>, reasons=frozenset([<ReasonFlags.ca_com"
+                "promise: 'cACompromise'>]), crl_issuer=[<DirectoryName(value="
+                "<Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name"
+                "=commonName)>, value=u'Important CA')>])>)>])>"
             )
 
 
@@ -2190,18 +2200,18 @@ class TestCRLDistributionPointsExtension(object):
             x509.DistributionPoint(
                 full_name=[x509.DirectoryName(
                     x509.Name([
-                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
                         x509.NameAttribute(
                             x509.OID_ORGANIZATION_NAME,
-                            "Test Certificates 2011"
+                            u"Test Certificates 2011"
                         ),
                         x509.NameAttribute(
                             x509.OID_ORGANIZATIONAL_UNIT_NAME,
-                            "indirectCRL CA3 cRLIssuer"
+                            u"indirectCRL CA3 cRLIssuer"
                         ),
                         x509.NameAttribute(
                             x509.OID_COMMON_NAME,
-                            "indirect CRL for indirectCRL CA3"
+                            u"indirect CRL for indirectCRL CA3"
                         ),
                     ])
                 )],
@@ -2209,14 +2219,14 @@ class TestCRLDistributionPointsExtension(object):
                 reasons=None,
                 crl_issuer=[x509.DirectoryName(
                     x509.Name([
-                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
                         x509.NameAttribute(
                             x509.OID_ORGANIZATION_NAME,
-                            "Test Certificates 2011"
+                            u"Test Certificates 2011"
                         ),
                         x509.NameAttribute(
                             x509.OID_ORGANIZATIONAL_UNIT_NAME,
-                            "indirectCRL CA3 cRLIssuer"
+                            u"indirectCRL CA3 cRLIssuer"
                         ),
                     ])
                 )],
@@ -2242,20 +2252,20 @@ class TestCRLDistributionPointsExtension(object):
                 relative_name=x509.Name([
                     x509.NameAttribute(
                         x509.OID_COMMON_NAME,
-                        "indirect CRL for indirectCRL CA3"
+                        u"indirect CRL for indirectCRL CA3"
                     ),
                 ]),
                 reasons=None,
                 crl_issuer=[x509.DirectoryName(
                     x509.Name([
-                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
                         x509.NameAttribute(
                             x509.OID_ORGANIZATION_NAME,
-                            "Test Certificates 2011"
+                            u"Test Certificates 2011"
                         ),
                         x509.NameAttribute(
                             x509.OID_ORGANIZATIONAL_UNIT_NAME,
-                            "indirectCRL CA3 cRLIssuer"
+                            u"indirectCRL CA3 cRLIssuer"
                         ),
                     ])
                 )],
@@ -2287,12 +2297,12 @@ class TestCRLDistributionPointsExtension(object):
                 ]),
                 crl_issuer=[x509.DirectoryName(
                     x509.Name([
-                        x509.NameAttribute(x509.OID_COUNTRY_NAME, "US"),
+                        x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
                         x509.NameAttribute(
-                            x509.OID_ORGANIZATION_NAME, "PyCA"
+                            x509.OID_ORGANIZATION_NAME, u"PyCA"
                         ),
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME, "cryptography CA"
+                            x509.OID_COMMON_NAME, u"cryptography CA"
                         ),
                     ])
                 )],
@@ -2377,7 +2387,7 @@ class TestCRLDistributionPointsExtension(object):
                 crl_issuer=[x509.DirectoryName(
                     x509.Name([
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME, "cryptography CA"
+                            x509.OID_COMMON_NAME, u"cryptography CA"
                         ),
                     ])
                 )],

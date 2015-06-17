@@ -22,6 +22,8 @@ Changelog
   provisioning URIs.
 * Add :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash`
   and :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHMAC`.
+* Raise a ``TypeError`` when passing objects that are not text as the value to
+  :class:`~cryptography.x509.NameAttribute`.
 
 0.9.1 - 2015-06-06
 ~~~~~~~~~~~~~~~~~~

@@ -148,6 +148,11 @@ class NameAttribute(object):
                 "oid argument must be an ObjectIdentifier instance."
             )
 
+        if not isinstance(value, six.text_type):
+            raise TypeError(
+                "value argument must be a text type."
+            )
+
         self._oid = oid
         self._value = value
 
