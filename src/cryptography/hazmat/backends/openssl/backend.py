@@ -90,9 +90,7 @@ def _encode_name(backend, attributes):
     subject = backend._lib.X509_NAME_new()
     subject = backend._ffi.gc(subject, backend._lib.X509_NAME_free)
     for attribute in attributes:
-        value = attribute.value
-        if isinstance(value, six.text_type):
-            value = value.encode('ascii')
+        value = attribute.value.encode('ascii')
         obj = _txt2obj(backend, attribute.oid.dotted_string)
         res = backend._lib.X509_NAME_add_entry_by_OBJ(
             subject,
@@ -110,8 +108,7 @@ def _txt2obj(backend, name):
     Converts a Python string with an ASN.1 object ID in dotted form to a
     ASN1_OBJECT.
     """
-    if isinstance(name, six.text_type):
-        name = name.encode('ascii')
+    name = name.encode('ascii')
     obj = backend._lib.OBJ_txt2obj(name, 1)
     assert obj != backend._ffi.NULL
     obj = backend._ffi.gc(obj, backend._lib.ASN1_OBJECT_free)
