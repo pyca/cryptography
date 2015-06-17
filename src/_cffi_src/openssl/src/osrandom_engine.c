@@ -47,24 +47,36 @@ static int osrandom_rand_status(void) {
     }
 }
 #else
-static int urandom_fd = -1;
+static struct {
+    int fd;
+    dev_t st_dev;
+    ino_t st_ino;
+} urandom_cache = { -1 };
 
 static int osrandom_finish(ENGINE *e);
 
 static int osrandom_init(ENGINE *e) {
-    if (urandom_fd > -1) {
+    struct stat st;
+
+    if (urandom_cache.fd > -1) {
         return 1;
     }
-    urandom_fd = open("/dev/urandom", O_RDONLY);
-    if (urandom_fd > -1) {
-        int flags = fcntl(urandom_fd, F_GETFD);
+    urandom_cache.fd = open("/dev/urandom", O_RDONLY);
+    if (urandom_cache.fd > -1) {
+        int flags = fcntl(urandom_cache.fd, F_GETFD);
         if (flags == -1) {
             osrandom_finish(e);
             return 0;
-        } else if (fcntl(urandom_fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
+        } else if (fcntl(urandom_cache.fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
             osrandom_finish(e);
             return 0;
         }
+        if (fstat(urandom_cache.fd, &st)) {
+            osrandom_finish(e);
+            return 0;
+        }
+        urandom_cache.st_dev = st.st_dev;
+        urandom_cache.st_ino = st.st_ino;
         return 1;
     } else {
         return 0;
@@ -73,9 +85,24 @@ static int osrandom_init(ENGINE *e) {
 
 static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     ssize_t n;
+    struct stat st;
+
+    if (fstat(urandom_cache.fd, &st) == -1 ||
+        st.st_dev != urandom_cache.st_dev ||
+        st.st_ino != urandom_cache.st_ino) {
+        /* The fd has changed since we opened it: error out. */
+        ERR_put_error(
+            ERR_LIB_RAND,
+            0,
+            ERR_R_RAND_LIB,
+            "osrandom_engine.py urandom fd changed",
+            0
+        );
+        return 0;
+    }
     while (size > 0) {
         do {
-            n = read(urandom_fd, buffer, (size_t)size);
+            n = read(urandom_cache.fd, buffer, (size_t)size);
         } while (n < 0 && errno == EINTR);
         if (n <= 0) {
             ERR_put_error(
@@ -92,9 +119,11 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
 static int osrandom_finish(ENGINE *e) {
     int n;
     do {
-        n = close(urandom_fd);
+        n = close(urandom_cache.fd);
     } while (n < 0 && errno == EINTR);
-    urandom_fd = -1;
+    urandom_cache.fd = -1;
+    urandom_cache.st_dev = -1;
+    urandom_cache.st_ino = -1;
     if (n < 0) {
         return 0;
     } else {
@@ -103,7 +132,9 @@ static int osrandom_finish(ENGINE *e) {
 }
 
 static int osrandom_rand_status(void) {
-    if (urandom_fd == -1) {
+    if (urandom_cache.fd == -1 ||
+        urandom_cache.st_dev == -1 ||
+        urandom_cache.st_ino == -1) {
         return 0;
     } else {
         return 1;
