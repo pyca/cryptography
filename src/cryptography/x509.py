@@ -1450,7 +1450,7 @@ class CertificateSigningRequestBuilder(object):
         Creates an empty X.509 certificate request (v1).
         """
         self._subject_name = subject_name
-        self._extensions = extensions[:]
+        self._extensions = extensions
 
     def subject_name(self, name):
         """

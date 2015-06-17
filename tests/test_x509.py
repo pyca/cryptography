@@ -21,6 +21,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
+from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048
 from .utils import load_vectors_from_file
 
 
@@ -683,22 +684,11 @@ class TestRSACertificateRequest(object):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
     def test_sign_invalid_hash_algorithm(self, backend):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=backend,
-        )
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            builder.sign(backend, private_key, 'NotAHash')
+            builder.sign(backend, RSA_KEY_2048, 'NotAHash')
 
     def test_build_ca_request(self, backend):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=backend,
-        )
-
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
@@ -708,9 +698,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
             ])
         ).add_extension(
-            x509.BasicConstraints(True, 2), critical=True
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
         ).sign(
-            backend, private_key, hashes.SHA1()
+            backend, RSA_KEY_2048, hashes.SHA1()
         )
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
@@ -732,12 +722,6 @@ class TestCertificateSigningRequestBuilder(object):
         assert basic_constraints.value.path_length == 2
 
     def test_build_nonca_request(self, backend):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=backend,
-        )
-
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
@@ -749,7 +733,7 @@ class TestCertificateSigningRequestBuilder(object):
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ).sign(
-            backend, private_key, hashes.SHA1()
+            backend, RSA_KEY_2048, hashes.SHA1()
         )
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)

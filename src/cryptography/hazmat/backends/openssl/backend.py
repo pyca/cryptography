@@ -817,8 +817,8 @@ class Backend(object):
 
         # Create an empty request.
         x509_req = self._lib.X509_REQ_new()
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         assert x509_req != self._ffi.NULL
+        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
 
         # Set x509 version.
         res = self._lib.X509_REQ_set_version(x509_req, x509.Version.v1.value)
@@ -839,6 +839,7 @@ class Backend(object):
 
         # Add extensions.
         extensions = self._lib.sk_X509_EXTENSION_new_null()
+        assert extensions != self._ffi.NULL
         extensions = self._ffi.gc(
             extensions,
             self._lib.sk_X509_EXTENSION_free,
