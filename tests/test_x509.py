@@ -794,6 +794,13 @@ class TestNameAttribute(object):
         with pytest.raises(TypeError):
             x509.NameAttribute(None, 'value')
 
+    def test_init_bad_value(self):
+        with pytest.raises(TypeError):
+            x509.NameAttribute(
+                x509.ObjectIdentifier('oid'),
+                b'bytes'
+            )
+
     def test_eq(self):
         assert x509.NameAttribute(
             x509.ObjectIdentifier('oid'), 'value'
