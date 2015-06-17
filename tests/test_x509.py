@@ -20,8 +20,8 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
-from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048
+from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
 
 
@@ -684,11 +684,15 @@ class TestRSACertificateRequest(object):
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
     def test_sign_invalid_hash_algorithm(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            builder.sign(backend, RSA_KEY_2048, 'NotAHash')
+            builder.sign(backend, private_key, 'NotAHash')
 
     def test_build_ca_request(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
@@ -700,7 +704,7 @@ class TestCertificateSigningRequestBuilder(object):
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
         ).sign(
-            backend, RSA_KEY_2048, hashes.SHA1()
+            backend, private_key, hashes.SHA1()
         )
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
@@ -722,6 +726,8 @@ class TestCertificateSigningRequestBuilder(object):
         assert basic_constraints.value.path_length == 2
 
     def test_build_nonca_request(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
@@ -733,7 +739,7 @@ class TestCertificateSigningRequestBuilder(object):
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ).sign(
-            backend, RSA_KEY_2048, hashes.SHA1()
+            backend, private_key, hashes.SHA1()
         )
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)

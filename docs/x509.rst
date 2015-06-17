@@ -488,7 +488,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         ... )
         >>> builder = x509.CertificateSigningRequestBuilder()
         >>> builder = builder.subject_name(x509.Name([
-        ...     x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+        ...     x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ... ]))
         >>> buidlder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
