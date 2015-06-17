@@ -701,11 +701,11 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-                x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
-                x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
             ])
         ).add_extension(
             x509.BasicConstraints(True, 2), critical=True
@@ -719,11 +719,11 @@ class TestCertificateSigningRequestBuilder(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
             x509.OID_BASIC_CONSTRAINTS
@@ -740,11 +740,11 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-                x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
-                x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
             ])
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), critical=True,
@@ -758,11 +758,11 @@ class TestCertificateSigningRequestBuilder(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, 'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, 'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, 'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, 'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, 'cryptography.io'),
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
             x509.OID_BASIC_CONSTRAINTS
