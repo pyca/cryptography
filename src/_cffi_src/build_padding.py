@@ -5,8 +5,9 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 
-from _cffi_src.utils import build_ffi
+from _cffi_src.utils import build_ffi, extra_link_args
 
 
 with open(os.path.join(
@@ -22,5 +23,6 @@ with open(os.path.join(
 ffi = build_ffi(
     module_name="_padding",
     cdef_source=types,
-    verify_source=functions
+    verify_source=functions,
+    extra_link_args=extra_link_args(sys.platform),
 )
