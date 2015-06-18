@@ -192,6 +192,13 @@ Custom X.509 Vectors
 * ``cdp_reason_aa_compromise.pem`` - An RSA 1024 bit certificate containing a
   CRL distribution points extension with the ``AACompromise`` ``reasons`` bit
   set.
+* ``nc_permitted_excluded.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with both permitted and excluded
+  elements.
+* ``nc_permitted.pem`` - An RSA 2048 bit self-signed certificate containing a
+  name constraints extension with permitted elements.
+* ``nc_excluded.pem`` - An RSA 2048 bit self-signed certificate containing a
+  name constraints extension with excluded elements.
 * ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
   certificate containing a certificate policies extension with a
   notice reference in the user notice.
