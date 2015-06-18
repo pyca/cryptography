@@ -300,7 +300,6 @@ setup(
 
     # for cffi
     zip_safe=False,
-    ext_package="cryptography.hazmat.bindings",
     entry_points={
         "cryptography.backends": backends,
     },
