@@ -290,6 +290,8 @@ class _Certificate(object):
                 value = _decode_crl_distribution_points(self._backend, ext)
             elif oid == x509.OID_OCSP_NO_CHECK:
                 value = x509.OCSPNoCheck()
+            elif oid == x509.OID_INHIBIT_ANY_POLICY:
+                value = _decode_inhibit_any_policy(self._backend, ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -633,6 +635,17 @@ def _decode_crl_distribution_points(backend, ext):
         )
 
     return x509.CRLDistributionPoints(dist_points)
+
+
+def _decode_inhibit_any_policy(backend, ext):
+    asn1_int = backend._ffi.cast(
+        "ASN1_INTEGER *",
+        backend._lib.X509V3_EXT_d2i(ext)
+    )
+    assert asn1_int != backend._ffi.NULL
+    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
+    skip_certs = _asn1_integer_to_int(backend, asn1_int)
+    return x509.InhibitAnyPolicy(skip_certs)
 
 
 @utils.register_interface(x509.CertificateSigningRequest)

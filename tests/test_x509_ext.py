@@ -2435,3 +2435,20 @@ class TestInhibitAnyPolicy(object):
         iap2 = x509.InhibitAnyPolicy(4)
         assert iap != iap2
         assert iap != object()
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestInhibitAnyPolicyExtension(object):
+    def test_nocheck(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "inhibit_any_policy_5.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        iap = cert.extensions.get_extension_for_oid(
+            x509.OID_INHIBIT_ANY_POLICY
+        ).value
+        assert iap.skip_certs == 5
