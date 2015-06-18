@@ -63,6 +63,9 @@ if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
 
 
 def cc_is_available():
+    if "PYCA_OSX_NOCOMMONCRYPTO" in os.environ:
+        return False
+
     return sys.platform == "darwin" and list(map(
         int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]
 
