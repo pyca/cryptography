@@ -205,6 +205,13 @@ Custom X.509 Vectors
   with no explicit text.
 * ``ocsp_nocheck.pem`` - An RSA 2048 bit self-signed certificate containing
   an ``OCSPNoCheck`` extension.
+* ``pc_inhibit_require.pem`` - An RSA 2048 bit self-signed certificate
+  containing a policy constraints extension with both inhibit policy mapping
+  and require explicit policy elements.
+* ``pc_inhibit.pem`` - An RSA 2048 bit self-signed certificate containing a
+  policy constraints extension with an inhibit policy mapping element.
+* ``pc_require.pem`` - An RSA 2048 bit self-signed certificate containing a
+  policy constraints extension with a require explicit policy element.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
