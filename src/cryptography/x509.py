@@ -1458,6 +1458,8 @@ class CertificateSigningRequestBuilder(object):
         """
         if not isinstance(name, Name):
             raise TypeError('Expecting x509.Name object.')
+        if self._subject_name is not None:
+            raise ValueError('The subject name may only be set once.')
         return CertificateSigningRequestBuilder(name, self._extensions)
 
     def add_extension(self, extension, critical=False):
