@@ -2395,6 +2395,23 @@ class TestCRLDistributionPointsExtension(object):
         ])
 
 
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestOCSPNoCheckExtension(object):
+    def test_nocheck(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "ocsp_nocheck.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_OCSP_NO_CHECK
+        )
+        assert isinstance(ext.value, x509.OCSPNoCheck)
+
+
 class TestInhibitAnyPolicy(object):
     def test_not_int(self):
         with pytest.raises(TypeError):

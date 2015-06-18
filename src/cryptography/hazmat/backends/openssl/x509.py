@@ -288,6 +288,8 @@ class _Certificate(object):
                 value = _decode_certificate_policies(self._backend, ext)
             elif oid == x509.OID_CRL_DISTRIBUTION_POINTS:
                 value = _decode_crl_distribution_points(self._backend, ext)
+            elif oid == x509.OID_OCSP_NO_CHECK:
+                value = x509.OCSPNoCheck()
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
