@@ -143,10 +143,14 @@ int X509_verify_cert(X509_STORE_CTX *);
 
 /* X509_STORE */
 X509_STORE *X509_STORE_new(void);
-void X509_STORE_free(X509_STORE *);
 int X509_STORE_add_cert(X509_STORE *, X509 *);
+int X509_STORE_add_crl(X509_STORE *, X509_CRL *);
 int X509_STORE_load_locations(X509_STORE *, const char *, const char *);
+int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
 int X509_STORE_set_default_paths(X509_STORE *);
+int X509_STORE_set_flags(X509_STORE *, unsigned long);
+void X509_STORE_free(X509_STORE *);
+
 
 /* X509_STORE_CTX */
 X509_STORE_CTX *X509_STORE_CTX_new(void);
