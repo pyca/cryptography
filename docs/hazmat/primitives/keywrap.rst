@@ -10,6 +10,8 @@ encapsulate key material.
 
 .. function:: aes_key_wrap(wrapping_key, key_to_wrap, backend)
 
+    .. versionadded:: 1.1
+
     :param bytes wrapping_key: The wrapping key.
 
     :param bytes key_to_wrap: The key to wrap.
@@ -23,6 +25,8 @@ encapsulate key material.
 
 .. function:: aes_key_unwrap(wrapping_key, wrapped_key, backend)
 
+    .. versionadded:: 1.1
+
     :param bytes wrapping_key: The wrapping key.
 
     :param bytes wrapped_key: The wrapped key.
@@ -33,6 +37,9 @@ encapsulate key material.
         :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`.
 
     :return bytes: The unwrapped key as bytes.
+
+    :raises cryptography.hazmat.primitives.keywrap.InvalidUnwrap: This is
+        raised if the key is not successfully unwrapped.
 
 Exceptions
 ~~~~~~~~~~
