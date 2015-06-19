@@ -34,6 +34,6 @@ class TOTP(object):
             raise InvalidToken("Supplied TOTP value does not match.")
 
     def get_provisioning_uri(self, account_name, issuer):
-        return _generate_uri(self._hotp, 'totp', account_name, issuer, [
-            ('period', int(self._time_step)),
+        return _generate_uri(self._hotp, "totp", account_name, issuer, [
+            ("period", int(self._time_step)),
         ])

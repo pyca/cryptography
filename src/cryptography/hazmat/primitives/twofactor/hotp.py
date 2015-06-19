@@ -62,6 +62,6 @@ class HOTP(object):
         return struct.unpack(">I", p)[0] & 0x7fffffff
 
     def get_provisioning_uri(self, account_name, counter, issuer):
-        return _generate_uri(self, 'hotp', account_name, issuer, [
-            ('counter', int(counter)),
+        return _generate_uri(self, "hotp", account_name, issuer, [
+            ("counter", int(counter)),
         ])
