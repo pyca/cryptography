@@ -71,9 +71,17 @@ static int osrandom_init(ENGINE *e) {
             osrandom_finish(e);
             return 0;
         }
-        if (fstat(urandom_cache.fd, &st)) {
-            osrandom_finish(e);
-            return 0;
+        errno = 0;
+        if (fstat(urandom_cache.fd, &st) == -1) {
+            /* As long as fstat failed for a reason that's not a bad file
+             * descriptor, call osrandom_finish to close the fd */
+            if (errno != EBADF) {
+                osrandom_finish(e);
+                return 0;
+            } else {
+                urandom_cache.fd = -1;
+                return 0;
+            }
         }
         urandom_cache.st_dev = st.st_dev;
         urandom_cache.st_ino = st.st_ino;
@@ -90,7 +98,7 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
     if (fstat(urandom_cache.fd, &st) == -1 ||
         st.st_dev != urandom_cache.st_dev ||
         st.st_ino != urandom_cache.st_ino) {
-        /* The fd has changed since we opened it: error out. */
+        /* The fd has changed since we opened it (or fstat failed) */
         ERR_put_error(
             ERR_LIB_RAND,
             0,
