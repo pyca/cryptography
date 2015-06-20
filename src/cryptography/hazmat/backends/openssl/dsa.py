@@ -107,9 +107,10 @@ class _DSAParameters(object):
 
 @utils.register_interface(dsa.DSAPrivateKeyWithSerialization)
 class _DSAPrivateKey(object):
-    def __init__(self, backend, dsa_cdata):
+    def __init__(self, backend, dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
+        self._evp_pkey = evp_pkey
         self._key_size = self._backend._lib.BN_num_bits(self._dsa_cdata.p)
 
     key_size = utils.read_only_property("_key_size")
@@ -140,7 +141,8 @@ class _DSAPrivateKey(object):
         dsa_cdata.q = self._backend._lib.BN_dup(self._dsa_cdata.q)
         dsa_cdata.g = self._backend._lib.BN_dup(self._dsa_cdata.g)
         dsa_cdata.pub_key = self._backend._lib.BN_dup(self._dsa_cdata.pub_key)
-        return _DSAPublicKey(self._backend, dsa_cdata)
+        evp_pkey = self._backend._dsa_cdata_to_evp_pkey(dsa_cdata)
+        return _DSAPublicKey(self._backend, dsa_cdata, evp_pkey)
 
     def parameters(self):
         dsa_cdata = self._backend._lib.DSA_new()
@@ -154,27 +156,21 @@ class _DSAPrivateKey(object):
         return _DSAParameters(self._backend, dsa_cdata)
 
     def private_bytes(self, encoding, format, encryption_algorithm):
-        evp_pkey = self._backend._lib.EVP_PKEY_new()
-        assert evp_pkey != self._backend._ffi.NULL
-        evp_pkey = self._backend._ffi.gc(
-            evp_pkey, self._backend._lib.EVP_PKEY_free
-        )
-        res = self._backend._lib.EVP_PKEY_set1_DSA(evp_pkey, self._dsa_cdata)
-        assert res == 1
         return self._backend._private_key_bytes(
             encoding,
             format,
             encryption_algorithm,
-            evp_pkey,
+            self._evp_pkey,
             self._dsa_cdata
         )
 
 
 @utils.register_interface(dsa.DSAPublicKeyWithSerialization)
 class _DSAPublicKey(object):
-    def __init__(self, backend, dsa_cdata):
+    def __init__(self, backend, dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
+        self._evp_pkey = evp_pkey
         self._key_size = self._backend._lib.BN_num_bits(self._dsa_cdata.p)
 
     key_size = utils.read_only_property("_key_size")
@@ -211,16 +207,9 @@ class _DSAPublicKey(object):
                 "DSA public keys do not support PKCS1 serialization"
             )
 
-        evp_pkey = self._backend._lib.EVP_PKEY_new()
-        assert evp_pkey != self._backend._ffi.NULL
-        evp_pkey = self._backend._ffi.gc(
-            evp_pkey, self._backend._lib.EVP_PKEY_free
-        )
-        res = self._backend._lib.EVP_PKEY_set1_DSA(evp_pkey, self._dsa_cdata)
-        assert res == 1
         return self._backend._public_key_bytes(
             encoding,
             format,
-            evp_pkey,
+            self._evp_pkey,
             None
         )
