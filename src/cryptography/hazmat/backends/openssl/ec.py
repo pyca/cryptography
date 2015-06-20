@@ -150,10 +150,11 @@ class _ECDSAVerificationContext(object):
 
 @utils.register_interface(ec.EllipticCurvePrivateKeyWithSerialization)
 class _EllipticCurvePrivateKey(object):
-    def __init__(self, backend, ec_key_cdata):
+    def __init__(self, backend, ec_key_cdata, evp_pkey):
         self._backend = backend
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         self._ec_key = ec_key_cdata
+        self._evp_pkey = evp_pkey
 
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
@@ -188,9 +189,9 @@ class _EllipticCurvePrivateKey(object):
         res = self._backend._lib.EC_KEY_set_public_key(public_ec_key, point)
         assert res == 1
 
-        return _EllipticCurvePublicKey(
-            self._backend, public_ec_key
-        )
+        evp_pkey = self._backend._ec_cdata_to_evp_pkey(public_ec_key)
+
+        return _EllipticCurvePublicKey(self._backend, public_ec_key, evp_pkey)
 
     def private_numbers(self):
         bn = self._backend._lib.EC_KEY_get0_private_key(self._ec_key)
@@ -201,28 +202,22 @@ class _EllipticCurvePrivateKey(object):
         )
 
     def private_bytes(self, encoding, format, encryption_algorithm):
-        evp_pkey = self._backend._lib.EVP_PKEY_new()
-        assert evp_pkey != self._backend._ffi.NULL
-        evp_pkey = self._backend._ffi.gc(
-            evp_pkey, self._backend._lib.EVP_PKEY_free
-        )
-        res = self._backend._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, self._ec_key)
-        assert res == 1
         return self._backend._private_key_bytes(
             encoding,
             format,
             encryption_algorithm,
-            evp_pkey,
+            self._evp_pkey,
             self._ec_key
         )
 
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
 class _EllipticCurvePublicKey(object):
-    def __init__(self, backend, ec_key_cdata):
+    def __init__(self, backend, ec_key_cdata, evp_pkey):
         self._backend = backend
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         self._ec_key = ec_key_cdata
+        self._evp_pkey = evp_pkey
 
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
@@ -268,16 +263,9 @@ class _EllipticCurvePublicKey(object):
                 "EC public keys do not support PKCS1 serialization"
             )
 
-        evp_pkey = self._backend._lib.EVP_PKEY_new()
-        assert evp_pkey != self._backend._ffi.NULL
-        evp_pkey = self._backend._ffi.gc(
-            evp_pkey, self._backend._lib.EVP_PKEY_free
-        )
-        res = self._backend._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, self._ec_key)
-        assert res == 1
         return self._backend._public_key_bytes(
             encoding,
             format,
-            evp_pkey,
+            self._evp_pkey,
             None
         )

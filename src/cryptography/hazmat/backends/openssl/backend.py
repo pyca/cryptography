@@ -388,8 +388,9 @@ class Backend(object):
             rsa_cdata, key_size, bn, self._ffi.NULL
         )
         assert res == 1
+        evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
-        return _RSAPrivateKey(self, rsa_cdata)
+        return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
 
     def generate_rsa_parameters_supported(self, public_exponent, key_size):
         return (public_exponent >= 3 and public_exponent & 1 != 0 and
@@ -419,8 +420,9 @@ class Backend(object):
         rsa_cdata.n = self._int_to_bn(numbers.public_numbers.n)
         res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
         assert res == 1
+        evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
-        return _RSAPrivateKey(self, rsa_cdata)
+        return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
 
     def load_rsa_public_numbers(self, numbers):
         rsa._check_public_key_components(numbers.e, numbers.n)
@@ -431,8 +433,17 @@ class Backend(object):
         rsa_cdata.n = self._int_to_bn(numbers.n)
         res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
         assert res == 1
+        evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
-        return _RSAPublicKey(self, rsa_cdata)
+        return _RSAPublicKey(self, rsa_cdata, evp_pkey)
+
+    def _rsa_cdata_to_evp_pkey(self, rsa_cdata):
+        evp_pkey = self._lib.EVP_PKEY_new()
+        assert evp_pkey != self._ffi.NULL
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        res = self._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
+        assert res == 1
+        return evp_pkey
 
     def _bytes_to_bio(self, data):
         """
@@ -483,18 +494,18 @@ class Backend(object):
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             assert rsa_cdata != self._ffi.NULL
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-            return _RSAPrivateKey(self, rsa_cdata)
+            return _RSAPrivateKey(self, rsa_cdata, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
-            return _DSAPrivateKey(self, dsa_cdata)
+            return _DSAPrivateKey(self, dsa_cdata, evp_pkey)
         elif (self._lib.Cryptography_HAS_EC == 1 and
               key_type == self._lib.EVP_PKEY_EC):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            return _EllipticCurvePrivateKey(self, ec_cdata)
+            return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -510,18 +521,18 @@ class Backend(object):
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
             assert rsa_cdata != self._ffi.NULL
             rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-            return _RSAPublicKey(self, rsa_cdata)
+            return _RSAPublicKey(self, rsa_cdata, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             assert dsa_cdata != self._ffi.NULL
             dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
-            return _DSAPublicKey(self, dsa_cdata)
+            return _DSAPublicKey(self, dsa_cdata, evp_pkey)
         elif (self._lib.Cryptography_HAS_EC == 1 and
               key_type == self._lib.EVP_PKEY_EC):
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             assert ec_cdata != self._ffi.NULL
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            return _EllipticCurvePublicKey(self, ec_cdata)
+            return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -615,8 +626,9 @@ class Backend(object):
         ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
 
         self._lib.DSA_generate_key(ctx)
+        evp_pkey = self._dsa_cdata_to_evp_pkey(ctx)
 
-        return _DSAPrivateKey(self, ctx)
+        return _DSAPrivateKey(self, ctx, evp_pkey)
 
     def generate_dsa_private_key_and_parameters(self, key_size):
         parameters = self.generate_dsa_parameters(key_size)
@@ -636,7 +648,9 @@ class Backend(object):
         dsa_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
         dsa_cdata.priv_key = self._int_to_bn(numbers.x)
 
-        return _DSAPrivateKey(self, dsa_cdata)
+        evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
+
+        return _DSAPrivateKey(self, dsa_cdata, evp_pkey)
 
     def load_dsa_public_numbers(self, numbers):
         dsa._check_dsa_parameters(numbers.parameter_numbers)
@@ -649,7 +663,9 @@ class Backend(object):
         dsa_cdata.g = self._int_to_bn(numbers.parameter_numbers.g)
         dsa_cdata.pub_key = self._int_to_bn(numbers.y)
 
-        return _DSAPublicKey(self, dsa_cdata)
+        evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
+
+        return _DSAPublicKey(self, dsa_cdata, evp_pkey)
 
     def load_dsa_parameter_numbers(self, numbers):
         dsa._check_dsa_parameters(numbers)
@@ -662,6 +678,14 @@ class Backend(object):
         dsa_cdata.g = self._int_to_bn(numbers.g)
 
         return _DSAParameters(self, dsa_cdata)
+
+    def _dsa_cdata_to_evp_pkey(self, dsa_cdata):
+        evp_pkey = self._lib.EVP_PKEY_new()
+        assert evp_pkey != self._ffi.NULL
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        res = self._lib.EVP_PKEY_set1_DSA(evp_pkey, dsa_cdata)
+        assert res == 1
+        return evp_pkey
 
     def dsa_hash_supported(self, algorithm):
         if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
@@ -714,7 +738,8 @@ class Backend(object):
             )
             if rsa_cdata != self._ffi.NULL:
                 rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-                return _RSAPublicKey(self, rsa_cdata)
+                evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
+                return _RSAPublicKey(self, rsa_cdata, evp_pkey)
             else:
                 self._handle_key_loading_error()
 
@@ -796,7 +821,8 @@ class Backend(object):
             )
             if rsa_cdata != self._ffi.NULL:
                 rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-                return _RSAPublicKey(self, rsa_cdata)
+                evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
+                return _RSAPublicKey(self, rsa_cdata, evp_pkey)
             else:
                 self._handle_key_loading_error()
 
@@ -1000,7 +1026,9 @@ class Backend(object):
             res = self._lib.EC_KEY_check_key(ec_cdata)
             assert res == 1
 
-            return _EllipticCurvePrivateKey(self, ec_cdata)
+            evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
+
+            return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm(
                 "Backend object does not support {0}.".format(curve.name),
@@ -1022,8 +1050,9 @@ class Backend(object):
         res = self._lib.EC_KEY_set_private_key(
             ec_cdata, self._int_to_bn(numbers.private_value))
         assert res == 1
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
-        return _EllipticCurvePrivateKey(self, ec_cdata)
+        return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
 
     def load_elliptic_curve_public_numbers(self, numbers):
         curve_nid = self._elliptic_curve_to_nid(numbers.curve)
@@ -1034,8 +1063,16 @@ class Backend(object):
 
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, numbers.x, numbers.y)
+        evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
-        return _EllipticCurvePublicKey(self, ec_cdata)
+        return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+
+    def _ec_cdata_to_evp_pkey(self, ec_cdata):
+        evp_pkey = self._lib.EVP_PKEY_new()
+        assert evp_pkey != self._ffi.NULL
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        res = self._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, ec_cdata)
+        assert res == 1
 
     def _elliptic_curve_to_nid(self, curve):
         """
