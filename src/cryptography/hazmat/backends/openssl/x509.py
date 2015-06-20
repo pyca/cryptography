@@ -292,6 +292,8 @@ class _Certificate(object):
                 value = x509.OCSPNoCheck()
             elif oid == x509.OID_INHIBIT_ANY_POLICY:
                 value = _decode_inhibit_any_policy(self._backend, ext)
+            elif oid == x509.OID_ISSUER_ALTERNATIVE_NAME:
+                value = _decode_issuer_alt_name(self._backend, ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
@@ -512,15 +514,26 @@ def _decode_key_usage(backend, ext):
     )
 
 
-def _decode_subject_alt_name(backend, ext):
+def _decode_general_names_extension(backend, ext):
     gns = backend._ffi.cast(
         "GENERAL_NAMES *", backend._lib.X509V3_EXT_d2i(ext)
     )
     assert gns != backend._ffi.NULL
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
     general_names = _decode_general_names(backend, gns)
+    return general_names
 
-    return x509.SubjectAlternativeName(general_names)
+
+def _decode_subject_alt_name(backend, ext):
+    return x509.SubjectAlternativeName(
+        _decode_general_names_extension(backend, ext)
+    )
+
+
+def _decode_issuer_alt_name(backend, ext):
+    return x509.IssuerAlternativeName(
+        _decode_general_names_extension(backend, ext)
+    )
 
 
 def _decode_extended_key_usage(backend, ext):
