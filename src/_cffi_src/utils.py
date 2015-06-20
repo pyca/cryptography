@@ -80,3 +80,12 @@ def build_ffi(module_name, cdef_source, verify_source, libraries=[],
         extra_link_args=extra_link_args,
     )
     return ffi
+
+
+def extra_link_args(platform):
+    if platform != "win32":
+        return []
+    else:
+        # Enable NX and ASLR for Windows builds. These are enabled by default
+        # on Python 3.3+ but not on 2.x.
+        return ["/NXCOMPAT", "/DYNAMICBASE"]
