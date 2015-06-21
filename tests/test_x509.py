@@ -775,15 +775,7 @@ class TestCertificateSigningRequestBuilder(object):
             builder.subject_name('NotAName')
 
     def test_add_unsupported_extension(self, backend):
-        builder = x509.CertificateSigningRequestBuilder().subject_name(
-            x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-                x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-                x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
-            ])
-        )
+        builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(NotImplementedError):
             builder.add_extension(
                 x509.AuthorityKeyIdentifier('keyid', None, None),
