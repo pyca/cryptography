@@ -159,6 +159,9 @@ class _Certificate(object):
         self._backend = backend
         self._x509 = x509
 
+    def __repr__(self):
+        return "<Certificate(subject={0}, ...)>".format(self.subject)
+
     def __eq__(self, other):
         if not isinstance(other, x509.Certificate):
             return NotImplemented
