@@ -784,9 +784,10 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
             ])
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(NotImplementedError):
             builder.add_extension(
-                x509.AuthorityKeyIdentifier('keyid', None, None)
+                x509.AuthorityKeyIdentifier('keyid', None, None),
+                critical=False,
             )
 
 

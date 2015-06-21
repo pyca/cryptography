@@ -1462,14 +1462,15 @@ class CertificateSigningRequestBuilder(object):
             raise ValueError('The subject name may only be set once.')
         return CertificateSigningRequestBuilder(name, self._extensions)
 
-    def add_extension(self, extension, critical=False):
+    def add_extension(self, extension, critical):
         """
         Adds an X.509 extension to the certificate request.
         """
         if isinstance(extension, BasicConstraints):
             extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
         else:
-            raise ValueError('Unsupported X.509 extension.')
+            raise NotImplementedError('Unsupported X.509 extension.')
+        # TODO: This is quadratic in the number of extensions
         for e in self._extensions:
             if e.oid == extension.oid:
                 raise ValueError('This extension has already been set.')
