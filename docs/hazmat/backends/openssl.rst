@@ -79,6 +79,6 @@ seeded from the same pool as ``/dev/random``.
 
 
 .. _`OpenSSL`: https://www.openssl.org/
-.. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_keys_.28Debian-specific.29
+.. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_private_keys_.28Debian-specific.29
 .. _`Yarrow`: https://en.wikipedia.org/wiki/Yarrow_algorithm
 .. _`Microsoft documentation`: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379942(v=vs.85).aspx
