@@ -2033,6 +2033,50 @@ class TestNameConstraints(object):
         assert nc != object()
 
 
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestNameConstraintsExtension(object):
+    def test_permitted_excluded(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_permitted_excluded_2.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        nc = cert.extensions.get_extension_for_oid(
+            x509.OID_NAME_CONSTRAINTS
+        ).value
+        assert nc == x509.NameConstraints(
+            permitted_subtrees=[
+                x509.DNSName(u"zombo.local"),
+            ],
+            excluded_subtrees=[
+                x509.DirectoryName(x509.Name([
+                    x509.NameAttribute(x509.OID_COMMON_NAME, u"zombo")
+                ]))
+            ]
+        )
+
+    def test_permitted(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_permitted_2.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        nc = cert.extensions.get_extension_for_oid(
+            x509.OID_NAME_CONSTRAINTS
+        ).value
+        assert nc == x509.NameConstraints(
+            permitted_subtrees=[
+                x509.DNSName(u"zombo.local"),
+            ],
+            excluded_subtrees=None
+        )
+
+
 class TestDistributionPoint(object):
     def test_distribution_point_full_name_not_general_names(self):
         with pytest.raises(TypeError):
