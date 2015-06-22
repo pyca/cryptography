@@ -1972,6 +1972,35 @@ class TestNameConstraints(object):
             ", <DNSName(value=name2.local)>], excluded_subtrees=None)>"
         )
 
+    def test_eq(self):
+        nc = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
+        )
+        nc2 = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
+        )
+        assert nc == nc2
+
+    def test_ne(self):
+        nc = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
+        )
+        nc2 = x509.NameConstraints(
+            permitted_subtrees=[x509.DNSName(u"name.local")],
+            excluded_subtrees=None
+        )
+        nc3 = x509.NameConstraints(
+            permitted_subtrees=None,
+            excluded_subtrees=[x509.DNSName(u"name2.local")]
+        )
+
+        assert nc != nc2
+        assert nc != nc3
+        assert nc != object()
+
 
 class TestDistributionPoint(object):
     def test_distribution_point_full_name_not_general_names(self):

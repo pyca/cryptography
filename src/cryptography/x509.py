@@ -709,6 +709,18 @@ class NameConstraints(object):
         self._permitted_subtrees = permitted_subtrees
         self._excluded_subtrees = excluded_subtrees
 
+    def __eq__(self, other):
+        if not isinstance(other, NameConstraints):
+            return NotImplemented
+
+        return (
+            self.excluded_subtrees == other.excluded_subtrees and
+            self.permitted_subtrees == other.permitted_subtrees
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
     def _validate_ip_name(self, tree):
         if any(isinstance(name, IPAddress) and not isinstance(
             name.value, (ipaddress.IPv4Network, ipaddress.IPv6Network)
