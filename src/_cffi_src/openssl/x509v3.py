@@ -24,6 +24,7 @@ typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
 typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
 typedef STACK_OF(POLICYINFO) Cryptography_STACK_OF_POLICYINFO;
 typedef STACK_OF(ASN1_INTEGER) Cryptography_STACK_OF_ASN1_INTEGER;
+typedef STACK_OF(GENERAL_SUBTREE) Cryptography_STACK_OF_GENERAL_SUBTREE;
 """
 
 TYPES = """
@@ -31,6 +32,7 @@ typedef ... Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 typedef ... Cryptography_STACK_OF_POLICYQUALINFO;
 typedef ... Cryptography_STACK_OF_POLICYINFO;
 typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
+typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
 
 typedef struct {
     X509 *issuer_cert;
@@ -70,6 +72,12 @@ typedef struct {
 } BASIC_CONSTRAINTS;
 
 typedef struct {
+    Cryptography_STACK_OF_GENERAL_SUBTREE *permittedSubtrees;
+    Cryptography_STACK_OF_GENERAL_SUBTREE *excludedSubtrees;
+} NAME_CONSTRAINTS;
+
+
+typedef struct {
     int type;
     union {
         char *ptr;
@@ -93,6 +101,12 @@ typedef struct {
     } d;
     ...;
 } GENERAL_NAME;
+
+typedef struct {
+    GENERAL_NAME *base;
+    ASN1_INTEGER *minimum;
+    ASN1_INTEGER *maximum;
+} GENERAL_SUBTREE;
 
 typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
 
@@ -173,6 +187,9 @@ void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *);
    x509v3.h header. */
 void AUTHORITY_KEYID_free(AUTHORITY_KEYID *);
 
+NAME_CONSTRAINTS *NAME_CONSTRAINTS_new(void);
+void NAME_CONSTRAINTS_free(NAME_CONSTRAINTS *);
+
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
@@ -206,6 +223,14 @@ void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
 int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
 POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
                                         int);
+
+void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
+int sk_GENERAL_SUBTREE_num(Cryptography_STACK_OF_GENERAL_SUBTREE *);
+GENERAL_SUBTREE *sk_GENERAL_SUBTREE_value(
+    Cryptography_STACK_OF_GENERAL_SUBTREE *, int
+);
+int sk_GENERAL_SUBTREE_push(Cryptography_STACK_OF_GENERAL_SUBTREE *,
+                            GENERAL_SUBTREE *);
 
 void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
