@@ -1905,6 +1905,74 @@ class TestAuthorityKeyIdentifierExtension(object):
         assert ext.value.authority_cert_serial_number == 3
 
 
+class TestNameConstraints(object):
+    def test_ipaddress_wrong_type(self):
+        with pytest.raises(TypeError):
+            x509.NameConstraints(
+                permitted_subtrees=[
+                    x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
+                ],
+                excluded_subtrees=None
+            )
+
+        with pytest.raises(TypeError):
+            x509.NameConstraints(
+                permitted_subtrees=None,
+                excluded_subtrees=[
+                    x509.IPAddress(ipaddress.IPv4Address(u"127.0.0.1"))
+                ]
+            )
+
+    def test_ipaddress_allowed_type(self):
+        permitted = [x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/29"))]
+        excluded = [x509.IPAddress(ipaddress.IPv4Network(u"10.10.0.0/24"))]
+        nc = x509.NameConstraints(
+            permitted_subtrees=permitted,
+            excluded_subtrees=excluded
+        )
+        assert nc.permitted_subtrees == permitted
+        assert nc.excluded_subtrees == excluded
+
+    def test_invalid_permitted_subtrees(self):
+        with pytest.raises(TypeError):
+            x509.NameConstraints("badpermitted", None)
+
+    def test_invalid_excluded_subtrees(self):
+        with pytest.raises(TypeError):
+            x509.NameConstraints(None, "badexcluded")
+
+    def test_no_subtrees(self):
+        with pytest.raises(ValueError):
+            x509.NameConstraints(None, None)
+
+    def test_permitted_none(self):
+        excluded = [x509.DNSName(u"name.local")]
+        nc = x509.NameConstraints(
+            permitted_subtrees=None, excluded_subtrees=excluded
+        )
+        assert nc.permitted_subtrees is None
+        assert nc.excluded_subtrees is not None
+
+    def test_excluded_none(self):
+        permitted = [x509.DNSName(u"name.local")]
+        nc = x509.NameConstraints(
+            permitted_subtrees=permitted, excluded_subtrees=None
+        )
+        assert nc.permitted_subtrees is not None
+        assert nc.excluded_subtrees is None
+
+    def test_repr(self):
+        permitted = [x509.DNSName(u"name.local"), x509.DNSName(u"name2.local")]
+        nc = x509.NameConstraints(
+            permitted_subtrees=permitted,
+            excluded_subtrees=None
+        )
+        assert repr(nc) == (
+            "<NameConstraints(permitted_subtrees=[<DNSName(value=name.local)>"
+            ", <DNSName(value=name2.local)>], excluded_subtrees=None)>"
+        )
+
+
 class TestDistributionPoint(object):
     def test_distribution_point_full_name_not_general_names(self):
         with pytest.raises(TypeError):
