@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from pyasn1.codec.ber import eoo
 from pyasn1.codec.der import decoder, encoder
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, univ
