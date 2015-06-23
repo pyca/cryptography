@@ -102,6 +102,8 @@ X.509
   tree.
 * ``cryptography.io.pem`` - A leaf certificate issued by RapidSSL for the
   cryptography website.
+* ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
+  ``langui.sh`` that contains wildcard entries in the SAN extension.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
