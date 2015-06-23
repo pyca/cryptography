@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
+from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
@@ -680,9 +681,9 @@ class TestRSACertificateRequest(object):
         assert serialized == request_bytes
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_sign_invalid_hash_algorithm(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
@@ -690,7 +691,8 @@ class TestCertificateSigningRequestBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(backend, private_key, 'NotAHash')
 
-    def test_build_ca_request(self, backend):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_build_ca_request_with_rsa(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
@@ -725,7 +727,8 @@ class TestCertificateSigningRequestBuilder(object):
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
 
-    def test_build_nonca_request(self, backend):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_build_nonca_request_with_rsa(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
@@ -759,6 +762,84 @@ class TestCertificateSigningRequestBuilder(object):
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    def test_build_ca_request_with_ec(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
+
+        private_key = ec.generate_private_key(ec.SECT283K1(), backend)
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(
+            backend, private_key, hashes.SHA1()
+        )
+
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    def test_build_ca_request_with_dsa(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
+
+        private_key = DSA_KEY_2048.private_key(backend)
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(
+            backend, private_key, hashes.SHA1()
+        )
+
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, dsa.DSAPublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ]
+        basic_constraints = request.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
 
     def test_add_duplicate_extension(self, backend):
         builder = x509.CertificateSigningRequestBuilder().add_extension(

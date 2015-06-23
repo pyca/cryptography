@@ -801,9 +801,20 @@ class Backend(object):
         return _CMACContext(self, algorithm)
 
     def create_x509_csr(self, builder, private_key, algorithm):
-        # TODO: check type of private key parameter.
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+            if isinstance(private_key, _DSAPrivateKey):
+                raise NotImplementedError(
+                    "Certificate signing requests aren't implemented for DSA"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
+            if isinstance(private_key, _EllipticCurvePrivateKey):
+                raise NotImplementedError(
+                    "Certificate signing requests aren't implemented for EC"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
