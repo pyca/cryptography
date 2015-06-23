@@ -642,6 +642,24 @@ class TestECSerialization(object):
                 DummyKeyEncryption()
             )
 
+    def test_public_bytes_from_derived_public_key(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        _skip_if_no_serialization(key, backend)
+        public = key.public_key()
+        pem = public.public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        parsed_public = serialization.load_pem_public_key(pem, backend)
+        assert parsed_public
+
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=PEMSerializationBackend)
