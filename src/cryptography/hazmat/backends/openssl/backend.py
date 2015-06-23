@@ -1073,6 +1073,7 @@ class Backend(object):
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
         res = self._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, ec_cdata)
         assert res == 1
+        return evp_pkey
 
     def _elliptic_curve_to_nid(self, curve):
         """
