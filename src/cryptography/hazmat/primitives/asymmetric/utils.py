@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from pyasn1.codec.ber import eoo
 from pyasn1.codec.der import decoder, encoder
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, univ
@@ -29,11 +28,6 @@ def decode_rfc6979_signature(signature):
         raise ValueError(
             "The signature contains bytes after the end of the ASN.1 sequence."
         )
-    # pyasn1 can erroneously return this from top-level DER decoding.
-    # It's intended as a sentinel in recursive BER decoding, so it's
-    # returned even though an asn1Spec is provided.
-    if eoo.endOfOctets.isSameTypeWith(data) and data == eoo.endOfOctets:
-        raise ValueError("Invalid signature data. Unable to decode ASN.1")
 
     r = int(data.getComponentByName('r'))
     s = int(data.getComponentByName('s'))

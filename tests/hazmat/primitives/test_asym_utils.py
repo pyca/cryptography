@@ -65,6 +65,6 @@ def test_decode_rfc6979_invalid_asn1():
         decode_rfc6979_signature(b"0\x07\x02\x01\x01\x02\x02\x01")
 
     with pytest.raises(ValueError):
-        # This is the BER "end-of-contents octets," which pyasn1 is
-        # wrongly willing to return from top-level DER decoding.
+        # This is the BER "end-of-contents octets," which older versions of
+        # pyasn1 are wrongly willing to return from top-level DER decoding.
         decode_rfc6979_signature(b"\x00\x00")
