@@ -1267,6 +1267,11 @@ Signature Algorithm OIDs
     Corresponds to the dotted string ``"1.2.840.113549.1.1.13"``. This is
     a SHA512 digest signed by an RSA key.
 
+.. data:: OID_ECDSA_WITH_SHA1
+
+    Corresponds to the dotted string ``"1.2.840.10045.4.1"``. This is a SHA1
+    digest signed by an ECDSA key.
+
 .. data:: OID_ECDSA_WITH_SHA224
 
     Corresponds to the dotted string ``"1.2.840.10045.4.3.1"``. This is
