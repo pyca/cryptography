@@ -728,6 +728,38 @@ class TestCertificateSigningRequestBuilder(object):
         assert basic_constraints.value.path_length == 2
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_build_ca_request_with_unicode(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+                x509.NameAttribute(x509.OID_ORGANIZATION_NAME,
+                                   u'PyCA\U0001f37a'),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(
+            backend, private_key, hashes.SHA1()
+        )
+
+        loaded_request = x509.load_pem_x509_csr(
+            request.public_bytes(encoding=serialization.Encoding.PEM), backend
+        )
+        subject = loaded_request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA\U0001f37a'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ]
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_build_nonca_request_with_rsa(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
