@@ -30,6 +30,7 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
 
 from ..primitives.fixtures_dsa import DSA_KEY_2048
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -470,6 +471,7 @@ class TestOpenSSLCreateX509CSR(object):
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_unsupported_ec_keys(self):
+        _skip_curve_unsupported(backend, ec.SECT283K1())
         private_key = ec.generate_private_key(ec.SECT283K1(), backend)
 
         with pytest.raises(NotImplementedError):
