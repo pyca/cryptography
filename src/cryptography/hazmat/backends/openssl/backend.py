@@ -90,12 +90,12 @@ def _encode_name(backend, attributes):
     subject = backend._lib.X509_NAME_new()
     subject = backend._ffi.gc(subject, backend._lib.X509_NAME_free)
     for attribute in attributes:
-        value = attribute.value.encode('ascii')
+        value = attribute.value.encode('utf8')
         obj = _txt2obj(backend, attribute.oid.dotted_string)
         res = backend._lib.X509_NAME_add_entry_by_OBJ(
             subject,
             obj,
-            backend._lib.MBSTRING_ASC,
+            backend._lib.MBSTRING_UTF8,
             value,
             -1, -1, 0,
         )
