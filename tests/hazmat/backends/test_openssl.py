@@ -471,8 +471,8 @@ class TestOpenSSLCreateX509CSR(object):
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_unsupported_ec_keys(self):
-        _skip_curve_unsupported(backend, ec.SECT283K1())
-        private_key = ec.generate_private_key(ec.SECT283K1(), backend)
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
 
         with pytest.raises(NotImplementedError):
             backend.create_x509_csr(object(), private_key, hashes.SHA1())
