@@ -468,6 +468,76 @@ X.509 Revoked Certificate Object
 
         The extensions encoded in the revoked certificate.
 
+X.509 CSR (Certificate Signing Request) Builder Object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateSigningRequestBuilder
+
+    .. versionadded:: 1.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
+        >>> builder = x509.CertificateSigningRequestBuilder()
+        >>> builder = builder.subject_name(x509.Name([
+        ...     x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ... ]))
+        >>> builder = builder.add_extension(
+        ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
+        ... )
+        >>> request = builder.sign(
+        ...     default_backend(), private_key, hashes.SHA256()
+        ... )
+        >>> isinstance(request, x509.CertificateSigningRequest)
+        True
+
+    .. method:: subject_name(name)
+
+        :param name: The :class:`~cryptography.x509.Name` of the certificate
+            subject.
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
+    .. method:: add_extension(extension, critical)
+
+        :param extension: The :class:`~cryptography.x509.Extension` to add to
+            the request.
+        :param critical: Set to `True` if the extension must be understood and
+             handled by whoever reads the certificate.
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
+    .. method:: sign(backend, private_key, algorithm)
+
+        :param backend: Backend that will be used to sign the request.
+            Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the request.  When the request is
+            signed by a certificate authority, the private key's associated
+            public key will be stored in the resulting certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the request signature.
+
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequest`.
+
+
 .. class:: Name
 
     .. versionadded:: 0.8

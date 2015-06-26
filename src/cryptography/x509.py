@@ -1442,3 +1442,44 @@ class RevokedCertificate(object):
         """
         Returns an Extensions object containing a list of Revoked extensions.
         """
+
+
+class CertificateSigningRequestBuilder(object):
+    def __init__(self, subject_name=None, extensions=[]):
+        """
+        Creates an empty X.509 certificate request (v1).
+        """
+        self._subject_name = subject_name
+        self._extensions = extensions
+
+    def subject_name(self, name):
+        """
+        Sets the certificate requestor's distinguished name.
+        """
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        if self._subject_name is not None:
+            raise ValueError('The subject name may only be set once.')
+        return CertificateSigningRequestBuilder(name, self._extensions)
+
+    def add_extension(self, extension, critical):
+        """
+        Adds an X.509 extension to the certificate request.
+        """
+        if isinstance(extension, BasicConstraints):
+            extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
+        else:
+            raise NotImplementedError('Unsupported X.509 extension.')
+        # TODO: This is quadratic in the number of extensions
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        return CertificateSigningRequestBuilder(
+            self._subject_name, self._extensions + [extension]
+        )
+
+    def sign(self, backend, private_key, algorithm):
+        """
+        Signs the request using the requestor's private key.
+        """
+        return backend.create_x509_csr(self, private_key, algorithm)

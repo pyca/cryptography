@@ -21,14 +21,16 @@ from cryptography.hazmat.backends.openssl.backend import (
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, padding
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm, Cipher, CipherAlgorithm
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
 
+from ..primitives.fixtures_dsa import DSA_KEY_2048
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -451,6 +453,29 @@ class TestOpenSSLCMAC(object):
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(FakeAlgorithm())
+
+
+class TestOpenSSLCreateX509CSR(object):
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_unsupported_dsa_keys(self):
+        private_key = DSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(NotImplementedError):
+            backend.create_x509_csr(object(), private_key, hashes.SHA1())
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_unsupported_ec_keys(self):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+
+        with pytest.raises(NotImplementedError):
+            backend.create_x509_csr(object(), private_key, hashes.SHA1())
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):
