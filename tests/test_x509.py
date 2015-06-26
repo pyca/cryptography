@@ -689,7 +689,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            builder.sign(backend, private_key, 'NotAHash')
+            builder.sign(private_key, 'NotAHash', backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_build_ca_request_with_rsa(self, backend):
@@ -701,9 +701,7 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
-        ).sign(
-            backend, private_key, hashes.SHA1()
-        )
+        ).sign(private_key, hashes.SHA1(), backend)
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
@@ -730,9 +728,7 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
-        ).sign(
-            backend, private_key, hashes.SHA1()
-        )
+        ).sign(private_key, hashes.SHA1(), backend)
 
         loaded_request = x509.load_pem_x509_csr(
             request.public_bytes(encoding=serialization.Encoding.PEM), backend
@@ -753,9 +749,7 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), critical=True,
-        ).sign(
-            backend, private_key, hashes.SHA1()
-        )
+        ).sign(private_key, hashes.SHA1(), backend)
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
@@ -785,9 +779,7 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
-        ).sign(
-            backend, private_key, hashes.SHA1()
-        )
+        ).sign(private_key, hashes.SHA1(), backend)
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
@@ -816,9 +808,7 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
-        ).sign(
-            backend, private_key, hashes.SHA1()
-        )
+        ).sign(private_key, hashes.SHA1(), backend)
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()

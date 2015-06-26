@@ -1478,7 +1478,7 @@ class CertificateSigningRequestBuilder(object):
             self._subject_name, self._extensions + [extension]
         )
 
-    def sign(self, backend, private_key, algorithm):
+    def sign(self, private_key, algorithm, backend):
         """
         Signs the request using the requestor's private key.
         """

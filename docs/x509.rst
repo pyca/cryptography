@@ -515,7 +515,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(backend, private_key, algorithm)
+    .. method:: sign(private_key, algorithm, backend)
 
         :param backend: Backend that will be used to sign the request.
             Must support the
