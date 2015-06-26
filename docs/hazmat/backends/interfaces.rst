@@ -519,6 +519,37 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: An instance of
             :class:`~cryptography.x509.CertificateSigningRequest`.
 
+    .. method:: load_der_x509_csr(data)
+
+        .. versionadded:: 0.9
+
+        :param bytes data: DER formatted certificate signing request data.
+
+        :returns: An instance of
+            :class:`~cryptography.x509.CertificateSigningRequest`.
+
+    .. method:: create_x509_csr(builder, private_key, algorithm)
+
+        .. versionadded:: 1.0
+
+        :param builder: An instance of
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the request.  When the request is
+            signed by a certificate authority, the private key's associated
+            public key will be stored in the resulting certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the request signature.
+
+        :returns: A new object with the
+            :class:`~cryptography.x509.CertificateSigningRequest` interface.
+
 
 .. class:: DHBackend
 
