@@ -856,6 +856,20 @@ class TestCertificateSigningRequestBuilder(object):
                 critical=False,
             )
 
+    def test_add_unsupported_extension_in_backend(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        builder = builder.subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            ])
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        )
+        with pytest.raises(NotImplementedError):
+            builder.sign(backend, private_key, hashes.SHA256())
+
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
