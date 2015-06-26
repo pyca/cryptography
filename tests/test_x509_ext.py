@@ -1351,6 +1351,37 @@ class TestRSASubjectAlternativeNameExtension(object):
         dns = san.get_values_for_type(x509.DNSName)
         assert dns == [u"www.cryptography.io", u"cryptography.io"]
 
+    def test_wildcard_dns_name(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "wildcard_san.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+
+        dns = ext.value.get_values_for_type(x509.DNSName)
+        assert dns == [
+            u'*.langui.sh',
+            u'langui.sh',
+            u'*.saseliminator.com',
+            u'saseliminator.com'
+        ]
+
+    def test_san_wildcard_idna_dns_name(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "san_wildcard_idna.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+
+        dns = ext.value.get_values_for_type(x509.DNSName)
+        assert dns == [u'*.\u043f\u044b\u043a\u0430.cryptography']
+
     def test_unsupported_other_name(self, backend):
         cert = _load_cert(
             os.path.join(
