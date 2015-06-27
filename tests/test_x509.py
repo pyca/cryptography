@@ -858,7 +858,7 @@ class TestCertificateSigningRequestBuilder(object):
             critical=False,
         )
         with pytest.raises(NotImplementedError):
-            builder.sign(backend, private_key, hashes.SHA256())
+            builder.sign(private_key, hashes.SHA256(), backend)
 
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
