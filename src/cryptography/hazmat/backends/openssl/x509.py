@@ -83,13 +83,10 @@ def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
         if data.startswith(b"*."):
-            # This is a wildcard name. We need to split on period, remove the
-            # leading wildcard, IDNA decode, then re-add the wildcard
-            # Wildcard characters should always be left-most (RFC 2595
-            # section 2.4).
-            parts = data.split(b".")
-            parts.pop(0)
-            data = u"*." + idna.decode(b".".join(parts))
+            # This is a wildcard name. We need to remove the leading wildcard,
+            # IDNA decode, then re-add the wildcard. Wildcard characters should
+            # always be left-most (RFC 2595 section 2.4).
+            data = u"*." + idna.decode(data[2:])
         else:
             # Not a wildcard, decode away. If the string has a * in it anywhere
             # invalid this will raise an InvalidCodePoint
