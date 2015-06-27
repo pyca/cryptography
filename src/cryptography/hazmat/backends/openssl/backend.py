@@ -1351,9 +1351,6 @@ class Backend(object):
 
     def _private_key_bytes(self, encoding, format, encryption_algorithm,
                            evp_pkey, cdata):
-        if not isinstance(encoding, serialization.Encoding):
-            raise TypeError("encoding must be an item from the Encoding enum")
-
         if not isinstance(format, serialization.PrivateFormat):
             raise TypeError(
                 "format must be an item from the PrivateFormat enum"
@@ -1416,6 +1413,8 @@ class Backend(object):
             elif format is serialization.PrivateFormat.PKCS8:
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
                 key = evp_pkey
+        else:
+            raise TypeError("encoding must be an item from the Encoding enum")
 
         bio = self._create_mem_bio()
         res = write_bio(
@@ -1448,11 +1447,6 @@ class Backend(object):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        if not isinstance(format, serialization.PublicFormat):
-            raise TypeError(
-                "format must be an item from the PublicFormat enum"
-            )
-
         if format is serialization.PublicFormat.SubjectPublicKeyInfo:
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
@@ -1469,6 +1463,10 @@ class Backend(object):
                 write_bio = self._lib.i2d_RSAPublicKey_bio
 
             key = cdata
+        else:
+            raise TypeError(
+                "format must be an item from the PublicFormat enum"
+            )
 
         bio = self._create_mem_bio()
         res = write_bio(bio, key)
