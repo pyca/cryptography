@@ -34,16 +34,18 @@ def osrandom_rand_status():
     return 1
 
 
+method = ffi.new(
+    "RAND_METHOD*", dict(bytes=osrandom_rand_bytes,
+                         pseudorand=osrandom_pseudo_rand_bytes,
+                         status=osrandom_rand_status)
+)
+
+
 def _register_osrandom_engine():
     looked_up_engine = lib.ENGINE_by_id(_osrandom_engine_id)
     if looked_up_engine != ffi.NULL:
         return 2
 
-    method = ffi.new(
-        "RAND_METHOD*", dict(bytes=osrandom_rand_bytes,
-                             pseudorand=osrandom_pseudo_rand_bytes,
-                             status=osrandom_rand_status)
-    )
     engine = lib.ENGINE_new()
     try:
         result = lib.ENGINE_set_id(engine, _osrandom_engine_id)
