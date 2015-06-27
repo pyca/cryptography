@@ -158,6 +158,27 @@ class TestConcatKDFHMAC(object):
 
         assert ckdf.derive(prk) == okm
 
+    def test_derive_explicit_salt(self, backend):
+        prk = binascii.unhexlify(
+            b"013951627c1dea63ea2d7702dd24e963eef5faac6b4af7e4"
+            b"b831cde499dff1ce45f6179f741c728aa733583b02409208"
+            b"8f0af7fce1d045edbc5790931e8d5ca79c73"
+        )
+
+        okm = binascii.unhexlify(b"64ce901db10d558661f10b6836a122a7"
+                                 b"605323ce2f39bf27eaaac8b34cf89f2f")
+
+        oinfo = binascii.unhexlify(
+            b"a1b2c3d4e55e600be5f367e0e8a465f4bf2704db00c9325c"
+            b"9fbd216d12b49160b2ae5157650f43415653696421e68e"
+        )
+
+        ckdf = ConcatKDFHMAC(
+            hashes.SHA512(), 32, b"\x00" * 128, oinfo, backend
+        )
+
+        assert ckdf.derive(prk) == okm
+
     def test_verify(self, backend):
         prk = binascii.unhexlify(
             b"013951627c1dea63ea2d7702dd24e963eef5faac6b4af7e4"
