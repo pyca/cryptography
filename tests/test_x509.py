@@ -687,9 +687,19 @@ class TestCertificateSigningRequestBuilder(object):
     def test_sign_invalid_hash_algorithm(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
-        builder = x509.CertificateSigningRequestBuilder()
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([])
+        )
         with pytest.raises(TypeError):
             builder.sign(private_key, 'NotAHash', backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_no_subject_name(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        builder = x509.CertificateSigningRequestBuilder()
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     def test_build_ca_request_with_rsa(self, backend):
