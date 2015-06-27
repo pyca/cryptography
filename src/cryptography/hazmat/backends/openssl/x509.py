@@ -322,14 +322,14 @@ class _Certificate(object):
         return x509.Extensions(extensions)
 
     def public_bytes(self, encoding):
-        if not isinstance(encoding, serialization.Encoding):
-            raise TypeError("encoding must be an item from the Encoding enum")
-
         bio = self._backend._create_mem_bio()
         if encoding is serialization.Encoding.PEM:
             res = self._backend._lib.PEM_write_bio_X509(bio, self._x509)
         elif encoding is serialization.Encoding.DER:
             res = self._backend._lib.i2d_X509_bio(bio, self._x509)
+        else:
+            raise TypeError("encoding must be an item from the Encoding enum")
+
         assert res == 1
         return self._backend._read_mem_bio(bio)
 
@@ -735,9 +735,6 @@ class _CertificateSigningRequest(object):
         return x509.Extensions(extensions)
 
     def public_bytes(self, encoding):
-        if not isinstance(encoding, serialization.Encoding):
-            raise TypeError("encoding must be an item from the Encoding enum")
-
         bio = self._backend._create_mem_bio()
         if encoding is serialization.Encoding.PEM:
             res = self._backend._lib.PEM_write_bio_X509_REQ(
@@ -745,5 +742,8 @@ class _CertificateSigningRequest(object):
             )
         elif encoding is serialization.Encoding.DER:
             res = self._backend._lib.i2d_X509_REQ_bio(bio, self._x509_req)
+        else:
+            raise TypeError("encoding must be an item from the Encoding enum")
+
         assert res == 1
         return self._backend._read_mem_bio(bio)
