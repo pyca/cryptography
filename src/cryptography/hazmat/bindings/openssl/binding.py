@@ -22,8 +22,8 @@ class Binding(object):
     _rand_method = None
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
-    _osrandom_engine_id = b"osrandom"
-    _osrandom_engine_name = b"osrandom_engine"
+    _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
+    _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
     _retained = []
 
     def __init__(self):
@@ -98,6 +98,7 @@ class Binding(object):
                   and cls.lib.ENGINE_add(e))
         if not cls.lib.ENGINE_free(e):
             return 0
+        assert cls.lib.ENGINE_by_id(cls._osrandom_engine_id) != cls.ffi.NULL
         return result
 
     @classmethod

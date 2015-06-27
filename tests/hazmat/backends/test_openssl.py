@@ -223,9 +223,7 @@ class TestOpenSSLRandomEngine(object):
         # for all these tests.
         backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
-        name = backend._ffi.string(
-            backend._lib.ENGINE_get_name(current_default)
-        )
+        name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._binding._osrandom_engine_name
 
     def test_osrandom_engine_is_default(self, tmpdir):
@@ -259,7 +257,9 @@ class TestOpenSSLRandomEngine(object):
                 stdout=out
             )
 
-        osrandom_engine_name = backend._binding._osrandom_engine_name
+        osrandom_engine_name = backend._ffi.string(
+            backend._binding._osrandom_engine_name
+        )
 
         assert engine_name.read().encode('ascii') == osrandom_engine_name
 
@@ -277,15 +277,14 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert (backend._ffi.string(name) ==
-                backend._binding._osrandom_engine_name)
+        assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
 
     def test_activate_builtin_random(self):
         e = backend._lib.ENGINE_get_default_RAND()
         assert e != backend._ffi.NULL
-        name = backend._ffi.string(backend._lib.ENGINE_get_name(e))
+        name = backend._lib.ENGINE_get_name(e)
         assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
@@ -303,13 +302,13 @@ class TestOpenSSLRandomEngine(object):
 
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
-        name = backend._ffi.string(backend._lib.ENGINE_get_name(e))
+        name = backend._lib.ENGINE_get_name(e)
         assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
         backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
-        name = backend._ffi.string(backend._lib.ENGINE_get_name(e))
+        name = backend._lib.ENGINE_get_name(e)
         assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
