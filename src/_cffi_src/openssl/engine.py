@@ -11,15 +11,24 @@ INCLUDES = """
 TYPES = """
 static const long Cryptography_HAS_ENGINE_CRYPTODEV;
 
+struct rand_meth_st {
+    void (*seed)(const void *buf, int num);
+    int (*bytes)(unsigned char *buf, int num);
+    void (*cleanup)(void);
+    void (*add)(const void *buf, int num, double entropy);
+    int (*pseudorand)(unsigned char *buf, int num);
+    int (*status)(void);
+};
+
 typedef ... ENGINE;
 typedef ... RSA_METHOD;
 typedef ... DSA_METHOD;
 typedef ... ECDH_METHOD;
 typedef ... ECDSA_METHOD;
 typedef ... DH_METHOD;
-typedef ... RAND_METHOD;
+typedef struct rand_meth_st RAND_METHOD;
 typedef ... STORE_METHOD;
-typedef ... *ENGINE_GEN_INT_FUNC_PTR;
+typedef int(*ENGINE_GEN_INT_FUNC_PTR)(ENGINE*);
 typedef ... *ENGINE_CTRL_FUNC_PTR;
 typedef ... *ENGINE_LOAD_KEY_PTR;
 typedef ... *ENGINE_CIPHERS_PTR;
