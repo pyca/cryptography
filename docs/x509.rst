@@ -494,7 +494,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
         ... )
         >>> request = builder.sign(
-        ...     default_backend(), private_key, hashes.SHA256()
+        ...     private_key, hashes.SHA256(), default_backend()
         ... )
         >>> isinstance(request, x509.CertificateSigningRequest)
         True
