@@ -396,7 +396,8 @@ def load_fips_dsa_key_pair_vectors(vector_data):
             continue
         elif line.startswith("[mod = L=3072"):
             continue
-        elif reading_key_data:
+
+        if reading_key_data:
             if line.startswith("P"):
                 vectors.append({'p': int(line.split("=")[1], 16)})
             elif line.startswith("Q"):
