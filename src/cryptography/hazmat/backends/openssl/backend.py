@@ -833,7 +833,7 @@ class Backend(object):
 
         # Set subject name.
         res = self._lib.X509_REQ_set_subject_name(
-            x509_req, _encode_name(self, list(builder._subject_name))
+            x509_req, _encode_name(self, builder._subject_name)
         )
         assert res == 1
 
