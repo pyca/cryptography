@@ -153,6 +153,9 @@ Custom X.509 Vectors
 * ``san_idna_names.pem`` - An RSA 2048 bit self-signed certificate containing
   a subject alternative name extension with ``rfc822Name``, ``dNSName``, and
   ``uniformResourceIdentifier`` general names with IDNA (:rfc:`5895`) encoding.
+* ``san_wildcard_idna.pem`` - An RSA 2048 bit self-signed certificate
+  containing a subject alternative name extension with a ``dNSName`` general
+  name with a wildcard IDNA (:rfc:`5895`) domain.
 * ``san_idna2003_dnsname.pem`` - An RSA 2048 bit self-signed certificate
   containing a subject alternative name extension with an IDNA 2003
   (:rfc:`3490`) ``dNSName``.
