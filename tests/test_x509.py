@@ -824,7 +824,7 @@ class TestCertificateSigningRequestBuilder(object):
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
 
-    def test_add_duplicate_extension(self, backend):
+    def test_add_duplicate_extension(self):
         builder = x509.CertificateSigningRequestBuilder().add_extension(
             x509.BasicConstraints(True, 2), critical=True,
         )
@@ -833,17 +833,45 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.BasicConstraints(True, 2), critical=True,
             )
 
-    def test_set_invalid_subject(self, backend):
+    def test_set_invalid_subject(self):
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
             builder.subject_name('NotAName')
 
-    def test_add_unsupported_extension(self, backend):
+    def test_add_unsupported_extension(self):
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(NotImplementedError):
             builder.add_extension(
                 x509.AuthorityKeyIdentifier('keyid', None, None),
                 critical=False,
+            )
+
+    def test_add_unsupported_extension_in_backend(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        builder = builder.subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            ])
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        )
+        with pytest.raises(NotImplementedError):
+            builder.sign(backend, private_key, hashes.SHA256())
+
+    def test_set_subject_twice(self):
+        builder = x509.CertificateSigningRequestBuilder()
+        builder = builder.subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            ])
+        )
+        with pytest.raises(ValueError):
+            builder.subject_name(
+                x509.Name([
+                    x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                ])
             )
 
 
