@@ -685,8 +685,7 @@ class Backend(object):
 
     def generate_dsa_parameters(self, key_size):
         if key_size not in (1024, 2048, 3072):
-            raise ValueError(
-                "Key size must be 1024 or 2048 or 3072 bits.")
+            raise ValueError("Key size must be 1024 or 2048 or 3072 bits.")
 
         if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
                 key_size > 1024):
