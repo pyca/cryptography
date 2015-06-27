@@ -44,6 +44,7 @@ class Binding(object):
     def _register_osrandom_engine(cls):
         if cls._retained:
             return 2
+
         def retain(it):
             cls._retained.append(it)
             return it
