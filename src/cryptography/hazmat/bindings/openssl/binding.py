@@ -20,6 +20,8 @@ class Binding(object):
     _lock_cb_handle = None
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
+    _osrandom_engine_id = b"osrandom"
+    _osrandom_engine_name = b"osrandom_engine"
 
     def __init__(self):
         self._ensure_ffi_initialized()
