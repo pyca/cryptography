@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import threading
 
 from cryptography.hazmat.bindings._openssl import ffi, lib
@@ -18,10 +19,12 @@ class Binding(object):
     _lib_loaded = False
     _locks = None
     _lock_cb_handle = None
+    _rand_method = None
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
     _osrandom_engine_id = b"osrandom"
     _osrandom_engine_name = b"osrandom_engine"
+    _retained = []
 
     def __init__(self):
         self._ensure_ffi_initialized()
@@ -34,8 +37,69 @@ class Binding(object):
         with cls._init_lock:
             if not cls._lib_loaded:
                 cls._lib_loaded = True
-                res = cls.lib.Cryptography_add_osrandom_engine()
+                res = cls._register_osrandom_engine()
                 assert res != 0
+
+    @classmethod
+    def _register_osrandom_engine(cls):
+        def retain(it):
+            cls._retained.append(it)
+            return it
+
+        if cls._rand_method is not None:
+            raise TypeError("no")
+        method = cls.ffi.new("RAND_METHOD*")
+        retain(method)
+        method.seed = cls.ffi.NULL
+
+        @retain
+        @cls.ffi.callback("int (*)(unsigned char *buf, int num)", error=0)
+        def osrandom_rand_bytes(buf, size):
+            signed = cls.ffi.cast("char*", buf)
+            result = os.urandom(size)
+            signed[0:size] = result
+            return 1
+
+        @retain
+        @cls.ffi.callback("int (*)(unsigned char *buf, int num)", error=0)
+        def osrandom_pseudo_rand_bytes(buf, size):
+            result = osrandom_rand_bytes(buf, size)
+            if result == 0:
+                return -1
+            else:
+                return result
+
+        @retain
+        @cls.ffi.callback("int (*)(void)", error=0)
+        def osrandom_rand_status():
+            return 1
+
+        @retain
+        @cls.ffi.callback("ENGINE_GEN_INT_FUNC_PTR", error=0)
+        def osrandom_init(engine):
+            return 1
+
+        @retain
+        @cls.ffi.callback("ENGINE_GEN_INT_FUNC_PTR", error=0)
+        def osrandom_finish(engine):
+            return 1
+
+        method.bytes = osrandom_rand_bytes
+        method.cleanup = cls.ffi.NULL
+        method.add = cls.ffi.NULL
+        method.pseudorand = osrandom_pseudo_rand_bytes
+        method.status = osrandom_rand_status
+
+        e = cls.lib.ENGINE_new()
+        result = (cls.lib.ENGINE_set_id(e, cls._osrandom_engine_id)
+                  and cls.lib.ENGINE_set_name(e, cls._osrandom_engine_name)
+                  and cls.lib.ENGINE_set_RAND(e, method)
+                  and cls.lib.ENGINE_set_init_function(e, osrandom_init)
+                  and cls.lib.ENGINE_set_finish_function(e, osrandom_finish)
+                  and cls.lib.ENGINE_add(e))
+        if not cls.lib.ENGINE_free(e):
+            return 0
+        return result
 
     @classmethod
     def init_static_locks(cls):
