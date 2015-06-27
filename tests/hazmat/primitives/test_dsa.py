@@ -30,21 +30,6 @@ from ...utils import (
 )
 
 
-def _skip_if_no_serialization(key, backend):
-    if not isinstance(
-        key,
-        (dsa.DSAPrivateKeyWithSerialization, dsa.DSAPublicKeyWithSerialization)
-    ):
-        pytest.skip(
-            "{0} does not support DSA key serialization".format(backend)
-        )
-
-
-def test_skip_if_no_serialization():
-    with pytest.raises(pytest.skip.Exception):
-        _skip_if_no_serialization("notakeywithserialization", "backend")
-
-
 @utils.register_interface(serialization.KeySerializationEncryption)
 class DummyKeyEncryption(object):
     pass
@@ -75,35 +60,33 @@ class TestDSA(object):
             g=vector['g']
         ).parameters(backend)
         skey = parameters.generate_private_key()
-        if isinstance(skey, dsa.DSAPrivateKeyWithSerialization):
-            numbers = skey.private_numbers()
-            skey_parameters = numbers.public_numbers.parameter_numbers
-            pkey = skey.public_key()
-            parameters = pkey.parameters()
-            parameter_numbers = parameters.parameter_numbers()
-            assert parameter_numbers.p == skey_parameters.p
-            assert parameter_numbers.q == skey_parameters.q
-            assert parameter_numbers.g == skey_parameters.g
-            assert skey_parameters.p == vector['p']
-            assert skey_parameters.q == vector['q']
-            assert skey_parameters.g == vector['g']
-            assert skey.key_size == bit_length(vector['p'])
-            assert pkey.key_size == skey.key_size
-            public_numbers = pkey.public_numbers()
-            assert numbers.public_numbers.y == public_numbers.y
-            assert numbers.public_numbers.y == pow(
-                skey_parameters.g, numbers.x, skey_parameters.p
-            )
+        numbers = skey.private_numbers()
+        skey_parameters = numbers.public_numbers.parameter_numbers
+        pkey = skey.public_key()
+        parameters = pkey.parameters()
+        parameter_numbers = parameters.parameter_numbers()
+        assert parameter_numbers.p == skey_parameters.p
+        assert parameter_numbers.q == skey_parameters.q
+        assert parameter_numbers.g == skey_parameters.g
+        assert skey_parameters.p == vector['p']
+        assert skey_parameters.q == vector['q']
+        assert skey_parameters.g == vector['g']
+        assert skey.key_size == bit_length(vector['p'])
+        assert pkey.key_size == skey.key_size
+        public_numbers = pkey.public_numbers()
+        assert numbers.public_numbers.y == public_numbers.y
+        assert numbers.public_numbers.y == pow(
+            skey_parameters.g, numbers.x, skey_parameters.p
+        )
 
     def test_generate_dsa_private_key_and_parameters(self, backend):
         skey = dsa.generate_private_key(1024, backend)
         assert skey
-        if isinstance(skey, dsa.DSAPrivateKeyWithSerialization):
-            numbers = skey.private_numbers()
-            skey_parameters = numbers.public_numbers.parameter_numbers
-            assert numbers.public_numbers.y == pow(
-                skey_parameters.g, numbers.x, skey_parameters.p
-            )
+        numbers = skey.private_numbers()
+        skey_parameters = numbers.public_numbers.parameter_numbers
+        assert numbers.public_numbers.y == pow(
+            skey_parameters.g, numbers.x, skey_parameters.p
+        )
 
     def test_invalid_parameters_values(self, backend):
         # Test a p < 1024 bits in length
@@ -819,7 +802,6 @@ class TestDSASerialization(object):
             lambda pemfile: pemfile.read().encode()
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
             fmt,
@@ -847,7 +829,6 @@ class TestDSASerialization(object):
             lambda pemfile: pemfile.read().encode()
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
             fmt,
@@ -888,7 +869,6 @@ class TestDSASerialization(object):
     def test_private_bytes_unencrypted(self, backend, encoding, fmt,
                                        loader_func):
         key = DSA_KEY_1024.private_key(backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
             encoding, fmt, serialization.NoEncryption()
         )
@@ -934,7 +914,6 @@ class TestDSASerialization(object):
 
     def test_private_bytes_traditional_der_encrypted_invalid(self, backend):
         key = DSA_KEY_1024.private_key(backend)
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.DER,
@@ -949,7 +928,6 @@ class TestDSASerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.private_bytes(
                 "notencoding",
@@ -964,7 +942,6 @@ class TestDSASerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
@@ -979,7 +956,6 @@ class TestDSASerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
@@ -994,7 +970,6 @@ class TestDSASerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.PEM,
@@ -1030,7 +1005,6 @@ class TestDSAPEMPublicKeySerialization(object):
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         key = loader_func(key_bytes, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
@@ -1038,7 +1012,6 @@ class TestDSAPEMPublicKeySerialization(object):
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.public_bytes(
                 "notencoding",
@@ -1047,13 +1020,11 @@ class TestDSAPEMPublicKeySerialization(object):
 
     def test_public_bytes_invalid_format(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.public_bytes(serialization.Encoding.PEM, "invalidformat")
 
     def test_public_bytes_pkcs1_unsupported(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
