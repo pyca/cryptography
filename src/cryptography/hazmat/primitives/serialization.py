@@ -106,12 +106,11 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
     if rest:
         raise ValueError('Key body contains extra bytes.')
 
-    if curve_name == b"nistp256":
-        curve = ec.SECP256R1()
-    elif curve_name == b"nistp384":
-        curve = ec.SECP384R1()
-    elif curve_name == b"nistp521":
-        curve = ec.SECP521R1()
+    curve = {
+        b"nistp256": ec.SECP256R1,
+        b"nistp384": ec.SECP384R1,
+        b"nistp521": ec.SECP521R1,
+    }[curve_name]()
 
     if six.indexbytes(data, 0) != 4:
         raise NotImplementedError(
