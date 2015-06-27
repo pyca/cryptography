@@ -33,18 +33,6 @@ _HASH_TYPES = {
 }
 
 
-def _skip_if_no_serialization(key, backend):
-    if not isinstance(
-        key, (
-            ec.EllipticCurvePrivateKeyWithSerialization,
-            ec.EllipticCurvePublicKeyWithSerialization
-        )
-    ):
-        pytest.skip(
-            "{0} does not support EC key serialization".format(backend)
-        )
-
-
 def _skip_ecdsa_vector(backend, curve_type, hash_type):
     if not backend.elliptic_curve_signature_algorithm_supported(
         ec.ECDSA(hash_type()),
@@ -86,11 +74,6 @@ class DummyKeyEncryption(object):
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_curve_unsupported(backend, DummyCurve())
-
-
-def test_skip_no_serialization():
-    with pytest.raises(pytest.skip.Exception):
-        _skip_if_no_serialization("fakebackend", "fakekey")
 
 
 def test_ec_numbers():
@@ -173,12 +156,11 @@ class TestECWithNumbers(object):
         ).private_key(backend)
         assert key
 
-        if isinstance(key, ec.EllipticCurvePrivateKeyWithSerialization):
-            priv_num = key.private_numbers()
-            assert priv_num.private_value == vector['d']
-            assert priv_num.public_numbers.x == vector['x']
-            assert priv_num.public_numbers.y == vector['y']
-            assert curve_type().name == priv_num.public_numbers.curve.name
+        priv_num = key.private_numbers()
+        assert priv_num.private_value == vector['d']
+        assert priv_num.public_numbers.x == vector['x']
+        assert priv_num.public_numbers.y == vector['y']
+        assert curve_type().name == priv_num.public_numbers.curve.name
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
@@ -437,7 +419,6 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode()
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
             fmt,
@@ -467,7 +448,6 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode()
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
             fmt,
@@ -514,7 +494,6 @@ class TestECSerialization(object):
             lambda pemfile: pemfile.read().encode()
         )
         key = serialization.load_pem_private_key(key_bytes, None, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.private_bytes(
             encoding, fmt, serialization.NoEncryption()
         )
@@ -566,7 +545,6 @@ class TestECSerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.DER,
@@ -583,7 +561,6 @@ class TestECSerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.private_bytes(
                 "notencoding",
@@ -600,7 +577,6 @@ class TestECSerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
@@ -617,7 +593,6 @@ class TestECSerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
@@ -634,7 +609,6 @@ class TestECSerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.PEM,
@@ -651,7 +625,6 @@ class TestECSerialization(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         public = key.public_key()
         pem = public.public_bytes(
             serialization.Encoding.PEM,
@@ -689,7 +662,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         key = loader_func(key_bytes, backend)
-        _skip_if_no_serialization(key, backend)
         serialized = key.public_bytes(
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
@@ -705,7 +677,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 pemfile.read().encode(), backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.public_bytes(
                 "notencoding",
@@ -722,7 +693,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 pemfile.read().encode(), backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(TypeError):
             key.public_bytes(serialization.Encoding.PEM, "invalidformat")
 
@@ -736,7 +706,6 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
                 pemfile.read().encode(), backend
             )
         )
-        _skip_if_no_serialization(key, backend)
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.PKCS1
