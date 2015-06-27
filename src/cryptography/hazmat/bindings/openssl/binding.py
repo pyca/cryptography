@@ -42,9 +42,13 @@ method = ffi.new(
 
 
 def _register_osrandom_engine():
+    assert lib.ERR_peek_error() == 0
     looked_up_engine = lib.ENGINE_by_id(_osrandom_engine_id)
     if looked_up_engine != ffi.NULL:
+        assert lib.ERR_peek_error() == 0
         return 2
+
+    lib.ERR_clear_error()
 
     engine = lib.ENGINE_new()
     try:
