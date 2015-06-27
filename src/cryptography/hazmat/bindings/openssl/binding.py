@@ -42,12 +42,11 @@ class Binding(object):
 
     @classmethod
     def _register_osrandom_engine(cls):
+        if cls._retained:
+            return 2
         def retain(it):
             cls._retained.append(it)
             return it
-
-        if cls._rand_method is not None:
-            raise TypeError("no")
         method = cls.ffi.new("RAND_METHOD*")
         retain(method)
         method.seed = cls.ffi.NULL

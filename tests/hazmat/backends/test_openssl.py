@@ -259,9 +259,7 @@ class TestOpenSSLRandomEngine(object):
                 stdout=out
             )
 
-        osrandom_engine_name = backend._ffi.string(
-            backend._lib.Cryptography_osrandom_engine_name
-        )
+        osrandom_engine_name = backend._binding._osrandom_engine_name
 
         assert engine_name.read().encode('ascii') == osrandom_engine_name
 

@@ -89,7 +89,7 @@ class TestOpenSSL(object):
 
     def test_add_engine_more_than_once(self):
         b = Binding()
-        res = b.lib.Cryptography_add_osrandom_engine()
+        res = b._register_osrandom_engine()
         assert res == 2
 
     def test_ssl_ctx_options(self):
