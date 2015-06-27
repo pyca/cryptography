@@ -53,7 +53,7 @@ class Binding(object):
         method.seed = cls.ffi.NULL
 
         @retain
-        @cls.ffi.callback("int (*)(unsigned char *buf, int num)", error=0)
+        @cls.ffi.callback("int (*)(unsigned char *, int)", error=0)
         def osrandom_rand_bytes(buf, size):
             signed = cls.ffi.cast("char*", buf)
             result = os.urandom(size)
@@ -61,7 +61,7 @@ class Binding(object):
             return 1
 
         @retain
-        @cls.ffi.callback("int (*)(unsigned char *buf, int num)", error=0)
+        @cls.ffi.callback("int (*)(unsigned char *, int)", error=0)
         def osrandom_pseudo_rand_bytes(buf, size):
             result = osrandom_rand_bytes(buf, size)
             if result == 0:

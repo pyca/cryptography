@@ -12,12 +12,12 @@ TYPES = """
 static const long Cryptography_HAS_ENGINE_CRYPTODEV;
 
 struct rand_meth_st {
-    void (*seed)(const void *buf, int num);
-    int (*bytes)(unsigned char *buf, int num);
-    void (*cleanup)(void);
-    void (*add)(const void *buf, int num, double entropy);
-    int (*pseudorand)(unsigned char *buf, int num);
-    int (*status)(void);
+    void (*seed)(const void *, int);
+    int (*bytes)(unsigned char *, int);
+    void (*cleanup)();
+    void (*add)(const void *, int, double);
+    int (*pseudorand)(unsigned char *, int);
+    int (*status)();
 };
 
 typedef ... ENGINE;
@@ -28,7 +28,7 @@ typedef ... ECDSA_METHOD;
 typedef ... DH_METHOD;
 typedef struct rand_meth_st RAND_METHOD;
 typedef ... STORE_METHOD;
-typedef int(*ENGINE_GEN_INT_FUNC_PTR)(ENGINE*);
+typedef int (*ENGINE_GEN_INT_FUNC_PTR)(ENGINE *);
 typedef ... *ENGINE_CTRL_FUNC_PTR;
 typedef ... *ENGINE_LOAD_KEY_PTR;
 typedef ... *ENGINE_CIPHERS_PTR;
