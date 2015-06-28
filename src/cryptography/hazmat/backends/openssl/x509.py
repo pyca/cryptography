@@ -176,8 +176,8 @@ class _X509ExtensionParser(object):
     def parse(self, backend, x509_obj):
         extensions = []
         seen_oids = set()
-        for i in range(self.ext_count(x509_obj)):
-            ext = self.get_ext(x509_obj, i)
+        for i in range(self.ext_count(backend, x509_obj)):
+            ext = self.get_ext(backend, x509_obj, i)
             assert ext != backend._ffi.NULL
             crit = backend._lib.X509_EXTENSION_get_critical(ext)
             critical = crit == 1
@@ -306,36 +306,7 @@ class _Certificate(object):
 
     @property
     def extensions(self):
-        return _X509ExtensionParser(
-            ext_count=self._backend._lib.X509_get_ext_count,
-            get_ext=self._backend._lib.X509_get_ext,
-            handlers=[
-                (x509.OID_BASIC_CONSTRAINTS, _decode_basic_constraints),
-                (
-                    x509.OID_SUBJECT_KEY_IDENTIFIER,
-                    _decode_subject_key_identifier
-                ),
-                (x509.OID_KEY_USAGE, _decode_key_usage),
-                (x509.OID_SUBJECT_ALTERNATIVE_NAME, _decode_subject_alt_name),
-                (x509.OID_EXTENDED_KEY_USAGE, _decode_extended_key_usage),
-                (
-                    x509.OID_AUTHORITY_KEY_IDENTIFIER,
-                    _decode_authority_key_identifier
-                ),
-                (
-                    x509.OID_AUTHORITY_INFORMATION_ACCESS,
-                    _decode_authority_information_access
-                ),
-                (x509.OID_CERTIFICATE_POLICIES, _decode_certificate_policies),
-                (
-                    x509.OID_CRL_DISTRIBUTION_POINTS,
-                    _decode_crl_distribution_points
-                ),
-                (x509.OID_OCSP_NO_CHECK, _decode_ocsp_no_check),
-                (x509.OID_INHIBIT_ANY_POLICY, _decode_inhibit_any_policy),
-                (x509.OID_ISSUER_ALTERNATIVE_NAME, _decode_issuer_alt_name),
-            ]
-        ).parse(self._backend, self._x509)
+        return _CERTIFICATE_EXTENSION_PARSER.parse(self._backend, self._x509)
 
     def public_bytes(self, encoding):
         bio = self._backend._create_mem_bio()
@@ -721,14 +692,7 @@ class _CertificateSigningRequest(object):
     @property
     def extensions(self):
         x509_exts = self._backend._lib.X509_REQ_get_extensions(self._x509_req)
-
-        return _X509ExtensionParser(
-            ext_count=self._backend._lib.sk_X509_EXTENSION_num,
-            get_ext=self._backend._lib.sk_X509_EXTENSION_value,
-            handlers=[
-                (x509.OID_BASIC_CONSTRAINTS, _decode_basic_constraints),
-            ]
-        ).parse(self._backend, x509_exts)
+        return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
 
     def public_bytes(self, encoding):
         bio = self._backend._create_mem_bio()
@@ -743,3 +707,34 @@ class _CertificateSigningRequest(object):
 
         assert res == 1
         return self._backend._read_mem_bio(bio)
+
+
+_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
+    handlers=[
+        (x509.OID_BASIC_CONSTRAINTS, _decode_basic_constraints),
+        (x509.OID_SUBJECT_KEY_IDENTIFIER, _decode_subject_key_identifier),
+        (x509.OID_KEY_USAGE, _decode_key_usage),
+        (x509.OID_SUBJECT_ALTERNATIVE_NAME, _decode_subject_alt_name),
+        (x509.OID_EXTENDED_KEY_USAGE, _decode_extended_key_usage),
+        (x509.OID_AUTHORITY_KEY_IDENTIFIER, _decode_authority_key_identifier),
+        (
+            x509.OID_AUTHORITY_INFORMATION_ACCESS,
+            _decode_authority_information_access
+        ),
+        (x509.OID_CERTIFICATE_POLICIES, _decode_certificate_policies),
+        (x509.OID_CRL_DISTRIBUTION_POINTS, _decode_crl_distribution_points),
+        (x509.OID_OCSP_NO_CHECK, _decode_ocsp_no_check),
+        (x509.OID_INHIBIT_ANY_POLICY, _decode_inhibit_any_policy),
+        (x509.OID_ISSUER_ALTERNATIVE_NAME, _decode_issuer_alt_name),
+    ]
+)
+
+_CSR_EXTENSION_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.sk_X509_EXTENSION_num(x),
+    get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
+    handlers=[
+        (x509.OID_BASIC_CONSTRAINTS, _decode_basic_constraints),
+    ]
+)
