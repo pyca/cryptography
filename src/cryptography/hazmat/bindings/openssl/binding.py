@@ -46,8 +46,7 @@ def _register_osrandom_engine():
     assert lib.ERR_peek_error() == 0
     looked_up_engine = lib.ENGINE_by_id(_osrandom_engine_id)
     if looked_up_engine != ffi.NULL:
-        assert lib.ERR_peek_error() == 0
-        return 2
+        raise RuntimeError("osrandom engine already registered")
 
     lib.ERR_clear_error()
 
@@ -64,7 +63,6 @@ def _register_osrandom_engine():
     finally:
         result = lib.ENGINE_free(engine)
         assert result == 1
-    return 1
 
 
 class Binding(object):
