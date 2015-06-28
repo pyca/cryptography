@@ -12,9 +12,10 @@ from cryptography.hazmat.bindings._openssl import ffi, lib
 _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
 _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
 
+
 @ffi.callback("int (*)(unsigned char *, int)", error=0)
 def osrandom_rand_bytes(buf, size):
-    signed = ffi.cast("char*", buf)
+    signed = ffi.cast("char *", buf)
     result = os.urandom(size)
     signed[0:size] = result
     return 1
