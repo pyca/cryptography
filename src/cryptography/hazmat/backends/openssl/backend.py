@@ -119,6 +119,9 @@ def _encode_basic_constraints(backend, basic_constraints, critical):
     obj = _txt2obj(backend, x509.OID_BASIC_CONSTRAINTS.dotted_string)
     assert obj is not None
     constraints = backend._lib.BASIC_CONSTRAINTS_new()
+    constraints = backend._ffi.gc(
+        constraints, backend._lib.BASIC_CONSTRAINTS_free
+    )
     constraints.ca = 255 if basic_constraints.ca else 0
     if basic_constraints.ca:
         constraints.pathlen = _encode_asn1_int(
