@@ -56,6 +56,7 @@ class Binding(object):
         cls.lib.ERR_clear_error()
 
         engine = cls.lib.ENGINE_new()
+        assert engine != cls.ffi.NULL
         try:
             result = cls.lib.ENGINE_set_id(engine, cls._osrandom_engine_id)
             assert result == 1
