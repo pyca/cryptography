@@ -64,8 +64,6 @@ def _register_osrandom_engine():
     finally:
         result = lib.ENGINE_free(engine)
         assert result == 1
-    looked_up_engine = lib.ENGINE_by_id(_osrandom_engine_id)
-    assert looked_up_engine != ffi.NULL
     return 1
 
 
