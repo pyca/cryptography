@@ -65,7 +65,6 @@ class Binding(object):
     _lib_loaded = False
     _locks = None
     _lock_cb_handle = None
-    _rand_method = None
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
 
