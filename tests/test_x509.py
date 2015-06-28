@@ -864,7 +864,17 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            x509.KeyUsage(
+                digital_signature=True,
+                content_commitment=True,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=True,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=False
+            ),
             critical=False,
         )
         with pytest.raises(NotImplementedError):
