@@ -10,6 +10,19 @@ import threading
 from cryptography.hazmat.bindings._openssl import ffi, lib
 
 
+@ffi.callback("int (*)(unsigned char *, int)", error=-1)
+def _osrandom_rand_bytes(buf, size):
+    signed = ffi.cast("char *", buf)
+    result = os.urandom(size)
+    signed[0:size] = result
+    return 1
+
+
+@ffi.callback("int (*)(void)")
+def _osrandom_rand_status():
+    return 1
+
+
 class Binding(object):
     """
     OpenSSL API wrapper.
@@ -28,19 +41,6 @@ class Binding(object):
 
     def __init__(self):
         self._ensure_ffi_initialized()
-
-    @ffi.callback("int (*)(unsigned char *, int)", error=-1)
-    @staticmethod
-    def _osrandom_rand_bytes(buf, size):
-        signed = ffi.cast("char *", buf)
-        result = os.urandom(size)
-        signed[0:size] = result
-        return 1
-
-    @ffi.callback("int (*)(void)")
-    @staticmethod
-    def _osrandom_rand_status():
-        return 1
 
     _osrandom_method = ffi.new(
         "RAND_METHOD *",
