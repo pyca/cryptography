@@ -13,21 +13,12 @@ _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
 _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
 
 
-@ffi.callback("int (*)(unsigned char *, int)", error=0)
+@ffi.callback("int (*)(unsigned char *, int)", error=-1)
 def osrandom_rand_bytes(buf, size):
     signed = ffi.cast("char *", buf)
     result = os.urandom(size)
     signed[0:size] = result
     return 1
-
-
-@ffi.callback("int (*)(unsigned char *, int)", error=0)
-def osrandom_pseudo_rand_bytes(buf, size):
-    result = osrandom_rand_bytes(buf, size)
-    if result == 0:
-        return -1
-    else:
-        return result
 
 
 @ffi.callback("int (*)(void)")
@@ -37,7 +28,7 @@ def osrandom_rand_status():
 
 method = ffi.new(
     "RAND_METHOD*", dict(bytes=osrandom_rand_bytes,
-                         pseudorand=osrandom_pseudo_rand_bytes,
+                         pseudorand=osrandom_rand_bytes,
                          status=osrandom_rand_status)
 )
 
