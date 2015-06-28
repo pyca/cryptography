@@ -35,18 +35,16 @@ class Binding(object):
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
 
-    # aliases for the convenience of tests.
     _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
     _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
-
-    def __init__(self):
-        self._ensure_ffi_initialized()
-
     _osrandom_method = ffi.new(
         "RAND_METHOD *",
         dict(bytes=_osrandom_rand_bytes, pseudorand=_osrandom_rand_bytes,
              status=_osrandom_rand_status)
     )
+
+    def __init__(self):
+        self._ensure_ffi_initialized()
 
     @classmethod
     def _register_osrandom_engine(cls):
