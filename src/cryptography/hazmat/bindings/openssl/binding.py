@@ -27,9 +27,9 @@ def osrandom_rand_status():
 
 
 method = ffi.new(
-    "RAND_METHOD*", dict(bytes=osrandom_rand_bytes,
-                         pseudorand=osrandom_rand_bytes,
-                         status=osrandom_rand_status)
+    "RAND_METHOD *",
+    dict(bytes=osrandom_rand_bytes, pseudorand=osrandom_rand_bytes,
+         status=osrandom_rand_status)
 )
 
 
