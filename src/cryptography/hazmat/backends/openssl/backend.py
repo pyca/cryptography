@@ -146,6 +146,47 @@ def _encode_basic_constraints(backend, basic_constraints, critical):
     return extension
 
 
+def _encode_subject_alt_name(backend, san, critical):
+    obj = _txt2obj(backend, x509.OID_SUBJECT_ALTERNATIVE_NAME.dotted_string)
+    assert obj is not None
+
+    general_names = backend._lib.GENERAL_NAMES_new()
+    assert general_names != backend._ffi.NULL
+    # TODO: GC
+
+    for alt_name in san:
+        assert isinstance(alt_name, x509.DNSName)
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        gn.type = backend._lib.GEN_DNS
+        ia5 = backend._lib.ASN1_IA5STRING_new()
+        assert ia5 != backend._ffi.NULL
+        gn.d.dNSName = ia5
+        # TODO: idna
+        value = alt_name.value.encode("ascii")
+        res = backend._lib.ASN1_STRING_set(gn.d.dNSName, value, len(value))
+        assert res == 1
+
+        res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
+        assert res == 1
+
+    pp = backend._ffi.new("unsigned char **")
+    r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+
+    extension = backend._lib.X509_EXTENSION_create_by_OBJ(
+        backend._ffi.NULL,
+        obj,
+        1 if critical else 0,
+        _encode_asn1_str(backend, pp[0], r)
+    )
+    assert extension != backend._ffi.NULL
+    return extension
+
+
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DERSerializationBackend)
@@ -856,6 +897,12 @@ class Backend(object):
                     self,
                     extension.value,
                     extension.critical
+                )
+            elif isinstance(extension.value, x509.SubjectAlternativeName):
+                extension = _encode_subject_alt_name(
+                    self,
+                    extension.value,
+                    extension.critical,
                 )
             else:
                 raise NotImplementedError('Extension not yet supported.')

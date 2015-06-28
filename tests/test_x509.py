@@ -884,6 +884,30 @@ class TestCertificateSigningRequestBuilder(object):
                 ])
             )
 
+    def test_subject_alt_names(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        csr = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COMMON_NAME, u"SAN"),
+            ])
+        ).add_extension(
+            x509.SubjectAlternativeName([
+                x509.DNSName(u"google.com"),
+            ]),
+            critical=False,
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        assert len(csr.extensions) == 1
+        ext = csr.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert not ext.critical
+        assert ext.oid == x509.OID_SUBJECT_ALTERNATIVE_NAME
+        assert list(ext.value) == [
+            x509.DNSName(u"google.com"),
+        ]
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
