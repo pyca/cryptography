@@ -720,6 +720,8 @@ class _CertificateSigningRequest(object):
                 )
             elif oid == x509.OID_BASIC_CONSTRAINTS:
                 value = _decode_basic_constraints(self._backend, ext)
+            elif oid == x509.OID_SUBJECT_ALTERNATIVE_NAME:
+                value = _decode_subject_alt_name(self._backend, ext)
             elif critical:
                 raise x509.UnsupportedExtension(
                     "{0} is not currently supported".format(oid), oid
