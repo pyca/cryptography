@@ -9,52 +9,6 @@ import threading
 
 from cryptography.hazmat.bindings._openssl import ffi, lib
 
-_osrandom_engine_id = ffi.new("const char[]", b"osrandom")
-_osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
-
-
-@ffi.callback("int (*)(unsigned char *, int)", error=-1)
-def _osrandom_rand_bytes(buf, size):
-    signed = ffi.cast("char *", buf)
-    result = os.urandom(size)
-    signed[0:size] = result
-    return 1
-
-
-@ffi.callback("int (*)(void)")
-def _osrandom_rand_status():
-    return 1
-
-
-_osrandom_method = ffi.new(
-    "RAND_METHOD *",
-    dict(bytes=_osrandom_rand_bytes, pseudorand=_osrandom_rand_bytes,
-         status=_osrandom_rand_status)
-)
-
-
-def _register_osrandom_engine():
-    assert lib.ERR_peek_error() == 0
-    looked_up_engine = lib.ENGINE_by_id(_osrandom_engine_id)
-    if looked_up_engine != ffi.NULL:
-        raise RuntimeError("osrandom engine already registered")
-
-    lib.ERR_clear_error()
-
-    engine = lib.ENGINE_new()
-    try:
-        result = lib.ENGINE_set_id(engine, _osrandom_engine_id)
-        assert result == 1
-        result = lib.ENGINE_set_name(engine, _osrandom_engine_name)
-        assert result == 1
-        result = lib.ENGINE_set_RAND(engine, _osrandom_method)
-        assert result == 1
-        result = lib.ENGINE_add(engine)
-        assert result == 1
-    finally:
-        result = lib.ENGINE_free(engine)
-        assert result == 1
-
 
 class Binding(object):
     """
@@ -69,12 +23,53 @@ class Binding(object):
     _lock_init_lock = threading.Lock()
 
     # aliases for the convenience of tests.
-    _osrandom_engine_id = _osrandom_engine_id
-    _osrandom_engine_name = _osrandom_engine_name
-    _register_osrandom_engine = staticmethod(_register_osrandom_engine)
+    _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
+    _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
 
     def __init__(self):
         self._ensure_ffi_initialized()
+
+    @ffi.callback("int (*)(unsigned char *, int)", error=-1)
+    @staticmethod
+    def _osrandom_rand_bytes(buf, size):
+        signed = ffi.cast("char *", buf)
+        result = os.urandom(size)
+        signed[0:size] = result
+        return 1
+
+    @ffi.callback("int (*)(void)")
+    @staticmethod
+    def _osrandom_rand_status():
+        return 1
+
+    _osrandom_method = ffi.new(
+        "RAND_METHOD *",
+        dict(bytes=_osrandom_rand_bytes, pseudorand=_osrandom_rand_bytes,
+             status=_osrandom_rand_status)
+    )
+
+    @classmethod
+    def _register_osrandom_engine(cls):
+        assert cls.lib.ERR_peek_error() == 0
+        looked_up_engine = cls.lib.ENGINE_by_id(cls._osrandom_engine_id)
+        if looked_up_engine != ffi.NULL:
+            raise RuntimeError("osrandom engine already registered")
+
+        cls.lib.ERR_clear_error()
+
+        engine = cls.lib.ENGINE_new()
+        try:
+            result = cls.lib.ENGINE_set_id(engine, cls._osrandom_engine_id)
+            assert result == 1
+            result = cls.lib.ENGINE_set_name(engine, cls._osrandom_engine_name)
+            assert result == 1
+            result = cls.lib.ENGINE_set_RAND(engine, cls._osrandom_method)
+            assert result == 1
+            result = cls.lib.ENGINE_add(engine)
+            assert result == 1
+        finally:
+            result = cls.lib.ENGINE_free(engine)
+            assert result == 1
 
     @classmethod
     def _ensure_ffi_initialized(cls):
@@ -84,7 +79,7 @@ class Binding(object):
         with cls._init_lock:
             if not cls._lib_loaded:
                 cls._lib_loaded = True
-                _register_osrandom_engine()
+                cls._register_osrandom_engine()
 
     @classmethod
     def init_static_locks(cls):
