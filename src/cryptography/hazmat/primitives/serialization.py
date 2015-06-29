@@ -122,8 +122,12 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
     if len(data) != 1 + 2 * ((curve.key_size + 7) // 8):
         raise ValueError("Malformed key bytes")
 
-    x = _int_from_bytes(data[1:1 + (curve.key_size + 7) // 8], byteorder='big')
-    y = _int_from_bytes(data[1 + (curve.key_size + 7) // 8:], byteorder='big')
+    x = utils.int_from_bytes(
+        data[1:1 + (curve.key_size + 7) // 8], byteorder='big'
+    )
+    y = utils.int_from_bytes(
+        data[1 + (curve.key_size + 7) // 8:], byteorder='big'
+    )
     return ec.EllipticCurvePublicNumbers(x, y, curve).public_key(backend)
 
 
@@ -145,27 +149,9 @@ def _read_next_mpint(data):
     """
     mpint_data, rest = _read_next_string(data)
 
-    return _int_from_bytes(mpint_data, byteorder='big', signed=False), rest
-
-
-if hasattr(int, "from_bytes"):
-    _int_from_bytes = int.from_bytes
-else:
-    def _int_from_bytes(data, byteorder, signed=False):
-        assert byteorder == 'big'
-        assert not signed
-
-        if len(data) % 4 != 0:
-            data = (b'\x00' * (4 - (len(data) % 4))) + data
-
-        result = 0
-
-        while len(data) > 0:
-            digit, = struct.unpack('>I', data[:4])
-            result = (result << 32) + digit
-            data = data[4:]
-
-        return result
+    return (
+        utils.int_from_bytes(mpint_data, byteorder='big', signed=False), rest
+    )
 
 
 class Encoding(Enum):
