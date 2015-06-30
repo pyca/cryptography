@@ -95,13 +95,15 @@ class TestOpenSSL(object):
             b._register_osrandom_engine()
 
     def test_actual_osrandom_bytes(self, monkeypatch):
+        b = Binding()
+        if b'LibreSSL' in b.ffi.string(b.lib.OPENSSL_VERSION_TEXT):
+            pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
         sample_data = (b"\x01\x02\x03\x04" * 4)
         length = len(sample_data)
         def notrandom(size):
             assert size == length
             return sample_data
         monkeypatch.setattr(os, "urandom", notrandom)
-        b = Binding()
         buf = b.ffi.new("char[]", length)
         b.lib.RAND_bytes(buf, length)
         assert b.ffi.buffer(buf)[0:length] == sample_data
