@@ -11,6 +11,20 @@ import pytest
 from cryptography.hazmat.bindings.openssl.binding import Binding
 
 
+def skip_if_libre_ssl(openssl_version):
+    if b'LibreSSL' in openssl_version:
+        pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
+
+
+class TestLibreSkip(object):
+    def test_skip_no(self):
+        assert skip_if_libre_ssl(b"OpenSSL 0.9.8zf 19 Mar 2015") is None
+
+    def test_skip_yes(self):
+        with pytest.raises(pytest.skip.Exception):
+            skip_if_libre_ssl(b"LibreSSL 2.1.6")
+
+
 class TestOpenSSL(object):
     def test_binding_loads(self):
         binding = Binding()
@@ -96,8 +110,7 @@ class TestOpenSSL(object):
 
     def test_actual_osrandom_bytes(self, monkeypatch):
         b = Binding()
-        if b'LibreSSL' in b.ffi.string(b.lib.OPENSSL_VERSION_TEXT):
-            pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
+        skip_if_libre_ssl(b.ffi.string(b.lib.OPENSSL_VERSION_TEXT))
         sample_data = (b"\x01\x02\x03\x04" * 4)
         length = len(sample_data)
 
