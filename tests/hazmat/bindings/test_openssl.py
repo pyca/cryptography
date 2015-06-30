@@ -100,6 +100,7 @@ class TestOpenSSL(object):
             pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
         sample_data = (b"\x01\x02\x03\x04" * 4)
         length = len(sample_data)
+
         def notrandom(size):
             assert size == length
             return sample_data
