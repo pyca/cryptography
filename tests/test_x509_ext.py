@@ -2076,6 +2076,44 @@ class TestNameConstraintsExtension(object):
             excluded_subtrees=None
         )
 
+    def test_permitted_with_leading_period(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_permitted.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        nc = cert.extensions.get_extension_for_oid(
+            x509.OID_NAME_CONSTRAINTS
+        ).value
+        assert nc == x509.NameConstraints(
+            permitted_subtrees=[
+                x509.DNSName(u".cryptography.io"),
+                x509.UniformResourceIdentifier(u"ftp://cryptography.test")
+            ],
+            excluded_subtrees=None
+        )
+
+    def test_excluded_with_leading_period(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_excluded.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        nc = cert.extensions.get_extension_for_oid(
+            x509.OID_NAME_CONSTRAINTS
+        ).value
+        assert nc == x509.NameConstraints(
+            permitted_subtrees=None,
+            excluded_subtrees=[
+                x509.DNSName(u".cryptography.io"),
+                x509.UniformResourceIdentifier(u"gopher://cryptography.test")
+            ]
+        )
+
 
 class TestDistributionPoint(object):
     def test_distribution_point_full_name_not_general_names(self):
