@@ -161,7 +161,7 @@ def _decode_general_name(backend, gn):
             if prefix == -1:
                 prefix = len(bits)
 
-            if b"1" in bits[prefix:]:
+            if "1" in bits[prefix:]:
                 raise ValueError("Invalid netmask")
 
             ip = ipaddress.ip_network(base.exploded + u"/{0}".format(prefix))
