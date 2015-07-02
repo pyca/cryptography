@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography import utils
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.backends.utils import _GCMSizeValidator
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import modes
 
@@ -23,6 +24,7 @@ class _CipherContext(object):
         self._mode = mode
         self._operation = operation
         self._tag = None
+        self._gcm_size_validator = _GCMSizeValidator()
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
             self._block_size = self._cipher.block_size
@@ -110,6 +112,12 @@ class _CipherContext(object):
         if len(data) == 0 and not isinstance(self._mode, modes.GCM):
             return b""
 
+        # OpenSSL does not properly handle the case when encrypting plaintext
+        # in GCM mode when the byte limit of 2**39 - 256 bits is reached.
+        # See #1821
+        if isinstance(self._mode, modes.GCM):
+            self._gcm_size_validator.update_and_validate_plaintext(data)
+
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
         outlen = self._backend._ffi.new("int *")
@@ -172,6 +180,9 @@ class _CipherContext(object):
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def authenticate_additional_data(self, data):
+        if isinstance(self._mode, modes.GCM):
+            self._gcm_size_validator.validate_aad(data)
+
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(
             self._ctx, self._backend._ffi.NULL, outlen, data, len(data)
