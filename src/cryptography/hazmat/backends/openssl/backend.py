@@ -115,9 +115,7 @@ def _txt2obj(backend, name):
     return obj
 
 
-def _encode_basic_constraints(backend, basic_constraints, critical):
-    obj = _txt2obj(backend, x509.OID_BASIC_CONSTRAINTS.dotted_string)
-    assert obj is not None
+def _encode_basic_constraints(backend, basic_constraints):
     constraints = backend._lib.BASIC_CONSTRAINTS_new()
     constraints = backend._ffi.gc(
         constraints, backend._lib.BASIC_CONSTRAINTS_free
@@ -135,18 +133,7 @@ def _encode_basic_constraints(backend, basic_constraints, critical):
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
     )
-
-    # Wrap that in an X509 extension object.
-    extension = backend._lib.X509_EXTENSION_create_by_OBJ(
-        backend._ffi.NULL,
-        obj,
-        1 if critical else 0,
-        _encode_asn1_str(backend, pp[0], r),
-    )
-    assert extension != backend._ffi.NULL
-
-    # Return the wrapped extension.
-    return extension
+    return pp, r
 
 
 @utils.register_interface(CipherBackend)
@@ -854,14 +841,19 @@ class Backend(object):
             self._lib.sk_X509_EXTENSION_free,
         )
         for extension in builder._extensions:
+            obj = _txt2obj(self, extension.oid.dotted_string)
             if isinstance(extension.value, x509.BasicConstraints):
-                extension = _encode_basic_constraints(
-                    self,
-                    extension.value,
-                    extension.critical
-                )
+                pp, r = _encode_basic_constraints(self, extension.value)
             else:
                 raise NotImplementedError('Extension not yet supported.')
+
+            extension = self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
+                obj,
+                1 if extension.critical else 0,
+                _encode_asn1_str(self, pp[0], r),
+            )
+            assert extension != self._ffi.NULL
             res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
             assert res == 1
         res = self._lib.X509_REQ_add_extensions(x509_req, extensions)
