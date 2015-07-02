@@ -253,3 +253,33 @@ class TestAESModeGCM(object):
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert computed_ct == ct
         assert encryptor.tag == tag
+
+    def test_gcm_ciphertext_limit(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        # 16 bytes less than the encryption limit
+        near_limit_bytes = (2 ** 39 - 256 - 128) // 8
+        encryptor._bytes_processed = near_limit_bytes
+        encryptor.update(b"0" * 16)
+        assert (
+            encryptor._bytes_processed == modes.GCM._MAX_ENCRYPTED_BYTES
+        )
+        with pytest.raises(ValueError):
+            encryptor.update(b"0")
+
+    def test_gcm_aad_limit(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        # 16 bytes less than the AAD limit
+        near_limit_bytes = (2 ** 64 - 128) // 8
+        encryptor._aad_bytes_processed = near_limit_bytes
+        encryptor.authenticate_additional_data(b"0" * 16)
+        assert encryptor._aad_bytes_processed == modes.GCM._MAX_AAD_BYTES
+        with pytest.raises(ValueError):
+            encryptor.authenticate_additional_data(b"0")
