@@ -86,13 +86,17 @@ def _decode_general_name(backend, gn):
             # This is a wildcard name. We need to remove the leading wildcard,
             # IDNA decode, then re-add the wildcard. Wildcard characters should
             # always be left-most (RFC 2595 section 2.4).
-            data = u"*." + idna.decode(data[2:])
+            decoded = u"*." + idna.decode(data[2:])
         else:
             # Not a wildcard, decode away. If the string has a * in it anywhere
             # invalid this will raise an InvalidCodePoint
-            data = idna.decode(data)
+            decoded = idna.decode(data)
+            if data.startswith(b"."):
+                # idna strips leading periods. Name constraints can have that
+                # so we need to re-add it. Sigh.
+                decoded = u"." + decoded
 
-        return x509.DNSName(data)
+        return x509.DNSName(decoded)
     elif gn.type == backend._lib.GEN_URI:
         data = backend._ffi.buffer(
             gn.d.uniformResourceIdentifier.data,
