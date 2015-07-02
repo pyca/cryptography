@@ -8,6 +8,7 @@ from cryptography import utils
 from cryptography.exceptions import (
     InvalidTag, UnsupportedAlgorithm, _Reasons
 )
+from cryptography.hazmat.backends.utils import _SizeValidator
 from cryptography.hazmat.primitives import ciphers, constant_time
 from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.ciphers.modes import (
@@ -111,6 +112,14 @@ class _GCMCipherContext(object):
         self._mode = mode
         self._operation = operation
         self._tag = None
+        self._plaintext_size_validator = _SizeValidator(
+            max_bytes=mode.plaintext_byte_limit,
+            label="%s mode plaintext" % mode.name
+        )
+        self._aad_size_validator = _SizeValidator(
+            max_bytes=mode.aad_byte_limit,
+            label="%s mode AAD" % mode.name
+        )
 
         registry = self._backend._cipher_registry
         try:
@@ -151,6 +160,7 @@ class _GCMCipherContext(object):
         self.authenticate_additional_data(b"")
 
     def update(self, data):
+        self._plaintext_size_validator.update_and_validate(data)
         buf = self._backend._ffi.new("unsigned char[]", len(data))
         args = (self._ctx[0], data, len(data), buf)
         if self._operation == self._backend._lib.kCCEncrypt:
@@ -185,6 +195,7 @@ class _GCMCipherContext(object):
         return b""
 
     def authenticate_additional_data(self, data):
+        self._aad_size_validator.update_and_validate(data)
         res = self._backend._lib.CCCryptorGCMAddAAD(
             self._ctx[0], data, len(data)
         )

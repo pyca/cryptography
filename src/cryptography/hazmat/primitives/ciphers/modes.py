@@ -54,6 +54,24 @@ class ModeWithAuthenticationTag(object):
         """
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithPlaintextByteLimit(object):
+    @abc.abstractproperty
+    def plaintext_byte_limit(self):
+        """
+        The maximum plaintext size in bytes.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ModeWithAADByteLimit(object):
+    @abc.abstractproperty
+    def aad_byte_limit(self):
+        """
+        The maximum aad size in bytes.
+        """
+
+
 def _check_iv_length(self, algorithm):
     if len(self.initialization_vector) * 8 != algorithm.block_size:
         raise ValueError("Invalid IV size ({0}) for {1}.".format(
@@ -137,6 +155,8 @@ class CTR(object):
 @utils.register_interface(Mode)
 @utils.register_interface(ModeWithInitializationVector)
 @utils.register_interface(ModeWithAuthenticationTag)
+@utils.register_interface(ModeWithPlaintextByteLimit)
+@utils.register_interface(ModeWithAADByteLimit)
 class GCM(object):
     name = "GCM"
     _MAX_ENCRYPTED_BYTES = (2 ** 39 - 256) // 8
@@ -156,9 +176,16 @@ class GCM(object):
 
         self._initialization_vector = initialization_vector
         self._tag = tag
+        self._plaintext_byte_limit = (2 ** 39 - 256) >> 3
+        # Technically, the AAD limit is 2 ** 64 - 1 bits, but cryptography
+        # requires that all data be passed in as bits, so it's ok to round
+        # this to the nearest byte.
+        self._aad_byte_limit = (2 ** 64) >> 3
 
     tag = utils.read_only_property("_tag")
     initialization_vector = utils.read_only_property("_initialization_vector")
+    plaintext_byte_limit = utils.read_only_property("_plaintext_byte_limit")
+    aad_byte_limit = utils.read_only_property("_aad_byte_limit")
 
     def validate_for_algorithm(self, algorithm):
         pass
