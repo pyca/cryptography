@@ -2184,6 +2184,41 @@ class TestNameConstraintsExtension(object):
             ]
         )
 
+    def test_permitted_excluded_with_ips(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_permitted_excluded.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        nc = cert.extensions.get_extension_for_oid(
+            x509.OID_NAME_CONSTRAINTS
+        ).value
+        assert nc == x509.NameConstraints(
+            permitted_subtrees=[
+                x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.0/24")),
+                x509.IPAddress(ipaddress.IPv6Network(u"FF:0:0:0:0:0:0:0/96")),
+            ],
+            excluded_subtrees=[
+                x509.DNSName(u".domain.com"),
+                x509.UniformResourceIdentifier(u"http://test.local"),
+            ]
+        )
+
+    def test_invalid_netmask(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_invalid_ip_netmask.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(ValueError):
+            cert.extensions.get_extension_for_oid(
+                x509.OID_NAME_CONSTRAINTS
+            )
+
 
 class TestDistributionPoint(object):
     def test_distribution_point_full_name_not_general_names(self):
