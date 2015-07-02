@@ -274,9 +274,7 @@ class TestAESModeGCM(object):
             modes.GCM(b"\x01" * 16),
             backend=backend
         ).encryptor()
-        # 16 bytes less than the AAD limit
-        near_limit_bytes = (2 ** 64 - 128) // 8
-        encryptor._aad_bytes_processed = near_limit_bytes
+        encryptor._aad_bytes_processed = modes.GCM._MAX_AAD_BYTES - 16
         encryptor.authenticate_additional_data(b"0" * 16)
         assert encryptor._aad_bytes_processed == modes.GCM._MAX_AAD_BYTES
         with pytest.raises(ValueError):
