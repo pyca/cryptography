@@ -36,6 +36,7 @@ class TestVerifyInterface(object):
             def method(self):
                 """Method with no arguments"""
 
+        # Invoke this to ensure the line is covered
         NonImplementer().method()
         with pytest.raises(InterfaceNotImplemented):
             verify_interface(SimpleInterface, NonImplementer)
@@ -52,5 +53,6 @@ class TestVerifyInterface(object):
             def property(self):
                 """A concrete property"""
 
+        # Invoke this to ensure the line is covered
         NonImplementer().property
         verify_interface(SimpleInterface, NonImplementer)
