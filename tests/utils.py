@@ -53,10 +53,11 @@ def skip_if_empty(backend_list, required_interfaces):
 def check_backend_support(item):
     supported = item.keywords.get("supported")
     if supported and "backend" in item.funcargs:
-        if not supported.kwargs["only_if"](item.funcargs["backend"]):
-            pytest.skip("{0} ({1})".format(
-                supported.kwargs["skip_message"], item.funcargs["backend"]
-            ))
+        for mark in supported:
+            if not mark.kwargs["only_if"](item.funcargs["backend"]):
+                pytest.skip("{0} ({1})".format(
+                    mark.kwargs["skip_message"], item.funcargs["backend"]
+                ))
     elif supported:
         raise ValueError("This mark is only available on methods that take a "
                          "backend")
