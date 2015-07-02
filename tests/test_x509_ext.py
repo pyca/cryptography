@@ -2206,6 +2206,25 @@ class TestNameConstraintsExtension(object):
             ]
         )
 
+    def test_single_ip_netmask(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "nc_single_ip_netmask.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        nc = cert.extensions.get_extension_for_oid(
+            x509.OID_NAME_CONSTRAINTS
+        ).value
+        assert nc == x509.NameConstraints(
+            permitted_subtrees=[
+                x509.IPAddress(ipaddress.IPv6Network(u"FF:0:0:0:0:0:0:0/128")),
+                x509.IPAddress(ipaddress.IPv4Network(u"192.168.0.1/32")),
+            ],
+            excluded_subtrees=None
+        )
+
     def test_invalid_netmask(self, backend):
         cert = _load_cert(
             os.path.join(

@@ -154,10 +154,14 @@ def _decode_general_name(backend, gn):
             # find the first 0 bit, which will be the prefix. If another 1
             # bit is present after that the netmask is invalid.
             base = ipaddress.ip_address(data[:data_len // 2])
-            netmask = utils.int_from_bytes(data[data_len // 2:], 'big')
-            bits = bin(netmask)[2:]
+            netmask = ipaddress.ip_address(data[data_len // 2:])
+            bits = bin(int(netmask))[2:]
             prefix = bits.find('0')
-            if bits[prefix:].find('1') != -1:
+            # If no 0 bits are found it is a /32 or /128
+            if prefix == -1:
+                prefix = len(bits)
+
+            if b"1" in bits[prefix:]:
                 raise ValueError("Invalid netmask")
 
             ip = ipaddress.ip_network(base.exploded + u"/{0}".format(prefix))
