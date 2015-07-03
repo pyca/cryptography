@@ -172,7 +172,9 @@ FUNCTIONS = """
 int X509V3_EXT_add_alias(int, int);
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);
 X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, char *, char *);
+GENERAL_NAME *GENERAL_NAME_new(void);
 int GENERAL_NAME_print(BIO *, GENERAL_NAME *);
+GENERAL_NAMES *GENERAL_NAMES_new(void);
 void GENERAL_NAMES_free(GENERAL_NAMES *);
 void *X509V3_EXT_d2i(X509_EXTENSION *);
 """
@@ -191,6 +193,9 @@ NAME_CONSTRAINTS *NAME_CONSTRAINTS_new(void);
 void NAME_CONSTRAINTS_free(NAME_CONSTRAINTS *);
 
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
+
+int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
+
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
