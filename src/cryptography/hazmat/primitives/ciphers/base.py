@@ -149,6 +149,8 @@ class _CipherContext(object):
 class _AEADCipherContext(object):
     def __init__(self, ctx):
         self._ctx = ctx
+        self._bytes_processed = 0
+        self._aad_bytes_processed = 0
         self._tag = None
         self._updated = False
 
@@ -156,6 +158,14 @@ class _AEADCipherContext(object):
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         self._updated = True
+        self._bytes_processed += len(data)
+        if self._bytes_processed > self._ctx._mode._MAX_ENCRYPTED_BYTES:
+            raise ValueError(
+                "{0} has a maximum encrypted byte limit of {1}".format(
+                    self._ctx._mode.name, self._ctx._mode._MAX_ENCRYPTED_BYTES
+                )
+            )
+
         return self._ctx.update(data)
 
     def finalize(self):
@@ -171,6 +181,15 @@ class _AEADCipherContext(object):
             raise AlreadyFinalized("Context was already finalized.")
         if self._updated:
             raise AlreadyUpdated("Update has been called on this context.")
+
+        self._aad_bytes_processed += len(data)
+        if self._aad_bytes_processed > self._ctx._mode._MAX_AAD_BYTES:
+            raise ValueError(
+                "{0} has a maximum AAD byte limit of {0}".format(
+                    self._ctx._mode.name, self._ctx._mode._MAX_AAD_BYTES
+                )
+            )
+
         self._ctx.authenticate_additional_data(data)
 
 

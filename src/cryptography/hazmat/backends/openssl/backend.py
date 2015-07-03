@@ -217,7 +217,7 @@ class Backend(object):
         self.activate_builtin_random()
         # Fetches an engine by id and returns it. This creates a structural
         # reference.
-        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
+        e = self._lib.ENGINE_by_id(self._binding._osrandom_engine_id)
         assert e != self._ffi.NULL
         # Initialize the engine for use. This adds a functional reference.
         res = self._lib.ENGINE_init(e)
@@ -872,25 +872,20 @@ class Backend(object):
         )
         for extension in builder._extensions:
             if isinstance(extension.value, x509.BasicConstraints):
-                pp, r = _encode_basic_constraints(
-                    self, extension.value,
-                )
+                pp, r = _encode_basic_constraints(self, extension.value)
             elif isinstance(extension.value, x509.SubjectAlternativeName):
-                pp, r = _encode_subject_alt_name(
-                    self, extension.value,
-                )
+                pp, r = _encode_subject_alt_name(self, extension.value)
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
             obj = _txt2obj(self, extension.oid.dotted_string)
-            extension = backend._lib.X509_EXTENSION_create_by_OBJ(
-                backend._ffi.NULL,
+            extension = self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
                 obj,
                 1 if extension.critical else 0,
-                _encode_asn1_str(backend, pp[0], r)
+                _encode_asn1_str(self, pp[0], r),
             )
-            assert extension != backend._ffi.NULL
-
+            assert extension != self._ffi.NULL
             res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
             assert res == 1
         res = self._lib.X509_REQ_add_extensions(x509_req, extensions)

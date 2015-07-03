@@ -86,13 +86,17 @@ def _decode_general_name(backend, gn):
             # This is a wildcard name. We need to remove the leading wildcard,
             # IDNA decode, then re-add the wildcard. Wildcard characters should
             # always be left-most (RFC 2595 section 2.4).
-            data = u"*." + idna.decode(data[2:])
+            decoded = u"*." + idna.decode(data[2:])
         else:
             # Not a wildcard, decode away. If the string has a * in it anywhere
             # invalid this will raise an InvalidCodePoint
-            data = idna.decode(data)
+            decoded = idna.decode(data)
+            if data.startswith(b"."):
+                # idna strips leading periods. Name constraints can have that
+                # so we need to re-add it. Sigh.
+                decoded = u"." + decoded
 
-        return x509.DNSName(data)
+        return x509.DNSName(decoded)
     elif gn.type == backend._lib.GEN_URI:
         data = backend._ffi.buffer(
             gn.d.uniformResourceIdentifier.data,
@@ -537,6 +541,35 @@ def _decode_issuer_alt_name(backend, ext):
     )
 
 
+def _decode_name_constraints(backend, ext):
+    nc = backend._ffi.cast(
+        "NAME_CONSTRAINTS *", backend._lib.X509V3_EXT_d2i(ext)
+    )
+    assert nc != backend._ffi.NULL
+    nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
+    permitted = _decode_general_subtrees(backend, nc.permittedSubtrees)
+    excluded = _decode_general_subtrees(backend, nc.excludedSubtrees)
+    return x509.NameConstraints(
+        permitted_subtrees=permitted, excluded_subtrees=excluded
+    )
+
+
+def _decode_general_subtrees(backend, stack_subtrees):
+    if stack_subtrees == backend._ffi.NULL:
+        return None
+
+    num = backend._lib.sk_GENERAL_SUBTREE_num(stack_subtrees)
+    subtrees = []
+
+    for i in range(num):
+        obj = backend._lib.sk_GENERAL_SUBTREE_value(stack_subtrees, i)
+        assert obj != backend._ffi.NULL
+        name = _decode_general_name(backend, obj.base)
+        subtrees.append(name)
+
+    return subtrees
+
+
 def _decode_extended_key_usage(backend, ext):
     sk = backend._ffi.cast(
         "Cryptography_STACK_OF_ASN1_OBJECT *",
@@ -728,6 +761,7 @@ _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
         x509.OID_OCSP_NO_CHECK: _decode_ocsp_no_check,
         x509.OID_INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
         x509.OID_ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
+        x509.OID_NAME_CONSTRAINTS: _decode_name_constraints,
     }
 )
 

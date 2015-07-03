@@ -17,9 +17,16 @@ typedef ... DSA_METHOD;
 typedef ... ECDH_METHOD;
 typedef ... ECDSA_METHOD;
 typedef ... DH_METHOD;
-typedef ... RAND_METHOD;
+typedef struct {
+    void (*seed)(const void *, int);
+    int (*bytes)(unsigned char *, int);
+    void (*cleanup)();
+    void (*add)(const void *, int, double);
+    int (*pseudorand)(unsigned char *, int);
+    int (*status)();
+} RAND_METHOD;
 typedef ... STORE_METHOD;
-typedef ... *ENGINE_GEN_INT_FUNC_PTR;
+typedef int (*ENGINE_GEN_INT_FUNC_PTR)(ENGINE *);
 typedef ... *ENGINE_CTRL_FUNC_PTR;
 typedef ... *ENGINE_LOAD_KEY_PTR;
 typedef ... *ENGINE_CIPHERS_PTR;

@@ -253,3 +253,53 @@ class TestAESModeGCM(object):
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert computed_ct == ct
         assert encryptor.tag == tag
+
+    def test_gcm_ciphertext_limit(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor._bytes_processed = modes.GCM._MAX_ENCRYPTED_BYTES - 16
+        encryptor.update(b"0" * 16)
+        assert (
+            encryptor._bytes_processed == modes.GCM._MAX_ENCRYPTED_BYTES
+        )
+        with pytest.raises(ValueError):
+            encryptor.update(b"0")
+
+    def test_gcm_aad_limit(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor._aad_bytes_processed = modes.GCM._MAX_AAD_BYTES - 16
+        encryptor.authenticate_additional_data(b"0" * 16)
+        assert encryptor._aad_bytes_processed == modes.GCM._MAX_AAD_BYTES
+        with pytest.raises(ValueError):
+            encryptor.authenticate_additional_data(b"0")
+
+    def test_gcm_ciphertext_increments(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor.update(b"0" * 8)
+        assert encryptor._bytes_processed == 8
+        encryptor.update(b"0" * 7)
+        assert encryptor._bytes_processed == 15
+        encryptor.update(b"0" * 18)
+        assert encryptor._bytes_processed == 33
+
+    def test_gcm_aad_increments(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(b"0" * 8)
+        assert encryptor._aad_bytes_processed == 8
+        encryptor.authenticate_additional_data(b"0" * 18)
+        assert encryptor._aad_bytes_processed == 26

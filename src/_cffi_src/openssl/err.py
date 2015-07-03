@@ -251,6 +251,7 @@ unsigned long ERR_peek_error_line(const char **, int *);
 unsigned long ERR_peek_last_error_line(const char **, int *);
 unsigned long ERR_get_error_line_data(const char **, int *,
                                       const char **, int *);
+void ERR_clear_error(void);
 unsigned long ERR_peek_error_line_data(const char **,
                                        int *, const char **, int *);
 unsigned long ERR_peek_last_error_line_data(const char **,

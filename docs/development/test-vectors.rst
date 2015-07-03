@@ -199,14 +199,25 @@ Custom X.509 Vectors
   set.
 * ``nc_permitted_excluded.pem`` - An RSA 2048 bit self-signed certificate
   containing a name constraints extension with both permitted and excluded
-  elements.
+  elements. Contains ``IPv4`` and ``IPv6`` addresses with network mask as well
+  as ``dNSName`` with a leading period.
+* ``nc_permitted_excluded_2.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with both permitted and excluded
+  elements. Unlike ``nc_permitted_excluded.pem``, the general names do not
+  contain any name constraints specific values.
 * ``nc_permitted.pem`` - An RSA 2048 bit self-signed certificate containing a
   name constraints extension with permitted elements.
+* ``nc_permitted_2.pem`` - An RSA 2048 bit self-signed certificate containing a
+  name constraints extension with permitted elements that do not contain any
+  name constraints specific values.
 * ``nc_excluded.pem`` - An RSA 2048 bit self-signed certificate containing a
   name constraints extension with excluded elements.
 * ``nc_invalid_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
   containing a name constraints extension with a permitted element that has an
   ``IPv6`` IP and an invalid network mask.
+* ``nc_single_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with a permitted element that has two
+  IPs with ``/32`` and ``/128`` network masks.
 * ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
   certificate containing a certificate policies extension with a
   notice reference in the user notice.

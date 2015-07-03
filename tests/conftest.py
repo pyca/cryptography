@@ -18,11 +18,13 @@ def pytest_generate_tests(metafunc):
     if "backend" in metafunc.fixturenames:
         filtered_backends = []
         required = metafunc.function.requires_backend_interface
-        required_interfaces = tuple(
+        required_interfaces = [
             mark.kwargs["interface"] for mark in required
-        )
+        ]
         for backend in selected_backends:
-            if isinstance(backend, required_interfaces):
+            if all(
+                isinstance(backend, iface) for iface in required_interfaces
+            ):
                 filtered_backends.append(backend)
 
         # If you pass an empty list to parametrize Bad Things(tm) happen
