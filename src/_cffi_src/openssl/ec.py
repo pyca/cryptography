@@ -56,6 +56,8 @@ int EC_GROUP_get_curve_GF2m(
     const EC_GROUP *, BIGNUM *, BIGNUM *, BIGNUM *, BN_CTX *);
 
 int EC_GROUP_get_degree(const EC_GROUP *);
+void EC_GROUP_set_asn1_flag(EC_GROUP *, int);
+void EC_GROUP_set_point_conversion_form(EC_GROUP *, point_conversion_form_t);
 
 const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *);
 const EC_POINT *EC_GROUP_get0_generator(const EC_GROUP *);
@@ -63,6 +65,7 @@ int EC_GROUP_get_curve_name(const EC_GROUP *);
 
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 
+EC_KEY *EC_KEY_new(void);
 void EC_KEY_free(EC_KEY *);
 
 int EC_KEY_get_flags(const EC_KEY *);
@@ -210,6 +213,7 @@ typedef long point_conversion_form_t;
 static const int OPENSSL_EC_NAMED_CURVE = 0;
 
 void (*EC_KEY_free)(EC_KEY *) = NULL;
+EC_KEY *(*EC_KEY_new)(void) = NULL;
 size_t (*EC_get_builtin_curves)(EC_builtin_curve *, size_t) = NULL;
 EC_KEY *(*EC_KEY_new_by_curve_name)(int) = NULL;
 EC_KEY *(*EC_KEY_copy)(EC_KEY *, const EC_KEY *) = NULL;
@@ -218,6 +222,9 @@ int (*EC_KEY_up_ref)(EC_KEY *) = NULL;
 const EC_GROUP *(*EC_KEY_get0_group)(const EC_KEY *) = NULL;
 int (*EC_GROUP_get_order)(const EC_GROUP *, BIGNUM *, BN_CTX *) = NULL;
 int (*EC_KEY_set_group)(EC_KEY *, const EC_GROUP *) = NULL;
+void (*EC_GROUP_set_asn1_flag)(EC_GROUP *, int) = NULL;
+void (*EC_GROUP_set_point_conversion_form)(EC_GROUP *,
+                                           point_conversion_form_t) = NULL;
 const BIGNUM *(*EC_KEY_get0_private_key)(const EC_KEY *) = NULL;
 int (*EC_KEY_set_private_key)(EC_KEY *, const BIGNUM *) = NULL;
 const EC_POINT *(*EC_KEY_get0_public_key)(const EC_KEY *) = NULL;
@@ -412,6 +419,9 @@ CONDITIONAL_NAMES = {
         "EC_GROUP_get0_generator",
         "EC_GROUP_get_curve_name",
         "EC_GROUP_get_degree",
+        "EC_GROUP_set_asn1_flag",
+        "EC_GROUP_set_point_conversion_form",
+        "EC_KEY_new",
         "EC_KEY_free",
         "EC_get_builtin_curves",
         "EC_KEY_new_by_curve_name",
