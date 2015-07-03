@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.2 - 2015-07-04
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.2c.
+
 0.9.1 - 2015-06-06
 ~~~~~~~~~~~~~~~~~~
 
