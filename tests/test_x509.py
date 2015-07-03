@@ -592,6 +592,20 @@ class TestRSACertificateRequest(object):
             ),
         ]
 
+    def test_subject_alt_name(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "san_rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        ext = request.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(ext.value) == [
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"sub.cryptography.io"),
+        ]
+
     def test_public_bytes_pem(self, backend):
         # Load an existing CSR.
         request = _load_cert(
