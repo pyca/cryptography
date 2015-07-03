@@ -878,6 +878,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        ).add_extension(
             x509.KeyUsage(
                 digital_signature=True,
                 content_commitment=True,
