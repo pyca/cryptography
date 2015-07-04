@@ -414,7 +414,7 @@ Key Interfaces
 
     .. versionadded:: 0.6
 
-    Alias of :class:`EllipticCurvePublicKey`.
+    Alias for :class:`EllipticCurvePublicKey`.
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf

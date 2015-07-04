@@ -399,7 +399,7 @@ Key interfaces
 
     .. versionadded:: 0.8
 
-    Alias of :class:`DSAPublicKey`.
+    Alias for :class:`DSAPublicKey`.
 
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm

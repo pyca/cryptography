@@ -640,7 +640,7 @@ Key interfaces
 
     .. versionadded:: 0.8
 
-    Alias of :class:`RSAPublicKey`.
+    Alias for :class:`RSAPublicKey`.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
