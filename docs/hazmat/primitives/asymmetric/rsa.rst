@@ -518,23 +518,6 @@ Key interfaces
         The bit length of the modulus.
 
 
-.. class:: RSAPrivateKeyWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`RSAPrivateKey`.
-
-    .. method:: private_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-            instance.
-
-
 .. class:: RSAPrivateKeyWithSerialization
 
     .. versionadded:: 0.8
@@ -624,23 +607,6 @@ Key interfaces
         :type: int
 
         The bit length of the modulus.
-
-
-.. class:: RSAPublicKeyWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`RSAPublicKey`.
-
-    .. method:: public_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-            instance.
 
 
 .. class:: RSAPublicKeyWithSerialization

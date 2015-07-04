@@ -321,19 +321,6 @@ Key Interfaces
         The EllipticCurvePublicKey object for this private key.
 
 
-.. class:: EllipticCurvePrivateKeyWithNumbers
-
-    .. versionadded:: 0.6
-
-    Extends :class:`EllipticCurvePrivateKey`.
-
-    .. method:: private_numbers()
-
-        Create a :class:`EllipticCurvePrivateNumbers` object.
-
-        :returns: An :class:`EllipticCurvePrivateNumbers` instance.
-
-
 .. class:: EllipticCurvePrivateKeyWithSerialization
 
     .. versionadded:: 0.8
@@ -398,19 +385,6 @@ Key Interfaces
         :type: :class:`EllipticCurve`
 
         The elliptic curve for this key.
-
-
-.. class:: EllipticCurvePublicKeyWithNumbers
-
-    .. versionadded:: 0.6
-
-    Extends :class:`EllipticCurvePublicKey`.
-
-    .. method:: public_numbers()
-
-        Create a :class:`EllipticCurvePublicNumbers` object.
-
-        :returns: An :class:`EllipticCurvePublicNumbers` instance.
 
 
 .. class:: EllipticCurvePublicKeyWithSerialization
