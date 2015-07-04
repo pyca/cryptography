@@ -128,7 +128,9 @@ build.
 Building cryptography on OS X
 -----------------------------
 
-To install the Xcode command line tools on OS X open a terminal window and run:
+Building cryptography requires the presence of a C compiler and development
+headers. On OS X this is typically provided by Apple's Xcode development tools.
+To install the Xcode command line tools on open a terminal window and run:
 
 .. code-block:: console
 
