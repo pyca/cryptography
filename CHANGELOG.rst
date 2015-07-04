@@ -130,48 +130,42 @@ Changelog
   SubjectPublicKeyInfo format for RSA, EC, and DSA).
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
-  and deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`.
+  and deprecated ``EllipticCurvePrivateKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
-  and deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`.
+  and deprecated ``RSAPrivateKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
-  and deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithNumbers`.
+  and deprecated ``DSAPrivateKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
-  and deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithNumbers`.
+  and deprecated ``RSAPublicKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
-  and deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithNumbers`.
+  and deprecated ``EllipticCurvePublicKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`
-  and deprecated
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`.
+  and deprecated ``DSAPublicKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization.public_bytes`
   to
@@ -209,25 +203,24 @@ Changelog
 * :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParametersWithNumbers`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithNumbers`,
+  ``DSAPrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` and
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithNumbers`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``DSAPublicKeyWithNumbers`` were moved from
+  :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.dsa`
 * :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurveSignatureAlgorithm`,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithNumbers`,
+  ``EllipticCurvePrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-  and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithNumbers`
+  and ``EllipticCurvePublicKeyWithNumbers``
   were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.ec`.
 * :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithNumbers`,
+  ``RSAPrivateKeyWithNumbers``,
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` and
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithNumbers`
-  were moved from :mod:`~cryptography.hazmat.primitives.interfaces` to
+  ``RSAPublicKeyWithNumbers`` were moved from
+  :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.asymmetric.rsa`.
 
 0.7.2 - 2015-01-16
