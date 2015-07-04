@@ -125,8 +125,23 @@ You'll also need to generate your own ``openssl.ld`` file. For example::
 You should replace the version string on the first line as appropriate for your
 build.
 
+Building cryptography on OS X
+-----------------------------
+
+Building cryptography requires the presence of a C compiler and development
+headers. On OS X this is typically provided by Apple's Xcode development tools.
+To install the Xcode command line tools on open a terminal window and run:
+
+.. code-block:: console
+
+    $ xcode-select --install
+
+This will install a compiler (clang) along with the required development
+headers. If you wish to compile against a more recent OpenSSL than the
+version shipped with OS X see the next section.
+
 Using your own OpenSSL on OS X
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To link cryptography against a custom version of OpenSSL you'll need to set
 ``ARCHFLAGS``, ``LDFLAGS``, and ``CFLAGS``. OpenSSL can be installed via
