@@ -153,21 +153,21 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
   and deprecated ``RSAPublicKeyWithNumbers``.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization.public_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
   and deprecated ``EllipticCurvePublicKeyWithNumbers``.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization.public_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`
   and deprecated ``DSAPublicKeyWithNumbers``.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization.public_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey.public_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
 * :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and

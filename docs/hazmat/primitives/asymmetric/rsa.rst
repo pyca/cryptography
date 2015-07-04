@@ -113,10 +113,8 @@ It is also possible to serialize without encryption using
     >>> pem.splitlines()[0]
     '-----BEGIN RSA PRIVATE KEY-----'
 
-Similarly, if your public key implements
-:class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
-interface you can use
-:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization.public_bytes`
+For public keys you can use
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.public_bytes`
 to serialize the key.
 
 .. doctest::
