@@ -284,23 +284,6 @@ Key interfaces
         The bit length of the modulus.
 
 
-.. class:: DSAPrivateKeyWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`DSAPrivateKey`.
-
-    .. method:: private_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
-        object.
-
-        :returns: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers`
-            instance.
-
-
 .. class:: DSAPrivateKeyWithSerialization
 
     .. versionadded:: 0.8
@@ -384,22 +367,6 @@ Key interfaces
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
-
-.. class:: DSAPublicKeyWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`DSAPublicKey`.
-
-    .. method:: public_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
-        object.
-
-        :returns: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`
-            instance.
 
 .. class:: DSAPublicKeyWithSerialization
 
