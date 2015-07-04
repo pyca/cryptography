@@ -155,6 +155,8 @@ int ASN1_UTCTIME_check(ASN1_UTCTIME *);
 
 /* Not a macro, const on openssl 1.0 */
 int ASN1_STRING_set_default_mask_asc(char *);
+
+int i2d_ASN1_TYPE(ASN1_TYPE *, unsigned char **);
 """
 
 CUSTOMIZATIONS = """

@@ -47,6 +47,17 @@ def _asn1_string_to_utf8(backend, asn1_string):
     return backend._ffi.buffer(buf[0], res)[:].decode('utf8')
 
 
+def _asn1_to_der(backend, asn1_type):
+    buf = backend._ffi.new("unsigned char **")
+    res = backend._lib.i2d_ASN1_TYPE(asn1_type, buf)
+    assert res >= 0
+    assert buf[0] != backend._ffi.NULL
+    buf = backend._ffi.gc(
+        buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
+    )
+    return backend._ffi.buffer(buf[0], res)[:]
+
+
 def _decode_x509_name_entry(backend, x509_name_entry):
     obj = backend._lib.X509_NAME_ENTRY_get_object(x509_name_entry)
     assert obj != backend._ffi.NULL
@@ -157,8 +168,12 @@ def _decode_general_name(backend, gn):
             return x509.RFC822Name(
                 parts[0] + u"@" + idna.decode(parts[1])
             )
+    elif gn.type == backend._lib.GEN_OTHERNAME:
+        type_id = _obj2txt(backend, gn.d.otherName.type_id)
+        value = _asn1_to_der(backend, gn.d.otherName.value)
+        return x509.OtherName(x509.ObjectIdentifier(type_id), value)
     else:
-        # otherName, x400Address or ediPartyName
+        # x400Address or ediPartyName
         raise x509.UnsupportedGeneralNameType(
             "{0} is not a supported type".format(
                 x509._GENERAL_NAMES.get(gn.type, gn.type)
