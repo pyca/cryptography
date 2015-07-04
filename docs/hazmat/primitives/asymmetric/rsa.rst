@@ -608,13 +608,6 @@ Key interfaces
 
         The bit length of the modulus.
 
-
-.. class:: RSAPublicKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Extends :class:`RSAPublicKey`.
-
     .. method:: public_numbers()
 
         Create a
@@ -643,6 +636,13 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+
+.. class:: RSAPublicKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias of :class:`RSAPublicKey`.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)

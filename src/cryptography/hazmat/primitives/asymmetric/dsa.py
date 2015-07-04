@@ -91,9 +91,6 @@ class DSAPublicKey(object):
         Returns an AsymmetricVerificationContext used for signing data.
         """
 
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAPublicKeyWithSerialization(DSAPublicKey):
     @abc.abstractmethod
     def public_numbers(self):
         """
@@ -105,6 +102,9 @@ class DSAPublicKeyWithSerialization(DSAPublicKey):
         """
         Returns the key serialized as bytes.
         """
+
+
+DSAPublicKeyWithSerialization = DSAPublicKey
 
 
 def generate_parameters(key_size, backend):

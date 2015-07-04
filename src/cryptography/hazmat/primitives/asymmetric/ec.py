@@ -85,9 +85,6 @@ class EllipticCurvePublicKey(object):
         The EllipticCurve that this key is on.
         """
 
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePublicKeyWithSerialization(EllipticCurvePublicKey):
     @abc.abstractmethod
     def public_numbers(self):
         """
@@ -99,6 +96,9 @@ class EllipticCurvePublicKeyWithSerialization(EllipticCurvePublicKey):
         """
         Returns the key serialized as bytes.
         """
+
+
+EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 
 
 @utils.register_interface(EllipticCurve)

@@ -367,13 +367,6 @@ Key interfaces
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
 
-
-.. class:: DSAPublicKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Extends :class:`DSAPublicKey`.
-
     .. method:: public_numbers()
 
         Create a
@@ -400,6 +393,13 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+
+.. class:: DSAPublicKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias of :class:`DSAPublicKey`.
 
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
