@@ -59,7 +59,8 @@ static const int GEN_IPADD;
 static const int GEN_RID;
 
 typedef struct {
-    ...;
+    ASN1_OBJECT *type_id;
+    ASN1_TYPE *value;
 } OTHERNAME;
 
 typedef struct {
