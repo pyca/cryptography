@@ -1382,18 +1382,16 @@ class TestRSASubjectAlternativeNameExtension(object):
         dns = ext.value.get_values_for_type(x509.DNSName)
         assert dns == [u'*.\u043f\u044b\u043a\u0430.cryptography']
 
-    def test_unsupported_other_name(self, backend):
+    def test_unsupported_gn(self, backend):
         cert = _load_cert(
-            os.path.join(
-                "x509", "custom", "san_other_name.pem"
-            ),
-            x509.load_pem_x509_certificate,
+            os.path.join("x509", "san_x400address.der"),
+            x509.load_der_x509_certificate,
             backend
         )
         with pytest.raises(x509.UnsupportedGeneralNameType) as exc:
             cert.extensions
 
-        assert exc.value.type == 0
+        assert exc.value.type == 3
 
     def test_registered_id(self, backend):
         cert = _load_cert(
