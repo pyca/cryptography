@@ -386,13 +386,6 @@ Key Interfaces
 
         The elliptic curve for this key.
 
-
-.. class:: EllipticCurvePublicKeyWithSerialization
-
-    .. versionadded:: 0.6
-
-    Extends :class:`EllipticCurvePublicKey`.
-
     .. method:: public_numbers()
 
         Create a :class:`EllipticCurvePublicNumbers` object.
@@ -415,6 +408,13 @@ Key Interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+
+.. class:: EllipticCurvePublicKeyWithSerialization
+
+    .. versionadded:: 0.6
+
+    Alias for :class:`EllipticCurvePublicKey`.
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf

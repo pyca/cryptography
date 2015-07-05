@@ -113,10 +113,8 @@ It is also possible to serialize without encryption using
     >>> pem.splitlines()[0]
     '-----BEGIN RSA PRIVATE KEY-----'
 
-Similarly, if your public key implements
-:class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
-interface you can use
-:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization.public_bytes`
+For public keys you can use
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.public_bytes`
 to serialize the key.
 
 .. doctest::
@@ -608,13 +606,6 @@ Key interfaces
 
         The bit length of the modulus.
 
-
-.. class:: RSAPublicKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Extends :class:`RSAPublicKey`.
-
     .. method:: public_numbers()
 
         Create a
@@ -643,6 +634,13 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+
+.. class:: RSAPublicKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias for :class:`RSAPublicKey`.
 
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
