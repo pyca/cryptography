@@ -139,20 +139,25 @@ def _encode_basic_constraints(backend, basic_constraints):
 def _encode_subject_alt_name(backend, san):
     general_names = backend._lib.GENERAL_NAMES_new()
     assert general_names != backend._ffi.NULL
-    # TODO: GC
+    general_names = backend._ffi.gc(
+        general_names, backend._lib.GENERAL_NAMES_free
+    )
 
     for alt_name in san:
-        assert isinstance(alt_name, x509.DNSName)
         gn = backend._lib.GENERAL_NAME_new()
         assert gn != backend._ffi.NULL
-        gn.type = backend._lib.GEN_DNS
-        ia5 = backend._lib.ASN1_IA5STRING_new()
-        assert ia5 != backend._ffi.NULL
-        gn.d.dNSName = ia5
-        # TODO: idna
-        value = alt_name.value.encode("ascii")
-        res = backend._lib.ASN1_STRING_set(gn.d.dNSName, value, len(value))
-        assert res == 1
+        # TODO: GC?
+        if isinstance(alt_name, x509.DNSName):
+            gn.type = backend._lib.GEN_DNS
+            ia5 = backend._lib.ASN1_IA5STRING_new()
+            assert ia5 != backend._ffi.NULL
+            # TODO: idna
+            value = alt_name.value.encode("ascii")
+            res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
+            assert res == 1
+            gn.d.dNSName = ia5
+        else:
+            raise NotImplementedError("Only DNSNames are supported right now")
 
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
         assert res == 1
