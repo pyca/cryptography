@@ -165,7 +165,7 @@ def _encode_subject_alt_name(backend, san):
             raise NotImplementedError("Only DNSNames are supported right now")
 
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
-        assert res >= 0
+        assert res != 0
 
     pp = backend._ffi.new("unsigned char **")
     r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
