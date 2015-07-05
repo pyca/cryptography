@@ -328,6 +328,8 @@ X.509 Certificate Object
 
     .. method:: public_bytes(encoding)
 
+        .. versionadded:: 1.0
+
         :param encoding: The
             :class:`~cryptography.hazmat.primitives.serialization.Encoding`
             that will be used to serialize the certificate.
@@ -434,6 +436,8 @@ X.509 CSR (Certificate Signing Request) Object
             True
 
     .. method:: public_bytes(encoding)
+
+        .. versionadded:: 1.0
 
         :param encoding: The
             :class:`~cryptography.hazmat.primitives.serialization.Encoding`
