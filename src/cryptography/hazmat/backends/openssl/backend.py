@@ -8,6 +8,8 @@ import collections
 import itertools
 from contextlib import contextmanager
 
+import idna
+
 import six
 
 from cryptography import utils, x509
@@ -129,6 +131,45 @@ def _encode_basic_constraints(backend, basic_constraints):
     # Fetch the encoded payload.
     pp = backend._ffi.new('unsigned char **')
     r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_subject_alt_name(backend, san):
+    general_names = backend._lib.GENERAL_NAMES_new()
+    assert general_names != backend._ffi.NULL
+    general_names = backend._ffi.gc(
+        general_names, backend._lib.GENERAL_NAMES_free
+    )
+
+    for alt_name in san:
+        if isinstance(alt_name, x509.DNSName):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            gn.type = backend._lib.GEN_DNS
+
+            ia5 = backend._lib.ASN1_IA5STRING_new()
+            assert ia5 != backend._ffi.NULL
+
+            if alt_name.value.startswith(u"*."):
+                value = b"*." + idna.encode(alt_name.value[2:])
+            else:
+                value = idna.encode(alt_name.value)
+
+            res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
+            assert res == 1
+            gn.d.dNSName = ia5
+        else:
+            raise NotImplementedError("Only DNSNames are supported right now")
+
+        res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
+        assert res != 0
+
+    pp = backend._ffi.new("unsigned char **")
+    r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
     assert r > 0
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
@@ -841,12 +882,14 @@ class Backend(object):
             self._lib.sk_X509_EXTENSION_free,
         )
         for extension in builder._extensions:
-            obj = _txt2obj(self, extension.oid.dotted_string)
             if isinstance(extension.value, x509.BasicConstraints):
                 pp, r = _encode_basic_constraints(self, extension.value)
+            elif isinstance(extension.value, x509.SubjectAlternativeName):
+                pp, r = _encode_subject_alt_name(self, extension.value)
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
+            obj = _txt2obj(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
                 obj,
