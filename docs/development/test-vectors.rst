@@ -104,6 +104,10 @@ X.509
   cryptography website.
 * ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
   ``langui.sh`` that contains wildcard entries in the SAN extension.
+* ``san_edipartyname.der`` - A DSA certificate from a `Mozilla bug`_
+  containing a SAN extension with an ``ediPartyName`` general name.
+* ``san_x400address.der`` - A DSA certificate from a `Mozilla bug`_ containing
+  a SAN extension with an ``x400Address`` general name.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -412,3 +416,4 @@ header format (substituting the correct information):
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
+.. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
