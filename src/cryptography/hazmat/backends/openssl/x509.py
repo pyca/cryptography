@@ -36,6 +36,14 @@ def _asn1_integer_to_int(backend, asn1_int):
     return backend._bn_to_int(bn)
 
 
+def _asn1_string_to_bytes(backend, asn1_string):
+    return backend._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+
+
+def _asn1_string_to_ascii(backend, asn1_string):
+    return _asn1_string_to_bytes(backend, asn1_string).decode("ascii")
+
+
 def _asn1_string_to_utf8(backend, asn1_string):
     buf = backend._ffi.new("unsigned char **")
     res = backend._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
@@ -81,7 +89,7 @@ def _decode_general_names(backend, gns):
 
 def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
-        data = backend._ffi.buffer(gn.d.dNSName.data, gn.d.dNSName.length)[:]
+        data = _asn1_string_to_bytes(backend, gn.d.dNSName)
         if data.startswith(b"*."):
             # This is a wildcard name. We need to remove the leading wildcard,
             # IDNA decode, then re-add the wildcard. Wildcard characters should
@@ -98,10 +106,7 @@ def _decode_general_name(backend, gn):
 
         return x509.DNSName(decoded)
     elif gn.type == backend._lib.GEN_URI:
-        data = backend._ffi.buffer(
-            gn.d.uniformResourceIdentifier.data,
-            gn.d.uniformResourceIdentifier.length
-        )[:].decode("ascii")
+        data = _asn1_string_to_ascii(backend, gn.d.uniformResourceIdentifier)
         parsed = urllib_parse.urlparse(data)
         hostname = idna.decode(parsed.hostname)
         if parsed.port:
@@ -127,9 +132,7 @@ def _decode_general_name(backend, gn):
     elif gn.type == backend._lib.GEN_IPADD:
         return x509.IPAddress(
             ipaddress.ip_address(
-                backend._ffi.buffer(
-                    gn.d.iPAddress.data, gn.d.iPAddress.length
-                )[:]
+                _asn1_string_to_bytes(backend, gn.d.iPAddress)
             )
         )
     elif gn.type == backend._lib.GEN_DIRNAME:
@@ -137,9 +140,7 @@ def _decode_general_name(backend, gn):
             _decode_x509_name(backend, gn.d.directoryName)
         )
     elif gn.type == backend._lib.GEN_EMAIL:
-        data = backend._ffi.buffer(
-            gn.d.rfc822Name.data, gn.d.rfc822Name.length
-        )[:].decode("ascii")
+        data = _asn1_string_to_ascii(backend, gn.d.rfc822Name)
         name, address = parseaddr(data)
         parts = address.split(u"@")
         if name or len(parts) > 2 or not address:
@@ -280,11 +281,10 @@ class _Certificate(object):
         generalized_time = self._backend._ffi.gc(
             generalized_time, self._backend._lib.ASN1_GENERALIZEDTIME_free
         )
-        time = self._backend._ffi.string(
-            self._backend._lib.ASN1_STRING_data(
-                self._backend._ffi.cast("ASN1_STRING *", generalized_time)
-            )
-        ).decode("ascii")
+        time = _asn1_string_to_ascii(
+            self._backend,
+            self._backend._ffi.cast("ASN1_STRING *", generalized_time)
+        )
         return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
     @property
