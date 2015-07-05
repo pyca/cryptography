@@ -148,12 +148,10 @@ def _encode_subject_alt_name(backend, san):
     for alt_name in san:
         gn = backend._lib.GENERAL_NAME_new()
         assert gn != backend._ffi.NULL
-        # TODO: GC?
         if isinstance(alt_name, x509.DNSName):
             gn.type = backend._lib.GEN_DNS
             ia5 = backend._lib.ASN1_IA5STRING_new()
             assert ia5 != backend._ffi.NULL
-            # TODO: GC?
             value = idna.encode(alt_name.value)
             res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
             assert res == 1
