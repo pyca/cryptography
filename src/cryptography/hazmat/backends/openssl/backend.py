@@ -8,6 +8,8 @@ import collections
 import itertools
 from contextlib import contextmanager
 
+import idna
+
 import six
 
 from cryptography import utils, x509
@@ -151,8 +153,7 @@ def _encode_subject_alt_name(backend, san):
             gn.type = backend._lib.GEN_DNS
             ia5 = backend._lib.ASN1_IA5STRING_new()
             assert ia5 != backend._ffi.NULL
-            # TODO: idna
-            value = alt_name.value.encode("ascii")
+            value = idna.encode(alt_name.value)
             res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
             assert res == 1
             gn.d.dNSName = ia5
