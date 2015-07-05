@@ -953,7 +953,6 @@ class TestCertificateSigningRequestBuilder(object):
             builder.sign(private_key, hashes.SHA256(), backend)
 
 
-
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestDSACertificate(object):
