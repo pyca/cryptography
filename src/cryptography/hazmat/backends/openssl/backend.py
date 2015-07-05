@@ -152,7 +152,12 @@ def _encode_subject_alt_name(backend, san):
             gn.type = backend._lib.GEN_DNS
             ia5 = backend._lib.ASN1_IA5STRING_new()
             assert ia5 != backend._ffi.NULL
-            value = idna.encode(alt_name.value)
+
+            if alt_name.value.startswith(u"*."):
+                value = b"*." + idna.encode(alt_name.value[2:])
+            else:
+                value = idna.encode(alt_name.value)
+
             res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
             assert res == 1
             gn.d.dNSName = ia5
@@ -160,7 +165,7 @@ def _encode_subject_alt_name(backend, san):
             raise NotImplementedError("Only DNSNames are supported right now")
 
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
-        assert res == 1
+        assert res >= 0
 
     pp = backend._ffi.new("unsigned char **")
     r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)

@@ -920,7 +920,8 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.SubjectAlternativeName([
-                x509.DNSName(u"google.com"),
+                x509.DNSName(u"example.com"),
+                x509.DNSName(u"*.example.com"),
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), backend)
@@ -932,7 +933,8 @@ class TestCertificateSigningRequestBuilder(object):
         assert not ext.critical
         assert ext.oid == x509.OID_SUBJECT_ALTERNATIVE_NAME
         assert list(ext.value) == [
-            x509.DNSName(u"google.com"),
+            x509.DNSName(u"example.com"),
+            x509.DNSName(u"*.example.com"),
         ]
 
     def test_subject_alt_name_unsupported_general_name(self, backend):
