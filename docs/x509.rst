@@ -699,7 +699,7 @@ General Name Classes
 
     .. versionadded:: 1.0
 
-    This corresponds to an "otherName."  An otherName has a type identifier and a value represented in binary DER format.
+    This corresponds to an ``otherName.``  An ``otherName`` has a type identifier and a value represented in binary DER format.
 
     .. attribute:: type_id
 
