@@ -922,6 +922,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.SubjectAlternativeName([
                 x509.DNSName(u"example.com"),
                 x509.DNSName(u"*.example.com"),
+                x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), backend)
@@ -935,6 +936,7 @@ class TestCertificateSigningRequestBuilder(object):
         assert list(ext.value) == [
             x509.DNSName(u"example.com"),
             x509.DNSName(u"*.example.com"),
+            x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
         ]
 
     def test_subject_alt_name_unsupported_general_name(self, backend):

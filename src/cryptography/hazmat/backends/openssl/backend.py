@@ -162,8 +162,19 @@ def _encode_subject_alt_name(backend, san):
             res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
             assert res == 1
             gn.d.dNSName = ia5
+        elif isinstance(alt_name, x509.RegisteredID):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            gn.type = backend._lib.GEN_RID
+            obj = backend._lib.OBJ_txt2obj(
+                alt_name.value.dotted_string.encode('ascii'), 1
+            )
+            assert obj != backend._ffi.NULL
+            gn.d.registeredID = obj
         else:
-            raise NotImplementedError("Only DNSNames are supported right now")
+            raise NotImplementedError(
+                "Only DNSName and RegisteredID supported right now"
+            )
 
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
         assert res != 0
