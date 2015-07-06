@@ -1642,14 +1642,13 @@ class TestRSASubjectAlternativeNameExtension(object):
         assert ext is not None
         assert ext.critical is False
 
+        expected = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"),
+                                  b'\x16\x0bHello World')
         assert len(ext.value) == 1
-        assert list(ext.value)[0] == \
-            x509.OtherName(
-                x509.ObjectIdentifier("1.2.3.4"),
-                b'\x16\x0bHello World')
+        assert list(ext.value)[0] == expected
 
         othernames = ext.value.get_values_for_type(x509.OtherName)
-        assert othernames == [b'\x16\x0bHello World']
+        assert othernames == [expected]
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

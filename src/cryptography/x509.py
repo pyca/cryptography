@@ -1090,7 +1090,13 @@ class GeneralNames(object):
         return len(self._general_names)
 
     def get_values_for_type(self, type):
-        return [i.value for i in self if isinstance(i, type)]
+        # Return the value of each GeneralName, except for OtherName instances
+        # which we return directly because it has two important properties not
+        # just one value.
+        objs = (i for i in self if isinstance(i, type))
+        if type != OtherName:
+            objs = (i.value for i in objs)
+        return list(objs)
 
     def __repr__(self):
         return "<GeneralNames({0})>".format(self._general_names)

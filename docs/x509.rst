@@ -981,6 +981,7 @@ X.509 Extensions
             :ref:`general name classes <general_name_classes>`.
 
         :returns: A list of values extracted from the matched general names.
+            The type of the returned values depends on the :class:`GeneralName`.
 
         .. doctest::
 
