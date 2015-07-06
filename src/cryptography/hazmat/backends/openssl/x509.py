@@ -226,6 +226,10 @@ class _Certificate(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        # TODO: Using fingerprint() with SHA256 is way overkill.
+        return hash(self.fingerprint(hashes.SHA256()))
+
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
         bio = self._backend._create_mem_bio()
