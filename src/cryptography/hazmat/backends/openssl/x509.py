@@ -701,6 +701,14 @@ class _CertificateSigningRequest(object):
         self._backend = backend
         self._x509_req = x509_req
 
+    def __eq__(self, other):
+        if not isinstance(other, _CertificateSigningRequest):
+            return NotImplemented
+
+        self_bytes = self.public_bytes(serialization.Encoding.DER)
+        other_bytes = other.public_bytes(serialization.Encoding.DER)
+        return self_bytes == other_bytes
+
     def public_key(self):
         pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
         assert pkey != self._backend._ffi.NULL
