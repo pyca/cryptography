@@ -694,6 +694,35 @@ class TestRSACertificateRequest(object):
         serialized = request.public_bytes(encoding)
         assert serialized == request_bytes
 
+    def test_eq(self, backend):
+        request1 = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        request2 = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+
+        assert request1 == request2
+
+    def test_ne(self, backend):
+        request1 = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        request2 = _load_cert(
+            os.path.join("x509", "requests", "san_rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+
+        assert request1 != request2
+        assert request1 != object()
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):

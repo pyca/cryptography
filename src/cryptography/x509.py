@@ -1392,6 +1392,18 @@ class CertificateRevocationList(object):
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
     @abc.abstractmethod
+    def __eq__(self, other):
+        """
+        Checks equality.
+        """
+
+    @abc.abstractmethod
+    def __ne__(self, other):
+        """
+        Checks not equal.
+        """
+
+    @abc.abstractmethod
     def public_key(self):
         """
         Returns the public key
