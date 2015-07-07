@@ -715,7 +715,7 @@ class TestRSACertificateRequest(object):
             backend
         )
         request2 = _load_cert(
-            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            os.path.join("x509", "requests", "san_rsa_sha1.pem"),
             x509.load_pem_x509_csr,
             backend
         )
