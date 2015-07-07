@@ -1391,7 +1391,7 @@ class CertificateRevocationList(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateSigningRequest(object):
-    @abc.abstracmethod
+    @abc.abstractmethod
     def __eq__(self, other):
         """
         Checks equality.
