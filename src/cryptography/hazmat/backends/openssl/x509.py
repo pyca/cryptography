@@ -709,6 +709,9 @@ class _CertificateSigningRequest(object):
         other_bytes = other.public_bytes(serialization.Encoding.DER)
         return self_bytes == other_bytes
 
+    def __ne__(self, other):
+        return not self == other
+
     def public_key(self):
         pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
         assert pkey != self._backend._ffi.NULL
