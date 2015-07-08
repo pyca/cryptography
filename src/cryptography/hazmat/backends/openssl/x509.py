@@ -226,15 +226,12 @@ class _Certificate(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.public_bytes(serialization.Encoding.DER))
+
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
-        bio = self._backend._create_mem_bio()
-        res = self._backend._lib.i2d_X509_bio(
-            bio, self._x509
-        )
-        assert res == 1
-        der = self._backend._read_mem_bio(bio)
-        h.update(der)
+        h.update(self.public_bytes(serialization.Encoding.DER))
         return h.finalize()
 
     @property

@@ -1324,6 +1324,12 @@ class Certificate(object):
         """
 
     @abc.abstractmethod
+    def __hash__(self):
+        """
+        Computes a hash.
+        """
+
+    @abc.abstractmethod
     def public_bytes(self, encoding):
         """
         Serializes the certificate to PEM or DER format.
