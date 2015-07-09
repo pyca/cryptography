@@ -27,6 +27,11 @@ Changelog
 * Add support for creating certificate signing requests with
   :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
+0.9.3 - 2015-07-09
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows wheels to be compiled against OpenSSL 1.0.2d.
+
 0.9.2 - 2015-07-04
 ~~~~~~~~~~~~~~~~~~
 
