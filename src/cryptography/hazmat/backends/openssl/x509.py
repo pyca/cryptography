@@ -709,6 +709,9 @@ class _CertificateSigningRequest(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.public_bytes(serialization.Encoding.DER))
+
     def public_key(self):
         pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
         assert pkey != self._backend._ffi.NULL

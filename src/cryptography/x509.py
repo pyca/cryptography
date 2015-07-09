@@ -1410,6 +1410,12 @@ class CertificateSigningRequest(object):
         """
 
     @abc.abstractmethod
+    def __hash__(self):
+        """
+        Computes a hash.
+        """
+
+    @abc.abstractmethod
     def public_key(self):
         """
         Returns the public key
