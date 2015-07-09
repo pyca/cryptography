@@ -699,6 +699,20 @@ General Name Classes
 
         :type: :class:`ObjectIdentifier`
 
+.. class:: OtherName
+
+    .. versionadded:: 1.0
+
+    This corresponds to an ``otherName.``  An ``otherName`` has a type identifier and a value represented in binary DER format.
+
+    .. attribute:: type_id
+
+        :type: :class:`ObjectIdentifier`
+
+    .. attribute:: value
+
+        :type: `bytes`
+
 X.509 Extensions
 ~~~~~~~~~~~~~~~~
 
@@ -971,6 +985,7 @@ X.509 Extensions
             :ref:`general name classes <general_name_classes>`.
 
         :returns: A list of values extracted from the matched general names.
+            The type of the returned values depends on the :class:`GeneralName`.
 
         .. doctest::
 

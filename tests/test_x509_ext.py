@@ -1147,6 +1147,55 @@ class TestIPAddress(object):
         assert gn != object()
 
 
+class TestOtherName(object):
+    def test_invalid_args(self):
+        with pytest.raises(TypeError):
+            x509.OtherName(b"notanobjectidentifier", b"derdata")
+
+        with pytest.raises(TypeError):
+            x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), u"notderdata")
+
+    def test_repr(self):
+        gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
+        if six.PY3:
+            assert repr(gn) == (
+                "<OtherName(type_id=<ObjectIdentifier(oid=1.2.3.4, "
+                "name=Unknown OID)>, value=b'derdata')>"
+            )
+        else:
+            assert repr(gn) == (
+                "<OtherName(type_id=<ObjectIdentifier(oid=1.2.3.4, "
+                "name=Unknown OID)>, value='derdata')>"
+            )
+
+        gn = x509.OtherName(x509.ObjectIdentifier("2.5.4.65"), b"derdata")
+        if six.PY3:
+            assert repr(gn) == (
+                "<OtherName(type_id=<ObjectIdentifier(oid=2.5.4.65, "
+                "name=pseudonym)>, value=b'derdata')>"
+            )
+        else:
+            assert repr(gn) == (
+                "<OtherName(type_id=<ObjectIdentifier(oid=2.5.4.65, "
+                "name=pseudonym)>, value='derdata')>"
+            )
+
+    def test_eq(self):
+        gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
+        gn2 = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
+        assert gn == gn2
+
+    def test_ne(self):
+        gn = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata")
+        assert gn != object()
+
+        gn2 = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"), b"derdata2")
+        assert gn != gn2
+
+        gn2 = x509.OtherName(x509.ObjectIdentifier("1.2.3.5"), b"derdata")
+        assert gn != gn2
+
+
 class TestGeneralNames(object):
     def test_get_values_for_type(self):
         gns = x509.GeneralNames(
@@ -1577,6 +1626,29 @@ class TestRSASubjectAlternativeNameExtension(object):
             cert.extensions
 
         assert 'Invalid rfc822name value' in str(exc.value)
+
+    def test_other_name(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_other_name.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        expected = x509.OtherName(x509.ObjectIdentifier("1.2.3.4"),
+                                  b'\x16\x0bHello World')
+        assert len(ext.value) == 1
+        assert list(ext.value)[0] == expected
+
+        othernames = ext.value.get_values_for_type(x509.OtherName)
+        assert othernames == [expected]
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

@@ -1045,6 +1045,34 @@ class IPAddress(object):
         return not self == other
 
 
+@utils.register_interface(GeneralName)
+class OtherName(object):
+    def __init__(self, type_id, value):
+        if not isinstance(type_id, ObjectIdentifier):
+            raise TypeError("type_id must be an ObjectIdentifier")
+        if not isinstance(value, bytes):
+            raise TypeError("value must be a binary string")
+
+        self._type_id = type_id
+        self._value = value
+
+    type_id = utils.read_only_property("_type_id")
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return "<OtherName(type_id={0}, value={1!r})>".format(
+            self.type_id, self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, OtherName):
+            return NotImplemented
+
+        return self.type_id == other.type_id and self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+
 class GeneralNames(object):
     def __init__(self, general_names):
         if not all(isinstance(x, GeneralName) for x in general_names):
@@ -1062,7 +1090,13 @@ class GeneralNames(object):
         return len(self._general_names)
 
     def get_values_for_type(self, type):
-        return [i.value for i in self if isinstance(i, type)]
+        # Return the value of each GeneralName, except for OtherName instances
+        # which we return directly because it has two important properties not
+        # just one value.
+        objs = (i for i in self if isinstance(i, type))
+        if type != OtherName:
+            objs = (i.value for i in objs)
+        return list(objs)
 
     def __repr__(self):
         return "<GeneralNames({0})>".format(self._general_names)
