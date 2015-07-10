@@ -171,6 +171,15 @@ def _encode_subject_alt_name(backend, san):
             )
             assert obj != backend._ffi.NULL
             gn.d.registeredID = obj
+        elif isinstance(alt_name, x509.DirectoryName):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            name = _encode_name(backend, alt_name.value)
+            # _encode_name registers the X509_NAME for gc so we'll duplicate
+            # a new one that is not gc'd for the struct
+            name = backend._lib.X509_NAME_dup(name)
+            gn.type = backend._lib.GEN_DIRNAME
+            gn.d.directoryName = name
         else:
             raise NotImplementedError(
                 "Only DNSName and RegisteredID supported right now"
