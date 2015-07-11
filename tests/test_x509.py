@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import datetime
+import ipaddress
 import os
 
 import pytest
@@ -1001,6 +1002,8 @@ class TestCertificateSigningRequestBuilder(object):
                         x509.OID_ORGANIZATION_NAME, u'We heart UTF8!\u2122'
                     )
                 ])),
+                x509.IPAddress(ipaddress.ip_address(u"127.0.0.1")),
+                x509.IPAddress(ipaddress.ip_address(u"ff::")),
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), backend)
@@ -1021,6 +1024,8 @@ class TestCertificateSigningRequestBuilder(object):
                     x509.OID_ORGANIZATION_NAME, u'We heart UTF8!\u2122'
                 ),
             ])),
+            x509.IPAddress(ipaddress.ip_address(u"127.0.0.1")),
+            x509.IPAddress(ipaddress.ip_address(u"ff::")),
         ]
 
     def test_subject_alt_name_unsupported_general_name(self, backend):

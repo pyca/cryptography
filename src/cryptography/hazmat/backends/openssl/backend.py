@@ -83,8 +83,14 @@ def _encode_asn1_str(backend, data, length):
     Create an ASN1_OCTET_STRING from a Python byte string.
     """
     s = backend._lib.ASN1_OCTET_STRING_new()
+    res = backend._lib.ASN1_OCTET_STRING_set(s, data, length)
+    assert res == 1
+    return s
+
+
+def _encode_asn1_str_gc(backend, data, length):
+    s = _encode_asn1_str(backend, data, length)
     s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
-    backend._lib.ASN1_OCTET_STRING_set(s, data, length)
     return s
 
 
@@ -185,6 +191,14 @@ def _encode_subject_alt_name(backend, san):
             name = _encode_name(backend, alt_name.value)
             gn.type = backend._lib.GEN_DIRNAME
             gn.d.directoryName = name
+        elif isinstance(alt_name, x509.IPAddress):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            ipaddr = _encode_asn1_str(
+                backend, alt_name.value.packed, len(alt_name.value.packed)
+            )
+            gn.type = backend._lib.GEN_IPADD
+            gn.d.iPAddress = ipaddr
         else:
             raise NotImplementedError(
                 "Only DNSName and RegisteredID supported right now"
@@ -919,7 +933,7 @@ class Backend(object):
                 self._ffi.NULL,
                 obj,
                 1 if extension.critical else 0,
-                _encode_asn1_str(self, pp[0], r),
+                _encode_asn1_str_gc(self, pp[0], r),
             )
             assert extension != self._ffi.NULL
             res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
