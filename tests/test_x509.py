@@ -13,7 +13,7 @@ import pytest
 
 import six
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
@@ -25,6 +25,14 @@ from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
+
+
+@utils.register_interface(x509.GeneralName)
+class FakeGeneralName(object):
+    def __init__(self, value):
+        self._value = value
+
+    value = utils.read_only_property("_value")
 
 
 def _load_cert(filename, loader, backend):
@@ -1011,6 +1019,12 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.RFC822Name(u"test@example.com"),
                 x509.RFC822Name(u"email"),
                 x509.RFC822Name(u"email@em\xe5\xefl.com"),
+                x509.UniformResourceIdentifier(
+                    u"https://\u043f\u044b\u043a\u0430.cryptography"
+                ),
+                x509.UniformResourceIdentifier(
+                    u"gopher://cryptography:70/some/path"
+                ),
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), backend)
@@ -1040,6 +1054,12 @@ class TestCertificateSigningRequestBuilder(object):
             x509.RFC822Name(u"test@example.com"),
             x509.RFC822Name(u"email"),
             x509.RFC822Name(u"email@em\xe5\xefl.com"),
+            x509.UniformResourceIdentifier(
+                u"https://\u043f\u044b\u043a\u0430.cryptography"
+            ),
+            x509.UniformResourceIdentifier(
+                u"gopher://cryptography:70/some/path"
+            ),
         ]
 
     def test_invalid_asn1_othername(self, backend):
@@ -1069,13 +1089,11 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.NameAttribute(x509.OID_COMMON_NAME, u"SAN"),
             ])
         ).add_extension(
-            x509.SubjectAlternativeName([
-                x509.UniformResourceIdentifier(u"http://test.com"),
-            ]),
+            x509.SubjectAlternativeName([FakeGeneralName("")]),
             critical=False,
         )
 
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
 
