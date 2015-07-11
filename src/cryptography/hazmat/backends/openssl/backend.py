@@ -215,7 +215,8 @@ def _encode_subject_alt_name(backend, san):
             value = backend._lib.d2i_ASN1_TYPE(
                 backend._ffi.NULL, data_ptr_ptr, len(alt_name.value)
             )
-            assert value != backend._ffi.NULL
+            if value == backend._ffi.NULL:
+                raise ValueError("Invalid ASN.1 data")
             other_name.type_id = type_id
             other_name.value = value
             gn.type = backend._lib.GEN_OTHERNAME

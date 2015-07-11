@@ -1036,6 +1036,25 @@ class TestCertificateSigningRequestBuilder(object):
             ),
         ]
 
+    def test_invalid_asn1_othername(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COMMON_NAME, u"SAN"),
+            ])
+        ).add_extension(
+            x509.SubjectAlternativeName([
+                x509.OtherName(
+                    type_id=x509.ObjectIdentifier("1.2.3.3.3.3"),
+                    value=b"\x01\x02\x01\x05"
+                ),
+            ]),
+            critical=False,
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
     def test_subject_alt_name_unsupported_general_name(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
 
