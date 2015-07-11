@@ -89,8 +89,10 @@ def _encode_asn1_str(backend, data, length):
 
 
 def _encode_name(backend, attributes):
+    """
+    The X509_NAME created will not be gc'd. Use _encode_name_gc if needed.
+    """
     subject = backend._lib.X509_NAME_new()
-    subject = backend._ffi.gc(subject, backend._lib.X509_NAME_free)
     for attribute in attributes:
         value = attribute.value.encode('utf8')
         obj = _txt2obj(backend, attribute.oid.dotted_string)
@@ -102,6 +104,12 @@ def _encode_name(backend, attributes):
             -1, -1, 0,
         )
         assert res == 1
+    return subject
+
+
+def _encode_name_gc(backend, attributes):
+    subject = _encode_name(backend, attributes)
+    subject = backend._ffi.gc(subject, backend._lib.X509_NAME_free)
     return subject
 
 
@@ -175,9 +183,6 @@ def _encode_subject_alt_name(backend, san):
             gn = backend._lib.GENERAL_NAME_new()
             assert gn != backend._ffi.NULL
             name = _encode_name(backend, alt_name.value)
-            # _encode_name registers the X509_NAME for gc so we'll duplicate
-            # a new one that is not gc'd for the struct
-            name = backend._lib.X509_NAME_dup(name)
             gn.type = backend._lib.GEN_DIRNAME
             gn.d.directoryName = name
         else:
@@ -883,7 +888,7 @@ class Backend(object):
 
         # Set subject name.
         res = self._lib.X509_REQ_set_subject_name(
-            x509_req, _encode_name(self, builder._subject_name)
+            x509_req, _encode_name_gc(self, builder._subject_name)
         )
         assert res == 1
 
