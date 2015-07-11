@@ -157,6 +157,7 @@ int ASN1_UTCTIME_check(ASN1_UTCTIME *);
 int ASN1_STRING_set_default_mask_asc(char *);
 
 int i2d_ASN1_TYPE(ASN1_TYPE *, unsigned char **);
+ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
