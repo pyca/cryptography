@@ -216,6 +216,7 @@ def _encode_subject_alt_name(backend, san):
                 backend._ffi.NULL, data_ptr_ptr, len(alt_name.value)
             )
             if value == backend._ffi.NULL:
+                backend._consume_errors()
                 raise ValueError("Invalid ASN.1 data")
             other_name.type_id = type_id
             other_name.value = value
