@@ -199,6 +199,28 @@ def _encode_subject_alt_name(backend, san):
             )
             gn.type = backend._lib.GEN_IPADD
             gn.d.iPAddress = ipaddr
+        elif isinstance(alt_name, x509.OtherName):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            other_name = backend._lib.OTHERNAME_new()
+            assert other_name != backend._ffi.NULL
+
+            type_id = backend._lib.OBJ_txt2obj(
+                alt_name.type_id.dotted_string.encode('ascii'), 1
+            )
+            assert type_id != backend._ffi.NULL
+            data = backend._ffi.new("unsigned char[]", alt_name.value)
+            data_ptr_ptr = backend._ffi.new("unsigned char **")
+            data_ptr_ptr[0] = data
+            value = backend._lib.d2i_ASN1_TYPE(
+                backend._ffi.NULL, data_ptr_ptr, len(alt_name.value)
+            )
+            if value == backend._ffi.NULL:
+                raise ValueError("Invalid ASN.1 data")
+            other_name.type_id = type_id
+            other_name.value = value
+            gn.type = backend._lib.GEN_OTHERNAME
+            gn.d.otherName = other_name
         else:
             raise NotImplementedError(
                 "Only DNSName and RegisteredID supported right now"
