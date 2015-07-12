@@ -175,10 +175,9 @@ def _decode_general_name(backend, gn):
         data = _asn1_string_to_ascii(backend, gn.d.rfc822Name)
         name, address = parseaddr(data)
         parts = address.split(u"@")
-        if name or len(parts) > 2 or not address:
-            # parseaddr has found a name (e.g. Name <email>) or the split
-            # has found more than 2 parts (which means more than one @ sign)
-            # or the entire value is an empty string.
+        if name or not address:
+            # parseaddr has found a name (e.g. Name <email>) or the entire
+            # value is an empty string.
             raise ValueError("Invalid rfc822name value")
         elif len(parts) == 1:
             # Single label email name. This is valid for local delivery. No
