@@ -1,5 +1,5 @@
-X.509
-=====
+X.509 Reference
+===============
 
 .. currentmodule:: cryptography.x509
 
@@ -85,10 +85,6 @@ X.509
     GVI9+0lAFwxOUnOnwsoI40iOoxjLMGB+CgFLKCGUcWxP
     -----END CERTIFICATE-----
     """.strip()
-
-X.509 is an ITU-T standard for a `public key infrastructure`_. X.509v3 is
-defined in :rfc:`5280` (which obsoletes :rfc:`2459` and :rfc:`3280`). X.509
-certificates are commonly used in protocols like `TLS`_.
 
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
