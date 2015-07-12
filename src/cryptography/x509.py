@@ -6,7 +6,10 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 import ipaddress
+from email.utils import parseaddr
 from enum import Enum
+
+import idna
 
 import six
 
@@ -901,7 +904,24 @@ class RFC822Name(object):
         if not isinstance(value, six.text_type):
             raise TypeError("value must be a unicode string")
 
+        name, address = parseaddr(value)
+        parts = address.split(u"@")
+        if name or len(parts) > 2 or not address:
+            # parseaddr has found a name (e.g. Name <email>) or the split
+            # has found more than 2 parts (which means more than one @)
+            # or the entire value is an empty string.
+            raise ValueError("Invalid rfc822name value")
+        elif len(parts) == 1:
+            # Single label email name. This is valid for local delivery.
+            # No IDNA encoding needed since there is no domain component.
+            encoded = address.encode("ascii")
+        else:
+            # A normal email of the form user@domain.com. Let's attempt to
+            # encode the domain component and reconstruct the address.
+            encoded = parts[0].encode("ascii") + b"@" + idna.encode(parts[1])
+
         self._value = value
+        self._encoded = encoded
 
     value = utils.read_only_property("_value")
 

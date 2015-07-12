@@ -1087,6 +1087,24 @@ class TestDirectoryName(object):
         assert gn != object()
 
 
+class TestRFC822Name(object):
+    def test_invalid_email(self):
+        with pytest.raises(ValueError):
+            x509.RFC822Name(u"Name <email>")
+
+        with pytest.raises(ValueError):
+            x509.RFC822Name(u"")
+
+    def test_single_label(self):
+        gn = x509.RFC822Name(u"administrator")
+        assert gn.value == u"administrator"
+
+    def test_idna(self):
+        gn = x509.RFC822Name(u"email@em\xe5\xefl.com")
+        assert gn.value == u"email@em\xe5\xefl.com"
+        assert gn._encoded == b"email@xn--eml-vla4c.com"
+
+
 class TestRegisteredID(object):
     def test_not_oid(self):
         with pytest.raises(TypeError):
