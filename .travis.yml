@@ -120,7 +120,7 @@ script:
     - ./.travis/run.sh
 
 after_success:
-    - source ~/.venv/bin/activate && bash <(curl -s https://codecov.io/bash) -e TRAVIS_OS_NAME,TOXENV,OPENSSL
+    - ./.travis/upload_coverage.sh
 
 notifications:
     irc:
