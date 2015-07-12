@@ -12,10 +12,10 @@ from .utils import check_backend_support, select_backends, skip_if_empty
 
 
 def pytest_generate_tests(metafunc):
-    names = metafunc.config.getoption("--backend")
-    selected_backends = select_backends(names, _available_backends())
-
     if "backend" in metafunc.fixturenames:
+        names = metafunc.config.getoption("--backend")
+        selected_backends = select_backends(names, _available_backends())
+
         filtered_backends = []
         required = metafunc.function.requires_backend_interface
         required_interfaces = [
