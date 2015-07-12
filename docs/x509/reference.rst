@@ -1578,7 +1578,5 @@ Exceptions
         types can be found in `RFC 5280 section 4.2.1.6`_.
 
 
-.. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
-.. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
