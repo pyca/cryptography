@@ -1705,6 +1705,22 @@ class TestRSANumbersEquality(object):
         )
         assert num != object()
 
+    def test_public_numbers_hash(self):
+        pub1 = RSAPublicNumbers(3, 17)
+        pub2 = RSAPublicNumbers(3, 17)
+        pub3 = RSAPublicNumbers(7, 21)
+
+        assert hash(pub1) == hash(pub2)
+        assert hash(pub1) != hash(pub3)
+
+    def test_private_numbers_hash(self):
+        priv1 = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 2))
+        priv2 = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 2))
+        priv3 = RSAPrivateNumbers(1, 2, 3, 4, 5, 6, RSAPublicNumbers(1, 3))
+
+        assert hash(priv1) == hash(priv2)
+        assert hash(priv1) != hash(priv3)
+
 
 class TestRSAPrimeFactorRecovery(object):
     @pytest.mark.parametrize(

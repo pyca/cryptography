@@ -307,6 +307,17 @@ class RSAPrivateNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((
+            self.p,
+            self.q,
+            self.d,
+            self.dmp1,
+            self.dmq1,
+            self.iqmp,
+            self.public_numbers,
+        ))
+
 
 class RSAPublicNumbers(object):
     def __init__(self, e, n):
@@ -336,3 +347,6 @@ class RSAPublicNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.e, self.n))
