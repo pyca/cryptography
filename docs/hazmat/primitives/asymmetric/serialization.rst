@@ -97,8 +97,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 .. note::
 
     A PEM block which starts with ``-----BEGIN CERTIFICATE-----`` is not a
-    public or private key, it's an :doc:`X.509 Certificate </x509>`. You can
-    load it using :func:`~cryptography.x509.load_pem_x509_certificate` and
+    public or private key, it's an :doc:`X.509 Certificate </x509/index>`. You
+    can load it using :func:`~cryptography.x509.load_pem_x509_certificate` and
     extract the public key with
     :meth:`Certificate.public_key <cryptography.x509.Certificate.public_key>`.
 
