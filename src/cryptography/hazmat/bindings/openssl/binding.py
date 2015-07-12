@@ -72,9 +72,6 @@ class Binding(object):
 
     @classmethod
     def _ensure_ffi_initialized(cls):
-        if cls._lib_loaded:
-            return
-
         with cls._init_lock:
             if not cls._lib_loaded:
                 cls._lib_loaded = True
