@@ -995,6 +995,12 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.DNSName(u"example.com"),
                 x509.DNSName(u"*.example.com"),
                 x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
+                x509.DirectoryName(x509.Name([
+                    x509.NameAttribute(x509.OID_COMMON_NAME, u'PyCA'),
+                    x509.NameAttribute(
+                        x509.OID_ORGANIZATION_NAME, u'We heart UTF8!\u2122'
+                    )
+                ])),
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), backend)
@@ -1009,6 +1015,12 @@ class TestCertificateSigningRequestBuilder(object):
             x509.DNSName(u"example.com"),
             x509.DNSName(u"*.example.com"),
             x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
+            x509.DirectoryName(x509.Name([
+                x509.NameAttribute(x509.OID_COMMON_NAME, u'PyCA'),
+                x509.NameAttribute(
+                    x509.OID_ORGANIZATION_NAME, u'We heart UTF8!\u2122'
+                ),
+            ])),
         ]
 
     def test_subject_alt_name_unsupported_general_name(self, backend):
