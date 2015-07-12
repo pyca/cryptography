@@ -141,9 +141,7 @@ def _decode_general_name(backend, gn):
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
     elif gn.type == backend._lib.GEN_IPADD:
-        data = backend._ffi.buffer(
-            gn.d.iPAddress.data, gn.d.iPAddress.length
-        )[:]
+        data = _asn1_string_to_bytes(backend, gn.d.iPAddress)
         data_len = len(data)
         if data_len == 8 or data_len == 32:
             # This is an IPv4 or IPv6 Network and not a single IP. This
