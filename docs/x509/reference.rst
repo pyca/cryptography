@@ -1,5 +1,5 @@
-X.509
-=====
+X.509 Reference
+===============
 
 .. currentmodule:: cryptography.x509
 
@@ -85,10 +85,6 @@ X.509
     GVI9+0lAFwxOUnOnwsoI40iOoxjLMGB+CgFLKCGUcWxP
     -----END CERTIFICATE-----
     """.strip()
-
-X.509 is an ITU-T standard for a `public key infrastructure`_. X.509v3 is
-defined in :rfc:`5280` (which obsoletes :rfc:`2459` and :rfc:`3280`). X.509
-certificates are commonly used in protocols like `TLS`_.
 
 Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
@@ -1582,7 +1578,5 @@ Exceptions
         types can be found in `RFC 5280 section 4.2.1.6`_.
 
 
-.. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
-.. _`TLS`: https://en.wikipedia.org/wiki/Transport_Layer_Security
 .. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6

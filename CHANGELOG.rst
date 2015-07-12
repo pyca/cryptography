@@ -93,7 +93,7 @@ Changelog
   Note that unsupported extensions with the critical flag raise
   :class:`~cryptography.x509.UnsupportedExtension` while unsupported extensions
   set to non-critical are silently ignored. Read the
-  :doc:`X.509 documentation</x509>` for more information.
+  :doc:`X.509 documentation</x509/index>` for more information.
 
 0.8.2 - 2015-04-10
 ~~~~~~~~~~~~~~~~~~
@@ -120,7 +120,7 @@ Changelog
   from :mod:`~cryptography.hazmat.primitives.interfaces` to
   :mod:`~cryptography.hazmat.primitives.kdf`.
 * Added support for parsing X.509 names. See the
-  :doc:`X.509 documentation</x509>` for more information.
+  :doc:`X.509 documentation</x509/index>` for more information.
 * Added
   :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key` to
   support loading of DER encoded private keys and
@@ -256,7 +256,7 @@ Changelog
   support the loading of OpenSSH public keys (:rfc:`4253`). Only RSA and DSA
   keys are currently supported.
 * Added initial support for X.509 certificate parsing. See the
-  :doc:`X.509 documentation</x509>` for more information.
+  :doc:`X.509 documentation</x509/index>` for more information.
 
 0.6.1 - 2014-10-15
 ~~~~~~~~~~~~~~~~~~
