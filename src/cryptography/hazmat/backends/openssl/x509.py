@@ -141,11 +141,32 @@ def _decode_general_name(backend, gn):
         oid = _obj2txt(backend, gn.d.registeredID)
         return x509.RegisteredID(x509.ObjectIdentifier(oid))
     elif gn.type == backend._lib.GEN_IPADD:
-        return x509.IPAddress(
-            ipaddress.ip_address(
-                _asn1_string_to_bytes(backend, gn.d.iPAddress)
-            )
-        )
+        data = _asn1_string_to_bytes(backend, gn.d.iPAddress)
+        data_len = len(data)
+        if data_len == 8 or data_len == 32:
+            # This is an IPv4 or IPv6 Network and not a single IP. This
+            # type of data appears in Name Constraints. Unfortunately,
+            # ipaddress doesn't support packed bytes + netmask. Additionally,
+            # IPv6Network can only handle CIDR rather than the full 16 byte
+            # netmask. To handle this we convert the netmask to integer, then
+            # find the first 0 bit, which will be the prefix. If another 1
+            # bit is present after that the netmask is invalid.
+            base = ipaddress.ip_address(data[:data_len // 2])
+            netmask = ipaddress.ip_address(data[data_len // 2:])
+            bits = bin(int(netmask))[2:]
+            prefix = bits.find('0')
+            # If no 0 bits are found it is a /32 or /128
+            if prefix == -1:
+                prefix = len(bits)
+
+            if "1" in bits[prefix:]:
+                raise ValueError("Invalid netmask")
+
+            ip = ipaddress.ip_network(base.exploded + u"/{0}".format(prefix))
+        else:
+            ip = ipaddress.ip_address(data)
+
+        return x509.IPAddress(ip)
     elif gn.type == backend._lib.GEN_DIRNAME:
         return x509.DirectoryName(
             _decode_x509_name(backend, gn.d.directoryName)
