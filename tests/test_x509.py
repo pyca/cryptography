@@ -1008,6 +1008,9 @@ class TestCertificateSigningRequestBuilder(object):
                     type_id=x509.ObjectIdentifier("1.2.3.3.3.3"),
                     value=b"0\x03\x02\x01\x05"
                 ),
+                x509.RFC822Name(u"test@example.com"),
+                x509.RFC822Name(u"email"),
+                x509.RFC822Name(u"email@em\xe5\xefl.com"),
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), backend)
@@ -1034,6 +1037,9 @@ class TestCertificateSigningRequestBuilder(object):
                 type_id=x509.ObjectIdentifier("1.2.3.3.3.3"),
                 value=b"0\x03\x02\x01\x05"
             ),
+            x509.RFC822Name(u"test@example.com"),
+            x509.RFC822Name(u"email"),
+            x509.RFC822Name(u"email@em\xe5\xefl.com"),
         ]
 
     def test_invalid_asn1_othername(self, backend):
@@ -1064,7 +1070,7 @@ class TestCertificateSigningRequestBuilder(object):
             ])
         ).add_extension(
             x509.SubjectAlternativeName([
-                x509.RFC822Name(u"test@example.com"),
+                x509.UniformResourceIdentifier(u"http://test.com"),
             ]),
             critical=False,
         )

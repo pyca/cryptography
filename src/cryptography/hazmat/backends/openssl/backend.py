@@ -222,6 +222,14 @@ def _encode_subject_alt_name(backend, san):
             other_name.value = value
             gn.type = backend._lib.GEN_OTHERNAME
             gn.d.otherName = other_name
+        elif isinstance(alt_name, x509.RFC822Name):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            asn1_str = _encode_asn1_str(
+                backend, alt_name._encoded, len(alt_name._encoded)
+            )
+            gn.type = backend._lib.GEN_EMAIL
+            gn.d.rfc822Name = asn1_str
         else:
             raise NotImplementedError(
                 "Only DNSName and RegisteredID supported right now"
