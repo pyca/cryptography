@@ -12,8 +12,6 @@ import idna
 
 import six
 
-from six.moves import urllib_parse
-
 from cryptography import utils, x509
 from cryptography.exceptions import (
     InternalError, UnsupportedAlgorithm, _Reasons
