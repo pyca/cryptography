@@ -2,13 +2,13 @@ Tutorial
 ========
 
 X.509 certificates are used to authenticate clients on servers. The most common
-use case is for webservers using HTTPS.
+use case is for web servers using HTTPS.
 
 Creating a Certificate Signing Request (CSR)
 --------------------------------------------
 
 When obtaining a certificate from a certificate authority (CA), the usual
-workflow is:
+flow is:
 
 1. You generate a private/public key pair.
 2. You create a request for a certificate, which is signed by your key (to prove
