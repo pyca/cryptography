@@ -230,9 +230,17 @@ def _encode_subject_alt_name(backend, san):
             )
             gn.type = backend._lib.GEN_EMAIL
             gn.d.rfc822Name = asn1_str
+        elif isinstance(alt_name, x509.UniformResourceIdentifier):
+            gn = backend._lib.GENERAL_NAME_new()
+            assert gn != backend._ffi.NULL
+            asn1_str = _encode_asn1_str(
+                backend, alt_name._encoded, len(alt_name._encoded)
+            )
+            gn.type = backend._lib.GEN_URI
+            gn.d.uniformResourceIdentifier = asn1_str
         else:
-            raise NotImplementedError(
-                "Only DNSName and RegisteredID supported right now"
+            raise ValueError(
+                "{0} is an unknown GeneralName type".format(alt_name)
             )
 
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
