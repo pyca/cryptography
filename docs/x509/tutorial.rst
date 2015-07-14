@@ -11,13 +11,15 @@ When obtaining a certificate from a certificate authority (CA), the usual
 flow is:
 
 1. You generate a private/public key pair.
-2. You create a request for a certificate, which is signed by your key (to prove
-   that you own that key).
+2. You create a request for a certificate, which is signed by your key (to
+   prove that you own that key).
 3. You give your CSR to a CA (but *not* the private key).
 4. The CA validates that you own the resource (e.g. domain) you want a
    certificate for.
-5. The CA gives you a certificate, signed by them. Which identifies your public
+5. The CA gives you a certificate, signed by them, which identifies your public
    key, and the resource you are authenticated for.
+6. You configure your server to use that certificate, combined with your
+   private key, to server traffic.
 
 If you want to obtain a certificate from a typical commercial CA, here's how.
 First, you'll need to generate a private key, we'll generate an RSA key (these
@@ -45,8 +47,8 @@ are the most common types of keys on the web right now):
 If you've already generated a key you can load it with
 :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`.
 
-Next we need to generate a certificate signing request. A typical CSR contains a
-few details:
+Next we need to generate a certificate signing request. A typical CSR contains
+a few details:
 
 * Information about our public key (including a signature of the entire body).
 * Information about who *we* are.
