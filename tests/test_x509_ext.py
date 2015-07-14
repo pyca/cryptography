@@ -1105,6 +1105,38 @@ class TestRFC822Name(object):
         assert gn._encoded == b"email@xn--eml-vla4c.com"
 
 
+class TestUniformResourceIdentifier(object):
+    def test_no_parsed_hostname(self):
+        gn = x509.UniformResourceIdentifier(u"singlelabel")
+        assert gn.value == u"singlelabel"
+
+    def test_with_port(self):
+        gn = x509.UniformResourceIdentifier(u"singlelabel:443/test")
+        assert gn.value == u"singlelabel:443/test"
+
+    def test_idna_no_port(self):
+        gn = x509.UniformResourceIdentifier(
+            u"http://\u043f\u044b\u043a\u0430.cryptography"
+        )
+        assert gn.value == u"http://\u043f\u044b\u043a\u0430.cryptography"
+        assert gn._encoded == b"http://xn--80ato2c.cryptography"
+
+    def test_idna_with_port(self):
+        gn = x509.UniformResourceIdentifier(
+            u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
+        )
+        assert gn.value == (
+            u"gopher://\u043f\u044b\u043a\u0430.cryptography:70/some/path"
+        )
+        assert gn._encoded == b"gopher://xn--80ato2c.cryptography:70/some/path"
+
+    def test_query_and_fragment(self):
+        gn = x509.UniformResourceIdentifier(
+            u"ldap://cryptography:90/path?query=true#somedata"
+        )
+        assert gn.value == u"ldap://cryptography:90/path?query=true#somedata"
+
+
 class TestRegisteredID(object):
     def test_not_oid(self):
         with pytest.raises(TypeError):

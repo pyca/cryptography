@@ -13,6 +13,8 @@ import idna
 
 import six
 
+from six.moves import urllib_parse
+
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes
 
@@ -966,7 +968,31 @@ class UniformResourceIdentifier(object):
         if not isinstance(value, six.text_type):
             raise TypeError("value must be a unicode string")
 
+        parsed = urllib_parse.urlparse(value)
+        if not parsed.hostname:
+            netloc = ""
+        elif parsed.port:
+            netloc = (
+                idna.encode(parsed.hostname) +
+                ":{0}".format(parsed.port).encode("ascii")
+            ).decode("ascii")
+        else:
+            netloc = idna.encode(parsed.hostname).decode("ascii")
+
+        # Note that building a URL in this fashion means it should be
+        # semantically indistinguishable from the original but is not
+        # guaranteed to be exactly the same.
+        uri = urllib_parse.urlunparse((
+            parsed.scheme,
+            netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment
+        )).encode("ascii")
+
         self._value = value
+        self._encoded = uri
 
     value = utils.read_only_property("_value")
 
