@@ -42,7 +42,7 @@ are the most common types of keys on the web right now):
     ...         encoding=serialization.Encoding.PEM,
     ...         format=serialization.PrivateFormat.TraditionalOpenSSL,
     ...         encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
-    ... ))
+    ...     ))
 
 If you've already generated a key you can load it with
 :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`.
