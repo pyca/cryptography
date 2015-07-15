@@ -9,6 +9,7 @@ import platform
 import subprocess
 import sys
 from distutils.command.build import build
+from distutils.command.build_ext import build_ext
 
 import pkg_resources
 
@@ -97,6 +98,30 @@ class PyTest(test):
         test_args = [os.path.join(base_dir, "tests")]
         errno = pytest.main(test_args)
         sys.exit(errno)
+
+
+class ConditionalCFFIBuildExt(build_ext):
+
+    def pre_run(self, ext, ffi):
+        from cffi import FFI
+        count = 0
+        for conditional in getattr(ffi, "_conditional_cdefs", []):
+            for attribute, (tc, rc) in conditional.items():
+                modname = "_cryptography_cffi_test_{0}".format(count)
+                tffi = FFI()
+                tffi.cdef("static const int {0};".format(attribute))
+                tffi.set_source(
+                    modname, tc,
+                    libraries=self.get_libraries(ext),
+                )
+                tmpdir = os.path.join(self.build_temp, "conditionals")
+                tffi.compile(tmpdir=tmpdir)
+                sys_path = sys.path[:]
+                sys.path.append(tmpdir)
+                mod = __import__(modname)
+                sys.path = sys_path
+                if getattr(mod.lib, attribute, None):
+                    ffi.cdef(rc)
 
 
 def keywords_with_side_effects(argv):
@@ -207,6 +232,7 @@ def keywords_with_side_effects(argv):
         return {
             "setup_requires": setup_requirements,
             "cmdclass": {
+                "build_ext": ConditionalCFFIBuildExt,
                 "test": PyTest,
             },
             "cffi_modules": cffi_modules

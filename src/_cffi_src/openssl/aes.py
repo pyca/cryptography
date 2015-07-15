@@ -23,13 +23,6 @@ int AES_set_decrypt_key(const unsigned char *, const int, AES_KEY *);
 """
 
 MACROS = """
-/* these can be moved back to FUNCTIONS once we drop support for 0.9.8h.
-   This should be when we drop RHEL/CentOS 5, which is on 0.9.8e. */
-int AES_wrap_key(AES_KEY *, const unsigned char *, unsigned char *,
-                 const unsigned char *, unsigned int);
-int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
-                   const unsigned char *, unsigned int);
-
 /* The ctr128_encrypt function is only useful in 0.9.8. You should use EVP for
    this in 1.0.0+. It is defined in macros because the function signature
    changed after 0.9.8 */
@@ -45,10 +38,6 @@ CUSTOMIZATIONS = """
 static const long Cryptography_HAS_AES_WRAP = 1;
 #else
 static const long Cryptography_HAS_AES_WRAP = 0;
-int (*AES_wrap_key)(AES_KEY *, const unsigned char *, unsigned char *,
-                    const unsigned char *, unsigned int) = NULL;
-int (*AES_unwrap_key)(AES_KEY *, const unsigned char *, unsigned char *,
-                      const unsigned char *, unsigned int) = NULL;
 #endif
 
 """
@@ -58,4 +47,25 @@ CONDITIONAL_NAMES = {
         "AES_wrap_key",
         "AES_unwrap_key",
     ],
+}
+
+
+CONDITIONAL_NAMES2 = {
+    "Cryptography_HAS_AES_WRAP": (
+        """
+/* OpenSSL 0.9.8h+ */
+#include <openssl/opensslv.h>
+#if OPENSSL_VERSION_NUMBER >= 0x0090808fL
+static const long Cryptography_HAS_AES_WRAP = 1;
+#else
+static const long Cryptography_HAS_AES_WRAP = 0;
+#endif
+        """,
+        """
+int AES_wrap_key(AES_KEY *, const unsigned char *, unsigned char *,
+                 const unsigned char *, unsigned int);
+int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
+                   const unsigned char *, unsigned int);
+        """,
+    ),
 }

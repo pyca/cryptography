@@ -6,7 +6,17 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
-from cffi import FFI
+from cffi import FFI as _FFI
+
+
+class FFI(_FFI):
+
+    def __init__(self, *args, **kwargs):
+        super(FFI, self).__init__(*args, **kwargs)
+        self._conditional_cdefs = []
+
+    def conditional_cdefs(self, conditionals):
+        self._conditional_cdefs.extend(conditionals)
 
 
 def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
@@ -31,6 +41,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
     functions = []
     macros = []
     customizations = []
+    conditionals = []
     for name in modules:
         __import__(module_prefix + name)
         module = sys.modules[module_prefix + name]
@@ -40,6 +51,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
         functions.append(module.FUNCTIONS)
         includes.append(module.INCLUDES)
         customizations.append(module.CUSTOMIZATIONS)
+        conditionals.append(getattr(module, "CONDITIONAL_NAMES2", {}))
 
     # We include functions here so that if we got any of their definitions
     # wrong, the underlying C compiler will explode. In C you are allowed
@@ -60,6 +72,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
         module_name,
         cdef_source="\n".join(types + functions + macros),
         verify_source=verify_source,
+        conditionals=conditionals,
         libraries=libraries,
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
@@ -68,10 +81,11 @@ def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
     return ffi
 
 
-def build_ffi(module_name, cdef_source, verify_source, libraries=[],
-              extra_compile_args=[], extra_link_args=[]):
+def build_ffi(module_name, cdef_source, verify_source, conditionals=[],
+              libraries=[], extra_compile_args=[], extra_link_args=[]):
     ffi = FFI()
     ffi.cdef(cdef_source)
+    ffi.conditional_cdefs(conditionals)
     ffi.set_source(
         module_name,
         verify_source,
