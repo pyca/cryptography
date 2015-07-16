@@ -45,7 +45,7 @@ are the most common types of keys on the web right now):
     ...     ))
 
 If you've already generated a key you can load it with
-:func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`.
+:func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`.
 
 Next we need to generate a certificate signing request. A typical CSR contains
 a few details:
