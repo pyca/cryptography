@@ -8,6 +8,7 @@ certificates are commonly used in protocols like `TLS`_.
 .. toctree::
     :maxdepth: 2
 
+    tutorial
     reference
 
 .. _`public key infrastructure`: https://en.wikipedia.org/wiki/Public_key_infrastructure
