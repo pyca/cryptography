@@ -1728,8 +1728,6 @@ class CertificateBuilder(object):
             )
         else:
             raise NotImplementedError('Unsupported X.509 extension.')
-        if not isinstance(extension, Extension):
-            raise TypeError('Expecting x509.Extension object.')
 
         # TODO: This is quadratic in the number of extensions
         for e in self._extensions:
