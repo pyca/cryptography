@@ -801,7 +801,7 @@ class TestRSACertificateRequest(object):
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
-            x509.BasicConstraints(False, None), True,
+            x509.BasicConstraints(ca=False, path_length=None), True,
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
