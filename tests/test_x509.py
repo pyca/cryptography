@@ -776,16 +776,8 @@ class TestRSACertificateRequest(object):
         assert hash(request1) != hash(request3)
 
     def test_build_cert(self, backend):
-        issuer_private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=backend,
-        )
-        subject_private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=backend,
-        )
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
