@@ -1044,6 +1044,8 @@ class Backend(object):
         for i, extension in enumerate(builder._extensions):
             if isinstance(extension.value, x509.BasicConstraints):
                 pp, r = _encode_basic_constraints(self, extension.value)
+            elif isinstance(extension.value, x509.SubjectAlternativeName):
+                pp, r = _encode_subject_alt_name(self, extension.value)
             else:
                 raise ValueError('Extension not yet supported.')
 
