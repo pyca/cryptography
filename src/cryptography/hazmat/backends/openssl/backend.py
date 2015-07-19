@@ -95,22 +95,6 @@ def _encode_asn1_str_gc(backend, data, length):
     return s
 
 
-def _make_asn1_int(backend, x):
-    i = backend._lib.ASN1_INTEGER_new()
-    # i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
-    backend._lib.ASN1_INTEGER_set(i, x)
-    return i
-
-
-def _make_asn1_str(backend, x, n=None):
-    if n is None:
-        n = len(x)
-    s = backend._lib.ASN1_OCTET_STRING_new()
-    # s = backend._ffi.gc(s, backend._lib.ASN1_OCTET_STRING_free)
-    backend._lib.ASN1_OCTET_STRING_set(s, x, n)
-    return s
-
-
 def _encode_name(backend, attributes):
     """
     The X509_NAME created will not be gc'd. Use _encode_name_gc if needed.
@@ -1039,7 +1023,7 @@ class Backend(object):
         assert res == 1
 
         # Set the certificate serial number.
-        serial_number = _make_asn1_int(self, builder._serial_number)
+        serial_number = _encode_asn1_int(self, builder._serial_number)
         self._lib.X509_set_serialNumber(x509_cert, serial_number)
 
         # Set the "not before" time.

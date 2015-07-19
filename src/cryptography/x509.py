@@ -1746,6 +1746,7 @@ class CertificateBuilder(object):
         """
         Signs the certificate using the CA's private key.
         """
+        builder = self
         if self._version is None:
-            self._version = Version.v1
-        return backend.sign_x509_certificate(self, private_key, algorithm)
+            builder = self.version(Version.v3)
+        return backend.sign_x509_certificate(builder, private_key, algorithm)

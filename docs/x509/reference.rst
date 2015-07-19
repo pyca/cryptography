@@ -393,10 +393,6 @@ X.509 Certificate Builder
 
 .. class:: CertificateBuilder
 
-    .. method:: __init__()
-
-        Creates an empty certificate (version 1).
-
     .. method:: set_version(version)
 
         Sets the X.509 version that will be used in the certificate.
@@ -404,27 +400,27 @@ X.509 Certificate Builder
         :param version: The :class:`~cryptography.x509.Version` that will be
             used by the certificate.
 
-    .. method:: set_issuer_name(name)
+    .. method:: issuer_name(name)
 
         Sets the issuer's distinguished name.
 
         :param public_key: The :class:`~cryptography.x509.Name` that describes
             the issuer (CA).
 
-    .. method:: set_subject_name(name)
+    .. method:: subject_name(name)
 
         Sets the subject's distinguished name.
 
         :param public_key: The :class:`~cryptography.x509.Name` that describes
             the subject (requester).
 
-    .. method:: set_public_key(public_key)
+    .. method:: public_key(public_key)
 
         Sets the subject's public key.
 
         :param public_key: The subject's public key.
 
-    .. method:: set_serial_number(serial_number)
+    .. method:: serial_number(serial_number)
 
         Sets the certificate's serial number (an integer).  The CA's policy
         determines how it attributes serial numbers to certificates.  The only
@@ -435,7 +431,7 @@ X.509 Certificate Builder
             identify this certificate (most notably during certificate
             revocation checking).
 
-    .. method:: set_not_valid_before(time)
+    .. method:: not_valid_before(time)
 
         Sets the certificate's activation time.  This is the time from which
         clients can start trusting the certificate.  It may be different from
@@ -445,7 +441,7 @@ X.509 Certificate Builder
             activation time for the certificate.  The certificate may not be
             trusted clients if it is used before this time.
 
-    .. method:: set_not_valid_after(time)
+    .. method:: not_valid_after(time)
 
         Sets the certificate's expiration time.  This is the time from which
         clients should no longer trust the certificate.  The CA's policy will
