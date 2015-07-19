@@ -1648,7 +1648,7 @@ class CertificateBuilder(object):
         """
         if not isinstance(name, Name):
             raise TypeError('Expecting x509.Name object.')
-        if self._issuer_name is not None:
+        if self._subject_name is not None:
             raise ValueError('The subject name may only be set once.')
         return CertificateBuilder(
             self._version, self._issuer_name, name, self._public_key,
@@ -1678,7 +1678,7 @@ class CertificateBuilder(object):
         """
         if not isinstance(number, six.integer_types):
             raise TypeError('Serial number must be of integral type.')
-        if self._public_key is not None:
+        if self._serial_number is not None:
             raise ValueError('The serial number may only be set once.')
         return CertificateBuilder(
             self._version, self._issuer_name, self._subject_name,
@@ -1708,7 +1708,7 @@ class CertificateBuilder(object):
         # TODO: require UTC datetime?
         if not isinstance(time, datetime.datetime):
             raise TypeError('Expecting datetime object.')
-        if self._not_valid_before is not None:
+        if self._not_valid_after is not None:
             raise ValueError('The not valid after may only be set once.')
         return CertificateBuilder(
             self._version, self._issuer_name, self._subject_name,
