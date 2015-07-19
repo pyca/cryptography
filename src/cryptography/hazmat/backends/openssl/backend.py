@@ -1043,14 +1043,17 @@ class Backend(object):
         # Add extensions.
         for i, extension in enumerate(builder._extensions):
             if isinstance(extension.value, x509.BasicConstraints):
-                extension = _encode_basic_constraints(
-                    self,
-                    extension.value.ca,
-                    extension.value.path_length,
-                    extension.critical
-                )
+                pp, r = _encode_basic_constraints(self, extension.value)
             else:
                 raise ValueError('Extension not yet supported.')
+
+            obj = _txt2obj(self, extension.oid.dotted_string)
+            extension = self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
+                obj,
+                1 if extension.critical else 0,
+                _encode_asn1_str_gc(self, pp[0], r)
+            )
             res = self._lib.X509_add_ext(x509_cert, extension, i)
             assert res == 1
 
