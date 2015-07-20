@@ -802,6 +802,9 @@ class TestRSACertificateRequest(object):
             subject_private_key.public_key()
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), True,
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
@@ -951,6 +954,12 @@ class TestCertificateBuilder(object):
             builder.add_extension(
                 x509.BasicConstraints(ca=False, path_length=None), True,
             )
+
+    def test_add_unsupported_extension(self):
+        builder = x509.CertificateBuilder()
+
+        with pytest.raises(NotImplementedError):
+            builder.add_extension(object(), False)
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
