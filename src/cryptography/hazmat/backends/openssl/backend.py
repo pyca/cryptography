@@ -1047,7 +1047,7 @@ class Backend(object):
             elif isinstance(extension.value, x509.SubjectAlternativeName):
                 pp, r = _encode_subject_alt_name(self, extension.value)
             else:
-                raise ValueError('Extension not yet supported.')
+                raise NotImplementedError('Extension not yet supported.')
 
             obj = _txt2obj(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
