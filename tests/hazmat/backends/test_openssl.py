@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import os
 import subprocess
 import sys
@@ -14,6 +15,7 @@ import pretend
 import pytest
 
 from cryptography import utils
+from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
@@ -476,6 +478,43 @@ class TestOpenSSLCreateX509CSR(object):
 
         with pytest.raises(NotImplementedError):
             backend.create_x509_csr(object(), private_key, hashes.SHA1())
+
+
+class TestOpenSSLSignX509Certificate(object):
+    def test_requires_certificate_builder(self):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(TypeError):
+            backend.sign_x509_certificate(object(), private_key, DummyHash())
+
+    def test_checks_for_unsupported_extensions(self):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().version(
+            x509.Version.v3
+        ).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(1999, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2020, 1, 1)
+        )
+
+        builder._extensions.append(x509.Extension(
+            oid=x509.OID_COUNTRY_NAME,
+            critical=False,
+            value=object()
+        ))
+
+        with pytest.raises(NotImplementedError):
+            backend.sign_x509_certificate(builder, private_key, hashes.SHA1())
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):

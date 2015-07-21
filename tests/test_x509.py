@@ -961,6 +961,15 @@ class TestCertificateBuilder(object):
         with pytest.raises(NotImplementedError):
             builder.add_extension(object(), False)
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_with_unsupported_hash(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder()
+
+        with pytest.raises(TypeError):
+            builder.sign(backend, private_key, object())
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
