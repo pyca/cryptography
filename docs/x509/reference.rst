@@ -393,7 +393,7 @@ X.509 Certificate Builder
 
 .. class:: CertificateBuilder
 
-    .. method:: set_version(version)
+    .. method:: version(version)
 
         Sets the X.509 version that will be used in the certificate.
 
