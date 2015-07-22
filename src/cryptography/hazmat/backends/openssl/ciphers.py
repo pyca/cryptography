@@ -24,6 +24,8 @@ class _CipherContext(object):
         self._operation = operation
         self._tag = None
 
+        self._is_gcm = isinstance(self._mode, modes.GCM)
+
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
             self._block_size = self._cipher.block_size
         else:
@@ -72,7 +74,7 @@ class _CipherContext(object):
             ctx, len(cipher.key)
         )
         assert res != 0
-        if isinstance(mode, modes.GCM):
+        if self._is_gcm:
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 ctx, self._backend._lib.EVP_CTRL_GCM_SET_IVLEN,
                 len(iv_nonce), self._backend._ffi.NULL
@@ -107,7 +109,7 @@ class _CipherContext(object):
         # should be taken only when length is zero and mode is not GCM because
         # AES GCM can return improper tag values if you don't call update
         # with empty plaintext when authenticating AAD for ...reasons.
-        if len(data) == 0 and not isinstance(self._mode, modes.GCM):
+        if len(data) == 0 and not self._is_gcm:
             return b""
 
         buf = self._backend._ffi.new("unsigned char[]",
@@ -124,7 +126,7 @@ class _CipherContext(object):
         # even if you are only using authenticate_additional_data or the
         # GCM tag will be wrong. An (empty) call to update resolves this
         # and is harmless for all other versions of OpenSSL.
-        if isinstance(self._mode, modes.GCM):
+        if self._is_gcm:
             self.update(b"")
 
         buf = self._backend._ffi.new("unsigned char[]", self._block_size)
@@ -133,7 +135,7 @@ class _CipherContext(object):
         if res == 0:
             errors = self._backend._consume_errors()
 
-            if not errors and isinstance(self._mode, modes.GCM):
+            if not errors and self._is_gcm:
                 raise InvalidTag
 
             assert errors
@@ -154,7 +156,7 @@ class _CipherContext(object):
             else:
                 raise self._backend._unknown_error(errors[0])
 
-        if (isinstance(self._mode, modes.GCM) and
+        if (self._is_gcm and
            self._operation == self._ENCRYPT):
             block_byte_size = self._block_size // 8
             tag_buf = self._backend._ffi.new(
