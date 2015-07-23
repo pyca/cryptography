@@ -816,6 +816,7 @@ _CSR_EXTENSION_PARSER = _X509ExtensionParser(
     get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
     handlers={
         x509.OID_BASIC_CONSTRAINTS: _decode_basic_constraints,
+        x509.OID_KEY_USAGE: _decode_key_usage,
         x509.OID_SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
     }
 )

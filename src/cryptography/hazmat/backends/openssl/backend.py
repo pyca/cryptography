@@ -131,6 +131,44 @@ def _txt2obj(backend, name):
     return obj
 
 
+def _encode_key_usage(backend, key_usage):
+    set_bit = backend._lib.ASN1_BIT_STRING_set_bit
+    ku = backend._lib.ASN1_BIT_STRING_new()
+    ku = backend._ffi.gc(ku, backend._lib.ASN1_BIT_STRING_free)
+    res = set_bit(ku, 0, key_usage.digital_signature)
+    assert res == 1
+    res = set_bit(ku, 1, key_usage.content_commitment)
+    assert res == 1
+    res = set_bit(ku, 2, key_usage.key_encipherment)
+    assert res == 1
+    res = set_bit(ku, 3, key_usage.data_encipherment)
+    assert res == 1
+    res = set_bit(ku, 4, key_usage.key_agreement)
+    assert res == 1
+    res = set_bit(ku, 5, key_usage.key_cert_sign)
+    assert res == 1
+    res = set_bit(ku, 6, key_usage.crl_sign)
+    assert res == 1
+    if key_usage.key_agreement:
+        res = set_bit(ku, 7, key_usage.encipher_only)
+        assert res == 1
+        res = set_bit(ku, 8, key_usage.decipher_only)
+        assert res == 1
+    else:
+        res = set_bit(ku, 7, 0)
+        assert res == 1
+        res = set_bit(ku, 8, 0)
+        assert res == 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_ASN1_BIT_STRING(ku, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 def _encode_basic_constraints(backend, basic_constraints):
     constraints = backend._lib.BASIC_CONSTRAINTS_new()
     constraints = backend._ffi.gc(
@@ -964,6 +1002,8 @@ class Backend(object):
                 pp, r = _encode_basic_constraints(self, extension.value)
             elif isinstance(extension.value, x509.SubjectAlternativeName):
                 pp, r = _encode_subject_alt_name(self, extension.value)
+            elif isinstance(extension.value, x509.KeyUsage):
+                pp, r = _encode_key_usage(self, extension.value)
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
