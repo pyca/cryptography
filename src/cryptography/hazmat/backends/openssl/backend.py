@@ -976,7 +976,7 @@ class Backend(object):
             )
             assert extension != self._ffi.NULL
             res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
-            assert res == 1
+            assert res >= 1
         res = self._lib.X509_REQ_add_extensions(x509_req, extensions)
         assert res == 1
 
