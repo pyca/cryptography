@@ -1577,6 +1577,8 @@ class CertificateSigningRequestBuilder(object):
             )
         elif isinstance(extension, KeyUsage):
             extension = Extension(OID_KEY_USAGE, critical, extension)
+        elif isinstance(extension, InhibitAnyPolicy):
+            extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
         else:
             raise NotImplementedError('Unsupported X.509 extension.')
         # TODO: This is quadratic in the number of extensions
