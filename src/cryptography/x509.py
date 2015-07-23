@@ -1571,6 +1571,8 @@ class CertificateSigningRequestBuilder(object):
         """
         if isinstance(extension, BasicConstraints):
             extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
+        elif isinstance(extension, ExtendedKeyUsage):
+            extension = Extension(OID_EXTENDED_KEY_USAGE, critical, extension)
         elif isinstance(extension, SubjectAlternativeName):
             extension = Extension(
                 OID_SUBJECT_ALTERNATIVE_NAME, critical, extension

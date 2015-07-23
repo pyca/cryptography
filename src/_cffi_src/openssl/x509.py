@@ -325,6 +325,8 @@ int i2o_ECPublicKey(EC_KEY *, unsigned char **);
 int sk_ASN1_OBJECT_num(Cryptography_STACK_OF_ASN1_OBJECT *);
 ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
 void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
+Cryptography_STACK_OF_ASN1_OBJECT *sk_ASN1_OBJECT_new_null(void);
+int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
 """
 
 CUSTOMIZATIONS = """

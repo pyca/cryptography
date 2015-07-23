@@ -1183,6 +1183,29 @@ class TestCertificateSigningRequestBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
+    def test_extended_key_usage(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        request = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).add_extension(
+            x509.ExtendedKeyUsage([
+                x509.OID_CLIENT_AUTH,
+                x509.OID_SERVER_AUTH,
+                x509.OID_CODE_SIGNING,
+            ]), critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        eku = request.extensions.get_extension_for_oid(
+            x509.OID_EXTENDED_KEY_USAGE
+        )
+        assert eku.critical is False
+        assert eku.value == x509.ExtendedKeyUsage([
+            x509.OID_CLIENT_AUTH,
+            x509.OID_SERVER_AUTH,
+            x509.OID_CODE_SIGNING,
+        ])
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

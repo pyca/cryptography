@@ -818,5 +818,6 @@ _CSR_EXTENSION_PARSER = _X509ExtensionParser(
         x509.OID_BASIC_CONSTRAINTS: _decode_basic_constraints,
         x509.OID_KEY_USAGE: _decode_key_usage,
         x509.OID_SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
+        x509.OID_EXTENDED_KEY_USAGE: _decode_extended_key_usage,
     }
 )

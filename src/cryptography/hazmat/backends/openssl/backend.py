@@ -101,7 +101,7 @@ def _encode_name(backend, attributes):
     subject = backend._lib.X509_NAME_new()
     for attribute in attributes:
         value = attribute.value.encode('utf8')
-        obj = _txt2obj(backend, attribute.oid.dotted_string)
+        obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
         res = backend._lib.X509_NAME_add_entry_by_OBJ(
             subject,
             obj,
@@ -127,6 +127,11 @@ def _txt2obj(backend, name):
     name = name.encode('ascii')
     obj = backend._lib.OBJ_txt2obj(name, 1)
     assert obj != backend._ffi.NULL
+    return obj
+
+
+def _txt2obj_gc(backend, name):
+    obj = _txt2obj(backend, name)
     obj = backend._ffi.gc(obj, backend._lib.ASN1_OBJECT_free)
     return obj
 
@@ -286,6 +291,25 @@ def _encode_subject_alt_name(backend, san):
 
     pp = backend._ffi.new("unsigned char **")
     r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_extended_key_usage(backend, extended_key_usage):
+    eku = backend._lib.sk_ASN1_OBJECT_new_null()
+    eku = backend._ffi.gc(eku, backend._lib.sk_ASN1_OBJECT_free)
+    for oid in extended_key_usage:
+        obj = _txt2obj(backend, oid.dotted_string)
+        res = backend._lib.sk_ASN1_OBJECT_push(eku, obj)
+        assert res >= 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_EXTENDED_KEY_USAGE(
+        backend._ffi.cast("EXTENDED_KEY_USAGE *", eku), pp
+    )
     assert r > 0
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
@@ -1004,10 +1028,12 @@ class Backend(object):
                 pp, r = _encode_subject_alt_name(self, extension.value)
             elif isinstance(extension.value, x509.KeyUsage):
                 pp, r = _encode_key_usage(self, extension.value)
+            elif isinstance(extension.value, x509.ExtendedKeyUsage):
+                pp, r = _encode_extended_key_usage(self, extension.value)
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
-            obj = _txt2obj(self, extension.oid.dotted_string)
+            obj = _txt2obj_gc(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
                 obj,
