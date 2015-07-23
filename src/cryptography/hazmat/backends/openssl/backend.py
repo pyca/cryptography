@@ -194,8 +194,9 @@ def _encode_subject_alt_name(backend, san):
         elif isinstance(alt_name, x509.IPAddress):
             gn = backend._lib.GENERAL_NAME_new()
             assert gn != backend._ffi.NULL
+            address = bytes(alt_name.value.packed)
             ipaddr = _encode_asn1_str(
-                backend, alt_name.value.packed, len(alt_name.value.packed)
+                backend, address, len(address)
             )
             gn.type = backend._lib.GEN_IPADD
             gn.d.iPAddress = ipaddr
