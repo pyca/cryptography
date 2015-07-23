@@ -33,6 +33,7 @@ typedef ... Cryptography_STACK_OF_POLICYQUALINFO;
 typedef ... Cryptography_STACK_OF_POLICYINFO;
 typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
 typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
+typedef ... EXTENDED_KEY_USAGE;
 
 typedef struct {
     X509 *issuer_cert;
@@ -199,6 +200,8 @@ void OTHERNAME_free(OTHERNAME *);
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 
 int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
+
+int i2d_EXTENDED_KEY_USAGE(EXTENDED_KEY_USAGE *, unsigned char **);
 
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
