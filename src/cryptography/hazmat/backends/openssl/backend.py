@@ -203,89 +203,7 @@ def _encode_subject_alt_name(backend, san):
     )
 
     for alt_name in san:
-        if isinstance(alt_name, x509.DNSName):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            gn.type = backend._lib.GEN_DNS
-
-            ia5 = backend._lib.ASN1_IA5STRING_new()
-            assert ia5 != backend._ffi.NULL
-
-            if alt_name.value.startswith(u"*."):
-                value = b"*." + idna.encode(alt_name.value[2:])
-            else:
-                value = idna.encode(alt_name.value)
-
-            res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
-            assert res == 1
-            gn.d.dNSName = ia5
-        elif isinstance(alt_name, x509.RegisteredID):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            gn.type = backend._lib.GEN_RID
-            obj = backend._lib.OBJ_txt2obj(
-                alt_name.value.dotted_string.encode('ascii'), 1
-            )
-            assert obj != backend._ffi.NULL
-            gn.d.registeredID = obj
-        elif isinstance(alt_name, x509.DirectoryName):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            name = _encode_name(backend, alt_name.value)
-            gn.type = backend._lib.GEN_DIRNAME
-            gn.d.directoryName = name
-        elif isinstance(alt_name, x509.IPAddress):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            ipaddr = _encode_asn1_str(
-                backend, alt_name.value.packed, len(alt_name.value.packed)
-            )
-            gn.type = backend._lib.GEN_IPADD
-            gn.d.iPAddress = ipaddr
-        elif isinstance(alt_name, x509.OtherName):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            other_name = backend._lib.OTHERNAME_new()
-            assert other_name != backend._ffi.NULL
-
-            type_id = backend._lib.OBJ_txt2obj(
-                alt_name.type_id.dotted_string.encode('ascii'), 1
-            )
-            assert type_id != backend._ffi.NULL
-            data = backend._ffi.new("unsigned char[]", alt_name.value)
-            data_ptr_ptr = backend._ffi.new("unsigned char **")
-            data_ptr_ptr[0] = data
-            value = backend._lib.d2i_ASN1_TYPE(
-                backend._ffi.NULL, data_ptr_ptr, len(alt_name.value)
-            )
-            if value == backend._ffi.NULL:
-                backend._consume_errors()
-                raise ValueError("Invalid ASN.1 data")
-            other_name.type_id = type_id
-            other_name.value = value
-            gn.type = backend._lib.GEN_OTHERNAME
-            gn.d.otherName = other_name
-        elif isinstance(alt_name, x509.RFC822Name):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            asn1_str = _encode_asn1_str(
-                backend, alt_name._encoded, len(alt_name._encoded)
-            )
-            gn.type = backend._lib.GEN_EMAIL
-            gn.d.rfc822Name = asn1_str
-        elif isinstance(alt_name, x509.UniformResourceIdentifier):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            asn1_str = _encode_asn1_str(
-                backend, alt_name._encoded, len(alt_name._encoded)
-            )
-            gn.type = backend._lib.GEN_URI
-            gn.d.uniformResourceIdentifier = asn1_str
-        else:
-            raise ValueError(
-                "{0} is an unknown GeneralName type".format(alt_name)
-            )
-
+        gn = _encode_general_name(backend, alt_name)
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
         assert res != 0
 
@@ -296,6 +214,93 @@ def _encode_subject_alt_name(backend, san):
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
     )
     return pp, r
+
+
+def _encode_general_name(backend, name):
+    if isinstance(name, x509.DNSName):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        gn.type = backend._lib.GEN_DNS
+
+        ia5 = backend._lib.ASN1_IA5STRING_new()
+        assert ia5 != backend._ffi.NULL
+
+        if name.value.startswith(u"*."):
+            value = b"*." + idna.encode(name.value[2:])
+        else:
+            value = idna.encode(name.value)
+
+        res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
+        assert res == 1
+        gn.d.dNSName = ia5
+    elif isinstance(name, x509.RegisteredID):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        gn.type = backend._lib.GEN_RID
+        obj = backend._lib.OBJ_txt2obj(
+            name.value.dotted_string.encode('ascii'), 1
+        )
+        assert obj != backend._ffi.NULL
+        gn.d.registeredID = obj
+    elif isinstance(name, x509.DirectoryName):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        dir_name = _encode_name(backend, name.value)
+        gn.type = backend._lib.GEN_DIRNAME
+        gn.d.directoryName = dir_name
+    elif isinstance(name, x509.IPAddress):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        ipaddr = _encode_asn1_str(
+            backend, name.value.packed, len(name.value.packed)
+        )
+        gn.type = backend._lib.GEN_IPADD
+        gn.d.iPAddress = ipaddr
+    elif isinstance(name, x509.OtherName):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        other_name = backend._lib.OTHERNAME_new()
+        assert other_name != backend._ffi.NULL
+
+        type_id = backend._lib.OBJ_txt2obj(
+            name.type_id.dotted_string.encode('ascii'), 1
+        )
+        assert type_id != backend._ffi.NULL
+        data = backend._ffi.new("unsigned char[]", name.value)
+        data_ptr_ptr = backend._ffi.new("unsigned char **")
+        data_ptr_ptr[0] = data
+        value = backend._lib.d2i_ASN1_TYPE(
+            backend._ffi.NULL, data_ptr_ptr, len(name.value)
+        )
+        if value == backend._ffi.NULL:
+            backend._consume_errors()
+            raise ValueError("Invalid ASN.1 data")
+        other_name.type_id = type_id
+        other_name.value = value
+        gn.type = backend._lib.GEN_OTHERNAME
+        gn.d.otherName = other_name
+    elif isinstance(name, x509.RFC822Name):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        asn1_str = _encode_asn1_str(
+            backend, name._encoded, len(name._encoded)
+        )
+        gn.type = backend._lib.GEN_EMAIL
+        gn.d.rfc822Name = asn1_str
+    elif isinstance(name, x509.UniformResourceIdentifier):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        asn1_str = _encode_asn1_str(
+            backend, name._encoded, len(name._encoded)
+        )
+        gn.type = backend._lib.GEN_URI
+        gn.d.uniformResourceIdentifier = asn1_str
+    else:
+        raise ValueError(
+            "{0} is an unknown GeneralName type".format(name)
+        )
+
+    return gn
 
 
 def _encode_extended_key_usage(backend, extended_key_usage):
