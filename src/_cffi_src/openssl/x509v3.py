@@ -223,9 +223,11 @@ X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
+Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
 int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
 DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
+int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
 
 void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
 int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
@@ -236,6 +238,7 @@ int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
 POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
                                         int);
 
+Cryptography_STACK_OF_GENERAL_SUBTREE *sk_GENERAL_SUBTREE_new_null(void);
 void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 int sk_GENERAL_SUBTREE_num(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 GENERAL_SUBTREE *sk_GENERAL_SUBTREE_value(
@@ -249,6 +252,11 @@ int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
 ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
 
 X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
+
+DIST_POINT *DIST_POINT_new(void);
+void DIST_POINT_free(DIST_POINT *);
+
+int i2d_CRL_DIST_POINTS(Cryptography_STACK_OF_DIST_POINT *, unsigned char **);
 """
 
 CUSTOMIZATIONS = """
