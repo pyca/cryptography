@@ -1605,7 +1605,7 @@ class CertificateBuilder(object):
         """
         Creates an empty X.509 certificate (version 1).
         """
-        self._version = version
+        self._version = Version.v3
         self._issuer_name = issuer_name
         self._subject_name = subject_name
         self._public_key = public_key
@@ -1613,20 +1613,6 @@ class CertificateBuilder(object):
         self._not_valid_before = not_valid_before
         self._not_valid_after = not_valid_after
         self._extensions = extensions
-
-    def version(self, version):
-        """
-        Sets the X.509 version required by decoders.
-        """
-        if not isinstance(version, Version):
-            raise TypeError('Expecting x509.Version object.')
-        if self._version is not None:
-            raise ValueError('The version may only be set once.')
-        return CertificateBuilder(
-            version, self._issuer_name, self._subject_name, self._public_key,
-            self._serial_number, self._not_valid_before,
-            self._not_valid_after, self._extensions
-        )
 
     def issuer_name(self, name):
         """
@@ -1744,7 +1730,4 @@ class CertificateBuilder(object):
         """
         Signs the certificate using the CA's private key.
         """
-        builder = self
-        if self._version is None:
-            builder = self.version(Version.v3)
-        return backend.sign_x509_certificate(builder, private_key, algorithm)
+        return backend.sign_x509_certificate(self, private_key, algorithm)

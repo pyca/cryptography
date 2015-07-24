@@ -782,9 +782,7 @@ class TestRSACertificateRequest(object):
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
-        builder = x509.CertificateBuilder().version(
-            x509.Version.v3
-        ).serial_number(
+        builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
@@ -824,20 +822,6 @@ class TestRSACertificateRequest(object):
 
 
 class TestCertificateBuilder(object):
-    def test_version_must_be_a_version_type(self):
-        builder = x509.CertificateBuilder()
-
-        with pytest.raises(TypeError):
-            builder.version("v1")
-
-    def test_version_may_only_be_set_once(self):
-        builder = x509.CertificateBuilder().version(
-            x509.Version.v3
-        )
-
-        with pytest.raises(ValueError):
-            builder.version(x509.Version.v1)
-
     def test_issuer_name_must_be_a_name_type(self):
         builder = x509.CertificateBuilder()
 

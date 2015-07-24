@@ -489,9 +489,7 @@ class TestOpenSSLSignX509Certificate(object):
 
     def test_checks_for_unsupported_extensions(self):
         private_key = RSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateBuilder().version(
-            x509.Version.v3
-        ).subject_name(x509.Name([
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
             x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
             x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),

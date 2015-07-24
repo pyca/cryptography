@@ -393,13 +393,6 @@ X.509 Certificate Builder
 
 .. class:: CertificateBuilder
 
-    .. method:: version(version)
-
-        Sets the X.509 version that will be used in the certificate.
-
-        :param version: The :class:`~cryptography.x509.Version` that will be
-            used by the certificate.
-
     .. method:: issuer_name(name)
 
         Sets the issuer's distinguished name.
