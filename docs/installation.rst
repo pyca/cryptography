@@ -186,6 +186,6 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: http://www.macports.org
-.. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
+.. _`pre-compiled binaries`: https://jenkins.cryptography.io/job/openssl-win32-release/
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
