@@ -990,11 +990,22 @@ class Backend(object):
         return _CertificateSigningRequest(self, x509_req)
 
     def sign_x509_certificate(self, builder, private_key, algorithm):
-        # TODO: check type of private key parameter.
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+            if isinstance(private_key, _DSAPrivateKey):
+                raise NotImplementedError(
+                    "Certificate signatures aren't implemented for DSA"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
+            if isinstance(private_key, _EllipticCurvePrivateKey):
+                raise NotImplementedError(
+                    "Certificate signatures aren't implemented for EC"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -1024,7 +1035,8 @@ class Backend(object):
 
         # Set the certificate serial number.
         serial_number = _encode_asn1_int(self, builder._serial_number)
-        self._lib.X509_set_serialNumber(x509_cert, serial_number)
+        res = self._lib.X509_set_serialNumber(x509_cert, serial_number)
+        assert res == 1
 
         # Set the "not before" time.
         res = self._lib.ASN1_TIME_set(

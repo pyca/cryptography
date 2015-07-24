@@ -954,6 +954,132 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(backend, private_key, object())
 
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_with_dsa_private_key_is_unsupported(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
+            pytest.skip("Requires an older OpenSSL. Must be < 1.0.1")
+
+        private_key = DSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder()
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(backend, private_key, hashes.SHA512())
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_with_ec_private_key_is_unsupported(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
+            pytest.skip("Requires an older OpenSSL. Must be < 1.0.1")
+
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = x509.CertificateBuilder()
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(backend, private_key, hashes.SHA512())
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_dsa_private_key(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
+
+        issuer_private_key = DSA_KEY_2048.private_key(backend)
+        subject_private_key = DSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            x509.BasicConstraints(ca=False, path_length=None), True,
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
+
+        assert cert.version is x509.Version.v3
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_dsa_private_key(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
+
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        issuer_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        subject_private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            x509.BasicConstraints(ca=False, path_length=None), True,
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
+
+        assert cert.version is x509.Version.v3
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
