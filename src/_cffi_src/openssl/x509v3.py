@@ -238,6 +238,7 @@ int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
 POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
                                         int);
 
+Cryptography_STACK_OF_GENERAL_SUBTREE *sk_GENERAL_SUBTREE_new_null(void);
 void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 int sk_GENERAL_SUBTREE_num(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 GENERAL_SUBTREE *sk_GENERAL_SUBTREE_value(
