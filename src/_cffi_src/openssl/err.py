@@ -230,6 +230,7 @@ static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
 static const int RSA_R_PKCS_DECODING_ERROR;
+static const int RSA_F_RSA_SIGN;
 """
 
 FUNCTIONS = """

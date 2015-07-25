@@ -1206,6 +1206,19 @@ class TestCertificateSigningRequestBuilder(object):
             x509.OID_CODE_SIGNING,
         ])
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_rsa_key_too_small(self, backend):
+        private_key = rsa.generate_private_key(65537, 512, backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        )
+
+        with pytest.raises(ValueError) as exc:
+            builder.sign(private_key, hashes.SHA512(), backend)
+
+        assert exc.value.message == "Digest too big for RSA key"
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
