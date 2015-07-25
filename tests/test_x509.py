@@ -1217,7 +1217,7 @@ class TestCertificateSigningRequestBuilder(object):
         with pytest.raises(ValueError) as exc:
             builder.sign(private_key, hashes.SHA512(), backend)
 
-        assert exc.value.message == "Digest too big for RSA key"
+        assert str(exc.value) == "Digest too big for RSA key"
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
