@@ -1058,11 +1058,9 @@ class Backend(object):
         if res == 0:
             errors = self._consume_errors()
             assert errors[0][1:] == (
-                (
-                    self._lib.ERR_LIB_RSA,
-                    self._lib.RSA_F_RSA_SIGN,
-                    self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
-                )
+                self._lib.ERR_LIB_RSA,
+                self._lib.RSA_F_RSA_SIGN,
+                self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
             )
             raise ValueError("Digest too big for RSA key")
 
