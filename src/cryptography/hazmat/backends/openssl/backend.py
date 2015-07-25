@@ -202,6 +202,30 @@ def _encode_basic_constraints(backend, basic_constraints):
     return pp, r
 
 
+def _encode_authority_information_access(backend, authority_info_access):
+    aia = backend._lib.sk_ACCESS_DESCRIPTION_new_null()
+    assert aia != backend._ffi.NULL
+    aia = backend._ffi.gc(
+        aia, backend._lib.sk_ACCESS_DESCRIPTION_free
+    )
+    for access_description in authority_info_access:
+        ad = backend._lib.ACCESS_DESCRIPTION_new()
+        method = _txt2obj(backend, access_description.access_method)
+        gn = _encode_general_name(backend, access_description.access_location)
+        ad.method = method
+        ad.location = gn
+        res = backend._lib.sk_ACCESS_DESCRIPTION_push(aia, ad)
+        assert res >= 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_AUTHORITY_INFO_ACCESS(aia, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 def _encode_subject_alt_name(backend, san):
     general_names = backend._lib.GENERAL_NAMES_new()
     assert general_names != backend._ffi.NULL

@@ -203,6 +203,9 @@ int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
 
 int i2d_EXTENDED_KEY_USAGE(EXTENDED_KEY_USAGE *, unsigned char **);
 
+int i2d_AUTHORITY_INFO_ACCESS(Cryptography_STACK_OF_ACCESS_DESCRIPTION *,
+                              unsigned char **);
+
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
@@ -215,6 +218,9 @@ ACCESS_DESCRIPTION *sk_ACCESS_DESCRIPTION_value(
 void sk_ACCESS_DESCRIPTION_free(Cryptography_STACK_OF_ACCESS_DESCRIPTION *);
 int sk_ACCESS_DESCRIPTION_push(Cryptography_STACK_OF_ACCESS_DESCRIPTION *,
                                ACCESS_DESCRIPTION *);
+
+ACCESS_DESCRIPTION *ACCESS_DESCRIPTION_new(void);
+void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
 
 X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
                                     X509V3_CTX *, int, char *);
