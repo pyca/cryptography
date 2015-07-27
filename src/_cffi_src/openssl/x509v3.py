@@ -232,11 +232,31 @@ int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
 void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
 int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
 POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
+int sk_POLICYINFO_push(Cryptography_STACK_OF_POLICYINFO *, POLICYINFO *);
+Cryptography_STACK_OF_POLICYINFO *sk_POLICYINFO_new_null(void);
+
+POLICYINFO *POLICYINFO_new(void);
+void POLICYINFO_free(POLICYINFO *);
+
+POLICYQUALINFO *POLICYQUALINFO_new(void);
+void POLICYQUALINFO_free(POLICYQUALINFO *);
+
+NOTICEREF *NOTICEREF_new(void);
+void NOTICEREF_free(NOTICEREF *);
+
+USERNOTICE *USERNOTICE_new(void);
+void USERNOTICE_free(USERNOTICE *);
+
+int i2d_CERTIFICATEPOLICIES(Cryptography_STACK_OF_POLICYINFO *,
+                            unsigned char **);
 
 void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
 int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
 POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
                                         int);
+int sk_POLICYQUALINFO_push(Cryptography_STACK_OF_POLICYQUALINFO *,
+                           POLICYQUALINFO *);
+Cryptography_STACK_OF_POLICYQUALINFO *sk_POLICYQUALINFO_new_null(void);
 
 Cryptography_STACK_OF_GENERAL_SUBTREE *sk_GENERAL_SUBTREE_new_null(void);
 void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
@@ -250,6 +270,7 @@ int sk_GENERAL_SUBTREE_push(Cryptography_STACK_OF_GENERAL_SUBTREE *,
 void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
 ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
+int sk_ASN1_INTEGER_push(Cryptography_STACK_OF_ASN1_INTEGER *, ASN1_INTEGER *);
 
 X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
 
