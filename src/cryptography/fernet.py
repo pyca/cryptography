@@ -70,7 +70,7 @@ class Fernet(object):
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
-    def decrypt(self, token, ttl=None):
+    def verify(self, token, ttl=None):
         if not isinstance(token, bytes):
             raise TypeError("token must be bytes.")
 
@@ -99,6 +99,11 @@ class Fernet(object):
             h.verify(data[-32:])
         except InvalidSignature:
             raise InvalidToken
+
+        return data
+
+    def decrypt(self, token, ttl=None):
+        data = self.verify(token, ttl)
 
         iv = data[9:25]
         ciphertext = data[25:-32]
