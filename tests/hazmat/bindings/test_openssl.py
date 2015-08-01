@@ -161,3 +161,21 @@ class TestOpenSSL(object):
         expected_options = current_options | b.lib.SSL_OP_ALL
         assert resp == expected_options
         assert b.lib.SSL_get_mode(ssl) == expected_options
+
+    def test_conditional_removal(self):
+        b = Binding()
+        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10000000:
+            assert b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
+            assert b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
+        else:
+            with pytest.raises(AttributeError):
+                b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
+
+            with pytest.raises(AttributeError):
+                b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
+
+        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
+            assert b.lib.CMAC_Init
+        else:
+            with pytest.raises(AttributeError):
+                b.lib.CMAC_Init
