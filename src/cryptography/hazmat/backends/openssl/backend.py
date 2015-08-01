@@ -79,6 +79,12 @@ def _encode_asn1_int(backend, x):
     return i
 
 
+def _encode_asn1_int_gc(backend, x):
+    i = _encode_asn1_int(backend, x)
+    i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
+    return i
+
+
 def _encode_asn1_str(backend, data, length):
     """
     Create an ASN1_OCTET_STRING from a Python byte string.
@@ -1034,7 +1040,7 @@ class Backend(object):
         assert res == 1
 
         # Set the certificate serial number.
-        serial_number = _encode_asn1_int(self, builder._serial_number)
+        serial_number = _encode_asn1_int_gc(self, builder._serial_number)
         res = self._lib.X509_set_serialNumber(x509_cert, serial_number)
         assert res == 1
 
