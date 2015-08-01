@@ -34,6 +34,20 @@ from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
+def skip_if_libre_ssl(openssl_version):
+    if b'LibreSSL' in openssl_version:
+        pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
+
+
+class TestLibreSkip(object):
+    def test_skip_no(self):
+        assert skip_if_libre_ssl(b"OpenSSL 0.9.8zf 19 Mar 2015") is None
+
+    def test_skip_yes(self):
+        with pytest.raises(pytest.skip.Exception):
+            skip_if_libre_ssl(b"LibreSSL 2.1.6")
+
+
 @utils.register_interface(Mode)
 class DummyMode(object):
     name = "dummy-mode"
@@ -215,6 +229,19 @@ class TestOpenSSL(object):
     def test_bn_to_int(self):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
+
+    def test_actual_osrandom_bytes(self, monkeypatch):
+        skip_if_libre_ssl(backend.openssl_version_text())
+        sample_data = (b"\x01\x02\x03\x04" * 4)
+        length = len(sample_data)
+
+        def notrandom(size):
+            assert size == length
+            return sample_data
+        monkeypatch.setattr(os, "urandom", notrandom)
+        buf = backend._ffi.new("char[]", length)
+        backend._lib.RAND_bytes(buf, length)
+        assert backend._ffi.buffer(buf)[0:length] == sample_data
 
 
 class TestOpenSSLRandomEngine(object):

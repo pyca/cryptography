@@ -4,25 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
-
 import pytest
 
 from cryptography.hazmat.bindings.openssl.binding import Binding
-
-
-def skip_if_libre_ssl(openssl_version):
-    if b'LibreSSL' in openssl_version:
-        pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
-
-
-class TestLibreSkip(object):
-    def test_skip_no(self):
-        assert skip_if_libre_ssl(b"OpenSSL 0.9.8zf 19 Mar 2015") is None
-
-    def test_skip_yes(self):
-        with pytest.raises(pytest.skip.Exception):
-            skip_if_libre_ssl(b"LibreSSL 2.1.6")
 
 
 class TestOpenSSL(object):
@@ -107,20 +91,6 @@ class TestOpenSSL(object):
         b = Binding()
         with pytest.raises(RuntimeError):
             b._register_osrandom_engine()
-
-    def test_actual_osrandom_bytes(self, monkeypatch):
-        b = Binding()
-        skip_if_libre_ssl(b.ffi.string(b.lib.OPENSSL_VERSION_TEXT))
-        sample_data = (b"\x01\x02\x03\x04" * 4)
-        length = len(sample_data)
-
-        def notrandom(size):
-            assert size == length
-            return sample_data
-        monkeypatch.setattr(os, "urandom", notrandom)
-        buf = b.ffi.new("char[]", length)
-        b.lib.RAND_bytes(buf, length)
-        assert b.ffi.buffer(buf)[0:length] == sample_data
 
     def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
