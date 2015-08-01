@@ -539,8 +539,8 @@ def load_fips_ecdsa_key_pair_vectors(vector_data):
             elif line.startswith("Qy = "):
                 key_data["y"] = int(line.split("=")[1], 16)
 
-    if key_data is not None:
-        vectors.append(key_data)
+    assert key_data is not None
+    vectors.append(key_data)
 
     return vectors
 
@@ -558,9 +558,6 @@ def load_fips_ecdsa_signing_vectors(vector_data):
     data = None
     for line in vector_data:
         line = line.strip()
-
-        if not line or line.startswith("#"):
-            continue
 
         curve_match = curve_rx.match(line)
         if curve_match:
@@ -593,8 +590,8 @@ def load_fips_ecdsa_signing_vectors(vector_data):
             elif line.startswith("Result = "):
                 data["fail"] = line.split("=")[1].strip()[0] == "F"
 
-    if data is not None:
-        vectors.append(data)
+    assert data is not None
+    vectors.append(data)
     return vectors
 
 

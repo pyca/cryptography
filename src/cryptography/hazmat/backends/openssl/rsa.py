@@ -268,8 +268,9 @@ class _RSASignatureContext(object):
                     self._backend._lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE):
                 reason = ("Salt length too long for key size. Try using "
                           "MAX_LENGTH instead.")
-            elif (errors[0].reason ==
-                    self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY):
+            else:
+                assert (errors[0].reason ==
+                        self._backend._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY)
                 reason = "Digest too large for key size. Use a larger key."
             assert reason is not None
             raise ValueError(reason)

@@ -1577,13 +1577,15 @@ class Backend(object):
             if format is serialization.PrivateFormat.PKCS8:
                 write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
                 key = evp_pkey
-            elif format is serialization.PrivateFormat.TraditionalOpenSSL:
+            else:
+                assert format is serialization.PrivateFormat.TraditionalOpenSSL
                 if evp_pkey.type == self._lib.EVP_PKEY_RSA:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
                 elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
-                elif (self._lib.Cryptography_HAS_EC == 1 and
-                      evp_pkey.type == self._lib.EVP_PKEY_EC):
+                else:
+                    assert self._lib.Cryptography_HAS_EC == 1
+                    assert evp_pkey.type == self._lib.EVP_PKEY_EC
                     write_bio = self._lib.PEM_write_bio_ECPrivateKey
 
                 key = cdata
@@ -1600,7 +1602,8 @@ class Backend(object):
                 return self._private_key_bytes_traditional_der(
                     evp_pkey.type, cdata
                 )
-            elif format is serialization.PrivateFormat.PKCS8:
+            else:
+                assert format is serialization.PrivateFormat.PKCS8
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
                 key = evp_pkey
         else:
@@ -1625,7 +1628,8 @@ class Backend(object):
         elif (self._lib.Cryptography_HAS_EC == 1 and
               key_type == self._lib.EVP_PKEY_EC):
             write_bio = self._lib.i2d_ECPrivateKey_bio
-        elif key_type == self._lib.EVP_PKEY_DSA:
+        else:
+            assert key_type == self._lib.EVP_PKEY_DSA
             write_bio = self._lib.i2d_DSAPrivateKey_bio
 
         bio = self._create_mem_bio()
@@ -1640,7 +1644,8 @@ class Backend(object):
         if format is serialization.PublicFormat.SubjectPublicKeyInfo:
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
-            elif encoding is serialization.Encoding.DER:
+            else:
+                assert encoding is serialization.Encoding.DER
                 write_bio = self._lib.i2d_PUBKEY_bio
 
             key = evp_pkey
@@ -1649,7 +1654,8 @@ class Backend(object):
             assert evp_pkey.type == self._lib.EVP_PKEY_RSA
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_RSAPublicKey
-            elif encoding is serialization.Encoding.DER:
+            else:
+                assert encoding is serialization.Encoding.DER
                 write_bio = self._lib.i2d_RSAPublicKey_bio
 
             key = cdata
