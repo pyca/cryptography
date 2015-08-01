@@ -397,15 +397,15 @@ X.509 Certificate Builder
 
         Sets the issuer's distinguished name.
 
-        :param public_key: The :class:`~cryptography.x509.Name` that describes
-            the issuer (CA).
+        :param name: The :class:`~cryptography.x509.Name` that describes the
+            issuer (CA).
 
     .. method:: subject_name(name)
 
         Sets the subject's distinguished name.
 
-        :param public_key: The :class:`~cryptography.x509.Name` that describes
-            the subject (requester).
+        :param name: The :class:`~cryptography.x509.Name` that describes the
+            subject (requester).
 
     .. method:: public_key(public_key)
 
