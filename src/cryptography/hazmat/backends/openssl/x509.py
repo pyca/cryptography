@@ -386,7 +386,8 @@ def _decode_certificate_policies(backend, ext):
                         pqi.d.cpsuri.data, pqi.d.cpsuri.length
                     )[:].decode('ascii')
                     qualifiers.append(cpsuri)
-                elif pqualid == x509.OID_CPS_USER_NOTICE:
+                else:
+                    assert pqualid == x509.OID_CPS_USER_NOTICE
                     user_notice = _decode_user_notice(
                         backend, pqi.d.usernotice
                     )
