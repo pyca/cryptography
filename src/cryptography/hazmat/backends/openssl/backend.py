@@ -1081,7 +1081,11 @@ class Backend(object):
         res = self._lib.X509_sign(
             x509_cert, private_key._evp_pkey, evp_md
         )
-        assert res > 0
+        if res == 0:
+            errors = self._consume_errors()
+            assert errors[0][1] == self._lib.ERR_LIB_RSA
+            assert errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+            raise ValueError("Digest too big for RSA key")
 
         return _Certificate(self, x509_cert)
 

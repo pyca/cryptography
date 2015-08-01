@@ -1680,7 +1680,6 @@ class CertificateBuilder(object):
         """
         Sets the certificate activation time.
         """
-        # TODO: require UTC datetime?
         if not isinstance(time, datetime.datetime):
             raise TypeError('Expecting datetime object.')
         if self._not_valid_before is not None:
@@ -1698,7 +1697,6 @@ class CertificateBuilder(object):
         """
         Sets the certificate expiration time.
         """
-        # TODO: require UTC datetime?
         if not isinstance(time, datetime.datetime):
             raise TypeError('Expecting datetime object.')
         if self._not_valid_after is not None:

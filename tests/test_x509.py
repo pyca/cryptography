@@ -1082,8 +1082,7 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_build_cert_with_sha512_and_rsa512(self, backend):
-        # TODO(sigmavirus24): Give this a better name
+    def test_build_cert_with_rsa_key_too_small(self, backend):
         issuer_private_key = RSA_KEY_512.private_key(backend)
         subject_private_key = RSA_KEY_512.private_key(backend)
 
@@ -1117,16 +1116,8 @@ class TestCertificateBuilder(object):
             not_valid_after
         )
 
-        cert = builder.sign(backend, issuer_private_key, hashes.SHA512())
-
-        assert cert.version is x509.Version.v3
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
-        basic_constraints = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
-        )
-        assert basic_constraints.value.ca is False
-        assert basic_constraints.value.path_length is None
+        with pytest.raises(ValueError):
+            builder.sign(backend, issuer_private_key, hashes.SHA512())
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
