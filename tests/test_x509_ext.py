@@ -2853,3 +2853,18 @@ class TestInhibitAnyPolicyExtension(object):
             x509.OID_INHIBIT_ANY_POLICY
         ).value
         assert iap.skip_certs == 5
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestInvalidExtension(object):
+    def test_invalid_certificate_policies_data(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cp_invalid.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        with pytest.raises(ValueError):
+            cert.extensions

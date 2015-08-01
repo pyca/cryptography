@@ -235,7 +235,13 @@ class _X509ExtensionParser(object):
                     )
             else:
                 d2i = backend._lib.X509V3_EXT_d2i(ext)
-                assert d2i != backend._ffi.NULL
+                if d2i == backend._ffi.NULL:
+                    backend._consume_errors()
+                    raise ValueError(
+                        "The {0} extension is invalid and can't be "
+                        "parsed".format(oid)
+                    )
+
                 value = handler(backend, d2i)
                 extensions.append(x509.Extension(oid, critical, value))
 
