@@ -438,9 +438,9 @@ X.509 CSR (Certificate Signing Request) Object
         The extensions encoded in the certificate signing request.
 
         :raises cryptography.x509.DuplicateExtension: If more than one
-            extension of the same type is found within the certificate siging request.
+            extension of the same type is found within the certificate signing request.
 
-        :raises cryptography.x509.UnsupportedExtension: If the certificate siging request
+        :raises cryptography.x509.UnsupportedExtension: If the certificate signing request
             contains an extension that is not supported.
 
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
