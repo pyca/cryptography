@@ -3047,6 +3047,7 @@ d518475576730ed528779366568e46b7dd4ed787cb72d0733c93
 
 def test_load_kasvs_ecdh_vectors():
     vector_data = textwrap.dedent("""
+    #  CAVS 11.0
     #  Parameter set(s) supported: EA EB EC ED EE
     #  CAVSid: CAVSid (in hex: 434156536964)
     #  IUTid: In hex: a1b2c3d4e5
