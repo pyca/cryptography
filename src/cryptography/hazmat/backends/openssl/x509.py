@@ -238,7 +238,8 @@ class _X509ExtensionParser(object):
                 if d2i == backend._ffi.NULL:
                     backend._consume_errors()
                     raise ValueError(
-                        "The {0} extension appears to be corrupt".format(oid)
+                        "The {0} extension is invalid and can't be "
+                        "parsed".format(oid)
                     )
 
                 value = handler(backend, d2i)

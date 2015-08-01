@@ -2857,7 +2857,7 @@ class TestInhibitAnyPolicyExtension(object):
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
-class TestCorruptExtension(object):
+class TestInvalidExtension(object):
     def test_invalid_certificate_policies_data(self, backend):
         cert = _load_cert(
             os.path.join(
