@@ -8,6 +8,7 @@ import os
 import threading
 
 from cryptography.hazmat.bindings._openssl import ffi, lib
+from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
 @ffi.callback("int (*)(unsigned char *, int)", error=-1)
@@ -23,11 +24,15 @@ def _osrandom_rand_status():
     return 1
 
 
+class _ConditionalLibrary(object):
+    pass
+
+
 class Binding(object):
     """
     OpenSSL API wrapper.
     """
-    lib = lib
+    lib = None
     ffi = ffi
     _lib_loaded = False
     _locks = None
@@ -74,6 +79,17 @@ class Binding(object):
     def _ensure_ffi_initialized(cls):
         with cls._init_lock:
             if not cls._lib_loaded:
+                conditional_lib = _ConditionalLibrary()
+                for attr in dir(lib):
+                    attrval = getattr(lib, attr)
+                    setattr(conditional_lib, attr, attrval)
+
+                for condition, names in CONDITIONAL_NAMES.items():
+                    if not getattr(conditional_lib, condition):
+                        for name in names:
+                            delattr(conditional_lib, name)
+
+                cls.lib = conditional_lib
                 cls._lib_loaded = True
                 cls._register_osrandom_engine()
 
