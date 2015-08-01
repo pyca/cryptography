@@ -455,6 +455,17 @@ X.509 Certificate Builder
 
         Sign the certificate using the CA's private key.
 
+        :param backend: Backend that will be used to build the certificate.
+            Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the certificate.
+
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature.

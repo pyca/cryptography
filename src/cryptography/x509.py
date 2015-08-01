@@ -97,6 +97,8 @@ _GENERAL_NAMES = {
     8: "registeredID",
 }
 
+_UNIX_EPOCH = datetime.datetime(1970, 1, 1)
+
 
 class Version(Enum):
     v1 = 0
@@ -1599,12 +1601,9 @@ class CertificateSigningRequestBuilder(object):
 
 
 class CertificateBuilder(object):
-    def __init__(self, version=None, issuer_name=None, subject_name=None,
+    def __init__(self, issuer_name=None, subject_name=None,
                  public_key=None, serial_number=None, not_valid_before=None,
                  not_valid_after=None, extensions=[]):
-        """
-        Creates an empty X.509 certificate (version 1).
-        """
         self._version = Version.v3
         self._issuer_name = issuer_name
         self._subject_name = subject_name
@@ -1623,7 +1622,7 @@ class CertificateBuilder(object):
         if self._issuer_name is not None:
             raise ValueError('The issuer name may only be set once.')
         return CertificateBuilder(
-            self._version, name, self._subject_name, self._public_key,
+            name, self._subject_name, self._public_key,
             self._serial_number, self._not_valid_before,
             self._not_valid_after, self._extensions
         )
@@ -1637,7 +1636,7 @@ class CertificateBuilder(object):
         if self._subject_name is not None:
             raise ValueError('The subject name may only be set once.')
         return CertificateBuilder(
-            self._version, self._issuer_name, name, self._public_key,
+            self._issuer_name, name, self._public_key,
             self._serial_number, self._not_valid_before,
             self._not_valid_after, self._extensions
         )
@@ -1653,7 +1652,7 @@ class CertificateBuilder(object):
         if self._public_key is not None:
             raise ValueError('The public key may only be set once.')
         return CertificateBuilder(
-            self._version, self._issuer_name, self._subject_name, key,
+            self._issuer_name, self._subject_name, key,
             self._serial_number, self._not_valid_before,
             self._not_valid_after, self._extensions
         )
@@ -1666,8 +1665,13 @@ class CertificateBuilder(object):
             raise TypeError('Serial number must be of integral type.')
         if self._serial_number is not None:
             raise ValueError('The serial number may only be set once.')
+        if number < 0:
+            raise ValueError('The serial number should be non-negative.')
+        if utils.bit_length(number) > 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than 160 '
+                             'bits.')
         return CertificateBuilder(
-            self._version, self._issuer_name, self._subject_name,
+            self._issuer_name, self._subject_name,
             self._public_key, number, self._not_valid_before,
             self._not_valid_after, self._extensions
         )
@@ -1681,8 +1685,11 @@ class CertificateBuilder(object):
             raise TypeError('Expecting datetime object.')
         if self._not_valid_before is not None:
             raise ValueError('The not valid before may only be set once.')
+        if time <= _UNIX_EPOCH:
+            raise ValueError('The not valid before date must be after the unix'
+                             ' epoch (1970 January 1).')
         return CertificateBuilder(
-            self._version, self._issuer_name, self._subject_name,
+            self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, time,
             self._not_valid_after, self._extensions
         )
@@ -1696,8 +1703,11 @@ class CertificateBuilder(object):
             raise TypeError('Expecting datetime object.')
         if self._not_valid_after is not None:
             raise ValueError('The not valid after may only be set once.')
+        if time <= _UNIX_EPOCH:
+            raise ValueError('The not valid after date must be after the unix'
+                             ' epoch (1970 January 1).')
         return CertificateBuilder(
-            self._version, self._issuer_name, self._subject_name,
+            self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, self._not_valid_before,
             time, self._extensions
         )
@@ -1721,7 +1731,7 @@ class CertificateBuilder(object):
                 raise ValueError('This extension has already been set.')
 
         return CertificateBuilder(
-            self._version, self._issuer_name, self._subject_name,
+            self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, self._not_valid_before,
             self._not_valid_after, self._extensions + [extension]
         )
