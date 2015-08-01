@@ -3045,6 +3045,10 @@ d518475576730ed528779366568e46b7dd4ed787cb72d0733c93
     assert expected == load_kasvs_dh_vectors(vector_data)
 
 
+def test_load_kasvs_ecdh_vectors_empty_vector_data():
+    assert [] == load_kasvs_ecdh_vectors([])
+
+
 def test_load_kasvs_ecdh_vectors():
     vector_data = textwrap.dedent("""
     #  CAVS 11.0
