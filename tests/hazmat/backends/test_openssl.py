@@ -35,17 +35,17 @@ from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
 def skip_if_libre_ssl(openssl_version):
-    if b'LibreSSL' in openssl_version:
+    if u'LibreSSL' in openssl_version:
         pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
 
 
 class TestLibreSkip(object):
     def test_skip_no(self):
-        assert skip_if_libre_ssl(b"OpenSSL 0.9.8zf 19 Mar 2015") is None
+        assert skip_if_libre_ssl(u"OpenSSL 0.9.8zf 19 Mar 2015") is None
 
     def test_skip_yes(self):
         with pytest.raises(pytest.skip.Exception):
-            skip_if_libre_ssl(b"LibreSSL 2.1.6")
+            skip_if_libre_ssl(u"LibreSSL 2.1.6")
 
 
 @utils.register_interface(Mode)
