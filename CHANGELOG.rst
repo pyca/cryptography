@@ -25,7 +25,13 @@ Changelog
 * Raise a ``TypeError`` when passing objects that are not text as the value to
   :class:`~cryptography.x509.NameAttribute`.
 * Add support for creating certificate signing requests with
-  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`. This includes
+  support for the following extensions:
+
+  * :class:`~cryptography.x509.BasicConstraints`
+  * :class:`~cryptography.x509.ExtendedKeyUsage`
+  * :class:`~cryptography.x509.KeyUsage`
+  * :class:`~cryptography.x509.SubjectAlternativeName`
 
 0.9.3 - 2015-07-09
 ~~~~~~~~~~~~~~~~~~
