@@ -64,10 +64,6 @@ matrix:
               apt:
                   packages:
                       - libenchant-dev
-        - python: 2.7
-          env: TOXENV=pep8
-        - python: 3.3
-          env: TOXENV=py3pep8
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
