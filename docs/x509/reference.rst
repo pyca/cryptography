@@ -405,7 +405,7 @@ X.509 Certificate Builder
         Sets the subject's distinguished name.
 
         :param name: The :class:`~cryptography.x509.Name` that describes the
-            subject (requester).
+            subject.
 
     .. method:: public_key(public_key)
 

@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
-from .hazmat.primitives.fixtures_rsa import RSA_KEY_512, RSA_KEY_2048
+from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
 
@@ -1031,7 +1031,7 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_build_cert_with_dsa_private_key(self, backend):
+    def test_build_cert_with_ec_private_key(self, backend):
         if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
 
