@@ -411,7 +411,10 @@ X.509 Certificate Builder
 
         Sets the subject's public key.
 
-        :param public_key: The subject's public key.
+        :param public_key: The subject's public key. This can be one of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
 
     .. method:: serial_number(serial_number)
 
@@ -448,8 +451,9 @@ X.509 Certificate Builder
 
         Adds an X.509 extension to the certificate.
 
-        :param extension: The :class:`~cryptography.x509.Extension` to add to
-            the certificate.
+        :param extension: The extension to add to the certificate. Can be one
+            of :class:`~cryptography.x509.BasicConstraints` or
+            :class:`~cryptography.x509.SubjectAlternativeName`.
 
     .. method:: sign(backend, private_key, algorithm)
 
