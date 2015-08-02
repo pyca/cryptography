@@ -834,10 +834,6 @@ class TestCertificateBuilder(object):
     def test_issuer_name_may_only_be_set_once(self):
         name = x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])
         builder = x509.CertificateBuilder().issuer_name(name)
 
@@ -856,10 +852,6 @@ class TestCertificateBuilder(object):
     def test_subject_name_may_only_be_set_once(self):
         name = x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])
         builder = x509.CertificateBuilder().subject_name(name)
 
@@ -995,16 +987,8 @@ class TestCertificateBuilder(object):
             777
         ).issuer_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -1046,16 +1030,8 @@ class TestCertificateBuilder(object):
             777
         ).issuer_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -1093,16 +1069,8 @@ class TestCertificateBuilder(object):
             777
         ).issuer_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
