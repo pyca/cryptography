@@ -881,6 +881,15 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().serial_number(10.0)
 
+    def test_serial_number_must_be_non_negative(self):
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder().serial_number(-10)
+
+    def test_serial_number_must_be_less_than_160_bits_long(self):
+        with pytest.raises(ValueError):
+            # 2 raised to the 160th power is actually 161 bits
+            x509.CertificateBuilder().serial_number(2 ** 160)
+
     def test_serial_number_may_only_be_set_once(self):
         builder = x509.CertificateBuilder().serial_number(10)
 
@@ -893,6 +902,11 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(datetime.time())
+
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder().not_valid_after(
+                datetime.datetime(1960, 8, 10)
+            )
 
     def test_not_valid_after_may_only_be_set_once(self):
         builder = x509.CertificateBuilder().not_valid_after(
@@ -910,6 +924,11 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_before(datetime.time())
+
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder().not_valid_before(
+                datetime.datetime(1960, 8, 10)
+            )
 
     def test_not_valid_before_may_only_be_set_once(self):
         builder = x509.CertificateBuilder().not_valid_before(
