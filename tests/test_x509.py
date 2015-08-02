@@ -819,6 +819,12 @@ class TestRSACertificateRequest(object):
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
+        subject_alternative_name = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(subject_alternative_name.value) == [
+            x509.DNSName(u"cryptography.io"),
+        ]
 
 
 class TestCertificateBuilder(object):
@@ -1031,6 +1037,12 @@ class TestCertificateBuilder(object):
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
+        subject_alternative_name = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(subject_alternative_name.value) == [
+            x509.DNSName(u"cryptography.io"),
+        ]
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -1074,6 +1086,12 @@ class TestCertificateBuilder(object):
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
+        subject_alternative_name = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(subject_alternative_name.value) == [
+            x509.DNSName(u"cryptography.io"),
+        ]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -1092,11 +1110,6 @@ class TestCertificateBuilder(object):
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
-        ).add_extension(
-            x509.BasicConstraints(ca=False, path_length=None), True,
-        ).add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
-            critical=False,
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
