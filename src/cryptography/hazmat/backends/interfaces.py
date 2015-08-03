@@ -280,6 +280,12 @@ class X509Backend(object):
         Create and sign an X.509 CSR from a CSR builder object.
         """
 
+    @abc.abstractmethod
+    def sign_x509_certificate(self, builder, private_key, algorithm):
+        """
+        Sign an X.509 Certificate from a CertificateBuilder object.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):
