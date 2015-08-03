@@ -502,14 +502,9 @@ X.509 Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
 
-    .. method:: sign(backend, private_key, algorithm)
+    .. method:: sign(private_key, algorithm, backend)
 
         Sign the certificate using the CA's private key.
-
-        :param backend: Backend that will be used to build the certificate.
-            Must support the
-            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
-            interface.
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -520,6 +515,11 @@ X.509 Certificate Builder
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature.
+
+        :param backend: Backend that will be used to build the certificate.
+            Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
 
 
 X.509 CSR (Certificate Signing Request) Object

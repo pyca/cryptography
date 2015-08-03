@@ -1740,7 +1740,7 @@ class CertificateBuilder(object):
             self._not_valid_after, self._extensions + [extension]
         )
 
-    def sign(self, backend, private_key, algorithm):
+    def sign(self, private_key, algorithm, backend):
         """
         Signs the certificate using the CA's private key.
         """
