@@ -26,14 +26,16 @@ def _osrandom_rand_status():
 
 class _ConditionalLibrary(object):
     def __init__(self, lib, conditional_names):
-        for attr in dir(lib):
-            attrval = getattr(lib, attr)
-            setattr(self, attr, attrval)
-
+        excluded_names = set()
         for condition, names in conditional_names.items():
-            if not getattr(self, condition):
-                for name in names:
-                    delattr(self, name)
+            if not getattr(lib, condition):
+                excluded_names |= set(names)
+
+        for attr in dir(lib):
+            if attr in excluded_names:
+                continue
+            else:
+                setattr(self, attr, getattr(lib, attr))
 
 
 class Binding(object):
