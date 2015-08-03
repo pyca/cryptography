@@ -531,7 +531,7 @@ class TestOpenSSLSignX509Certificate(object):
         )
 
         with pytest.raises(NotImplementedError):
-            builder.sign(backend, private_key, hashes.SHA1())
+            builder.sign(private_key, hashes.SHA1(), backend)
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):
