@@ -84,16 +84,3 @@ static const long Cryptography_HAS_MGF1_MD = 0;
 int (*EVP_PKEY_CTX_set_rsa_mgf1_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_PKEY_CTX": [
-        "EVP_PKEY_CTX_set_rsa_padding",
-        "EVP_PKEY_CTX_set_rsa_pss_saltlen",
-    ],
-    "Cryptography_HAS_PSS_PADDING": [
-        "RSA_PKCS1_PSS_PADDING",
-    ],
-    "Cryptography_HAS_MGF1_MD": [
-        "EVP_PKEY_CTX_set_rsa_mgf1_md",
-    ],
-}

@@ -231,35 +231,3 @@ EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
 int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_GCM": [
-        "EVP_CTRL_GCM_GET_TAG",
-        "EVP_CTRL_GCM_SET_TAG",
-        "EVP_CTRL_GCM_SET_IVLEN",
-    ],
-    "Cryptography_HAS_PBKDF2_HMAC": [
-        "PKCS5_PBKDF2_HMAC"
-    ],
-    "Cryptography_HAS_PKEY_CTX": [
-        "EVP_PKEY_CTX_new",
-        "EVP_PKEY_CTX_new_id",
-        "EVP_PKEY_CTX_dup",
-        "EVP_PKEY_CTX_free",
-        "EVP_PKEY_sign",
-        "EVP_PKEY_sign_init",
-        "EVP_PKEY_verify",
-        "EVP_PKEY_verify_init",
-        "Cryptography_EVP_PKEY_encrypt",
-        "EVP_PKEY_encrypt_init",
-        "Cryptography_EVP_PKEY_decrypt",
-        "EVP_PKEY_decrypt_init",
-        "EVP_PKEY_CTX_set_signature_md",
-        "EVP_PKEY_id",
-    ],
-    "Cryptography_HAS_EC": [
-        "EVP_PKEY_assign_EC_KEY",
-        "EVP_PKEY_get1_EC_KEY",
-        "EVP_PKEY_set1_EC_KEY",
-    ]
-}

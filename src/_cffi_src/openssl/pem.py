@@ -90,9 +90,3 @@ int (*PEM_write_bio_ECPrivateKey)(BIO *, EC_KEY *, const EVP_CIPHER *,
 #endif
 
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_EC": [
-        "PEM_write_bio_ECPrivateKey"
-    ]
-}

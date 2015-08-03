@@ -282,5 +282,3 @@ int i2d_CRL_DIST_POINTS(Cryptography_STACK_OF_DIST_POINT *, unsigned char **);
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}

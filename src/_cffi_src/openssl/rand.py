@@ -41,11 +41,3 @@ int (*RAND_query_egd_bytes)(const char *, unsigned char *, int) = NULL;
 static const long Cryptography_HAS_EGD = 1;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_EGD": [
-        "RAND_egd",
-        "RAND_egd_bytes",
-        "RAND_query_egd_bytes",
-    ]
-}

@@ -167,9 +167,3 @@ void (*ENGINE_load_cryptodev)(void) = NULL;
 static const long Cryptography_HAS_ENGINE_CRYPTODEV = 1;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_ENGINE_CRYPTODEV": [
-        "ENGINE_load_cryptodev"
-    ]
-}

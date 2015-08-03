@@ -48,12 +48,3 @@ void *(*ECDH_get_ex_data)(EC_KEY *, int) = NULL;
 static const long Cryptography_HAS_ECDH = 1;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_ECDH": [
-        "ECDH_compute_key",
-        "ECDH_get_ex_new_index",
-        "ECDH_set_ex_data",
-        "ECDH_get_ex_data",
-    ],
-}

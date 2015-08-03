@@ -43,14 +43,3 @@ void (*CMAC_CTX_free)(CMAC_CTX *) = NULL;
 static const long Cryptography_HAS_CMAC = 1;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_CMAC": [
-        "CMAC_CTX_new",
-        "CMAC_Init",
-        "CMAC_Update",
-        "CMAC_Final",
-        "CMAC_CTX_copy",
-        "CMAC_CTX_free",
-    ],
-}

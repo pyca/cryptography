@@ -52,5 +52,3 @@ int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}

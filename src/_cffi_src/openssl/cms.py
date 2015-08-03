@@ -116,37 +116,3 @@ CMS_SignerInfo *(*CMS_add1_signer)(CMS_ContentInfo *, X509 *, EVP_PKEY *,
                                    const EVP_MD *, unsigned int) = NULL;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_CMS": [
-        "BIO_new_CMS",
-        "i2d_CMS_bio_stream",
-        "PEM_write_bio_CMS_stream",
-        "CMS_final",
-        "CMS_sign",
-        "CMS_verify",
-        "CMS_encrypt",
-        "CMS_decrypt",
-        "CMS_add1_signer",
-        "CMS_TEXT",
-        "CMS_NOCERTS",
-        "CMS_NO_CONTENT_VERIFY",
-        "CMS_NO_ATTR_VERIFY",
-        "CMS_NOSIGS",
-        "CMS_NOINTERN",
-        "CMS_NO_SIGNER_CERT_VERIFY",
-        "CMS_NOVERIFY",
-        "CMS_DETACHED",
-        "CMS_BINARY",
-        "CMS_NOATTR",
-        "CMS_NOSMIMECAP",
-        "CMS_NOOLDMIMETYPE",
-        "CMS_CRLFEOL",
-        "CMS_STREAM",
-        "CMS_NOCRL",
-        "CMS_PARTIAL",
-        "CMS_REUSE_DIGEST",
-        "CMS_USE_KEYID",
-        "CMS_DEBUG_DECRYPT",
-    ]
-}

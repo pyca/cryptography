@@ -348,18 +348,3 @@ EC_KEY *(*o2i_ECPublicKey)(EC_KEY **, const unsigned char **, long) = NULL;
 int (*i2o_ECPublicKey)(EC_KEY *, unsigned char **) = NULL;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_EC": [
-        "i2d_EC_PUBKEY",
-        "d2i_EC_PUBKEY",
-        "d2i_EC_PUBKEY_bio",
-        "i2d_EC_PUBKEY_bio",
-        "d2i_ECPrivateKey",
-        "d2i_ECPrivateKey_bio",
-        "i2d_ECPrivateKey",
-        "i2d_ECPrivateKey_bio",
-        "i2o_ECPublicKey",
-        "o2i_ECPublicKey",
-    ]
-}
