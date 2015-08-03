@@ -1780,6 +1780,10 @@ class CertificateBuilder(object):
             )
         elif isinstance(extension, InhibitAnyPolicy):
             extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
+        elif isinstance(extension, CRLDistributionPoints):
+            extension = Extension(
+                OID_CRL_DISTRIBUTION_POINTS, critical, extension
+            )
         else:
             raise NotImplementedError('Unsupported X.509 extension.')
 

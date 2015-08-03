@@ -1143,6 +1143,124 @@ class TestCertificateBuilder(object):
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA512(), backend)
 
+    @pytest.mark.parametrize(
+        "cdp",
+        [
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                        ])
+                    )],
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(
+                                x509.OID_ORGANIZATION_NAME,
+                                u"cryptography Testing"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.UniformResourceIdentifier(
+                        u"http://myhost.com/myca.crl"
+                    )],
+                    relative_name=None,
+                    reasons=frozenset([
+                        x509.ReasonFlags.key_compromise,
+                        x509.ReasonFlags.ca_compromise
+                    ]),
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(
+                                x509.OID_COMMON_NAME, u"cryptography CA"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.UniformResourceIdentifier(
+                        u"http://domain.com/some.crl"
+                    )],
+                    relative_name=None,
+                    reasons=frozenset([
+                        x509.ReasonFlags.key_compromise,
+                        x509.ReasonFlags.ca_compromise,
+                        x509.ReasonFlags.affiliation_changed,
+                        x509.ReasonFlags.superseded,
+                        x509.ReasonFlags.privilege_withdrawn,
+                        x509.ReasonFlags.cessation_of_operation,
+                        x509.ReasonFlags.aa_compromise,
+                        x509.ReasonFlags.certificate_hold,
+                    ]),
+                    crl_issuer=None
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=None,
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(
+                                x509.OID_COMMON_NAME, u"cryptography CA"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[x509.UniformResourceIdentifier(
+                        u"http://domain.com/some.crl"
+                    )],
+                    relative_name=None,
+                    reasons=frozenset([x509.ReasonFlags.aa_compromise]),
+                    crl_issuer=None
+                )
+            ])
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_crl_distribution_points(self, backend, cdp):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        builder = x509.CertificateBuilder().serial_number(
+            4444444
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            cdp,
+            critical=False,
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        )
+        assert ext.critical is False
+        assert ext.value == cdp
+
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_build_cert_with_dsa_private_key(self, backend):

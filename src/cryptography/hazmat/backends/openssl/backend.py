@@ -359,6 +359,95 @@ def _encode_extended_key_usage(backend, extended_key_usage):
     return pp, r
 
 
+def _encode_crl_distribution_points(backend, crl_distribution_points):
+    cdp = backend._lib.sk_DIST_POINT_new_null()
+    cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
+    for point in crl_distribution_points:
+        dp = backend._lib.DIST_POINT_new()
+        assert dp != backend._ffi.NULL
+
+        if point.reasons:
+            # TODO: determining reason flag is quadratic
+            bitmask = backend._lib.ASN1_BIT_STRING_new()
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask, 1, x509.ReasonFlags.key_compromise in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask, 2, x509.ReasonFlags.ca_compromise in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask,
+                3,
+                x509.ReasonFlags.affiliation_changed in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask, 4, x509.ReasonFlags.superseded in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask,
+                5,
+                x509.ReasonFlags.cessation_of_operation in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask, 6, x509.ReasonFlags.certificate_hold in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask,
+                7,
+                x509.ReasonFlags.privilege_withdrawn in point.reasons
+            )
+            assert res == 1
+            res = backend._lib.ASN1_BIT_STRING_set_bit(
+                bitmask, 8, x509.ReasonFlags.aa_compromise in point.reasons
+            )
+            assert res == 1
+
+            dp.reasons = bitmask
+
+        if point.full_name:
+            # Type 0 is fullName, there is no #define for it in the code.
+            dpn = backend._lib.DIST_POINT_NAME_new()
+            assert dpn != backend._ffi.NULL
+            dpn.type = 0
+            for name in point.full_name:
+                gns = backend._lib.GENERAL_NAMES_new()
+                assert gns != backend._ffi.NULL
+                for name in point.full_name:
+                    gn = _encode_general_name(backend, name)
+                    res = backend._lib.sk_GENERAL_NAME_push(gns, gn)
+                    assert res >= 1
+
+            dpn.name.fullname = gns
+            dp.distpoint = dpn
+
+        if point.relative_name:
+            # TODO: don't duplicate this with fullname above
+            dpn = backend._lib.DIST_POINT_NAME_new()
+            assert dpn != backend._ffi.NULL
+            dpn.name.relativename = _encode_name(backend, point.relative_name)
+            dp.distpoint = dpn
+
+        if point.crl_issuer:
+            dp.CRLissuer = _encode_general_names(backend, point.crl_issuer)
+
+        res = backend._lib.sk_DIST_POINT_push(cdp, dp)
+        assert res >= 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_CRL_DIST_POINTS(cdp, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DERSerializationBackend)
@@ -1175,6 +1264,10 @@ class Backend(object):
                 pp, r = _encode_subject_alt_name(self, extension.value)
             elif isinstance(extension.value, x509.AuthorityInformationAccess):
                 pp, r = _encode_authority_information_access(
+                    self, extension.value
+                )
+            elif isinstance(extension.value, x509.CRLDistributionPoints):
+                pp, r = _encode_crl_distribution_points(
                     self, extension.value
                 )
             else:
