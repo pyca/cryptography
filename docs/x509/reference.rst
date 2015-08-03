@@ -425,7 +425,10 @@ X.509 Certificate Builder
 
         :param serial_number: Integer number that will be used by the CA to
             identify this certificate (most notably during certificate
-            revocation checking).
+            revocation checking). Users are encouraged to use a method of
+            generating 20 bytes of entropy, e.g., UUID4. For more information
+            on secure random number generation, see
+            :ref:`secure_random_number_generation`.
 
     .. method:: not_valid_before(time)
 
@@ -433,7 +436,7 @@ X.509 Certificate Builder
         clients can start trusting the certificate.  It may be different from
         the time at which the certificate was created.
 
-        :param time: The `datetime.datetime` object (in UTC) that marks the
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             activation time for the certificate.  The certificate may not be
             trusted clients if it is used before this time.
 
@@ -443,17 +446,20 @@ X.509 Certificate Builder
         clients should no longer trust the certificate.  The CA's policy will
         determine how long the certificate should remain in use.
 
-        :param time: The `datetime.datetime` object (in UTC) that marks the
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             expiration time for the certificate.  The certificate may not be
             trusted clients if it is used after this time.
 
-    .. method:: add_extension(extension)
+    .. method:: add_extension(extension, critical)
 
         Adds an X.509 extension to the certificate.
 
         :param extension: The extension to add to the certificate. Can be one
             of :class:`~cryptography.x509.BasicConstraints` or
             :class:`~cryptography.x509.SubjectAlternativeName`.
+
+        :param critical: Set to ``True`` if the extension must be understood and
+             handled by whoever reads the certificate.
 
     .. method:: sign(backend, private_key, algorithm)
 

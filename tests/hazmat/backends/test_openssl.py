@@ -491,10 +491,6 @@ class TestOpenSSLSignX509Certificate(object):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
         ])).public_key(
             private_key.public_key()
         ).serial_number(
@@ -503,16 +499,12 @@ class TestOpenSSLSignX509Certificate(object):
             datetime.datetime(1999, 1, 1)
         ).not_valid_after(
             datetime.datetime(2020, 1, 1)
+        ).add_extension(
+            x509.InhibitAnyPolicy(0), False
         )
 
-        builder._extensions.append(x509.Extension(
-            oid=x509.OID_COUNTRY_NAME,
-            critical=False,
-            value=object()
-        ))
-
         with pytest.raises(NotImplementedError):
-            backend.sign_x509_certificate(builder, private_key, hashes.SHA1())
+            builder.sign(backend, private_key, hashes.SHA1())
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):
