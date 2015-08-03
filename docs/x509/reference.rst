@@ -393,6 +393,48 @@ X.509 Certificate Builder
 
 .. class:: CertificateBuilder
 
+    .. versionadded:: 1.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> import datetime
+        >>> import uuid
+        >>> one_day = datetime.timedelta(1, 0, 0)
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
+        >>> public_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... ).public_key()
+        >>> builder = x509.CertificateBuilder()
+        >>> builder = builder.subject_name(x509.Name([
+        ...     x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ... ]))
+        >>> builder = builder.issuer_name(x509.Name([
+        ...     x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ... ]))
+        >>> builder = builder.not_valid_before(datetime.datetime.today() - one_day)
+        >>> builder = builder.not_valid_after(datetime.datetime(2018, 8, 2))
+        >>> builder = builder.serial_number(int(uuid.uuid4()))
+        >>> builder = builder.public_key(public_key)
+        >>> builder = builder.add_extension(
+        ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
+        ... )
+        >>> certificate = builder.sign(
+        ...     private_key=private_key, algorithm=hashes.SHA256(),
+        ...     backend=default_backend()
+        ... )
+        >>> isinstance(certificate, x509.Certificate)
+        True
+
     .. method:: issuer_name(name)
 
         Sets the issuer's distinguished name.
