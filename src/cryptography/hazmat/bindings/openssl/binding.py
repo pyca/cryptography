@@ -25,7 +25,15 @@ def _osrandom_rand_status():
 
 
 class _ConditionalLibrary(object):
-    pass
+    def __init__(self):
+        for attr in dir(lib):
+            attrval = getattr(lib, attr)
+            setattr(self, attr, attrval)
+
+        for condition, names in CONDITIONAL_NAMES.items():
+            if not getattr(self, condition):
+                for name in names:
+                    delattr(self, name)
 
 
 class Binding(object):
@@ -79,17 +87,7 @@ class Binding(object):
     def _ensure_ffi_initialized(cls):
         with cls._init_lock:
             if not cls._lib_loaded:
-                conditional_lib = _ConditionalLibrary()
-                for attr in dir(lib):
-                    attrval = getattr(lib, attr)
-                    setattr(conditional_lib, attr, attrval)
-
-                for condition, names in CONDITIONAL_NAMES.items():
-                    if not getattr(conditional_lib, condition):
-                        for name in names:
-                            delattr(conditional_lib, name)
-
-                cls.lib = conditional_lib
+                cls.lib = _ConditionalLibrary()
                 cls._lib_loaded = True
                 cls._register_osrandom_engine()
 
