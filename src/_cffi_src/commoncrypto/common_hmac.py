@@ -35,5 +35,3 @@ MACROS = """
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}
