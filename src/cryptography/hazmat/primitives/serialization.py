@@ -33,9 +33,9 @@ def load_der_public_key(data, backend):
 
 
 def load_ssh_public_key(data, backend):
-    key_parts = data.split(b' ')
+    key_parts = data.split(b' ', 2)
 
-    if len(key_parts) != 2 and len(key_parts) != 3:
+    if len(key_parts) < 2:
         raise ValueError(
             'Key is not in the proper format or contains extra data.')
 

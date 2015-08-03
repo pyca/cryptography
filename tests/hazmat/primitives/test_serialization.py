@@ -854,7 +854,7 @@ class TestRSASSHSerialization(object):
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
-    def test_load_ssh_public_key_rsa_extra_string_after_comment(self, backend):
+    def test_load_ssh_public_key_rsa_comment_with_spaces(self, backend):
         ssh_key = (
             b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
             b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
@@ -866,8 +866,7 @@ class TestRSASSHSerialization(object):
             b"2MzHvnbv testkey@localhost extra"
         )
 
-        with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+        load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_rsa_extra_data_after_modulo(self, backend):
         ssh_key = (
@@ -943,7 +942,7 @@ class TestDSSSSHSerialization(object):
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
-    def test_load_ssh_public_key_dss_extra_string_after_comment(self, backend):
+    def test_load_ssh_public_key_dss_comment_with_spaces(self, backend):
         ssh_key = (
             b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
             b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
@@ -957,8 +956,7 @@ class TestDSSSSHSerialization(object):
             b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost extra"
         )
 
-        with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+        load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_dss_extra_data_after_modulo(self, backend):
         ssh_key = (
