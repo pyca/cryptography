@@ -234,7 +234,15 @@ class _X509ExtensionParser(object):
                         "{0} is not currently supported".format(oid), oid
                     )
             else:
-                value = handler(backend, ext)
+                d2i = backend._lib.X509V3_EXT_d2i(ext)
+                if d2i == backend._ffi.NULL:
+                    backend._consume_errors()
+                    raise ValueError(
+                        "The {0} extension is invalid and can't be "
+                        "parsed".format(oid)
+                    )
+
+                value = handler(backend, d2i)
                 extensions.append(x509.Extension(oid, critical, value))
 
             seen_oids.add(oid)
@@ -358,12 +366,8 @@ class _Certificate(object):
         return self._backend._read_mem_bio(bio)
 
 
-def _decode_certificate_policies(backend, ext):
-    cp = backend._ffi.cast(
-        "Cryptography_STACK_OF_POLICYINFO *",
-        backend._lib.X509V3_EXT_d2i(ext)
-    )
-    assert cp != backend._ffi.NULL
+def _decode_certificate_policies(backend, cp):
+    cp = backend._ffi.cast("Cryptography_STACK_OF_POLICYINFO *", cp)
     cp = backend._ffi.gc(cp, backend._lib.sk_POLICYINFO_free)
     num = backend._lib.sk_POLICYINFO_num(cp)
     certificate_policies = []
@@ -386,7 +390,8 @@ def _decode_certificate_policies(backend, ext):
                         pqi.d.cpsuri.data, pqi.d.cpsuri.length
                     )[:].decode('ascii')
                     qualifiers.append(cpsuri)
-                elif pqualid == x509.OID_CPS_USER_NOTICE:
+                else:
+                    assert pqualid == x509.OID_CPS_USER_NOTICE
                     user_notice = _decode_user_notice(
                         backend, pqi.d.usernotice
                     )
@@ -431,12 +436,8 @@ def _decode_user_notice(backend, un):
     return x509.UserNotice(notice_reference, explicit_text)
 
 
-def _decode_basic_constraints(backend, ext):
-    bc_st = backend._lib.X509V3_EXT_d2i(ext)
-    assert bc_st != backend._ffi.NULL
-    basic_constraints = backend._ffi.cast(
-        "BASIC_CONSTRAINTS *", bc_st
-    )
+def _decode_basic_constraints(backend, bc_st):
+    basic_constraints = backend._ffi.cast("BASIC_CONSTRAINTS *", bc_st)
     basic_constraints = backend._ffi.gc(
         basic_constraints, backend._lib.BASIC_CONSTRAINTS_free
     )
@@ -447,19 +448,13 @@ def _decode_basic_constraints(backend, ext):
     if basic_constraints.pathlen == backend._ffi.NULL:
         path_length = None
     else:
-        path_length = _asn1_integer_to_int(
-            backend, basic_constraints.pathlen
-        )
+        path_length = _asn1_integer_to_int(backend, basic_constraints.pathlen)
 
     return x509.BasicConstraints(ca, path_length)
 
 
-def _decode_subject_key_identifier(backend, ext):
-    asn1_string = backend._lib.X509V3_EXT_d2i(ext)
-    assert asn1_string != backend._ffi.NULL
-    asn1_string = backend._ffi.cast(
-        "ASN1_OCTET_STRING *", asn1_string
-    )
+def _decode_subject_key_identifier(backend, asn1_string):
+    asn1_string = backend._ffi.cast("ASN1_OCTET_STRING *", asn1_string)
     asn1_string = backend._ffi.gc(
         asn1_string, backend._lib.ASN1_OCTET_STRING_free
     )
@@ -468,13 +463,9 @@ def _decode_subject_key_identifier(backend, ext):
     )
 
 
-def _decode_authority_key_identifier(backend, ext):
-    akid = backend._lib.X509V3_EXT_d2i(ext)
-    assert akid != backend._ffi.NULL
+def _decode_authority_key_identifier(backend, akid):
     akid = backend._ffi.cast("AUTHORITY_KEYID *", akid)
-    akid = backend._ffi.gc(
-        akid, backend._lib.AUTHORITY_KEYID_free
-    )
+    akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
     key_identifier = None
     authority_cert_issuer = None
     authority_cert_serial_number = None
@@ -499,15 +490,9 @@ def _decode_authority_key_identifier(backend, ext):
     )
 
 
-def _decode_authority_information_access(backend, ext):
-    aia = backend._lib.X509V3_EXT_d2i(ext)
-    assert aia != backend._ffi.NULL
-    aia = backend._ffi.cast(
-        "Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia
-    )
-    aia = backend._ffi.gc(
-        aia, backend._lib.sk_ACCESS_DESCRIPTION_free
-    )
+def _decode_authority_information_access(backend, aia):
+    aia = backend._ffi.cast("Cryptography_STACK_OF_ACCESS_DESCRIPTION *", aia)
+    aia = backend._ffi.gc(aia, backend._lib.sk_ACCESS_DESCRIPTION_free)
     num = backend._lib.sk_ACCESS_DESCRIPTION_num(aia)
     access_descriptions = []
     for i in range(num):
@@ -521,13 +506,9 @@ def _decode_authority_information_access(backend, ext):
     return x509.AuthorityInformationAccess(access_descriptions)
 
 
-def _decode_key_usage(backend, ext):
-    bit_string = backend._lib.X509V3_EXT_d2i(ext)
-    assert bit_string != backend._ffi.NULL
+def _decode_key_usage(backend, bit_string):
     bit_string = backend._ffi.cast("ASN1_BIT_STRING *", bit_string)
-    bit_string = backend._ffi.gc(
-        bit_string, backend._lib.ASN1_BIT_STRING_free
-    )
+    bit_string = backend._ffi.gc(bit_string, backend._lib.ASN1_BIT_STRING_free)
     get_bit = backend._lib.ASN1_BIT_STRING_get_bit
     digital_signature = get_bit(bit_string, 0) == 1
     content_commitment = get_bit(bit_string, 1) == 1
@@ -551,11 +532,8 @@ def _decode_key_usage(backend, ext):
     )
 
 
-def _decode_general_names_extension(backend, ext):
-    gns = backend._ffi.cast(
-        "GENERAL_NAMES *", backend._lib.X509V3_EXT_d2i(ext)
-    )
-    assert gns != backend._ffi.NULL
+def _decode_general_names_extension(backend, gns):
+    gns = backend._ffi.cast("GENERAL_NAMES *", gns)
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
     general_names = _decode_general_names(backend, gns)
     return general_names
@@ -573,11 +551,8 @@ def _decode_issuer_alt_name(backend, ext):
     )
 
 
-def _decode_name_constraints(backend, ext):
-    nc = backend._ffi.cast(
-        "NAME_CONSTRAINTS *", backend._lib.X509V3_EXT_d2i(ext)
-    )
-    assert nc != backend._ffi.NULL
+def _decode_name_constraints(backend, nc):
+    nc = backend._ffi.cast("NAME_CONSTRAINTS *", nc)
     nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
     permitted = _decode_general_subtrees(backend, nc.permittedSubtrees)
     excluded = _decode_general_subtrees(backend, nc.excludedSubtrees)
@@ -602,12 +577,8 @@ def _decode_general_subtrees(backend, stack_subtrees):
     return subtrees
 
 
-def _decode_extended_key_usage(backend, ext):
-    sk = backend._ffi.cast(
-        "Cryptography_STACK_OF_ASN1_OBJECT *",
-        backend._lib.X509V3_EXT_d2i(ext)
-    )
-    assert sk != backend._ffi.NULL
+def _decode_extended_key_usage(backend, sk):
+    sk = backend._ffi.cast("Cryptography_STACK_OF_ASN1_OBJECT *", sk)
     sk = backend._ffi.gc(sk, backend._lib.sk_ASN1_OBJECT_free)
     num = backend._lib.sk_ASN1_OBJECT_num(sk)
     ekus = []
@@ -621,14 +592,9 @@ def _decode_extended_key_usage(backend, ext):
     return x509.ExtendedKeyUsage(ekus)
 
 
-def _decode_crl_distribution_points(backend, ext):
-    cdps = backend._ffi.cast(
-        "Cryptography_STACK_OF_DIST_POINT *",
-        backend._lib.X509V3_EXT_d2i(ext)
-    )
-    assert cdps != backend._ffi.NULL
-    cdps = backend._ffi.gc(
-        cdps, backend._lib.sk_DIST_POINT_free)
+def _decode_crl_distribution_points(backend, cdps):
+    cdps = backend._ffi.cast("Cryptography_STACK_OF_DIST_POINT *", cdps)
+    cdps = backend._ffi.gc(cdps, backend._lib.sk_DIST_POINT_free)
     num = backend._lib.sk_DIST_POINT_num(cdps)
 
     dist_points = []
@@ -716,12 +682,8 @@ def _decode_crl_distribution_points(backend, ext):
     return x509.CRLDistributionPoints(dist_points)
 
 
-def _decode_inhibit_any_policy(backend, ext):
-    asn1_int = backend._ffi.cast(
-        "ASN1_INTEGER *",
-        backend._lib.X509V3_EXT_d2i(ext)
-    )
-    assert asn1_int != backend._ffi.NULL
+def _decode_inhibit_any_policy(backend, asn1_int):
+    asn1_int = backend._ffi.cast("ASN1_INTEGER *", asn1_int)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
     skip_certs = _asn1_integer_to_int(backend, asn1_int)
     return x509.InhibitAnyPolicy(skip_certs)
@@ -789,33 +751,33 @@ class _CertificateSigningRequest(object):
         return self._backend._read_mem_bio(bio)
 
 
+_EXTENSION_HANDLERS = {
+    x509.OID_BASIC_CONSTRAINTS: _decode_basic_constraints,
+    x509.OID_SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
+    x509.OID_KEY_USAGE: _decode_key_usage,
+    x509.OID_SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
+    x509.OID_EXTENDED_KEY_USAGE: _decode_extended_key_usage,
+    x509.OID_AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
+    x509.OID_AUTHORITY_INFORMATION_ACCESS: (
+        _decode_authority_information_access
+    ),
+    x509.OID_CERTIFICATE_POLICIES: _decode_certificate_policies,
+    x509.OID_CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
+    x509.OID_OCSP_NO_CHECK: _decode_ocsp_no_check,
+    x509.OID_INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
+    x509.OID_ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
+    x509.OID_NAME_CONSTRAINTS: _decode_name_constraints,
+}
+
+
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
-    handlers={
-        x509.OID_BASIC_CONSTRAINTS: _decode_basic_constraints,
-        x509.OID_SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
-        x509.OID_KEY_USAGE: _decode_key_usage,
-        x509.OID_SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
-        x509.OID_EXTENDED_KEY_USAGE: _decode_extended_key_usage,
-        x509.OID_AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-        x509.OID_AUTHORITY_INFORMATION_ACCESS: (
-            _decode_authority_information_access
-        ),
-        x509.OID_CERTIFICATE_POLICIES: _decode_certificate_policies,
-        x509.OID_CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
-        x509.OID_OCSP_NO_CHECK: _decode_ocsp_no_check,
-        x509.OID_INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
-        x509.OID_ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
-        x509.OID_NAME_CONSTRAINTS: _decode_name_constraints,
-    }
+    handlers=_EXTENSION_HANDLERS
 )
 
 _CSR_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.sk_X509_EXTENSION_num(x),
     get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
-    handlers={
-        x509.OID_BASIC_CONSTRAINTS: _decode_basic_constraints,
-        x509.OID_SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
-    }
+    handlers=_EXTENSION_HANDLERS
 )

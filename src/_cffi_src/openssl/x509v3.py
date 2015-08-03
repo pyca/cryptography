@@ -33,6 +33,7 @@ typedef ... Cryptography_STACK_OF_POLICYQUALINFO;
 typedef ... Cryptography_STACK_OF_POLICYINFO;
 typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
 typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
+typedef ... EXTENDED_KEY_USAGE;
 
 typedef struct {
     X509 *issuer_cert;
@@ -200,6 +201,8 @@ void *X509V3_set_ctx_nodb(X509V3_CTX *);
 
 int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
 
+int i2d_EXTENDED_KEY_USAGE(EXTENDED_KEY_USAGE *, unsigned char **);
+
 int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
 int sk_GENERAL_NAME_push(struct stack_st_GENERAL_NAME *, GENERAL_NAME *);
 GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
@@ -220,19 +223,42 @@ X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
 const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
 const X509V3_EXT_METHOD *X509V3_EXT_get_nid(int);
 
+Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
 void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
 int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
 DIST_POINT *sk_DIST_POINT_value(Cryptography_STACK_OF_DIST_POINT *, int);
+int sk_DIST_POINT_push(Cryptography_STACK_OF_DIST_POINT *, DIST_POINT *);
 
 void sk_POLICYINFO_free(Cryptography_STACK_OF_POLICYINFO *);
 int sk_POLICYINFO_num(Cryptography_STACK_OF_POLICYINFO *);
 POLICYINFO *sk_POLICYINFO_value(Cryptography_STACK_OF_POLICYINFO *, int);
+int sk_POLICYINFO_push(Cryptography_STACK_OF_POLICYINFO *, POLICYINFO *);
+Cryptography_STACK_OF_POLICYINFO *sk_POLICYINFO_new_null(void);
+
+POLICYINFO *POLICYINFO_new(void);
+void POLICYINFO_free(POLICYINFO *);
+
+POLICYQUALINFO *POLICYQUALINFO_new(void);
+void POLICYQUALINFO_free(POLICYQUALINFO *);
+
+NOTICEREF *NOTICEREF_new(void);
+void NOTICEREF_free(NOTICEREF *);
+
+USERNOTICE *USERNOTICE_new(void);
+void USERNOTICE_free(USERNOTICE *);
+
+int i2d_CERTIFICATEPOLICIES(Cryptography_STACK_OF_POLICYINFO *,
+                            unsigned char **);
 
 void sk_POLICYQUALINFO_free(Cryptography_STACK_OF_POLICYQUALINFO *);
 int sk_POLICYQUALINFO_num(Cryptography_STACK_OF_POLICYQUALINFO *);
 POLICYQUALINFO *sk_POLICYQUALINFO_value(Cryptography_STACK_OF_POLICYQUALINFO *,
                                         int);
+int sk_POLICYQUALINFO_push(Cryptography_STACK_OF_POLICYQUALINFO *,
+                           POLICYQUALINFO *);
+Cryptography_STACK_OF_POLICYQUALINFO *sk_POLICYQUALINFO_new_null(void);
 
+Cryptography_STACK_OF_GENERAL_SUBTREE *sk_GENERAL_SUBTREE_new_null(void);
 void sk_GENERAL_SUBTREE_free(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 int sk_GENERAL_SUBTREE_num(Cryptography_STACK_OF_GENERAL_SUBTREE *);
 GENERAL_SUBTREE *sk_GENERAL_SUBTREE_value(
@@ -244,8 +270,14 @@ int sk_GENERAL_SUBTREE_push(Cryptography_STACK_OF_GENERAL_SUBTREE *,
 void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
 ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
+int sk_ASN1_INTEGER_push(Cryptography_STACK_OF_ASN1_INTEGER *, ASN1_INTEGER *);
 
 X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
+
+DIST_POINT *DIST_POINT_new(void);
+void DIST_POINT_free(DIST_POINT *);
+
+int i2d_CRL_DIST_POINTS(Cryptography_STACK_OF_DIST_POINT *, unsigned char **);
 """
 
 CUSTOMIZATIONS = """

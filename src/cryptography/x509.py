@@ -1575,12 +1575,16 @@ class CertificateSigningRequestBuilder(object):
         """
         if isinstance(extension, BasicConstraints):
             extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
+        elif isinstance(extension, ExtendedKeyUsage):
+            extension = Extension(OID_EXTENDED_KEY_USAGE, critical, extension)
         elif isinstance(extension, SubjectAlternativeName):
             extension = Extension(
                 OID_SUBJECT_ALTERNATIVE_NAME, critical, extension
             )
         elif isinstance(extension, KeyUsage):
             extension = Extension(OID_KEY_USAGE, critical, extension)
+        elif isinstance(extension, InhibitAnyPolicy):
+            extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
         else:
             raise NotImplementedError('Unsupported X.509 extension.')
         # TODO: This is quadratic in the number of extensions

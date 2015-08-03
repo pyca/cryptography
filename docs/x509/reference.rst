@@ -565,6 +565,25 @@ X.509 CSR (Certificate Signing Request) Object
             >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
             True
 
+    .. attribute:: extensions
+
+        :type: :class:`Extensions`
+
+        The extensions encoded in the certificate signing request.
+
+        :raises cryptography.x509.DuplicateExtension: If more than one
+            extension of the same type is found within the certificate signing request.
+
+        :raises cryptography.x509.UnsupportedExtension: If the certificate signing request
+            contains an extension that is not supported.
+
+        :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
+            contains a general name that is not supported.
+
+        :raises UnicodeError: If an extension contains IDNA encoding that is
+            invalid or not compliant with IDNA 2008.
+
+
     .. method:: public_bytes(encoding)
 
         .. versionadded:: 1.0

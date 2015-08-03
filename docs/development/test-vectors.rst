@@ -233,6 +233,8 @@ Custom X.509 Vectors
 * ``cp_user_notice_no_explicit_text.pem`` - An RSA 2048 bit self-signed
   certificate containing a certificate policies extension with a user notice
   with no explicit text.
+* ``cp_invalid.pem`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with invalid data.
 * ``ian_uri.pem`` - An RSA 2048 bit certificate containing an issuer
   alternative name extension with a ``URI`` general name.
 * ``ocsp_nocheck.pem`` - An RSA 2048 bit self-signed certificate containing

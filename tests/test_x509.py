@@ -1306,6 +1306,20 @@ class TestCertificateSigningRequestBuilder(object):
             x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).add_extension(
+            x509.InhibitAnyPolicy(0),
+            critical=False
+        )
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    def test_key_usage(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        request = builder.subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            ])
+        ).add_extension(
             x509.KeyUsage(
                 digital_signature=True,
                 content_commitment=True,
@@ -1318,9 +1332,82 @@ class TestCertificateSigningRequestBuilder(object):
                 decipher_only=False
             ),
             critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+        assert len(request.extensions) == 1
+        ext = request.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        assert ext.critical is False
+        assert ext.value == x509.KeyUsage(
+            digital_signature=True,
+            content_commitment=True,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=False,
+            key_cert_sign=True,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=False
         )
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+
+    def test_key_usage_key_agreement_bit(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        request = builder.subject_name(
+            x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            ])
+        ).add_extension(
+            x509.KeyUsage(
+                digital_signature=False,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=True,
+                key_cert_sign=True,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=True
+            ),
+            critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+        assert len(request.extensions) == 1
+        ext = request.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        assert ext.critical is False
+        assert ext.value == x509.KeyUsage(
+            digital_signature=False,
+            content_commitment=False,
+            key_encipherment=False,
+            data_encipherment=False,
+            key_agreement=True,
+            key_cert_sign=True,
+            crl_sign=False,
+            encipher_only=False,
+            decipher_only=True
+        )
+
+    def test_add_two_extensions(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        request = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
+            critical=False,
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).sign(private_key, hashes.SHA1(), backend)
+
+        assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
+        public_key = request.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        basic_constraints = request.extensions.get_extension_for_oid(
+            x509.OID_BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+        ext = request.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_ALTERNATIVE_NAME
+        )
+        assert list(ext.value) == [x509.DNSName(u"cryptography.io")]
 
     def test_set_subject_twice(self):
         builder = x509.CertificateSigningRequestBuilder()
@@ -1439,6 +1526,42 @@ class TestCertificateSigningRequestBuilder(object):
 
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
+
+    def test_extended_key_usage(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        request = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).add_extension(
+            x509.ExtendedKeyUsage([
+                x509.OID_CLIENT_AUTH,
+                x509.OID_SERVER_AUTH,
+                x509.OID_CODE_SIGNING,
+            ]), critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        eku = request.extensions.get_extension_for_oid(
+            x509.OID_EXTENDED_KEY_USAGE
+        )
+        assert eku.critical is False
+        assert eku.value == x509.ExtendedKeyUsage([
+            x509.OID_CLIENT_AUTH,
+            x509.OID_SERVER_AUTH,
+            x509.OID_CODE_SIGNING,
+        ])
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    def test_rsa_key_too_small(self, backend):
+        private_key = rsa.generate_private_key(65537, 512, backend)
+        builder = x509.CertificateSigningRequestBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        )
+
+        with pytest.raises(ValueError) as exc:
+            builder.sign(private_key, hashes.SHA512(), backend)
+
+        assert str(exc.value) == "Digest too big for RSA key"
 
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)

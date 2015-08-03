@@ -108,7 +108,7 @@ def _encode_name(backend, attributes):
     subject = backend._lib.X509_NAME_new()
     for attribute in attributes:
         value = attribute.value.encode('utf8')
-        obj = _txt2obj(backend, attribute.oid.dotted_string)
+        obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
         res = backend._lib.X509_NAME_add_entry_by_OBJ(
             subject,
             obj,
@@ -134,8 +134,51 @@ def _txt2obj(backend, name):
     name = name.encode('ascii')
     obj = backend._lib.OBJ_txt2obj(name, 1)
     assert obj != backend._ffi.NULL
+    return obj
+
+
+def _txt2obj_gc(backend, name):
+    obj = _txt2obj(backend, name)
     obj = backend._ffi.gc(obj, backend._lib.ASN1_OBJECT_free)
     return obj
+
+
+def _encode_key_usage(backend, key_usage):
+    set_bit = backend._lib.ASN1_BIT_STRING_set_bit
+    ku = backend._lib.ASN1_BIT_STRING_new()
+    ku = backend._ffi.gc(ku, backend._lib.ASN1_BIT_STRING_free)
+    res = set_bit(ku, 0, key_usage.digital_signature)
+    assert res == 1
+    res = set_bit(ku, 1, key_usage.content_commitment)
+    assert res == 1
+    res = set_bit(ku, 2, key_usage.key_encipherment)
+    assert res == 1
+    res = set_bit(ku, 3, key_usage.data_encipherment)
+    assert res == 1
+    res = set_bit(ku, 4, key_usage.key_agreement)
+    assert res == 1
+    res = set_bit(ku, 5, key_usage.key_cert_sign)
+    assert res == 1
+    res = set_bit(ku, 6, key_usage.crl_sign)
+    assert res == 1
+    if key_usage.key_agreement:
+        res = set_bit(ku, 7, key_usage.encipher_only)
+        assert res == 1
+        res = set_bit(ku, 8, key_usage.decipher_only)
+        assert res == 1
+    else:
+        res = set_bit(ku, 7, 0)
+        assert res == 1
+        res = set_bit(ku, 8, 0)
+        assert res == 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_ASN1_BIT_STRING(ku, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
 
 
 def _encode_basic_constraints(backend, basic_constraints):
@@ -167,94 +210,118 @@ def _encode_subject_alt_name(backend, san):
     )
 
     for alt_name in san:
-        if isinstance(alt_name, x509.DNSName):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            gn.type = backend._lib.GEN_DNS
-
-            ia5 = backend._lib.ASN1_IA5STRING_new()
-            assert ia5 != backend._ffi.NULL
-
-            if alt_name.value.startswith(u"*."):
-                value = b"*." + idna.encode(alt_name.value[2:])
-            else:
-                value = idna.encode(alt_name.value)
-
-            res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
-            assert res == 1
-            gn.d.dNSName = ia5
-        elif isinstance(alt_name, x509.RegisteredID):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            gn.type = backend._lib.GEN_RID
-            obj = backend._lib.OBJ_txt2obj(
-                alt_name.value.dotted_string.encode('ascii'), 1
-            )
-            assert obj != backend._ffi.NULL
-            gn.d.registeredID = obj
-        elif isinstance(alt_name, x509.DirectoryName):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            name = _encode_name(backend, alt_name.value)
-            gn.type = backend._lib.GEN_DIRNAME
-            gn.d.directoryName = name
-        elif isinstance(alt_name, x509.IPAddress):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            ipaddr = _encode_asn1_str(
-                backend, alt_name.value.packed, len(alt_name.value.packed)
-            )
-            gn.type = backend._lib.GEN_IPADD
-            gn.d.iPAddress = ipaddr
-        elif isinstance(alt_name, x509.OtherName):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            other_name = backend._lib.OTHERNAME_new()
-            assert other_name != backend._ffi.NULL
-
-            type_id = backend._lib.OBJ_txt2obj(
-                alt_name.type_id.dotted_string.encode('ascii'), 1
-            )
-            assert type_id != backend._ffi.NULL
-            data = backend._ffi.new("unsigned char[]", alt_name.value)
-            data_ptr_ptr = backend._ffi.new("unsigned char **")
-            data_ptr_ptr[0] = data
-            value = backend._lib.d2i_ASN1_TYPE(
-                backend._ffi.NULL, data_ptr_ptr, len(alt_name.value)
-            )
-            if value == backend._ffi.NULL:
-                backend._consume_errors()
-                raise ValueError("Invalid ASN.1 data")
-            other_name.type_id = type_id
-            other_name.value = value
-            gn.type = backend._lib.GEN_OTHERNAME
-            gn.d.otherName = other_name
-        elif isinstance(alt_name, x509.RFC822Name):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            asn1_str = _encode_asn1_str(
-                backend, alt_name._encoded, len(alt_name._encoded)
-            )
-            gn.type = backend._lib.GEN_EMAIL
-            gn.d.rfc822Name = asn1_str
-        elif isinstance(alt_name, x509.UniformResourceIdentifier):
-            gn = backend._lib.GENERAL_NAME_new()
-            assert gn != backend._ffi.NULL
-            asn1_str = _encode_asn1_str(
-                backend, alt_name._encoded, len(alt_name._encoded)
-            )
-            gn.type = backend._lib.GEN_URI
-            gn.d.uniformResourceIdentifier = asn1_str
-        else:
-            raise ValueError(
-                "{0} is an unknown GeneralName type".format(alt_name)
-            )
-
+        gn = _encode_general_name(backend, alt_name)
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
         assert res != 0
 
     pp = backend._ffi.new("unsigned char **")
     r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_general_name(backend, name):
+    if isinstance(name, x509.DNSName):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        gn.type = backend._lib.GEN_DNS
+
+        ia5 = backend._lib.ASN1_IA5STRING_new()
+        assert ia5 != backend._ffi.NULL
+
+        if name.value.startswith(u"*."):
+            value = b"*." + idna.encode(name.value[2:])
+        else:
+            value = idna.encode(name.value)
+
+        res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
+        assert res == 1
+        gn.d.dNSName = ia5
+    elif isinstance(name, x509.RegisteredID):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        gn.type = backend._lib.GEN_RID
+        obj = backend._lib.OBJ_txt2obj(
+            name.value.dotted_string.encode('ascii'), 1
+        )
+        assert obj != backend._ffi.NULL
+        gn.d.registeredID = obj
+    elif isinstance(name, x509.DirectoryName):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        dir_name = _encode_name(backend, name.value)
+        gn.type = backend._lib.GEN_DIRNAME
+        gn.d.directoryName = dir_name
+    elif isinstance(name, x509.IPAddress):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        ipaddr = _encode_asn1_str(
+            backend, name.value.packed, len(name.value.packed)
+        )
+        gn.type = backend._lib.GEN_IPADD
+        gn.d.iPAddress = ipaddr
+    elif isinstance(name, x509.OtherName):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        other_name = backend._lib.OTHERNAME_new()
+        assert other_name != backend._ffi.NULL
+
+        type_id = backend._lib.OBJ_txt2obj(
+            name.type_id.dotted_string.encode('ascii'), 1
+        )
+        assert type_id != backend._ffi.NULL
+        data = backend._ffi.new("unsigned char[]", name.value)
+        data_ptr_ptr = backend._ffi.new("unsigned char **")
+        data_ptr_ptr[0] = data
+        value = backend._lib.d2i_ASN1_TYPE(
+            backend._ffi.NULL, data_ptr_ptr, len(name.value)
+        )
+        if value == backend._ffi.NULL:
+            backend._consume_errors()
+            raise ValueError("Invalid ASN.1 data")
+        other_name.type_id = type_id
+        other_name.value = value
+        gn.type = backend._lib.GEN_OTHERNAME
+        gn.d.otherName = other_name
+    elif isinstance(name, x509.RFC822Name):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        asn1_str = _encode_asn1_str(
+            backend, name._encoded, len(name._encoded)
+        )
+        gn.type = backend._lib.GEN_EMAIL
+        gn.d.rfc822Name = asn1_str
+    elif isinstance(name, x509.UniformResourceIdentifier):
+        gn = backend._lib.GENERAL_NAME_new()
+        assert gn != backend._ffi.NULL
+        asn1_str = _encode_asn1_str(
+            backend, name._encoded, len(name._encoded)
+        )
+        gn.type = backend._lib.GEN_URI
+        gn.d.uniformResourceIdentifier = asn1_str
+    else:
+        raise ValueError(
+            "{0} is an unknown GeneralName type".format(name)
+        )
+
+    return gn
+
+
+def _encode_extended_key_usage(backend, extended_key_usage):
+    eku = backend._lib.sk_ASN1_OBJECT_new_null()
+    eku = backend._ffi.gc(eku, backend._lib.sk_ASN1_OBJECT_free)
+    for oid in extended_key_usage:
+        obj = _txt2obj(backend, oid.dotted_string)
+        res = backend._lib.sk_ASN1_OBJECT_push(eku, obj)
+        assert res >= 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_EXTENDED_KEY_USAGE(
+        backend._ffi.cast("EXTENDED_KEY_USAGE *", eku), pp
+    )
     assert r > 0
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
@@ -971,10 +1038,14 @@ class Backend(object):
                 pp, r = _encode_basic_constraints(self, extension.value)
             elif isinstance(extension.value, x509.SubjectAlternativeName):
                 pp, r = _encode_subject_alt_name(self, extension.value)
+            elif isinstance(extension.value, x509.KeyUsage):
+                pp, r = _encode_key_usage(self, extension.value)
+            elif isinstance(extension.value, x509.ExtendedKeyUsage):
+                pp, r = _encode_extended_key_usage(self, extension.value)
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
-            obj = _txt2obj(self, extension.oid.dotted_string)
+            obj = _txt2obj_gc(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
                 obj,
@@ -983,7 +1054,7 @@ class Backend(object):
             )
             assert extension != self._ffi.NULL
             res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
-            assert res == 1
+            assert res >= 1
         res = self._lib.X509_REQ_add_extensions(x509_req, extensions)
         assert res == 1
 
@@ -991,7 +1062,11 @@ class Backend(object):
         res = self._lib.X509_REQ_sign(
             x509_req, private_key._evp_pkey, evp_md
         )
-        assert res > 0
+        if res == 0:
+            errors = self._consume_errors()
+            assert errors[0][1] == self._lib.ERR_LIB_RSA
+            assert errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+            raise ValueError("Digest too big for RSA key")
 
         return _CertificateSigningRequest(self, x509_req)
 
@@ -1609,13 +1684,15 @@ class Backend(object):
             if format is serialization.PrivateFormat.PKCS8:
                 write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
                 key = evp_pkey
-            elif format is serialization.PrivateFormat.TraditionalOpenSSL:
+            else:
+                assert format is serialization.PrivateFormat.TraditionalOpenSSL
                 if evp_pkey.type == self._lib.EVP_PKEY_RSA:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
                 elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
-                elif (self._lib.Cryptography_HAS_EC == 1 and
-                      evp_pkey.type == self._lib.EVP_PKEY_EC):
+                else:
+                    assert self._lib.Cryptography_HAS_EC == 1
+                    assert evp_pkey.type == self._lib.EVP_PKEY_EC
                     write_bio = self._lib.PEM_write_bio_ECPrivateKey
 
                 key = cdata
@@ -1632,7 +1709,8 @@ class Backend(object):
                 return self._private_key_bytes_traditional_der(
                     evp_pkey.type, cdata
                 )
-            elif format is serialization.PrivateFormat.PKCS8:
+            else:
+                assert format is serialization.PrivateFormat.PKCS8
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
                 key = evp_pkey
         else:
@@ -1657,7 +1735,8 @@ class Backend(object):
         elif (self._lib.Cryptography_HAS_EC == 1 and
               key_type == self._lib.EVP_PKEY_EC):
             write_bio = self._lib.i2d_ECPrivateKey_bio
-        elif key_type == self._lib.EVP_PKEY_DSA:
+        else:
+            assert key_type == self._lib.EVP_PKEY_DSA
             write_bio = self._lib.i2d_DSAPrivateKey_bio
 
         bio = self._create_mem_bio()
@@ -1672,7 +1751,8 @@ class Backend(object):
         if format is serialization.PublicFormat.SubjectPublicKeyInfo:
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
-            elif encoding is serialization.Encoding.DER:
+            else:
+                assert encoding is serialization.Encoding.DER
                 write_bio = self._lib.i2d_PUBKEY_bio
 
             key = evp_pkey
@@ -1681,7 +1761,8 @@ class Backend(object):
             assert evp_pkey.type == self._lib.EVP_PKEY_RSA
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_RSAPublicKey
-            elif encoding is serialization.Encoding.DER:
+            else:
+                assert encoding is serialization.Encoding.DER
                 write_bio = self._lib.i2d_RSAPublicKey_bio
 
             key = cdata

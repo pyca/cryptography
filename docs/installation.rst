@@ -45,28 +45,18 @@ dependencies are included. Just run
     $ pip install cryptography
 
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
-There are `pre-compiled binaries`_ available. If your installation is in an
-unusual location set the ``LIB`` and ``INCLUDE`` environment variables to
-include the corresponding locations.For example:
+You can compile OpenSSL yourself as well or use the binaries we build for our
+release infrastructure (`32-bit`_ and `64-bit`_). Wherever you place your copy
+of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE`` environment variables
+to include the proper locations. For example:
 
 .. code-block:: console
 
     C:\> \path\to\vcvarsall.bat x86_amd64
-    C:\> set LIB=C:\OpenSSL\lib\VC\static;C:\OpenSSL\lib;%LIB%
-    C:\> set INCLUDE=C:\OpenSSL\include;%INCLUDE%
+    C:\> set LIB=C:\OpenSSL-win64\lib;%LIB%
+    C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
     C:\> pip install cryptography
 
-You can also choose to build statically or dynamically using the
-``PYCA_WINDOWS_LINK_TYPE`` variable. Allowed values are ``static`` (default)
-and ``dynamic``.
-
-.. code-block:: console
-
-    C:\> \path\to\vcvarsall.bat x86_amd64
-    C:\> set LIB=C:\OpenSSL\lib\VC\static;C:\OpenSSL\lib;%LIB%
-    C:\> set INCLUDE=C:\OpenSSL\include;%INCLUDE%
-    C:\> set PYCA_WINDOWS_LINK_TYPE=dynamic
-    C:\> pip install cryptography
 
 Building cryptography on Linux
 ------------------------------
@@ -186,6 +176,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: http://www.macports.org
-.. _`pre-compiled binaries`: https://www.openssl.org/related/binaries.html
+.. _`32-bit`: https://jenkins.cryptography.io/job/openssl-win32-release/
+.. _`64-bit`: https://jenkins.cryptography.io/job/openssl-win64-release/
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
