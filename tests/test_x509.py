@@ -809,7 +809,7 @@ class TestRSACertificateRequest(object):
             not_valid_after
         )
 
-        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
+        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -969,7 +969,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.sign(backend, private_key, object())
+            builder.sign(private_key, object(), backend)
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -981,7 +981,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(NotImplementedError):
-            builder.sign(backend, private_key, hashes.SHA512())
+            builder.sign(private_key, hashes.SHA512(), backend)
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -994,7 +994,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder()
 
         with pytest.raises(NotImplementedError):
-            builder.sign(backend, private_key, hashes.SHA512())
+            builder.sign(private_key, hashes.SHA512(), backend)
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -1027,7 +1027,7 @@ class TestCertificateBuilder(object):
             not_valid_after
         )
 
-        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
+        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -1076,7 +1076,7 @@ class TestCertificateBuilder(object):
             not_valid_after
         )
 
-        cert = builder.sign(backend, issuer_private_key, hashes.SHA1())
+        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
 
         assert cert.version is x509.Version.v3
         assert cert.not_valid_before == not_valid_before
@@ -1117,7 +1117,7 @@ class TestCertificateBuilder(object):
         )
 
         with pytest.raises(ValueError):
-            builder.sign(backend, issuer_private_key, hashes.SHA512())
+            builder.sign(issuer_private_key, hashes.SHA512(), backend)
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
