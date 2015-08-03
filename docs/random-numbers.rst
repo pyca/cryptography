@@ -1,5 +1,3 @@
-.. _secure_random_number_generation:
-
 Random number generation
 ========================
 

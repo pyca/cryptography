@@ -469,8 +469,7 @@ X.509 Certificate Builder
             identify this certificate (most notably during certificate
             revocation checking). Users are encouraged to use a method of
             generating 20 bytes of entropy, e.g., UUID4. For more information
-            on secure random number generation, see
-            :ref:`secure_random_number_generation`.
+            on secure random number generation, see :doc:`/random-numbers`.
 
     .. method:: not_valid_before(time)
 
