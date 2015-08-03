@@ -210,7 +210,9 @@ def _encode_authority_information_access(backend, authority_info_access):
     )
     for access_description in authority_info_access:
         ad = backend._lib.ACCESS_DESCRIPTION_new()
-        method = _txt2obj(backend, access_description.access_method)
+        method = _txt2obj(
+            backend, access_description.access_method.dotted_string
+        )
         gn = _encode_general_name(backend, access_description.access_location)
         ad.method = method
         ad.location = gn
@@ -1163,6 +1165,10 @@ class Backend(object):
                 pp, r = _encode_basic_constraints(self, extension.value)
             elif isinstance(extension.value, x509.SubjectAlternativeName):
                 pp, r = _encode_subject_alt_name(self, extension.value)
+            elif isinstance(extension.value, x509.AuthorityInformationAccess):
+                pp, r = _encode_authority_information_access(
+                    self, extension.value
+                )
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
