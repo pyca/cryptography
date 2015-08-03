@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import datetime
 import ipaddress
 from email.utils import parseaddr
 from enum import Enum
@@ -17,6 +18,7 @@ from six.moves import urllib_parse
 
 from cryptography import utils
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 
 
 _OID_NAMES = {
@@ -94,6 +96,8 @@ _GENERAL_NAMES = {
     7: "iPAddress",
     8: "registeredID",
 }
+
+_UNIX_EPOCH = datetime.datetime(1970, 1, 1)
 
 
 class Version(Enum):
@@ -1598,3 +1602,146 @@ class CertificateSigningRequestBuilder(object):
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
         return backend.create_x509_csr(self, private_key, algorithm)
+
+
+class CertificateBuilder(object):
+    def __init__(self, issuer_name=None, subject_name=None,
+                 public_key=None, serial_number=None, not_valid_before=None,
+                 not_valid_after=None, extensions=[]):
+        self._version = Version.v3
+        self._issuer_name = issuer_name
+        self._subject_name = subject_name
+        self._public_key = public_key
+        self._serial_number = serial_number
+        self._not_valid_before = not_valid_before
+        self._not_valid_after = not_valid_after
+        self._extensions = extensions
+
+    def issuer_name(self, name):
+        """
+        Sets the CA's distinguished name.
+        """
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        if self._issuer_name is not None:
+            raise ValueError('The issuer name may only be set once.')
+        return CertificateBuilder(
+            name, self._subject_name, self._public_key,
+            self._serial_number, self._not_valid_before,
+            self._not_valid_after, self._extensions
+        )
+
+    def subject_name(self, name):
+        """
+        Sets the requestor's distinguished name.
+        """
+        if not isinstance(name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        if self._subject_name is not None:
+            raise ValueError('The subject name may only be set once.')
+        return CertificateBuilder(
+            self._issuer_name, name, self._public_key,
+            self._serial_number, self._not_valid_before,
+            self._not_valid_after, self._extensions
+        )
+
+    def public_key(self, key):
+        """
+        Sets the requestor's public key (as found in the signing request).
+        """
+        if not isinstance(key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
+                                ec.EllipticCurvePublicKey)):
+            raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
+                            ' or EllipticCurvePublicKey.')
+        if self._public_key is not None:
+            raise ValueError('The public key may only be set once.')
+        return CertificateBuilder(
+            self._issuer_name, self._subject_name, key,
+            self._serial_number, self._not_valid_before,
+            self._not_valid_after, self._extensions
+        )
+
+    def serial_number(self, number):
+        """
+        Sets the certificate serial number.
+        """
+        if not isinstance(number, six.integer_types):
+            raise TypeError('Serial number must be of integral type.')
+        if self._serial_number is not None:
+            raise ValueError('The serial number may only be set once.')
+        if number < 0:
+            raise ValueError('The serial number should be non-negative.')
+        if utils.bit_length(number) > 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than 160 '
+                             'bits.')
+        return CertificateBuilder(
+            self._issuer_name, self._subject_name,
+            self._public_key, number, self._not_valid_before,
+            self._not_valid_after, self._extensions
+        )
+
+    def not_valid_before(self, time):
+        """
+        Sets the certificate activation time.
+        """
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._not_valid_before is not None:
+            raise ValueError('The not valid before may only be set once.')
+        if time <= _UNIX_EPOCH:
+            raise ValueError('The not valid before date must be after the unix'
+                             ' epoch (1970 January 1).')
+        return CertificateBuilder(
+            self._issuer_name, self._subject_name,
+            self._public_key, self._serial_number, time,
+            self._not_valid_after, self._extensions
+        )
+
+    def not_valid_after(self, time):
+        """
+        Sets the certificate expiration time.
+        """
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._not_valid_after is not None:
+            raise ValueError('The not valid after may only be set once.')
+        if time <= _UNIX_EPOCH:
+            raise ValueError('The not valid after date must be after the unix'
+                             ' epoch (1970 January 1).')
+        return CertificateBuilder(
+            self._issuer_name, self._subject_name,
+            self._public_key, self._serial_number, self._not_valid_before,
+            time, self._extensions
+        )
+
+    def add_extension(self, extension, critical):
+        """
+        Adds an X.509 extension to the certificate.
+        """
+        if isinstance(extension, BasicConstraints):
+            extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
+        elif isinstance(extension, SubjectAlternativeName):
+            extension = Extension(
+                OID_SUBJECT_ALTERNATIVE_NAME, critical, extension
+            )
+        elif isinstance(extension, InhibitAnyPolicy):
+            extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
+        else:
+            raise NotImplementedError('Unsupported X.509 extension.')
+
+        # TODO: This is quadratic in the number of extensions
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+
+        return CertificateBuilder(
+            self._issuer_name, self._subject_name,
+            self._public_key, self._serial_number, self._not_valid_before,
+            self._not_valid_after, self._extensions + [extension]
+        )
+
+    def sign(self, backend, private_key, algorithm):
+        """
+        Signs the certificate using the CA's private key.
+        """
+        return backend.sign_x509_certificate(self, private_key, algorithm)

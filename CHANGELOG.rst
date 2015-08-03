@@ -45,6 +45,13 @@ Changelog
   * :class:`~cryptography.x509.KeyUsage`
   * :class:`~cryptography.x509.SubjectAlternativeName`
 
+* Add support for creating signed certificates with
+  :class:`~cryptography.x509.CertificateBuilder`. This includes support for
+  the following extensions
+
+  * :class:`~cryptography.x509.BasicConstraints`
+  * :class:`~cryptography.x509.SubjectAlternativeName`
+
 0.9.3 - 2015-07-09
 ~~~~~~~~~~~~~~~~~~
 

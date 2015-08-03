@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import calendar
 import collections
 import itertools
 from contextlib import contextmanager
@@ -75,6 +76,12 @@ def _encode_asn1_int(backend, x):
     # Wrap in a ASN.1 integer.  Don't GC -- as documented.
     i = backend._lib.BN_to_ASN1_INTEGER(i, backend._ffi.NULL)
     assert i != backend._ffi.NULL
+    return i
+
+
+def _encode_asn1_int_gc(backend, x):
+    i = _encode_asn1_int(backend, x)
+    i = backend._ffi.gc(i, backend._lib.ASN1_INTEGER_free)
     return i
 
 
@@ -1062,6 +1069,106 @@ class Backend(object):
             raise ValueError("Digest too big for RSA key")
 
         return _CertificateSigningRequest(self, x509_req)
+
+    def sign_x509_certificate(self, builder, private_key, algorithm):
+        if not isinstance(builder, x509.CertificateBuilder):
+            raise TypeError('Builder type mismatch.')
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+            if isinstance(private_key, _DSAPrivateKey):
+                raise NotImplementedError(
+                    "Certificate signatures aren't implemented for DSA"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
+            if isinstance(private_key, _EllipticCurvePrivateKey):
+                raise NotImplementedError(
+                    "Certificate signatures aren't implemented for EC"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
+
+        # Resolve the signature algorithm.
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode('ascii')
+        )
+        assert evp_md != self._ffi.NULL
+
+        # Create an empty certificate.
+        x509_cert = self._lib.X509_new()
+        x509_cert = self._ffi.gc(x509_cert, backend._lib.X509_free)
+
+        # Set the x509 version.
+        res = self._lib.X509_set_version(x509_cert, builder._version.value)
+        assert res == 1
+
+        # Set the subject's name.
+        res = self._lib.X509_set_subject_name(
+            x509_cert, _encode_name(self, list(builder._subject_name))
+        )
+        assert res == 1
+
+        # Set the subject's public key.
+        res = self._lib.X509_set_pubkey(
+            x509_cert, builder._public_key._evp_pkey
+        )
+        assert res == 1
+
+        # Set the certificate serial number.
+        serial_number = _encode_asn1_int_gc(self, builder._serial_number)
+        res = self._lib.X509_set_serialNumber(x509_cert, serial_number)
+        assert res == 1
+
+        # Set the "not before" time.
+        res = self._lib.ASN1_TIME_set(
+            self._lib.X509_get_notBefore(x509_cert),
+            calendar.timegm(builder._not_valid_before.timetuple())
+        )
+        assert res != self._ffi.NULL
+
+        # Set the "not after" time.
+        res = self._lib.ASN1_TIME_set(
+            self._lib.X509_get_notAfter(x509_cert),
+            calendar.timegm(builder._not_valid_after.timetuple())
+        )
+        assert res != self._ffi.NULL
+
+        # Add extensions.
+        for i, extension in enumerate(builder._extensions):
+            if isinstance(extension.value, x509.BasicConstraints):
+                pp, r = _encode_basic_constraints(self, extension.value)
+            elif isinstance(extension.value, x509.SubjectAlternativeName):
+                pp, r = _encode_subject_alt_name(self, extension.value)
+            else:
+                raise NotImplementedError('Extension not yet supported.')
+
+            obj = _txt2obj(self, extension.oid.dotted_string)
+            extension = self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
+                obj,
+                1 if extension.critical else 0,
+                _encode_asn1_str_gc(self, pp[0], r)
+            )
+            res = self._lib.X509_add_ext(x509_cert, extension, i)
+            assert res == 1
+
+        # Set the issuer name.
+        res = self._lib.X509_set_issuer_name(
+            x509_cert, _encode_name(self, list(builder._issuer_name))
+        )
+        assert res == 1
+
+        # Sign the certificate with the issuer's private key.
+        res = self._lib.X509_sign(
+            x509_cert, private_key._evp_pkey, evp_md
+        )
+        if res == 0:
+            errors = self._consume_errors()
+            assert errors[0][1] == self._lib.ERR_LIB_RSA
+            assert errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+            raise ValueError("Digest too big for RSA key")
+
+        return _Certificate(self, x509_cert)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(

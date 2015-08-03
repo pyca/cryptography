@@ -388,6 +388,140 @@ X.509 CRL (Certificate Revocation List) Object
 
         The extensions encoded in the CRL.
 
+X.509 Certificate Builder
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateBuilder
+
+    .. versionadded:: 1.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> import datetime
+        >>> import uuid
+        >>> one_day = datetime.timedelta(1, 0, 0)
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
+        >>> public_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... ).public_key()
+        >>> builder = x509.CertificateBuilder()
+        >>> builder = builder.subject_name(x509.Name([
+        ...     x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ... ]))
+        >>> builder = builder.issuer_name(x509.Name([
+        ...     x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+        ... ]))
+        >>> builder = builder.not_valid_before(datetime.datetime.today() - one_day)
+        >>> builder = builder.not_valid_after(datetime.datetime(2018, 8, 2))
+        >>> builder = builder.serial_number(int(uuid.uuid4()))
+        >>> builder = builder.public_key(public_key)
+        >>> builder = builder.add_extension(
+        ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,
+        ... )
+        >>> certificate = builder.sign(
+        ...     private_key=private_key, algorithm=hashes.SHA256(),
+        ...     backend=default_backend()
+        ... )
+        >>> isinstance(certificate, x509.Certificate)
+        True
+
+    .. method:: issuer_name(name)
+
+        Sets the issuer's distinguished name.
+
+        :param name: The :class:`~cryptography.x509.Name` that describes the
+            issuer (CA).
+
+    .. method:: subject_name(name)
+
+        Sets the subject's distinguished name.
+
+        :param name: The :class:`~cryptography.x509.Name` that describes the
+            subject.
+
+    .. method:: public_key(public_key)
+
+        Sets the subject's public key.
+
+        :param public_key: The subject's public key. This can be one of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+
+    .. method:: serial_number(serial_number)
+
+        Sets the certificate's serial number (an integer).  The CA's policy
+        determines how it attributes serial numbers to certificates.  The only
+        requirement is that this number uniquely identify the certificate given
+        the issuer.
+
+        :param serial_number: Integer number that will be used by the CA to
+            identify this certificate (most notably during certificate
+            revocation checking). Users are encouraged to use a method of
+            generating 20 bytes of entropy, e.g., UUID4. For more information
+            on secure random number generation, see :doc:`/random-numbers`.
+
+    .. method:: not_valid_before(time)
+
+        Sets the certificate's activation time.  This is the time from which
+        clients can start trusting the certificate.  It may be different from
+        the time at which the certificate was created.
+
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
+            activation time for the certificate.  The certificate may not be
+            trusted clients if it is used before this time.
+
+    .. method:: not_valid_after(time)
+
+        Sets the certificate's expiration time.  This is the time from which
+        clients should no longer trust the certificate.  The CA's policy will
+        determine how long the certificate should remain in use.
+
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
+            expiration time for the certificate.  The certificate may not be
+            trusted clients if it is used after this time.
+
+    .. method:: add_extension(extension, critical)
+
+        Adds an X.509 extension to the certificate.
+
+        :param extension: The extension to add to the certificate. Can be one
+            of :class:`~cryptography.x509.BasicConstraints` or
+            :class:`~cryptography.x509.SubjectAlternativeName`.
+
+        :param critical: Set to ``True`` if the extension must be understood and
+             handled by whoever reads the certificate.
+
+    .. method:: sign(backend, private_key, algorithm)
+
+        Sign the certificate using the CA's private key.
+
+        :param backend: Backend that will be used to build the certificate.
+            Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
+            will be used to generate the signature.
+
+
 X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
