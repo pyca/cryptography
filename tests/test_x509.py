@@ -1148,6 +1148,31 @@ class TestCertificateBuilder(object):
         [
             x509.CRLDistributionPoints([
                 x509.DistributionPoint(
+                    full_name=None,
+                    relative_name=x509.Name([
+                        x509.NameAttribute(
+                            x509.OID_COMMON_NAME,
+                            u"indirect CRL for indirectCRL CA3"
+                        ),
+                    ]),
+                    reasons=None,
+                    crl_issuer=[x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(
+                                x509.OID_ORGANIZATION_NAME,
+                                u"Test Certificates 2011"
+                            ),
+                            x509.NameAttribute(
+                                x509.OID_ORGANIZATIONAL_UNIT_NAME,
+                                u"indirectCRL CA3 cRLIssuer"
+                            ),
+                        ])
+                    )],
+                )
+            ]),
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
                     full_name=[x509.DirectoryName(
                         x509.Name([
                             x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
