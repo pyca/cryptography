@@ -1100,6 +1100,19 @@ class TestCertificateBuilder(object):
 
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
 
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA512(), backend)
@@ -1113,6 +1126,19 @@ class TestCertificateBuilder(object):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
 
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA512(), backend)
