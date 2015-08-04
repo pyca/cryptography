@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import threading
+import types
 
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
@@ -24,18 +25,18 @@ def _osrandom_rand_status():
     return 1
 
 
-class _ConditionalLibrary(object):
-    def __init__(self, lib, conditional_names):
-        excluded_names = set()
-        for condition, names in conditional_names.items():
-            if not getattr(lib, condition):
-                excluded_names |= set(names)
+def build_conditional_library(lib, conditional_names):
+    conditional_lib = types.ModuleType("lib")
+    excluded_names = set()
+    for condition, names in conditional_names.items():
+        if not getattr(lib, condition):
+            excluded_names |= set(names)
 
-        for attr in dir(lib):
-            if attr in excluded_names:
-                continue
-            else:
-                setattr(self, attr, getattr(lib, attr))
+    for attr in dir(lib):
+        if attr not in excluded_names:
+            setattr(conditional_lib, attr, getattr(lib, attr))
+
+    return conditional_lib
 
 
 class Binding(object):
@@ -89,7 +90,7 @@ class Binding(object):
     def _ensure_ffi_initialized(cls):
         with cls._init_lock:
             if not cls._lib_loaded:
-                cls.lib = _ConditionalLibrary(lib, CONDITIONAL_NAMES)
+                cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
                 cls._lib_loaded = True
                 cls._register_osrandom_engine()
 
