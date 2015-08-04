@@ -48,5 +48,3 @@ int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}

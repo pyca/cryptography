@@ -95,27 +95,3 @@ void* (*ECDSA_get_ex_data)(EC_KEY *, int) = NULL;
 static const long Cryptography_HAS_ECDSA = 1;
 #endif
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_ECDSA": [
-        "ECDSA_SIG_new",
-        "ECDSA_SIG_free",
-        "i2d_ECDSA_SIG",
-        "d2i_ECDSA_SIG",
-        "ECDSA_do_sign",
-        "ECDSA_do_sign_ex",
-        "ECDSA_do_verify",
-        "ECDSA_sign_setup",
-        "ECDSA_sign",
-        "ECDSA_sign_ex",
-        "ECDSA_verify",
-        "ECDSA_size",
-        "ECDSA_OpenSSL",
-        "ECDSA_set_default_method",
-        "ECDSA_get_default_method",
-        "ECDSA_set_method",
-        "ECDSA_get_ex_new_index",
-        "ECDSA_set_ex_data",
-        "ECDSA_get_ex_data",
-    ],
-}

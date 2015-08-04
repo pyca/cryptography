@@ -97,5 +97,3 @@ enum {
     kCCModeGCM = 11
 };
 """
-
-CONDITIONAL_NAMES = {}

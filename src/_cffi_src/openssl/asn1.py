@@ -164,5 +164,3 @@ ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}

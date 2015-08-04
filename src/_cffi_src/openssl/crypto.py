@@ -54,5 +54,3 @@ void CRYPTO_malloc_debug_init(void);
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}

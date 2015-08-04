@@ -168,5 +168,3 @@ int BIO_method_type(const BIO *);
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}

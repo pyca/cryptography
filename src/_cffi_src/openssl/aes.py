@@ -52,10 +52,3 @@ int (*AES_unwrap_key)(AES_KEY *, const unsigned char *, unsigned char *,
 #endif
 
 """
-
-CONDITIONAL_NAMES = {
-    "Cryptography_HAS_AES_WRAP": [
-        "AES_wrap_key",
-        "AES_unwrap_key",
-    ],
-}

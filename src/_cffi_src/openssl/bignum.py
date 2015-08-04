@@ -101,5 +101,3 @@ int BN_rshift1(BIGNUM *, BIGNUM *);
 
 CUSTOMIZATIONS = """
 """
-
-CONDITIONAL_NAMES = {}
