@@ -411,9 +411,9 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
             dp.reasons = bitmask
 
         if point.full_name:
-            # Type 0 is fullName, there is no #define for it in the code.
             dpn = backend._lib.DIST_POINT_NAME_new()
             assert dpn != backend._ffi.NULL
+            # Type 0 is fullName, there is no #define for it in the code.
             dpn.type = 0
             for name in point.full_name:
                 gns = backend._lib.GENERAL_NAMES_new()
@@ -427,10 +427,13 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
             dp.distpoint = dpn
 
         if point.relative_name:
-            # TODO: don't duplicate this with fullname above
             dpn = backend._lib.DIST_POINT_NAME_new()
             assert dpn != backend._ffi.NULL
-            dpn.name.relativename = _encode_name(backend, point.relative_name)
+            dpn.type = 1
+            name = _encode_name_gc(backend, point.relative_name)
+            relativename = backend._lib.sk_X509_NAME_ENTRY_dup(name.entries)
+            assert relativename != backend._ffi.NULL
+            dpn.name.relativename = relativename
             dp.distpoint = dpn
 
         if point.crl_issuer:
