@@ -1119,7 +1119,7 @@ X.509 Extensions
 
         The binary value of the identifier.
 
-    .. classmethod:: create_from_public_key(public_key)
+    .. classmethod:: from_public_key(public_key)
 
         .. versionadded:: 1.0
 

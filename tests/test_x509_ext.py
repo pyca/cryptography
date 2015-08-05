@@ -955,7 +955,7 @@ class TestSubjectKeyIdentifierExtension(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_create_from_rsa_public_key(self, backend):
+    def test_from_rsa_public_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
@@ -964,14 +964,14 @@ class TestSubjectKeyIdentifierExtension(object):
         ext = cert.extensions.get_extension_for_oid(
             x509.OID_SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.create_from_public_key(
+        ski = x509.SubjectKeyIdentifier.from_public_key(
             cert.public_key()
         )
         assert ext.value == ski
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_create_from_dsa_public_key(self, backend):
+    def test_from_dsa_public_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
@@ -981,14 +981,14 @@ class TestSubjectKeyIdentifierExtension(object):
         ext = cert.extensions.get_extension_for_oid(
             x509.OID_SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.create_from_public_key(
+        ski = x509.SubjectKeyIdentifier.from_public_key(
             cert.public_key()
         )
         assert ext.value == ski
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_create_from_ec_public_key(self, backend):
+    def test_from_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
@@ -999,7 +999,7 @@ class TestSubjectKeyIdentifierExtension(object):
         ext = cert.extensions.get_extension_for_oid(
             x509.OID_SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.create_from_public_key(
+        ski = x509.SubjectKeyIdentifier.from_public_key(
             cert.public_key()
         )
         assert ext.value == ski

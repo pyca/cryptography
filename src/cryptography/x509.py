@@ -682,7 +682,7 @@ class SubjectKeyIdentifier(object):
         self._digest = digest
 
     @classmethod
-    def create_from_public_key(cls, public_key):
+    def from_public_key(cls, public_key):
         # This is a very slow way to do this.
         serialized = public_key.public_bytes(
             serialization.Encoding.DER,
