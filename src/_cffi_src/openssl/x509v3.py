@@ -283,6 +283,9 @@ X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
 DIST_POINT *DIST_POINT_new(void);
 void DIST_POINT_free(DIST_POINT *);
 
+DIST_POINT_NAME *DIST_POINT_NAME_new(void);
+void DIST_POINT_NAME_free(DIST_POINT_NAME *);
+
 int i2d_CRL_DIST_POINTS(Cryptography_STACK_OF_DIST_POINT *, unsigned char **);
 """
 
