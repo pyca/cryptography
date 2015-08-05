@@ -241,6 +241,9 @@ def _encode_general_names(backend, names):
 
 def _encode_subject_alt_name(backend, san):
     general_names = _encode_general_names(backend, san)
+    general_names = backend._ffi.gc(
+        general_names, backend._lib.GENERAL_NAMES_free
+    )
     pp = backend._ffi.new("unsigned char **")
     r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
     assert r > 0
