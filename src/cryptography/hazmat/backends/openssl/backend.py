@@ -182,6 +182,36 @@ def _encode_key_usage(backend, key_usage):
     return pp, r
 
 
+def _encode_authority_key_identifier(backend, authority_keyid):
+    akid = backend._lib.AUTHORITY_KEYID_new()
+    assert akid != backend._ffi.NULL
+    akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
+    if authority_keyid.key_identifier is not None:
+        akid.keyid = _encode_asn1_str(
+            backend,
+            authority_keyid.key_identifier,
+            len(authority_keyid.key_identifier)
+        )
+
+    if authority_keyid.authority_cert_issuer is not None:
+        akid.issuer = _encode_general_names(
+            backend, authority_keyid.authority_cert_issuer
+        )
+
+    if authority_keyid.authority_cert_serial_number is not None:
+        akid.serial = _encode_asn1_int(
+            backend, authority_keyid.authority_cert_serial_number
+        )
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_AUTHORITY_KEYID(akid, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 def _encode_basic_constraints(backend, basic_constraints):
     constraints = backend._lib.BASIC_CONSTRAINTS_new()
     constraints = backend._ffi.gc(
@@ -1240,6 +1270,8 @@ class Backend(object):
         for i, extension in enumerate(builder._extensions):
             if isinstance(extension.value, x509.BasicConstraints):
                 pp, r = _encode_basic_constraints(self, extension.value)
+            elif isinstance(extension.value, x509.AuthorityKeyIdentifier):
+                pp, r = _encode_authority_key_identifier(self, extension.value)
             elif isinstance(extension.value, x509.KeyUsage):
                 pp, r = _encode_key_usage(self, extension.value)
             elif isinstance(extension.value, x509.ExtendedKeyUsage):

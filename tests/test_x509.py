@@ -2026,6 +2026,82 @@ class TestCertificateSigningRequestBuilder(object):
         )
         assert ext.value == ski
 
+    @pytest.mark.parametrize(
+        "aki",
+        [
+            x509.AuthorityKeyIdentifier(
+                b"\xc3\x9c\xf3\xfc\xd3F\x084\xbb\xceF\x7f\xa0|[\xf3\xe2\x08"
+                b"\xcbY",
+                None,
+                None
+            ),
+            x509.AuthorityKeyIdentifier(
+                b"\xc3\x9c\xf3\xfc\xd3F\x084\xbb\xceF\x7f\xa0|[\xf3\xe2\x08"
+                b"\xcbY",
+                [
+                    x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(
+                                x509.OID_ORGANIZATION_NAME, u"PyCA"
+                            ),
+                            x509.NameAttribute(
+                                x509.OID_COMMON_NAME, u"cryptography CA"
+                            )
+                        ])
+                    )
+                ],
+                333
+            ),
+            x509.AuthorityKeyIdentifier(
+                None,
+                [
+                    x509.DirectoryName(
+                        x509.Name([
+                            x509.NameAttribute(
+                                x509.OID_ORGANIZATION_NAME, u"PyCA"
+                            ),
+                            x509.NameAttribute(
+                                x509.OID_COMMON_NAME, u"cryptography CA"
+                            )
+                        ])
+                    )
+                ],
+                333
+            ),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_aki(self, aki, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            aki, critical=False
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_AUTHORITY_KEY_IDENTIFIER
+        )
+        assert ext.value == aki
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
