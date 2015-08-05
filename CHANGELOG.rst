@@ -11,6 +11,7 @@ Changelog
   memory consumption. Due to this change we no longer support PyPy releases
   older than 2.6 nor do we support any released version of PyPy3 (until a
   version supporting cffi 1.0 comes out).
+* Fix parsing of OpenSSH public keys that have spaces in comments.
 * Support serialization of certificate signing requests using the
   ``public_bytes`` method of
   :class:`~cryptography.x509.CertificateSigningRequest`.
