@@ -228,18 +228,22 @@ def _encode_authority_information_access(backend, authority_info_access):
     return pp, r
 
 
-def _encode_subject_alt_name(backend, san):
+def _encode_general_names(backend, names):
     general_names = backend._lib.GENERAL_NAMES_new()
     assert general_names != backend._ffi.NULL
-    general_names = backend._ffi.gc(
-        general_names, backend._lib.GENERAL_NAMES_free
-    )
-
-    for alt_name in san:
-        gn = _encode_general_name(backend, alt_name)
+    for name in names:
+        gn = _encode_general_name(backend, name)
         res = backend._lib.sk_GENERAL_NAME_push(general_names, gn)
         assert res != 0
 
+    return general_names
+
+
+def _encode_subject_alt_name(backend, san):
+    general_names = _encode_general_names(backend, san)
+    general_names = backend._ffi.gc(
+        general_names, backend._lib.GENERAL_NAMES_free
+    )
     pp = backend._ffi.new("unsigned char **")
     r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
     assert r > 0
