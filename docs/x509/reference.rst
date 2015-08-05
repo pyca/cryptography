@@ -1160,6 +1160,28 @@ X.509 Extensions
 
         The serial number of the issuer's issuer.
 
+    .. classmethod:: from_issuer_public_key(public_key)
+
+        .. versionadded:: 1.0
+
+        Creates a new AuthorityKeyIdentifier instance using the public key
+        provided to generate the appropriate digest. This should be the
+        **issuer public key**. The resulting object will contain a
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.key_identifier`.
+        The generated digest is the SHA1 hash of the ``subjectPublicKey`` A
+        SN.1 bit string. This is the first recommendation in :rfc:`5280`
+        section 4.2.1.2.
+
+        :param certificate: The issuing :class:`~cryptography.x509.Certificate`.
+
+        .. doctest::
+
+            >>> from cryptography import x509
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(cert.public_key())
+            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
+
 .. class:: SubjectKeyIdentifier
 
     .. versionadded:: 0.9
@@ -1197,6 +1219,14 @@ X.509 Extensions
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
             , or
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
+
+        .. doctest::
+
+            >>> from cryptography import x509
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+            <SubjectKeyIdentifier(digest='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>
 
 .. class:: SubjectAlternativeName
 
