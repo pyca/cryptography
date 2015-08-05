@@ -102,6 +102,8 @@ X.509
   tree.
 * ``cryptography.io.pem`` - A leaf certificate issued by RapidSSL for the
   cryptography website.
+* ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the
+  ``cryptography.io.pem`` certificate.
 * ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
   ``langui.sh`` that contains wildcard entries in the SAN extension.
 * ``san_edipartyname.der`` - A DSA certificate from a `Mozilla bug`_
