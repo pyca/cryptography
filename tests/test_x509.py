@@ -828,6 +828,114 @@ class TestRSACertificateRequest(object):
 
 
 class TestCertificateBuilder(object):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_subject_name(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(subject_private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_issuer_name(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(subject_private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_public_key(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(subject_private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_not_valid_before(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(subject_private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_not_valid_after(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(subject_private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_no_serial_number(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(subject_private_key, hashes.SHA256(), backend)
+
     def test_issuer_name_must_be_a_name_type(self):
         builder = x509.CertificateBuilder()
 
@@ -967,6 +1075,19 @@ class TestCertificateBuilder(object):
     def test_sign_with_unsupported_hash(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
 
         with pytest.raises(TypeError):
             builder.sign(private_key, object(), backend)
@@ -979,6 +1100,19 @@ class TestCertificateBuilder(object):
 
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
 
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA512(), backend)
@@ -992,6 +1126,19 @@ class TestCertificateBuilder(object):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
 
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA512(), backend)

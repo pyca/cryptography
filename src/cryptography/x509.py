@@ -1752,4 +1752,22 @@ class CertificateBuilder(object):
         """
         Signs the certificate using the CA's private key.
         """
+        if self._subject_name is None:
+            raise ValueError("A certificate must have a subject name")
+
+        if self._issuer_name is None:
+            raise ValueError("A certificate must have an issuer name")
+
+        if self._serial_number is None:
+            raise ValueError("A certificate must have a serial number")
+
+        if self._not_valid_before is None:
+            raise ValueError("A certificate must have a not valid before time")
+
+        if self._not_valid_after is None:
+            raise ValueError("A certificate must have a not valid after time")
+
+        if self._public_key is None:
+            raise ValueError("A certificate must have a public key")
+
         return backend.sign_x509_certificate(self, private_key, algorithm)

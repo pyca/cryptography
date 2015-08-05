@@ -518,6 +518,8 @@ class TestOpenSSLSignX509Certificate(object):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().subject_name(x509.Name([
             x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
         ])).public_key(
             private_key.public_key()
         ).serial_number(
