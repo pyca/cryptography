@@ -15,10 +15,13 @@ typedef STACK_OF(X509_NAME_ENTRY) Cryptography_STACK_OF_X509_NAME_ENTRY;
 """
 
 TYPES = """
-typedef ... X509_NAME;
+typedef ... Cryptography_STACK_OF_X509_NAME_ENTRY;
+typedef struct {
+    Cryptography_STACK_OF_X509_NAME_ENTRY *entries;
+    ...;
+} X509_NAME;
 typedef ... X509_NAME_ENTRY;
 typedef ... Cryptography_STACK_OF_X509_NAME;
-typedef ... Cryptography_STACK_OF_X509_NAME_ENTRY;
 """
 
 FUNCTIONS = """
@@ -55,6 +58,9 @@ void sk_X509_NAME_free(Cryptography_STACK_OF_X509_NAME *);
 int sk_X509_NAME_ENTRY_num(Cryptography_STACK_OF_X509_NAME_ENTRY *);
 X509_NAME_ENTRY *sk_X509_NAME_ENTRY_value(
     Cryptography_STACK_OF_X509_NAME_ENTRY *, int);
+Cryptography_STACK_OF_X509_NAME_ENTRY *sk_X509_NAME_ENTRY_dup(
+    Cryptography_STACK_OF_X509_NAME_ENTRY *
+);
 """
 
 CUSTOMIZATIONS = """
