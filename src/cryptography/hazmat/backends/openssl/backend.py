@@ -1187,6 +1187,8 @@ class Backend(object):
                 1 if extension.critical else 0,
                 _encode_asn1_str_gc(self, pp[0], r)
             )
+            assert extension != self._ffi.NULL
+            extension = self._ffi.gc(extension, self._lib.X509_EXTENSION_free)
             res = self._lib.X509_add_ext(x509_cert, extension, i)
             assert res == 1
 
