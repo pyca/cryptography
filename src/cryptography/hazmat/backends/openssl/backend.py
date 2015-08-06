@@ -1180,7 +1180,7 @@ class Backend(object):
             else:
                 raise NotImplementedError('Extension not yet supported.')
 
-            obj = _txt2obj(self, extension.oid.dotted_string)
+            obj = _txt2obj_gc(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
                 obj,
