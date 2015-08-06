@@ -102,6 +102,17 @@ def _encode_asn1_str_gc(backend, data, length):
     return s
 
 
+def _encode_inhibit_any_policy(backend, inhibit_any_policy):
+    asn1int = _encode_asn1_int_gc(backend, inhibit_any_policy.skip_certs)
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_ASN1_INTEGER(asn1int, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 def _encode_name(backend, attributes):
     """
     The X509_NAME created will not be gc'd. Use _encode_name_gc if needed.
@@ -1274,6 +1285,8 @@ class Backend(object):
                 pp, r = _encode_authority_key_identifier(self, extension.value)
             elif isinstance(extension.value, x509.KeyUsage):
                 pp, r = _encode_key_usage(self, extension.value)
+            elif isinstance(extension.value, x509.InhibitAnyPolicy):
+                pp, r = _encode_inhibit_any_policy(self, extension.value)
             elif isinstance(extension.value, x509.ExtendedKeyUsage):
                 pp, r = _encode_extended_key_usage(self, extension.value)
             elif isinstance(extension.value, x509.SubjectAlternativeName):

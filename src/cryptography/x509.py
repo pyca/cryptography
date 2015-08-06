@@ -1818,6 +1818,8 @@ class CertificateBuilder(object):
             )
         elif isinstance(extension, KeyUsage):
             extension = Extension(OID_KEY_USAGE, critical, extension)
+        elif isinstance(extension, InhibitAnyPolicy):
+            extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
         elif isinstance(extension, ExtendedKeyUsage):
             extension = Extension(OID_EXTENDED_KEY_USAGE, critical, extension)
         elif isinstance(extension, SubjectAlternativeName):

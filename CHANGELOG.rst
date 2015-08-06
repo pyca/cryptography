@@ -58,6 +58,7 @@ Changelog
   * :class:`~cryptography.x509.AuthorityKeyIdentifier`
   * :class:`~cryptography.x509.AuthorityInformationAccess`
   * :class:`~cryptography.x509.CRLDistributionPoints`
+  * :class:`~cryptography.x509.InhibitAnyPolicy`
 
 0.9.3 - 2015-07-09
 ~~~~~~~~~~~~~~~~~~
