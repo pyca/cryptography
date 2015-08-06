@@ -313,6 +313,16 @@ class Extension(object):
         return not self == other
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ExtensionType(object):
+    @abc.abstractproperty
+    def oid(self):
+        """
+        Returns the oid associated with the given extension type.
+        """
+
+
+@utils.register_interface(ExtensionType)
 class ExtendedKeyUsage(object):
     oid = OID_EXTENDED_KEY_USAGE
 
@@ -343,10 +353,12 @@ class ExtendedKeyUsage(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class OCSPNoCheck(object):
     oid = OID_OCSP_NO_CHECK
 
 
+@utils.register_interface(ExtensionType)
 class BasicConstraints(object):
     oid = OID_BASIC_CONSTRAINTS
 
@@ -385,6 +397,7 @@ class BasicConstraints(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class KeyUsage(object):
     oid = OID_KEY_USAGE
 
@@ -470,6 +483,7 @@ class KeyUsage(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class AuthorityInformationAccess(object):
     oid = OID_AUTHORITY_INFORMATION_ACCESS
 
@@ -536,6 +550,7 @@ class AccessDescription(object):
     access_location = utils.read_only_property("_access_location")
 
 
+@utils.register_interface(ExtensionType)
 class CertificatePolicies(object):
     oid = OID_CERTIFICATE_POLICIES
 
@@ -675,6 +690,7 @@ class NoticeReference(object):
     notice_numbers = utils.read_only_property("_notice_numbers")
 
 
+@utils.register_interface(ExtensionType)
 class SubjectKeyIdentifier(object):
     oid = OID_SUBJECT_KEY_IDENTIFIER
 
@@ -698,6 +714,7 @@ class SubjectKeyIdentifier(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class NameConstraints(object):
     oid = OID_NAME_CONSTRAINTS
 
@@ -764,6 +781,7 @@ class NameConstraints(object):
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
 
 
+@utils.register_interface(ExtensionType)
 class CRLDistributionPoints(object):
     oid = OID_CRL_DISTRIBUTION_POINTS
 
@@ -886,6 +904,7 @@ class ReasonFlags(Enum):
     remove_from_crl = "removeFromCRL"
 
 
+@utils.register_interface(ExtensionType)
 class InhibitAnyPolicy(object):
     oid = OID_INHIBIT_ANY_POLICY
 
@@ -1178,6 +1197,7 @@ class GeneralNames(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class SubjectAlternativeName(object):
     oid = OID_SUBJECT_ALTERNATIVE_NAME
 
@@ -1206,6 +1226,7 @@ class SubjectAlternativeName(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class IssuerAlternativeName(object):
     oid = OID_ISSUER_ALTERNATIVE_NAME
 
@@ -1234,6 +1255,7 @@ class IssuerAlternativeName(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class AuthorityKeyIdentifier(object):
     oid = OID_AUTHORITY_KEY_IDENTIFIER
 

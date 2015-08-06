@@ -909,6 +909,13 @@ X.509 Extensions
 
         Returns an instance of the extension type corresponding to the OID.
 
+.. class:: ExtensionType
+
+    .. versionadded:: 1.0
+
+    This is the interface against which all the following extension types are
+    registered.
+
 .. class:: KeyUsage
 
     .. versionadded:: 0.9
