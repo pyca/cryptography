@@ -1100,7 +1100,7 @@ class Backend(object):
 
         return _CertificateSigningRequest(self, x509_req)
 
-    def sign_x509_certificate(self, builder, private_key, algorithm):
+    def create_x509_certificate(self, builder, private_key, algorithm):
         if not isinstance(builder, x509.CertificateBuilder):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
