@@ -550,6 +550,26 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A new object with the
             :class:`~cryptography.x509.CertificateSigningRequest` interface.
 
+    .. method:: sign_x509_certificate(builder, private_key, algorithm)
+
+        .. versionadded:: 1.0
+
+        :param builder: An instance of
+            :class:`~cryptography.x509.CertificateBuilder`.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the certificate signature.
+
+        :returns: A new object with the
+            :class:`~cryptography.x509.Certificate` interface.
+
 
 .. class:: DHBackend
 
