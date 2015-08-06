@@ -918,6 +918,14 @@ X.509 Extensions
     be used for more than one operation is to be restricted. It corresponds to
     :data:`OID_KEY_USAGE`.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
     .. attribute:: digital_signature
 
         :type: bool
@@ -1010,6 +1018,14 @@ X.509 Extensions
     length restrictions may exist. It corresponds to
     :data:`OID_BASIC_CONSTRAINTS`.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
     .. attribute:: ca
 
         :type: bool
@@ -1038,6 +1054,15 @@ X.509 Extensions
     purposes indicated in the key usage extension. The object is
     iterable to obtain the list of :ref:`extended key usage OIDs <eku_oids>`.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
+
 .. class:: OCSPNoCheck
 
     .. versionadded:: 1.0
@@ -1051,6 +1076,14 @@ X.509 Extensions
     extension is only relevant when the certificate is an authorized OCSP
     responder.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
 .. class:: NameConstraints
 
     .. versionadded:: 1.0
@@ -1059,6 +1092,14 @@ X.509 Extensions
     defines a name space within which all subject names in certificates issued
     beneath the CA certificate must (or must not) be in. For specific details
     on the way this extension should be processed see :rfc:`5280`.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
 
     .. attribute:: permitted_subtrees
 
@@ -1087,6 +1128,14 @@ X.509 Extensions
     certificate chain. For more information about generation and use of this
     extension see `RFC 5280 section 4.2.1.1`_.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
     .. attribute:: key_identifier
 
         :type: bytes
@@ -1113,6 +1162,14 @@ X.509 Extensions
     The subject key identifier extension provides a means of identifying
     certificates that contain a particular public key.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
     .. attribute:: digest
 
         :type: bytes
@@ -1127,6 +1184,14 @@ X.509 Extensions
     :ref:`general name <general_name_classes>` instances that provide a set
     of identities for which the certificate is valid. The object is iterable to
     get every element.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
 
     .. method:: get_values_for_type(type)
 
@@ -1158,6 +1223,14 @@ X.509 Extensions
     of identities for the certificate issuer. The object is iterable to
     get every element.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
     .. method:: get_values_for_type(type)
 
         :param type: A :class:`GeneralName` provider. This is one of the
@@ -1175,6 +1248,14 @@ X.509 Extensions
     the extension appears. Information and services may include online
     validation services (such as OCSP) and issuer data. It is an iterable,
     containing one or more :class:`AccessDescription` instances.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
 
 
 .. class:: AccessDescription
@@ -1205,6 +1286,14 @@ X.509 Extensions
     The CRL distribution points extension identifies how CRL information is
     obtained. It is an iterable, containing one or more
     :class:`DistributionPoint` instances.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
 
 .. class:: DistributionPoint
 
@@ -1304,6 +1393,14 @@ X.509 Extensions
     certificates issued by the subject of this certificate, but not in
     additional certificates in the path.
 
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
+
     .. attribute:: skip_certs
 
         :type: int
@@ -1314,6 +1411,14 @@ X.509 Extensions
 
     The certificate policies extension is an iterable, containing one or more
     :class:`PolicyInformation` instances.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        The OID associated with this extension type.
 
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
