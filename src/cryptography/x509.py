@@ -1770,4 +1770,4 @@ class CertificateBuilder(object):
         if self._public_key is None:
             raise ValueError("A certificate must have a public key")
 
-        return backend.sign_x509_certificate(self, private_key, algorithm)
+        return backend.create_x509_certificate(self, private_key, algorithm)

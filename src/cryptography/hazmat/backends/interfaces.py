@@ -281,9 +281,9 @@ class X509Backend(object):
         """
 
     @abc.abstractmethod
-    def sign_x509_certificate(self, builder, private_key, algorithm):
+    def create_x509_certificate(self, builder, private_key, algorithm):
         """
-        Sign an X.509 Certificate from a CertificateBuilder object.
+        Create and sign an X.509 certificate from a CertificateBuilder object.
         """
 
 

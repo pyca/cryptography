@@ -512,7 +512,7 @@ class TestOpenSSLSignX509Certificate(object):
         private_key = RSA_KEY_2048.private_key(backend)
 
         with pytest.raises(TypeError):
-            backend.sign_x509_certificate(object(), private_key, DummyHash())
+            backend.create_x509_certificate(object(), private_key, DummyHash())
 
     def test_checks_for_unsupported_extensions(self):
         private_key = RSA_KEY_2048.private_key(backend)

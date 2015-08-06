@@ -550,7 +550,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A new object with the
             :class:`~cryptography.x509.CertificateSigningRequest` interface.
 
-    .. method:: sign_x509_certificate(builder, private_key, algorithm)
+    .. method:: create_x509_certificate(builder, private_key, algorithm)
 
         .. versionadded:: 1.0
 
