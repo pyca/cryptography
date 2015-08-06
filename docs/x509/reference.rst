@@ -922,8 +922,7 @@ X.509 Extensions
 
     The key usage extension defines the purpose of the key contained in the
     certificate.  The usage restriction might be employed when a key that could
-    be used for more than one operation is to be restricted. It corresponds to
-    :data:`OID_KEY_USAGE`.
+    be used for more than one operation is to be restricted.
 
     .. attribute:: oid
 
@@ -931,7 +930,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_KEY_USAGE`.
 
     .. attribute:: digital_signature
 
@@ -1022,8 +1021,7 @@ X.509 Extensions
 
     Basic constraints is an X.509 extension type that defines whether a given
     certificate is allowed to sign additional certificates and what path
-    length restrictions may exist. It corresponds to
-    :data:`OID_BASIC_CONSTRAINTS`.
+    length restrictions may exist.
 
     .. attribute:: oid
 
@@ -1031,7 +1029,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_BASIC_CONSTRAINTS`.
 
     .. attribute:: ca
 
@@ -1067,7 +1065,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_EXTENDED_KEY_USAGE`.
 
 
 .. class:: OCSPNoCheck
@@ -1106,7 +1104,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_NAME_CONSTRAINTS`.
 
     .. attribute:: permitted_subtrees
 
@@ -1141,7 +1139,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_AUTHORITY_KEY_IDENTIFIER`.
 
     .. attribute:: key_identifier
 
@@ -1175,7 +1173,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_SUBJECT_KEY_IDENTIFIER`.
 
     .. attribute:: digest
 
@@ -1198,7 +1196,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_SUBJECT_ALTERNATIVE_NAME`.
 
     .. method:: get_values_for_type(type)
 
@@ -1236,7 +1234,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_ISSUER_ALTERNATIVE_NAME`.
 
     .. method:: get_values_for_type(type)
 
@@ -1262,7 +1260,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_AUTHORITY_INFORMATION_ACCESS`.
 
 
 .. class:: AccessDescription
@@ -1300,7 +1298,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_CRL_DISTRIBUTION_POINTS`.
 
 .. class:: DistributionPoint
 
@@ -1406,7 +1404,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_INHIBIT_ANY_POLICY`.
 
     .. attribute:: skip_certs
 
@@ -1425,7 +1423,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_CERTIFICATE_POLICIES`.
 
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1779,6 +1777,11 @@ Extension OIDs
 
     Corresponds to the dotted string ``"1.3.6.1.5.5.7.1.1"``. The identifier
     for the :class:`AuthorityInformationAccess` extension type.
+
+.. data:: OID_INHIBIT_ANY_POLICY
+
+    Corresponds to the dotted string ``"2.5.29.54"``. The identifier
+    for the :class:`InhibitAnyPolicy` extension type.
 
 .. data:: OID_OCSP_NO_CHECK
 
