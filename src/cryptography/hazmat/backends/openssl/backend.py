@@ -155,6 +155,15 @@ def _txt2obj_gc(backend, name):
     return obj
 
 
+def _encode_ocsp_nocheck(backend, ext):
+    """
+    The OCSP No Check extension is defined as a null ASN.1 value. We can just
+    return that value directly here in the pp, r tuple form the other
+    extension encoding functions use.
+    """
+    return [b"\x05\x00"], 2
+
+
 def _encode_key_usage(backend, key_usage):
     set_bit = backend._lib.ASN1_BIT_STRING_set_bit
     ku = backend._lib.ASN1_BIT_STRING_new()
@@ -485,6 +494,7 @@ _EXTENSION_ENCODE_HANDLERS = {
     ),
     x509.OID_CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
     x509.OID_INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
+    x509.OID_OCSP_NO_CHECK: _encode_ocsp_nocheck,
 }
 
 
