@@ -1087,7 +1087,7 @@ X.509 Extensions
 
         :type: :class:`ObjectIdentifier`
 
-        The OID associated with this extension type.
+        Returns :data:`OID_OCSP_NO_CHECK`.
 
 .. class:: NameConstraints
 
