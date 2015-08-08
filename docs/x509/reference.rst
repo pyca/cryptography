@@ -1166,10 +1166,14 @@ X.509 Extensions
 
         Creates a new AuthorityKeyIdentifier instance using the public key
         provided to generate the appropriate digest. This should be the
-        **issuer public key**. The resulting object will contain a
-        :attr:`~cryptography.x509.AuthorityKeyIdentifier.key_identifier`.
-        The generated digest is the SHA1 hash of the ``subjectPublicKey`` A
-        SN.1 bit string. This is the first recommendation in :rfc:`5280`
+        **issuer's public key**. The resulting object will contain
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.key_identifier`, but
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.authority_cert_issuer`
+        and
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.authority_cert_serial_number`
+        will be None.
+        The generated ``key_identifier`` is the SHA1 hash of the ``subjectPublicKey``
+        ASN.1 bit string. This is the first recommendation in :rfc:`5280`
         section 4.2.1.2.
 
         :param certificate: The issuing :class:`~cryptography.x509.Certificate`.
