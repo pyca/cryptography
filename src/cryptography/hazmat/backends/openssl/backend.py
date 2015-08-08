@@ -38,7 +38,8 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _Certificate, _CertificateSigningRequest
+    _Certificate, _CertificateSigningRequest, _DISTPOINT_TYPE_FULLNAME,
+    _DISTPOINT_TYPE_RELATIVENAME
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -391,15 +392,14 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
         if point.full_name:
             dpn = backend._lib.DIST_POINT_NAME_new()
             assert dpn != backend._ffi.NULL
-            # Type 0 is fullName, there is no #define for it in the code.
-            dpn.type = 0
+            dpn.type = _DISTPOINT_TYPE_FULLNAME
             dpn.name.fullname = _encode_general_names(backend, point.full_name)
             dp.distpoint = dpn
 
         if point.relative_name:
             dpn = backend._lib.DIST_POINT_NAME_new()
             assert dpn != backend._ffi.NULL
-            dpn.type = 1
+            dpn.type = _DISTPOINT_TYPE_RELATIVENAME
             name = _encode_name_gc(backend, point.relative_name)
             relativename = backend._lib.sk_X509_NAME_ENTRY_dup(name.entries)
             assert relativename != backend._ffi.NULL

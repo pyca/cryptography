@@ -592,6 +592,10 @@ def _decode_extended_key_usage(backend, sk):
     return x509.ExtendedKeyUsage(ekus)
 
 
+_DISTPOINT_TYPE_FULLNAME = 0
+_DISTPOINT_TYPE_RELATIVENAME = 1
+
+
 def _decode_crl_distribution_points(backend, cdps):
     cdps = backend._ffi.cast("Cryptography_STACK_OF_DIST_POINT *", cdps)
     cdps = backend._ffi.gc(cdps, backend._lib.sk_DIST_POINT_free)
@@ -651,7 +655,7 @@ def _decode_crl_distribution_points(backend, cdps):
         # point so make sure it's not null.
         if cdp.distpoint != backend._ffi.NULL:
             # Type 0 is fullName, there is no #define for it in the code.
-            if cdp.distpoint.type == 0:
+            if cdp.distpoint.type == _DISTPOINT_TYPE_FULLNAME:
                 full_name = _decode_general_names(
                     backend, cdp.distpoint.name.fullname
                 )
