@@ -693,7 +693,7 @@ class SubjectKeyIdentifier(object):
         assert not remaining
         # the univ.BitString object is a tuple of bits. We need bytes and
         # pyasn1 really doesn't want to give them to us. To get it we'll
-        # build an integer, hex it, then decode the hex.
+        # build an integer and convert that to bytes.
         bits = 0
         for bit in spki.getComponentByName("subjectPublicKey"):
             bits = bits << 1 | bit
