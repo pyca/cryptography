@@ -359,6 +359,18 @@ def _encode_extended_key_usage(backend, extended_key_usage):
     return pp, r
 
 
+_CRLREASONFLAGS = {
+    x509.ReasonFlags.key_compromise: 1,
+    x509.ReasonFlags.ca_compromise: 2,
+    x509.ReasonFlags.affiliation_changed: 3,
+    x509.ReasonFlags.superseded: 4,
+    x509.ReasonFlags.cessation_of_operation: 5,
+    x509.ReasonFlags.certificate_hold: 6,
+    x509.ReasonFlags.privilege_withdrawn: 7,
+    x509.ReasonFlags.aa_compromise: 8,
+}
+
+
 def _encode_crl_distribution_points(backend, crl_distribution_points):
     cdp = backend._lib.sk_DIST_POINT_new_null()
     cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
@@ -367,48 +379,14 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
         assert dp != backend._ffi.NULL
 
         if point.reasons:
-            # TODO: determining reason flag is quadratic
             bitmask = backend._lib.ASN1_BIT_STRING_new()
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask, 1, x509.ReasonFlags.key_compromise in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask, 2, x509.ReasonFlags.ca_compromise in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask,
-                3,
-                x509.ReasonFlags.affiliation_changed in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask, 4, x509.ReasonFlags.superseded in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask,
-                5,
-                x509.ReasonFlags.cessation_of_operation in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask, 6, x509.ReasonFlags.certificate_hold in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask,
-                7,
-                x509.ReasonFlags.privilege_withdrawn in point.reasons
-            )
-            assert res == 1
-            res = backend._lib.ASN1_BIT_STRING_set_bit(
-                bitmask, 8, x509.ReasonFlags.aa_compromise in point.reasons
-            )
-            assert res == 1
-
+            assert bitmask != backend._ffi.NULL
             dp.reasons = bitmask
+            for reason in point.reasons:
+                res = backend._lib.ASN1_BIT_STRING_set_bit(
+                    bitmask, _CRLREASONFLAGS[reason], 1
+                )
+                assert res == 1
 
         if point.full_name:
             dpn = backend._lib.DIST_POINT_NAME_new()
