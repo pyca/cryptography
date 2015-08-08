@@ -254,6 +254,17 @@ def _encode_subject_alt_name(backend, san):
     return pp, r
 
 
+def _encode_subject_key_identifier(backend, ski):
+    asn1_str = _encode_asn1_str_gc(backend, ski.digest, len(ski.digest))
+    pp = backend._ffi.new("unsigned char **")
+    r = backend._lib.i2d_ASN1_OCTET_STRING(asn1_str, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 def _encode_general_name(backend, name):
     if isinstance(name, x509.DNSName):
         gn = backend._lib.GENERAL_NAME_new()
@@ -1235,6 +1246,8 @@ class Backend(object):
                 pp, r = _encode_extended_key_usage(self, extension.value)
             elif isinstance(extension.value, x509.SubjectAlternativeName):
                 pp, r = _encode_subject_alt_name(self, extension.value)
+            elif isinstance(extension.value, x509.SubjectKeyIdentifier):
+                pp, r = _encode_subject_key_identifier(self, extension.value)
             elif isinstance(extension.value, x509.AuthorityInformationAccess):
                 pp, r = _encode_authority_information_access(
                     self, extension.value

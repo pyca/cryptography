@@ -1811,6 +1811,10 @@ class CertificateBuilder(object):
             extension = Extension(
                 OID_AUTHORITY_INFORMATION_ACCESS, critical, extension
             )
+        elif isinstance(extension, SubjectKeyIdentifier):
+            extension = Extension(
+                OID_SUBJECT_KEY_IDENTIFIER, critical, extension
+            )
         elif isinstance(extension, InhibitAnyPolicy):
             extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
         elif isinstance(extension, CRLDistributionPoints):

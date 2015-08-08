@@ -1990,6 +1990,42 @@ class TestCertificateSigningRequestBuilder(object):
         )
         assert ext.value == aia
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_cert_with_ski(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            subject_private_key.public_key()
+        )
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).add_extension(
+            ski, critical=False
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_KEY_IDENTIFIER
+        )
+        assert ext.value == ski
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
