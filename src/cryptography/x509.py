@@ -313,7 +313,19 @@ class Extension(object):
         return not self == other
 
 
+@six.add_metaclass(abc.ABCMeta)
+class ExtensionType(object):
+    @abc.abstractproperty
+    def oid(self):
+        """
+        Returns the oid associated with the given extension type.
+        """
+
+
+@utils.register_interface(ExtensionType)
 class ExtendedKeyUsage(object):
+    oid = OID_EXTENDED_KEY_USAGE
+
     def __init__(self, usages):
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
             raise TypeError(
@@ -341,11 +353,15 @@ class ExtendedKeyUsage(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class OCSPNoCheck(object):
-    pass
+    oid = OID_OCSP_NO_CHECK
 
 
+@utils.register_interface(ExtensionType)
 class BasicConstraints(object):
+    oid = OID_BASIC_CONSTRAINTS
+
     def __init__(self, ca, path_length):
         if not isinstance(ca, bool):
             raise TypeError("ca must be a boolean value")
@@ -381,7 +397,10 @@ class BasicConstraints(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class KeyUsage(object):
+    oid = OID_KEY_USAGE
+
     def __init__(self, digital_signature, content_commitment, key_encipherment,
                  data_encipherment, key_agreement, key_cert_sign, crl_sign,
                  encipher_only, decipher_only):
@@ -464,7 +483,10 @@ class KeyUsage(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class AuthorityInformationAccess(object):
+    oid = OID_AUTHORITY_INFORMATION_ACCESS
+
     def __init__(self, descriptions):
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
@@ -528,7 +550,10 @@ class AccessDescription(object):
     access_location = utils.read_only_property("_access_location")
 
 
+@utils.register_interface(ExtensionType)
 class CertificatePolicies(object):
+    oid = OID_CERTIFICATE_POLICIES
+
     def __init__(self, policies):
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
@@ -665,7 +690,10 @@ class NoticeReference(object):
     notice_numbers = utils.read_only_property("_notice_numbers")
 
 
+@utils.register_interface(ExtensionType)
 class SubjectKeyIdentifier(object):
+    oid = OID_SUBJECT_KEY_IDENTIFIER
+
     def __init__(self, digest):
         self._digest = digest
 
@@ -686,7 +714,10 @@ class SubjectKeyIdentifier(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class NameConstraints(object):
+    oid = OID_NAME_CONSTRAINTS
+
     def __init__(self, permitted_subtrees, excluded_subtrees):
         if permitted_subtrees is not None:
             if not all(
@@ -750,7 +781,10 @@ class NameConstraints(object):
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
 
 
+@utils.register_interface(ExtensionType)
 class CRLDistributionPoints(object):
+    oid = OID_CRL_DISTRIBUTION_POINTS
+
     def __init__(self, distribution_points):
         if not all(
             isinstance(x, DistributionPoint) for x in distribution_points
@@ -870,7 +904,10 @@ class ReasonFlags(Enum):
     remove_from_crl = "removeFromCRL"
 
 
+@utils.register_interface(ExtensionType)
 class InhibitAnyPolicy(object):
+    oid = OID_INHIBIT_ANY_POLICY
+
     def __init__(self, skip_certs):
         if not isinstance(skip_certs, six.integer_types):
             raise TypeError("skip_certs must be an integer")
@@ -1160,7 +1197,10 @@ class GeneralNames(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class SubjectAlternativeName(object):
+    oid = OID_SUBJECT_ALTERNATIVE_NAME
+
     def __init__(self, general_names):
         self._general_names = GeneralNames(general_names)
 
@@ -1186,7 +1226,10 @@ class SubjectAlternativeName(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class IssuerAlternativeName(object):
+    oid = OID_ISSUER_ALTERNATIVE_NAME
+
     def __init__(self, general_names):
         self._general_names = GeneralNames(general_names)
 
@@ -1212,7 +1255,10 @@ class IssuerAlternativeName(object):
         return not self == other
 
 
+@utils.register_interface(ExtensionType)
 class AuthorityKeyIdentifier(object):
+    oid = OID_AUTHORITY_KEY_IDENTIFIER
+
     def __init__(self, key_identifier, authority_cert_issuer,
                  authority_cert_serial_number):
         if authority_cert_issuer or authority_cert_serial_number:
