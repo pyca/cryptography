@@ -6,19 +6,30 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 import datetime
+import hashlib
 import ipaddress
 from email.utils import parseaddr
 from enum import Enum
 
 import idna
 
+from pyasn1.codec.der import decoder
+from pyasn1.type import namedtype, univ
+
 import six
 
 from six.moves import urllib_parse
 
 from cryptography import utils
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+
+
+class _SubjectPublicKeyInfo(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('algorithm', univ.Sequence()),
+        namedtype.NamedType('subjectPublicKey', univ.BitString())
+    )
 
 
 _OID_NAMES = {
@@ -696,6 +707,27 @@ class SubjectKeyIdentifier(object):
 
     def __init__(self, digest):
         self._digest = digest
+
+    @classmethod
+    def from_public_key(cls, public_key):
+        # This is a very slow way to do this.
+        serialized = public_key.public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        spki, remaining = decoder.decode(
+            serialized, asn1Spec=_SubjectPublicKeyInfo()
+        )
+        assert not remaining
+        # the univ.BitString object is a tuple of bits. We need bytes and
+        # pyasn1 really doesn't want to give them to us. To get it we'll
+        # build an integer and convert that to bytes.
+        bits = 0
+        for bit in spki.getComponentByName("subjectPublicKey"):
+            bits = bits << 1 | bit
+
+        data = utils.int_to_bytes(bits)
+        return cls(hashlib.sha1(data).digest())
 
     digest = utils.read_only_property("_digest")
 

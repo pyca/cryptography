@@ -1181,6 +1181,23 @@ X.509 Extensions
 
         The binary value of the identifier.
 
+    .. classmethod:: from_public_key(public_key)
+
+        .. versionadded:: 1.0
+
+        Creates a new SubjectKeyIdentifier instance using the public key
+        provided to generate the appropriate digest. This should be the public
+        key that is in the certificate. The generated digest is the SHA1 hash
+        of the ``subjectPublicKey`` ASN.1 bit string. This is the first
+        recommendation in :rfc:`5280` section 4.2.1.2.
+
+        :param public_key: One of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+            ,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
+            , or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
+
 .. class:: SubjectAlternativeName
 
     .. versionadded:: 0.9

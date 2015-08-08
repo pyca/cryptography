@@ -13,8 +13,12 @@ import pytest
 import six
 
 from cryptography import x509
-from cryptography.hazmat.backends.interfaces import RSABackend, X509Backend
+from cryptography.hazmat.backends.interfaces import (
+    DSABackend, EllipticCurveBackend, RSABackend, X509Backend
+)
+from cryptography.hazmat.primitives.asymmetric import ec
 
+from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .test_x509 import _load_cert
 
 
@@ -917,9 +921,9 @@ class TestBasicConstraintsExtension(object):
         assert ext.value.ca is False
 
 
-@pytest.mark.requires_backend_interface(interface=RSABackend)
-@pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestSubjectKeyIdentifierExtension(object):
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_subject_key_identifier(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
@@ -936,6 +940,8 @@ class TestSubjectKeyIdentifierExtension(object):
             b"580184241bbc2b52944a3da510721451f5af3ac9"
         )
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_subject_key_identifier(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "bc_path_length_zero.pem"),
@@ -946,6 +952,57 @@ class TestSubjectKeyIdentifierExtension(object):
             cert.extensions.get_extension_for_oid(
                 x509.OID_SUBJECT_KEY_IDENTIFIER
             )
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_from_rsa_public_key(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_KEY_IDENTIFIER
+        )
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            cert.public_key()
+        )
+        assert ext.value == ski
+
+    @pytest.mark.requires_backend_interface(interface=DSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_from_dsa_public_key(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_KEY_IDENTIFIER
+        )
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            cert.public_key()
+        )
+        assert ext.value == ski
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_from_ec_public_key(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        cert = _load_cert(
+            os.path.join("x509", "ecdsa_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_SUBJECT_KEY_IDENTIFIER
+        )
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            cert.public_key()
+        )
+        assert ext.value == ski
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
