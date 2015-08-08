@@ -1812,6 +1812,10 @@ class CertificateBuilder(object):
         """
         if isinstance(extension, BasicConstraints):
             extension = Extension(OID_BASIC_CONSTRAINTS, critical, extension)
+        elif isinstance(extension, AuthorityKeyIdentifier):
+            extension = Extension(
+                OID_AUTHORITY_KEY_IDENTIFIER, critical, extension
+            )
         elif isinstance(extension, KeyUsage):
             extension = Extension(OID_KEY_USAGE, critical, extension)
         elif isinstance(extension, ExtendedKeyUsage):
