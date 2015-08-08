@@ -279,6 +279,7 @@ void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
 ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
 int sk_ASN1_INTEGER_push(Cryptography_STACK_OF_ASN1_INTEGER *, ASN1_INTEGER *);
+Cryptography_STACK_OF_ASN1_INTEGER *sk_ASN1_INTEGER_new_null(void);
 
 X509_EXTENSION *X509V3_EXT_i2d(int, int, void *);
 
