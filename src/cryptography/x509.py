@@ -698,7 +698,7 @@ class SubjectKeyIdentifier(object):
         for bit in spki.getComponentByName("subjectPublicKey"):
             bits = bits << 1 | bit
 
-        data = utils.int_to_bytes(bits, "big")
+        data = utils.int_to_bytes(bits)
         return cls(hashlib.sha1(data).digest())
 
     digest = utils.read_only_property("_digest")
