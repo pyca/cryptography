@@ -393,14 +393,7 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
             assert dpn != backend._ffi.NULL
             # Type 0 is fullName, there is no #define for it in the code.
             dpn.type = 0
-            gns = backend._lib.GENERAL_NAMES_new()
-            assert gns != backend._ffi.NULL
-            for name in point.full_name:
-                gn = _encode_general_name(backend, name)
-                res = backend._lib.sk_GENERAL_NAME_push(gns, gn)
-                assert res >= 1
-
-            dpn.name.fullname = gns
+            dpn.name.fullname = _encode_general_names(backend, point.full_name)
             dp.distpoint = dpn
 
         if point.relative_name:
