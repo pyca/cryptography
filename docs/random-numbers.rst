@@ -21,4 +21,12 @@ you can obtain them with:
 This will use ``/dev/urandom`` on UNIX platforms, and ``CryptGenRandom`` on
 Windows.
 
+If you need your random number as an integer (for example, for
+:meth:`~cryptography.x509.CertificateBuilder.serial_number`), you can use
+``int.from_bytes`` to convert the result of ``os.urandom``:
+
+.. code-block:: pycon
+
+    >>> serial = int.from_bytes(os.urandom(20), byteorder="big")
+
 .. _`always use your operating system's provided random number generator`: http://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
