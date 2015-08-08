@@ -38,7 +38,8 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _Certificate, _CertificateSigningRequest
+    _Certificate, _CertificateSigningRequest, _DISTPOINT_TYPE_FULLNAME,
+    _DISTPOINT_TYPE_RELATIVENAME
 )
 from cryptography.hazmat.bindings.openssl.binding import Binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -352,6 +353,67 @@ def _encode_extended_key_usage(backend, extended_key_usage):
     r = backend._lib.i2d_EXTENDED_KEY_USAGE(
         backend._ffi.cast("EXTENDED_KEY_USAGE *", eku), pp
     )
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+_CRLREASONFLAGS = {
+    x509.ReasonFlags.key_compromise: 1,
+    x509.ReasonFlags.ca_compromise: 2,
+    x509.ReasonFlags.affiliation_changed: 3,
+    x509.ReasonFlags.superseded: 4,
+    x509.ReasonFlags.cessation_of_operation: 5,
+    x509.ReasonFlags.certificate_hold: 6,
+    x509.ReasonFlags.privilege_withdrawn: 7,
+    x509.ReasonFlags.aa_compromise: 8,
+}
+
+
+def _encode_crl_distribution_points(backend, crl_distribution_points):
+    cdp = backend._lib.sk_DIST_POINT_new_null()
+    cdp = backend._ffi.gc(cdp, backend._lib.sk_DIST_POINT_free)
+    for point in crl_distribution_points:
+        dp = backend._lib.DIST_POINT_new()
+        assert dp != backend._ffi.NULL
+
+        if point.reasons:
+            bitmask = backend._lib.ASN1_BIT_STRING_new()
+            assert bitmask != backend._ffi.NULL
+            dp.reasons = bitmask
+            for reason in point.reasons:
+                res = backend._lib.ASN1_BIT_STRING_set_bit(
+                    bitmask, _CRLREASONFLAGS[reason], 1
+                )
+                assert res == 1
+
+        if point.full_name:
+            dpn = backend._lib.DIST_POINT_NAME_new()
+            assert dpn != backend._ffi.NULL
+            dpn.type = _DISTPOINT_TYPE_FULLNAME
+            dpn.name.fullname = _encode_general_names(backend, point.full_name)
+            dp.distpoint = dpn
+
+        if point.relative_name:
+            dpn = backend._lib.DIST_POINT_NAME_new()
+            assert dpn != backend._ffi.NULL
+            dpn.type = _DISTPOINT_TYPE_RELATIVENAME
+            name = _encode_name_gc(backend, point.relative_name)
+            relativename = backend._lib.sk_X509_NAME_ENTRY_dup(name.entries)
+            assert relativename != backend._ffi.NULL
+            dpn.name.relativename = relativename
+            dp.distpoint = dpn
+
+        if point.crl_issuer:
+            dp.CRLissuer = _encode_general_names(backend, point.crl_issuer)
+
+        res = backend._lib.sk_DIST_POINT_push(cdp, dp)
+        assert res >= 1
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_CRL_DIST_POINTS(cdp, pp)
     assert r > 0
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
@@ -1175,6 +1237,10 @@ class Backend(object):
                 pp, r = _encode_subject_alt_name(self, extension.value)
             elif isinstance(extension.value, x509.AuthorityInformationAccess):
                 pp, r = _encode_authority_information_access(
+                    self, extension.value
+                )
+            elif isinstance(extension.value, x509.CRLDistributionPoints):
+                pp, r = _encode_crl_distribution_points(
                     self, extension.value
                 )
             else:
