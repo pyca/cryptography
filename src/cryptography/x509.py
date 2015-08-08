@@ -819,7 +819,8 @@ class DistributionPoint(object):
     def __init__(self, full_name, relative_name, reasons, crl_issuer):
         if full_name and relative_name:
             raise ValueError(
-                "At least one of full_name and relative_name must be None"
+                "You cannot provide both full_name and relative_name, at "
+                "least one must be None."
             )
 
         if full_name and not all(
