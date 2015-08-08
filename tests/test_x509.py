@@ -1192,9 +1192,14 @@ class TestCertificateBuilder(object):
             ]),
             x509.CRLDistributionPoints([
                 x509.DistributionPoint(
-                    full_name=[x509.UniformResourceIdentifier(
-                        u"http://myhost.com/myca.crl"
-                    )],
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            u"http://myhost.com/myca.crl"
+                        ),
+                        x509.UniformResourceIdentifier(
+                            u"http://backup.myhost.com/myca.crl"
+                        )
+                    ],
                     relative_name=None,
                     reasons=frozenset([
                         x509.ReasonFlags.key_compromise,
