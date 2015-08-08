@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import binascii
 import datetime
 import hashlib
 import ipaddress
@@ -699,10 +698,7 @@ class SubjectKeyIdentifier(object):
         for bit in spki.getComponentByName("subjectPublicKey"):
             bits = bits << 1 | bit
 
-        # convert the integer to bytes
-        hex_string = '%x' % bits
-        n = len(hex_string)
-        data = binascii.unhexlify(hex_string.zfill(n + (n & 1)))
+        data = utils.int_to_bytes(bits, "big")
         return cls(hashlib.sha1(data).digest())
 
     digest = utils.read_only_property("_digest")

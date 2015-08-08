@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import binascii
 import inspect
 import struct
 import sys
@@ -44,6 +45,18 @@ else:
             data = data[4:]
 
         return result
+
+
+if hasattr(int, "to_bytes"):
+    int_to_bytes = int.to_bytes
+else:
+    def int_to_bytes(integer, byteorder, signed=False):
+        assert byteorder == 'big'
+        assert not signed
+
+        hex_string = '%x' % integer
+        n = len(hex_string)
+        return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
 
 
 class InterfaceNotImplemented(Exception):
