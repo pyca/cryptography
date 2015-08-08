@@ -43,6 +43,7 @@ typedef struct asn1_string_st ASN1_IA5STRING;
 typedef ... ASN1_BIT_STRING;
 typedef ... ASN1_OBJECT;
 typedef struct asn1_string_st ASN1_STRING;
+typedef struct asn1_string_st ASN1_UTF8STRING;
 typedef ... ASN1_TYPE;
 typedef ... ASN1_GENERALIZEDTIME;
 typedef ... ASN1_ENUMERATED;
@@ -125,6 +126,9 @@ int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
 """
 
 MACROS = """
+ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
+void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
+
 ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
 void ASN1_BIT_STRING_free(ASN1_BIT_STRING *);
 int i2d_ASN1_BIT_STRING(ASN1_BIT_STRING *, unsigned char **);
