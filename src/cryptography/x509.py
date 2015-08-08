@@ -32,6 +32,27 @@ class _SubjectPublicKeyInfo(univ.Sequence):
     )
 
 
+def _key_identifier_from_public_key(public_key):
+    # This is a very slow way to do this.
+    serialized = public_key.public_bytes(
+        serialization.Encoding.DER,
+        serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    spki, remaining = decoder.decode(
+        serialized, asn1Spec=_SubjectPublicKeyInfo()
+    )
+    assert not remaining
+    # the univ.BitString object is a tuple of bits. We need bytes and
+    # pyasn1 really doesn't want to give them to us. To get it we'll
+    # build an integer and convert that to bytes.
+    bits = 0
+    for bit in spki.getComponentByName("subjectPublicKey"):
+        bits = bits << 1 | bit
+
+    data = utils.int_to_bytes(bits)
+    return hashlib.sha1(data).digest()
+
+
 _OID_NAMES = {
     "2.5.4.3": "commonName",
     "2.5.4.6": "countryName",
@@ -710,24 +731,7 @@ class SubjectKeyIdentifier(object):
 
     @classmethod
     def from_public_key(cls, public_key):
-        # This is a very slow way to do this.
-        serialized = public_key.public_bytes(
-            serialization.Encoding.DER,
-            serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-        spki, remaining = decoder.decode(
-            serialized, asn1Spec=_SubjectPublicKeyInfo()
-        )
-        assert not remaining
-        # the univ.BitString object is a tuple of bits. We need bytes and
-        # pyasn1 really doesn't want to give them to us. To get it we'll
-        # build an integer and convert that to bytes.
-        bits = 0
-        for bit in spki.getComponentByName("subjectPublicKey"):
-            bits = bits << 1 | bit
-
-        data = utils.int_to_bytes(bits)
-        return cls(hashlib.sha1(data).digest())
+        return cls(_key_identifier_from_public_key(public_key))
 
     digest = utils.read_only_property("_digest")
 
@@ -1317,6 +1321,15 @@ class AuthorityKeyIdentifier(object):
         self._key_identifier = key_identifier
         self._authority_cert_issuer = authority_cert_issuer
         self._authority_cert_serial_number = authority_cert_serial_number
+
+    @classmethod
+    def from_issuer_public_key(cls, public_key):
+        digest = _key_identifier_from_public_key(public_key)
+        return cls(
+            key_identifier=digest,
+            authority_cert_issuer=None,
+            authority_cert_serial_number=None
+        )
 
     def __repr__(self):
         return (
