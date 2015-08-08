@@ -1176,14 +1176,19 @@ X.509 Extensions
         ASN.1 bit string. This is the first recommendation in :rfc:`5280`
         section 4.2.1.2.
 
-        :param certificate: The issuing :class:`~cryptography.x509.Certificate`.
+        :param public_key: One of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+            ,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
+            , or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
 
         .. doctest::
 
             >>> from cryptography import x509
             >>> from cryptography.hazmat.backends import default_backend
-            >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-            >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(cert.public_key())
+            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
             <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
 .. class:: SubjectKeyIdentifier
@@ -1228,9 +1233,9 @@ X.509 Extensions
 
             >>> from cryptography import x509
             >>> from cryptography.hazmat.backends import default_backend
-            >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-            >>> x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
-            <SubjectKeyIdentifier(digest='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9')>
+            >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
+            >>> x509.SubjectKeyIdentifier.from_public_key(csr.public_key())
+            <SubjectKeyIdentifier(digest='\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
 
 .. class:: SubjectAlternativeName
 

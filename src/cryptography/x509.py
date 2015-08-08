@@ -41,10 +41,10 @@ def _key_identifier_from_public_key(public_key):
     spki, remaining = decoder.decode(
         serialized, asn1Spec=_SubjectPublicKeyInfo()
     )
+    assert not remaining
     # the univ.BitString object is a tuple of bits. We need bytes and
     # pyasn1 really doesn't want to give them to us. To get it we'll
     # build an integer and convert that to bytes.
-    assert not remaining
     bits = 0
     for bit in spki.getComponentByName("subjectPublicKey"):
         bits = bits << 1 | bit
