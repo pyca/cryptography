@@ -1193,15 +1193,10 @@ class Backend(object):
             self._lib.sk_X509_EXTENSION_free,
         )
         for extension in builder._extensions:
-            if isinstance(extension.value, x509.BasicConstraints):
-                pp, r = _encode_basic_constraints(self, extension.value)
-            elif isinstance(extension.value, x509.SubjectAlternativeName):
-                pp, r = _encode_subject_alt_name(self, extension.value)
-            elif isinstance(extension.value, x509.KeyUsage):
-                pp, r = _encode_key_usage(self, extension.value)
-            elif isinstance(extension.value, x509.ExtendedKeyUsage):
-                pp, r = _encode_extended_key_usage(self, extension.value)
-            else:
+            try:
+                encode = _EXTENSION_ENCODE_HANDLERS[extension.oid]
+                pp, r = encode(self, extension.value)
+            except KeyError:
                 raise NotImplementedError('Extension not yet supported.')
 
             obj = _txt2obj_gc(self, extension.oid.dotted_string)
