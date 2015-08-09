@@ -27,6 +27,11 @@ from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
 
 
+@utils.register_interface(x509.ExtensionType)
+class DummyExtension(object):
+    oid = x509.ObjectIdentifier("1.2.3.4")
+
+
 @utils.register_interface(x509.GeneralName)
 class FakeGeneralName(object):
     def __init__(self, value):
@@ -1416,6 +1421,43 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_issuer_alt_name(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        ).public_key(
+            subject_private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            x509.IssuerAlternativeName([
+                x509.DNSName(u"myissuer"),
+                x509.RFC822Name(u"email@domain.com"),
+            ]), critical=False
+        ).sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_ISSUER_ALTERNATIVE_NAME
+        )
+        assert ext.critical is False
+        assert ext.value == x509.IssuerAlternativeName([
+            x509.DNSName(u"myissuer"),
+            x509.RFC822Name(u"email@domain.com"),
+        ])
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_extended_key_usage(self, backend):
         issuer_private_key = RSA_KEY_2048.private_key(backend)
         subject_private_key = RSA_KEY_2048.private_key(backend)
@@ -1718,7 +1760,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).add_extension(
-            x509.IssuerAlternativeName([x509.DNSName(u"crypto.io")]), False
+            DummyExtension(), False
         )
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)

@@ -50,6 +50,11 @@ class TestLibreSkip(object):
             skip_if_libre_ssl(u"LibreSSL 2.1.6")
 
 
+@utils.register_interface(x509.ExtensionType)
+class DummyExtension(object):
+    oid = x509.ObjectIdentifier("1.2.3.4")
+
+
 @utils.register_interface(Mode)
 class DummyMode(object):
     name = "dummy-mode"
@@ -529,7 +534,7 @@ class TestOpenSSLSignX509Certificate(object):
         ).not_valid_after(
             datetime.datetime(2020, 1, 1)
         ).add_extension(
-            x509.IssuerAlternativeName([x509.DNSName(u"crypto.io")]), False
+            DummyExtension(), False
         )
 
         with pytest.raises(NotImplementedError):

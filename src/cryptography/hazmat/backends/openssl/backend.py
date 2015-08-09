@@ -281,7 +281,7 @@ def _encode_general_names(backend, names):
     return general_names
 
 
-def _encode_subject_alt_name(backend, san):
+def _encode_alt_name(backend, san):
     general_names = _encode_general_names(backend, san)
     general_names = backend._ffi.gc(
         general_names, backend._lib.GENERAL_NAMES_free
@@ -477,7 +477,8 @@ _EXTENSION_ENCODE_HANDLERS = {
     x509.OID_BASIC_CONSTRAINTS: _encode_basic_constraints,
     x509.OID_SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
     x509.OID_KEY_USAGE: _encode_key_usage,
-    x509.OID_SUBJECT_ALTERNATIVE_NAME: _encode_subject_alt_name,
+    x509.OID_SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
+    x509.OID_ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     x509.OID_EXTENDED_KEY_USAGE: _encode_extended_key_usage,
     x509.OID_AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
     x509.OID_AUTHORITY_INFORMATION_ACCESS: (
