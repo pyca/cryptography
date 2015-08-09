@@ -37,15 +37,6 @@ Changelog
 
 * Extension support was added to
   :class:`~cryptography.x509.CertificateSigningRequest`.
-* Add support for creating certificate signing requests with
-  :class:`~cryptography.x509.CertificateSigningRequestBuilder`. This includes
-  support for the following extensions:
-
-  * :class:`~cryptography.x509.BasicConstraints`
-  * :class:`~cryptography.x509.ExtendedKeyUsage`
-  * :class:`~cryptography.x509.KeyUsage`
-  * :class:`~cryptography.x509.SubjectAlternativeName`
-
 * Add support for creating signed certificates with
   :class:`~cryptography.x509.CertificateBuilder`. This includes support for
   the following extensions:
@@ -59,6 +50,10 @@ Changelog
   * :class:`~cryptography.x509.AuthorityInformationAccess`
   * :class:`~cryptography.x509.CRLDistributionPoints`
   * :class:`~cryptography.x509.InhibitAnyPolicy`
+
+* Add support for creating certificate signing requests with
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`. This includes
+  support for the same extensions supported in the ``CertificateBuilder``.
 
 0.9.3 - 2015-07-09
 ~~~~~~~~~~~~~~~~~~
