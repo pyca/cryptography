@@ -1818,6 +1818,8 @@ class CertificateBuilder(object):
             )
         elif isinstance(extension, KeyUsage):
             extension = Extension(OID_KEY_USAGE, critical, extension)
+        elif isinstance(extension, InhibitAnyPolicy):
+            extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
         elif isinstance(extension, ExtendedKeyUsage):
             extension = Extension(OID_EXTENDED_KEY_USAGE, critical, extension)
         elif isinstance(extension, SubjectAlternativeName):
@@ -1832,11 +1834,13 @@ class CertificateBuilder(object):
             extension = Extension(
                 OID_SUBJECT_KEY_IDENTIFIER, critical, extension
             )
-        elif isinstance(extension, InhibitAnyPolicy):
-            extension = Extension(OID_INHIBIT_ANY_POLICY, critical, extension)
         elif isinstance(extension, CRLDistributionPoints):
             extension = Extension(
                 OID_CRL_DISTRIBUTION_POINTS, critical, extension
+            )
+        elif isinstance(extension, IssuerAlternativeName):
+            extension = Extension(
+                OID_ISSUER_ALTERNATIVE_NAME, critical, extension
             )
         else:
             raise NotImplementedError('Unsupported X.509 extension.')
