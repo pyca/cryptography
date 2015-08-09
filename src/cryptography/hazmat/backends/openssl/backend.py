@@ -473,6 +473,21 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
     return pp, r
 
 
+_EXTENSION_ENCODE_HANDLERS = {
+    x509.OID_BASIC_CONSTRAINTS: _encode_basic_constraints,
+    x509.OID_SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
+    x509.OID_KEY_USAGE: _encode_key_usage,
+    x509.OID_SUBJECT_ALTERNATIVE_NAME: _encode_subject_alt_name,
+    x509.OID_EXTENDED_KEY_USAGE: _encode_extended_key_usage,
+    x509.OID_AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
+    x509.OID_AUTHORITY_INFORMATION_ACCESS: (
+        _encode_authority_information_access
+    ),
+    x509.OID_CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
+    x509.OID_INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
+}
+
+
 @utils.register_interface(CipherBackend)
 @utils.register_interface(CMACBackend)
 @utils.register_interface(DERSerializationBackend)
@@ -1279,29 +1294,10 @@ class Backend(object):
 
         # Add extensions.
         for i, extension in enumerate(builder._extensions):
-            if isinstance(extension.value, x509.BasicConstraints):
-                pp, r = _encode_basic_constraints(self, extension.value)
-            elif isinstance(extension.value, x509.AuthorityKeyIdentifier):
-                pp, r = _encode_authority_key_identifier(self, extension.value)
-            elif isinstance(extension.value, x509.KeyUsage):
-                pp, r = _encode_key_usage(self, extension.value)
-            elif isinstance(extension.value, x509.InhibitAnyPolicy):
-                pp, r = _encode_inhibit_any_policy(self, extension.value)
-            elif isinstance(extension.value, x509.ExtendedKeyUsage):
-                pp, r = _encode_extended_key_usage(self, extension.value)
-            elif isinstance(extension.value, x509.SubjectAlternativeName):
-                pp, r = _encode_subject_alt_name(self, extension.value)
-            elif isinstance(extension.value, x509.SubjectKeyIdentifier):
-                pp, r = _encode_subject_key_identifier(self, extension.value)
-            elif isinstance(extension.value, x509.AuthorityInformationAccess):
-                pp, r = _encode_authority_information_access(
-                    self, extension.value
-                )
-            elif isinstance(extension.value, x509.CRLDistributionPoints):
-                pp, r = _encode_crl_distribution_points(
-                    self, extension.value
-                )
-            else:
+            try:
+                encode = _EXTENSION_ENCODE_HANDLERS[extension.oid]
+                pp, r = encode(self, extension.value)
+            except KeyError:
                 raise NotImplementedError('Extension not yet supported.')
 
             obj = _txt2obj_gc(self, extension.oid.dotted_string)

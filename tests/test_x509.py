@@ -1064,10 +1064,10 @@ class TestCertificateBuilder(object):
                 x509.BasicConstraints(ca=False, path_length=None), True,
             )
 
-    def test_add_unsupported_extension(self):
+    def test_add_invalid_extension_type(self):
         builder = x509.CertificateBuilder()
 
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             builder.add_extension(object(), False)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
