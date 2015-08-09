@@ -1195,10 +1195,10 @@ class Backend(object):
         for extension in builder._extensions:
             try:
                 encode = _EXTENSION_ENCODE_HANDLERS[extension.oid]
-                pp, r = encode(self, extension.value)
             except KeyError:
                 raise NotImplementedError('Extension not yet supported.')
 
+            pp, r = encode(self, extension.value)
             obj = _txt2obj_gc(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
@@ -1291,10 +1291,10 @@ class Backend(object):
         for i, extension in enumerate(builder._extensions):
             try:
                 encode = _EXTENSION_ENCODE_HANDLERS[extension.oid]
-                pp, r = encode(self, extension.value)
             except KeyError:
                 raise NotImplementedError('Extension not yet supported.')
 
+            pp, r = encode(self, extension.value)
             obj = _txt2obj_gc(self, extension.oid.dotted_string)
             extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
