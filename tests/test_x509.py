@@ -1064,10 +1064,10 @@ class TestCertificateBuilder(object):
                 x509.BasicConstraints(ca=False, path_length=None), True,
             )
 
-    def test_add_unsupported_extension(self):
+    def test_add_invalid_extension_type(self):
         builder = x509.CertificateBuilder()
 
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             builder.add_extension(object(), False)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -1701,15 +1701,13 @@ class TestCertificateSigningRequestBuilder(object):
         with pytest.raises(TypeError):
             builder.subject_name('NotAName')
 
-    def test_add_unsupported_extension(self):
+    def test_add_invalid_extension_type(self):
         builder = x509.CertificateSigningRequestBuilder()
-        with pytest.raises(NotImplementedError):
-            builder.add_extension(
-                x509.AuthorityKeyIdentifier('keyid', None, None),
-                critical=False,
-            )
 
-    def test_add_unsupported_extension_in_backend(self, backend):
+        with pytest.raises(TypeError):
+            builder.add_extension(object(), False)
+
+    def test_add_unsupported_extension(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
@@ -1720,8 +1718,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
         ).add_extension(
-            x509.InhibitAnyPolicy(0),
-            critical=False
+            x509.IssuerAlternativeName([x509.DNSName(u"crypto.io")]), False
         )
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)
