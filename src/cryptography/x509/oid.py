@@ -16,85 +16,21 @@ class ObjectIdentifier(object):
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
 
-        return self._dotted_string == other._dotted_string
+        return self.dotted_string == other.dotted_string
 
     def __ne__(self, other):
         return not self == other
 
     def __repr__(self):
         return "<ObjectIdentifier(oid={0}, name={1})>".format(
-            self._dotted_string,
-            _OID_NAMES.get(self._dotted_string, "Unknown OID")
+            self.dotted_string,
+            _OID_NAMES.get(self.dotted_string, "Unknown OID")
         )
 
     def __hash__(self):
         return hash(self.dotted_string)
 
     dotted_string = utils.read_only_property("_dotted_string")
-
-
-_OID_NAMES = {
-    "2.5.4.3": "commonName",
-    "2.5.4.6": "countryName",
-    "2.5.4.7": "localityName",
-    "2.5.4.8": "stateOrProvinceName",
-    "2.5.4.10": "organizationName",
-    "2.5.4.11": "organizationalUnitName",
-    "2.5.4.5": "serialNumber",
-    "2.5.4.4": "surname",
-    "2.5.4.42": "givenName",
-    "2.5.4.12": "title",
-    "2.5.4.44": "generationQualifier",
-    "2.5.4.46": "dnQualifier",
-    "2.5.4.65": "pseudonym",
-    "0.9.2342.19200300.100.1.25": "domainComponent",
-    "1.2.840.113549.1.9.1": "emailAddress",
-    "1.2.840.113549.1.1.4": "md5WithRSAEncryption",
-    "1.2.840.113549.1.1.5": "sha1WithRSAEncryption",
-    "1.2.840.113549.1.1.14": "sha224WithRSAEncryption",
-    "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
-    "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
-    "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
-    "1.2.840.10045.4.1": "ecdsa-with-SHA1",
-    "1.2.840.10045.4.3.1": "ecdsa-with-SHA224",
-    "1.2.840.10045.4.3.2": "ecdsa-with-SHA256",
-    "1.2.840.10045.4.3.3": "ecdsa-with-SHA384",
-    "1.2.840.10045.4.3.4": "ecdsa-with-SHA512",
-    "1.2.840.10040.4.3": "dsa-with-sha1",
-    "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
-    "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
-    "1.3.6.1.5.5.7.3.1": "serverAuth",
-    "1.3.6.1.5.5.7.3.2": "clientAuth",
-    "1.3.6.1.5.5.7.3.3": "codeSigning",
-    "1.3.6.1.5.5.7.3.4": "emailProtection",
-    "1.3.6.1.5.5.7.3.8": "timeStamping",
-    "1.3.6.1.5.5.7.3.9": "OCSPSigning",
-    "2.5.29.9": "subjectDirectoryAttributes",
-    "2.5.29.14": "subjectKeyIdentifier",
-    "2.5.29.15": "keyUsage",
-    "2.5.29.17": "subjectAltName",
-    "2.5.29.18": "issuerAltName",
-    "2.5.29.19": "basicConstraints",
-    "2.5.29.21": "cRLReason",
-    "2.5.29.24": "invalidityDate",
-    "2.5.29.29": "certificateIssuer",
-    "2.5.29.30": "nameConstraints",
-    "2.5.29.31": "cRLDistributionPoints",
-    "2.5.29.32": "certificatePolicies",
-    "2.5.29.33": "policyMappings",
-    "2.5.29.35": "authorityKeyIdentifier",
-    "2.5.29.36": "policyConstraints",
-    "2.5.29.37": "extendedKeyUsage",
-    "2.5.29.46": "freshestCRL",
-    "2.5.29.54": "inhibitAnyPolicy",
-    "1.3.6.1.5.5.7.1.1": "authorityInfoAccess",
-    "1.3.6.1.5.5.7.1.11": "subjectInfoAccess",
-    "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
-    "1.3.6.1.5.5.7.48.1": "OCSP",
-    "1.3.6.1.5.5.7.48.2": "caIssuers",
-    "1.3.6.1.5.5.7.2.1": "id-qt-cps",
-    "1.3.6.1.5.5.7.2.2": "id-qt-unotice",
-}
 
 
 OID_SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
@@ -180,3 +116,66 @@ OID_OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
 OID_CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
 OID_CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
 OID_ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
+
+_OID_NAMES = {
+    OID_COMMON_NAME.dotted_string: "commonName",
+    OID_COUNTRY_NAME.dotted_string: "countryName",
+    OID_LOCALITY_NAME.dotted_string: "localityName",
+    OID_STATE_OR_PROVINCE_NAME.dotted_string: "stateOrProvinceName",
+    OID_ORGANIZATION_NAME.dotted_string: "organizationName",
+    OID_ORGANIZATIONAL_UNIT_NAME.dotted_string: "organizationalUnitName",
+    OID_SERIAL_NUMBER.dotted_string: "serialNumber",
+    OID_SURNAME.dotted_string: "surname",
+    OID_GIVEN_NAME.dotted_string: "givenName",
+    OID_TITLE.dotted_string: "title",
+    OID_GENERATION_QUALIFIER.dotted_string: "generationQualifier",
+    OID_DN_QUALIFIER.dotted_string: "dnQualifier",
+    OID_PSEUDONYM.dotted_string: "pseudonym",
+    OID_DOMAIN_COMPONENT.dotted_string: "domainComponent",
+    OID_EMAIL_ADDRESS.dotted_string: "emailAddress",
+    "1.2.840.113549.1.1.4": "md5WithRSAEncryption",
+    "1.2.840.113549.1.1.5": "sha1WithRSAEncryption",
+    "1.2.840.113549.1.1.14": "sha224WithRSAEncryption",
+    "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
+    "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
+    "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
+    "1.2.840.10045.4.1": "ecdsa-with-SHA1",
+    "1.2.840.10045.4.3.1": "ecdsa-with-SHA224",
+    "1.2.840.10045.4.3.2": "ecdsa-with-SHA256",
+    "1.2.840.10045.4.3.3": "ecdsa-with-SHA384",
+    "1.2.840.10045.4.3.4": "ecdsa-with-SHA512",
+    "1.2.840.10040.4.3": "dsa-with-sha1",
+    "2.16.840.1.101.3.4.3.1": "dsa-with-sha224",
+    "2.16.840.1.101.3.4.3.2": "dsa-with-sha256",
+    "1.3.6.1.5.5.7.3.1": "serverAuth",
+    "1.3.6.1.5.5.7.3.2": "clientAuth",
+    "1.3.6.1.5.5.7.3.3": "codeSigning",
+    "1.3.6.1.5.5.7.3.4": "emailProtection",
+    "1.3.6.1.5.5.7.3.8": "timeStamping",
+    "1.3.6.1.5.5.7.3.9": "OCSPSigning",
+    "2.5.29.9": "subjectDirectoryAttributes",
+    "2.5.29.14": "subjectKeyIdentifier",
+    "2.5.29.15": "keyUsage",
+    "2.5.29.17": "subjectAltName",
+    "2.5.29.18": "issuerAltName",
+    "2.5.29.19": "basicConstraints",
+    "2.5.29.21": "cRLReason",
+    "2.5.29.24": "invalidityDate",
+    "2.5.29.29": "certificateIssuer",
+    "2.5.29.30": "nameConstraints",
+    "2.5.29.31": "cRLDistributionPoints",
+    "2.5.29.32": "certificatePolicies",
+    "2.5.29.33": "policyMappings",
+    "2.5.29.35": "authorityKeyIdentifier",
+    "2.5.29.36": "policyConstraints",
+    "2.5.29.37": "extendedKeyUsage",
+    "2.5.29.46": "freshestCRL",
+    "2.5.29.54": "inhibitAnyPolicy",
+    "1.3.6.1.5.5.7.1.1": "authorityInfoAccess",
+    "1.3.6.1.5.5.7.1.11": "subjectInfoAccess",
+    "1.3.6.1.5.5.7.48.1.5": "OCSPNoCheck",
+    "1.3.6.1.5.5.7.48.1": "OCSP",
+    "1.3.6.1.5.5.7.48.2": "caIssuers",
+    "1.3.6.1.5.5.7.2.1": "id-qt-cps",
+    "1.3.6.1.5.5.7.2.2": "id-qt-unotice",
+}
