@@ -76,6 +76,8 @@ codes (HMAC).
 
     .. method:: get_provisioning_uri(account_name, counter, issuer)
 
+        .. versionadded:: 1.0
+
         :param account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
         :type account_name: :term:`text`
@@ -185,6 +187,8 @@ similar to the following code.
              is raised when the supplied TOTP does not match the expected TOTP.
 
     .. method:: get_provisioning_uri(account_name, issuer)
+
+        .. versionadded:: 1.0
 
         :param account_name: The display name of account, such as
             ``'Alice Smith'`` or ``'alice@example.com'``.
