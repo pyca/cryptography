@@ -924,6 +924,8 @@ X.509 Extensions
     certificate.  The usage restriction might be employed when a key that could
     be used for more than one operation is to be restricted.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1023,6 +1025,8 @@ X.509 Extensions
     certificate is allowed to sign additional certificates and what path
     length restrictions may exist.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1059,6 +1063,8 @@ X.509 Extensions
     purposes indicated in the key usage extension. The object is
     iterable to obtain the list of :ref:`extended key usage OIDs <eku_oids>`.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1081,6 +1087,8 @@ X.509 Extensions
     extension is only relevant when the certificate is an authorized OCSP
     responder.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1097,6 +1105,8 @@ X.509 Extensions
     defines a name space within which all subject names in certificates issued
     beneath the CA certificate must (or must not) be in. For specific details
     on the way this extension should be processed see :rfc:`5280`.
+
+    Conforms to the :class:`ExtensionType` interface.
 
     .. attribute:: oid
 
@@ -1132,6 +1142,8 @@ X.509 Extensions
     This extension is typically used to assist in determining the appropriate
     certificate chain. For more information about generation and use of this
     extension see `RFC 5280 section 4.2.1.1`_.
+
+    Conforms to the :class:`ExtensionType` interface.
 
     .. attribute:: oid
 
@@ -1198,6 +1210,8 @@ X.509 Extensions
     The subject key identifier extension provides a means of identifying
     certificates that contain a particular public key.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1246,6 +1260,8 @@ X.509 Extensions
     of identities for which the certificate is valid. The object is iterable to
     get every element.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1284,6 +1300,8 @@ X.509 Extensions
     of identities for the certificate issuer. The object is iterable to
     get every element.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1310,6 +1328,8 @@ X.509 Extensions
     validation services (such as OCSP) and issuer data. It is an iterable,
     containing one or more :class:`AccessDescription` instances.
 
+    Conforms to the :class:`ExtensionType` interface.
+
     .. attribute:: oid
 
         .. versionadded:: 1.0
@@ -1318,6 +1338,142 @@ X.509 Extensions
 
         Returns :data:`OID_AUTHORITY_INFORMATION_ACCESS`.
 
+
+.. class:: CRLDistributionPoints
+
+    .. versionadded:: 0.9
+
+    The CRL distribution points extension identifies how CRL information is
+    obtained. It is an iterable, containing one or more
+    :class:`DistributionPoint` instances.
+
+    Conforms to the :class:`ExtensionType` interface.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :data:`OID_CRL_DISTRIBUTION_POINTS`.
+
+.. class:: InhibitAnyPolicy
+
+    .. versionadded:: 1.0
+
+    The inhibit ``anyPolicy`` extension indicates that the special OID
+    :data:`OID_ANY_POLICY`, is not considered an explicit match for other
+    :class:`CertificatePolicies` except when it appears in an intermediate
+    self-issued CA certificate.  The value indicates the number of additional
+    non-self-issued certificates that may appear in the path before
+    :data:`OID_ANY_POLICY` is no longer permitted.  For example, a value
+    of one indicates that :data:`OID_ANY_POLICY` may be processed in
+    certificates issued by the subject of this certificate, but not in
+    additional certificates in the path.
+
+    Conforms to the :class:`ExtensionType` interface.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :data:`OID_INHIBIT_ANY_POLICY`.
+
+    .. attribute:: skip_certs
+
+        :type: int
+
+.. class:: CertificatePolicies
+
+    .. versionadded:: 0.9
+
+    The certificate policies extension is an iterable, containing one or more
+    :class:`PolicyInformation` instances.
+
+    Conforms to the :class:`ExtensionType` interface.
+
+    .. attribute:: oid
+
+        .. versionadded:: 1.0
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :data:`OID_CERTIFICATE_POLICIES`.
+
+Certificate Policies Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These classes may be present within a :class:`CertificatePolicies` instance.
+
+.. class:: PolicyInformation
+
+    .. versionadded:: 0.9
+
+    Contains a policy identifier and an optional list of qualifiers.
+
+    .. attribute:: policy_identifier
+
+        :type: :class:`ObjectIdentifier`
+
+    .. attribute:: policy_qualifiers
+
+        :type: list
+
+        A list consisting of :term:`text` and/or :class:`UserNotice` objects.
+        If the value is text it is a pointer to the practice statement
+        published by the certificate authority. If it is a user notice it is
+        meant for display to the relying party when the certificate is
+        used.
+
+.. class:: UserNotice
+
+    .. versionadded:: 0.9
+
+    User notices are intended for display to a relying party when a certificate
+    is used. In practice, few if any UIs expose this data and it is a rarely
+    encoded component.
+
+    .. attribute:: notice_reference
+
+        :type: :class:`NoticeReference` or None
+
+        The notice reference field names an organization and identifies,
+        by number, a particular statement prepared by that organization.
+
+    .. attribute:: explicit_text
+
+        This field includes an arbitrary textual statement directly in the
+        certificate.
+
+        :type: :term:`text`
+
+.. class:: NoticeReference
+
+    Notice reference can name an organization and provide information about
+    notices related to the certificate. For example, it might identify the
+    organization name and notice number 1. Application software could
+    have a notice file containing the current set of notices for the named
+    organization; the application would then extract the notice text from the
+    file and display it. In practice this is rarely seen.
+
+    .. versionadded:: 0.9
+
+    .. attribute:: organization
+
+        :type: :term:`text`
+
+    .. attribute:: notice_numbers
+
+        :type: list
+
+        A list of integers.
+
+Authority Information Access Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This class is present within a :class:`AuthorityInformationAccess` instance.
 
 .. class:: AccessDescription
 
@@ -1340,21 +1496,11 @@ X.509 Extensions
 
         Where to access the information defined by the access method.
 
-.. class:: CRLDistributionPoints
+CRL Distribution Points Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    .. versionadded:: 0.9
-
-    The CRL distribution points extension identifies how CRL information is
-    obtained. It is an iterable, containing one or more
-    :class:`DistributionPoint` instances.
-
-    .. attribute:: oid
-
-        .. versionadded:: 1.0
-
-        :type: :class:`ObjectIdentifier`
-
-        Returns :data:`OID_CRL_DISTRIBUTION_POINTS`.
+These classes may be present within a :class:`CRLDistributionPoints`
+extension instance.
 
 .. class:: DistributionPoint
 
@@ -1440,114 +1586,6 @@ X.509 Extensions
         removed from the CRL. This reason cannot be used as a reason flag
         in a :class:`DistributionPoint`.
 
-.. class:: InhibitAnyPolicy
-
-    .. versionadded:: 1.0
-
-    The inhibit ``anyPolicy`` extension indicates that the special OID
-    :data:`OID_ANY_POLICY`, is not considered an explicit match for other
-    :class:`CertificatePolicies` except when it appears in an intermediate
-    self-issued CA certificate.  The value indicates the number of additional
-    non-self-issued certificates that may appear in the path before
-    :data:`OID_ANY_POLICY` is no longer permitted.  For example, a value
-    of one indicates that :data:`OID_ANY_POLICY` may be processed in
-    certificates issued by the subject of this certificate, but not in
-    additional certificates in the path.
-
-    .. attribute:: oid
-
-        .. versionadded:: 1.0
-
-        :type: :class:`ObjectIdentifier`
-
-        Returns :data:`OID_INHIBIT_ANY_POLICY`.
-
-    .. attribute:: skip_certs
-
-        :type: int
-
-.. class:: CertificatePolicies
-
-    .. versionadded:: 0.9
-
-    The certificate policies extension is an iterable, containing one or more
-    :class:`PolicyInformation` instances.
-
-    .. attribute:: oid
-
-        .. versionadded:: 1.0
-
-        :type: :class:`ObjectIdentifier`
-
-        Returns :data:`OID_CERTIFICATE_POLICIES`.
-
-Certificate Policies Classes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-These classes may be present within a :class:`CertificatePolicies` instance.
-
-.. class:: PolicyInformation
-
-    .. versionadded:: 0.9
-
-    Contains a policy identifier and an optional list of qualifiers.
-
-    .. attribute:: policy_identifier
-
-        :type: :class:`ObjectIdentifier`
-
-    .. attribute:: policy_qualifiers
-
-        :type: list
-
-        A list consisting of :term:`text` and/or :class:`UserNotice` objects.
-        If the value is text it is a pointer to the practice statement
-        published by the certificate authority. If it is a user notice it is
-        meant for display to the relying party when the certificate is
-        used.
-
-.. class:: UserNotice
-
-    .. versionadded:: 0.9
-
-    User notices are intended for display to a relying party when a certificate
-    is used. In practice, few if any UIs expose this data and it is a rarely
-    encoded component.
-
-    .. attribute:: notice_reference
-
-        :type: :class:`NoticeReference` or None
-
-        The notice reference field names an organization and identifies,
-        by number, a particular statement prepared by that organization.
-
-    .. attribute:: explicit_text
-
-        This field includes an arbitrary textual statement directly in the
-        certificate.
-
-        :type: :term:`text`
-
-.. class:: NoticeReference
-
-    Notice reference can name an organization and provide information about
-    notices related to the certificate. For example, it might identify the
-    organization name and notice number 1. Application software could
-    have a notice file containing the current set of notices for the named
-    organization; the application would then extract the notice text from the
-    file and display it. In practice this is rarely seen.
-
-    .. versionadded:: 0.9
-
-    .. attribute:: organization
-
-        :type: :term:`text`
-
-    .. attribute:: notice_numbers
-
-        :type: list
-
-        A list of integers.
 
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
