@@ -529,7 +529,7 @@ class TestOpenSSLSignX509Certificate(object):
         ).not_valid_after(
             datetime.datetime(2020, 1, 1)
         ).add_extension(
-            x509.InhibitAnyPolicy(0), False
+            x509.IssuerAlternativeName([x509.DNSName(u"crypto.io")]), False
         )
 
         with pytest.raises(NotImplementedError):
