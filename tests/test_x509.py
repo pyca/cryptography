@@ -835,6 +835,29 @@ class TestRSACertificateRequest(object):
 class TestCertificateBuilder(object):
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_checks_for_unsupported_extensions(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(1999, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2020, 1, 1)
+        ).add_extension(
+            DummyExtension(), False
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA1(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_subject_name(self, backend):
         subject_private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().serial_number(

@@ -50,11 +50,6 @@ class TestLibreSkip(object):
             skip_if_libre_ssl(u"LibreSSL 2.1.6")
 
 
-@utils.register_interface(x509.ExtensionType)
-class DummyExtension(object):
-    oid = x509.ObjectIdentifier("1.2.3.4")
-
-
 @utils.register_interface(Mode)
 class DummyMode(object):
     name = "dummy-mode"
@@ -518,27 +513,6 @@ class TestOpenSSLSignX509Certificate(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_certificate(object(), private_key, DummyHash())
-
-    def test_checks_for_unsupported_extensions(self):
-        private_key = RSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateBuilder().subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-        ])).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-        ])).public_key(
-            private_key.public_key()
-        ).serial_number(
-            777
-        ).not_valid_before(
-            datetime.datetime(1999, 1, 1)
-        ).not_valid_after(
-            datetime.datetime(2020, 1, 1)
-        ).add_extension(
-            DummyExtension(), False
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA1(), backend)
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):
