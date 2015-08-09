@@ -157,9 +157,8 @@ def _txt2obj_gc(backend, name):
 
 def _encode_ocsp_nocheck(backend, ext):
     """
-    The OCSP No Check extension is defined as a null ASN.1 value. We can just
-    return that value directly here in the pp, r tuple form the other
-    extension encoding functions use.
+    The OCSP No Check extension is defined as a null ASN.1 value. Rather than
+    calling OpenSSL we can return a Python bytestring value in a list.
     """
     return [b"\x05\x00"], 2
 
