@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import datetime
 import os
 import subprocess
 import sys
@@ -15,7 +14,6 @@ import pretend
 import pytest
 
 from cryptography import utils
-from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
