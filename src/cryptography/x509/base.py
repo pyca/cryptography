@@ -23,6 +23,7 @@ from six.moves import urllib_parse
 from cryptography import utils
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.x509.name import Name
 from cryptography.x509.oid import (
     OID_AUTHORITY_INFORMATION_ACCESS,
     OID_AUTHORITY_KEY_IDENTIFIER, OID_BASIC_CONSTRAINTS,
@@ -126,66 +127,6 @@ class UnsupportedGeneralNameType(Exception):
     def __init__(self, msg, type):
         super(UnsupportedGeneralNameType, self).__init__(msg)
         self.type = type
-
-
-class NameAttribute(object):
-    def __init__(self, oid, value):
-        if not isinstance(oid, ObjectIdentifier):
-            raise TypeError(
-                "oid argument must be an ObjectIdentifier instance."
-            )
-
-        if not isinstance(value, six.text_type):
-            raise TypeError(
-                "value argument must be a text type."
-            )
-
-        self._oid = oid
-        self._value = value
-
-    oid = utils.read_only_property("_oid")
-    value = utils.read_only_property("_value")
-
-    def __eq__(self, other):
-        if not isinstance(other, NameAttribute):
-            return NotImplemented
-
-        return (
-            self.oid == other.oid and
-            self.value == other.value
-        )
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __repr__(self):
-        return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
-
-
-class Name(object):
-    def __init__(self, attributes):
-        self._attributes = attributes
-
-    def get_attributes_for_oid(self, oid):
-        return [i for i in self if i.oid == oid]
-
-    def __eq__(self, other):
-        if not isinstance(other, Name):
-            return NotImplemented
-
-        return self._attributes == other._attributes
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __iter__(self):
-        return iter(self._attributes)
-
-    def __len__(self):
-        return len(self._attributes)
-
-    def __repr__(self):
-        return "<Name({0!r})>".format(self._attributes)
 
 
 class Extensions(object):
