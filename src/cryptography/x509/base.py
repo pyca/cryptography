@@ -59,18 +59,6 @@ def _key_identifier_from_public_key(public_key):
     return hashlib.sha1(data).digest()
 
 
-_GENERAL_NAMES = {
-    0: "otherName",
-    1: "rfc822Name",
-    2: "dNSName",
-    3: "x400Address",
-    4: "directoryName",
-    5: "ediPartyName",
-    6: "uniformResourceIdentifier",
-    7: "iPAddress",
-    8: "registeredID",
-}
-
 _UNIX_EPOCH = datetime.datetime(1970, 1, 1)
 
 
