@@ -74,36 +74,38 @@ OID_PSEUDONYM = ObjectIdentifier("2.5.4.65")
 OID_DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
 OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
 
-OID_RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
-OID_RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
-OID_RSA_WITH_SHA224 = ObjectIdentifier("1.2.840.113549.1.1.14")
-OID_RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
-OID_RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
-OID_RSA_WITH_SHA512 = ObjectIdentifier("1.2.840.113549.1.1.13")
-OID_ECDSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10045.4.1")
-OID_ECDSA_WITH_SHA224 = ObjectIdentifier("1.2.840.10045.4.3.1")
-OID_ECDSA_WITH_SHA256 = ObjectIdentifier("1.2.840.10045.4.3.2")
-OID_ECDSA_WITH_SHA384 = ObjectIdentifier("1.2.840.10045.4.3.3")
-OID_ECDSA_WITH_SHA512 = ObjectIdentifier("1.2.840.10045.4.3.4")
-OID_DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
-OID_DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
-OID_DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
+
+class SignatureAlgorithmOID(object):
+    RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
+    RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
+    RSA_WITH_SHA224 = ObjectIdentifier("1.2.840.113549.1.1.14")
+    RSA_WITH_SHA256 = ObjectIdentifier("1.2.840.113549.1.1.11")
+    RSA_WITH_SHA384 = ObjectIdentifier("1.2.840.113549.1.1.12")
+    RSA_WITH_SHA512 = ObjectIdentifier("1.2.840.113549.1.1.13")
+    ECDSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10045.4.1")
+    ECDSA_WITH_SHA224 = ObjectIdentifier("1.2.840.10045.4.3.1")
+    ECDSA_WITH_SHA256 = ObjectIdentifier("1.2.840.10045.4.3.2")
+    ECDSA_WITH_SHA384 = ObjectIdentifier("1.2.840.10045.4.3.3")
+    ECDSA_WITH_SHA512 = ObjectIdentifier("1.2.840.10045.4.3.4")
+    DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
+    DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
+    DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")
 
 _SIG_OIDS_TO_HASH = {
-    OID_RSA_WITH_MD5.dotted_string: hashes.MD5(),
-    OID_RSA_WITH_SHA1.dotted_string: hashes.SHA1(),
-    OID_RSA_WITH_SHA224.dotted_string: hashes.SHA224(),
-    OID_RSA_WITH_SHA256.dotted_string: hashes.SHA256(),
-    OID_RSA_WITH_SHA384.dotted_string: hashes.SHA384(),
-    OID_RSA_WITH_SHA512.dotted_string: hashes.SHA512(),
-    OID_ECDSA_WITH_SHA1.dotted_string: hashes.SHA1(),
-    OID_ECDSA_WITH_SHA224.dotted_string: hashes.SHA224(),
-    OID_ECDSA_WITH_SHA256.dotted_string: hashes.SHA256(),
-    OID_ECDSA_WITH_SHA384.dotted_string: hashes.SHA384(),
-    OID_ECDSA_WITH_SHA512.dotted_string: hashes.SHA512(),
-    OID_DSA_WITH_SHA1.dotted_string: hashes.SHA1(),
-    OID_DSA_WITH_SHA224.dotted_string: hashes.SHA224(),
-    OID_DSA_WITH_SHA256.dotted_string: hashes.SHA256()
+    SignatureAlgorithmOID.RSA_WITH_MD5.dotted_string: hashes.MD5(),
+    SignatureAlgorithmOID.RSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    SignatureAlgorithmOID.RSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    SignatureAlgorithmOID.RSA_WITH_SHA256.dotted_string: hashes.SHA256(),
+    SignatureAlgorithmOID.RSA_WITH_SHA384.dotted_string: hashes.SHA384(),
+    SignatureAlgorithmOID.RSA_WITH_SHA512.dotted_string: hashes.SHA512(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA256.dotted_string: hashes.SHA256(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA384.dotted_string: hashes.SHA384(),
+    SignatureAlgorithmOID.ECDSA_WITH_SHA512.dotted_string: hashes.SHA512(),
+    SignatureAlgorithmOID.DSA_WITH_SHA1.dotted_string: hashes.SHA1(),
+    SignatureAlgorithmOID.DSA_WITH_SHA224.dotted_string: hashes.SHA224(),
+    SignatureAlgorithmOID.DSA_WITH_SHA256.dotted_string: hashes.SHA256()
 }
 
 OID_SERVER_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.1")
@@ -136,20 +138,20 @@ _OID_NAMES = {
     OID_PSEUDONYM: "pseudonym",
     OID_DOMAIN_COMPONENT: "domainComponent",
     OID_EMAIL_ADDRESS: "emailAddress",
-    OID_RSA_WITH_MD5: "md5WithRSAEncryption",
-    OID_RSA_WITH_SHA1: "sha1WithRSAEncryption",
-    OID_RSA_WITH_SHA224: "sha224WithRSAEncryption",
-    OID_RSA_WITH_SHA256: "sha256WithRSAEncryption",
-    OID_RSA_WITH_SHA384: "sha384WithRSAEncryption",
-    OID_RSA_WITH_SHA512: "sha512WithRSAEncryption",
-    OID_ECDSA_WITH_SHA1: "ecdsa-with-SHA1",
-    OID_ECDSA_WITH_SHA224: "ecdsa-with-SHA224",
-    OID_ECDSA_WITH_SHA256: "ecdsa-with-SHA256",
-    OID_ECDSA_WITH_SHA384: "ecdsa-with-SHA384",
-    OID_ECDSA_WITH_SHA512: "ecdsa-with-SHA512",
-    OID_DSA_WITH_SHA1: "dsa-with-sha1",
-    OID_DSA_WITH_SHA224: "dsa-with-sha224",
-    OID_DSA_WITH_SHA256: "dsa-with-sha256",
+    SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
+    SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
+    SignatureAlgorithmOID.RSA_WITH_SHA224: "sha224WithRSAEncryption",
+    SignatureAlgorithmOID.RSA_WITH_SHA256: "sha256WithRSAEncryption",
+    SignatureAlgorithmOID.RSA_WITH_SHA384: "sha384WithRSAEncryption",
+    SignatureAlgorithmOID.RSA_WITH_SHA512: "sha512WithRSAEncryption",
+    SignatureAlgorithmOID.ECDSA_WITH_SHA1: "ecdsa-with-SHA1",
+    SignatureAlgorithmOID.ECDSA_WITH_SHA224: "ecdsa-with-SHA224",
+    SignatureAlgorithmOID.ECDSA_WITH_SHA256: "ecdsa-with-SHA256",
+    SignatureAlgorithmOID.ECDSA_WITH_SHA384: "ecdsa-with-SHA384",
+    SignatureAlgorithmOID.ECDSA_WITH_SHA512: "ecdsa-with-SHA512",
+    SignatureAlgorithmOID.DSA_WITH_SHA1: "dsa-with-sha1",
+    SignatureAlgorithmOID.DSA_WITH_SHA224: "dsa-with-sha224",
+    SignatureAlgorithmOID.DSA_WITH_SHA256: "dsa-with-sha256",
     OID_SERVER_AUTH: "serverAuth",
     OID_CLIENT_AUTH: "clientAuth",
     OID_CODE_SIGNING: "codeSigning",
