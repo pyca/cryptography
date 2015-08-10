@@ -25,13 +25,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
-    OID_AUTHORITY_INFORMATION_ACCESS,
-    OID_AUTHORITY_KEY_IDENTIFIER, OID_BASIC_CONSTRAINTS,
-    OID_CA_ISSUERS, OID_CERTIFICATE_POLICIES, OID_CRL_DISTRIBUTION_POINTS,
-    OID_EXTENDED_KEY_USAGE, OID_INHIBIT_ANY_POLICY,
-    OID_ISSUER_ALTERNATIVE_NAME, OID_KEY_USAGE, OID_NAME_CONSTRAINTS,
-    OID_OCSP, OID_OCSP_NO_CHECK, OID_SUBJECT_ALTERNATIVE_NAME,
-    OID_SUBJECT_KEY_IDENTIFIER, ObjectIdentifier
+    ExtensionOID, OID_CA_ISSUERS, OID_OCSP, ObjectIdentifier
 )
 
 
@@ -194,7 +188,7 @@ class ExtensionType(object):
 
 @utils.register_interface(ExtensionType)
 class ExtendedKeyUsage(object):
-    oid = OID_EXTENDED_KEY_USAGE
+    oid = ExtensionOID.EXTENDED_KEY_USAGE
 
     def __init__(self, usages):
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
@@ -225,12 +219,12 @@ class ExtendedKeyUsage(object):
 
 @utils.register_interface(ExtensionType)
 class OCSPNoCheck(object):
-    oid = OID_OCSP_NO_CHECK
+    oid = ExtensionOID.OCSP_NO_CHECK
 
 
 @utils.register_interface(ExtensionType)
 class BasicConstraints(object):
-    oid = OID_BASIC_CONSTRAINTS
+    oid = ExtensionOID.BASIC_CONSTRAINTS
 
     def __init__(self, ca, path_length):
         if not isinstance(ca, bool):
@@ -269,7 +263,7 @@ class BasicConstraints(object):
 
 @utils.register_interface(ExtensionType)
 class KeyUsage(object):
-    oid = OID_KEY_USAGE
+    oid = ExtensionOID.KEY_USAGE
 
     def __init__(self, digital_signature, content_commitment, key_encipherment,
                  data_encipherment, key_agreement, key_cert_sign, crl_sign,
@@ -355,7 +349,7 @@ class KeyUsage(object):
 
 @utils.register_interface(ExtensionType)
 class AuthorityInformationAccess(object):
-    oid = OID_AUTHORITY_INFORMATION_ACCESS
+    oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
     def __init__(self, descriptions):
         if not all(isinstance(x, AccessDescription) for x in descriptions):
@@ -422,7 +416,7 @@ class AccessDescription(object):
 
 @utils.register_interface(ExtensionType)
 class CertificatePolicies(object):
-    oid = OID_CERTIFICATE_POLICIES
+    oid = ExtensionOID.CERTIFICATE_POLICIES
 
     def __init__(self, policies):
         if not all(isinstance(x, PolicyInformation) for x in policies):
@@ -562,7 +556,7 @@ class NoticeReference(object):
 
 @utils.register_interface(ExtensionType)
 class SubjectKeyIdentifier(object):
-    oid = OID_SUBJECT_KEY_IDENTIFIER
+    oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
 
     def __init__(self, digest):
         self._digest = digest
@@ -590,7 +584,7 @@ class SubjectKeyIdentifier(object):
 
 @utils.register_interface(ExtensionType)
 class NameConstraints(object):
-    oid = OID_NAME_CONSTRAINTS
+    oid = ExtensionOID.NAME_CONSTRAINTS
 
     def __init__(self, permitted_subtrees, excluded_subtrees):
         if permitted_subtrees is not None:
@@ -657,7 +651,7 @@ class NameConstraints(object):
 
 @utils.register_interface(ExtensionType)
 class CRLDistributionPoints(object):
-    oid = OID_CRL_DISTRIBUTION_POINTS
+    oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
     def __init__(self, distribution_points):
         if not all(
@@ -781,7 +775,7 @@ class ReasonFlags(Enum):
 
 @utils.register_interface(ExtensionType)
 class InhibitAnyPolicy(object):
-    oid = OID_INHIBIT_ANY_POLICY
+    oid = ExtensionOID.INHIBIT_ANY_POLICY
 
     def __init__(self, skip_certs):
         if not isinstance(skip_certs, six.integer_types):
@@ -1074,7 +1068,7 @@ class GeneralNames(object):
 
 @utils.register_interface(ExtensionType)
 class SubjectAlternativeName(object):
-    oid = OID_SUBJECT_ALTERNATIVE_NAME
+    oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
     def __init__(self, general_names):
         self._general_names = GeneralNames(general_names)
@@ -1103,7 +1097,7 @@ class SubjectAlternativeName(object):
 
 @utils.register_interface(ExtensionType)
 class IssuerAlternativeName(object):
-    oid = OID_ISSUER_ALTERNATIVE_NAME
+    oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
     def __init__(self, general_names):
         self._general_names = GeneralNames(general_names)
@@ -1132,7 +1126,7 @@ class IssuerAlternativeName(object):
 
 @utils.register_interface(ExtensionType)
 class AuthorityKeyIdentifier(object):
-    oid = OID_AUTHORITY_KEY_IDENTIFIER
+    oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
 
     def __init__(self, key_identifier, authority_cert_issuer,
                  authority_cert_serial_number):
