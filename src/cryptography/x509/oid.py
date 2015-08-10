@@ -33,27 +33,30 @@ class ObjectIdentifier(object):
     dotted_string = utils.read_only_property("_dotted_string")
 
 
-OID_SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
-OID_SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
-OID_KEY_USAGE = ObjectIdentifier("2.5.29.15")
-OID_SUBJECT_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.17")
-OID_ISSUER_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.18")
-OID_BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+class ExtensionOID(object):
+    SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
+    SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
+    KEY_USAGE = ObjectIdentifier("2.5.29.15")
+    SUBJECT_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.17")
+    ISSUER_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.18")
+    BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
+    NAME_CONSTRAINTS = ObjectIdentifier("2.5.29.30")
+    CRL_DISTRIBUTION_POINTS = ObjectIdentifier("2.5.29.31")
+    CERTIFICATE_POLICIES = ObjectIdentifier("2.5.29.32")
+    POLICY_MAPPINGS = ObjectIdentifier("2.5.29.33")
+    AUTHORITY_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.35")
+    POLICY_CONSTRAINTS = ObjectIdentifier("2.5.29.36")
+    EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
+    FRESHEST_CRL = ObjectIdentifier("2.5.29.46")
+    INHIBIT_ANY_POLICY = ObjectIdentifier("2.5.29.54")
+    AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
+    SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
+    OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
+
+
 OID_CRL_REASON = ObjectIdentifier("2.5.29.21")
 OID_INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
 OID_CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
-OID_NAME_CONSTRAINTS = ObjectIdentifier("2.5.29.30")
-OID_CRL_DISTRIBUTION_POINTS = ObjectIdentifier("2.5.29.31")
-OID_CERTIFICATE_POLICIES = ObjectIdentifier("2.5.29.32")
-OID_POLICY_MAPPINGS = ObjectIdentifier("2.5.29.33")
-OID_AUTHORITY_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.35")
-OID_POLICY_CONSTRAINTS = ObjectIdentifier("2.5.29.36")
-OID_EXTENDED_KEY_USAGE = ObjectIdentifier("2.5.29.37")
-OID_FRESHEST_CRL = ObjectIdentifier("2.5.29.46")
-OID_INHIBIT_ANY_POLICY = ObjectIdentifier("2.5.29.54")
-OID_AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
-OID_SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
-OID_OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
 
 OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
 OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
@@ -153,27 +156,27 @@ _OID_NAMES = {
     OID_EMAIL_PROTECTION: "emailProtection",
     OID_TIME_STAMPING: "timeStamping",
     OID_OCSP_SIGNING: "OCSPSigning",
-    OID_SUBJECT_DIRECTORY_ATTRIBUTES: "subjectDirectoryAttributes",
-    OID_SUBJECT_KEY_IDENTIFIER: "subjectKeyIdentifier",
-    OID_KEY_USAGE: "keyUsage",
-    OID_SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
-    OID_ISSUER_ALTERNATIVE_NAME: "issuerAltName",
-    OID_BASIC_CONSTRAINTS: "basicConstraints",
+    ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES: "subjectDirectoryAttributes",
+    ExtensionOID.SUBJECT_KEY_IDENTIFIER: "subjectKeyIdentifier",
+    ExtensionOID.KEY_USAGE: "keyUsage",
+    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
+    ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
     OID_CRL_REASON: "cRLReason",
     OID_INVALIDITY_DATE: "invalidityDate",
     OID_CERTIFICATE_ISSUER: "certificateIssuer",
-    OID_NAME_CONSTRAINTS: "nameConstraints",
-    OID_CRL_DISTRIBUTION_POINTS: "cRLDistributionPoints",
-    OID_CERTIFICATE_POLICIES: "certificatePolicies",
-    OID_POLICY_MAPPINGS: "policyMappings",
-    OID_AUTHORITY_KEY_IDENTIFIER: "authorityKeyIdentifier",
-    OID_POLICY_CONSTRAINTS: "policyConstraints",
-    OID_EXTENDED_KEY_USAGE: "extendedKeyUsage",
-    OID_FRESHEST_CRL: "freshestCRL",
-    OID_INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
-    OID_AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
-    OID_SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
-    OID_OCSP_NO_CHECK: "OCSPNoCheck",
+    ExtensionOID.NAME_CONSTRAINTS: "nameConstraints",
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: "cRLDistributionPoints",
+    ExtensionOID.CERTIFICATE_POLICIES: "certificatePolicies",
+    ExtensionOID.POLICY_MAPPINGS: "policyMappings",
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: "authorityKeyIdentifier",
+    ExtensionOID.POLICY_CONSTRAINTS: "policyConstraints",
+    ExtensionOID.EXTENDED_KEY_USAGE: "extendedKeyUsage",
+    ExtensionOID.FRESHEST_CRL: "freshestCRL",
+    ExtensionOID.INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
+    ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
+    ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
     OID_OCSP: "OCSP",
     OID_CA_ISSUERS: "caIssuers",
     OID_CPS_QUALIFIER: "id-qt-cps",
