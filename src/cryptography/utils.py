@@ -13,6 +13,7 @@ import warnings
 
 
 DeprecatedIn09 = DeprecationWarning
+DeprecatedIn10 = PendingDeprecationWarning
 
 
 def read_only_property(name):
