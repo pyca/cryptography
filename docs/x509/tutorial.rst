@@ -57,14 +57,15 @@ a few details:
 .. code-block:: pycon
 
     >>> from cryptography import x509
+    >>> from cryptography.x509 import oid
     >>> # Generate a CSR
     >>> csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
     ...     # Provide various details about who we are.
-    ...     x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
-    ...     x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u"CA"),
-    ...     x509.NameAttribute(x509.OID_LOCALITY_NAME, u"San Francisco"),
-    ...     x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u"My Company"),
-    ...     x509.NameAttribute(x509.COMMON_NAME, u"mysite.com"),
+    ...     x509.NameAttribute(oid.NameOID.COUNTRY_NAME, u"US"),
+    ...     x509.NameAttribute(oid.NameOID.STATE_OR_PROVINCE_NAME, u"CA"),
+    ...     x509.NameAttribute(oid.NameOID.LOCALITY_NAME, u"San Francisco"),
+    ...     x509.NameAttribute(oid.NameOID.ORGANIZATION_NAME, u"My Company"),
+    ...     x509.NameAttribute(oid.NameOID.COMMON_NAME, u"mysite.com"),
     ... ])).add_extension(x509.SubjectAlternativeName([
     ...     # Describe what sites we want this certificate for.
     ...     x509.DNSName(u"mysite.com"),
