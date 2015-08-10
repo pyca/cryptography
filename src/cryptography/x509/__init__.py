@@ -8,18 +8,20 @@ from cryptography.x509.base import (
     AccessDescription, AuthorityInformationAccess, AuthorityKeyIdentifier,
     BasicConstraints, CRLDistributionPoints, Certificate, CertificateBuilder,
     CertificatePolicies, CertificateRevocationList, CertificateSigningRequest,
-    CertificateSigningRequestBuilder, DNSName, DirectoryName,
-    DistributionPoint, DuplicateExtension, ExtendedKeyUsage,
-    Extension, ExtensionNotFound, ExtensionType, Extensions, GeneralName,
-    GeneralNames, IPAddress, InhibitAnyPolicy, InvalidVersion,
-    IssuerAlternativeName, KeyUsage, NameConstraints,
-    NoticeReference, OCSPNoCheck, ObjectIdentifier, OtherName,
-    PolicyInformation, RFC822Name, ReasonFlags, RegisteredID,
+    CertificateSigningRequestBuilder, DistributionPoint,
+    DuplicateExtension, ExtendedKeyUsage, Extension, ExtensionNotFound,
+    ExtensionType, Extensions, GeneralNames, InhibitAnyPolicy,
+    InvalidVersion, IssuerAlternativeName, KeyUsage, NameConstraints,
+    NoticeReference, OCSPNoCheck, ObjectIdentifier,
+    PolicyInformation, ReasonFlags,
     RevokedCertificate, SubjectAlternativeName, SubjectKeyIdentifier,
-    UniformResourceIdentifier, UnsupportedExtension,
-    UnsupportedGeneralNameType, UserNotice, Version, _GENERAL_NAMES,
-    load_der_x509_certificate,
+    UnsupportedExtension, UserNotice, Version, load_der_x509_certificate,
     load_der_x509_csr, load_pem_x509_certificate, load_pem_x509_csr,
+)
+from cryptography.x509.general_name import (
+    DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
+    RegisteredID, UniformResourceIdentifier, UnsupportedGeneralNameType,
+    _GENERAL_NAMES
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
