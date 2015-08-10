@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
-    ExtensionOID, OID_CA_ISSUERS, OID_OCSP, ObjectIdentifier
+    AuthorityInformationAccessOID, ExtensionOID, ObjectIdentifier
 )
 
 
@@ -359,7 +359,8 @@ class AuthorityInformationAccess(object):
 
 class AccessDescription(object):
     def __init__(self, access_method, access_location):
-        if not (access_method == OID_OCSP or access_method == OID_CA_ISSUERS):
+        if not (access_method == AuthorityInformationAccessOID.OCSP or
+                access_method == AuthorityInformationAccessOID.CA_ISSUERS):
             raise ValueError(
                 "access_method must be OID_OCSP or OID_CA_ISSUERS"
             )

@@ -25,12 +25,9 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
-    ExtensionOID, NameOID, OID_ANY_POLICY,
-    OID_CA_ISSUERS, OID_CERTIFICATE_ISSUER, OID_CLIENT_AUTH,
-    OID_CODE_SIGNING, OID_CPS_QUALIFIER, OID_CPS_USER_NOTICE, OID_CRL_REASON,
-    OID_EMAIL_PROTECTION, OID_INVALIDITY_DATE, OID_OCSP, OID_OCSP_SIGNING,
-    OID_SERVER_AUTH, OID_TIME_STAMPING,
-    SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
+    AuthorityInformationAccessOID, CRLExtensionOID, CertificatePoliciesOID,
+    ExtendedKeyUsageOID, ExtensionOID, NameOID, SignatureAlgorithmOID,
+    _SIG_OIDS_TO_HASH
 )
 
 
@@ -84,6 +81,24 @@ OID_STATE_OR_PROVINCE_NAME = NameOID.STATE_OR_PROVINCE_NAME
 OID_SURNAME = NameOID.SURNAME
 OID_TITLE = NameOID.TITLE
 
+OID_CLIENT_AUTH = ExtendedKeyUsageOID.CLIENT_AUTH
+OID_CODE_SIGNING = ExtendedKeyUsageOID.CODE_SIGNING
+OID_EMAIL_PROTECTION = ExtendedKeyUsageOID.EMAIL_PROTECTION
+OID_OCSP_SIGNING = ExtendedKeyUsageOID.OCSP_SIGNING
+OID_SERVER_AUTH = ExtendedKeyUsageOID.SERVER_AUTH
+OID_TIME_STAMPING = ExtendedKeyUsageOID.TIME_STAMPING
+
+OID_ANY_POLICY = CertificatePoliciesOID.ANY_POLICY
+OID_CPS_QUALIFIER = CertificatePoliciesOID.CPS_QUALIFIER
+OID_CPS_USER_NOTICE = CertificatePoliciesOID.CPS_USER_NOTICE
+
+OID_CERTIFICATE_ISSUER = CRLExtensionOID.CERTIFICATE_ISSUER
+OID_CRL_REASON = CRLExtensionOID.CRL_REASON
+OID_INVALIDITY_DATE = CRLExtensionOID.INVALIDITY_DATE
+
+OID_CA_ISSUERS = AuthorityInformationAccessOID.CA_ISSUERS
+OID_OCSP = AuthorityInformationAccessOID.OCSP
+
 
 __all__ = [
     "load_pem_x509_certificate",
@@ -136,20 +151,8 @@ __all__ = [
     "CertificateSigningRequestBuilder",
     "CertificateBuilder",
     "Version",
-    "OID_CRL_REASON",
-    "OID_INVALIDITY_DATE",
-    "OID_CERTIFICATE_ISSUER",
     "_SIG_OIDS_TO_HASH",
-    "OID_CPS_QUALIFIER",
-    "OID_CPS_USER_NOTICE",
-    "OID_ANY_POLICY",
     "OID_CA_ISSUERS",
     "OID_OCSP",
-    "OID_SERVER_AUTH",
-    "OID_CLIENT_AUTH",
-    "OID_CODE_SIGNING",
-    "OID_EMAIL_PROTECTION",
-    "OID_TIME_STAMPING",
-    "OID_OCSP_SIGNING",
     "_GENERAL_NAMES",
 ]

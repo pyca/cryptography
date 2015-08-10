@@ -54,9 +54,10 @@ class ExtensionOID(object):
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
 
 
-OID_CRL_REASON = ObjectIdentifier("2.5.29.21")
-OID_INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
-OID_CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
+class CRLExtensionOID(object):
+    CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
+    CRL_REASON = ObjectIdentifier("2.5.29.21")
+    INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
 
 
 class NameOID(object):
@@ -110,19 +111,25 @@ _SIG_OIDS_TO_HASH = {
     SignatureAlgorithmOID.DSA_WITH_SHA256.dotted_string: hashes.SHA256()
 }
 
-OID_SERVER_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.1")
-OID_CLIENT_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.2")
-OID_CODE_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.3")
-OID_EMAIL_PROTECTION = ObjectIdentifier("1.3.6.1.5.5.7.3.4")
-OID_TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
-OID_OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
 
-OID_CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
-OID_OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
+class ExtendedKeyUsageOID(object):
+    SERVER_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.1")
+    CLIENT_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.2")
+    CODE_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.3")
+    EMAIL_PROTECTION = ObjectIdentifier("1.3.6.1.5.5.7.3.4")
+    TIME_STAMPING = ObjectIdentifier("1.3.6.1.5.5.7.3.8")
+    OCSP_SIGNING = ObjectIdentifier("1.3.6.1.5.5.7.3.9")
 
-OID_CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
-OID_CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
-OID_ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
+
+class AuthorityInformationAccessOID(object):
+    CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
+    OCSP = ObjectIdentifier("1.3.6.1.5.5.7.48.1")
+
+
+class CertificatePoliciesOID(object):
+    CPS_QUALIFIER = ObjectIdentifier("1.3.6.1.5.5.7.2.1")
+    CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
+    ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
 _OID_NAMES = {
     NameOID.COMMON_NAME: "commonName",
@@ -154,21 +161,21 @@ _OID_NAMES = {
     SignatureAlgorithmOID.DSA_WITH_SHA1: "dsa-with-sha1",
     SignatureAlgorithmOID.DSA_WITH_SHA224: "dsa-with-sha224",
     SignatureAlgorithmOID.DSA_WITH_SHA256: "dsa-with-sha256",
-    OID_SERVER_AUTH: "serverAuth",
-    OID_CLIENT_AUTH: "clientAuth",
-    OID_CODE_SIGNING: "codeSigning",
-    OID_EMAIL_PROTECTION: "emailProtection",
-    OID_TIME_STAMPING: "timeStamping",
-    OID_OCSP_SIGNING: "OCSPSigning",
+    ExtendedKeyUsageOID.SERVER_AUTH: "serverAuth",
+    ExtendedKeyUsageOID.CLIENT_AUTH: "clientAuth",
+    ExtendedKeyUsageOID.CODE_SIGNING: "codeSigning",
+    ExtendedKeyUsageOID.EMAIL_PROTECTION: "emailProtection",
+    ExtendedKeyUsageOID.TIME_STAMPING: "timeStamping",
+    ExtendedKeyUsageOID.OCSP_SIGNING: "OCSPSigning",
     ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES: "subjectDirectoryAttributes",
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: "subjectKeyIdentifier",
     ExtensionOID.KEY_USAGE: "keyUsage",
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
     ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
-    OID_CRL_REASON: "cRLReason",
-    OID_INVALIDITY_DATE: "invalidityDate",
-    OID_CERTIFICATE_ISSUER: "certificateIssuer",
+    CRLExtensionOID.CRL_REASON: "cRLReason",
+    CRLExtensionOID.INVALIDITY_DATE: "invalidityDate",
+    CRLExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
     ExtensionOID.NAME_CONSTRAINTS: "nameConstraints",
     ExtensionOID.CRL_DISTRIBUTION_POINTS: "cRLDistributionPoints",
     ExtensionOID.CERTIFICATE_POLICIES: "certificatePolicies",
@@ -181,8 +188,8 @@ _OID_NAMES = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
-    OID_OCSP: "OCSP",
-    OID_CA_ISSUERS: "caIssuers",
-    OID_CPS_QUALIFIER: "id-qt-cps",
-    OID_CPS_USER_NOTICE: "id-qt-unotice",
+    AuthorityInformationAccessOID.OCSP: "OCSP",
+    AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
+    CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
+    CertificatePoliciesOID.CPS_USER_NOTICE: "id-qt-unotice",
 }
