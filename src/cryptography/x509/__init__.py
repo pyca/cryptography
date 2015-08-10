@@ -5,22 +5,28 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography.x509.base import (
-    AccessDescription, AuthorityInformationAccess, AuthorityKeyIdentifier,
-    BasicConstraints, CRLDistributionPoints, Certificate, CertificateBuilder,
-    CertificatePolicies, CertificateRevocationList, CertificateSigningRequest,
-    CertificateSigningRequestBuilder, DNSName, DirectoryName,
-    DistributionPoint, DuplicateExtension, ExtendedKeyUsage,
-    Extension, ExtensionNotFound, ExtensionType, Extensions, GeneralName,
-    GeneralNames, IPAddress, InhibitAnyPolicy, InvalidVersion,
-    IssuerAlternativeName, KeyUsage, Name, NameAttribute, NameConstraints,
-    NoticeReference, OCSPNoCheck, ObjectIdentifier, OtherName,
-    PolicyInformation, RFC822Name, ReasonFlags, RegisteredID,
-    RevokedCertificate, SubjectAlternativeName, SubjectKeyIdentifier,
-    UniformResourceIdentifier, UnsupportedExtension,
-    UnsupportedGeneralNameType, UserNotice, Version, _GENERAL_NAMES,
-    load_der_x509_certificate,
-    load_der_x509_csr, load_pem_x509_certificate, load_pem_x509_csr,
+    Certificate, CertificateBuilder, CertificateRevocationList,
+    CertificateSigningRequest, CertificateSigningRequestBuilder,
+    InvalidVersion, RevokedCertificate, Version,
+    load_der_x509_certificate, load_der_x509_csr,
+    load_pem_x509_certificate, load_pem_x509_csr
 )
+from cryptography.x509.extensions import (
+    AccessDescription, AuthorityInformationAccess, AuthorityKeyIdentifier,
+    BasicConstraints, CRLDistributionPoints, CertificatePolicies,
+    DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
+    ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
+    InhibitAnyPolicy, IssuerAlternativeName, KeyUsage, NameConstraints,
+    NoticeReference, OCSPNoCheck, PolicyInformation, ReasonFlags,
+    SubjectAlternativeName, SubjectKeyIdentifier, UnsupportedExtension,
+    UserNotice
+)
+from cryptography.x509.general_name import (
+    DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
+    RegisteredID, UniformResourceIdentifier, UnsupportedGeneralNameType,
+    _GENERAL_NAMES
+)
+from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
     OID_ANY_POLICY, OID_AUTHORITY_INFORMATION_ACCESS,
     OID_AUTHORITY_KEY_IDENTIFIER, OID_BASIC_CONSTRAINTS, OID_CA_ISSUERS,
@@ -42,7 +48,7 @@ from cryptography.x509.oid import (
     OID_SERIAL_NUMBER, OID_SERVER_AUTH, OID_STATE_OR_PROVINCE_NAME,
     OID_SUBJECT_ALTERNATIVE_NAME, OID_SUBJECT_DIRECTORY_ATTRIBUTES,
     OID_SUBJECT_INFORMATION_ACCESS, OID_SUBJECT_KEY_IDENTIFIER, OID_SURNAME,
-    OID_TIME_STAMPING, OID_TITLE, _SIG_OIDS_TO_HASH
+    OID_TIME_STAMPING, OID_TITLE, ObjectIdentifier, _SIG_OIDS_TO_HASH
 )
 
 __all__ = [
