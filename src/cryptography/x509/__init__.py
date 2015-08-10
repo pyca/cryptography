@@ -12,7 +12,7 @@ from cryptography.x509.base import (
     DistributionPoint, DuplicateExtension, ExtendedKeyUsage,
     Extension, ExtensionNotFound, ExtensionType, Extensions, GeneralName,
     GeneralNames, IPAddress, InhibitAnyPolicy, InvalidVersion,
-    IssuerAlternativeName, KeyUsage, Name, NameAttribute, NameConstraints,
+    IssuerAlternativeName, KeyUsage, NameConstraints,
     NoticeReference, OCSPNoCheck, ObjectIdentifier, OtherName,
     PolicyInformation, RFC822Name, ReasonFlags, RegisteredID,
     RevokedCertificate, SubjectAlternativeName, SubjectKeyIdentifier,
@@ -21,6 +21,7 @@ from cryptography.x509.base import (
     load_der_x509_certificate,
     load_der_x509_csr, load_pem_x509_certificate, load_pem_x509_csr,
 )
+from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
     OID_ANY_POLICY, OID_AUTHORITY_INFORMATION_ACCESS,
     OID_AUTHORITY_KEY_IDENTIFIER, OID_BASIC_CONSTRAINTS, OID_CA_ISSUERS,
