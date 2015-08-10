@@ -58,21 +58,23 @@ OID_CRL_REASON = ObjectIdentifier("2.5.29.21")
 OID_INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
 OID_CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
 
-OID_COMMON_NAME = ObjectIdentifier("2.5.4.3")
-OID_COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
-OID_LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
-OID_STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
-OID_ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
-OID_ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
-OID_SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
-OID_SURNAME = ObjectIdentifier("2.5.4.4")
-OID_GIVEN_NAME = ObjectIdentifier("2.5.4.42")
-OID_TITLE = ObjectIdentifier("2.5.4.12")
-OID_GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
-OID_DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
-OID_PSEUDONYM = ObjectIdentifier("2.5.4.65")
-OID_DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
-OID_EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
+
+class NameOID(object):
+    COMMON_NAME = ObjectIdentifier("2.5.4.3")
+    COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
+    LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
+    STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
+    ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
+    ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
+    SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
+    SURNAME = ObjectIdentifier("2.5.4.4")
+    GIVEN_NAME = ObjectIdentifier("2.5.4.42")
+    TITLE = ObjectIdentifier("2.5.4.12")
+    GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
+    DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
+    PSEUDONYM = ObjectIdentifier("2.5.4.65")
+    DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
+    EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
 
 
 class SignatureAlgorithmOID(object):
@@ -123,21 +125,21 @@ OID_CPS_USER_NOTICE = ObjectIdentifier("1.3.6.1.5.5.7.2.2")
 OID_ANY_POLICY = ObjectIdentifier("2.5.29.32.0")
 
 _OID_NAMES = {
-    OID_COMMON_NAME: "commonName",
-    OID_COUNTRY_NAME: "countryName",
-    OID_LOCALITY_NAME: "localityName",
-    OID_STATE_OR_PROVINCE_NAME: "stateOrProvinceName",
-    OID_ORGANIZATION_NAME: "organizationName",
-    OID_ORGANIZATIONAL_UNIT_NAME: "organizationalUnitName",
-    OID_SERIAL_NUMBER: "serialNumber",
-    OID_SURNAME: "surname",
-    OID_GIVEN_NAME: "givenName",
-    OID_TITLE: "title",
-    OID_GENERATION_QUALIFIER: "generationQualifier",
-    OID_DN_QUALIFIER: "dnQualifier",
-    OID_PSEUDONYM: "pseudonym",
-    OID_DOMAIN_COMPONENT: "domainComponent",
-    OID_EMAIL_ADDRESS: "emailAddress",
+    NameOID.COMMON_NAME: "commonName",
+    NameOID.COUNTRY_NAME: "countryName",
+    NameOID.LOCALITY_NAME: "localityName",
+    NameOID.STATE_OR_PROVINCE_NAME: "stateOrProvinceName",
+    NameOID.ORGANIZATION_NAME: "organizationName",
+    NameOID.ORGANIZATIONAL_UNIT_NAME: "organizationalUnitName",
+    NameOID.SERIAL_NUMBER: "serialNumber",
+    NameOID.SURNAME: "surname",
+    NameOID.GIVEN_NAME: "givenName",
+    NameOID.TITLE: "title",
+    NameOID.GENERATION_QUALIFIER: "generationQualifier",
+    NameOID.DN_QUALIFIER: "dnQualifier",
+    NameOID.PSEUDONYM: "pseudonym",
+    NameOID.DOMAIN_COMPONENT: "domainComponent",
+    NameOID.EMAIL_ADDRESS: "emailAddress",
     SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA224: "sha224WithRSAEncryption",
