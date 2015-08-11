@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography.x509.base import (
-    AccessDescription, AuthorityInformationAccess, AuthorityKeyIdentifier,
+    AccessDescription, AuthorityInformationAccess,
     BasicConstraints, CRLDistributionPoints, Certificate, CertificateBuilder,
     CertificatePolicies, CertificateRevocationList, CertificateSigningRequest,
     CertificateSigningRequestBuilder, DistributionPoint,
@@ -14,9 +14,12 @@ from cryptography.x509.base import (
     InvalidVersion, IssuerAlternativeName, KeyUsage, NameConstraints,
     NoticeReference, OCSPNoCheck, ObjectIdentifier,
     PolicyInformation, ReasonFlags,
-    RevokedCertificate, SubjectAlternativeName, SubjectKeyIdentifier,
+    RevokedCertificate, SubjectAlternativeName,
     UnsupportedExtension, UserNotice, Version, load_der_x509_certificate,
     load_der_x509_csr, load_pem_x509_certificate, load_pem_x509_csr,
+)
+from cryptography.x509.extensions import (
+    AuthorityKeyIdentifier, SubjectKeyIdentifier
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
