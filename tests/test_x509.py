@@ -20,7 +20,9 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
-from cryptography.x509.oid import ExtensionOID, NameOID
+from cryptography.x509.oid import (
+    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
+)
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
@@ -1503,9 +1505,9 @@ class TestCertificateBuilder(object):
             123
         ).add_extension(
             x509.ExtendedKeyUsage([
-                x509.OID_CLIENT_AUTH,
-                x509.OID_SERVER_AUTH,
-                x509.OID_CODE_SIGNING,
+                ExtendedKeyUsageOID.CLIENT_AUTH,
+                ExtendedKeyUsageOID.SERVER_AUTH,
+                ExtendedKeyUsageOID.CODE_SIGNING,
             ]), critical=False
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
@@ -1514,9 +1516,9 @@ class TestCertificateBuilder(object):
         )
         assert eku.critical is False
         assert eku.value == x509.ExtendedKeyUsage([
-            x509.OID_CLIENT_AUTH,
-            x509.OID_SERVER_AUTH,
-            x509.OID_CODE_SIGNING,
+            ExtendedKeyUsageOID.CLIENT_AUTH,
+            ExtendedKeyUsageOID.SERVER_AUTH,
+            ExtendedKeyUsageOID.CODE_SIGNING,
         ])
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -2011,9 +2013,9 @@ class TestCertificateSigningRequestBuilder(object):
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).add_extension(
             x509.ExtendedKeyUsage([
-                x509.OID_CLIENT_AUTH,
-                x509.OID_SERVER_AUTH,
-                x509.OID_CODE_SIGNING,
+                ExtendedKeyUsageOID.CLIENT_AUTH,
+                ExtendedKeyUsageOID.SERVER_AUTH,
+                ExtendedKeyUsageOID.CODE_SIGNING,
             ]), critical=False
         ).sign(private_key, hashes.SHA256(), backend)
 
@@ -2022,9 +2024,9 @@ class TestCertificateSigningRequestBuilder(object):
         )
         assert eku.critical is False
         assert eku.value == x509.ExtendedKeyUsage([
-            x509.OID_CLIENT_AUTH,
-            x509.OID_SERVER_AUTH,
-            x509.OID_CODE_SIGNING,
+            ExtendedKeyUsageOID.CLIENT_AUTH,
+            ExtendedKeyUsageOID.SERVER_AUTH,
+            ExtendedKeyUsageOID.CODE_SIGNING,
         ])
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -2051,11 +2053,11 @@ class TestCertificateSigningRequestBuilder(object):
 
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])

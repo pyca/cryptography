@@ -17,7 +17,9 @@ from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509.oid import ExtensionOID, NameOID
+from cryptography.x509.oid import (
+    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
+)
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .test_x509 import _load_cert
@@ -731,8 +733,8 @@ class TestExtendedKeyUsage(object):
         ])
         assert len(eku) == 2
         assert list(eku) == [
-            x509.OID_SERVER_AUTH,
-            x509.OID_CLIENT_AUTH
+            ExtendedKeyUsageOID.SERVER_AUTH,
+            ExtendedKeyUsageOID.CLIENT_AUTH
         ]
 
     def test_repr(self):
@@ -1797,11 +1799,13 @@ class TestAccessDescription(object):
 
     def test_invalid_access_location(self):
         with pytest.raises(TypeError):
-            x509.AccessDescription(x509.OID_CA_ISSUERS, "invalid")
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS, "invalid"
+            )
 
     def test_repr(self):
         ad = x509.AccessDescription(
-            x509.OID_OCSP,
+            AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
         )
         assert repr(ad) == (
@@ -1812,26 +1816,26 @@ class TestAccessDescription(object):
 
     def test_eq(self):
         ad = x509.AccessDescription(
-            x509.OID_OCSP,
+            AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
         )
         ad2 = x509.AccessDescription(
-            x509.OID_OCSP,
+            AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
         )
         assert ad == ad2
 
     def test_ne(self):
         ad = x509.AccessDescription(
-            x509.OID_OCSP,
+            AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
         )
         ad2 = x509.AccessDescription(
-            x509.OID_CA_ISSUERS,
+            AuthorityInformationAccessOID.CA_ISSUERS,
             x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
         )
         ad3 = x509.AccessDescription(
-            x509.OID_OCSP,
+            AuthorityInformationAccessOID.OCSP,
             x509.UniformResourceIdentifier(u"http://notthesame")
         )
         assert ad != ad2
@@ -1847,22 +1851,22 @@ class TestAuthorityInformationAccess(object):
     def test_iter_len(self):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
         assert len(aia) == 2
         assert list(aia) == [
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ]
@@ -1870,11 +1874,11 @@ class TestAuthorityInformationAccess(object):
     def test_repr(self):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
@@ -1890,21 +1894,21 @@ class TestAuthorityInformationAccess(object):
     def test_eq(self):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
         aia2 = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
@@ -1913,17 +1917,17 @@ class TestAuthorityInformationAccess(object):
     def test_ne(self):
         aia = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
             )
         ])
         aia2 = x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
         ])
@@ -1949,11 +1953,11 @@ class TestAuthorityInformationAccessExtension(object):
 
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://gv.symcd.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.UniformResourceIdentifier(u"http://gv.symcb.com/gv.crt")
             ),
         ])
@@ -1972,15 +1976,15 @@ class TestAuthorityInformationAccessExtension(object):
 
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp2.domain.com")
             ),
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.DirectoryName(x509.Name([
                     x509.NameAttribute(NameOID.COMMON_NAME, u"myCN"),
                     x509.NameAttribute(NameOID.ORGANIZATION_NAME,
@@ -2003,7 +2007,7 @@ class TestAuthorityInformationAccessExtension(object):
 
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_OCSP,
+                AuthorityInformationAccessOID.OCSP,
                 x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
             ),
         ])
@@ -2022,7 +2026,7 @@ class TestAuthorityInformationAccessExtension(object):
 
         assert ext.value == x509.AuthorityInformationAccess([
             x509.AccessDescription(
-                x509.OID_CA_ISSUERS,
+                AuthorityInformationAccessOID.CA_ISSUERS,
                 x509.DirectoryName(x509.Name([
                     x509.NameAttribute(NameOID.COMMON_NAME, u"myCN"),
                     x509.NameAttribute(NameOID.ORGANIZATION_NAME,
