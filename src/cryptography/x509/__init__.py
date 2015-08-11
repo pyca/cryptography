@@ -5,18 +5,21 @@
 from __future__ import absolute_import, division, print_function
 
 from cryptography.x509.base import (
-    AccessDescription, AuthorityInformationAccess, AuthorityKeyIdentifier,
-    BasicConstraints, CRLDistributionPoints, Certificate, CertificateBuilder,
-    CertificatePolicies, CertificateRevocationList, CertificateSigningRequest,
-    CertificateSigningRequestBuilder, DistributionPoint,
-    DuplicateExtension, ExtendedKeyUsage, Extension, ExtensionNotFound,
-    ExtensionType, Extensions, GeneralNames, InhibitAnyPolicy,
-    InvalidVersion, IssuerAlternativeName, KeyUsage, NameConstraints,
-    NoticeReference, OCSPNoCheck, ObjectIdentifier,
-    PolicyInformation, ReasonFlags,
-    RevokedCertificate, SubjectAlternativeName, SubjectKeyIdentifier,
-    UnsupportedExtension, UserNotice, Version, load_der_x509_certificate,
+    Certificate, CertificateBuilder,
+    CertificateRevocationList, CertificateSigningRequest,
+    CertificateSigningRequestBuilder, InvalidVersion,
+    RevokedCertificate, Version, load_der_x509_certificate,
     load_der_x509_csr, load_pem_x509_certificate, load_pem_x509_csr,
+)
+from cryptography.x509.extensions import (
+    AccessDescription, AuthorityInformationAccess, AuthorityKeyIdentifier,
+    BasicConstraints, CRLDistributionPoints, CertificatePolicies,
+    DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
+    ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
+    InhibitAnyPolicy, IssuerAlternativeName, KeyUsage, NameConstraints,
+    NoticeReference, OCSPNoCheck, PolicyInformation, ReasonFlags,
+    SubjectAlternativeName, SubjectKeyIdentifier, UnsupportedExtension,
+    UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -26,8 +29,8 @@ from cryptography.x509.general_name import (
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, CRLExtensionOID, CertificatePoliciesOID,
-    ExtendedKeyUsageOID, ExtensionOID, NameOID, SignatureAlgorithmOID,
-    _SIG_OIDS_TO_HASH
+    ExtendedKeyUsageOID, ExtensionOID, NameOID, ObjectIdentifier,
+    SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
 
 
