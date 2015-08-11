@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtensionOID, ObjectIdentifier
+    ExtensionOID, ObjectIdentifier
 )
 
 
@@ -168,45 +168,6 @@ class OCSPNoCheck(object):
 
 
 @utils.register_interface(ExtensionType)
-class BasicConstraints(object):
-    oid = ExtensionOID.BASIC_CONSTRAINTS
-
-    def __init__(self, ca, path_length):
-        if not isinstance(ca, bool):
-            raise TypeError("ca must be a boolean value")
-
-        if path_length is not None and not ca:
-            raise ValueError("path_length must be None when ca is False")
-
-        if (
-            path_length is not None and
-            (not isinstance(path_length, six.integer_types) or path_length < 0)
-        ):
-            raise TypeError(
-                "path_length must be a non-negative integer or None"
-            )
-
-        self._ca = ca
-        self._path_length = path_length
-
-    ca = utils.read_only_property("_ca")
-    path_length = utils.read_only_property("_path_length")
-
-    def __repr__(self):
-        return ("<BasicConstraints(ca={0.ca}, "
-                "path_length={0.path_length})>").format(self)
-
-    def __eq__(self, other):
-        if not isinstance(other, BasicConstraints):
-            return NotImplemented
-
-        return self.ca == other.ca and self.path_length == other.path_length
-
-    def __ne__(self, other):
-        return not self == other
-
-
-@utils.register_interface(ExtensionType)
 class KeyUsage(object):
     oid = ExtensionOID.KEY_USAGE
 
@@ -290,74 +251,6 @@ class KeyUsage(object):
 
     def __ne__(self, other):
         return not self == other
-
-
-@utils.register_interface(ExtensionType)
-class AuthorityInformationAccess(object):
-    oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
-
-    def __init__(self, descriptions):
-        if not all(isinstance(x, AccessDescription) for x in descriptions):
-            raise TypeError(
-                "Every item in the descriptions list must be an "
-                "AccessDescription"
-            )
-
-        self._descriptions = descriptions
-
-    def __iter__(self):
-        return iter(self._descriptions)
-
-    def __len__(self):
-        return len(self._descriptions)
-
-    def __repr__(self):
-        return "<AuthorityInformationAccess({0})>".format(self._descriptions)
-
-    def __eq__(self, other):
-        if not isinstance(other, AuthorityInformationAccess):
-            return NotImplemented
-
-        return self._descriptions == other._descriptions
-
-    def __ne__(self, other):
-        return not self == other
-
-
-class AccessDescription(object):
-    def __init__(self, access_method, access_location):
-        if not (access_method == AuthorityInformationAccessOID.OCSP or
-                access_method == AuthorityInformationAccessOID.CA_ISSUERS):
-            raise ValueError(
-                "access_method must be OID_OCSP or OID_CA_ISSUERS"
-            )
-
-        if not isinstance(access_location, GeneralName):
-            raise TypeError("access_location must be a GeneralName")
-
-        self._access_method = access_method
-        self._access_location = access_location
-
-    def __repr__(self):
-        return (
-            "<AccessDescription(access_method={0.access_method}, access_locati"
-            "on={0.access_location})>".format(self)
-        )
-
-    def __eq__(self, other):
-        if not isinstance(other, AccessDescription):
-            return NotImplemented
-
-        return (
-            self.access_method == other.access_method and
-            self.access_location == other.access_location
-        )
-
-    def __ne__(self, other):
-        return not self == other
-
-    access_method = utils.read_only_property("_access_method")
-    access_location = utils.read_only_property("_access_location")
 
 
 @utils.register_interface(ExtensionType)
@@ -565,130 +458,6 @@ class NameConstraints(object):
 
     permitted_subtrees = utils.read_only_property("_permitted_subtrees")
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
-
-
-@utils.register_interface(ExtensionType)
-class CRLDistributionPoints(object):
-    oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
-
-    def __init__(self, distribution_points):
-        if not all(
-            isinstance(x, DistributionPoint) for x in distribution_points
-        ):
-            raise TypeError(
-                "distribution_points must be a list of DistributionPoint "
-                "objects"
-            )
-
-        self._distribution_points = distribution_points
-
-    def __iter__(self):
-        return iter(self._distribution_points)
-
-    def __len__(self):
-        return len(self._distribution_points)
-
-    def __repr__(self):
-        return "<CRLDistributionPoints({0})>".format(self._distribution_points)
-
-    def __eq__(self, other):
-        if not isinstance(other, CRLDistributionPoints):
-            return NotImplemented
-
-        return self._distribution_points == other._distribution_points
-
-    def __ne__(self, other):
-        return not self == other
-
-
-class DistributionPoint(object):
-    def __init__(self, full_name, relative_name, reasons, crl_issuer):
-        if full_name and relative_name:
-            raise ValueError(
-                "You cannot provide both full_name and relative_name, at "
-                "least one must be None."
-            )
-
-        if full_name and not all(
-            isinstance(x, GeneralName) for x in full_name
-        ):
-            raise TypeError(
-                "full_name must be a list of GeneralName objects"
-            )
-
-        if relative_name and not isinstance(relative_name, Name):
-            raise TypeError("relative_name must be a Name")
-
-        if crl_issuer and not all(
-            isinstance(x, GeneralName) for x in crl_issuer
-        ):
-            raise TypeError(
-                "crl_issuer must be None or a list of general names"
-            )
-
-        if reasons and (not isinstance(reasons, frozenset) or not all(
-            isinstance(x, ReasonFlags) for x in reasons
-        )):
-            raise TypeError("reasons must be None or frozenset of ReasonFlags")
-
-        if reasons and (
-            ReasonFlags.unspecified in reasons or
-            ReasonFlags.remove_from_crl in reasons
-        ):
-            raise ValueError(
-                "unspecified and remove_from_crl are not valid reasons in a "
-                "DistributionPoint"
-            )
-
-        if reasons and not crl_issuer and not (full_name or relative_name):
-            raise ValueError(
-                "You must supply crl_issuer, full_name, or relative_name when "
-                "reasons is not None"
-            )
-
-        self._full_name = full_name
-        self._relative_name = relative_name
-        self._reasons = reasons
-        self._crl_issuer = crl_issuer
-
-    def __repr__(self):
-        return (
-            "<DistributionPoint(full_name={0.full_name}, relative_name={0.rela"
-            "tive_name}, reasons={0.reasons}, crl_issuer={0.crl_is"
-            "suer})>".format(self)
-        )
-
-    def __eq__(self, other):
-        if not isinstance(other, DistributionPoint):
-            return NotImplemented
-
-        return (
-            self.full_name == other.full_name and
-            self.relative_name == other.relative_name and
-            self.reasons == other.reasons and
-            self.crl_issuer == other.crl_issuer
-        )
-
-    def __ne__(self, other):
-        return not self == other
-
-    full_name = utils.read_only_property("_full_name")
-    relative_name = utils.read_only_property("_relative_name")
-    reasons = utils.read_only_property("_reasons")
-    crl_issuer = utils.read_only_property("_crl_issuer")
-
-
-class ReasonFlags(Enum):
-    unspecified = "unspecified"
-    key_compromise = "keyCompromise"
-    ca_compromise = "cACompromise"
-    affiliation_changed = "affiliationChanged"
-    superseded = "superseded"
-    cessation_of_operation = "cessationOfOperation"
-    certificate_hold = "certificateHold"
-    privilege_withdrawn = "privilegeWithdrawn"
-    aa_compromise = "aACompromise"
-    remove_from_crl = "removeFromCRL"
 
 
 @utils.register_interface(ExtensionType)
