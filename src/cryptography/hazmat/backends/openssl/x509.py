@@ -17,6 +17,7 @@ from six.moves import urllib_parse
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.x509.oid import CertificatePoliciesOID, ExtensionOID
 
 
 def _obj2txt(backend, obj):
@@ -385,13 +386,13 @@ def _decode_certificate_policies(backend, cp):
                 pqualid = x509.ObjectIdentifier(
                     _obj2txt(backend, pqi.pqualid)
                 )
-                if pqualid == x509.OID_CPS_QUALIFIER:
+                if pqualid == CertificatePoliciesOID.CPS_QUALIFIER:
                     cpsuri = backend._ffi.buffer(
                         pqi.d.cpsuri.data, pqi.d.cpsuri.length
                     )[:].decode('ascii')
                     qualifiers.append(cpsuri)
                 else:
-                    assert pqualid == x509.OID_CPS_USER_NOTICE
+                    assert pqualid == CertificatePoliciesOID.CPS_USER_NOTICE
                     user_notice = _decode_user_notice(
                         backend, pqi.d.usernotice
                     )
@@ -756,21 +757,21 @@ class _CertificateSigningRequest(object):
 
 
 _EXTENSION_HANDLERS = {
-    x509.OID_BASIC_CONSTRAINTS: _decode_basic_constraints,
-    x509.OID_SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
-    x509.OID_KEY_USAGE: _decode_key_usage,
-    x509.OID_SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
-    x509.OID_EXTENDED_KEY_USAGE: _decode_extended_key_usage,
-    x509.OID_AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
-    x509.OID_AUTHORITY_INFORMATION_ACCESS: (
+    ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
+    ExtensionOID.SUBJECT_KEY_IDENTIFIER: _decode_subject_key_identifier,
+    ExtensionOID.KEY_USAGE: _decode_key_usage,
+    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _decode_subject_alt_name,
+    ExtensionOID.EXTENDED_KEY_USAGE: _decode_extended_key_usage,
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _decode_authority_information_access
     ),
-    x509.OID_CERTIFICATE_POLICIES: _decode_certificate_policies,
-    x509.OID_CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
-    x509.OID_OCSP_NO_CHECK: _decode_ocsp_no_check,
-    x509.OID_INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
-    x509.OID_ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
-    x509.OID_NAME_CONSTRAINTS: _decode_name_constraints,
+    ExtensionOID.CERTIFICATE_POLICIES: _decode_certificate_policies,
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: _decode_crl_distribution_points,
+    ExtensionOID.OCSP_NO_CHECK: _decode_ocsp_no_check,
+    ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
+    ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
 
 
