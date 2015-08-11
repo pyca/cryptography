@@ -17,7 +17,7 @@ from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509.oid import NameOID
+from cryptography.x509.oid import ExtensionOID, NameOID
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .test_x509 import _load_cert
@@ -32,11 +32,11 @@ class TestExtension(object):
     def test_critical_not_a_bool(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
-            x509.Extension(x509.OID_BASIC_CONSTRAINTS, "notabool", bc)
+            x509.Extension(ExtensionOID.BASIC_CONSTRAINTS, "notabool", bc)
 
     def test_repr(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
-        ext = x509.Extension(x509.OID_BASIC_CONSTRAINTS, True, bc)
+        ext = x509.Extension(ExtensionOID.BASIC_CONSTRAINTS, True, bc)
         assert repr(ext) == (
             "<Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConst"
             "raints)>, critical=True, value=<BasicConstraints(ca=False, path"
@@ -278,7 +278,7 @@ class TestCertificatePoliciesExtension(object):
         )
 
         cp = cert.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_POLICIES
+            ExtensionOID.CERTIFICATE_POLICIES
         ).value
 
         assert cp == x509.CertificatePolicies([
@@ -298,7 +298,7 @@ class TestCertificatePoliciesExtension(object):
         )
 
         cp = cert.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_POLICIES
+            ExtensionOID.CERTIFICATE_POLICIES
         ).value
 
         assert cp == x509.CertificatePolicies([
@@ -325,7 +325,7 @@ class TestCertificatePoliciesExtension(object):
         )
 
         cp = cert.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_POLICIES
+            ExtensionOID.CERTIFICATE_POLICIES
         ).value
 
         assert cp == x509.CertificatePolicies([
@@ -345,7 +345,7 @@ class TestCertificatePoliciesExtension(object):
         )
 
         cp = cert.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_POLICIES
+            ExtensionOID.CERTIFICATE_POLICIES
         ).value
 
         assert cp == x509.CertificatePolicies([
@@ -557,7 +557,7 @@ class TestSubjectKeyIdentifier(object):
         ski = x509.SubjectKeyIdentifier(
             binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
         )
-        ext = x509.Extension(x509.OID_SUBJECT_KEY_IDENTIFIER, False, ski)
+        ext = x509.Extension(ExtensionOID.SUBJECT_KEY_IDENTIFIER, False, ski)
         if six.PY3:
             assert repr(ext) == (
                 "<Extension(oid=<ObjectIdentifier(oid=2.5.29.14, name=subjectK"
@@ -775,9 +775,9 @@ class TestExtensions(object):
         assert len(ext) == 0
         assert list(ext) == []
         with pytest.raises(x509.ExtensionNotFound) as exc:
-            ext.get_extension_for_oid(x509.OID_BASIC_CONSTRAINTS)
+            ext.get_extension_for_oid(ExtensionOID.BASIC_CONSTRAINTS)
 
-        assert exc.value.oid == x509.OID_BASIC_CONSTRAINTS
+        assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
     def test_one_extension(self, backend):
         cert = _load_cert(
@@ -788,7 +788,7 @@ class TestExtensions(object):
             backend
         )
         extensions = cert.extensions
-        ext = extensions.get_extension_for_oid(x509.OID_BASIC_CONSTRAINTS)
+        ext = extensions.get_extension_for_oid(ExtensionOID.BASIC_CONSTRAINTS)
         assert ext is not None
         assert ext.value.ca is False
 
@@ -803,7 +803,7 @@ class TestExtensions(object):
         with pytest.raises(x509.DuplicateExtension) as exc:
             cert.extensions
 
-        assert exc.value.oid == x509.OID_BASIC_CONSTRAINTS
+        assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
     def test_unsupported_critical_extension(self, backend):
         cert = _load_cert(
@@ -843,7 +843,7 @@ class TestBasicConstraintsExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
         assert ext.critical is True
@@ -857,7 +857,7 @@ class TestBasicConstraintsExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
         assert ext.critical is True
@@ -871,7 +871,7 @@ class TestBasicConstraintsExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
         assert ext.critical is True
@@ -885,7 +885,7 @@ class TestBasicConstraintsExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
         assert ext.critical is True
@@ -904,7 +904,9 @@ class TestBasicConstraintsExtension(object):
             backend
         )
         with pytest.raises(x509.ExtensionNotFound):
-            cert.extensions.get_extension_for_oid(x509.OID_BASIC_CONSTRAINTS)
+            cert.extensions.get_extension_for_oid(
+                ExtensionOID.BASIC_CONSTRAINTS
+            )
 
     def test_basic_constraint_not_critical(self, backend):
         cert = _load_cert(
@@ -915,7 +917,7 @@ class TestBasicConstraintsExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
         assert ext.critical is False
@@ -932,7 +934,7 @@ class TestSubjectKeyIdentifierExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_KEY_IDENTIFIER
+            ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
         ski = ext.value
         assert ext is not None
@@ -951,7 +953,7 @@ class TestSubjectKeyIdentifierExtension(object):
         )
         with pytest.raises(x509.ExtensionNotFound):
             cert.extensions.get_extension_for_oid(
-                x509.OID_SUBJECT_KEY_IDENTIFIER
+                ExtensionOID.SUBJECT_KEY_IDENTIFIER
             )
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -963,7 +965,7 @@ class TestSubjectKeyIdentifierExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_KEY_IDENTIFIER
+            ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
         ski = x509.SubjectKeyIdentifier.from_public_key(
             cert.public_key()
@@ -980,7 +982,7 @@ class TestSubjectKeyIdentifierExtension(object):
         )
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_KEY_IDENTIFIER
+            ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
         ski = x509.SubjectKeyIdentifier.from_public_key(
             cert.public_key()
@@ -998,7 +1000,7 @@ class TestSubjectKeyIdentifierExtension(object):
         )
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_KEY_IDENTIFIER
+            ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
         ski = x509.SubjectKeyIdentifier.from_public_key(
             cert.public_key()
@@ -1017,9 +1019,9 @@ class TestKeyUsageExtension(object):
         )
         ext = cert.extensions
         with pytest.raises(x509.ExtensionNotFound) as exc:
-            ext.get_extension_for_oid(x509.OID_KEY_USAGE)
+            ext.get_extension_for_oid(ExtensionOID.KEY_USAGE)
 
-        assert exc.value.oid == x509.OID_KEY_USAGE
+        assert exc.value.oid == ExtensionOID.KEY_USAGE
 
     def test_all_purposes(self, backend):
         cert = _load_cert(
@@ -1030,7 +1032,7 @@ class TestKeyUsageExtension(object):
             backend
         )
         extensions = cert.extensions
-        ext = extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        ext = extensions.get_extension_for_oid(ExtensionOID.KEY_USAGE)
         assert ext is not None
 
         ku = ext.value
@@ -1052,7 +1054,7 @@ class TestKeyUsageExtension(object):
             x509.load_der_x509_certificate,
             backend
         )
-        ext = cert.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        ext = cert.extensions.get_extension_for_oid(ExtensionOID.KEY_USAGE)
         assert ext is not None
         assert ext.critical is True
 
@@ -1217,7 +1219,7 @@ class TestRegisteredID(object):
 
     def test_ne(self):
         gn = x509.RegisteredID(NameOID.COMMON_NAME)
-        gn2 = x509.RegisteredID(x509.OID_BASIC_CONSTRAINTS)
+        gn2 = x509.RegisteredID(ExtensionOID.BASIC_CONSTRAINTS)
         assert gn != gn2
         assert gn != object()
 
@@ -1425,7 +1427,7 @@ class TestRSAIssuerAlternativeNameExtension(object):
             backend,
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_ISSUER_ALTERNATIVE_NAME
+            ExtensionOID.ISSUER_ALTERNATIVE_NAME
         )
         assert list(ext.value) == [
             x509.UniformResourceIdentifier(u"http://path.to.root/root.crt"),
@@ -1498,7 +1500,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1515,7 +1517,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
 
         dns = ext.value.get_values_for_type(x509.DNSName)
@@ -1533,7 +1535,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
 
         dns = ext.value.get_values_for_type(x509.DNSName)
@@ -1559,7 +1561,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1577,7 +1579,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         uri = ext.value.get_values_for_type(
@@ -1598,7 +1600,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1620,7 +1622,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1645,7 +1647,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1675,7 +1677,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         rfc822_name = ext.value.get_values_for_type(x509.RFC822Name)
@@ -1694,7 +1696,7 @@ class TestRSASubjectAlternativeNameExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1745,7 +1747,7 @@ class TestRSASubjectAlternativeNameExtension(object):
         )
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert ext is not None
         assert ext.critical is False
@@ -1771,7 +1773,7 @@ class TestExtendedKeyUsageExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_EXTENDED_KEY_USAGE
+            ExtensionOID.EXTENDED_KEY_USAGE
         )
         assert ext is not None
         assert ext.critical is False
@@ -1940,7 +1942,7 @@ class TestAuthorityInformationAccessExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_INFORMATION_ACCESS
+            ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         )
         assert ext is not None
         assert ext.critical is False
@@ -1963,7 +1965,7 @@ class TestAuthorityInformationAccessExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_INFORMATION_ACCESS
+            ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         )
         assert ext is not None
         assert ext.critical is False
@@ -1994,7 +1996,7 @@ class TestAuthorityInformationAccessExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_INFORMATION_ACCESS
+            ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         )
         assert ext is not None
         assert ext.critical is False
@@ -2013,7 +2015,7 @@ class TestAuthorityInformationAccessExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_INFORMATION_ACCESS
+            ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         )
         assert ext is not None
         assert ext.critical is False
@@ -2042,7 +2044,7 @@ class TestAuthorityKeyIdentifierExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_KEY_IDENTIFIER
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
         )
         assert ext is not None
         assert ext.critical is False
@@ -2062,7 +2064,7 @@ class TestAuthorityKeyIdentifierExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_KEY_IDENTIFIER
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
         )
         assert ext is not None
         assert ext.critical is False
@@ -2093,7 +2095,7 @@ class TestAuthorityKeyIdentifierExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_KEY_IDENTIFIER
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
         )
         assert ext is not None
         assert ext.critical is False
@@ -2125,7 +2127,7 @@ class TestAuthorityKeyIdentifierExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_KEY_IDENTIFIER
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
         )
         aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(
             issuer_cert.public_key()
@@ -2242,7 +2244,7 @@ class TestNameConstraintsExtension(object):
             backend
         )
         nc = cert.extensions.get_extension_for_oid(
-            x509.OID_NAME_CONSTRAINTS
+            ExtensionOID.NAME_CONSTRAINTS
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
@@ -2264,7 +2266,7 @@ class TestNameConstraintsExtension(object):
             backend
         )
         nc = cert.extensions.get_extension_for_oid(
-            x509.OID_NAME_CONSTRAINTS
+            ExtensionOID.NAME_CONSTRAINTS
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
@@ -2282,7 +2284,7 @@ class TestNameConstraintsExtension(object):
             backend
         )
         nc = cert.extensions.get_extension_for_oid(
-            x509.OID_NAME_CONSTRAINTS
+            ExtensionOID.NAME_CONSTRAINTS
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
@@ -2301,7 +2303,7 @@ class TestNameConstraintsExtension(object):
             backend
         )
         nc = cert.extensions.get_extension_for_oid(
-            x509.OID_NAME_CONSTRAINTS
+            ExtensionOID.NAME_CONSTRAINTS
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=None,
@@ -2320,7 +2322,7 @@ class TestNameConstraintsExtension(object):
             backend
         )
         nc = cert.extensions.get_extension_for_oid(
-            x509.OID_NAME_CONSTRAINTS
+            ExtensionOID.NAME_CONSTRAINTS
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
@@ -2342,7 +2344,7 @@ class TestNameConstraintsExtension(object):
             backend
         )
         nc = cert.extensions.get_extension_for_oid(
-            x509.OID_NAME_CONSTRAINTS
+            ExtensionOID.NAME_CONSTRAINTS
         ).value
         assert nc == x509.NameConstraints(
             permitted_subtrees=[
@@ -2362,7 +2364,7 @@ class TestNameConstraintsExtension(object):
         )
         with pytest.raises(ValueError):
             cert.extensions.get_extension_for_oid(
-                x509.OID_NAME_CONSTRAINTS
+                ExtensionOID.NAME_CONSTRAINTS
             )
 
 
@@ -2671,7 +2673,7 @@ class TestCRLDistributionPointsExtension(object):
         )
 
         cdps = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         ).value
 
         assert cdps == x509.CRLDistributionPoints([
@@ -2721,7 +2723,7 @@ class TestCRLDistributionPointsExtension(object):
         )
 
         cdps = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         ).value
 
         assert cdps == x509.CRLDistributionPoints([
@@ -2760,7 +2762,7 @@ class TestCRLDistributionPointsExtension(object):
         )
 
         cdps = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         ).value
 
         assert cdps == x509.CRLDistributionPoints([
@@ -2797,7 +2799,7 @@ class TestCRLDistributionPointsExtension(object):
         )
 
         cdps = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         ).value
 
         assert cdps == x509.CRLDistributionPoints([
@@ -2830,7 +2832,7 @@ class TestCRLDistributionPointsExtension(object):
         )
 
         cdps = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         ).value
 
         assert cdps == x509.CRLDistributionPoints([
@@ -2854,7 +2856,7 @@ class TestCRLDistributionPointsExtension(object):
         )
 
         cdps = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         ).value
 
         assert cdps == x509.CRLDistributionPoints([
@@ -2885,7 +2887,7 @@ class TestOCSPNoCheckExtension(object):
             backend
         )
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_OCSP_NO_CHECK
+            ExtensionOID.OCSP_NO_CHECK
         )
         assert isinstance(ext.value, x509.OCSPNoCheck)
 
@@ -2927,7 +2929,7 @@ class TestInhibitAnyPolicyExtension(object):
             backend
         )
         iap = cert.extensions.get_extension_for_oid(
-            x509.OID_INHIBIT_ANY_POLICY
+            ExtensionOID.INHIBIT_ANY_POLICY
         ).value
         assert iap.skip_certs == 5
 

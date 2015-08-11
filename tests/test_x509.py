@@ -20,7 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
-from cryptography.x509.oid import NameOID
+from cryptography.x509.oid import ExtensionOID, NameOID
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
@@ -586,7 +586,7 @@ class TestRSACertificateRequest(object):
         with pytest.raises(x509.DuplicateExtension) as exc:
             request.extensions
 
-        assert exc.value.oid == x509.OID_BASIC_CONSTRAINTS
+        assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
     def test_unsupported_critical_extension(self, backend):
         request = _load_cert(
@@ -624,7 +624,7 @@ class TestRSACertificateRequest(object):
         assert isinstance(extensions, x509.Extensions)
         assert list(extensions) == [
             x509.Extension(
-                x509.OID_BASIC_CONSTRAINTS,
+                ExtensionOID.BASIC_CONSTRAINTS,
                 True,
                 x509.BasicConstraints(ca=True, path_length=1),
             ),
@@ -637,7 +637,7 @@ class TestRSACertificateRequest(object):
             backend,
         )
         ext = request.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(ext.value) == [
             x509.DNSName(u"cryptography.io"),
@@ -821,12 +821,12 @@ class TestRSACertificateRequest(object):
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
         subject_alternative_name = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
@@ -1315,7 +1315,7 @@ class TestCertificateBuilder(object):
         cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_CRL_DISTRIBUTION_POINTS
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
         )
         assert ext.critical is False
         assert ext.value == cdp
@@ -1357,12 +1357,12 @@ class TestCertificateBuilder(object):
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
         subject_alternative_name = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
@@ -1406,12 +1406,12 @@ class TestCertificateBuilder(object):
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
         subject_alternative_name = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
@@ -1472,7 +1472,7 @@ class TestCertificateBuilder(object):
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_ISSUER_ALTERNATIVE_NAME
+            ExtensionOID.ISSUER_ALTERNATIVE_NAME
         )
         assert ext.critical is False
         assert ext.value == x509.IssuerAlternativeName([
@@ -1510,7 +1510,7 @@ class TestCertificateBuilder(object):
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
         eku = cert.extensions.get_extension_for_oid(
-            x509.OID_EXTENDED_KEY_USAGE
+            ExtensionOID.EXTENDED_KEY_USAGE
         )
         assert eku.critical is False
         assert eku.value == x509.ExtendedKeyUsage([
@@ -1545,7 +1545,7 @@ class TestCertificateBuilder(object):
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_INHIBIT_ANY_POLICY
+            ExtensionOID.INHIBIT_ANY_POLICY
         )
         assert ext.value == x509.InhibitAnyPolicy(3)
 
@@ -1585,7 +1585,7 @@ class TestCertificateBuilder(object):
             critical=False
         ).sign(issuer_private_key, hashes.SHA256(), backend)
 
-        ext = cert.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        ext = cert.extensions.get_extension_for_oid(ExtensionOID.KEY_USAGE)
         assert ext.critical is False
         assert ext.value == x509.KeyUsage(
             digital_signature=True,
@@ -1641,7 +1641,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
@@ -1689,7 +1689,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is False
         assert basic_constraints.value.path_length is None
@@ -1719,7 +1719,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
@@ -1748,7 +1748,7 @@ class TestCertificateSigningRequestBuilder(object):
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
@@ -1811,7 +1811,7 @@ class TestCertificateSigningRequestBuilder(object):
             critical=False
         ).sign(private_key, hashes.SHA256(), backend)
         assert len(request.extensions) == 1
-        ext = request.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        ext = request.extensions.get_extension_for_oid(ExtensionOID.KEY_USAGE)
         assert ext.critical is False
         assert ext.value == x509.KeyUsage(
             digital_signature=True,
@@ -1847,7 +1847,7 @@ class TestCertificateSigningRequestBuilder(object):
             critical=False
         ).sign(private_key, hashes.SHA256(), backend)
         assert len(request.extensions) == 1
-        ext = request.extensions.get_extension_for_oid(x509.OID_KEY_USAGE)
+        ext = request.extensions.get_extension_for_oid(ExtensionOID.KEY_USAGE)
         assert ext.critical is False
         assert ext.value == x509.KeyUsage(
             digital_signature=False,
@@ -1877,12 +1877,12 @@ class TestCertificateSigningRequestBuilder(object):
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         basic_constraints = request.extensions.get_extension_for_oid(
-            x509.OID_BASIC_CONSTRAINTS
+            ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
         ext = request.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert list(ext.value) == [x509.DNSName(u"cryptography.io")]
 
@@ -1939,10 +1939,10 @@ class TestCertificateSigningRequestBuilder(object):
 
         assert len(csr.extensions) == 1
         ext = csr.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_ALTERNATIVE_NAME
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         )
         assert not ext.critical
-        assert ext.oid == x509.OID_SUBJECT_ALTERNATIVE_NAME
+        assert ext.oid == ExtensionOID.SUBJECT_ALTERNATIVE_NAME
         assert list(ext.value) == [
             x509.DNSName(u"example.com"),
             x509.DNSName(u"*.example.com"),
@@ -2018,7 +2018,7 @@ class TestCertificateSigningRequestBuilder(object):
         ).sign(private_key, hashes.SHA256(), backend)
 
         eku = request.extensions.get_extension_for_oid(
-            x509.OID_EXTENDED_KEY_USAGE
+            ExtensionOID.EXTENDED_KEY_USAGE
         )
         assert eku.critical is False
         assert eku.value == x509.ExtendedKeyUsage([
@@ -2079,7 +2079,7 @@ class TestCertificateSigningRequestBuilder(object):
         cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_INFORMATION_ACCESS
+            ExtensionOID.AUTHORITY_INFORMATION_ACCESS
         )
         assert ext.value == aia
 
@@ -2115,7 +2115,7 @@ class TestCertificateSigningRequestBuilder(object):
         cert = builder.sign(issuer_private_key, hashes.SHA1(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_SUBJECT_KEY_IDENTIFIER
+            ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
         assert ext.value == ski
 
@@ -2191,7 +2191,7 @@ class TestCertificateSigningRequestBuilder(object):
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_AUTHORITY_KEY_IDENTIFIER
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
         )
         assert ext.value == aki
 
@@ -2221,7 +2221,7 @@ class TestCertificateSigningRequestBuilder(object):
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
         ext = cert.extensions.get_extension_for_oid(
-            x509.OID_OCSP_NO_CHECK
+            ExtensionOID.OCSP_NO_CHECK
         )
         assert isinstance(ext.value, x509.OCSPNoCheck)
 
