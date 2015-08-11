@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.0 - `master`_
+1.0 - 2015-08-12
 ~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
 
 * Switched to the new `cffi`_ ``set_source`` out-of-line API mode for
   compilation. This results in significantly faster imports and lowered
