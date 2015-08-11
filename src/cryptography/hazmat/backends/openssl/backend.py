@@ -53,6 +53,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
+from cryptography.x509.oid import ExtensionOID
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -482,19 +483,19 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
 
 
 _EXTENSION_ENCODE_HANDLERS = {
-    x509.OID_BASIC_CONSTRAINTS: _encode_basic_constraints,
-    x509.OID_SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
-    x509.OID_KEY_USAGE: _encode_key_usage,
-    x509.OID_SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
-    x509.OID_ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
-    x509.OID_EXTENDED_KEY_USAGE: _encode_extended_key_usage,
-    x509.OID_AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
-    x509.OID_AUTHORITY_INFORMATION_ACCESS: (
+    ExtensionOID.BASIC_CONSTRAINTS: _encode_basic_constraints,
+    ExtensionOID.SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
+    ExtensionOID.KEY_USAGE: _encode_key_usage,
+    ExtensionOID.SUBJECT_ALTERNATIVE_NAME: _encode_alt_name,
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
+    ExtensionOID.EXTENDED_KEY_USAGE: _encode_extended_key_usage,
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _encode_authority_information_access
     ),
-    x509.OID_CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
-    x509.OID_INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
-    x509.OID_OCSP_NO_CHECK: _encode_ocsp_nocheck,
+    ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
+    ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
+    ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
 }
 
 
