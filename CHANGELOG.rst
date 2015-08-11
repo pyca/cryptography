@@ -50,6 +50,8 @@ Changelog
   * :class:`~cryptography.x509.AuthorityInformationAccess`
   * :class:`~cryptography.x509.CRLDistributionPoints`
   * :class:`~cryptography.x509.InhibitAnyPolicy`
+  * :class:`~cryptography.x509.IssuerAlternativeName`
+  * :class:`~cryptography.x509.OCSPNoCheck`
 
 * Add support for creating certificate signing requests with
   :class:`~cryptography.x509.CertificateSigningRequestBuilder`. This includes
