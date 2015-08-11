@@ -20,6 +20,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.x509.oid import NameOID
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
@@ -88,14 +89,14 @@ class TestRSACertificate(object):
         issuer = cert.issuer
         assert isinstance(issuer, x509.Name)
         assert list(issuer) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             x509.NameAttribute(
-                x509.OID_ORGANIZATION_NAME, u'Test Certificates 2011'
+                NameOID.ORGANIZATION_NAME, u'Test Certificates 2011'
             ),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'Good CA')
+            x509.NameAttribute(NameOID.COMMON_NAME, u'Good CA')
         ]
-        assert issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'Good CA')
+        assert issuer.get_attributes_for_oid(NameOID.COMMON_NAME) == [
+            x509.NameAttribute(NameOID.COMMON_NAME, u'Good CA')
         ]
 
     def test_all_issuer_name_types(self, backend):
@@ -111,36 +112,36 @@ class TestRSACertificate(object):
 
         assert isinstance(issuer, x509.Name)
         assert list(issuer) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'CA'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Illinois'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Chicago'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'Zero, LLC'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'One, LLC'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'common name 0'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'common name 1'),
-            x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, u'OU 0'),
-            x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, u'OU 1'),
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, u'dnQualifier0'),
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, u'dnQualifier1'),
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, u'123'),
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, u'456'),
-            x509.NameAttribute(x509.OID_TITLE, u'Title 0'),
-            x509.NameAttribute(x509.OID_TITLE, u'Title 1'),
-            x509.NameAttribute(x509.OID_SURNAME, u'Surname 0'),
-            x509.NameAttribute(x509.OID_SURNAME, u'Surname 1'),
-            x509.NameAttribute(x509.OID_GIVEN_NAME, u'Given Name 0'),
-            x509.NameAttribute(x509.OID_GIVEN_NAME, u'Given Name 1'),
-            x509.NameAttribute(x509.OID_PSEUDONYM, u'Incognito 0'),
-            x509.NameAttribute(x509.OID_PSEUDONYM, u'Incognito 1'),
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, u'Last Gen'),
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, u'Next Gen'),
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, u'dc0'),
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, u'dc1'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, u'test0@test.local'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, u'test1@test.local'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'CA'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Illinois'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Chicago'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'Zero, LLC'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'One, LLC'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'common name 0'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'common name 1'),
+            x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'OU 0'),
+            x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u'OU 1'),
+            x509.NameAttribute(NameOID.DN_QUALIFIER, u'dnQualifier0'),
+            x509.NameAttribute(NameOID.DN_QUALIFIER, u'dnQualifier1'),
+            x509.NameAttribute(NameOID.SERIAL_NUMBER, u'123'),
+            x509.NameAttribute(NameOID.SERIAL_NUMBER, u'456'),
+            x509.NameAttribute(NameOID.TITLE, u'Title 0'),
+            x509.NameAttribute(NameOID.TITLE, u'Title 1'),
+            x509.NameAttribute(NameOID.SURNAME, u'Surname 0'),
+            x509.NameAttribute(NameOID.SURNAME, u'Surname 1'),
+            x509.NameAttribute(NameOID.GIVEN_NAME, u'Given Name 0'),
+            x509.NameAttribute(NameOID.GIVEN_NAME, u'Given Name 1'),
+            x509.NameAttribute(NameOID.PSEUDONYM, u'Incognito 0'),
+            x509.NameAttribute(NameOID.PSEUDONYM, u'Incognito 1'),
+            x509.NameAttribute(NameOID.GENERATION_QUALIFIER, u'Last Gen'),
+            x509.NameAttribute(NameOID.GENERATION_QUALIFIER, u'Next Gen'),
+            x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'dc0'),
+            x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'dc1'),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'test0@test.local'),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'test1@test.local'),
         ]
 
     def test_subject(self, backend):
@@ -155,18 +156,18 @@ class TestRSACertificate(object):
         subject = cert.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             x509.NameAttribute(
-                x509.OID_ORGANIZATION_NAME, u'Test Certificates 2011'
+                NameOID.ORGANIZATION_NAME, u'Test Certificates 2011'
             ),
             x509.NameAttribute(
-                x509.OID_COMMON_NAME,
+                NameOID.COMMON_NAME,
                 u'Valid pre2000 UTC notBefore Date EE Certificate Test3'
             )
         ]
-        assert subject.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
+        assert subject.get_attributes_for_oid(NameOID.COMMON_NAME) == [
             x509.NameAttribute(
-                x509.OID_COMMON_NAME,
+                NameOID.COMMON_NAME,
                 u'Valid pre2000 UTC notBefore Date EE Certificate Test3'
             )
         ]
@@ -180,15 +181,15 @@ class TestRSACertificate(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        assert cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
+        assert cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME) == [
             x509.NameAttribute(
-                x509.OID_COMMON_NAME,
+                NameOID.COMMON_NAME,
                 u'We heart UTF8!\u2122'
             )
         ]
-        assert cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
+        assert cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME) == [
             x509.NameAttribute(
-                x509.OID_COMMON_NAME,
+                NameOID.COMMON_NAME,
                 u'We heart UTF8!\u2122'
             )
         ]
@@ -205,40 +206,40 @@ class TestRSACertificate(object):
         subject = cert.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'AU'),
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'DE'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'California'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'New York'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'San Francisco'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Ithaca'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'Org Zero, LLC'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'Org One, LLC'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'CN 0'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'CN 1'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'AU'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'DE'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'California'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'New York'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'San Francisco'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Ithaca'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'Org Zero, LLC'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'Org One, LLC'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'CN 0'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'CN 1'),
             x509.NameAttribute(
-                x509.OID_ORGANIZATIONAL_UNIT_NAME, u'Engineering 0'
+                NameOID.ORGANIZATIONAL_UNIT_NAME, u'Engineering 0'
             ),
             x509.NameAttribute(
-                x509.OID_ORGANIZATIONAL_UNIT_NAME, u'Engineering 1'
+                NameOID.ORGANIZATIONAL_UNIT_NAME, u'Engineering 1'
             ),
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, u'qualified0'),
-            x509.NameAttribute(x509.OID_DN_QUALIFIER, u'qualified1'),
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, u'789'),
-            x509.NameAttribute(x509.OID_SERIAL_NUMBER, u'012'),
-            x509.NameAttribute(x509.OID_TITLE, u'Title IX'),
-            x509.NameAttribute(x509.OID_TITLE, u'Title X'),
-            x509.NameAttribute(x509.OID_SURNAME, u'Last 0'),
-            x509.NameAttribute(x509.OID_SURNAME, u'Last 1'),
-            x509.NameAttribute(x509.OID_GIVEN_NAME, u'First 0'),
-            x509.NameAttribute(x509.OID_GIVEN_NAME, u'First 1'),
-            x509.NameAttribute(x509.OID_PSEUDONYM, u'Guy Incognito 0'),
-            x509.NameAttribute(x509.OID_PSEUDONYM, u'Guy Incognito 1'),
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, u'32X'),
-            x509.NameAttribute(x509.OID_GENERATION_QUALIFIER, u'Dreamcast'),
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, u'dc2'),
-            x509.NameAttribute(x509.OID_DOMAIN_COMPONENT, u'dc3'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, u'test2@test.local'),
-            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, u'test3@test.local'),
+            x509.NameAttribute(NameOID.DN_QUALIFIER, u'qualified0'),
+            x509.NameAttribute(NameOID.DN_QUALIFIER, u'qualified1'),
+            x509.NameAttribute(NameOID.SERIAL_NUMBER, u'789'),
+            x509.NameAttribute(NameOID.SERIAL_NUMBER, u'012'),
+            x509.NameAttribute(NameOID.TITLE, u'Title IX'),
+            x509.NameAttribute(NameOID.TITLE, u'Title X'),
+            x509.NameAttribute(NameOID.SURNAME, u'Last 0'),
+            x509.NameAttribute(NameOID.SURNAME, u'Last 1'),
+            x509.NameAttribute(NameOID.GIVEN_NAME, u'First 0'),
+            x509.NameAttribute(NameOID.GIVEN_NAME, u'First 1'),
+            x509.NameAttribute(NameOID.PSEUDONYM, u'Guy Incognito 0'),
+            x509.NameAttribute(NameOID.PSEUDONYM, u'Guy Incognito 1'),
+            x509.NameAttribute(NameOID.GENERATION_QUALIFIER, u'32X'),
+            x509.NameAttribute(NameOID.GENERATION_QUALIFIER, u'Dreamcast'),
+            x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'dc2'),
+            x509.NameAttribute(NameOID.DOMAIN_COMPONENT, u'dc3'),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'test2@test.local'),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS, u'test3@test.local'),
         ]
 
     def test_load_good_ca_cert(self, backend):
@@ -547,11 +548,11 @@ class TestRSACertificateRequest(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ]
         extensions = request.extensions
         assert isinstance(extensions, x509.Extensions)
@@ -663,11 +664,11 @@ class TestRSACertificateRequest(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ]
 
     def test_public_bytes_der(self, backend):
@@ -690,11 +691,11 @@ class TestRSACertificateRequest(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ]
 
     def test_public_bytes_invalid_encoding(self, backend):
@@ -790,17 +791,17 @@ class TestRSACertificateRequest(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -838,9 +839,9 @@ class TestCertificateBuilder(object):
     def test_checks_for_unsupported_extensions(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             private_key.public_key()
         ).serial_number(
@@ -863,7 +864,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_before(
@@ -881,7 +882,7 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_before(
@@ -899,9 +900,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).not_valid_before(
             datetime.datetime(2002, 1, 1, 12, 1)
         ).not_valid_after(
@@ -917,9 +918,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_after(
@@ -935,9 +936,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_before(
@@ -951,9 +952,9 @@ class TestCertificateBuilder(object):
     def test_no_serial_number(self, backend):
         subject_private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_before(
@@ -975,7 +976,7 @@ class TestCertificateBuilder(object):
 
     def test_issuer_name_may_only_be_set_once(self):
         name = x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])
         builder = x509.CertificateBuilder().issuer_name(name)
 
@@ -993,7 +994,7 @@ class TestCertificateBuilder(object):
 
     def test_subject_name_may_only_be_set_once(self):
         name = x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])
         builder = x509.CertificateBuilder().subject_name(name)
 
@@ -1104,9 +1105,9 @@ class TestCertificateBuilder(object):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
         builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).serial_number(
             1
         ).public_key(
@@ -1129,9 +1130,9 @@ class TestCertificateBuilder(object):
         private_key = DSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder()
         builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).serial_number(
             1
         ).public_key(
@@ -1155,9 +1156,9 @@ class TestCertificateBuilder(object):
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         builder = x509.CertificateBuilder()
         builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).serial_number(
             1
         ).public_key(
@@ -1179,20 +1180,20 @@ class TestCertificateBuilder(object):
                     full_name=None,
                     relative_name=x509.Name([
                         x509.NameAttribute(
-                            x509.OID_COMMON_NAME,
+                            NameOID.COMMON_NAME,
                             u"indirect CRL for indirectCRL CA3"
                         ),
                     ]),
                     reasons=None,
                     crl_issuer=[x509.DirectoryName(
                         x509.Name([
-                            x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
                             x509.NameAttribute(
-                                x509.OID_ORGANIZATION_NAME,
+                                NameOID.ORGANIZATION_NAME,
                                 u"Test Certificates 2011"
                             ),
                             x509.NameAttribute(
-                                x509.OID_ORGANIZATIONAL_UNIT_NAME,
+                                NameOID.ORGANIZATIONAL_UNIT_NAME,
                                 u"indirectCRL CA3 cRLIssuer"
                             ),
                         ])
@@ -1203,7 +1204,7 @@ class TestCertificateBuilder(object):
                 x509.DistributionPoint(
                     full_name=[x509.DirectoryName(
                         x509.Name([
-                            x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
                         ])
                     )],
                     relative_name=None,
@@ -1211,7 +1212,7 @@ class TestCertificateBuilder(object):
                     crl_issuer=[x509.DirectoryName(
                         x509.Name([
                             x509.NameAttribute(
-                                x509.OID_ORGANIZATION_NAME,
+                                NameOID.ORGANIZATION_NAME,
                                 u"cryptography Testing"
                             ),
                         ])
@@ -1235,9 +1236,9 @@ class TestCertificateBuilder(object):
                     ]),
                     crl_issuer=[x509.DirectoryName(
                         x509.Name([
-                            x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                            x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
                             x509.NameAttribute(
-                                x509.OID_COMMON_NAME, u"cryptography CA"
+                                NameOID.COMMON_NAME, u"cryptography CA"
                             ),
                         ])
                     )],
@@ -1270,7 +1271,7 @@ class TestCertificateBuilder(object):
                     crl_issuer=[x509.DirectoryName(
                         x509.Name([
                             x509.NameAttribute(
-                                x509.OID_COMMON_NAME, u"cryptography CA"
+                                NameOID.COMMON_NAME, u"cryptography CA"
                             ),
                         ])
                     )],
@@ -1297,9 +1298,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             4444444
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -1334,9 +1335,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -1383,9 +1384,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -1428,9 +1429,9 @@ class TestCertificateBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).not_valid_before(
@@ -1452,9 +1453,9 @@ class TestCertificateBuilder(object):
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
         cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
@@ -1489,9 +1490,9 @@ class TestCertificateBuilder(object):
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
         cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
@@ -1528,9 +1529,9 @@ class TestCertificateBuilder(object):
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
         cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
@@ -1558,9 +1559,9 @@ class TestCertificateBuilder(object):
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
 
         cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).not_valid_before(
             not_valid_before
         ).not_valid_after(
@@ -1625,7 +1626,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
@@ -1637,7 +1638,7 @@ class TestCertificateSigningRequestBuilder(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
             x509.OID_BASIC_CONSTRAINTS
@@ -1651,7 +1652,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_ORGANIZATION_NAME,
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME,
                                    u'PyCA\U0001f37a'),
             ])
         ).add_extension(
@@ -1664,7 +1665,7 @@ class TestCertificateSigningRequestBuilder(object):
         subject = loaded_request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA\U0001f37a'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA\U0001f37a'),
         ]
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -1673,7 +1674,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None), critical=True,
@@ -1685,7 +1686,7 @@ class TestCertificateSigningRequestBuilder(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
             x509.OID_BASIC_CONSTRAINTS
@@ -1703,7 +1704,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
@@ -1715,7 +1716,7 @@ class TestCertificateSigningRequestBuilder(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
             x509.OID_BASIC_CONSTRAINTS
@@ -1732,7 +1733,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         request = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
@@ -1744,7 +1745,7 @@ class TestCertificateSigningRequestBuilder(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ]
         basic_constraints = request.extensions.get_extension_for_oid(
             x509.OID_BASIC_CONSTRAINTS
@@ -1777,7 +1778,7 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
             x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
@@ -1793,7 +1794,7 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateSigningRequestBuilder()
         request = builder.subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
             x509.KeyUsage(
@@ -1829,7 +1830,7 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateSigningRequestBuilder()
         request = builder.subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         ).add_extension(
             x509.KeyUsage(
@@ -1864,7 +1865,7 @@ class TestCertificateSigningRequestBuilder(object):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder()
         request = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).add_extension(
             x509.SubjectAlternativeName([x509.DNSName(u"cryptography.io")]),
             critical=False,
@@ -1889,13 +1890,13 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
             ])
         )
         with pytest.raises(ValueError):
             builder.subject_name(
                 x509.Name([
-                    x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
                 ])
             )
 
@@ -1904,7 +1905,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         csr = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, u"SAN"),
+                x509.NameAttribute(NameOID.COMMON_NAME, u"SAN"),
             ])
         ).add_extension(
             x509.SubjectAlternativeName([
@@ -1912,9 +1913,9 @@ class TestCertificateSigningRequestBuilder(object):
                 x509.DNSName(u"*.example.com"),
                 x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
                 x509.DirectoryName(x509.Name([
-                    x509.NameAttribute(x509.OID_COMMON_NAME, u'PyCA'),
+                    x509.NameAttribute(NameOID.COMMON_NAME, u'PyCA'),
                     x509.NameAttribute(
-                        x509.OID_ORGANIZATION_NAME, u'We heart UTF8!\u2122'
+                        NameOID.ORGANIZATION_NAME, u'We heart UTF8!\u2122'
                     )
                 ])),
                 x509.IPAddress(ipaddress.ip_address(u"127.0.0.1")),
@@ -1947,9 +1948,9 @@ class TestCertificateSigningRequestBuilder(object):
             x509.DNSName(u"*.example.com"),
             x509.RegisteredID(x509.ObjectIdentifier("1.2.3.4.5.6.7")),
             x509.DirectoryName(x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, u'PyCA'),
+                x509.NameAttribute(NameOID.COMMON_NAME, u'PyCA'),
                 x509.NameAttribute(
-                    x509.OID_ORGANIZATION_NAME, u'We heart UTF8!\u2122'
+                    NameOID.ORGANIZATION_NAME, u'We heart UTF8!\u2122'
                 ),
             ])),
             x509.IPAddress(ipaddress.ip_address(u"127.0.0.1")),
@@ -1974,7 +1975,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, u"SAN"),
+                x509.NameAttribute(NameOID.COMMON_NAME, u"SAN"),
             ])
         ).add_extension(
             x509.SubjectAlternativeName([
@@ -1993,7 +1994,7 @@ class TestCertificateSigningRequestBuilder(object):
 
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([
-                x509.NameAttribute(x509.OID_COMMON_NAME, u"SAN"),
+                x509.NameAttribute(NameOID.COMMON_NAME, u"SAN"),
             ])
         ).add_extension(
             x509.SubjectAlternativeName([FakeGeneralName("")]),
@@ -2007,7 +2008,7 @@ class TestCertificateSigningRequestBuilder(object):
         private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateSigningRequestBuilder()
         request = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         ).add_extension(
             x509.ExtendedKeyUsage([
                 x509.OID_CLIENT_AUTH,
@@ -2031,7 +2032,7 @@ class TestCertificateSigningRequestBuilder(object):
         private_key = rsa.generate_private_key(65537, 512, backend)
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
         )
 
         with pytest.raises(ValueError) as exc:
@@ -2062,9 +2063,9 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -2098,9 +2099,9 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -2134,10 +2135,10 @@ class TestCertificateSigningRequestBuilder(object):
                     x509.DirectoryName(
                         x509.Name([
                             x509.NameAttribute(
-                                x509.OID_ORGANIZATION_NAME, u"PyCA"
+                                NameOID.ORGANIZATION_NAME, u"PyCA"
                             ),
                             x509.NameAttribute(
-                                x509.OID_COMMON_NAME, u"cryptography CA"
+                                NameOID.COMMON_NAME, u"cryptography CA"
                             )
                         ])
                     )
@@ -2150,10 +2151,10 @@ class TestCertificateSigningRequestBuilder(object):
                     x509.DirectoryName(
                         x509.Name([
                             x509.NameAttribute(
-                                x509.OID_ORGANIZATION_NAME, u"PyCA"
+                                NameOID.ORGANIZATION_NAME, u"PyCA"
                             ),
                             x509.NameAttribute(
-                                x509.OID_COMMON_NAME, u"cryptography CA"
+                                NameOID.COMMON_NAME, u"cryptography CA"
                             )
                         ])
                     )
@@ -2174,9 +2175,9 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -2204,9 +2205,9 @@ class TestCertificateSigningRequestBuilder(object):
         builder = x509.CertificateBuilder().serial_number(
             777
         ).issuer_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).subject_name(x509.Name([
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])).public_key(
             subject_private_key.public_key()
         ).add_extension(
@@ -2296,11 +2297,11 @@ class TestDSACertificate(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
         ]
 
 
@@ -2360,11 +2361,11 @@ class TestECDSACertificate(object):
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
-            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
-            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, u'Texas'),
-            x509.NameAttribute(x509.OID_LOCALITY_NAME, u'Austin'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
         ]
 
 
@@ -2460,8 +2461,8 @@ class TestName(object):
 
     def test_repr(self):
         name = x509.Name([
-            x509.NameAttribute(x509.OID_COMMON_NAME, u'cryptography.io'),
-            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, u'PyCA'),
+            x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
         ])
 
         if six.PY3:
