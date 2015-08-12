@@ -679,6 +679,23 @@ class TestRSAVerification(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             public_key.verifier(b"sig", DummyPadding(), hashes.SHA1())
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5."
+    )
+    def test_signature_not_bytes(self, backend):
+        public_key = RSA_KEY_512.public_numbers.public_key(backend)
+        signature = 1234
+
+        with pytest.raises(TypeError):
+            public_key.verifier(
+                signature,
+                padding.PKCS1v15(),
+                hashes.SHA1()
+            )
+
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()

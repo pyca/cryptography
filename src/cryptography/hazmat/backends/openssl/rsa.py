@@ -337,6 +337,9 @@ class _RSASignatureContext(object):
 @utils.register_interface(AsymmetricVerificationContext)
 class _RSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, padding, algorithm):
+        if not isinstance(signature, bytes):
+            raise TypeError("signature must be bytes.")
+
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
