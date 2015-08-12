@@ -79,6 +79,13 @@ class Extensions(object):
 
         raise ExtensionNotFound("No {0} extension was found".format(oid), oid)
 
+    def get_extension_for_class(self, extclass):
+        for ext in self:
+            if type(ext.value) == extclass:
+                return ext
+
+        raise ExtensionNotFound("No {0} extension was found".format(extclass), extclass)
+
     def __iter__(self):
         return iter(self._extensions)
 
