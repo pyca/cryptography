@@ -85,7 +85,9 @@ class Extensions(object):
             if isinstance(ext.value, extclass):
                 return ext
 
-        raise ExtensionNotFound("No {0} extension was found".format(extclass), extclass)
+        raise ExtensionNotFound(
+            "No {0} extension was found".format(extclass), extclass
+        )
 
     def __iter__(self):
         return iter(self._extensions)
