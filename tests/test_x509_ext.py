@@ -869,7 +869,7 @@ class TestBasicConstraintsExtension(object):
             x509.load_der_x509_certificate,
             backend
         )
-        ext = cert.extensions.get_extension_for_oid(
+        cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
