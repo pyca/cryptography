@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 import hashlib
 import ipaddress
 from enum import Enum
@@ -15,8 +16,7 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import serialization
-from cryptography.x509.base import ExtensionType
-from cryptography.x509.general_name import GeneralName, IPAddress
+from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtensionOID, ObjectIdentifier
@@ -67,6 +67,15 @@ class ExtensionNotFound(Exception):
     def __init__(self, msg, oid):
         super(ExtensionNotFound, self).__init__(msg)
         self.oid = oid
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ExtensionType(object):
+    @abc.abstractproperty
+    def oid(self):
+        """
+        Returns the oid associated with the given extension type.
+        """
 
 
 class Extensions(object):
@@ -769,3 +778,135 @@ class NameConstraints(object):
 
     permitted_subtrees = utils.read_only_property("_permitted_subtrees")
     excluded_subtrees = utils.read_only_property("_excluded_subtrees")
+
+
+class Extension(object):
+    def __init__(self, oid, critical, value):
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError(
+                "oid argument must be an ObjectIdentifier instance."
+            )
+
+        if not isinstance(critical, bool):
+            raise TypeError("critical must be a boolean value")
+
+        self._oid = oid
+        self._critical = critical
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    critical = utils.read_only_property("_critical")
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return ("<Extension(oid={0.oid}, critical={0.critical}, "
+                "value={0.value})>").format(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, Extension):
+            return NotImplemented
+
+        return (
+            self.oid == other.oid and
+            self.critical == other.critical and
+            self.value == other.value
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class GeneralNames(object):
+    def __init__(self, general_names):
+        if not all(isinstance(x, GeneralName) for x in general_names):
+            raise TypeError(
+                "Every item in the general_names list must be an "
+                "object conforming to the GeneralName interface"
+            )
+
+        self._general_names = general_names
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        # Return the value of each GeneralName, except for OtherName instances
+        # which we return directly because it has two important properties not
+        # just one value.
+        objs = (i for i in self if isinstance(i, type))
+        if type != OtherName:
+            objs = (i.value for i in objs)
+        return list(objs)
+
+    def __repr__(self):
+        return "<GeneralNames({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, GeneralNames):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(ExtensionType)
+class SubjectAlternativeName(object):
+    oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+
+    def __init__(self, general_names):
+        self._general_names = GeneralNames(general_names)
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return self._general_names.get_values_for_type(type)
+
+    def __repr__(self):
+        return "<SubjectAlternativeName({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, SubjectAlternativeName):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(ExtensionType)
+class IssuerAlternativeName(object):
+    oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
+
+    def __init__(self, general_names):
+        self._general_names = GeneralNames(general_names)
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return self._general_names.get_values_for_type(type)
+
+    def __repr__(self):
+        return "<IssuerAlternativeName({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, IssuerAlternativeName):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
