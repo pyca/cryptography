@@ -832,6 +832,22 @@ class TestExtensions(object):
         extensions = cert.extensions
         assert len(extensions) == 0
 
+    def test_no_extensions_get_for_class(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "verisign_md2_root.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions
+        assert len(ext) == 0
+        assert list(ext) == []
+        with pytest.raises(x509.ExtensionNotFound) as exc:
+            ext.get_extension_for_class(x509.BasicConstraints)
+
+        assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
+
     def test_one_extension_get_for_class(self, backend):
         cert = _load_cert(
             os.path.join(

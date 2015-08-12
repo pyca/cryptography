@@ -86,7 +86,7 @@ class Extensions(object):
                 return ext
 
         raise ExtensionNotFound(
-            "No {0} extension was found".format(extclass), extclass
+            "No {0} extension was found".format(extclass), extclass.oid
         )
 
     def __iter__(self):
