@@ -306,7 +306,7 @@ Key Interfaces
 
         Sign data which can be verified later by others using the public key.
         The signature is formatted as DER-encoded bytes, as specified in
-        :rfc:`6979`.
+        :rfc:`3279`.
 
         :param signature_algorithm: An instance of a
             :class:`EllipticCurveSignatureAlgorithm` provider.
@@ -372,7 +372,7 @@ Key Interfaces
         key.
 
         :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`6979`.
+            specified in :rfc:`3279`.
 
         :param signature_algorithm: An instance of a
             :class:`EllipticCurveSignatureAlgorithm` provider.
