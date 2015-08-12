@@ -842,7 +842,7 @@ class TestExtensions(object):
         )
         exts = cert.extensions
         with pytest.raises(x509.ExtensionNotFound) as exc:
-            ext = exts.get_extension_for_class(x509.BasicConstraints)
+            exts.get_extension_for_class(x509.BasicConstraints)
         assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
     def test_one_extension_get_for_class(self, backend):
@@ -869,7 +869,7 @@ class TestBasicConstraintsExtension(object):
             x509.load_der_x509_certificate,
             backend
         )
-        cert.extensions.get_extension_for_oid(
+        ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
         assert ext is not None
