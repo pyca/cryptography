@@ -583,6 +583,11 @@ class TestDSAVerification(object):
         with pytest.raises(InvalidSignature):
             verifier.verify()
 
+    def test_signature_not_bytes(self, backend):
+        public_key = DSA_KEY_1024.public_numbers.public_key(backend)
+        with pytest.raises(TypeError):
+            public_key.verifier(1234, hashes.SHA1())
+
     def test_use_after_finalize(self, backend):
         public_key = DSA_KEY_1024.public_numbers.public_key(backend)
         verifier = public_key.verifier(b'fakesig', hashes.SHA1())
