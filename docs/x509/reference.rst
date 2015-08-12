@@ -889,6 +889,21 @@ X.509 Extensions
             >>> cert.extensions.get_extension_for_oid(ExtensionOID.BASIC_CONSTRAINTS)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
+    .. method:: get_extension_for_class(extclass)
+
+        :param extclass: An extension class.
+
+        :returns: An instance of the extension class.
+
+        :raises cryptography.x509.ExtensionNotFound: If the certificate does
+            not have the extension requested.
+
+        .. doctest::
+
+            >>> from cryptography import x509
+            >>> cert.extensions.get_extension_for_class(x509.BasicConstraints)
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
+
 .. class:: Extension
 
     .. versionadded:: 0.9
