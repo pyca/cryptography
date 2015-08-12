@@ -264,7 +264,7 @@ Key interfaces
 
         Sign data which can be verified later by others using the public key.
         The signature is formatted as DER-encoded bytes, as specified in
-        :rfc:`6979`.
+        :rfc:`3279`.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
@@ -354,7 +354,7 @@ Key interfaces
         key.
 
         :param bytes signature: The signature to verify. DER encoded as
-            specified in :rfc:`6979`.
+            specified in :rfc:`3279`.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
