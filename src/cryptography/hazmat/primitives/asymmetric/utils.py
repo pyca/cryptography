@@ -4,11 +4,15 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 from pyasn1.codec.der import decoder, encoder
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import namedtype, univ
 
 import six
+
+from cryptography import utils
 
 
 class _DSSSigValue(univ.Sequence):
@@ -19,6 +23,17 @@ class _DSSSigValue(univ.Sequence):
 
 
 def decode_rfc6979_signature(signature):
+    warnings.warn(
+        "decode_rfc6979_signature is deprecated and will "
+        "be removed in a future version, use decode_dss_signature instead "
+        "instead.",
+        utils.DeprecatedIn10,
+        stacklevel=2
+    )
+    return decode_dss_signature(signature)
+
+
+def decode_dss_signature(signature):
     try:
         data, remaining = decoder.decode(signature, asn1Spec=_DSSSigValue())
     except PyAsn1Error:
@@ -35,6 +50,17 @@ def decode_rfc6979_signature(signature):
 
 
 def encode_rfc6979_signature(r, s):
+    warnings.warn(
+        "encode_rfc6979_signature is deprecated and will "
+        "be removed in a future version, use encode_dss_signature instead "
+        "instead.",
+        utils.DeprecatedIn10,
+        stacklevel=2
+    )
+    return encode_dss_signature(r, s)
+
+
+def encode_dss_signature(r, s):
     if (
         not isinstance(r, six.integer_types) or
         not isinstance(s, six.integer_types)

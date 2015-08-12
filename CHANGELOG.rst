@@ -56,6 +56,12 @@ Changelog
 * Add support for creating certificate signing requests with
   :class:`~cryptography.x509.CertificateSigningRequestBuilder`. This includes
   support for the same extensions supported in the ``CertificateBuilder``.
+* Deprecate ``encode_rfc6979_signature`` and ``decode_rfc6979_signature`` in
+  favor of
+  :func:`~cryptography.hazmat.primitives.asymmetric.utils.encode_dss_signature`
+  and
+  :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
+
 
 0.9.3 - 2015-07-09
 ~~~~~~~~~~~~~~~~~~

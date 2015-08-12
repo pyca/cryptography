@@ -80,8 +80,8 @@ provider.
     >>> signature = signer.finalize()
 
 The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
-described in :rfc:`6979`. This can be decoded using
-:func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_rfc6979_signature`.
+described in :rfc:`3279`. This can be decoded using
+:func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
 Verification
 ~~~~~~~~~~~~
