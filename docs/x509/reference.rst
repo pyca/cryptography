@@ -891,6 +891,8 @@ X.509 Extensions
 
     .. method:: get_extension_for_class(extclass)
 
+        .. versionadded:: 1.1
+
         :param extclass: An extension class.
 
         :returns: An instance of the extension class.
