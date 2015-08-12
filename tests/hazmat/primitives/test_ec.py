@@ -715,7 +715,8 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDSAVerification(object):
     def test_signature_not_bytes(self, backend):
-        key = ec.generate_private_key(ec.SECP192R1(), backend)
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key = ec.generate_private_key(ec.SECP256R1(), backend)
         public_key = key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(1234, ec.ECDSA(hashes.SHA256()))
