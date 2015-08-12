@@ -840,12 +840,10 @@ class TestExtensions(object):
             x509.load_pem_x509_certificate,
             backend
         )
-        ext = cert.extensions
-        assert len(ext) == 0
-        assert list(ext) == []
+        exts = cert.extensions
         with pytest.raises(x509.ExtensionNotFound) as exc:
-            ext.get_extension_for_class(x509.BasicConstraints)
-
+            ext = exts.get_extension_for_class(x509.BasicConstraints)
+            assert ext is None
         assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
     def test_one_extension_get_for_class(self, backend):
@@ -858,7 +856,6 @@ class TestExtensions(object):
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
-
         assert isinstance(ext.value, x509.BasicConstraints)
 
 
