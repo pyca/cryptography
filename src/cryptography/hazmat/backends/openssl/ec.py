@@ -119,8 +119,6 @@ class _ECDSASignatureContext(object):
 @utils.register_interface(AsymmetricVerificationContext)
 class _ECDSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, algorithm):
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
@@ -227,6 +225,9 @@ class _EllipticCurvePublicKey(object):
     curve = utils.read_only_property("_curve")
 
     def verifier(self, signature, signature_algorithm):
+        if not isinstance(signature, bytes):
+            raise TypeError("signature must be bytes.")
+
         if isinstance(signature_algorithm, ec.ECDSA):
             return _ECDSAVerificationContext(
                 self._backend, self, signature, signature_algorithm.algorithm

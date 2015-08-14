@@ -29,9 +29,6 @@ def _truncate_digest_for_dsa(dsa_cdata, digest, backend):
 @utils.register_interface(AsymmetricVerificationContext)
 class _DSAVerificationContext(object):
     def __init__(self, backend, public_key, signature, algorithm):
-        if not isinstance(signature, bytes):
-            raise TypeError("signature must be bytes.")
-
         self._backend = backend
         self._public_key = public_key
         self._signature = signature
@@ -179,6 +176,9 @@ class _DSAPublicKey(object):
     key_size = utils.read_only_property("_key_size")
 
     def verifier(self, signature, signature_algorithm):
+        if not isinstance(signature, bytes):
+            raise TypeError("signature must be bytes.")
+
         return _DSAVerificationContext(
             self._backend, self, signature, signature_algorithm
         )
