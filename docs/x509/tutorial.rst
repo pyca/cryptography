@@ -58,6 +58,7 @@ a few details:
 
     >>> from cryptography import x509
     >>> from cryptography.x509.oid import NameOID
+    >>> from cryptography.hazmat.primitives import hashes
     >>> # Generate a CSR
     >>> csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
     ...     # Provide various details about who we are.
