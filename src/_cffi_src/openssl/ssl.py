@@ -130,8 +130,17 @@ typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
 typedef struct {
+    unsigned int key_arg_length;
+    unsigned char key_arg[...];
     int master_key_length;
     unsigned char master_key[...];
+    unsigned int session_id_length;
+    unsigned char session_id[...];
+    unsigned int sid_ctx_length;
+    unsigned char sid_ctx[...];
+    unsigned char *tlsext_tick;
+    size_t tlsext_ticklen;
+    long tlsext_tick_lifetime_hint;
     ...;
 } SSL_SESSION;
 
@@ -236,11 +245,13 @@ void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
+int SSL_SESSION_print(BIO *fp, const SSL_SESSION *ses);
 
 /* Information about actually used cipher */
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 char *SSL_CIPHER_get_version(const SSL_CIPHER *);
+char *SSL_CIPHER_description(const SSL_CIPHER *, char *buf, int size);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
