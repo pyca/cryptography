@@ -242,19 +242,21 @@ void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
-int SSL_SESSION_print(BIO *, const SSL_SESSION *);
 
 /* Information about actually used cipher */
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 char *SSL_CIPHER_get_version(const SSL_CIPHER *);
-char *SSL_CIPHER_description(const SSL_CIPHER *, char *, int);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 """
 
 MACROS = """
+/* not a macro, but older OpenSSLs don't pass the args as const */
+char *SSL_CIPHER_description(const SSL_CIPHER *, char *, int);
+int SSL_SESSION_print(BIO *, const SSL_SESSION *);
+
 /* not macros, but will be conditionally bound so can't live in functions */
 const COMP_METHOD *SSL_get_current_compression(SSL *);
 const COMP_METHOD *SSL_get_current_expansion(SSL *);
