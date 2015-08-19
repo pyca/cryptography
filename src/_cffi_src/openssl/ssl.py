@@ -130,8 +130,6 @@ typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
 typedef struct {
-    unsigned int key_arg_length;
-    unsigned char key_arg[...];
     int master_key_length;
     unsigned char master_key[...];
     unsigned int session_id_length;
