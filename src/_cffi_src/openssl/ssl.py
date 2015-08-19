@@ -132,6 +132,10 @@ typedef ... SSL_CTX;
 typedef struct {
     int master_key_length;
     unsigned char master_key[...];
+    unsigned int session_id_length;
+    unsigned char session_id[...];
+    unsigned int sid_ctx_length;
+    unsigned char sid_ctx[...];
     ...;
 } SSL_SESSION;
 
@@ -247,6 +251,10 @@ size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 """
 
 MACROS = """
+/* not a macro, but older OpenSSLs don't pass the args as const */
+char *SSL_CIPHER_description(const SSL_CIPHER *, char *, int);
+int SSL_SESSION_print(BIO *, const SSL_SESSION *);
+
 /* not macros, but will be conditionally bound so can't live in functions */
 const COMP_METHOD *SSL_get_current_compression(SSL *);
 const COMP_METHOD *SSL_get_current_expansion(SSL *);
