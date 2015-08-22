@@ -521,6 +521,12 @@ class Backend(object):
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
+        # Set the default string mask for encoding ASN1 strings to UTF8. This
+        # is the default for newer OpenSSLs for several years and is
+        # recommended in RFC 2459.
+        res = self._lib.ASN1_STRING_set_default_mask_asc(b"utf8only")
+        assert res == 1
+
         self._binding.init_static_locks()
 
         # adds all ciphers/digests for EVP
