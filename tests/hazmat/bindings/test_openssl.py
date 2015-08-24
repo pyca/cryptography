@@ -89,8 +89,8 @@ class TestOpenSSL(object):
 
     def test_add_engine_more_than_once(self):
         b = Binding()
-        with pytest.raises(RuntimeError):
-            b._register_osrandom_engine()
+        b._register_osrandom_engine()
+        assert b.lib.ERR_get_error() == 0
 
     def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
