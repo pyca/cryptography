@@ -45,6 +45,7 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_NETBSD_D1_METH;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_ALPN;
+static const long Cryptography_HAS_SET_CERT_CB;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -406,6 +407,12 @@ void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
 void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
 
 long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
+
+/* SSL_CTX_set_cert_cb is introduced in OpenSSL 1.0.2. To continue to support
+ * earlier versions some special handling of these is necessary.
+ */
+void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
+void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 """
 
 CUSTOMIZATIONS = """
@@ -608,6 +615,16 @@ static const long Cryptography_HAS_ALPN = 0;
 #else
 static const long Cryptography_HAS_ALPN = 1;
 #endif
+
+/* SSL_CTX_set_cert_cb was added in OpenSSL 1.0.2. */
+#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
+void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
+static const long Cryptography_HAS_SET_CERT_CB = 0;
+#else
+static const long Cryptography_HAS_SET_CERT_CB = 1;
+#endif
+
 
 #if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
