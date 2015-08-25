@@ -2436,6 +2436,12 @@ class TestObjectIdentifier(object):
         oid = x509.ObjectIdentifier("oid1")
         assert repr(oid) == "<ObjectIdentifier(oid=oid1, name=Unknown OID)>"
 
+    def test_name_property(self):
+        oid = x509.ObjectIdentifier("2.5.4.3")
+        assert oid._name == 'commonName'
+        oid = x509.ObjectIdentifier("oid1")
+        assert oid._name == 'Unknown OID'
+
 
 class TestName(object):
     def test_eq(self):
