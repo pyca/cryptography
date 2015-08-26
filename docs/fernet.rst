@@ -3,7 +3,7 @@ Fernet (symmetric encryption)
 
 .. currentmodule:: cryptography.fernet
 
-Fernet provides guarantees that a message encrypted using it cannot be
+Fernet guarantees that a message encrypted using it cannot be
 manipulated or read without the key. `Fernet`_ is an implementation of
 symmetric (also known as "secret key") authenticated cryptography. Fernet also
 has support for implementing key rotation via :class:`MultiFernet`.
