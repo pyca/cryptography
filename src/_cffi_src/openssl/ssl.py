@@ -205,6 +205,7 @@ Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
 int SSL_get_error(const SSL *, int);
 int SSL_do_handshake(SSL *);
 int SSL_shutdown(SSL *);
+int SSL_renegotiate(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
 Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
 
