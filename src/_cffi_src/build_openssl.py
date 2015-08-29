@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 
 from _cffi_src.utils import build_ffi_for_binding, extra_link_args
@@ -11,15 +12,27 @@ from _cffi_src.utils import build_ffi_for_binding, extra_link_args
 
 def _get_openssl_libraries(platform):
     # OpenSSL goes by a different library name on different operating systems.
-    if platform != "win32":
+    if platform == "darwin":
+        return _osx_libraries(
+            os.environ.get("CRYPTOGRAPHY_BUILD_STATIC", None)
+        )
+    elif platform == "win32":
+        return ["libeay32", "ssleay32", "advapi32",
+                "crypt32", "gdi32", "user32", "ws2_32"]
+    else:
         # In some circumstances, the order in which these libs are
         # specified on the linker command-line is significant;
         # libssl must come before libcrypto
         # (http://marc.info/?l=openssl-users&m=135361825921871)
         return ["ssl", "crypto"]
+
+
+def _osx_libraries(build_static):
+    # For building statically we don't want to pass the -lssl or -lcrypto flags
+    if build_static == "1":
+        return []
     else:
-        return ["libeay32", "ssleay32", "advapi32",
-                "crypt32", "gdi32", "user32", "ws2_32"]
+        return ["ssl", "crypto"]
 
 
 _OSX_PRE_INCLUDE = """
