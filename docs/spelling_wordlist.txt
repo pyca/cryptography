@@ -22,6 +22,7 @@ deserialize
 deserialized
 Diffie
 Docstrings
+Django
 Encodings
 fernet
 Fernet
