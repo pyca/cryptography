@@ -125,10 +125,10 @@ Elliptic Curve Signature Algorithms
 Elliptic Curves
 ---------------
 
-Elliptic curves provide equivalent security at much smaller key sizes than other
-asymmetric cryptography systems such as RSA or DSA. For many operations elliptic
-curves are also significantly faster; `elliptic curve diffie-hellman is faster
-than diffie-hellman`_.
+Elliptic curves provide equivalent security at much smaller key sizes than
+other asymmetric cryptography systems such as RSA or DSA. For many operations
+elliptic curves are also significantly faster; `elliptic curve diffie-hellman
+is faster than diffie-hellman`_.
 
 .. note::
     Curves with a size of `less than 224 bits`_ should not be used. You should
