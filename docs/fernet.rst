@@ -162,4 +162,4 @@ For complete details consult the `specification`_.
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
-.. _`recommends`_: https://github.com/django/django/blob/master/django/utils/crypto.py#L148
+.. _`recommends`: https://github.com/django/django/blob/master/django/utils/crypto.py#L148
