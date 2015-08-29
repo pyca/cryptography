@@ -106,6 +106,43 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
     See :meth:`Fernet.decrypt` for more information.
 
+
+Using passwords with Fernet
+---------------------------
+
+It is possible to use passwords with Fernet. To do this, you need to run the
+password through a key derivation function like
+:class:`~cryptography.hazmat.primitives.kdf.PBKDF2`:
+
+.. code-block:: python
+
+    import base64
+    import os
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.fernet import Fernet
+
+    password = b"password"
+    salt = os.urandom(16)
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+    f = Fernet(key)
+
+In this scheme, the salt has to be stored in a retrievable location in order
+to derive the same key from the password in the future.
+
+The iteration count used should be adjusted to be as high as your server can
+tolerate. A good default is at least 100k iterations which is what Django
+`recommends`_.
+
 Implementation
 --------------
 
@@ -125,3 +162,4 @@ For complete details consult the `specification`_.
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
+.. _`recommends`_: https://github.com/django/django/blob/master/django/utils/crypto.py#L148
