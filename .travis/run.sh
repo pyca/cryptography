@@ -33,5 +33,5 @@ source ~/.venv/bin/activate
 tox -- $TOX_FLAGS
 # Output information about linking of the OpenSSL library on OS X
 if [[ "$(uname -s)" == "Darwin" ]]; then
-    otool -L `find .tox -name _openssl.so`
+    otool -L `find .tox -name _openssl*.so`
 fi
