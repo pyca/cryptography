@@ -111,17 +111,18 @@ Using passwords with Fernet
 ---------------------------
 
 It is possible to use passwords with Fernet. To do this, you need to run the
-password through a key derivation function like
+password through a key derivation function such as
 :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`:
 
 .. code-block:: python
 
     import base64
     import os
+
+    from cryptography.fernet import Fernet
+    from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.fernet import Fernet
 
     password = b"password"
     salt = os.urandom(16)
@@ -140,8 +141,8 @@ In this scheme, the salt has to be stored in a retrievable location in order
 to derive the same key from the password in the future.
 
 The iteration count used should be adjusted to be as high as your server can
-tolerate. A good default is at least 100k iterations which is what Django
-`recommends`_.
+tolerate. A good default is at least 100,000 iterations which is what Django
+`recommends`_ in 2014.
 
 Implementation
 --------------
