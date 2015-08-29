@@ -71,23 +71,23 @@ matrix:
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py26
+          env: TOXENV=py26 CRYPTOGRAPHY_BUILD_STATIC=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py27
+          env: TOXENV=py27 CRYPTOGRAPHY_BUILD_STATIC=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py33
+          env: TOXENV=py33 CRYPTOGRAPHY_BUILD_STATIC=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py34
+          env: TOXENV=py34 CRYPTOGRAPHY_BUILD_STATIC=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=pypy
+          env: TOXENV=pypy CRYPTOGRAPHY_BUILD_STATIC=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
@@ -112,6 +112,10 @@ matrix:
           os: osx
           osx_image: beta-xcode6.3
           env: TOXENV=docs
+        - language: generic
+          os: osx
+          osx_image: beta-xcode6.3
+          env: TOXENV=py27
 
 install:
     - ./.travis/install.sh
