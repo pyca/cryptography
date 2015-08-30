@@ -112,7 +112,8 @@ Using passwords with Fernet
 
 It is possible to use passwords with Fernet. To do this, you need to run the
 password through a key derivation function such as
-:class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`:
+:class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`, bcrypt or
+scrypt.
 
 .. code-block:: python
 
