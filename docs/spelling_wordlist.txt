@@ -1,6 +1,7 @@
 affine
 backend
 backends
+bcrypt
 Backends
 Blowfish
 boolean
@@ -22,6 +23,7 @@ deserialize
 deserialized
 Diffie
 Docstrings
+Django
 Encodings
 fernet
 Fernet
