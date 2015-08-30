@@ -1,6 +1,7 @@
 affine
 backend
 backends
+bcrypt
 Backends
 Blowfish
 boolean
