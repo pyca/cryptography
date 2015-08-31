@@ -9,7 +9,7 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         # set our flags to use homebrew openssl
         export ARCHFLAGS="-arch x86_64"
         # if the build is static we need different LDFLAGS
-        if [[ "${CRYPTOGRAPHY_BUILD_STATIC}" == "1" ]]; then
+        if [[ "${CRYPTOGRAPHY_OSX_NO_LINK_FLAGS}" == "1" ]]; then
             export LDFLAGS="/usr/local/opt/openssl/lib/libssl.a /usr/local/opt/openssl/lib/libcrypto.a"
         else
             export LDFLAGS="-L/usr/local/opt/openssl/lib"

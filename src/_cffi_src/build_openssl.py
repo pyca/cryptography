@@ -14,7 +14,7 @@ def _get_openssl_libraries(platform):
     # OpenSSL goes by a different library name on different operating systems.
     if platform == "darwin":
         return _osx_libraries(
-            os.environ.get("CRYPTOGRAPHY_BUILD_STATIC")
+            os.environ.get("CRYPTOGRAPHY_OSX_NO_LINK_FLAGS")
         )
     elif platform == "win32":
         return ["libeay32", "ssleay32", "advapi32",
