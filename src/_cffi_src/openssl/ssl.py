@@ -431,9 +431,9 @@ static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 #endif
 #ifdef OPENSSL_NO_SSL2
 static const long Cryptography_HAS_SSL2 = 0;
-SSL_METHOD* (*SSLv2_method)(void) = NULL;
-SSL_METHOD* (*SSLv2_client_method)(void) = NULL;
-SSL_METHOD* (*SSLv2_server_method)(void) = NULL;
+const SSL_METHOD *SSLv2_method(void);
+const SSL_METHOD *SSLv2_server_method(void);
+const SSL_METHOD *SSLv2_client_method(void);
 #else
 static const long Cryptography_HAS_SSL2 = 1;
 #endif
