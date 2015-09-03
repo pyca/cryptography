@@ -67,13 +67,16 @@ a few details:
     ...     x509.NameAttribute(NameOID.LOCALITY_NAME, u"San Francisco"),
     ...     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"My Company"),
     ...     x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
-    ... ])).add_extension(x509.SubjectAlternativeName([
-    ...     # Describe what sites we want this certificate for.
-    ...     x509.DNSName(u"mysite.com"),
-    ...     x509.DNSName(u"www.mysite.com"),
-    ...     x509.DNSName(u"subdomain.mysite.com"),
+    ... ])).add_extension(
+    ...     x509.SubjectAlternativeName([
+    ...         # Describe what sites we want this certificate for.
+    ...         x509.DNSName(u"mysite.com"),
+    ...         x509.DNSName(u"www.mysite.com"),
+    ...         x509.DNSName(u"subdomain.mysite.com"),
+    ...     ]),
+    ...     critical=False,
     ... # Sign the CSR with our private key.
-    ... ])).sign(key, hashes.SHA256(), default_backend())
+    ... ).sign(key, hashes.SHA256(), default_backend())
     >>> # Write our CSR out to disk.
     >>> with open("path/to/csr.pem", "wb") as f:
     ...     f.write(csr.public_bytes(serialization.Encoding.PEM))
