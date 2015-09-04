@@ -219,6 +219,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
     ],
+    "Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR": [
+        "RSA_R_OAEP_DECODING_ERROR"
+    ],
     "Cryptography_HAS_GCM": [
         "EVP_CTRL_GCM_GET_TAG",
         "EVP_CTRL_GCM_SET_TAG",

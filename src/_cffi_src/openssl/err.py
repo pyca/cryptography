@@ -14,6 +14,7 @@ static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
 static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
+static const int Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -230,6 +231,7 @@ static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
 static const int RSA_R_PKCS_DECODING_ERROR;
+static const int RSA_R_OAEP_DECODING_ERROR;
 static const int RSA_F_RSA_SIGN;
 """
 
@@ -333,5 +335,12 @@ static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
 #else
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
 static const long RSA_R_PKCS_DECODING_ERROR = 0;
+#endif
+
+#ifdef RSA_R_OAEP_DECODING_ERROR
+static const long Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR = 1;
+#else
+static const long Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR = 0;
+static const long RSA_R_OAEP_DECODING_ERROR = 0;
 #endif
 """
