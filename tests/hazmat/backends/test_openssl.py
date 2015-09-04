@@ -468,8 +468,10 @@ class TestOpenSSLRSA(object):
             )
         )
 
+        private_key_alt = RSA_KEY_512_ALT.private_key(backend)
+
         with pytest.raises(ValueError):
-            RSA_KEY_512_ALT.private_key(backend).decrypt(
+            private_key_alt.decrypt(
                 ciphertext,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
