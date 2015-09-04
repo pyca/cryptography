@@ -456,6 +456,29 @@ class TestOpenSSLRSA(object):
                 )
             )
 
+    def test_supported_oaep_decrypt(self):
+        private_key = RSA_KEY_512.private_key(backend)
+
+        ciphertext = private_key.public_key().encrypt(
+            b'secure data',
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            )
+        )
+
+        decrypted = private_key.decrypt(
+            ciphertext,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            )
+        )
+
+        assert decrypted == b'secure data'
+
 
 @pytest.mark.skipif(
     backend._lib.OPENSSL_VERSION_NUMBER <= 0x10001000,
