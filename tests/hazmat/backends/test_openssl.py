@@ -30,7 +30,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
 
 from ..primitives.fixtures_dsa import DSA_KEY_2048
-from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512, RSA_KEY_512_ALT
 from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
@@ -468,7 +468,7 @@ class TestOpenSSLRSA(object):
             )
         )
 
-        decrypted = private_key.decrypt(
+        decrypted = RSA_KEY_512_ALT.private_key(backend).decrypt(
             ciphertext,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
