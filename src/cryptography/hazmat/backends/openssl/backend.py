@@ -529,13 +529,6 @@ class Backend(object):
 
         self._binding.init_static_locks()
 
-        # adds all ciphers/digests for EVP
-        self._lib.OpenSSL_add_all_algorithms()
-        # registers available SSL/TLS ciphers and digests
-        self._lib.SSL_library_init()
-        # loads error strings for libcrypto and libssl functions
-        self._lib.SSL_load_error_strings()
-
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()

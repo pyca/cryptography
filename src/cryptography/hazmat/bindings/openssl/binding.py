@@ -92,6 +92,12 @@ class Binding(object):
             if not cls._lib_loaded:
                 cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
                 cls._lib_loaded = True
+                # initialize the SSL library
+                cls.lib.SSL_library_init()
+                # adds all ciphers/digests for EVP
+                cls.lib.OpenSSL_add_all_algorithms()
+                # loads error strings for libcrypto and libssl functions
+                cls.lib.SSL_load_error_strings()
                 cls._register_osrandom_engine()
 
     @classmethod
