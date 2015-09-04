@@ -468,16 +468,15 @@ class TestOpenSSLRSA(object):
             )
         )
 
-        decrypted = RSA_KEY_512_ALT.private_key(backend).decrypt(
-            ciphertext,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                algorithm=hashes.SHA1(),
-                label=None
+        with pytest.raises(ValueError):
+            RSA_KEY_512_ALT.private_key(backend).decrypt(
+                ciphertext,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                )
             )
-        )
-
-        assert decrypted == b'secure data'
 
 
 @pytest.mark.skipif(
