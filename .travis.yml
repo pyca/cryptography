@@ -71,23 +71,27 @@ matrix:
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py26
+          env: TOXENV=py26 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py27
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py33
+          env: TOXENV=py33 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=py34
+          env: TOXENV=py34 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
-          env: TOXENV=pypy
+          env: TOXENV=pypy CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: beta-xcode6.3
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=0
         - language: generic
           os: osx
           osx_image: beta-xcode6.3
