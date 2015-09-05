@@ -118,38 +118,65 @@ build.
 Building cryptography on OS X
 -----------------------------
 
-Building cryptography requires the presence of a C compiler and development
-headers. On OS X this is typically provided by Apple's Xcode development tools.
-To install the Xcode command line tools on open a terminal window and run:
+The wheel package on OS X is a statically linked build (as of 1.0.1) so for
+users on 10.10 (Yosemite) and above you need two steps:
 
 .. code-block:: console
 
     $ xcode-select --install
 
-This will install a compiler (clang) along with the required development
-headers. If you wish to compile against a more recent OpenSSL than the
-version shipped with OS X see the next section.
+followed by
 
-Using your own OpenSSL on OS X
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block:: console
 
-To link cryptography against a custom version of OpenSSL you'll need to set
-``ARCHFLAGS``, ``LDFLAGS``, and ``CFLAGS``. OpenSSL can be installed via
-`Homebrew`_ or `MacPorts`_:
+    $ pip install cryptography
+
+If you want to build cryptography yourself or are on an older OS X version
+cryptography requires the presence of a C compiler, development headers, and
+the proper libraries. On OS X much of this is provided by Apple's Xcode
+development tools.  To install the Xcode command line tools open a terminal
+window and run:
+
+.. code-block:: console
+
+    $ xcode-select --install
+
+This will install a compiler (clang) along with (most of) the required
+development headers.
+
+You'll also need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
+
+To build cryptography and dynamically link it:
 
 `Homebrew`_
 
 .. code-block:: console
 
     $ brew install openssl
-    $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography
+    $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography
 
-or `MacPorts`_:
+`MacPorts`_:
 
 .. code-block:: console
 
     $ sudo port install openssl
-    $ env ARCHFLAGS="-arch x86_64" LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" pip install cryptography
+    $ env LDFLAGS="-L/opt/local/lib" CFLAGS="-I/opt/local/include" pip install cryptography
+
+You can also build cryptography statically:
+
+`Homebrew`_
+
+.. code-block:: console
+
+    $ brew install openssl
+    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl)/lib/libssl.a $(brew --prefix openssl)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography
+
+`MacPorts`_:
+
+.. code-block:: console
+
+    $ sudo port install openssl
+    $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
 
 Building cryptography with conda
 --------------------------------
