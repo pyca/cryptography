@@ -6,6 +6,18 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+1.0.1 - 2015-09-05
+~~~~~~~~~~~~~~~~~~
+
+* We now ship OS X wheels that statically link OpenSSL by default. When
+  installing a wheel on OS X 10.10+ (and using a Python compiled against the
+  10.10 SDK) users will no longer need to compile. See :doc:`/installation` for
+  alternate installation methods if required.
+* Set the default string mask to UTF-8 in the OpenSSL backend to resolve
+  character encoding issues with older versions of OpenSSL.
+* Several new OpenSSL bindings have been added to support a future pyOpenSSL
+  release.
+* Raise an error during install on PyPy < 2.6. 1.0+ requires PyPy 2.6+.
 
 1.0 - 2015-08-12
 ~~~~~~~~~~~~~~~~
