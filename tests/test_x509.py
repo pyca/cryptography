@@ -722,7 +722,7 @@ class TestRSACertificateRequest(object):
     def test_public_bytes_txt(self, backend):
         # Load an existing CSR.
         request = _load_cert(
-            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            os.path.join("x509", "requests", "san_rsa_sha1.pem"),
             x509.load_pem_x509_csr,
             backend
         )
