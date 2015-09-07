@@ -458,6 +458,25 @@ class TestRSACertificate(object):
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
 
+    def test_public_bytes_txt(self, backend):
+        # Load an existing certificate.
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        # Encode it to TXT.
+        cert = cert.public_bytes(
+            encoding=serialization.Encoding.TXT,
+        )
+
+        # We should recover what we had to start with.
+        assert 'Issuer: C=US, O=Test Certificates 2011, CN=Trust' in cert
+        assert 'Subject: C=US, O=Test Certificates 2011, CN=Good CA' in cert
+        assert 'keyid:E4:7D:5F:D1:5C:95:86:08:2C:' in cert
+        assert 'Signature Algorithm: sha256WithRSAEncryption' in cert
+
     def test_public_bytes_invalid_encoding(self, backend):
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
@@ -699,6 +718,26 @@ class TestRSACertificateRequest(object):
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, u'PyCA'),
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ]
+
+    def test_public_bytes_txt(self, backend):
+        # Load an existing CSR.
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+
+        # Encode it to TXT
+        request = request.public_bytes(
+            encoding=serialization.Encoding.TXT,
+        )
+
+        assert 'Certificate Request:' in request
+        assert 'Subject: C=US, ST=Illinois, L=Chicago, O=PyCA,' in request
+        assert 'Public Key Algorithm: rsaEncryption' in request
+        assert 'X509v3 Subject Alternative Name:' in request
+        assert 'DNS:cryptography.io, DNS:sub.cryptography.io' in request
+        assert 'Signature Algorithm: sha1WithRSAEncryption' in request
 
     def test_public_bytes_invalid_encoding(self, backend):
         request = _load_cert(

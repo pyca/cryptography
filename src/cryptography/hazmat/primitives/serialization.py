@@ -157,6 +157,7 @@ def _read_next_mpint(data):
 class Encoding(Enum):
     PEM = "PEM"
     DER = "DER"
+    TXT = "TXT"
 
 
 class PrivateFormat(Enum):
