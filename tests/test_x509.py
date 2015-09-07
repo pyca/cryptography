@@ -466,10 +466,10 @@ class TestRSACertificate(object):
             backend
         )
 
-        # Encode it to TXT.
-        cert = cert.public_bytes(
+        # Encode it to TXT and force str type
+        cert = str(cert.public_bytes(
             encoding=serialization.Encoding.TXT,
-        )
+        ))
 
         # We should recover what we had to start with.
         assert 'Issuer: C=US, O=Test Certificates 2011, CN=Trust' in cert
@@ -727,10 +727,10 @@ class TestRSACertificateRequest(object):
             backend
         )
 
-        # Encode it to TXT
-        request = request.public_bytes(
+        # Encode it to TXT and force str type
+        request = str(request.public_bytes(
             encoding=serialization.Encoding.TXT,
-        )
+        ))
 
         assert 'Certificate Request:' in request
         assert 'Subject: C=US, ST=Illinois, L=Chicago, O=PyCA,' in request
