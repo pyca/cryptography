@@ -410,5 +410,9 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE": [
         "X509_V_FLAG_CHECK_SS_SIGNATURE",
-    ]
+    ],
+    "Cryptography_HAS_SET_CERT_CB": [
+        "SSL_CTX_set_cert_cb",
+        "SSL_set_cert_cb",
+    ],
 }

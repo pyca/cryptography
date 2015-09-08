@@ -126,9 +126,9 @@ Elliptic Curves
 ---------------
 
 Elliptic curves provide equivalent security at much smaller key sizes than
-asymmetric cryptography systems such as RSA or DSA. For some operations they
-can also provide higher performance at every security level. According to NIST
-they can have as much as a `64x lower computational cost than DH`_.
+other asymmetric cryptography systems such as RSA or DSA. For many operations
+elliptic curves are also significantly faster; `elliptic curve diffie-hellman
+is faster than diffie-hellman`_.
 
 .. note::
     Curves with a size of `less than 224 bits`_ should not be used. You should
@@ -421,7 +421,7 @@ Key Interfaces
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
-.. _`64x lower computational cost than DH`: https://www.nsa.gov/business/programs/elliptic_curve.shtml
+.. _`elliptic curve diffie-hellman is faster than diffie-hellman`: http://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
 .. _`minimize the number of security concerns for elliptic-curve cryptography`: http://cr.yp.to/ecdh/curve25519-20060209.pdf
 .. _`SafeCurves`: http://safecurves.cr.yp.to/
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA

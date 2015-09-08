@@ -35,8 +35,8 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             ;;
         pypy)
             brew outdated pyenv || brew upgrade pyenv
-            pyenv install pypy-2.6.0
-            pyenv global pypy-2.6.0
+            pyenv install pypy-2.6.1
+            pyenv global pypy-2.6.1
             ;;
         pypy3)
             brew outdated pyenv || brew upgrade pyenv
@@ -57,8 +57,8 @@ else
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv install pypy-2.6.0
-        pyenv global pypy-2.6.0
+        pyenv install pypy-2.6.1
+        pyenv global pypy-2.6.1
     fi
     pip install virtualenv
 fi
