@@ -24,11 +24,15 @@ class ObjectIdentifier(object):
     def __repr__(self):
         return "<ObjectIdentifier(oid={0}, name={1})>".format(
             self.dotted_string,
-            _OID_NAMES.get(self, "Unknown OID")
+            self._name
         )
 
     def __hash__(self):
         return hash(self.dotted_string)
+
+    @property
+    def _name(self):
+        return _OID_NAMES.get(self, "Unknown OID")
 
     dotted_string = utils.read_only_property("_dotted_string")
 
