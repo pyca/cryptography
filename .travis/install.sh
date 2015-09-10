@@ -10,7 +10,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
         brew outdated openssl || brew upgrade openssl
     fi
 
-    if which pyenv > /dev/null; then
+    if which -s pyenv; then
         eval "$(pyenv init -)"
     fi
 
