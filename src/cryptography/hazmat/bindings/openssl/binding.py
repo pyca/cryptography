@@ -182,6 +182,8 @@ class Binding(object):
 # although it's still unclear what happens when a subinterpreter which
 # has registered the locks is destroyed. Do the callback functions still work
 # or are all the objects associated with that subinterpreter destroyed?
+# imp.acquire_lock() is global even in 3.4+ while import locks have moved to
+# per module granularity.
 try:
     imp.acquire_lock()
     Binding.init_static_locks()
