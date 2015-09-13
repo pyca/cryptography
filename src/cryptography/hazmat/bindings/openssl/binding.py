@@ -182,7 +182,9 @@ class Binding(object):
 # although it's still unclear what happens when a subinterpreter which
 # has registered the locks is destroyed. Do the callback functions still work
 # or are all the objects associated with that subinterpreter destroyed?
-imp.acquire_lock()
-Binding.init_static_locks()
-Binding._ensure_ffi_initialized()
-imp.release_lock()
+try:
+    imp.acquire_lock()
+    Binding.init_static_locks()
+    Binding._ensure_ffi_initialized()
+finally:
+    imp.release_lock()
