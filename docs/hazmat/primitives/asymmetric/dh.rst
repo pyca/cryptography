@@ -29,7 +29,7 @@ Numbers
         The private value.
 
 
-.. class:: DHPublicNumbers(parameters, y)
+.. class:: DHPublicNumbers(y, parameter_numbers)
 
     .. versionadded:: 0.8
 
