@@ -38,8 +38,8 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.5.0
             ;;
         pypy)
-            pyenv install pypy-2.6.1
-            pyenv global pypy-2.6.1
+            pyenv install pypy-c-jit-latest
+            pyenv global pypy-c-jit-latest
             ;;
         pypy3)
             pyenv install pypy3-2.4.0
@@ -53,14 +53,15 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv rehash
     python -m pip install --user virtualenv
 else
-    # temporary pyenv installation to get pypy-2.6 before container infra upgrade
+    # temporary pyenv installation to get latest pypy before container infra upgrade
+    # now using the -latest because of a segfault bug we're encountering in 2.6.1
     if [[ "${TOXENV}" == "pypy" ]]; then
         git clone https://github.com/yyuu/pyenv.git ~/.pyenv
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv install pypy-2.6.1
-        pyenv global pypy-2.6.1
+        pyenv install pypy-c-jit-latest
+        pyenv global pypy-c-jit-latest
     fi
     pip install virtualenv
 fi
