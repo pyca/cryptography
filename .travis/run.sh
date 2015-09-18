@@ -26,7 +26,6 @@ else
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv global pypy-2.6.1
     fi
 fi
 source ~/.venv/bin/activate
