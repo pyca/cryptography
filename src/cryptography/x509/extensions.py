@@ -15,7 +15,7 @@ from pyasn1.type import namedtype, univ
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, constant_time
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
@@ -193,9 +193,7 @@ class SubjectKeyIdentifier(object):
         if not isinstance(other, SubjectKeyIdentifier):
             return NotImplemented
 
-        return (
-            self.digest == other.digest
-        )
+        return constant_time.bytes_eq(self.digest, other.digest)
 
     def __ne__(self, other):
         return not self == other
