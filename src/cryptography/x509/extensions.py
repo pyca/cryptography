@@ -15,7 +15,7 @@ from pyasn1.type import namedtype, univ
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives import serialization, constant_time
+from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
