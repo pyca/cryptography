@@ -976,11 +976,17 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             builder.issuer_name(object)
 
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(issuer_name="subject")
+
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(issuer_name=object)
+
     def test_issuer_name_may_only_be_set_once(self):
         name = x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])
-        builder = x509.CertificateBuilder().issuer_name(name)
+        builder = x509.CertificateBuilder(issuer_name=name)
 
         with pytest.raises(ValueError):
             builder.issuer_name(name)
@@ -994,11 +1000,17 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             builder.subject_name(object)
 
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(subject_name="subject")
+
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(subject_name=object)
+
     def test_subject_name_may_only_be_set_once(self):
         name = x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
         ])
-        builder = x509.CertificateBuilder().subject_name(name)
+        builder = x509.CertificateBuilder(subject_name=name)
 
         with pytest.raises(ValueError):
             builder.subject_name(name)
@@ -1017,7 +1029,7 @@ class TestCertificateBuilder(object):
     def test_public_key_may_only_be_set_once(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
         public_key = private_key.public_key()
-        builder = x509.CertificateBuilder().public_key(public_key)
+        builder = x509.CertificateBuilder(public_key=public_key)
 
         with pytest.raises(ValueError):
             builder.public_key(public_key)
@@ -1026,17 +1038,26 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().serial_number(10.0)
 
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(serial_number=10.0)
+
     def test_serial_number_must_be_non_negative(self):
         with pytest.raises(ValueError):
             x509.CertificateBuilder().serial_number(-10)
+
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder(serial_number=-10)
 
     def test_serial_number_must_be_less_than_160_bits_long(self):
         with pytest.raises(ValueError):
             # 2 raised to the 160th power is actually 161 bits
             x509.CertificateBuilder().serial_number(2 ** 160)
 
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder(serial_number=2 ** 160)
+
     def test_serial_number_may_only_be_set_once(self):
-        builder = x509.CertificateBuilder().serial_number(10)
+        builder = x509.CertificateBuilder(serial_number=10)
 
         with pytest.raises(ValueError):
             builder.serial_number(20)
@@ -1053,9 +1074,20 @@ class TestCertificateBuilder(object):
                 datetime.datetime(1960, 8, 10)
             )
 
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(not_valid_after=104204304504)
+
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(not_valid_after=datetime.time())
+
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder(
+                not_valid_after=datetime.datetime(1960, 8, 10)
+            )
+
     def test_not_valid_after_may_only_be_set_once(self):
-        builder = x509.CertificateBuilder().not_valid_after(
-            datetime.datetime.now()
+        builder = x509.CertificateBuilder(
+            not_valid_after=datetime.datetime.now()
         )
 
         with pytest.raises(ValueError):
@@ -1075,9 +1107,20 @@ class TestCertificateBuilder(object):
                 datetime.datetime(1960, 8, 10)
             )
 
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(not_valid_before=104204304504)
+
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(not_valid_before=datetime.time())
+
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder(
+                not_valid_before=datetime.datetime(1960, 8, 10)
+            )
+
     def test_not_valid_before_may_only_be_set_once(self):
-        builder = x509.CertificateBuilder().not_valid_before(
-            datetime.datetime.now()
+        builder = x509.CertificateBuilder(
+            not_valid_before=datetime.datetime.now()
         )
 
         with pytest.raises(ValueError):
