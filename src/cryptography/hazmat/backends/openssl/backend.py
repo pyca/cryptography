@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import calendar
 import collections
+import datetime
 import itertools
 from contextlib import contextmanager
 
@@ -1940,6 +1941,52 @@ class Backend(object):
         res = write_bio(bio, key)
         assert res == 1
         return self._read_mem_bio(bio)
+
+    def _asn1_integer_to_int(self, asn1_int):
+        bn = self._lib.ASN1_INTEGER_to_BN(asn1_int, self._ffi.NULL)
+        assert bn != self._ffi.NULL
+        bn = self._ffi.gc(bn, self._lib.BN_free)
+        return self._bn_to_int(bn)
+
+    def _asn1_string_to_bytes(self, asn1_string):
+        return self._ffi.buffer(asn1_string.data, asn1_string.length)[:]
+
+    def _asn1_string_to_ascii(self, asn1_string):
+        return self._asn1_string_to_bytes(asn1_string).decode("ascii")
+
+    def _asn1_string_to_utf8(self, asn1_string):
+        buf = self._ffi.new("unsigned char **")
+        res = self._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
+        assert res >= 0
+        assert buf[0] != self._ffi.NULL
+        buf = self._ffi.gc(
+            buf, lambda buffer: self._lib.OPENSSL_free(buffer[0])
+        )
+        return self._ffi.buffer(buf[0], res)[:].decode('utf8')
+
+    def _asn1_to_der(self, asn1_type):
+        buf = self._ffi.new("unsigned char **")
+        res = self._lib.i2d_ASN1_TYPE(asn1_type, buf)
+        assert res >= 0
+        assert buf[0] != self._ffi.NULL
+        buf = self._ffi.gc(
+            buf, lambda buffer: self._lib.OPENSSL_free(buffer[0])
+        )
+        return self._ffi.buffer(buf[0], res)[:]
+
+    def _parse_asn1_time(self, asn1_time):
+        assert asn1_time != self._ffi.NULL
+        generalized_time = self._lib.ASN1_TIME_to_generalizedtime(
+            asn1_time, self._ffi.NULL
+        )
+        assert generalized_time != self._ffi.NULL
+        generalized_time = self._ffi.gc(
+            generalized_time, self._lib.ASN1_GENERALIZEDTIME_free
+        )
+        time = self._asn1_string_to_ascii(
+            self._ffi.cast("ASN1_STRING *", generalized_time)
+        )
+        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
 class GetCipherByName(object):
