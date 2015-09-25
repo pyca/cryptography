@@ -790,7 +790,6 @@ class Backend(object):
             bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
             # A zero length means the BN has value 0
             self.openssl_assert(bin_len >= 0)
-            self.openssl_assert(bin_ptr != self._ffi.NULL)
             return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
 
         else:
