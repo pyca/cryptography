@@ -138,7 +138,7 @@ Generally the NIST prime field ("P") curves are significantly faster than the
 other types suggested by NIST at both signing and verifying with ECDSA.
 
 Prime fields also `minimize the number of security concerns for elliptic-curve
-cryptography`_. However there is `some concern`_ that both the prime field and
+cryptography`_. However, there is `some concern`_ that both the prime field and
 binary field ("B") NIST curves may have been weakened during their generation.
 
 Currently `cryptography` only supports NIST curves, none of which are
