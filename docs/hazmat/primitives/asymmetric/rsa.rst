@@ -421,7 +421,7 @@ Handling partial RSA private keys
 If you are trying to load RSA private keys yourself you may find that not all
 parameters required by ``RSAPrivateNumbers`` are available. In particular the
 `Chinese Remainder Theorem`_ (CRT) values ``dmp1``, ``dmq1``, ``iqmp`` may be
-missing or present in a different form. For example `OpenPGP`_ does not include
+missing or present in a different form. For example, `OpenPGP`_ does not include
 the ``iqmp``, ``dmp1`` or ``dmq1`` parameters.
 
 The following functions are provided for users who want to work with keys like
