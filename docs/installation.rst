@@ -10,8 +10,8 @@ You can install ``cryptography`` with ``pip``:
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4 and PyPy 2.6+
-on these operating systems.
+Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
+2.6+ on these operating systems.
 
 * x86-64 CentOS 7.x, 6.4 and CentOS 5.x
 * x86-64 FreeBSD 10
