@@ -506,6 +506,99 @@ Different KDFs are suitable for different tasks such as:
         ``key_material`` generates the same key as the ``expected_key``, and
         raises an exception if they do not match.
 
+.. currentmodule:: cryptography.hazmat.primitives.kdf.x963kdf
+
+.. class:: X963KDF(algorithm, length, otherinfo, backend)
+
+    .. versionadded:: 1.1
+
+    X963KDF (ANSI X9.63 Key Derivation Function) is defined by ANSI
+    in the `ANSI X9.63:2001`_ document, to be used to derive keys for use
+    after a Key Exchange negotiation operation.
+
+    SECG in `SEC 1 v2.0`_ recommends that
+    :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash` be
+    used for new projects. This KDF should only be used for backwards
+    compatibility with pre-existing protocols.
+
+
+    .. warning::
+
+        X963KDF should not be used for password storage.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> sharedinfo = b"ANSI X9.63 Example"
+        >>> xkdf = X963KDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=256,
+        ...     sharedinfo=sharedinfo,
+        ...     backend=backend
+        ... )
+        >>> key = xkdf.derive(b"input key")
+        >>> xkdf = X963KDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     length=256,
+        ...     sharedinfo=sharedinfo,
+        ...     backend=backend
+        ... )
+        >>> xkdf.verify(b"input key", key)
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider
+
+    :param int length: The desired length of the derived key in bytes.
+        Maximum is ``hashlen * (2^32 -1)``.
+
+    :param bytes sharedinfo: Application specific context information.
+        If ``None`` is explicitly passed an empty byte string will be used.
+
+    :param backend: A cryptography backend
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+        if the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+
+    :raises TypeError: This exception is raised if ``sharedinfo`` is not
+        ``bytes``.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is
+                            not ``bytes``.
+
+        Derives a new key from the input key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
 
 Interface
 ~~~~~~~~~
@@ -556,6 +649,8 @@ Interface
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
 .. _`NIST SP 800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
+.. _`ANSI X9.63:2001`: https://webstore.ansi.org
+.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
 .. _`Password Storage Cheat Sheet`: https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet
 .. _`PBKDF2`: https://en.wikipedia.org/wiki/PBKDF2
 .. _`scrypt`: https://en.wikipedia.org/wiki/Scrypt

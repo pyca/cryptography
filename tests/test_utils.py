@@ -24,6 +24,7 @@ from .utils import (
     load_hash_vectors, load_kasvs_dh_vectors,
     load_kasvs_ecdh_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
+    load_x963_vectors,
     raises_unsupported_algorithm, select_backends, skip_if_empty
 )
 
@@ -3408,6 +3409,86 @@ ffdfa60dd7
     ]
 
     assert expected == load_kasvs_ecdh_vectors(vector_data)
+
+
+def test_load_x963_vectors():
+    vector_data = textwrap.dedent("""
+    # CAVS 12.0
+    # 'ANS X9.63-2001' information for sample
+
+    [SHA-1]
+    [shared secret length = 192]
+    [SharedInfo length = 0]
+    [key data length = 128]
+
+    COUNT = 0
+    Z = 1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd
+    SharedInfo =
+        Counter = 00000001
+        Hash input 1 = 1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd00000001
+        K1 = bf71dffd8f4d99223936beb46fee8ccc60439b7e
+    key_data = bf71dffd8f4d99223936beb46fee8ccc
+
+    COUNT = 1
+    Z = 5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab1
+    SharedInfo =
+        Counter = 00000001
+        Hash input 1 = 5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab100000001
+        K1 = ec3e224446bfd7b3be1df404104af953c1b2d0f5
+    key_data = ec3e224446bfd7b3be1df404104af953
+
+    [SHA-512]
+    [shared secret length = 521]
+    [SharedInfo length = 128]
+    [key data length = 1024]
+
+    COUNT = 0
+    Z = 00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb369348b8150739\
+2f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d
+    SharedInfo = e3b5b4c1b0d5cf1d2b3a2f9937895d31
+        Counter = 00000001
+        Hash input 1 = 00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9ad\
+b369348b81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d0\
+0000001e3b5b4c1b0d5cf1d2b3a2f9937895d31
+        K1 = 4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7fa733633d6\
+e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee20800226
+        Counter = 00000002
+        Hash input 2 = 00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9ad\
+b369348b81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d0\
+0000002e3b5b4c1b0d5cf1d2b3a2f9937895d31
+        K2 = 7089dbf351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1\
+a59b4106cf2dbbc0ab2aa8e2efa7b17902d34276951ceccab87f9661c3e8816
+    key_data = 4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7fa733633\
+d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089dbf351f3f\
+5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2aa8e2ef\
+a7b17902d34276951ceccab87f9661c3e8816
+    """).splitlines()
+
+    assert load_x963_vectors(vector_data) == [
+        {"hash": "SHA-1", "count": 0,
+         "shared_secret_length": 192,
+         "Z": "1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd",
+         "sharedinfo_length": 0,
+         "key_data_length": 128,
+         "key_data": "bf71dffd8f4d99223936beb46fee8ccc"},
+        {"hash": "SHA-1", "count": 1,
+         "shared_secret_length": 192,
+         "Z": "5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab1",
+         "sharedinfo_length": 0,
+         "key_data_length": 128,
+         "key_data": "ec3e224446bfd7b3be1df404104af953"},
+        {"hash": "SHA-512", "count": 0,
+         "shared_secret_length": 521,
+         "Z": "00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb369348b\
+81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d",
+         "sharedinfo_length": 128,
+         "sharedinfo": "e3b5b4c1b0d5cf1d2b3a2f9937895d31",
+         "key_data_length": 1024,
+         "key_data": "4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7f\
+a733633d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089db\
+f351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2\
+aa8e2efa7b17902d34276951ceccab87f9661c3e8816"},
+    ]
 
 
 def test_vector_version():

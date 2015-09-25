@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import collections
+import math
 import re
 from contextlib import contextmanager
 
@@ -670,7 +671,7 @@ def load_kasvs_ecdh_vectors(vector_data):
     result_rx = re.compile(r"([FP]) \(([0-9]+) -")
 
     tags = []
-    sets = dict()
+    sets = {}
     vectors = []
 
     # find info in header
@@ -708,8 +709,8 @@ def load_kasvs_ecdh_vectors(vector_data):
 
     # Data
     data = {
-        "CAVS": dict(),
-        "IUT": dict(),
+        "CAVS": {},
+        "IUT": {},
     }
     tag = None
     for line in vector_data:
@@ -755,8 +756,56 @@ def load_kasvs_ecdh_vectors(vector_data):
             vectors.append(data)
 
             data = {
-                "CAVS": dict(),
-                "IUT": dict(),
+                "CAVS": {},
+                "IUT": {},
             }
+
+    return vectors
+
+
+def load_x963_vectors(vector_data):
+    """
+    Loads data out of the X9.63 vector data
+    """
+
+    vectors = []
+
+    # Sets Metadata
+    hashname = None
+    vector = {}
+    for line in vector_data:
+        line = line.strip()
+
+        if line.startswith("[SHA"):
+            hashname = line[1:-1]
+            shared_secret_len = 0
+            shared_info_len = 0
+            key_data_len = 0
+        elif line.startswith("[shared secret length"):
+            shared_secret_len = int(line[1:-1].split("=")[1].strip())
+        elif line.startswith("[SharedInfo length"):
+            shared_info_len = int(line[1:-1].split("=")[1].strip())
+        elif line.startswith("[key data length"):
+            key_data_len = int(line[1:-1].split("=")[1].strip())
+        elif line.startswith("COUNT"):
+            count = int(line.split("=")[1].strip())
+            vector["hash"] = hashname
+            vector["count"] = count
+            vector["shared_secret_length"] = shared_secret_len
+            vector["sharedinfo_length"] = shared_info_len
+            vector["key_data_length"] = key_data_len
+        elif line.startswith("Z"):
+            vector["Z"] = line.split("=")[1].strip()
+            assert math.ceil(shared_secret_len / 8) * 2 == len(vector["Z"])
+        elif line.startswith("SharedInfo"):
+            if shared_info_len != 0:
+                vector["sharedinfo"] = line.split("=")[1].strip()
+                silen = len(vector["sharedinfo"])
+                assert math.ceil(shared_info_len / 8) * 2 == silen
+        elif line.startswith("key_data"):
+            vector["key_data"] = line.split("=")[1].strip()
+            assert math.ceil(key_data_len / 8) * 2 == len(vector["key_data"])
+            vectors.append(vector)
+            vector = {}
 
     return vectors
