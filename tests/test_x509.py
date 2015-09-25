@@ -52,6 +52,252 @@ def _load_cert(filename, loader, backend):
     return cert
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestCertificateRevocationList(object):
+    def test_load_pem_crl(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl, x509.CertificateRevocationList)
+        fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
+        assert fingerprint == b"3234b0cb4c0cedf6423724b736729dcfc9e441ef"
+        assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+
+    def test_load_der_crl(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl, x509.CertificateRevocationList)
+        fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
+        assert fingerprint == b"dd3db63c50f4c4a13e090f14053227cb1011a5ad"
+        assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+
+    def test_invalid_pem(self, backend):
+        with pytest.raises(ValueError):
+            x509.load_pem_x509_crl(b"notacrl", backend)
+
+    def test_invalid_der(self, backend):
+        with pytest.raises(ValueError):
+            x509.load_der_x509_crl(b"notacrl", backend)
+
+    def test_unknown_signature_algorithm(self, backend):
+        crl = _load_cert(
+            os.path.join(
+                "x509", "custom", "crl_md2_unknown_crit_entry_ext.pem"
+            ),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(UnsupportedAlgorithm):
+                crl.signature_hash_algorithm()
+
+    def test_issuer(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl.issuer, x509.Name)
+        assert list(crl.issuer) == [
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US'),
+            x509.NameAttribute(
+                x509.OID_ORGANIZATION_NAME, u'Test Certificates 2011'
+            ),
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'Good CA')
+        ]
+        assert crl.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) == [
+            x509.NameAttribute(x509.OID_COMMON_NAME, u'Good CA')
+        ]
+
+    def test_equality(self, backend):
+        crl1 = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        crl2 = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        crl3 = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert crl1 == crl2
+        assert crl1 != crl3
+        assert crl1 != object()
+
+    def test_update_dates(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl.next_update, datetime.datetime)
+        assert isinstance(crl.last_update, datetime.datetime)
+
+        assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
+        assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
+
+    def test_revoked_certs(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert isinstance(crl.revoked_certificates, list)
+        for r in crl.revoked_certificates:
+                assert isinstance(r, x509.RevokedCertificate)
+
+    def test_extensions(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # CRL extensions are currently not supported in the OpenSSL backend.
+        with pytest.raises(NotImplementedError):
+                crl.extensions
+
+
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestRevokedCertificate(object):
+
+    def test_revoked_basics(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        for i, rev in enumerate(crl.revoked_certificates):
+            assert isinstance(rev, x509.RevokedCertificate)
+            assert isinstance(rev.serial_number, int)
+            assert isinstance(rev.revocation_date, datetime.datetime)
+            assert isinstance(rev.extensions, x509.Extensions)
+
+            assert rev.serial_number == i
+            assert rev.revocation_date.isoformat() == "2015-01-01T00:00:00"
+
+    def test_revoked_extensions(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # First revoked cert doesn't have extensions, test if it is handled
+        # correctly.
+        rev0 = crl.revoked_certificates[0]
+        # It should return an empty Extensions object.
+        assert isinstance(rev0.extensions, x509.Extensions)
+        assert len(rev0.extensions) == 0
+        with pytest.raises(x509.ExtensionNotFound):
+            rev0.extensions.get_extension_for_oid(x509.OID_CRL_REASON)
+
+        assert rev0.get_invalidity_date() is None
+        assert rev0.get_certificate_issuer() is None
+        assert rev0.get_reason() is None
+
+        # Test manual retrieval of extension values.
+        rev1 = crl.revoked_certificates[1]
+        assert isinstance(rev1.extensions, x509.Extensions)
+
+        reason = rev1.extensions.get_extension_for_oid(
+            x509.OID_CRL_REASON).value
+        assert reason == x509.ReasonFlags.unspecified
+
+        date = rev1.extensions.get_extension_for_oid(
+            x509.OID_INVALIDITY_DATE).value
+        assert isinstance(date, datetime.datetime)
+        assert date.isoformat() == "2015-01-01T00:00:00"
+
+        # Test convenience function.
+        assert rev1.get_invalidity_date().isoformat() == "2015-01-01T00:00:00"
+
+        # Check if all reason flags can be found in the CRL.
+        flags = set(x509.ReasonFlags)
+        # The first revoked cert doesn't have a reason.
+        for r in crl.revoked_certificates[1:]:
+            flags.discard(r.get_reason())
+        assert len(flags) == 0
+
+    def test_duplicate_entry_ext(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_dup_entry_ext.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(x509.DuplicateExtension):
+            crl.revoked_certificates[0].extensions
+
+    def test_unsupported_crit_entry_ext(self, backend):
+        crl = _load_cert(
+            os.path.join(
+                "x509", "custom", "crl_md2_unknown_crit_entry_ext.pem"
+            ),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(x509.UnsupportedExtension):
+            crl.revoked_certificates[0].extensions
+
+    def test_unsupported_reason(self, backend):
+        crl = _load_cert(
+            os.path.join(
+                "x509", "custom", "crl_unsupported_reason.pem"
+            ),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(ValueError):
+            crl.revoked_certificates[0].extensions
+
+    def test_cert_issuer_ext(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10000000:
+            pytest.skip("Requires a newer OpenSSL. Must be at least 1.0.0")
+
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        exp_issuer = x509.GeneralNames([
+            x509.DirectoryName(x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u"cryptography.io"),
+            ]))
+        ])
+
+        rev = crl.revoked_certificates[1]
+        issuer = rev.extensions.get_extension_for_oid(
+            x509.OID_CERTIFICATE_ISSUER).value
+        assert issuer == exp_issuer
+
+        # Test convenience function.
+        assert rev.get_certificate_issuer() == exp_issuer
+
+
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRSACertificate(object):
