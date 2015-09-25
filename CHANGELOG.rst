@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF`.
+
 1.0.1 - 2015-09-05
 ~~~~~~~~~~~~~~~~~~
 
