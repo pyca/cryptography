@@ -132,6 +132,14 @@ matrix:
           env: TOXENV=pypy OPENSSL=0.9.8
         - language: generic
           os: osx
+          osx_image: osx10.11
+          env: TOXENV=py26 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: osx10.11
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
           osx_image: xcode7
           env: TOXENV=docs
 
