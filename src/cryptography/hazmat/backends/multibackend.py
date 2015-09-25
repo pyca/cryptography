@@ -271,6 +271,19 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
+    def derive_elliptic_curve_public_point(self, private_value, curve):
+        for b in self._filtered_backends(EllipticCurveBackend):
+            try:
+                return b.derive_elliptic_curve_public_point(private_value,
+                                                            curve)
+            except UnsupportedAlgorithm:
+                continue
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support this elliptic curve.",
+            _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        )
+
     def load_pem_private_key(self, data, password):
         for b in self._filtered_backends(PEMSerializationBackend):
             return b.load_pem_private_key(data, password)
