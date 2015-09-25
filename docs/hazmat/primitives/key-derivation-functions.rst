@@ -519,7 +519,7 @@ Different KDFs are suitable for different tasks such as:
     SECG in `SEC 1 v2.0`_ recommends that
     :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash` be
     used for new projects. This KDF should only be used for backwards
-    compatibility with pre-existing implementations.
+    compatibility with pre-existing protocols.
 
 
     .. warning::

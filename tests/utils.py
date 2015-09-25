@@ -671,7 +671,7 @@ def load_kasvs_ecdh_vectors(vector_data):
     result_rx = re.compile(r"([FP]) \(([0-9]+) -")
 
     tags = []
-    sets = dict()
+    sets = {}
     vectors = []
 
     # find info in header
@@ -709,8 +709,8 @@ def load_kasvs_ecdh_vectors(vector_data):
 
     # Data
     data = {
-        "CAVS": dict(),
-        "IUT": dict(),
+        "CAVS": {},
+        "IUT": {},
     }
     tag = None
     for line in vector_data:
@@ -756,8 +756,8 @@ def load_kasvs_ecdh_vectors(vector_data):
             vectors.append(data)
 
             data = {
-                "CAVS": dict(),
-                "IUT": dict(),
+                "CAVS": {},
+                "IUT": {},
             }
 
     return vectors
@@ -772,7 +772,7 @@ def load_x963_vectors(vector_data):
 
     # Sets Metadata
     hashname = None
-    vector = dict()
+    vector = {}
     for line in vector_data:
         line = line.strip()
 
@@ -791,21 +791,21 @@ def load_x963_vectors(vector_data):
             count = int(line.split("=")[1].strip())
             vector["hash"] = hashname
             vector["count"] = count
-            vector["shared secret length"] = shared_secret_len
-            vector["SharedInfo length"] = shared_info_len
-            vector["key data length"] = key_data_len
+            vector["shared_secret_length"] = shared_secret_len
+            vector["sharedinfo_length"] = shared_info_len
+            vector["key_data_length"] = key_data_len
         elif line.startswith("Z"):
             vector["Z"] = line.split("=")[1].strip()
             assert math.ceil(shared_secret_len / 8) * 2 == len(vector["Z"])
         elif line.startswith("SharedInfo"):
             if shared_info_len != 0:
-                vector["SharedInfo"] = line.split("=")[1].strip()
-                silen = len(vector["SharedInfo"])
+                vector["sharedinfo"] = line.split("=")[1].strip()
+                silen = len(vector["sharedinfo"])
                 assert math.ceil(shared_info_len / 8) * 2 == silen
         elif line.startswith("key_data"):
             vector["key_data"] = line.split("=")[1].strip()
             assert math.ceil(key_data_len / 8) * 2 == len(vector["key_data"])
             vectors.append(vector)
-            vector = dict()
+            vector = {}
 
     return vectors

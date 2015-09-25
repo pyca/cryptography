@@ -3466,24 +3466,24 @@ a7b17902d34276951ceccab87f9661c3e8816
 
     assert load_x963_vectors(vector_data) == [
         {"hash": "SHA-1", "count": 0,
-         "shared secret length": 192,
+         "shared_secret_length": 192,
          "Z": "1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd",
-         "SharedInfo length": 0,
-         "key data length": 128,
+         "sharedinfo_length": 0,
+         "key_data_length": 128,
          "key_data": "bf71dffd8f4d99223936beb46fee8ccc"},
         {"hash": "SHA-1", "count": 1,
-         "shared secret length": 192,
+         "shared_secret_length": 192,
          "Z": "5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab1",
-         "SharedInfo length": 0,
-         "key data length": 128,
+         "sharedinfo_length": 0,
+         "key_data_length": 128,
          "key_data": "ec3e224446bfd7b3be1df404104af953"},
         {"hash": "SHA-512", "count": 0,
-         "shared secret length": 521,
+         "shared_secret_length": 521,
          "Z": "00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb369348b\
 81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d",
-         "SharedInfo length": 128,
-         "SharedInfo": "e3b5b4c1b0d5cf1d2b3a2f9937895d31",
-         "key data length": 1024,
+         "sharedinfo_length": 128,
+         "sharedinfo": "e3b5b4c1b0d5cf1d2b3a2f9937895d31",
+         "key_data_length": 1024,
          "key_data": "4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7f\
 a733633d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089db\
 f351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2\

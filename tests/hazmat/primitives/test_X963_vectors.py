@@ -57,9 +57,9 @@ class TestX963(object):
 
         key = binascii.unhexlify(vector["Z"])
         sharedinfo = None
-        if vector["SharedInfo length"] != 0:
-            sharedinfo = binascii.unhexlify(vector["SharedInfo"])
-        key_data_len = vector["key data length"] // 8
+        if vector["sharedinfo_length"] != 0:
+            sharedinfo = binascii.unhexlify(vector["sharedinfo"])
+        key_data_len = vector["key_data_length"] // 8
         key_data = binascii.unhexlify(vector["key_data"])
 
         xkdf = X963KDF(algorithm=hashfn(),
