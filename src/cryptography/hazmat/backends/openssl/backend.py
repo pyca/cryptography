@@ -543,7 +543,12 @@ class Backend(object):
     def openssl_assert(self, ok):
         if not ok:
             errors = self._consume_errors()
-            raise UnhandledOpenSSLError("Unknown OpenSSL error", errors)
+            raise UnhandledOpenSSLError(
+                "Unknown OpenSSL error. Please file an issue at https://github"
+                ".com/pyca/cryptography/issues with information on how to "
+                "reproduce this.",
+                errors
+            )
 
     def activate_builtin_random(self):
         # Obtain a new structural reference.
@@ -776,7 +781,7 @@ class Backend(object):
         )
 
     def _bn_to_int(self, bn):
-        self.openssl_assert(bn != self._ffi.NULL)
+        assert bn != self._ffi.NULL
         if six.PY3:
             # Python 3 has constant time from_bytes, so use that.
 
@@ -804,7 +809,7 @@ class Backend(object):
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
-        self.openssl_assert(bn is None or bn != self._ffi.NULL)
+        assert bn is None or bn != self._ffi.NULL
 
         if bn is None:
             bn = self._ffi.NULL
@@ -1537,7 +1542,7 @@ class Backend(object):
             raise TypeError(
                 "Password was given but private key is not encrypted.")
 
-        self.openssl_assert(
+        assert (
             (password is not None and password_func.called == 1) or
             password is None
         )
@@ -1596,11 +1601,11 @@ class Backend(object):
             )
 
         else:
-            self.openssl_assert(errors[0][1] in (
+            assert errors[0][1] in (
                 self._lib.ERR_LIB_EVP,
                 self._lib.ERR_LIB_PEM,
                 self._lib.ERR_LIB_ASN1,
-            ))
+            )
             raise ValueError("Could not unserialize key data.")
 
     def elliptic_curve_supported(self, curve):
@@ -1773,7 +1778,7 @@ class Backend(object):
             set_func = self._lib.EC_POINT_set_affine_coordinates_GFp
             get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
 
-        self.openssl_assert(set_func and get_func)
+        assert set_func and get_func
 
         return set_func, get_func, group
 
@@ -1866,16 +1871,14 @@ class Backend(object):
                 write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
                 key = evp_pkey
             else:
-                self.openssl_assert(
-                    format is serialization.PrivateFormat.TraditionalOpenSSL
-                )
+                assert format is serialization.PrivateFormat.TraditionalOpenSSL
                 if evp_pkey.type == self._lib.EVP_PKEY_RSA:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
                 elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
                 else:
-                    self.openssl_assert(self._lib.Cryptography_HAS_EC == 1)
-                    self.openssl_assert(evp_pkey.type == self._lib.EVP_PKEY_EC)
+                    assert self._lib.Cryptography_HAS_EC == 1
+                    assert evp_pkey.type == self._lib.EVP_PKEY_EC
                     write_bio = self._lib.PEM_write_bio_ECPrivateKey
 
                 key = cdata
@@ -1893,9 +1896,7 @@ class Backend(object):
                     evp_pkey.type, cdata
                 )
             else:
-                self.openssl_assert(
-                    format is serialization.PrivateFormat.PKCS8
-                )
+                assert format is serialization.PrivateFormat.PKCS8
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
                 key = evp_pkey
         else:
@@ -1937,17 +1938,17 @@ class Backend(object):
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
             else:
-                self.openssl_assert(encoding is serialization.Encoding.DER)
+                assert encoding is serialization.Encoding.DER
                 write_bio = self._lib.i2d_PUBKEY_bio
 
             key = evp_pkey
         elif format is serialization.PublicFormat.PKCS1:
             # Only RSA is supported here.
-            self.openssl_assert(evp_pkey.type == self._lib.EVP_PKEY_RSA)
+            assert evp_pkey.type == self._lib.EVP_PKEY_RSA
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_RSAPublicKey
             else:
-                self.openssl_assert(encoding is serialization.Encoding.DER)
+                assert encoding is serialization.Encoding.DER
                 write_bio = self._lib.i2d_RSAPublicKey_bio
 
             key = cdata
