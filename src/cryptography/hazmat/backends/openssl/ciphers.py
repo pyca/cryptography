@@ -66,24 +66,24 @@ class _CipherContext(object):
                                                    self._backend._ffi.NULL,
                                                    self._backend._ffi.NULL,
                                                    operation)
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
         # set the key length to handle variable key ciphers
         res = self._backend._lib.EVP_CIPHER_CTX_set_key_length(
             ctx, len(cipher.key)
         )
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
         if isinstance(mode, modes.GCM):
             res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                 ctx, self._backend._lib.EVP_CTRL_GCM_SET_IVLEN,
                 len(iv_nonce), self._backend._ffi.NULL
             )
-            assert res != 0
+            self._backend.openssl_assert(res != 0)
             if operation == self._DECRYPT:
                 res = self._backend._lib.EVP_CIPHER_CTX_ctrl(
                     ctx, self._backend._lib.EVP_CTRL_GCM_SET_TAG,
                     len(mode.tag), mode.tag
                 )
-                assert res != 0
+                self._backend.openssl_assert(res != 0)
 
         # pass key/iv
         res = self._backend._lib.EVP_CipherInit_ex(
@@ -94,7 +94,7 @@ class _CipherContext(object):
             iv_nonce,
             operation
         )
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
         # We purposely disable padding here as it's handled higher up in the
         # API.
         self._backend._lib.EVP_CIPHER_CTX_set_padding(ctx, 0)
@@ -115,7 +115,7 @@ class _CipherContext(object):
         outlen = self._backend._ffi.new("int *")
         res = self._backend._lib.EVP_CipherUpdate(self._ctx, buf, outlen, data,
                                                   len(data))
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def finalize(self):
@@ -164,11 +164,11 @@ class _CipherContext(object):
                 self._ctx, self._backend._lib.EVP_CTRL_GCM_GET_TAG,
                 block_byte_size, tag_buf
             )
-            assert res != 0
+            self._backend.openssl_assert(res != 0)
             self._tag = self._backend._ffi.buffer(tag_buf)[:]
 
         res = self._backend._lib.EVP_CIPHER_CTX_cleanup(self._ctx)
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def authenticate_additional_data(self, data):
@@ -176,7 +176,7 @@ class _CipherContext(object):
         res = self._backend._lib.EVP_CipherUpdate(
             self._ctx, self._backend._ffi.NULL, outlen, data, len(data)
         )
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
 
     tag = utils.read_only_property("_tag")
 
@@ -191,11 +191,10 @@ class _AESCTRCipherContext(object):
         self._backend = backend
 
         self._key = self._backend._ffi.new("AES_KEY *")
-        assert self._key != self._backend._ffi.NULL
         res = self._backend._lib.AES_set_encrypt_key(
             cipher.key, len(cipher.key) * 8, self._key
         )
-        assert res == 0
+        self._backend.openssl_assert(res == 0)
         self._ecount = self._backend._ffi.new("char[]", 16)
         self._nonce = self._backend._ffi.new("char[16]", mode.nonce)
         self._num = self._backend._ffi.new("unsigned int *", 0)

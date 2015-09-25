@@ -25,15 +25,15 @@ def _obj2txt(backend, obj):
     buf_len = 80
     buf = backend._ffi.new("char[]", buf_len)
     res = backend._lib.OBJ_obj2txt(buf, buf_len, obj, 1)
-    assert res > 0
+    backend.openssl_assert(res > 0)
     return backend._ffi.buffer(buf, res)[:].decode()
 
 
 def _decode_x509_name_entry(backend, x509_name_entry):
     obj = backend._lib.X509_NAME_ENTRY_get_object(x509_name_entry)
-    assert obj != backend._ffi.NULL
+    backend.openssl_assert(obj != backend._ffi.NULL)
     data = backend._lib.X509_NAME_ENTRY_get_data(x509_name_entry)
-    assert data != backend._ffi.NULL
+    backend.openssl_assert(data != backend._ffi.NULL)
     value = backend._asn1_string_to_utf8(data)
     oid = _obj2txt(backend, obj)
 
@@ -55,7 +55,7 @@ def _decode_general_names(backend, gns):
     names = []
     for i in range(num):
         gn = backend._lib.sk_GENERAL_NAME_value(gns, i)
-        assert gn != backend._ffi.NULL
+        backend.openssl_assert(gn != backend._ffi.NULL)
         names.append(_decode_general_name(backend, gn))
 
     return names
@@ -181,7 +181,7 @@ class _X509ExtensionParser(object):
         seen_oids = set()
         for i in range(self.ext_count(backend, x509_obj)):
             ext = self.get_ext(backend, x509_obj, i)
-            assert ext != backend._ffi.NULL
+            backend.openssl_assert(ext != backend._ffi.NULL)
             crit = backend._lib.X509_EXTENSION_get_critical(ext)
             critical = crit == 1
             oid = x509.ObjectIdentifier(_obj2txt(backend, ext.object))
@@ -255,12 +255,12 @@ class _Certificate(object):
     @property
     def serial(self):
         asn1_int = self._backend._lib.X509_get_serialNumber(self._x509)
-        assert asn1_int != self._backend._ffi.NULL
+        self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
         return self._backend._asn1_integer_to_int(asn1_int)
 
     def public_key(self):
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
-        assert pkey != self._backend._ffi.NULL
+        self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
 
         return self._backend._evp_pkey_to_public_key(pkey)
@@ -278,13 +278,13 @@ class _Certificate(object):
     @property
     def issuer(self):
         issuer = self._backend._lib.X509_get_issuer_name(self._x509)
-        assert issuer != self._backend._ffi.NULL
+        self._backend.openssl_assert(issuer != self._backend._ffi.NULL)
         return _decode_x509_name(self._backend, issuer)
 
     @property
     def subject(self):
         subject = self._backend._lib.X509_get_subject_name(self._x509)
-        assert subject != self._backend._ffi.NULL
+        self._backend.openssl_assert(subject != self._backend._ffi.NULL)
         return _decode_x509_name(self._backend, subject)
 
     @property
@@ -310,7 +310,7 @@ class _Certificate(object):
         else:
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
 
@@ -441,9 +441,9 @@ def _decode_authority_information_access(backend, aia):
     access_descriptions = []
     for i in range(num):
         ad = backend._lib.sk_ACCESS_DESCRIPTION_value(aia, i)
-        assert ad.method != backend._ffi.NULL
+        backend.openssl_assert(ad.method != backend._ffi.NULL)
         oid = x509.ObjectIdentifier(_obj2txt(backend, ad.method))
-        assert ad.location != backend._ffi.NULL
+        backend.openssl_assert(ad.location != backend._ffi.NULL)
         gn = _decode_general_name(backend, ad.location)
         access_descriptions.append(x509.AccessDescription(oid, gn))
 
@@ -514,7 +514,7 @@ def _decode_general_subtrees(backend, stack_subtrees):
 
     for i in range(num):
         obj = backend._lib.sk_GENERAL_SUBTREE_value(stack_subtrees, i)
-        assert obj != backend._ffi.NULL
+        backend.openssl_assert(obj != backend._ffi.NULL)
         name = _decode_general_name(backend, obj.base)
         subtrees.append(name)
 
@@ -529,7 +529,7 @@ def _decode_extended_key_usage(backend, sk):
 
     for i in range(num):
         obj = backend._lib.sk_ASN1_OBJECT_value(sk, i)
-        assert obj != backend._ffi.NULL
+        backend.openssl_assert(obj != backend._ffi.NULL)
         oid = x509.ObjectIdentifier(_obj2txt(backend, obj))
         ekus.append(oid)
 
@@ -614,7 +614,7 @@ def _decode_crl_distribution_points(backend, cdps):
                     rn = backend._lib.sk_X509_NAME_ENTRY_value(
                         rns, i
                     )
-                    assert rn != backend._ffi.NULL
+                    backend.openssl_assert(rn != backend._ffi.NULL)
                     attributes.append(
                         _decode_x509_name_entry(backend, rn)
                     )
@@ -659,14 +659,14 @@ class _CertificateSigningRequest(object):
 
     def public_key(self):
         pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
-        assert pkey != self._backend._ffi.NULL
+        self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
         return self._backend._evp_pkey_to_public_key(pkey)
 
     @property
     def subject(self):
         subject = self._backend._lib.X509_REQ_get_subject_name(self._x509_req)
-        assert subject != self._backend._ffi.NULL
+        self._backend.openssl_assert(subject != self._backend._ffi.NULL)
         return _decode_x509_name(self._backend, subject)
 
     @property
@@ -695,7 +695,7 @@ class _CertificateSigningRequest(object):
         else:
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
 

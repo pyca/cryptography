@@ -31,7 +31,7 @@ class _HashContext(object):
                 )
             res = self._backend._lib.EVP_DigestInit_ex(ctx, evp_md,
                                                        self._backend._ffi.NULL)
-            assert res != 0
+            self._backend.openssl_assert(res != 0)
 
         self._ctx = ctx
 
@@ -43,20 +43,20 @@ class _HashContext(object):
             copied_ctx, self._backend._lib.EVP_MD_CTX_destroy
         )
         res = self._backend._lib.EVP_MD_CTX_copy_ex(copied_ctx, self._ctx)
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
         return _HashContext(self._backend, self.algorithm, ctx=copied_ctx)
 
     def update(self, data):
         res = self._backend._lib.EVP_DigestUpdate(self._ctx, data, len(data))
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
 
     def finalize(self):
         buf = self._backend._ffi.new("unsigned char[]",
                                      self._backend._lib.EVP_MAX_MD_SIZE)
         outlen = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
-        assert res != 0
+        self._backend.openssl_assert(res != 0)
         assert outlen[0] == self.algorithm.digest_size
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[:outlen[0]]

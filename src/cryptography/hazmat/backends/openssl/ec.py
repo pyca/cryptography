@@ -30,10 +30,10 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
 
     with backend._tmp_bn_ctx() as bn_ctx:
         order = _lib.BN_CTX_get(bn_ctx)
-        assert order != _ffi.NULL
+        backend.openssl_assert(order != _ffi.NULL)
 
         res = _lib.EC_GROUP_get_order(group, order, bn_ctx)
-        assert res == 1
+        backend.openssl_assert(res == 1)
 
         order_bits = _lib.BN_num_bits(order)
 
@@ -42,7 +42,7 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
 
 def _ec_key_curve_sn(backend, ec_key):
     group = backend._lib.EC_KEY_get0_group(ec_key)
-    assert group != backend._ffi.NULL
+    backend.openssl_assert(group != backend._ffi.NULL)
 
     nid = backend._lib.EC_GROUP_get_curve_name(group)
     # The following check is to find EC keys with unnamed curves and raise
@@ -54,7 +54,7 @@ def _ec_key_curve_sn(backend, ec_key):
         )
 
     curve_name = backend._lib.OBJ_nid2sn(nid)
-    assert curve_name != backend._ffi.NULL
+    backend.openssl_assert(curve_name != backend._ffi.NULL)
 
     sn = backend._ffi.string(curve_name).decode('ascii')
     return sn
@@ -100,7 +100,7 @@ class _ECDSASignatureContext(object):
         digest = _truncate_digest_for_ecdsa(ec_key, digest, self._backend)
 
         max_size = self._backend._lib.ECDSA_size(ec_key)
-        assert max_size > 0
+        self._backend.openssl_assert(max_size > 0)
 
         sigbuf = self._backend._ffi.new("char[]", max_size)
         siglen_ptr = self._backend._ffi.new("unsigned int[]", 1)
@@ -112,7 +112,7 @@ class _ECDSASignatureContext(object):
             siglen_ptr,
             ec_key
         )
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(sigbuf)[:siglen_ptr[0]]
 
 
@@ -173,21 +173,21 @@ class _EllipticCurvePrivateKey(object):
 
     def public_key(self):
         group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
-        assert group != self._backend._ffi.NULL
+        self._backend.openssl_assert(group != self._backend._ffi.NULL)
 
         curve_nid = self._backend._lib.EC_GROUP_get_curve_name(group)
 
         public_ec_key = self._backend._lib.EC_KEY_new_by_curve_name(curve_nid)
-        assert public_ec_key != self._backend._ffi.NULL
+        self._backend.openssl_assert(public_ec_key != self._backend._ffi.NULL)
         public_ec_key = self._backend._ffi.gc(
             public_ec_key, self._backend._lib.EC_KEY_free
         )
 
         point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
-        assert point != self._backend._ffi.NULL
+        self._backend.openssl_assert(point != self._backend._ffi.NULL)
 
         res = self._backend._lib.EC_KEY_set_public_key(public_ec_key, point)
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
 
         evp_pkey = self._backend._ec_cdata_to_evp_pkey(public_ec_key)
 
@@ -242,14 +242,14 @@ class _EllipticCurvePublicKey(object):
             self._backend._ec_key_determine_group_get_set_funcs(self._ec_key)
         )
         point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
-        assert point != self._backend._ffi.NULL
+        self._backend.openssl_assert(point != self._backend._ffi.NULL)
 
         with self._backend._tmp_bn_ctx() as bn_ctx:
             bn_x = self._backend._lib.BN_CTX_get(bn_ctx)
             bn_y = self._backend._lib.BN_CTX_get(bn_ctx)
 
             res = get_func(group, point, bn_x, bn_y, bn_ctx)
-            assert res == 1
+            self._backend.openssl_assert(res == 1)
 
             x = self._backend._bn_to_int(bn_x)
             y = self._backend._bn_to_int(bn_y)

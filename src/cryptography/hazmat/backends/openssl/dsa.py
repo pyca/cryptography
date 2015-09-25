@@ -82,7 +82,7 @@ class _DSASignatureContext(object):
         res = self._backend._lib.DSA_sign(
             0, data_to_sign, len(data_to_sign), sig_buf,
             buflen, self._private_key._dsa_cdata)
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
         assert buflen[0]
 
         return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
@@ -133,7 +133,7 @@ class _DSAPrivateKey(object):
 
     def public_key(self):
         dsa_cdata = self._backend._lib.DSA_new()
-        assert dsa_cdata != self._backend._ffi.NULL
+        self._backend.openssl_assert(dsa_cdata != self._backend._ffi.NULL)
         dsa_cdata = self._backend._ffi.gc(
             dsa_cdata, self._backend._lib.DSA_free
         )
@@ -146,7 +146,7 @@ class _DSAPrivateKey(object):
 
     def parameters(self):
         dsa_cdata = self._backend._lib.DSA_new()
-        assert dsa_cdata != self._backend._ffi.NULL
+        self._backend.openssl_assert(dsa_cdata != self._backend._ffi.NULL)
         dsa_cdata = self._backend._ffi.gc(
             dsa_cdata, self._backend._lib.DSA_free
         )
@@ -195,7 +195,7 @@ class _DSAPublicKey(object):
 
     def parameters(self):
         dsa_cdata = self._backend._lib.DSA_new()
-        assert dsa_cdata != self._backend._ffi.NULL
+        self._backend.openssl_assert(dsa_cdata != self._backend._ffi.NULL)
         dsa_cdata = self._backend._ffi.gc(
             dsa_cdata, self._backend._lib.DSA_free
         )
