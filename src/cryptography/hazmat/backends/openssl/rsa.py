@@ -158,6 +158,7 @@ class _RSASignatureContext(object):
         self._pkey_size = self._backend._lib.EVP_PKEY_size(
             self._private_key._evp_pkey
         )
+        self._backend.openssl_assert(self._pkey_size > 0)
 
         if isinstance(padding, PKCS1v15):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
@@ -174,7 +175,6 @@ class _RSASignatureContext(object):
 
             # Size of key in bytes - 2 is the maximum
             # PSS signature length (salt length is checked later)
-            self._backend.openssl_assert(self._pkey_size > 0)
             if self._pkey_size - algorithm.digest_size - 2 < 0:
                 raise ValueError("Digest too large for key size. Use a larger "
                                  "key.")
@@ -349,6 +349,7 @@ class _RSAVerificationContext(object):
         self._pkey_size = self._backend._lib.EVP_PKEY_size(
             self._public_key._evp_pkey
         )
+        self._backend.openssl_assert(self._pkey_size > 0)
 
         if isinstance(padding, PKCS1v15):
             if self._backend._lib.Cryptography_HAS_PKEY_CTX:
@@ -365,7 +366,6 @@ class _RSAVerificationContext(object):
 
             # Size of key in bytes - 2 is the maximum
             # PSS signature length (salt length is checked later)
-            self._backend.openssl_assert(self._pkey_size > 0)
             if self._pkey_size - algorithm.digest_size - 2 < 0:
                 raise ValueError(
                     "Digest too large for key size. Check that you have the "
