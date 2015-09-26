@@ -17,7 +17,7 @@ from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
-    Backend, backend
+    Backend, UnhandledOpenSSLError, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -121,6 +121,11 @@ class TestOpenSSL(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
+
+    def test_openssl_assert(self):
+        backend.openssl_assert(True)
+        with pytest.raises(UnhandledOpenSSLError):
+            backend.openssl_assert(False)
 
     def test_consume_errors(self):
         for i in range(10):
