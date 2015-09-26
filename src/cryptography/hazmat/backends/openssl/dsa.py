@@ -83,7 +83,7 @@ class _DSASignatureContext(object):
             0, data_to_sign, len(data_to_sign), sig_buf,
             buflen, self._private_key._dsa_cdata)
         self._backend.openssl_assert(res == 1)
-        assert buflen[0]
+        self._backend.openssl_assert(buflen[0])
 
         return self._backend._ffi.buffer(sig_buf)[:buflen[0]]
 
