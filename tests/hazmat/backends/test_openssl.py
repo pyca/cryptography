@@ -17,9 +17,10 @@ from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
-    Backend, UnhandledOpenSSLError, backend
+    Backend, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
+from cryptography.hazmat.bindings.openssl.binding import UnhandledOpenSSLError
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
 from cryptography.hazmat.primitives.ciphers import (

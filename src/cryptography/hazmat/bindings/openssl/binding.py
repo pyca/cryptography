@@ -30,11 +30,11 @@ def _consume_errors(lib):
         if code == 0:
             break
 
-        lib = lib.ERR_GET_LIB(code)
-        func = lib.ERR_GET_FUNC(code)
-        reason = lib.ERR_GET_REASON(code)
+        err_lib = lib.ERR_GET_LIB(code)
+        err_func = lib.ERR_GET_FUNC(code)
+        err_reason = lib.ERR_GET_REASON(code)
 
-        errors.append(_OpenSSLError(code, lib, func, reason))
+        errors.append(_OpenSSLError(code, err_lib, err_func, err_reason))
     return errors
 
 
