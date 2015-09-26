@@ -42,7 +42,9 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateSigningRequest, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
 )
-from cryptography.hazmat.bindings.openssl.binding import Binding
+from cryptography.hazmat.bindings.openssl.binding import (
+    _consume_errors, _openssl_assert, Binding
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
@@ -58,14 +60,6 @@ from cryptography.x509.oid import ExtensionOID
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
-_OpenSSLError = collections.namedtuple("_OpenSSLError",
-                                       ["code", "lib", "func", "reason"])
-
-
-class UnhandledOpenSSLError(Exception):
-    def __init__(self, msg, errors):
-        super(UnhandledOpenSSLError, self).__init__(msg)
-        self.errors = errors
 
 
 def _encode_asn1_int(backend, x):
@@ -541,14 +535,7 @@ class Backend(object):
         self.activate_osrandom_engine()
 
     def openssl_assert(self, ok):
-        if not ok:
-            errors = self._consume_errors()
-            raise UnhandledOpenSSLError(
-                "Unknown OpenSSL error. Please file an issue at https://github"
-                ".com/pyca/cryptography/issues with information on how to "
-                "reproduce this.",
-                errors
-            )
+        return _openssl_assert(self._lib, ok)
 
     def activate_builtin_random(self):
         # Obtain a new structural reference.
@@ -759,18 +746,7 @@ class Backend(object):
         return self._ffi.string(err_buf, 256)[:]
 
     def _consume_errors(self):
-        errors = []
-        while True:
-            code = self._lib.ERR_get_error()
-            if code == 0:
-                break
-
-            lib = self._lib.ERR_GET_LIB(code)
-            func = self._lib.ERR_GET_FUNC(code)
-            reason = self._lib.ERR_GET_REASON(code)
-
-            errors.append(_OpenSSLError(code, lib, func, reason))
-        return errors
+        return _consume_errors(self._lib)
 
     def _unknown_error(self, error):
         return InternalError(
