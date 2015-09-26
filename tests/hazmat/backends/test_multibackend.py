@@ -221,6 +221,9 @@ class TestMultiBackend(object):
         assert backend.cipher_supported(
             algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
         )
+        assert not backend.cipher_supported(
+            algorithms.TripleDES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
+        )
 
         cipher = Cipher(
             algorithms.AES(b"\x00" * 16),
@@ -245,6 +248,7 @@ class TestMultiBackend(object):
             DummyHashBackend([hashes.MD5])
         ])
         assert backend.hash_supported(hashes.MD5())
+        assert not backend.hash_supported(hashes.SHA256())
 
         hashes.Hash(hashes.MD5(), backend=backend)
 
@@ -256,6 +260,7 @@ class TestMultiBackend(object):
             DummyHMACBackend([hashes.MD5])
         ])
         assert backend.hmac_supported(hashes.MD5())
+        assert not backend.hmac_supported(hashes.SHA256())
 
         hmac.HMAC(b"", hashes.MD5(), backend=backend)
 
@@ -381,8 +386,10 @@ class TestMultiBackend(object):
 
         fake_key = b"\x00" * 16
 
-        assert backend.cmac_algorithm_supported(
-            algorithms.AES(fake_key)) is True
+        assert backend.cmac_algorithm_supported(algorithms.AES(fake_key))
+        assert not backend.cmac_algorithm_supported(
+            algorithms.TripleDES(fake_key)
+        )
 
         cmac.CMAC(algorithms.AES(fake_key), backend)
 
