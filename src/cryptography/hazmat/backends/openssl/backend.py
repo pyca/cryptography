@@ -15,9 +15,7 @@ import idna
 import six
 
 from cryptography import utils, x509
-from cryptography.exceptions import (
-    InternalError, UnsupportedAlgorithm, _Reasons
-)
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
