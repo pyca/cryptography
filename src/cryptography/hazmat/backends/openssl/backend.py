@@ -738,21 +738,8 @@ class Backend(object):
 
         return self._ffi.buffer(buf)[:]
 
-    def _err_string(self, code):
-        err_buf = self._ffi.new("char[]", 256)
-        self._lib.ERR_error_string_n(code, err_buf, 256)
-        return self._ffi.string(err_buf, 256)[:]
-
     def _consume_errors(self):
         return binding._consume_errors(self._lib)
-
-    def _unknown_error(self, error):
-        return InternalError(
-            "Unknown error code {0} from OpenSSL, "
-            "you should probably file a bug. {1}.".format(
-                error.code, self._err_string(error.code)
-            )
-        )
 
     def _bn_to_int(self, bn):
         assert bn != self._ffi.NULL
