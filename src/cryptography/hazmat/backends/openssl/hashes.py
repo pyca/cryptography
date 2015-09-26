@@ -56,7 +56,7 @@ class _HashContext(object):
         outlen = self._backend._ffi.new("unsigned int *")
         res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
         self._backend.openssl_assert(res != 0)
-        assert outlen[0] == self.algorithm.digest_size
+        self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
         res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
         self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[:outlen[0]]

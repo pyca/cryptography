@@ -71,7 +71,7 @@ class _HMACContext(object):
             self._ctx, buf, outlen
         )
         self._backend.openssl_assert(res != 0)
-        assert outlen[0] == self.algorithm.digest_size
+        self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
         self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
