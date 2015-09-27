@@ -26,6 +26,7 @@ Encodings
 fernet
 Fernet
 hazmat
+Käsper
 indistinguishability
 initialisms
 interoperable
