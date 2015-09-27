@@ -1,4 +1,4 @@
-from hypothesis import binary
+from hypothesis.strategies import binary
 
 import pytest
 
