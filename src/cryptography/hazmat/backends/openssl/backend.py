@@ -14,9 +14,7 @@ import idna
 import six
 
 from cryptography import utils, x509
-from cryptography.exceptions import (
-    InternalError, UnsupportedAlgorithm, _Reasons
-)
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
@@ -41,7 +39,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateSigningRequest, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
 )
-from cryptography.hazmat.bindings.openssl.binding import Binding
+from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
@@ -57,14 +55,6 @@ from cryptography.x509.oid import ExtensionOID
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
-_OpenSSLError = collections.namedtuple("_OpenSSLError",
-                                       ["code", "lib", "func", "reason"])
-
-
-class UnhandledOpenSSLError(Exception):
-    def __init__(self, msg, errors):
-        super(UnhandledOpenSSLError, self).__init__(msg)
-        self.errors = errors
 
 
 def _encode_asn1_int(backend, x):
@@ -523,7 +513,7 @@ class Backend(object):
     name = "openssl"
 
     def __init__(self):
-        self._binding = Binding()
+        self._binding = binding.Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
 
@@ -547,14 +537,7 @@ class Backend(object):
         self.activate_osrandom_engine()
 
     def openssl_assert(self, ok):
-        if not ok:
-            errors = self._consume_errors()
-            raise UnhandledOpenSSLError(
-                "Unknown OpenSSL error. Please file an issue at https://github"
-                ".com/pyca/cryptography/issues with information on how to "
-                "reproduce this.",
-                errors
-            )
+        return binding._openssl_assert(self._lib, ok)
 
     def activate_builtin_random(self):
         # Obtain a new structural reference.
@@ -759,32 +742,8 @@ class Backend(object):
 
         return self._ffi.buffer(buf)[:]
 
-    def _err_string(self, code):
-        err_buf = self._ffi.new("char[]", 256)
-        self._lib.ERR_error_string_n(code, err_buf, 256)
-        return self._ffi.string(err_buf, 256)[:]
-
     def _consume_errors(self):
-        errors = []
-        while True:
-            code = self._lib.ERR_get_error()
-            if code == 0:
-                break
-
-            lib = self._lib.ERR_GET_LIB(code)
-            func = self._lib.ERR_GET_FUNC(code)
-            reason = self._lib.ERR_GET_REASON(code)
-
-            errors.append(_OpenSSLError(code, lib, func, reason))
-        return errors
-
-    def _unknown_error(self, error):
-        return InternalError(
-            "Unknown error code {0} from OpenSSL, "
-            "you should probably file a bug. {1}.".format(
-                error.code, self._err_string(error.code)
-            )
-        )
+        return binding._consume_errors(self._lib)
 
     def _bn_to_int(self, bn):
         assert bn != self._ffi.NULL

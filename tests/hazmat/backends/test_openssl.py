@@ -17,7 +17,7 @@ from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
-    Backend, UnhandledOpenSSLError, backend
+    Backend, backend
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
@@ -124,7 +124,7 @@ class TestOpenSSL(object):
 
     def test_openssl_assert(self):
         backend.openssl_assert(True)
-        with pytest.raises(UnhandledOpenSSLError):
+        with pytest.raises(InternalError):
             backend.openssl_assert(False)
 
     def test_consume_errors(self):
@@ -138,23 +138,6 @@ class TestOpenSSL(object):
 
         assert backend._lib.ERR_peek_error() == 0
         assert len(errors) == 10
-
-    def test_openssl_error_string(self):
-        backend._lib.ERR_put_error(
-            backend._lib.ERR_LIB_EVP,
-            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-            0,
-            b"test_openssl.py",
-            -1
-        )
-
-        errors = backend._consume_errors()
-        exc = backend._unknown_error(errors[0])
-
-        assert (
-            "digital envelope routines:"
-            "EVP_DecryptFinal_ex:digital envelope routines" in str(exc)
-        )
 
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLSv1_method()
