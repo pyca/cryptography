@@ -13,6 +13,3 @@ class Binding(object):
     """
     lib = lib
     ffi = ffi
-
-    def __init__(self):
-        pass

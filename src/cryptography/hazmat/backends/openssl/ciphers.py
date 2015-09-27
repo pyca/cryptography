@@ -136,23 +136,21 @@ class _CipherContext(object):
             if not errors and isinstance(self._mode, modes.GCM):
                 raise InvalidTag
 
-            assert errors
-
-            if errors[0][1:] == (
-                self._backend._lib.ERR_LIB_EVP,
-                self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
-            ) or errors[0][1:] == (
-                self._backend._lib.ERR_LIB_EVP,
-                self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-                self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
-            ):
-                raise ValueError(
-                    "The length of the provided data is not a multiple of "
-                    "the block length."
+            self._backend.openssl_assert(
+                errors[0][1:] == (
+                    self._backend._lib.ERR_LIB_EVP,
+                    self._backend._lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+                    self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+                ) or errors[0][1:] == (
+                    self._backend._lib.ERR_LIB_EVP,
+                    self._backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
+                    self._backend._lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
                 )
-            else:
-                raise self._backend._unknown_error(errors[0])
+            )
+            raise ValueError(
+                "The length of the provided data is not a multiple of "
+                "the block length."
+            )
 
         if (isinstance(self._mode, modes.GCM) and
            self._operation == self._ENCRYPT):

@@ -49,7 +49,9 @@ class InvalidSignature(Exception):
 
 
 class InternalError(Exception):
-    pass
+    def __init__(self, msg, err_code):
+        super(InternalError, self).__init__(msg)
+        self.err_code = err_code
 
 
 class InvalidKey(Exception):
