@@ -8,6 +8,17 @@ Changelog
 
 * Added :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF`.
 
+1.0.2 - 2015-09-27
+~~~~~~~~~~~~~~~~~~
+* **SECURITY ISSUE**: The OpenSSL backend prior to 1.0.2 made extensive use
+  of assertions to check response codes where our tests could not trigger a
+  failure.  However, when Python is run with ``-O`` these asserts are optimized
+  away.  If a user ran Python with this flag and got an invalid response code
+  this could result in undefined behavior or worse. Accordingly, all response
+  checks from the OpenSSL backend have been converted from ``assert``
+  to a true function call. Credit **Emilia Käsper (Google Security Team)**
+  for the report.
+
 1.0.1 - 2015-09-05
 ~~~~~~~~~~~~~~~~~~
 

@@ -9,18 +9,13 @@ import os
 import threading
 import types
 
+from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
 _OpenSSLError = collections.namedtuple("_OpenSSLError",
                                        ["code", "lib", "func", "reason"])
-
-
-class UnhandledOpenSSLError(Exception):
-    def __init__(self, msg, errors):
-        super(UnhandledOpenSSLError, self).__init__(msg)
-        self.errors = errors
 
 
 def _consume_errors(lib):
@@ -41,7 +36,7 @@ def _consume_errors(lib):
 def _openssl_assert(lib, ok):
     if not ok:
         errors = _consume_errors(lib)
-        raise UnhandledOpenSSLError(
+        raise InternalError(
             "Unknown OpenSSL error. Please file an issue at https://github.com"
             "/pyca/cryptography/issues with information on how to reproduce "
             "this.",
