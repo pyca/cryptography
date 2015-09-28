@@ -232,11 +232,14 @@ class TestRevokedCertificate(object):
         assert rev1.get_invalidity_date().isoformat() == "2015-01-01T00:00:00"
 
         # Check if all reason flags can be found in the CRL.
+        # Also test if CRL as iterator works.
         flags = set(x509.ReasonFlags)
-        # The first revoked cert doesn't have a reason.
-        for r in crl.revoked_certificates[1:]:
+        for r in crl:
             flags.discard(r.get_reason())
         assert len(flags) == 0
+
+        # Check that len() works for CRLs.
+        assert len(crl) == 12
 
     def test_duplicate_entry_ext(self, backend):
         crl = _load_cert(
