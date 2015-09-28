@@ -197,6 +197,12 @@ class DummyX509Backend(object):
     def load_der_x509_certificate(self, data):
         pass
 
+    def load_pem_x509_crl(self, data):
+        pass
+
+    def load_der_x509_crl(self, data):
+        pass
+
     def load_pem_x509_csr(self, data):
         pass
 
@@ -491,6 +497,8 @@ class TestMultiBackend(object):
 
         backend.load_pem_x509_certificate(b"certdata")
         backend.load_der_x509_certificate(b"certdata")
+        backend.load_pem_x509_crl(b"crldata")
+        backend.load_der_x509_crl(b"crldata")
         backend.load_pem_x509_csr(b"reqdata")
         backend.load_der_x509_csr(b"reqdata")
         backend.create_x509_csr(object(), b"privatekey", hashes.SHA1())
@@ -501,6 +509,10 @@ class TestMultiBackend(object):
             backend.load_pem_x509_certificate(b"certdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_der_x509_certificate(b"certdata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_pem_x509_crl(b"crldata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_der_x509_crl(b"crldata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_pem_x509_csr(b"reqdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):

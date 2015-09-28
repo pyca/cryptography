@@ -40,6 +40,14 @@ def load_der_x509_csr(data, backend):
     return backend.load_der_x509_csr(data)
 
 
+def load_pem_x509_crl(data, backend):
+    return backend.load_pem_x509_crl(data)
+
+
+def load_der_x509_crl(data, backend):
+    return backend.load_der_x509_crl(data)
+
+
 class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
