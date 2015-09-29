@@ -1138,11 +1138,31 @@ class TestCertificateBuilder(object):
                 x509.BasicConstraints(ca=False, path_length=None), True,
             )
 
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder(
+                critical_extensions=[
+                    x509.BasicConstraints(ca=False, path_length=None),
+                    x509.BasicConstraints(ca=False, path_length=None),
+                ]
+            )
+
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder(
+                critical_extensions=[
+                    x509.BasicConstraints(ca=False, path_length=None),
+                ],
+                optional_extensions=[
+                    x509.BasicConstraints(ca=False, path_length=None),
+                ]
+            )
+
     def test_add_invalid_extension_type(self):
-        builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_extension(object(), False)
+            x509.CertificateBuilder().add_extension(object(), False)
+
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder(critical_extensions=[object()])
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

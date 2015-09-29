@@ -313,7 +313,8 @@ class CertificateSigningRequestBuilder(object):
 class CertificateBuilder(object):
     def __init__(self, issuer_name=None, subject_name=None,
                  public_key=None, serial_number=None,
-                 not_valid_before=None, not_valid_after=None):
+                 not_valid_before=None, not_valid_after=None,
+                 optional_extensions=[], critical_extensions=[]):
         self._version = Version.v3
         self._issuer_name = None
         self._subject_name = None
@@ -340,6 +341,12 @@ class CertificateBuilder(object):
 
         if not_valid_after is not None:
             self._set_not_valid_after(not_valid_after)
+
+        for extension in optional_extensions:
+            self._add_extension(extension, critical=False)
+
+        for extension in critical_extensions:
+            self._add_extension(extension, critical=True)
 
     def _clone(self):
         clone = self.__class__()
