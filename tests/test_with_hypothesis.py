@@ -6,9 +6,6 @@ import pytest
 from cryptography.fernet import Fernet
 
 
-hypothesis = pytest.importorskip("hypothesis")
-
-
 @given(binary())
 def test_fernet(data):
     f = Fernet(Fernet.generate_key())
