@@ -60,11 +60,9 @@ test_requirements = [
     "pytest<2.8",
     "pretend",
     "iso8601",
+    "hypothesis",
+    "hypothesis-pytest",
 ]
-
-if sys.version_info[:2] != (2, 6):
-    test_requirements.append("hypothesis")
-    test_requirements.append("hypothesis-pytest")
 
 # If there's no vectors locally that probably means we are in a tarball and
 # need to go and get the matching vectors package from PyPi
