@@ -58,6 +58,11 @@ class InterfaceNotImplemented(Exception):
     pass
 
 
+if hasattr(inspect, "signature"):
+    signature = inspect.signature
+else:
+    signature = inspect.getargspec
+
 def verify_interface(iface, klass):
     for method in iface.__abstractmethods__:
         if not hasattr(klass, method):
@@ -67,9 +72,9 @@ def verify_interface(iface, klass):
         if isinstance(getattr(iface, method), abc.abstractproperty):
             # Can't properly verify these yet.
             continue
-        spec = inspect.getargspec(getattr(iface, method))
-        actual = inspect.getargspec(getattr(klass, method))
-        if spec != actual:
+        sig = signature(getattr(iface, method))
+        actual = signature(getattr(klass, method))
+        if sig != actual:
             raise InterfaceNotImplemented(
                 "{0}.{1}'s signature differs from the expected. Expected: "
                 "{2!r}. Received: {3!r}".format(
