@@ -63,6 +63,7 @@ if hasattr(inspect, "signature"):
 else:
     signature = inspect.getargspec
 
+
 def verify_interface(iface, klass):
     for method in iface.__abstractmethods__:
         if not hasattr(klass, method):
