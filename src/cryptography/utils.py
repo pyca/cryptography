@@ -78,7 +78,7 @@ def verify_interface(iface, klass):
             raise InterfaceNotImplemented(
                 "{0}.{1}'s signature differs from the expected. Expected: "
                 "{2!r}. Received: {3!r}".format(
-                    klass, method, spec, actual
+                    klass, method, sig, actual
                 )
             )
 
