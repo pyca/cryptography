@@ -235,7 +235,7 @@ def _encode_basic_constraints(backend, basic_constraints):
         constraints, backend._lib.BASIC_CONSTRAINTS_free
     )
     constraints.ca = 255 if basic_constraints.ca else 0
-    if basic_constraints.ca:
+    if basic_constraints.ca and basic_constraints.path_length != None:
         constraints.pathlen = _encode_asn1_int(
             backend, basic_constraints.path_length
         )
