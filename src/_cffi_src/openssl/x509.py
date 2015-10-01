@@ -71,6 +71,7 @@ typedef struct {
 typedef struct {
     X509_ALGOR *sig_alg;
     X509_CINF *cert_info;
+    ASN1_BIT_STRING *signature;
     ...;
 } X509;
 
@@ -257,6 +258,7 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+int i2d_X509_CINF(X509_CINF *, unsigned char **);
 long X509_get_version(X509 *);
 
 ASN1_TIME *X509_get_notBefore(X509 *);

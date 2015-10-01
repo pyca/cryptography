@@ -117,6 +117,18 @@ class Certificate(object):
         Returns an Extensions object.
         """
 
+    @abc.abstractproperty
+    def signature(self):
+        """
+        Returns the signature bytes.
+        """
+
+    @abc.abstractproperty
+    def tbs_certificate(self):
+        """
+        Returns the tbsCertificate payload bytes as defined in RFC 5280.
+        """
+
     @abc.abstractmethod
     def __eq__(self, other):
         """
