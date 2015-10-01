@@ -1601,6 +1601,30 @@ class TestCertificateBuilder(object):
             decipher_only=False
         )
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_build_ca_request_with_path_length_none(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        request = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                                   u'PyCA'),
+            ])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=None), critical=True
+        ).sign(private_key, hashes.SHA1(), backend)
+
+        loaded_request = x509.load_pem_x509_csr(
+            request.public_bytes(encoding=serialization.Encoding.PEM), backend
+        )
+        subject = loaded_request.subject
+        assert isinstance(subject, x509.Name)
+        basic_constraints = request.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert basic_constraints.value.path_length is None
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
