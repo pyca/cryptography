@@ -6,6 +6,7 @@ Backends
 Blowfish
 boolean
 Botan
+Capitan
 Changelog
 ciphertext
 committer
