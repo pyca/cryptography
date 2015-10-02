@@ -156,8 +156,17 @@ class AuthorityKeyIdentifier(object):
         if not isinstance(other, AuthorityKeyIdentifier):
             return NotImplemented
 
+        if self.key_identifier is None:
+            key_ident_match = other.key_identifier is None
+        else:
+            key_ident_match = (
+                other.key_identifier is not None and
+                constant_time.bytes_eq(self.key_identifier,
+                                       other.key_identifier)
+            )
+
         return (
-            self.key_identifier == other.key_identifier and
+            key_ident_match and
             self.authority_cert_issuer == other.authority_cert_issuer and
             self.authority_cert_serial_number ==
             other.authority_cert_serial_number
