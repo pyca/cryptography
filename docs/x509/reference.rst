@@ -496,9 +496,8 @@ X.509 Certificate Builder
 
         Adds an X.509 extension to the certificate.
 
-        :param extension: The extension to add to the certificate. Can be one
-            of :class:`~cryptography.x509.BasicConstraints` or
-            :class:`~cryptography.x509.SubjectAlternativeName`.
+        :param extension: An extension conforming to the
+            :class:`~cryptography.x509.ExtensionType` interface.
 
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
@@ -663,8 +662,8 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. method:: add_extension(extension, critical)
 
-        :param extension: The :class:`~cryptography.x509.Extension` to add to
-            the request.
+        :param extension: An extension conforming to the
+            :class:`~cryptography.x509.ExtensionType` interface.
         :param critical: Set to `True` if the extension must be understood and
              handled by whoever reads the certificate.
         :returns: A new
