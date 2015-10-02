@@ -119,13 +119,7 @@ Building cryptography on OS X
 -----------------------------
 
 The wheel package on OS X is a statically linked build (as of 1.0.1) so for
-users on 10.10 (Yosemite) and above you need two steps:
-
-.. code-block:: console
-
-    $ xcode-select --install
-
-followed by
+users on 10.10 (Yosemite) and above you only need one step:
 
 .. code-block:: console
 
