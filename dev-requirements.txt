@@ -12,5 +12,7 @@ sphinx_rtd_theme
 sphinxcontrib-spelling
 tox
 twine
+hypothesis
+hypothesis-pytest
 -e .
 -e vectors
