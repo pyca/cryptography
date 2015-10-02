@@ -396,14 +396,14 @@ header format (substituting the correct information):
 .. _`IETF`: https://www.ietf.org/
 .. _`NIST CAVP`: http://csrc.nist.gov/groups/STM/cavp/
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
-.. _`Camellia page`: http://info.isl.ntt.co.jp/crypt/eng/camellia/
-.. _`CRYPTREC`: http://www.cryptrec.go.jp
+.. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
+.. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
 .. _`RIPEMD website`: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 .. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
-.. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
+.. _`errata`: https://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`OpenSSL example key`: https://github.com/openssl/openssl/blob/d02b48c63a58ea4367a0e905979f140b7d090f86/test/testrsa.pem
 .. _`GnuTLS key parsing tests`: https://gitlab.com/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
 .. _`enc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/encpkcs8.pem
