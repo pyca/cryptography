@@ -13,6 +13,5 @@ sphinxcontrib-spelling
 tox
 twine
 hypothesis
-hypothesis-pytest
 -e .
 -e vectors
