@@ -396,8 +396,8 @@ header format (substituting the correct information):
 .. _`IETF`: https://www.ietf.org/
 .. _`NIST CAVP`: http://csrc.nist.gov/groups/STM/cavp/
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
-.. _`Camellia page`: http://info.isl.ntt.co.jp/crypt/eng/camellia/
-.. _`CRYPTREC`: http://www.cryptrec.go.jp
+.. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
+.. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
 .. _`RIPEMD website`: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
