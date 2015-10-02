@@ -202,7 +202,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 
 .. _`Homebrew`: http://brew.sh
-.. _`MacPorts`: http://www.macports.org
+.. _`MacPorts`: https://www.macports.org
 .. _`32-bit`: https://jenkins.cryptography.io/job/openssl-win32-release/
 .. _`64-bit`: https://jenkins.cryptography.io/job/openssl-win64-release/
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
