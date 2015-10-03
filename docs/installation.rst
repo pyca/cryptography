@@ -15,24 +15,24 @@ Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 
 * x86-64 CentOS 7.x, 6.4 and CentOS 5.x
 * x86-64 FreeBSD 10
-* OS X 10.10 Yosemite, 10.9 Mavericks, 10.8 Mountain Lion, and 10.7 Lion
-* x86-64 Ubuntu 12.04 LTS
-* x86-64 Debian Wheezy (7.x) and Jessie (8.x)
-* 32-bit Python on 64-bit Windows Server 2008
-* 64-bit Python on 64-bit Windows Server 2012
+* OS X 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks, 10.8 Mountain Lion,
+  and 10.7 Lion
+* x86-64 Ubuntu 12.04 LTS and Ubuntu 14.04 LTS
+* x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
+* 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
 * ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
 * ``OpenSSL 0.9.8k``
-* ``OpenSSL 0.9.8za``
+* ``OpenSSL 0.9.8-latest`` (The most recent 0.9.8 release)
 * ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
 * ``OpenSSL 1.0.1j-freebsd``
-* ``OpenSSL 1.0.1-latest`` (The most recent 1.0.1 release)
-* ``OpenSSL 1.0.2``
+* ``OpenSSL 1.0.1f``
+* ``OpenSSL 1.0.2-latest``
 
 On Windows
 ----------
@@ -119,13 +119,7 @@ Building cryptography on OS X
 -----------------------------
 
 The wheel package on OS X is a statically linked build (as of 1.0.1) so for
-users on 10.10 (Yosemite) and above you need two steps:
-
-.. code-block:: console
-
-    $ xcode-select --install
-
-followed by
+users on 10.10 (Yosemite) and above you only need one step:
 
 .. code-block:: console
 
