@@ -61,7 +61,6 @@ test_requirements = [
     "pretend",
     "iso8601",
     "hypothesis",
-    "hypothesis-pytest",
 ]
 
 # If there's no vectors locally that probably means we are in a tarball and
