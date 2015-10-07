@@ -5,7 +5,7 @@ invoke
 iso8601
 pep8-naming
 pretend
-pytest<2.8
+pytest
 requests
 sphinx
 sphinx_rtd_theme
