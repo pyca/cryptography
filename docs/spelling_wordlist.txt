@@ -28,6 +28,7 @@ Django
 Encodings
 fernet
 Fernet
+FIPS
 hazmat
 indistinguishability
 initialisms
