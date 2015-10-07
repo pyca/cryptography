@@ -137,9 +137,10 @@ install the Cryptography dependencies as mentioned in :ref:`build-on-linux`.
 Please also make sure you have `virtualenv`_ installed: this should be
 available from your system package manager.
 
-Then, run the following shell script. Feel free to adjust the OpenSSL version
-if you'd like to use something more recent or you have specific version
-requirements.
+Then, paste the following into a shell script. You'll need to populate the
+``OPENSSL_VERSION`` variable. To do that, visit `openssl.org`_ and find the
+latest non-FIPS release version number, then set the string appropriately. For
+example, for OpenSSL 1.0.2d, use ``OPENSSL_VERSION="1.0.2d"``.
 
 When this shell script is complete, you'll find a collection of wheel files in
 a directory called ``wheelhouse``. These wheels can be installed by a
@@ -152,7 +153,7 @@ dependencies.
 
     set -e
 
-    OPENSSL_VERSION="1.0.2d"
+    OPENSSL_VERSION="VERSIONGOESHERE"
     CWD=$(pwd)
 
     virtualenv env
