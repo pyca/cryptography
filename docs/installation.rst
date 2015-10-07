@@ -58,6 +58,8 @@ to include the proper locations. For example:
     C:\> pip install cryptography
 
 
+.. _build-on-linux:
+
 Building cryptography on Linux
 ------------------------------
 
@@ -114,6 +116,58 @@ You'll also need to generate your own ``openssl.ld`` file. For example::
 
 You should replace the version string on the first line as appropriate for your
 build.
+
+Static Wheels
+~~~~~~~~~~~~~
+
+Cryptography ships statically-linked wheels for OS X and Windows, ensuring that
+these platforms can always use the most-recent OpenSSL, regardless of what is
+shipped by default on those platforms. As a result of various difficulties
+around Linux binary linking, Cryptography cannot do the same on Linux.
+
+However, you can build your own statically-linked wheels that will work on your
+own systems. This will allow you to continue to use relatively old Linux
+distributions (such as LTS releases), while making sure you have the most
+recent OpenSSL available to your Python programs.
+
+To do so, you should find yourself a machine that is as similar as possible to
+your target environment (e.g. your production environment): for example, spin
+up a new cloud server running your target Linux distribution. On this machine,
+install the Cryptography dependencies as mentioned in :ref:`build-on-linux`.
+Please also make sure you have `virtualenv`_ installed: this should be
+available from your system package manager.
+
+Then, run the following shell script. Feel free to adjust the OpenSSL version
+if you'd like to use something more recent or you have specific version
+requirements.
+
+When this shell script is complete, you'll find a collection of wheel files in
+a directory called ``wheelhouse``. These wheels can be installed by a
+sufficiently-recent version of ``pip``. The Cryptography wheel in this
+directory contains a statically-linked OpenSSL binding, which ensures that you
+have access to the most-recent OpenSSL releases without corrupting your system
+dependencies.
+
+.. code-block:: console
+
+    set -e
+
+    OPENSSL_VERSION="1.0.2d"
+    CWD=$(pwd)
+
+    virtualenv env
+    . env/bin/activate
+    pip install -U setuptools
+    pip install -U wheel pip
+    curl -O https://openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
+    tar xvf openssl-${OPENSSL_VERSION}.tar.gz
+    cd openssl-${OPENSSL_VERSION}
+    ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
+    make && make install
+    cd ..
+    CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel cryptography
+
+.. _virtualenv: https://virtualenv.pypa.io/en/latest/
 
 Building cryptography on OS X
 -----------------------------
