@@ -167,8 +167,6 @@ dependencies.
     cd ..
     CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel cryptography
 
-.. _virtualenv: https://virtualenv.pypa.io/en/latest/
-
 Building cryptography on OS X
 -----------------------------
 
@@ -255,3 +253,4 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`64-bit`: https://jenkins.cryptography.io/job/openssl-win64-release/
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
+.. _virtualenv: https://virtualenv.pypa.io/en/latest/
