@@ -69,3 +69,6 @@ fi
 python -m virtualenv ~/.venv
 source ~/.venv/bin/activate
 pip install tox codecov
+openssl version
+lipo -info /usr/lib/libssl.dylib
+lipo -info /usr/lib/libcrypto.dylib
