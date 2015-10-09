@@ -117,18 +117,6 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode7
-          env: TOXENV=py33 OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          osx_image: xcode7
-          env: TOXENV=py34 OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          osx_image: xcode7
-          env: TOXENV=py35 OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          osx_image: xcode7
           env: TOXENV=pypy OPENSSL=0.9.8
         - language: generic
           os: osx
