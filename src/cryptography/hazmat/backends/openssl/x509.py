@@ -64,7 +64,9 @@ def _decode_general_names(backend, gns):
 def _decode_general_name(backend, gn):
     if gn.type == backend._lib.GEN_DNS:
         data = backend._asn1_string_to_bytes(gn.d.dNSName)
-        if data.startswith(b"*."):
+        if not data:
+            decoded = u""
+        elif data.startswith(b"*."):
             # This is a wildcard name. We need to remove the leading wildcard,
             # IDNA decode, then re-add the wildcard. Wildcard characters should
             # always be left-most (RFC 2595 section 2.4).
@@ -82,7 +84,10 @@ def _decode_general_name(backend, gn):
     elif gn.type == backend._lib.GEN_URI:
         data = backend._asn1_string_to_ascii(gn.d.uniformResourceIdentifier)
         parsed = urllib_parse.urlparse(data)
-        hostname = idna.decode(parsed.hostname)
+        if parsed.hostname:
+            hostname = idna.decode(parsed.hostname)
+        else:
+            hostname = ""
         if parsed.port:
             netloc = hostname + u":" + six.text_type(parsed.port)
         else:
