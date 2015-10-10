@@ -30,6 +30,7 @@ fernet
 Fernet
 FIPS
 hazmat
+hostname
 indistinguishability
 initialisms
 interoperable
