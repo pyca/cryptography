@@ -1776,9 +1776,13 @@ class Backend(object):
             self.openssl_assert(res == 1)
 
             res = self._lib.BN_cmp(bn_x, check_x)
-            self.openssl_assert(res == 0)
+            if res != 0:
+                self._consume_errors()
+                raise ValueError("Invalid EC Key X point.")
             res = self._lib.BN_cmp(bn_y, check_y)
-            self.openssl_assert(res == 0)
+            if res != 0:
+                self._consume_errors()
+                raise ValueError("Invalid EC Key Y point.")
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         self.openssl_assert(res == 1)
