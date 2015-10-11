@@ -148,6 +148,9 @@ Custom X.509 Vectors
   certificate containing a subject alternative name extension with the
   following general names: ``rfc822Name``, ``dNSName``, ``iPAddress``,
   ``directoryName``, and ``uniformResourceIdentifier``.
+* ``san_empty_hostname.pem`` - An RSA 2048 bit self-signed certificate
+  containing a subject alternative extension with an empty ``dNSName``
+  general name.
 * ``san_other_name.pem`` - An RSA 2048 bit self-signed certificate containing
   a subject alternative name extension with the ``otherName`` general name.
 * ``san_registered_id.pem`` - An RSA 1024 bit certificate containing a
@@ -193,6 +196,9 @@ Custom X.509 Vectors
   containing an authority information access extension with an OCSP entry.
 * ``aia_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
   containing an authority information access extension with a CA issuers entry.
+* ``cdp_empty_hostname.pem`` - An RSA 2048 bit self-signed certificate
+  containing a CRL distribution point extension with ``fullName`` URI without
+  a hostname.
 * ``cdp_fullname_reasons_crl_issuer.pem`` - An RSA 1024 bit certificate
   containing a CRL distribution points extension with ``fullName``,
   ``cRLIssuer``, and ``reasons`` data.

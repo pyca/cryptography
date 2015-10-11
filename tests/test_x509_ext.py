@@ -1555,6 +1555,21 @@ class TestRSASubjectAlternativeNameExtension(object):
             u'saseliminator.com'
         ]
 
+    def test_san_empty_hostname(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "san_empty_hostname.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        san = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+
+        dns = san.value.get_values_for_type(x509.DNSName)
+        assert dns == [u'']
+
     def test_san_wildcard_idna_dns_name(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "san_wildcard_idna.pem"),
@@ -2900,6 +2915,30 @@ class TestCRLDistributionPointsExtension(object):
                         ),
                     ])
                 )],
+            )
+        ])
+
+    def test_crl_empty_hostname(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "cdp_empty_hostname.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+
+        cdps = cert.extensions.get_extension_for_oid(
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
+        ).value
+
+        assert cdps == x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                full_name=[x509.UniformResourceIdentifier(
+                    u"ldap:/CN=A,OU=B,dc=C,DC=D?E?F?G?H=I"
+                )],
+                relative_name=None,
+                reasons=None,
+                crl_issuer=None
             )
         ])
 
