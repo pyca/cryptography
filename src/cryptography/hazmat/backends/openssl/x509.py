@@ -260,7 +260,11 @@ class _Certificate(object):
 
     def public_key(self):
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
-        self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
+        if pkey == self._backend._ffi.NULL:
+            # Remove errors from the stack.
+            self._backend._consume_errors()
+            raise ValueError("Certificate public key is of an unknown type")
+
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
 
         return self._backend._evp_pkey_to_public_key(pkey)

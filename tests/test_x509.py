@@ -2395,6 +2395,21 @@ class TestECDSACertificate(object):
         ]
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestOtherCertificate(object):
+    def test_unsupported_subject_public_key_info(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "unsupported_subject_public_key_info.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        with pytest.raises(ValueError):
+            cert.public_key()
+
+
 class TestNameAttribute(object):
     def test_init_bad_oid(self):
         with pytest.raises(TypeError):
