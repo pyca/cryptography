@@ -263,7 +263,7 @@ class _Certificate(object):
         if pkey == self._backend._ffi.NULL:
             # Remove errors from the stack.
             self._backend._consume_errors()
-            raise ValueError("Certificate public key is of an unkonwn type")
+            raise ValueError("Certificate public key is of an unknown type")
 
         pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
 
