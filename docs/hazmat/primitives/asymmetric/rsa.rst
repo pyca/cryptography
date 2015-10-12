@@ -168,7 +168,9 @@ signing algorithm that was used you can check that the private key associated
 with a given public key was used to sign that specific message.  You can obtain
 a public key to use in verification using
 :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
-:func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`, or
+:func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers.public_key`
+, or
 :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.public_key`.
 
 .. doctest::
