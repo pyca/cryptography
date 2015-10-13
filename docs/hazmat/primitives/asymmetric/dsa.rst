@@ -86,8 +86,14 @@ described in :rfc:`3279`. This can be decoded using
 Verification
 ~~~~~~~~~~~~
 
-Using a :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
-provider.
+Verification is performed using a
+:class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` provider.
+You can get a public key object with
+:func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
+:func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
+:meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers.public_key`
+, or
+:meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey.public_key`.
 
 .. doctest::
 
