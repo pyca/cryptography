@@ -503,8 +503,6 @@ X.509 Certificate Builder
              handled by whoever reads the certificate.
 
     .. method:: sign(private_key, algorithm, backend)
-    
-        :type: :class:`~cryptography.x509.Certificate`
 
         Sign the certificate using the CA's private key.
 
@@ -522,6 +520,8 @@ X.509 Certificate Builder
             Must support the
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
+            
+        :returns: :class:`~cryptography.x509.Certificate`
 
 
 X.509 CSR (Certificate Signing Request) Object
