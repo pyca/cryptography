@@ -241,6 +241,9 @@ class TestRevokedCertificate(object):
         # Check that len() works for CRLs.
         assert len(crl) == 12
 
+        # Check that direct access to revoked cert in CRL works
+        assert isinstance(crl[0], x509.RevokedCertificate)
+
     def test_duplicate_entry_ext(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_dup_entry_ext.pem"),

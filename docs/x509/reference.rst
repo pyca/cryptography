@@ -401,6 +401,19 @@ X.509 CRL (Certificate Revocation List) Object
 
     .. versionadded:: 1.0
 
+    A CertificateRevocationList is an object representing a list of revoked
+    certificates. The object is iterable and will yield the RevokedCertificate
+    objects stored in this CRL.
+
+    .. doctest::
+            >>> len(crl)
+            1
+            >>> type(crl[0])
+            <class 'cryptography.hazmat.backends.openssl.x509._RevokedCertificate'>
+            >>> for r in crl:
+            ...     print(r.serial_number)
+            0
+
     .. method:: fingerprint(algorithm)
 
         :param algorithm: The
@@ -706,7 +719,8 @@ X.509 Revoked Certificate Object
 
         .. doctest::
 
-            >>> crl.revoked_certificates[0].serial_number
+            >>> revoked_certificate = crl.revoked_certificates[0]
+            >>> revoked_certificate.serial_number
             0
 
     .. attribute:: revocation_date

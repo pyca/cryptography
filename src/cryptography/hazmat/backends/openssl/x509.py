@@ -645,39 +645,39 @@ class _RevokedCertificate(object):
         self._backend = backend
         self._x509_revoked = x509_revoked
 
-        self.__serial_number = None
-        self.__revocation_date = None
-        self.__extensions = None
+        self._serial_number = None
+        self._revocation_date = None
+        self._extensions = None
 
     @property
     def serial_number(self):
-        if self.__serial_number:
-            return self.__serial_number
+        if self._serial_number:
+            return self._serial_number
 
         asn1_int = self._x509_revoked.serialNumber
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
-        self.__serial_number = self._backend._asn1_integer_to_int(asn1_int)
-        return self.__serial_number
+        self._serial_number = self._backend._asn1_integer_to_int(asn1_int)
+        return self._serial_number
 
     @property
     def revocation_date(self):
-        if self.__revocation_date:
-            return self.__revocation_date
+        if self._revocation_date:
+            return self._revocation_date
 
-        self.__revocation_date = self._backend._parse_asn1_time(
+        self._revocation_date = self._backend._parse_asn1_time(
             self._x509_revoked.revocationDate)
-        return self.__revocation_date
+        return self._revocation_date
 
     @property
     def extensions(self):
-        if self.__extensions:
-            return self.__extensions
+        if self._extensions:
+            return self._extensions
 
         extensions = []
         seen_oids = set()
         extcount = self._backend._lib.X509_REVOKED_get_ext_count(
             self._x509_revoked)
-        for i in range(0, extcount):
+        for i in range(extcount):
             ext = self._backend._lib.X509_REVOKED_get_ext(
                 self._x509_revoked, i)
             self._backend.openssl_assert(ext != self._backend._ffi.NULL)
@@ -693,8 +693,8 @@ class _RevokedCertificate(object):
                 value = self._decode_crl_reason(ext)
             elif oid == x509.OID_INVALIDITY_DATE:
                 value = self._decode_invalidity_date(ext)
-            elif oid == x509.OID_CERTIFICATE_ISSUER and \
-                    self._backend._lib.OPENSSL_VERSION_NUMBER >= 0x10000000:
+            elif (oid == x509.OID_CERTIFICATE_ISSUER and
+                    self._backend._lib.OPENSSL_VERSION_NUMBER >= 0x10000000):
                 value = self._decode_cert_issuer(ext)
             elif critical:
                 raise x509.UnsupportedExtension(
@@ -708,38 +708,38 @@ class _RevokedCertificate(object):
             seen_oids.add(oid)
             extensions.append(x509.Extension(oid, critical, value))
 
-        self.__extensions = x509.Extensions(extensions)
-        return self.__extensions
+        self._extensions = x509.Extensions(extensions)
+        return self._extensions
 
     def get_reason(self):
         """
         Returns the CRLReason extension if it exists.
         """
         try:
-                return self.extensions.get_extension_for_oid(
-                    x509.OID_CRL_REASON).value
+            return self.extensions.get_extension_for_oid(
+                x509.OID_CRL_REASON).value
         except x509.ExtensionNotFound:
-                return None
+            return None
 
     def get_invalidity_date(self):
         """
         Returns the InvalidityDate extension if it exists.
         """
         try:
-                return self.extensions.get_extension_for_oid(
-                    x509.OID_INVALIDITY_DATE).value
+            return self.extensions.get_extension_for_oid(
+                x509.OID_INVALIDITY_DATE).value
         except x509.ExtensionNotFound:
-                return None
+            return None
 
     def get_certificate_issuer(self):
         """
         Returns the CertificateIssuer extension if it exists.
         """
         try:
-                return self.extensions.get_extension_for_oid(
-                    x509.OID_CERTIFICATE_ISSUER).value
+            return self.extensions.get_extension_for_oid(
+                x509.OID_CERTIFICATE_ISSUER).value
         except x509.ExtensionNotFound:
-                return None
+            return None
 
     def _decode_crl_reason(self, ext):
         enum = self._backend._lib.X509V3_EXT_d2i(ext)
@@ -749,27 +749,21 @@ class _RevokedCertificate(object):
             enum, self._backend._lib.ASN1_ENUMERATED_free
         )
         code = self._backend._lib.ASN1_ENUMERATED_get(enum)
-        if code == 0:
-            return x509.ReasonFlags.unspecified
-        elif code == 1:
-            return x509.ReasonFlags.key_compromise
-        elif code == 2:
-            return x509.ReasonFlags.ca_compromise
-        elif code == 3:
-            return x509.ReasonFlags.affiliation_changed
-        elif code == 4:
-            return x509.ReasonFlags.superseded
-        elif code == 5:
-            return x509.ReasonFlags.cessation_of_operation
-        elif code == 6:
-            return x509.ReasonFlags.certificate_hold
-        elif code == 8:
-            return x509.ReasonFlags.remove_from_crl
-        elif code == 9:
-            return x509.ReasonFlags.privilege_withdrawn
-        elif code == 10:
-            return x509.ReasonFlags.aa_compromise
-        else:
+
+        try:
+            return {
+                0: x509.ReasonFlags.unspecified,
+                1: x509.ReasonFlags.key_compromise,
+                2: x509.ReasonFlags.ca_compromise,
+                3: x509.ReasonFlags.affiliation_changed,
+                4: x509.ReasonFlags.superseded,
+                5: x509.ReasonFlags.cessation_of_operation,
+                6: x509.ReasonFlags.certificate_hold,
+                8: x509.ReasonFlags.remove_from_crl,
+                9: x509.ReasonFlags.privilege_withdrawn,
+                10: x509.ReasonFlags.aa_compromise,
+            }[code]
+        except KeyError:
             raise ValueError("Unsupported reason code: {0}".format(code))
 
     def _decode_invalidity_date(self, ext):
@@ -805,10 +799,10 @@ class _CertificateRevocationList(object):
         self._backend = backend
         self._x509_crl = x509_crl
 
-        self.__revoked = None
-        self.__issuer = None
-        self.__next_update = None
-        self.__last_update = None
+        self._revoked = None
+        self._issuer = None
+        self._next_update = None
+        self._last_update = None
 
     def __eq__(self, other):
         if not isinstance(other, x509.CertificateRevocationList):
@@ -843,38 +837,38 @@ class _CertificateRevocationList(object):
 
     @property
     def issuer(self):
-        if self.__issuer:
-            return self.__issuer
+        if self._issuer:
+            return self._issuer
 
         issuer = self._backend._lib.X509_CRL_get_issuer(self._x509_crl)
         self._backend.openssl_assert(issuer != self._backend._ffi.NULL)
-        self.__issuer = _decode_x509_name(self._backend, issuer)
-        return self.__issuer
+        self._issuer = _decode_x509_name(self._backend, issuer)
+        return self._issuer
 
     @property
     def next_update(self):
-        if self.__next_update:
-            return self.__next_update
+        if self._next_update:
+            return self._next_update
 
         nu = self._backend._lib.X509_CRL_get_nextUpdate(self._x509_crl)
         self._backend.openssl_assert(nu != self._backend._ffi.NULL)
-        self.__next_update = self._backend._parse_asn1_time(nu)
-        return self.__next_update
+        self._next_update = self._backend._parse_asn1_time(nu)
+        return self._next_update
 
     @property
     def last_update(self):
-        if self.__last_update:
-            return self.__last_update
+        if self._last_update:
+            return self._last_update
 
         lu = self._backend._lib.X509_CRL_get_lastUpdate(self._x509_crl)
         self._backend.openssl_assert(lu != self._backend._ffi.NULL)
-        self.__last_update = self._backend._parse_asn1_time(lu)
-        return self.__last_update
+        self._last_update = self._backend._parse_asn1_time(lu)
+        return self._last_update
 
     @property
     def revoked_certificates(self):
-        if self.__revoked:
-            return self.__revoked
+        if self._revoked:
+            return self._revoked
 
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
         self._backend.openssl_assert(revoked != self._backend._ffi.NULL)
@@ -886,11 +880,14 @@ class _CertificateRevocationList(object):
             self._backend.openssl_assert(r != self._backend._ffi.NULL)
             revoked_list.append(_RevokedCertificate(self._backend, r))
 
-        self.__revoked = revoked_list
-        return self.__revoked
+        self._revoked = revoked_list
+        return self._revoked
 
     def __iter__(self):
         return iter(self.revoked_certificates)
+
+    def __getitem__(self, idx):
+        return self.revoked_certificates[idx]
 
     def __len__(self):
         return len(self.revoked_certificates)
