@@ -285,6 +285,35 @@ class TestECDSAVectors(object):
         with pytest.raises(ValueError):
             numbers.private_key(backend)
 
+    def test_load_invalid_public_ec_key_from_numbers(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP521R1())
+
+        # Bad X coordinate
+        numbers = ec.EllipticCurvePublicNumbers(
+            int("000003647356b91f8ace114c7247ecf4f4a622553fc025e04a178f179ef27"
+                "9090c184af678a4c78f635483bdd8aa544851c6ef291c1f0d6a241ebfd145"
+                "77d1d30d9903ce", 16),
+            int("000001499bc7e079322ea0fcfbd6b40103fa6a1536c2257b182db0df4b369"
+                "6ec643adf100eb4f2025d1b873f82e5a475d6e4400ba777090eeb4563a115"
+                "09e4c87319dc26", 16),
+            ec.SECP521R1()
+        )
+        with pytest.raises(ValueError):
+            numbers.public_key(backend)
+
+        # Bad Y coordinate
+        numbers = ec.EllipticCurvePublicNumbers(
+            int("0000019aadc221cc0525118ab6d5aa1f64720603de0be128cbfea0b381ad8"
+                "02a2facc6370bb58cf88b3f0c692bc654ee19d6cad198f10d4b681b396f20"
+                "d2e40603fa945b", 16),
+            int("0000025da392803a320717a08d4cb3dea932039badff363b71bdb8064e726"
+                "6c7f4f4b748d4d425347fc33e3885d34b750fa7fcd5691f4d90c89522ce33"
+                "feff5db10088a5", 16),
+            ec.SECP521R1()
+        )
+        with pytest.raises(ValueError):
+            numbers.public_key(backend)
+
     @pytest.mark.parametrize(
         "vector",
         itertools.chain(
