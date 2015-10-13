@@ -226,12 +226,12 @@ X.509 Certificate Object
 
     .. method:: public_key()
 
-        :type:
+        The public key associated with the certificate.
+
+        :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-
-        The public key associated with the certificate.
 
         .. doctest::
 
@@ -533,12 +533,12 @@ X.509 CSR (Certificate Signing Request) Object
 
     .. method:: public_key()
 
-        :type:
+        The public key associated with the request.
+
+        :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-
-        The public key associated with the request.
 
         .. doctest::
 
