@@ -10,7 +10,33 @@ INCLUDES = """
 
 TYPES = """
 typedef struct {
+    Cryptography_STACK_OF_X509 *cert;
+    Cryptography_STACK_OF_X509_CRL *crl;
+    ...;
+} PKCS7_SIGNED;
+
+typedef struct {
+    Cryptography_STACK_OF_X509 *cert;
+    Cryptography_STACK_OF_X509_CRL *crl;
+    ...;
+} PKCS7_SIGN_ENVELOPE;
+
+typedef ... PKCS7_DIGEST;
+typedef ... PKCS7_ENCRYPT;
+typedef ... PKCS7_ENVELOPE;
+
+typedef struct {
     ASN1_OBJECT *type;
+    union {
+        char *ptr;
+        ASN1_OCTET_STRING *data;
+        PKCS7_SIGNED *sign;
+        PKCS7_ENVELOPE *enveloped;
+        PKCS7_SIGN_ENVELOPE *signed_and_enveloped;
+        PKCS7_DIGEST *digest;
+        PKCS7_ENCRYPT *encrypted;
+        ASN1_TYPE *other;
+     } d;
     ...;
 } PKCS7;
 
@@ -44,13 +70,17 @@ Cryptography_STACK_OF_X509 *PKCS7_get0_signers(PKCS7 *,
 PKCS7 *PKCS7_encrypt(Cryptography_STACK_OF_X509 *, BIO *,
                      const EVP_CIPHER *, int);
 int PKCS7_decrypt(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int);
+
+BIO *PKCS7_dataInit(PKCS7 *, BIO *);
 """
 
 MACROS = """
+int PKCS7_type_is_encrypted(PKCS7 *);
 int PKCS7_type_is_signed(PKCS7 *);
 int PKCS7_type_is_enveloped(PKCS7 *);
 int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
 int PKCS7_type_is_data(PKCS7 *);
+int PKCS7_type_is_digest(PKCS7 *);
 """
 
 CUSTOMIZATIONS = ""
