@@ -503,6 +503,8 @@ X.509 Certificate Builder
              handled by whoever reads the certificate.
 
     .. method:: sign(private_key, algorithm, backend)
+    
+        :type: :class:`~cryptography.x509.Certificate`
 
         Sign the certificate using the CA's private key.
 
