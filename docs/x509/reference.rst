@@ -521,6 +521,8 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
             interface.
 
+        :returns: :class:`~cryptography.x509.Certificate`
+
 
 X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
