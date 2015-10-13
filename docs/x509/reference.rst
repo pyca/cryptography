@@ -406,6 +406,7 @@ X.509 CRL (Certificate Revocation List) Object
     objects stored in this CRL.
 
     .. doctest::
+
             >>> len(crl)
             1
             >>> type(crl[0])
