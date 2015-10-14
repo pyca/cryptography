@@ -153,16 +153,18 @@ class TestCertificateRevocationList(object):
         assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
         assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
 
-    def test_revoked_certs(self, backend):
+    def test_revoked_cert_retrieval(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
             backend
         )
 
-        assert isinstance(crl.revoked_certificates, list)
-        for r in crl.revoked_certificates:
+        for r in crl:
                 assert isinstance(r, x509.RevokedCertificate)
+
+        # Check that len() works for CRLs.
+        assert len(crl) == 12
 
     def test_extensions(self, backend):
         crl = _load_cert(
@@ -186,7 +188,7 @@ class TestRevokedCertificate(object):
             backend
         )
 
-        for i, rev in enumerate(crl.revoked_certificates):
+        for i, rev in enumerate(crl):
             assert isinstance(rev, x509.RevokedCertificate)
             assert isinstance(rev.serial_number, int)
             assert isinstance(rev.revocation_date, datetime.datetime)
@@ -204,7 +206,7 @@ class TestRevokedCertificate(object):
 
         # First revoked cert doesn't have extensions, test if it is handled
         # correctly.
-        rev0 = crl.revoked_certificates[0]
+        rev0 = crl[0]
         # It should return an empty Extensions object.
         assert isinstance(rev0.extensions, x509.Extensions)
         assert len(rev0.extensions) == 0
@@ -216,7 +218,7 @@ class TestRevokedCertificate(object):
         assert rev0.get_reason() is None
 
         # Test manual retrieval of extension values.
-        rev1 = crl.revoked_certificates[1]
+        rev1 = crl[1]
         assert isinstance(rev1.extensions, x509.Extensions)
 
         reason = rev1.extensions.get_extension_for_oid(
@@ -232,17 +234,10 @@ class TestRevokedCertificate(object):
         assert rev1.get_invalidity_date().isoformat() == "2015-01-01T00:00:00"
 
         # Check if all reason flags can be found in the CRL.
-        # Also test if CRL as iterator works.
         flags = set(x509.ReasonFlags)
         for r in crl:
             flags.discard(r.get_reason())
         assert len(flags) == 0
-
-        # Check that len() works for CRLs.
-        assert len(crl) == 12
-
-        # Check that direct access to revoked cert in CRL works
-        assert isinstance(crl[0], x509.RevokedCertificate)
 
     def test_duplicate_entry_ext(self, backend):
         crl = _load_cert(
@@ -252,7 +247,7 @@ class TestRevokedCertificate(object):
         )
 
         with pytest.raises(x509.DuplicateExtension):
-            crl.revoked_certificates[0].extensions
+            crl[0].extensions
 
     def test_unsupported_crit_entry_ext(self, backend):
         crl = _load_cert(
@@ -264,7 +259,7 @@ class TestRevokedCertificate(object):
         )
 
         with pytest.raises(x509.UnsupportedExtension):
-            crl.revoked_certificates[0].extensions
+            crl[0].extensions
 
     def test_unsupported_reason(self, backend):
         crl = _load_cert(
@@ -276,7 +271,7 @@ class TestRevokedCertificate(object):
         )
 
         with pytest.raises(ValueError):
-            crl.revoked_certificates[0].extensions
+            crl[0].extensions
 
     def test_cert_issuer_ext(self, backend):
         if backend._lib.OPENSSL_VERSION_NUMBER < 0x10000000:
@@ -295,7 +290,7 @@ class TestRevokedCertificate(object):
             ]))
         ])
 
-        rev = crl.revoked_certificates[1]
+        rev = crl[1]
         issuer = rev.extensions.get_extension_for_oid(
             x509.OID_CERTIFICATE_ISSUER).value
         assert issuer == exp_issuer

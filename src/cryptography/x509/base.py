@@ -177,12 +177,6 @@ class CertificateRevocationList(object):
         """
 
     @abc.abstractproperty
-    def revoked_certificates(self):
-        """
-        Returns a list of RevokedCertificate objects for this CRL.
-        """
-
-    @abc.abstractproperty
     def extensions(self):
         """
         Returns an Extensions object containing a list of CRL extensions.

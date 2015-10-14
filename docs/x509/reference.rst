@@ -478,18 +478,6 @@ X.509 CRL (Certificate Revocation List) Object
             >>> crl.last_update
             datetime.datetime(2015, 1, 1, 0, 0)
 
-    .. attribute:: revoked_certificates
-
-        :type: list of :class:`RevokedCertificate`
-
-        The revoked certificates listed in this CRL.
-
-        .. doctest::
-
-            >>> for r in crl.revoked_certificates:
-            ...     print(r.serial_number)
-            0
-
     .. attribute:: extensions
 
         :type: :class:`Extensions`
@@ -712,6 +700,10 @@ X.509 Revoked Certificate Object
 
     .. versionadded:: 1.0
 
+    .. doctest::
+
+        >>> revoked_certificate = crl[0]
+
     .. attribute:: serial_number
 
         :type: :class:`int`
@@ -720,7 +712,6 @@ X.509 Revoked Certificate Object
 
         .. doctest::
 
-            >>> revoked_certificate = crl.revoked_certificates[0]
             >>> revoked_certificate.serial_number
             0
 
@@ -732,7 +723,7 @@ X.509 Revoked Certificate Object
 
         .. doctest::
 
-            >>> crl.revoked_certificates[0].revocation_date
+            >>> revoked_certificate.revocation_date
             datetime.datetime(2015, 1, 1, 0, 0)
 
     .. attribute:: extensions
@@ -743,7 +734,7 @@ X.509 Revoked Certificate Object
 
         .. doctest::
 
-            >>> for ext in crl.revoked_certificates[0].extensions:
+            >>> for ext in revoked_certificate.extensions:
             ...     print(ext)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.24, name=invalidityDate)>, critical=False, value=2015-01-01 00:00:00)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.21, name=cRLReason)>, critical=False, value=ReasonFlags.key_compromise)>

@@ -18,7 +18,9 @@ from six.moves import urllib_parse
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.x509.oid import CertificatePoliciesOID, ExtensionOID
+from cryptography.x509.oid import (
+    CertificatePoliciesOID, ExtensionOID, RevokedExtensionOID
+)
 
 
 def _obj2txt(backend, obj):
@@ -173,10 +175,11 @@ def _decode_ocsp_no_check(backend, ext):
 
 
 class _X509ExtensionParser(object):
-    def __init__(self, ext_count, get_ext, handlers):
+    def __init__(self, ext_count, get_ext, handlers, supported_versions=None):
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
+        self.supported_versions = supported_versions
 
     def parse(self, backend, x509_obj):
         extensions = []
@@ -187,6 +190,13 @@ class _X509ExtensionParser(object):
             crit = backend._lib.X509_EXTENSION_get_critical(ext)
             critical = crit == 1
             oid = x509.ObjectIdentifier(_obj2txt(backend, ext.object))
+
+            # Filter out extensions we know are not supported by the backend
+            if (self.supported_versions and oid in self.supported_versions and
+                    self.supported_versions[oid] >
+                    backend._lib.OPENSSL_VERSION_NUMBER):
+                self.handlers.pop(oid, None)
+
             if oid in seen_oids:
                 raise x509.DuplicateExtension(
                     "Duplicate {0} extension found".format(oid), oid
@@ -196,7 +206,8 @@ class _X509ExtensionParser(object):
             except KeyError:
                 if critical:
                     raise x509.UnsupportedExtension(
-                        "{0} is not currently supported".format(oid), oid
+                        "Critical extension {0} is not currently supported"
+                        .format(oid), oid
                     )
             else:
                 d2i = backend._lib.X509V3_EXT_d2i(ext)
@@ -639,6 +650,49 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
+def _decode_crl_reason(backend, enum):
+    enum = backend._ffi.cast("ASN1_ENUMERATED *", enum)
+    enum = backend._ffi.gc(enum, backend._lib.ASN1_ENUMERATED_free)
+    code = backend._lib.ASN1_ENUMERATED_get(enum)
+
+    try:
+        return {
+            0: x509.ReasonFlags.unspecified,
+            1: x509.ReasonFlags.key_compromise,
+            2: x509.ReasonFlags.ca_compromise,
+            3: x509.ReasonFlags.affiliation_changed,
+            4: x509.ReasonFlags.superseded,
+            5: x509.ReasonFlags.cessation_of_operation,
+            6: x509.ReasonFlags.certificate_hold,
+            8: x509.ReasonFlags.remove_from_crl,
+            9: x509.ReasonFlags.privilege_withdrawn,
+            10: x509.ReasonFlags.aa_compromise,
+        }[code]
+    except KeyError:
+        raise ValueError("Unsupported reason code: {0}".format(code))
+
+
+def _decode_invalidity_date(backend, inv_date):
+        generalized_time = backend._ffi.cast(
+            "ASN1_GENERALIZEDTIME *", inv_date
+        )
+        generalized_time = backend._ffi.gc(
+            generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
+        )
+        time = backend._ffi.string(
+            backend._lib.ASN1_STRING_data(
+                backend._ffi.cast("ASN1_STRING *", generalized_time)
+            )
+        ).decode("ascii")
+        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+
+
+def _decode_cert_issuer(backend, issuer):
+        gns = backend._ffi.cast("GENERAL_NAMES *", issuer)
+        gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
+        return x509.GeneralNames(_decode_general_names(backend, gns))
+
+
 @utils.register_interface(x509.RevokedCertificate)
 class _RevokedCertificate(object):
     def __init__(self, backend, x509_revoked):
@@ -670,46 +724,9 @@ class _RevokedCertificate(object):
 
     @property
     def extensions(self):
-        if self._extensions:
-            return self._extensions
-
-        extensions = []
-        seen_oids = set()
-        extcount = self._backend._lib.X509_REVOKED_get_ext_count(
-            self._x509_revoked)
-        for i in range(extcount):
-            ext = self._backend._lib.X509_REVOKED_get_ext(
-                self._x509_revoked, i)
-            self._backend.openssl_assert(ext != self._backend._ffi.NULL)
-            crit = self._backend._lib.X509_EXTENSION_get_critical(ext)
-            critical = crit == 1
-            oid = x509.ObjectIdentifier(_obj2txt(self._backend, ext.object))
-            if oid in seen_oids:
-                raise x509.DuplicateExtension(
-                    "Duplicate {0} extension found".format(oid), oid
-                )
-
-            if oid == x509.OID_CRL_REASON:
-                value = self._decode_crl_reason(ext)
-            elif oid == x509.OID_INVALIDITY_DATE:
-                value = self._decode_invalidity_date(ext)
-            elif (oid == x509.OID_CERTIFICATE_ISSUER and
-                    self._backend._lib.OPENSSL_VERSION_NUMBER >= 0x10000000):
-                value = self._decode_cert_issuer(ext)
-            elif critical:
-                raise x509.UnsupportedExtension(
-                    "{0} is not currently supported".format(oid), oid
-                )
-            else:
-                # Unsupported non-critical extension, silently skipping for now
-                seen_oids.add(oid)
-                continue
-
-            seen_oids.add(oid)
-            extensions.append(x509.Extension(oid, critical, value))
-
-        self._extensions = x509.Extensions(extensions)
-        return self._extensions
+        return _REVOKED_CERTIFICATE_EXTENSION_PARSER.parse(
+            self._backend, self._x509_revoked
+        )
 
     def get_reason(self):
         """
@@ -740,57 +757,6 @@ class _RevokedCertificate(object):
                 x509.OID_CERTIFICATE_ISSUER).value
         except x509.ExtensionNotFound:
             return None
-
-    def _decode_crl_reason(self, ext):
-        enum = self._backend._lib.X509V3_EXT_d2i(ext)
-        self._backend.openssl_assert(enum != self._backend._ffi.NULL)
-        enum = self._backend._ffi.cast("ASN1_ENUMERATED *", enum)
-        enum = self._backend._ffi.gc(
-            enum, self._backend._lib.ASN1_ENUMERATED_free
-        )
-        code = self._backend._lib.ASN1_ENUMERATED_get(enum)
-
-        try:
-            return {
-                0: x509.ReasonFlags.unspecified,
-                1: x509.ReasonFlags.key_compromise,
-                2: x509.ReasonFlags.ca_compromise,
-                3: x509.ReasonFlags.affiliation_changed,
-                4: x509.ReasonFlags.superseded,
-                5: x509.ReasonFlags.cessation_of_operation,
-                6: x509.ReasonFlags.certificate_hold,
-                8: x509.ReasonFlags.remove_from_crl,
-                9: x509.ReasonFlags.privilege_withdrawn,
-                10: x509.ReasonFlags.aa_compromise,
-            }[code]
-        except KeyError:
-            raise ValueError("Unsupported reason code: {0}".format(code))
-
-    def _decode_invalidity_date(self, ext):
-        generalized_time = self._backend._ffi.cast(
-            "ASN1_GENERALIZEDTIME *",
-            self._backend._lib.X509V3_EXT_d2i(ext)
-        )
-        self._backend.openssl_assert(
-            generalized_time != self._backend._ffi.NULL
-        )
-        generalized_time = self._backend._ffi.gc(
-            generalized_time, self._backend._lib.ASN1_GENERALIZEDTIME_free
-        )
-        time = self._backend._ffi.string(
-            self._backend._lib.ASN1_STRING_data(
-                self._backend._ffi.cast("ASN1_STRING *", generalized_time)
-            )
-        ).decode("ascii")
-        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
-
-    def _decode_cert_issuer(self, ext):
-        gns = self._backend._ffi.cast(
-            "GENERAL_NAMES *", self._backend._lib.X509V3_EXT_d2i(ext)
-        )
-        self._backend.openssl_assert(gns != self._backend._ffi.NULL)
-        gns = self._backend._ffi.gc(gns, self._backend._lib.GENERAL_NAMES_free)
-        return x509.GeneralNames(_decode_general_names(self._backend, gns))
 
 
 @utils.register_interface(x509.CertificateRevocationList)
@@ -865,8 +831,7 @@ class _CertificateRevocationList(object):
         self._last_update = self._backend._parse_asn1_time(lu)
         return self._last_update
 
-    @property
-    def revoked_certificates(self):
+    def _revoked_certificates(self):
         if self._revoked:
             return self._revoked
 
@@ -884,13 +849,13 @@ class _CertificateRevocationList(object):
         return self._revoked
 
     def __iter__(self):
-        return iter(self.revoked_certificates)
+        return iter(self._revoked_certificates())
 
     def __getitem__(self, idx):
-        return self.revoked_certificates[idx]
+        return self._revoked_certificates()[idx]
 
     def __len__(self):
-        return len(self.revoked_certificates)
+        return len(self._revoked_certificates())
 
     @property
     def extensions(self):
@@ -977,6 +942,15 @@ _EXTENSION_HANDLERS = {
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
 
+_REVOKED_EXTENSION_HANDLERS = {
+    RevokedExtensionOID.CRL_REASON: _decode_crl_reason,
+    RevokedExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
+    RevokedExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
+}
+
+_REVOKED_SUPPORTED_VERSIONS = {
+    RevokedExtensionOID.CERTIFICATE_ISSUER: 0x10000000,
+}
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
@@ -988,4 +962,11 @@ _CSR_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.sk_X509_EXTENSION_num(x),
     get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
     handlers=_EXTENSION_HANDLERS
+)
+
+_REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.X509_REVOKED_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.X509_REVOKED_get_ext(x, i),
+    handlers=_REVOKED_EXTENSION_HANDLERS,
+    supported_versions=_REVOKED_SUPPORTED_VERSIONS
 )
