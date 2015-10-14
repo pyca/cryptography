@@ -28,8 +28,8 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, RevokedExtensionOID, CertificatePoliciesOID,
-    ExtendedKeyUsageOID, ExtensionOID, NameOID, ObjectIdentifier,
+    AuthorityInformationAccessOID, CertificatePoliciesOID, ExtendedKeyUsageOID,
+    ExtensionOID, NameOID, ObjectIdentifier, RevokedExtensionOID,
     SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
 
