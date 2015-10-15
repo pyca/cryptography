@@ -204,6 +204,13 @@ class TestRevokedCertificate(object):
             backend
         )
 
+        exp_issuer = x509.GeneralNames([
+            x509.DirectoryName(x509.Name([
+                x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
+                x509.NameAttribute(x509.OID_COMMON_NAME, u"cryptography.io"),
+            ]))
+        ])
+
         # First revoked cert doesn't have extensions, test if it is handled
         # correctly.
         rev0 = crl[0]
@@ -225,6 +232,10 @@ class TestRevokedCertificate(object):
             x509.OID_CRL_REASON).value
         assert reason == x509.ReasonFlags.unspecified
 
+        issuer = rev1.extensions.get_extension_for_oid(
+            x509.OID_CERTIFICATE_ISSUER).value
+        assert issuer == exp_issuer
+
         date = rev1.extensions.get_extension_for_oid(
             x509.OID_INVALIDITY_DATE).value
         assert isinstance(date, datetime.datetime)
@@ -232,6 +243,7 @@ class TestRevokedCertificate(object):
 
         # Test convenience function.
         assert rev1.get_invalidity_date().isoformat() == "2015-01-01T00:00:00"
+        assert rev1.get_certificate_issuer() == exp_issuer
 
         # Check if all reason flags can be found in the CRL.
         flags = set(x509.ReasonFlags)
@@ -273,30 +285,17 @@ class TestRevokedCertificate(object):
         with pytest.raises(ValueError):
             crl[0].extensions
 
-    def test_cert_issuer_ext(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10000000:
-            pytest.skip("Requires a newer OpenSSL. Must be at least 1.0.0")
-
+    def test_invalid_cert_issuer_ext(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            os.path.join(
+                "x509", "custom", "crl_inval_cert_issuer_entry_ext.pem"
+            ),
             x509.load_pem_x509_crl,
             backend
         )
 
-        exp_issuer = x509.GeneralNames([
-            x509.DirectoryName(x509.Name([
-                x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
-                x509.NameAttribute(x509.OID_COMMON_NAME, u"cryptography.io"),
-            ]))
-        ])
-
-        rev = crl[1]
-        issuer = rev.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_ISSUER).value
-        assert issuer == exp_issuer
-
-        # Test convenience function.
-        assert rev.get_certificate_issuer() == exp_issuer
+        with pytest.raises(ValueError):
+            crl[0].extensions
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

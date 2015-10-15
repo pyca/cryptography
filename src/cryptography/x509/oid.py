@@ -58,7 +58,7 @@ class ExtensionOID(object):
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
 
 
-class RevokedExtensionOID(object):
+class CRLExtensionOID(object):
     CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
     CRL_REASON = ObjectIdentifier("2.5.29.21")
     INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
@@ -177,9 +177,9 @@ _OID_NAMES = {
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
     ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
-    RevokedExtensionOID.CRL_REASON: "cRLReason",
-    RevokedExtensionOID.INVALIDITY_DATE: "invalidityDate",
-    RevokedExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
+    CRLExtensionOID.CRL_REASON: "cRLReason",
+    CRLExtensionOID.INVALIDITY_DATE: "invalidityDate",
+    CRLExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
     ExtensionOID.NAME_CONSTRAINTS: "nameConstraints",
     ExtensionOID.CRL_DISTRIBUTION_POINTS: "cRLDistributionPoints",
     ExtensionOID.CERTIFICATE_POLICIES: "certificatePolicies",

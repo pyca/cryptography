@@ -19,7 +19,7 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.oid import (
-    CertificatePoliciesOID, ExtensionOID, RevokedExtensionOID
+    CRLExtensionOID, CertificatePoliciesOID, ExtensionOID
 )
 
 
@@ -175,11 +175,11 @@ def _decode_ocsp_no_check(backend, ext):
 
 
 class _X509ExtensionParser(object):
-    def __init__(self, ext_count, get_ext, handlers, supported_versions=None):
+    def __init__(self, ext_count, get_ext, handlers, unsupported_exts=None):
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
-        self.supported_versions = supported_versions
+        self.unsupported_exts = unsupported_exts
 
     def parse(self, backend, x509_obj):
         extensions = []
@@ -190,13 +190,6 @@ class _X509ExtensionParser(object):
             crit = backend._lib.X509_EXTENSION_get_critical(ext)
             critical = crit == 1
             oid = x509.ObjectIdentifier(_obj2txt(backend, ext.object))
-
-            # Filter out extensions we know are not supported by the backend
-            if (self.supported_versions and oid in self.supported_versions and
-                    self.supported_versions[oid] >
-                    backend._lib.OPENSSL_VERSION_NUMBER):
-                self.handlers.pop(oid, None)
-
             if oid in seen_oids:
                 raise x509.DuplicateExtension(
                     "Duplicate {0} extension found".format(oid), oid
@@ -210,15 +203,18 @@ class _X509ExtensionParser(object):
                         .format(oid), oid
                     )
             else:
-                d2i = backend._lib.X509V3_EXT_d2i(ext)
-                if d2i == backend._ffi.NULL:
-                    backend._consume_errors()
-                    raise ValueError(
-                        "The {0} extension is invalid and can't be "
-                        "parsed".format(oid)
-                    )
+                if self.unsupported_exts and oid in self.unsupported_exts:
+                    ext_data = ext
+                else:
+                    ext_data = backend._lib.X509V3_EXT_d2i(ext)
+                    if ext_data == backend._ffi.NULL:
+                        backend._consume_errors()
+                        raise ValueError(
+                            "The {0} extension is invalid and can't be "
+                            "parsed".format(oid)
+                        )
 
-                value = handler(backend, d2i)
+                value = handler(backend, ext_data)
                 extensions.append(x509.Extension(oid, critical, value))
 
             seen_oids.add(oid)
@@ -687,8 +683,18 @@ def _decode_invalidity_date(backend, inv_date):
         return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
-def _decode_cert_issuer(backend, issuer):
-        gns = backend._ffi.cast("GENERAL_NAMES *", issuer)
+def _decode_cert_issuer(backend, ext):
+        data_ptr_ptr = backend._ffi.new("const unsigned char **")
+        data_ptr_ptr[0] = ext.value.data
+        gns = backend._lib.d2i_GENERAL_NAMES(
+            backend._ffi.NULL, data_ptr_ptr, ext.value.length
+        )
+        if gns == backend._ffi.NULL:
+            backend._consume_errors()
+            raise ValueError(
+                "The {0} extension is corrupted and can't be parsed".format(
+                    CRLExtensionOID.CERTIFICATE_ISSUER))
+
         gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
         return x509.GeneralNames(_decode_general_names(backend, gns))
 
@@ -699,28 +705,16 @@ class _RevokedCertificate(object):
         self._backend = backend
         self._x509_revoked = x509_revoked
 
-        self._serial_number = None
-        self._revocation_date = None
-        self._extensions = None
-
     @property
     def serial_number(self):
-        if self._serial_number:
-            return self._serial_number
-
         asn1_int = self._x509_revoked.serialNumber
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
-        self._serial_number = self._backend._asn1_integer_to_int(asn1_int)
-        return self._serial_number
+        return self._backend._asn1_integer_to_int(asn1_int)
 
     @property
     def revocation_date(self):
-        if self._revocation_date:
-            return self._revocation_date
-
-        self._revocation_date = self._backend._parse_asn1_time(
+        return self._backend._parse_asn1_time(
             self._x509_revoked.revocationDate)
-        return self._revocation_date
 
     @property
     def extensions(self):
@@ -765,11 +759,6 @@ class _CertificateRevocationList(object):
         self._backend = backend
         self._x509_crl = x509_crl
 
-        self._revoked = None
-        self._issuer = None
-        self._next_update = None
-        self._last_update = None
-
     def __eq__(self, other):
         if not isinstance(other, x509.CertificateRevocationList):
             return NotImplemented
@@ -803,38 +792,23 @@ class _CertificateRevocationList(object):
 
     @property
     def issuer(self):
-        if self._issuer:
-            return self._issuer
-
         issuer = self._backend._lib.X509_CRL_get_issuer(self._x509_crl)
         self._backend.openssl_assert(issuer != self._backend._ffi.NULL)
-        self._issuer = _decode_x509_name(self._backend, issuer)
-        return self._issuer
+        return _decode_x509_name(self._backend, issuer)
 
     @property
     def next_update(self):
-        if self._next_update:
-            return self._next_update
-
         nu = self._backend._lib.X509_CRL_get_nextUpdate(self._x509_crl)
         self._backend.openssl_assert(nu != self._backend._ffi.NULL)
-        self._next_update = self._backend._parse_asn1_time(nu)
-        return self._next_update
+        return self._backend._parse_asn1_time(nu)
 
     @property
     def last_update(self):
-        if self._last_update:
-            return self._last_update
-
         lu = self._backend._lib.X509_CRL_get_lastUpdate(self._x509_crl)
         self._backend.openssl_assert(lu != self._backend._ffi.NULL)
-        self._last_update = self._backend._parse_asn1_time(lu)
-        return self._last_update
+        return self._backend._parse_asn1_time(lu)
 
     def _revoked_certificates(self):
-        if self._revoked:
-            return self._revoked
-
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
         self._backend.openssl_assert(revoked != self._backend._ffi.NULL)
 
@@ -845,8 +819,7 @@ class _CertificateRevocationList(object):
             self._backend.openssl_assert(r != self._backend._ffi.NULL)
             revoked_list.append(_RevokedCertificate(self._backend, r))
 
-        self._revoked = revoked_list
-        return self._revoked
+        return revoked_list
 
     def __iter__(self):
         return iter(self._revoked_certificates())
@@ -943,14 +916,14 @@ _EXTENSION_HANDLERS = {
 }
 
 _REVOKED_EXTENSION_HANDLERS = {
-    RevokedExtensionOID.CRL_REASON: _decode_crl_reason,
-    RevokedExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
-    RevokedExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
+    CRLExtensionOID.CRL_REASON: _decode_crl_reason,
+    CRLExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
+    CRLExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
 
-_REVOKED_SUPPORTED_VERSIONS = {
-    RevokedExtensionOID.CERTIFICATE_ISSUER: 0x10000000,
-}
+_REVOKED_UNSUPPORTED_EXTENSIONS = set([
+    CRLExtensionOID.CERTIFICATE_ISSUER,
+])
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
@@ -968,5 +941,5 @@ _REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_REVOKED_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_REVOKED_get_ext(x, i),
     handlers=_REVOKED_EXTENSION_HANDLERS,
-    supported_versions=_REVOKED_SUPPORTED_VERSIONS
+    unsupported_exts=_REVOKED_UNSUPPORTED_EXTENSIONS
 )
