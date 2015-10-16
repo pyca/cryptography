@@ -163,6 +163,20 @@ Elliptic Curve Key Exchange algorithm
 
         :returns: A ``bytes`` object containing the computed key.
 
+    .. classmethod:: with_ephemeral_key(curve, backend)
+
+        Creates a new :class:`ECDH` object with a new :class:`EllipticCurvePrivateKey`
+        generated with the provided curve. This allows to implement ECDHE by
+        using ECDH with a freshly, automatically, generated key.
+
+        :param curve: A valid :class:`EllipticCurve` provider.
+
+        :param backend: A
+            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
+            provider.
+
+        :returns: A new :class:`ECDH` object
+
 
 Elliptic Curves
 ---------------

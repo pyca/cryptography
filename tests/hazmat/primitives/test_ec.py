@@ -841,3 +841,20 @@ class TestECDHVectors(object):
                 assert z != vector['Z']
         else:
             assert z == vector['Z']
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECDHEexchange(object):
+
+    @pytest.mark.parametrize(
+        "curve", ec._CURVE_TYPES.values()
+    )
+    def test_ecdhe_curves(self, backend, curve):
+        _skip_curve_unsupported(backend, curve())
+
+        left = ec.ECDH.with_ephemeral_key(curve, backend)
+        right = ec.ECDH.with_ephemeral_key(curve, backend)
+        left_key = left.compute_key(right.public_key())
+        right_key = right.compute_key(left.public_key())
+
+        assert left_key == right_key

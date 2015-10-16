@@ -327,3 +327,7 @@ class ECDH(object):
             raise TypeError("Peer Public Key must be a EllipticCurvePublicKey")
         return self._backend.ecdh_compute_key(self._private_key,
                                               peer_public_key)
+
+    @classmethod
+    def with_ephemeral_key(cls, curve, backend):
+        return cls(backend.generate_elliptic_curve_private_key(curve))
