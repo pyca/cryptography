@@ -7,21 +7,28 @@ from __future__ import absolute_import, division, print_function
 import itertools
 import os
 
+from binascii import hexlify
+
 import pytest
 
 from cryptography import exceptions, utils
 from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, PEMSerializationBackend
 )
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import (
+    constant_time, hashes, serialization
+)
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.keyex import ECDH
 from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_rfc6979_signature
 )
+from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
-    load_vectors_from_file, raises_unsupported_algorithm
+    load_kasvs_ecdh_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
 )
 
 _HASH_TYPES = {
@@ -50,6 +57,15 @@ def _skip_curve_unsupported(backend, curve):
         pytest.skip(
             "Curve {0} is not supported by this backend {1}".format(
                 curve.name, backend
+            )
+        )
+
+
+def _skip_exchange_algorithm_unsupported(backend):
+    if not backend.elliptic_curve_exchange_algorithm_supported():
+        pytest.skip(
+            "Exchange algorithm is not supported by this backend {0}".format(
+                backend
             )
         )
 
@@ -749,3 +765,93 @@ class TestECDSAVerification(object):
         public_key = key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(1234, ec.ECDSA(hashes.SHA256()))
+
+
+@utils.register_interface(KeyDerivationFunction)
+class NullKDF(object):
+    def derive(self, key_material):
+        return key_material
+
+    def verify(self, key_material, expected_key):
+        if not constant_time.bytes_eq(key_material, expected_key):
+            raise exceptions.InvalidKey
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECDHVectors(object):
+
+    def test_unsupported_exchange_algorithm(self, backend):
+        _skip_exchange_algorithm_unsupported(backend)
+
+    def test_unsupported_ecdh_arguments(self, backend):
+        with pytest.raises(TypeError):
+            ECDH(None, backend)
+        curve = ec.SECP521R1
+        _skip_curve_unsupported(backend, curve)
+        pri_key = ec.generate_private_key(curve, backend)
+        ecdh = ECDH(pri_key, backend)
+        with pytest.raises(TypeError):
+            ecdh.compute_key(None, NullKDF())
+        with pytest.raises(TypeError):
+            ecdh.compute_key(pri_key.public_key(), None)
+
+    def test_invalid_key_verification(self, backend):
+        with pytest.raises(exceptions.InvalidKey):
+            NullKDF().verify(b'a', b'b')
+        NullKDF().verify(b'a', b'a')
+
+    def key_exchange(self, backend, vector):
+        key_numbers = vector['IUT']
+        peer_numbers = vector['CAVS']
+
+        prikey = ec.EllipticCurvePrivateNumbers(
+            key_numbers['d'],
+            ec.EllipticCurvePublicNumbers(
+                key_numbers['x'],
+                key_numbers['y'],
+                ec._CURVE_TYPES[vector['curve']]()
+            )
+        ).private_key(backend)
+
+        peerkey = ec.EllipticCurvePrivateNumbers(
+            peer_numbers['d'],
+            ec.EllipticCurvePublicNumbers(
+                peer_numbers['x'],
+                peer_numbers['y'],
+                ec._CURVE_TYPES[vector['curve']]()
+            )
+        ).private_key(backend)
+        peerpubkey = peerkey.public_key()
+
+        ecdh = ECDH(prikey, backend)
+        z = ecdh.compute_key(peerpubkey, NullKDF())
+
+        return int(hexlify(z).decode('ascii'), 16)
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDH",
+                "KASValidityTest_ECCStaticUnified_NOKC_ZZOnly_init.fax"),
+            load_kasvs_ecdh_vectors
+        )
+    )
+    def test_key_exchange_with_vectors(self, backend, vector):
+        curve = ec._CURVE_TYPES[vector['curve']]
+        _skip_curve_unsupported(backend, curve)
+        _skip_exchange_algorithm_unsupported(backend)
+
+        try:
+            z = self.key_exchange(backend, vector)
+        except ValueError:
+            assert vector['fail'] is True
+
+        if vector['fail']:
+            # Errno 7 denotes a changed private key. Errno 8 denotes a changed
+            # shared key. Both these errors will not cause a failure in the
+            # exchange but should lead to a non-matching derived shared key.
+            if vector['errno'] in [7, 8]:
+                assert z != vector['Z']
+        else:
+            assert z == vector['Z']

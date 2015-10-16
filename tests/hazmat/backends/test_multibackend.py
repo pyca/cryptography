@@ -170,6 +170,9 @@ class DummyEllipticCurveBackend(object):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
 
+    def elliptic_curve_exchange_algorithm_supported(self):
+        return True
+
 
 @utils.register_interface(PEMSerializationBackend)
 class DummyPEMSerializationBackend(object):
@@ -207,6 +210,18 @@ class DummyX509Backend(object):
         pass
 
     def create_x509_certificate(self, builder, private_key, algorithm):
+        pass
+
+
+@utils.register_interface(ec.EllipticCurvePrivateKey)
+class DummyEllipticCurvePrivateKey(object):
+    def signer(self, signature_algorithm):
+        pass
+
+    def public_key(self):
+        pass
+
+    def curve(self):
         pass
 
 
@@ -409,6 +424,8 @@ class TestMultiBackend(object):
             ec.ECDSA(hashes.SHA256()),
             ec.SECT283K1()
         ) is True
+
+        assert backend.elliptic_curve_exchange_algorithm_supported() is True
 
         backend.generate_elliptic_curve_private_key(ec.SECT283K1())
 
