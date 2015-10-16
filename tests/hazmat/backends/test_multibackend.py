@@ -136,6 +136,11 @@ class DummyCMACBackend(object):
             raise UnsupportedAlgorithm("", _Reasons.UNSUPPORTED_CIPHER)
 
 
+@utils.register_interface(ec.EllipticCurveKeyExchangeAlgorithm)
+class DummyKeyExchange(object):
+    algorithm = "dummy"
+
+
 @utils.register_interface(EllipticCurveBackend)
 class DummyEllipticCurveBackend(object):
     def __init__(self, supported_curves):
@@ -169,6 +174,11 @@ class DummyEllipticCurveBackend(object):
     def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def elliptic_curve_exchange_algorithm_supported(
+        self, exchange_algorithm, curve
+    ):
+        return isinstance(exchange_algorithm, DummyKeyExchange)
 
 
 @utils.register_interface(PEMSerializationBackend)
@@ -410,6 +420,11 @@ class TestMultiBackend(object):
             ec.SECT283K1()
         ) is True
 
+        assert backend.elliptic_curve_exchange_algorithm_supported(
+            DummyKeyExchange(),
+            ec.SECT283K1()
+        ) is True
+
         backend.generate_elliptic_curve_private_key(ec.SECT283K1())
 
         backend.load_elliptic_curve_private_numbers(
@@ -436,6 +451,11 @@ class TestMultiBackend(object):
         assert backend.elliptic_curve_signature_algorithm_supported(
             ec.ECDSA(hashes.SHA256()),
             ec.SECT163K1()
+        ) is False
+
+        assert backend.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDSA(hashes.SHA256()),
+            ec.SECT283K1()
         ) is False
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):

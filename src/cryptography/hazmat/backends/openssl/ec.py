@@ -13,6 +13,9 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, ec
 )
+from cryptography.hazmat.primitives.asymmetric.key_exchange import (
+    KeyExchangeContext
+)
 
 
 def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
@@ -148,6 +151,32 @@ class _ECDSAVerificationContext(object):
         return True
 
 
+@utils.register_interface(KeyExchangeContext)
+class _ECDHKeyExchangeContext(object):
+    def __init__(self, backend, private_key, algorithm):
+        self._backend = backend
+        self._private_key = private_key
+        self._kdf = algorithm
+
+    def agree(self, public_key):
+        pri_key = self._private_key._ec_key
+        pub_key = public_key._ec_key
+
+        group = self._backend._lib.EC_KEY_get0_group(pri_key)
+        z_len = (self._backend._lib.EC_GROUP_get_degree(group) + 7) // 8
+        assert z_len > 0
+        z_buf = self._backend._ffi.new("uint8_t[]", z_len)
+        peer_key = self._backend._lib.EC_KEY_get0_public_key(pub_key)
+
+        r = self._backend._lib.ECDH_compute_key(z_buf, z_len,
+                                                peer_key, pri_key,
+                                                self._backend._ffi.NULL)
+        self._backend.openssl_assert(r > 0)
+        z = self._backend._ffi.buffer(z_buf)[:z_len]
+
+        return self._kdf.derive(z)
+
+
 @utils.register_interface(ec.EllipticCurvePrivateKeyWithSerialization)
 class _EllipticCurvePrivateKey(object):
     def __init__(self, backend, ec_key_cdata, evp_pkey):
@@ -209,6 +238,16 @@ class _EllipticCurvePrivateKey(object):
             self._evp_pkey,
             self._ec_key
         )
+
+    def exchange(self, exchange_algorithm):
+        if isinstance(exchange_algorithm, ec.ECDH):
+            return _ECDHKeyExchangeContext(
+                self._backend, self, exchange_algorithm.algorithm
+            )
+        else:
+            raise UnsupportedAlgorithm(
+                "Unsupported elliptic curve exchange algorithm.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
 
 @utils.register_interface(ec.EllipticCurvePublicKeyWithSerialization)
