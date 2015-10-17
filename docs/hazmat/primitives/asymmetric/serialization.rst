@@ -357,7 +357,7 @@ Serialization Encodings
 
     .. attribute:: DER
 
-        .. versionadded :: 0.9
+        .. versionadded:: 0.9
 
         For DER format. This is a binary format.
 
