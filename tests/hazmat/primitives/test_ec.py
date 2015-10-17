@@ -765,12 +765,6 @@ class TestECDSAVerification(object):
             public_key.verifier(1234, ec.ECDSA(hashes.SHA256()))
 
 
-class DummyECDHBackend(object):
-    @classmethod
-    def elliptic_curve_exchange_algorithm_supported(cls):
-        return False
-
-
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDHVectors(object):
     @pytest.mark.parametrize(
