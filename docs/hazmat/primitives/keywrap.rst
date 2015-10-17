@@ -6,7 +6,10 @@ Key wrapping
 ============
 
 Key wrapping is a cryptographic construct that uses symmetric encryption to
-encapsulate key material.
+encapsulate key material. Key wrapping algorithms are occasionally utilized
+to protect keys at rest or transmit them over insecure networks. Many of the
+protections offered by key wrapping are also offered by using authenticated
+:doc:`symmetric encryption </hazmat/primitives/symmetric-encryption>`.
 
 .. function:: aes_key_wrap(wrapping_key, key_to_wrap, backend)
 
