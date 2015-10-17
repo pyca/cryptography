@@ -12,7 +12,7 @@ Elliptic curve cryptography
 
     Generate a new private key on ``curve`` for use with ``backend``.
 
-    :param backend: A :class:`EllipticCurve` provider.
+    :param curve: A :class:`EllipticCurve` provider.
 
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
