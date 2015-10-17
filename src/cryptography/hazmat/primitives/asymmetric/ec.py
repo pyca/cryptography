@@ -8,7 +8,6 @@ import abc
 
 import six
 
-from cryptography import exceptions
 from cryptography import utils
 
 
