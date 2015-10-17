@@ -31,7 +31,8 @@ class TestAESKeyWrap(object):
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.ECB()
         ),
-        skip_message="Does not support AES key wrap (RFC 3394)",
+        skip_message="Does not support AES key wrap (RFC 3394) because AES-ECB"
+                     " is unsupported",
     )
     def test_wrap(self, backend, params):
         wrapping_key = binascii.unhexlify(params["k"])
@@ -51,7 +52,8 @@ class TestAESKeyWrap(object):
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.ECB()
         ),
-        skip_message="Does not support AES key wrap (RFC 3394)",
+        skip_message="Does not support AES key wrap (RFC 3394) because AES-ECB"
+                     " is unsupported",
     )
     def test_unwrap(self, backend, params):
         wrapping_key = binascii.unhexlify(params["k"])
@@ -69,7 +71,8 @@ class TestAESKeyWrap(object):
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.ECB()
         ),
-        skip_message="Does not support AES key wrap (RFC 3394)",
+        skip_message="Does not support AES key wrap (RFC 3394) because AES-ECB"
+                     " is unsupported",
     )
     def test_wrap_invalid_key_length(self, backend):
         with pytest.raises(ValueError):
@@ -79,7 +82,8 @@ class TestAESKeyWrap(object):
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.ECB()
         ),
-        skip_message="Does not support AES key wrap (RFC 3394)",
+        skip_message="Does not support AES key wrap (RFC 3394) because AES-ECB"
+                     " is unsupported",
     )
     def test_unwrap_invalid_key_length(self, backend):
         with pytest.raises(ValueError):
@@ -89,7 +93,8 @@ class TestAESKeyWrap(object):
         only_if=lambda backend: backend.cipher_supported(
             algorithms.AES("\x00" * 16), modes.ECB()
         ),
-        skip_message="Does not support AES key wrap (RFC 3394)",
+        skip_message="Does not support AES key wrap (RFC 3394) because AES-ECB"
+                     " is unsupported",
     )
     def test_wrap_invalid_key_to_wrap_length(self, backend):
         with pytest.raises(ValueError):
@@ -98,12 +103,6 @@ class TestAESKeyWrap(object):
         with pytest.raises(ValueError):
             keywrap.aes_key_wrap(b"sixteen_byte_key", b"\x00" * 23, backend)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            algorithms.AES("\x00" * 16), modes.ECB()
-        ),
-        skip_message="Does not support AES key wrap (RFC 3394)",
-    )
     def test_unwrap_invalid_wrapped_key_length(self, backend):
         with pytest.raises(ValueError):
             keywrap.aes_key_unwrap(b"sixteen_byte_key", b"\x00" * 16, backend)
