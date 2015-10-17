@@ -132,6 +132,9 @@ Elliptic Curve Key Exchange algorithm
     The Elliptic Curve Diffie-Hellman Key Exchange algorithm first standardized
     in NIST publication `800-56A`_, and later in `800-56Ar2`_.
 
+    For most applications the ``shared_key`` should be passed to a key
+    derivation function.
+
     .. doctest::
 
         >>> from cryptography.hazmat.backends import default_backend
@@ -336,6 +339,22 @@ Key Interfaces
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
+
+    .. method:: exchange(algorithm, peer_public_key)
+
+        Perform's a key exchange operation using the provided algorithm with
+        the peer's public key.
+
+        For most applications the result should be passed to a key derivation
+        function.
+
+        :param algorithm: The key exchange algorithm, currently only
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` is
+            supported.
+        :param EllipticCurvePublicKey peer_public_key: The public key for the
+            peer.
+
+        :returns bytes: A shared key.
 
     .. method:: public_key()
 
