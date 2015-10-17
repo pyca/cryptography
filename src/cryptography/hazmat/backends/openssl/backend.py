@@ -1671,25 +1671,12 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
-    def elliptic_curve_exchange_algorithm_supported(self):
-        return (self._lib.Cryptography_HAS_EC == 1 and
-                self._lib.Cryptography_HAS_ECDH == 1)
-
-    def ecdh_compute_key(self, private_key, peer_public_key):
-        pri_key = private_key._ec_key
-        pub_key = peer_public_key._ec_key
-
-        group = self._lib.EC_KEY_get0_group(pri_key)
-        z_len = (self._lib.EC_GROUP_get_degree(group) + 7) // 8
-        self.openssl_assert(z_len > 0)
-        z_buf = self._ffi.new("uint8_t[]", z_len)
-        peer_key = self._lib.EC_KEY_get0_public_key(pub_key)
-
-        r = self._lib.ECDH_compute_key(z_buf, z_len,
-                                       peer_key, pri_key,
-                                       self._ffi.NULL)
-        self.openssl_assert(r > 0)
-        return self._ffi.buffer(z_buf)[:z_len]
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+        return (
+            self.elliptic_curve_supported(curve) and
+            self._lib.Cryptography_HAS_ECDH == 1 and
+            isinstance(algorithm, ec.ECDH)
+        )
 
     def _ec_cdata_to_evp_pkey(self, ec_cdata):
         evp_pkey = self._lib.EVP_PKEY_new()

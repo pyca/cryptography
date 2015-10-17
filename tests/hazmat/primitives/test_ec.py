@@ -57,8 +57,10 @@ def _skip_curve_unsupported(backend, curve):
         )
 
 
-def _skip_exchange_algorithm_unsupported(backend):
-    if not backend.elliptic_curve_exchange_algorithm_supported():
+def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
+    if not backend.elliptic_curve_exchange_algorithm_supported(
+        algorithm, curve
+    ):
         pytest.skip(
             "Exchange algorithm is not supported by this backend {0}".format(
                 backend
@@ -771,50 +773,6 @@ class DummyECDHBackend(object):
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDHVectors(object):
-
-    def test_unsupported_ecdh_arguments(self, backend):
-        with pytest.raises(TypeError):
-            ec.ECDH(None)
-        curve = ec.SECP521R1
-        _skip_curve_unsupported(backend, curve)
-        prikey = ec.generate_private_key(curve, backend)
-        ecdh = ec.ECDH(prikey)
-        ecdh.compute_key(ecdh.public_key())
-        with pytest.raises(TypeError):
-            ecdh.compute_key(None)
-        with pytest.raises(exceptions.UnsupportedAlgorithm):
-            prikey._backend = DummyECDHBackend()
-            ecdh = ec.ECDH(prikey)
-        _skip_exchange_algorithm_unsupported(DummyECDHBackend())
-
-    def key_exchange(self, backend, vector):
-        key_numbers = vector['IUT']
-        peer_numbers = vector['CAVS']
-
-        prikey = ec.EllipticCurvePrivateNumbers(
-            key_numbers['d'],
-            ec.EllipticCurvePublicNumbers(
-                key_numbers['x'],
-                key_numbers['y'],
-                ec._CURVE_TYPES[vector['curve']]()
-            )
-        ).private_key(backend)
-
-        peerkey = ec.EllipticCurvePrivateNumbers(
-            peer_numbers['d'],
-            ec.EllipticCurvePublicNumbers(
-                peer_numbers['x'],
-                peer_numbers['y'],
-                ec._CURVE_TYPES[vector['curve']]()
-            )
-        ).private_key(backend)
-        peerpubkey = peerkey.public_key()
-
-        ecdh = ec.ECDH(prikey)
-        z = ecdh.compute_key(peerpubkey)
-
-        return int(hexlify(z).decode('ascii'), 16)
-
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -825,19 +783,49 @@ class TestECDHVectors(object):
         )
     )
     def test_key_exchange_with_vectors(self, backend, vector):
-        _skip_curve_unsupported(backend, ec._CURVE_TYPES[vector['curve']])
-        _skip_exchange_algorithm_unsupported(backend)
+        _skip_exchange_algorithm_unsupported(
+            backend, ec.ECDH(), ec._CURVE_TYPES[vector['curve']]
+        )
 
+        key_numbers = vector['IUT']
         try:
-            z = self.key_exchange(backend, vector)
+            private_key = ec.EllipticCurvePrivateNumbers(
+                key_numbers['d'],
+                ec.EllipticCurvePublicNumbers(
+                    key_numbers['x'],
+                    key_numbers['y'],
+                    ec._CURVE_TYPES[vector['curve']]()
+                )
+            ).private_key(backend)
         except ValueError:
-            assert vector['fail'] is True
+            # Errno 5 and 6 indicates a bad public key, this doesn't test the
+            # ECDH code at all
+            assert vector['fail'] and vector['errno'] in [5, 6]
+            return
 
-        if vector['fail']:
+        peer_numbers = vector['CAVS']
+        try:
+            peer_pubkey = ec.EllipticCurvePublicNumbers(
+                peer_numbers['x'],
+                peer_numbers['y'],
+                ec._CURVE_TYPES[vector['curve']]()
+            ).public_key(backend)
+        except ValueError:
+            # Errno 1 and 2 indicates a bad public key, this doesn't test the
+            # ECDH code at all
+            assert vector['fail'] and vector['errno'] in [1, 2]
+            return
+
+        if vector['fail'] and vector['errno'] not in [7, 8]:
+            with pytest.raises(ValueError):
+                private_key.exchange(ec.ECDH(), peer_pubkey)
+        else:
+            z = private_key.exchange(ec.ECDH(), peer_pubkey)
+            z = int(hexlify(z).decode('ascii'), 16)
             # Errno 7 denotes a changed private key. Errno 8 denotes a changed
             # shared key. Both these errors will not cause a failure in the
             # exchange but should lead to a non-matching derived shared key.
             if vector['errno'] in [7, 8]:
                 assert z != vector['Z']
-        else:
-            assert z == vector['Z']
+            else:
+                assert z == vector['Z']

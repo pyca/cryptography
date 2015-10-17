@@ -271,9 +271,9 @@ class MultiBackend(object):
             _Reasons.UNSUPPORTED_ELLIPTIC_CURVE
         )
 
-    def elliptic_curve_exchange_algorithm_supported(self):
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return any(
-            b.elliptic_curve_exchange_algorithm_supported()
+            b.elliptic_curve_exchange_algorithm_supported(algorithm, curve)
             for b in self._filtered_backends(EllipticCurveBackend)
         )
 

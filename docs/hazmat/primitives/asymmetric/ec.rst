@@ -125,14 +125,12 @@ Elliptic Curve Signature Algorithms
 Elliptic Curve Key Exchange algorithm
 -------------------------------------
 
-.. class:: ECDH(private_key)
+.. class:: ECDH()
 
     .. versionadded:: 1.1
 
-    The ECDH Key Exchange algorithm first standardized in NIST publication
-    `800-56A`_, and later in `800-56Ar2`_.
-
-    :param private_key: An instance of :class:`EllipticCurvePrivateKey`.
+    The Elliptic Curve Diffie-Hellman Key Exchange algorithm first standardized
+    in NIST publication `800-56A`_, and later in `800-56Ar2`_.
 
     .. doctest::
 
@@ -144,24 +142,7 @@ Elliptic Curve Key Exchange algorithm
         >>> peer_public_key = ec.generate_private_key(
         ...     ec.SECP384R1(), default_backend()
         ... ).public_key()
-        >>> ecdh = ec.ECDH(private_key)
-        >>> sharedkey = ecdh.compute_key(peer_public_key)
-
-    .. attribute:: private_key
-
-        :type: :class:`EllipticCurvePrivateKey`
-
-        The private key associated to this object
-
-    .. method:: public_key()
-
-        The public key associated to the object's private key.
-
-    .. method:: compute_key(peer_public_key)
-
-        :param peer_public_key: A :class:`EllipticCurvePublicKey` object.
-
-        :returns: A ``bytes`` object containing the computed key.
+        >>> shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
 
 
 Elliptic Curves

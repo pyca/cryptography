@@ -171,6 +171,31 @@ class _EllipticCurvePrivateKey(object):
                 "Unsupported elliptic curve signature algorithm.",
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM)
 
+    def exchange(self, algorithm, peer_public_key):
+        if not (
+            self._backend.elliptic_curve_exchange_algorithm_supported(
+                algorithm, self.curve
+            )
+        ):
+            raise UnsupportedAlgorithm(
+                "This backend does not support the ECDH algorithm.",
+                _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
+            )
+
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        z_len = (self._backend._lib.EC_GROUP_get_degree(group) + 7) // 8
+        self._backend.openssl_assert(z_len > 0)
+        z_buf = self._backend._ffi.new("uint8_t[]", z_len)
+        peer_key = self._backend._lib.EC_KEY_get0_public_key(
+            peer_public_key._ec_key
+        )
+
+        r = self._backend._lib.ECDH_compute_key(
+            z_buf, z_len, peer_key, self._ec_key, self._backend._ffi.NULL
+        )
+        self._backend.openssl_assert(r > 0)
+        return self._backend._ffi.buffer(z_buf)[:z_len]
+
     def public_key(self):
         group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
         self._backend.openssl_assert(group != self._backend._ffi.NULL)

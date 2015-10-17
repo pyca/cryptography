@@ -216,7 +216,7 @@ class EllipticCurveBackend(object):
         """
 
     @abc.abstractmethod
-    def elliptic_curve_exchange_algorithm_supported(self):
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         """
         Returns whether the exchange algorithm is supported by this backend.
         """

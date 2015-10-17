@@ -534,11 +534,6 @@ class DummyLibrary(object):
     Cryptography_HAS_EC = 0
 
 
-class DummyLibraryECDH(object):
-    Cryptography_HAS_EC = 1
-    Cryptography_HAS_ECDH = 0
-
-
 class TestOpenSSLEllipticCurve(object):
     def test_elliptic_curve_supported(self, monkeypatch):
         monkeypatch.setattr(backend, "_lib", DummyLibrary())
@@ -558,12 +553,9 @@ class TestOpenSSLEllipticCurve(object):
 
     def test_elliptic_curve_exchange_algorithm_supported(self, monkeypatch):
         monkeypatch.setattr(backend, "_lib", DummyLibrary())
-
-        assert backend.elliptic_curve_exchange_algorithm_supported() is False
-
-        monkeypatch.setattr(backend, "_lib", DummyLibraryECDH())
-
-        assert backend.elliptic_curve_exchange_algorithm_supported() is False
+        assert not backend.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDH(), ec.SECP256R1()
+        )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
