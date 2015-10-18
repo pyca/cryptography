@@ -782,33 +782,37 @@ class TestECDHVectors(object):
         )
 
         key_numbers = vector['IUT']
-        try:
-            private_key = ec.EllipticCurvePrivateNumbers(
-                key_numbers['d'],
-                ec.EllipticCurvePublicNumbers(
-                    key_numbers['x'],
-                    key_numbers['y'],
-                    ec._CURVE_TYPES[vector['curve']]()
-                )
-            ).private_key(backend)
-        except ValueError:
-            # Errno 5 and 6 indicates a bad public key, this doesn't test the
-            # ECDH code at all
-            assert vector['fail'] and vector['errno'] in [5, 6]
+        private_numbers = ec.EllipticCurvePrivateNumbers(
+            key_numbers['d'],
+            ec.EllipticCurvePublicNumbers(
+                key_numbers['x'],
+                key_numbers['y'],
+                ec._CURVE_TYPES[vector['curve']]()
+            )
+        )
+        # Errno 5 and 6 indicates a bad public key, this doesn't test the ECDH
+        # code at all
+        if vector['fail'] and vector['errno'] in [5, 6]:
+            with pytest.raises(ValueError):
+                private_numbers.private_key(backend)
             return
+        else:
+            private_key = private_numbers.private_key(backend)
 
         peer_numbers = vector['CAVS']
-        try:
-            peer_pubkey = ec.EllipticCurvePublicNumbers(
-                peer_numbers['x'],
-                peer_numbers['y'],
-                ec._CURVE_TYPES[vector['curve']]()
-            ).public_key(backend)
-        except ValueError:
-            # Errno 1 and 2 indicates a bad public key, this doesn't test the
-            # ECDH code at all
-            assert vector['fail'] and vector['errno'] in [1, 2]
+        public_numbers = ec.EllipticCurvePublicNumbers(
+            peer_numbers['x'],
+            peer_numbers['y'],
+            ec._CURVE_TYPES[vector['curve']]()
+        )
+        # Errno 1 and 2 indicates a bad public key, this doesn't test the ECDH
+        # code at all
+        if vector['fail'] and vector['errno'] in [1, 2]:
+            with pytest.raises(ValueError):
+                public_numbers.public_key(backend)
             return
+        else:
+            peer_pubkey = public_numbers.public_key(backend)
 
         if vector['fail'] and vector['errno'] not in [7, 8]:
             with pytest.raises(ValueError):
