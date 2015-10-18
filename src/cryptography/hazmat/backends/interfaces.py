@@ -212,7 +212,7 @@ class EllipticCurveBackend(object):
     @abc.abstractmethod
     def load_elliptic_curve_private_numbers(self, numbers):
         """
-        Return an EllipticCurvePublicKey provider using the given numbers.
+        Return an EllipticCurvePrivateKey provider using the given numbers.
         """
 
 
