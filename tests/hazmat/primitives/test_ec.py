@@ -90,6 +90,12 @@ def test_skip_curve_unsupported(backend):
         _skip_curve_unsupported(backend, DummyCurve())
 
 
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_skip_exchange_algorithm_unsupported(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), DummyCurve())
+
+
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
         1,
@@ -814,16 +820,11 @@ class TestECDHVectors(object):
         else:
             peer_pubkey = public_numbers.public_key(backend)
 
-        if vector['fail'] and vector['errno'] not in [7, 8]:
-            with pytest.raises(ValueError):
-                private_key.exchange(ec.ECDH(), peer_pubkey)
+        z = private_key.exchange(ec.ECDH(), peer_pubkey)
+        z = int(hexlify(z).decode('ascii'), 16)
+        # At this point fail indicates that one of the underlying keys was
+        # changed. This results in a non-matching derived key.
+        if vector['fail']:
+            assert z != vector['Z']
         else:
-            z = private_key.exchange(ec.ECDH(), peer_pubkey)
-            z = int(hexlify(z).decode('ascii'), 16)
-            # Errno 7 denotes a changed private key. Errno 8 denotes a changed
-            # shared key. Both these errors will not cause a failure in the
-            # exchange but should lead to a non-matching derived shared key.
-            if vector['errno'] in [7, 8]:
-                assert z != vector['Z']
-            else:
-                assert z == vector['Z']
+            assert z == vector['Z']
