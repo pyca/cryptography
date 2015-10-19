@@ -557,13 +557,6 @@ class TestOpenSSLEllipticCurve(object):
             ec.ECDH(), ec.SECP256R1()
         )
 
-    def test_elliptic_curve_exchange_unsupported_algorithm(self):
-        key = ec.generate_private_key(ec.SECP256R1(), backend=backend)
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
-        ):
-            key.exchange(None, key.public_key())
-
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAPEMSerialization(object):

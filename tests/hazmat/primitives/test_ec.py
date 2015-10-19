@@ -828,3 +828,19 @@ class TestECDHVectors(object):
             assert z != vector['Z']
         else:
             assert z == vector['Z']
+
+    def test_exchange_unsupported_algorithm(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
+        ):
+            key.exchange(None, key.public_key())
