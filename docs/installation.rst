@@ -168,7 +168,7 @@ dependencies.
     ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
     make && make install
     cd ..
-    CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel cryptography
+    CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel --no-use-wheel cryptography
 
 Building cryptography on OS X
 -----------------------------
