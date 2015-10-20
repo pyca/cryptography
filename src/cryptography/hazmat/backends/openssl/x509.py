@@ -4,7 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import ipaddress
+
 from email.utils import parseaddr
 
 import idna
@@ -16,7 +18,9 @@ from six.moves import urllib_parse
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.x509.oid import CertificatePoliciesOID, ExtensionOID
+from cryptography.x509.oid import (
+    CRLExtensionOID, CertificatePoliciesOID, ExtensionOID
+)
 
 
 def _obj2txt(backend, obj):
@@ -176,10 +180,11 @@ def _decode_ocsp_no_check(backend, ext):
 
 
 class _X509ExtensionParser(object):
-    def __init__(self, ext_count, get_ext, handlers):
+    def __init__(self, ext_count, get_ext, handlers, unsupported_exts=None):
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
+        self.unsupported_exts = unsupported_exts
 
     def parse(self, backend, x509_obj):
         extensions = []
@@ -199,18 +204,22 @@ class _X509ExtensionParser(object):
             except KeyError:
                 if critical:
                     raise x509.UnsupportedExtension(
-                        "{0} is not currently supported".format(oid), oid
+                        "Critical extension {0} is not currently supported"
+                        .format(oid), oid
                     )
             else:
-                d2i = backend._lib.X509V3_EXT_d2i(ext)
-                if d2i == backend._ffi.NULL:
-                    backend._consume_errors()
-                    raise ValueError(
-                        "The {0} extension is invalid and can't be "
-                        "parsed".format(oid)
-                    )
+                if self.unsupported_exts and oid in self.unsupported_exts:
+                    ext_data = ext
+                else:
+                    ext_data = backend._lib.X509V3_EXT_d2i(ext)
+                    if ext_data == backend._ffi.NULL:
+                        backend._consume_errors()
+                        raise ValueError(
+                            "The {0} extension is invalid and can't be "
+                            "parsed".format(oid)
+                        )
 
-                value = handler(backend, d2i)
+                value = handler(backend, ext_data)
                 extensions.append(x509.Extension(oid, critical, value))
 
             seen_oids.add(oid)
@@ -646,6 +655,195 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
+def _decode_crl_reason(backend, enum):
+    enum = backend._ffi.cast("ASN1_ENUMERATED *", enum)
+    enum = backend._ffi.gc(enum, backend._lib.ASN1_ENUMERATED_free)
+    code = backend._lib.ASN1_ENUMERATED_get(enum)
+
+    try:
+        return {
+            0: x509.ReasonFlags.unspecified,
+            1: x509.ReasonFlags.key_compromise,
+            2: x509.ReasonFlags.ca_compromise,
+            3: x509.ReasonFlags.affiliation_changed,
+            4: x509.ReasonFlags.superseded,
+            5: x509.ReasonFlags.cessation_of_operation,
+            6: x509.ReasonFlags.certificate_hold,
+            8: x509.ReasonFlags.remove_from_crl,
+            9: x509.ReasonFlags.privilege_withdrawn,
+            10: x509.ReasonFlags.aa_compromise,
+        }[code]
+    except KeyError:
+        raise ValueError("Unsupported reason code: {0}".format(code))
+
+
+def _decode_invalidity_date(backend, inv_date):
+        generalized_time = backend._ffi.cast(
+            "ASN1_GENERALIZEDTIME *", inv_date
+        )
+        generalized_time = backend._ffi.gc(
+            generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
+        )
+        time = backend._ffi.string(
+            backend._lib.ASN1_STRING_data(
+                backend._ffi.cast("ASN1_STRING *", generalized_time)
+            )
+        ).decode("ascii")
+        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+
+
+def _decode_cert_issuer(backend, ext):
+        data_ptr_ptr = backend._ffi.new("const unsigned char **")
+        data_ptr_ptr[0] = ext.value.data
+        gns = backend._lib.d2i_GENERAL_NAMES(
+            backend._ffi.NULL, data_ptr_ptr, ext.value.length
+        )
+        if gns == backend._ffi.NULL:
+            backend._consume_errors()
+            raise ValueError(
+                "The {0} extension is corrupted and can't be parsed".format(
+                    CRLExtensionOID.CERTIFICATE_ISSUER))
+
+        gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
+        return x509.GeneralNames(_decode_general_names(backend, gns))
+
+
+@utils.register_interface(x509.RevokedCertificate)
+class _RevokedCertificate(object):
+    def __init__(self, backend, x509_revoked):
+        self._backend = backend
+        self._x509_revoked = x509_revoked
+
+    @property
+    def serial_number(self):
+        asn1_int = self._x509_revoked.serialNumber
+        self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
+        return self._backend._asn1_integer_to_int(asn1_int)
+
+    @property
+    def revocation_date(self):
+        return self._backend._parse_asn1_time(
+            self._x509_revoked.revocationDate)
+
+    @property
+    def extensions(self):
+        return _REVOKED_CERTIFICATE_EXTENSION_PARSER.parse(
+            self._backend, self._x509_revoked
+        )
+
+    def get_reason(self):
+        """
+        Returns the CRLReason extension if it exists.
+        """
+        try:
+            return self.extensions.get_extension_for_oid(
+                x509.OID_CRL_REASON).value
+        except x509.ExtensionNotFound:
+            return None
+
+    def get_invalidity_date(self):
+        """
+        Returns the InvalidityDate extension if it exists.
+        """
+        try:
+            return self.extensions.get_extension_for_oid(
+                x509.OID_INVALIDITY_DATE).value
+        except x509.ExtensionNotFound:
+            return None
+
+    def get_certificate_issuer(self):
+        """
+        Returns the CertificateIssuer extension if it exists.
+        """
+        try:
+            return self.extensions.get_extension_for_oid(
+                x509.OID_CERTIFICATE_ISSUER).value
+        except x509.ExtensionNotFound:
+            return None
+
+
+@utils.register_interface(x509.CertificateRevocationList)
+class _CertificateRevocationList(object):
+    def __init__(self, backend, x509_crl):
+        self._backend = backend
+        self._x509_crl = x509_crl
+
+    def __eq__(self, other):
+        if not isinstance(other, x509.CertificateRevocationList):
+            return NotImplemented
+
+        res = self._backend._lib.X509_CRL_cmp(self._x509_crl, other._x509_crl)
+        return res == 0
+
+    def __ne__(self, other):
+        return not self == other
+
+    def fingerprint(self, algorithm):
+        h = hashes.Hash(algorithm, self._backend)
+        bio = self._backend._create_mem_bio()
+        res = self._backend._lib.i2d_X509_CRL_bio(
+            bio, self._x509_crl
+        )
+        self._backend.openssl_assert(res == 1)
+        der = self._backend._read_mem_bio(bio)
+        h.update(der)
+        return h.finalize()
+
+    @property
+    def signature_hash_algorithm(self):
+        oid = _obj2txt(self._backend, self._x509_crl.sig_alg.algorithm)
+        try:
+            return x509._SIG_OIDS_TO_HASH[oid]
+        except KeyError:
+            raise UnsupportedAlgorithm(
+                "Signature algorithm OID:{0} not recognized".format(oid)
+            )
+
+    @property
+    def issuer(self):
+        issuer = self._backend._lib.X509_CRL_get_issuer(self._x509_crl)
+        self._backend.openssl_assert(issuer != self._backend._ffi.NULL)
+        return _decode_x509_name(self._backend, issuer)
+
+    @property
+    def next_update(self):
+        nu = self._backend._lib.X509_CRL_get_nextUpdate(self._x509_crl)
+        self._backend.openssl_assert(nu != self._backend._ffi.NULL)
+        return self._backend._parse_asn1_time(nu)
+
+    @property
+    def last_update(self):
+        lu = self._backend._lib.X509_CRL_get_lastUpdate(self._x509_crl)
+        self._backend.openssl_assert(lu != self._backend._ffi.NULL)
+        return self._backend._parse_asn1_time(lu)
+
+    def _revoked_certificates(self):
+        revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
+        self._backend.openssl_assert(revoked != self._backend._ffi.NULL)
+
+        num = self._backend._lib.sk_X509_REVOKED_num(revoked)
+        revoked_list = []
+        for i in range(num):
+            r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
+            self._backend.openssl_assert(r != self._backend._ffi.NULL)
+            revoked_list.append(_RevokedCertificate(self._backend, r))
+
+        return revoked_list
+
+    def __iter__(self):
+        return iter(self._revoked_certificates())
+
+    def __getitem__(self, idx):
+        return self._revoked_certificates()[idx]
+
+    def __len__(self):
+        return len(self._revoked_certificates())
+
+    @property
+    def extensions(self):
+        raise NotImplementedError()
+
+
 @utils.register_interface(x509.CertificateSigningRequest)
 class _CertificateSigningRequest(object):
     def __init__(self, backend, x509_req):
@@ -726,6 +924,15 @@ _EXTENSION_HANDLERS = {
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
 }
 
+_REVOKED_EXTENSION_HANDLERS = {
+    CRLExtensionOID.CRL_REASON: _decode_crl_reason,
+    CRLExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
+    CRLExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
+}
+
+_REVOKED_UNSUPPORTED_EXTENSIONS = set([
+    CRLExtensionOID.CERTIFICATE_ISSUER,
+])
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
@@ -737,4 +944,11 @@ _CSR_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.sk_X509_EXTENSION_num(x),
     get_ext=lambda backend, x, i: backend._lib.sk_X509_EXTENSION_value(x, i),
     handlers=_EXTENSION_HANDLERS
+)
+
+_REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.X509_REVOKED_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.X509_REVOKED_get_ext(x, i),
+    handlers=_REVOKED_EXTENSION_HANDLERS,
+    unsupported_exts=_REVOKED_UNSUPPORTED_EXTENSIONS
 )

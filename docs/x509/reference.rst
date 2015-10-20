@@ -5,6 +5,21 @@ X.509 Reference
 
 .. testsetup::
 
+    pem_crl_data = b"""
+    -----BEGIN X509 CRL-----
+    MIIBtDCBnQIBAjANBgkqhkiG9w0BAQsFADAnMQswCQYDVQQGEwJVUzEYMBYGA1UE
+    AwwPY3J5cHRvZ3JhcGh5LmlvGA8yMDE1MDEwMTAwMDAwMFoYDzIwMTYwMTAxMDAw
+    MDAwWjA+MDwCAQAYDzIwMTUwMTAxMDAwMDAwWjAmMBgGA1UdGAQRGA8yMDE1MDEw
+    MTAwMDAwMFowCgYDVR0VBAMKAQEwDQYJKoZIhvcNAQELBQADggEBABRA4ww50Lz5
+    zk1j2+aluC4HPHqb7o06h4pTDcCGeXUKXIGeP5ntGGmIoxa26sNoLeOr8+5b43Gf
+    yWraHertllOwaOpNFEe+YZFaE9femtoDbf+GLMvRx/0wDfd3KxPoXnXKMXb2d1w4
+    RCLgmkYx6JyvS+5ciuLQVIKC+l7jwIUeZFLJMUJ8msM4pFYoGameeZmtjMbd/TNg
+    cVBfmZxNMHuLladJxvSo2esARo0TYPhYsgrREKoHwhpzSxdynjn4bOVkILfguwsN
+    qtEEMZFEv5Kb0GqRp2+Iagv2S6dg9JGvxVdsoGjaB6EbYSZ3Psx4aODasIn11uwo
+    X4B9vUQNXqc=
+    -----END X509 CRL-----
+    """.strip()
+
     pem_req_data = b"""
     -----BEGIN CERTIFICATE REQUEST-----
     MIIC0zCCAbsCAQAwWTELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMRAw
@@ -128,6 +143,52 @@ Loading Certificates
     >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
     >>> cert.serial
     2
+
+Loading Certificate Revocation Lists
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: load_pem_x509_crl(data, backend)
+
+    .. versionadded:: 1.1
+
+    Deserialize a certificate revocation list (CRL) from PEM encoded data. PEM
+    requests are base64 decoded and have delimiters that look like
+    ``-----BEGIN X509 CRL-----``. This format is also known as
+    PKCS#10.
+
+    :param bytes data: The PEM encoded request data.
+
+    :param backend: A backend supporting the
+        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+        interface.
+
+    :returns: An instance of
+        :class:`~cryptography.x509.CertificateRevocationList`.
+
+.. function:: load_der_x509_crl(data, backend)
+
+    .. versionadded:: 1.1
+
+    Deserialize a certificate revocation list (CRL) from DER encoded data. DER
+    is a binary format.
+
+    :param bytes data: The DER encoded request data.
+
+    :param backend: A backend supporting the
+        :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+        interface.
+
+    :returns: An instance of
+        :class:`~cryptography.x509.CertificateRevocationList`.
+
+.. doctest::
+
+    >>> from cryptography import x509
+    >>> from cryptography.hazmat.backends import default_backend
+    >>> from cryptography.hazmat.primitives import hashes
+    >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
+    >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+    True
 
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -340,6 +401,20 @@ X.509 CRL (Certificate Revocation List) Object
 
     .. versionadded:: 1.0
 
+    A CertificateRevocationList is an object representing a list of revoked
+    certificates. The object is iterable and will yield the RevokedCertificate
+    objects stored in this CRL.
+
+    .. doctest::
+
+            >>> len(crl)
+            1
+            >>> type(crl[0])
+            <class 'cryptography.hazmat.backends.openssl.x509._RevokedCertificate'>
+            >>> for r in crl:
+            ...     print(r.serial_number)
+            0
+
     .. method:: fingerprint(algorithm)
 
         :param algorithm: The
@@ -349,6 +424,12 @@ X.509 CRL (Certificate Revocation List) Object
         :return bytes: The fingerprint using the supplied hash algorithm, as
             bytes.
 
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> crl.fingerprint(hashes.SHA256())
+            'e\xcf.\xc4:\x83?1\xdc\xf3\xfc\x95\xd7\xb3\x87\xb3\x8e\xf8\xb93!\x87\x07\x9d\x1b\xb4!\xb9\xe4W\xf4\x1f'
+
     .. attribute:: signature_hash_algorithm
 
         :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
@@ -357,11 +438,22 @@ X.509 CRL (Certificate Revocation List) Object
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` which
         was used in signing this CRL.
 
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+            True
+
     .. attribute:: issuer
 
         :type: :class:`Name`
 
         The :class:`Name` of the issuer.
+
+        .. doctest::
+
+            >>> crl.issuer
+            <Name([<NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.6, name=countryName)>, value=u'US')>, <NameAttribute(oid=<ObjectIdentifier(oid=2.5.4.3, name=commonName)>, value=u'cryptography.io')>])>
 
     .. attribute:: next_update
 
@@ -370,17 +462,21 @@ X.509 CRL (Certificate Revocation List) Object
         A naïve datetime representing when the next update to this CRL is
         expected.
 
+        .. doctest::
+
+            >>> crl.next_update
+            datetime.datetime(2016, 1, 1, 0, 0)
+
     .. attribute:: last_update
 
         :type: :class:`datetime.datetime`
 
         A naïve datetime representing when the this CRL was last updated.
 
-    .. attribute:: revoked_certificates
+        .. doctest::
 
-        :type: list of :class:`RevokedCertificate`
-
-        The revoked certificates listed in this CRL.
+            >>> crl.last_update
+            datetime.datetime(2015, 1, 1, 0, 0)
 
     .. attribute:: extensions
 
@@ -603,11 +699,20 @@ X.509 Revoked Certificate Object
 
     .. versionadded:: 1.0
 
+    .. doctest::
+
+        >>> revoked_certificate = crl[0]
+
     .. attribute:: serial_number
 
         :type: :class:`int`
 
         An integer representing the serial number of the revoked certificate.
+
+        .. doctest::
+
+            >>> revoked_certificate.serial_number
+            0
 
     .. attribute:: revocation_date
 
@@ -615,11 +720,23 @@ X.509 Revoked Certificate Object
 
         A naïve datetime representing the date this certificates was revoked.
 
+        .. doctest::
+
+            >>> revoked_certificate.revocation_date
+            datetime.datetime(2015, 1, 1, 0, 0)
+
     .. attribute:: extensions
 
         :type: :class:`Extensions`
 
         The extensions encoded in the revoked certificate.
+
+        .. doctest::
+
+            >>> for ext in revoked_certificate.extensions:
+            ...     print(ext)
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.24, name=invalidityDate)>, critical=False, value=2015-01-01 00:00:00)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.21, name=cRLReason)>, critical=False, value=ReasonFlags.key_compromise)>
 
 X.509 CSR (Certificate Signing Request) Builder Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
