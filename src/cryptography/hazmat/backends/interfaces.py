@@ -212,7 +212,13 @@ class EllipticCurveBackend(object):
     @abc.abstractmethod
     def load_elliptic_curve_private_numbers(self, numbers):
         """
-        Return an EllipticCurvePublicKey provider using the given numbers.
+        Return an EllipticCurvePrivateKey provider using the given numbers.
+        """
+
+    @abc.abstractmethod
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+        """
+        Returns whether the exchange algorithm is supported by this backend.
         """
 
 

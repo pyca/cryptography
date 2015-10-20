@@ -302,6 +302,8 @@ Custom X.509 Certificate Revocation List Vectors
   to "1.2.3.4". The CRL uses an unsupported MD2 signature algorithm.
 * ``crl_unsupported_reason.pem`` - Contains a CRL with one revocation which has
   an unsupported reason code.
+* ``crl_inval_cert_issuer_entry_ext.pem`` - Contains a CRL with one revocation
+  which has one entry extension for certificate issuer with an empty value.
 
 Hashes
 ~~~~~~

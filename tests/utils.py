@@ -722,7 +722,7 @@ def load_kasvs_ecdh_vectors(vector_data):
         if line.startswith("["):
             tag = line.split()[0][1:]
         elif line.startswith("COUNT = "):
-            data["COUNT"] = int(line.split("=")[1], 16)
+            data["COUNT"] = int(line.split("=")[1])
         elif line.startswith("dsCAVS = "):
             data["CAVS"]["d"] = int(line.split("=")[1], 16)
         elif line.startswith("QsCAVSx = "):

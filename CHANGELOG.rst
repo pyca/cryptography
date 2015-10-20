@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for Elliptic Curve Diffie-Hellman with
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF`.
 
 1.0.2 - 2015-09-27

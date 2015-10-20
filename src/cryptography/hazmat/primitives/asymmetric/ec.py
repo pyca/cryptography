@@ -44,6 +44,13 @@ class EllipticCurvePrivateKey(object):
         """
 
     @abc.abstractmethod
+    def exchange(self, algorithm, peer_public_key):
+        """
+        Performs a key exchange operation using the provided algorithm with the
+        provided peer's public key.
+        """
+
+    @abc.abstractmethod
     def public_key(self):
         """
         The EllipticCurvePublicKey for this private key.
@@ -302,3 +309,7 @@ class EllipticCurvePrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+class ECDH(object):
+    pass

@@ -79,7 +79,6 @@ ffi = build_ffi_for_binding(
         "objects",
         "opensslv",
         "pem",
-        "pkcs7",
         "pkcs12",
         "rand",
         "rsa",
@@ -87,7 +86,8 @@ ffi = build_ffi_for_binding(
         "x509",
         "x509name",
         "x509v3",
-        "x509_vfy"
+        "x509_vfy",
+        "pkcs7",
     ],
     pre_include=_OSX_PRE_INCLUDE,
     post_include=_OSX_POST_INCLUDE,

@@ -857,6 +857,20 @@ class TestExtensions(object):
         assert ext is not None
         assert isinstance(ext.value, x509.BasicConstraints)
 
+    def test_repr(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "basic_constraints_not_critical.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert repr(cert.extensions) == (
+            "<Extensions([<Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name"
+            "=basicConstraints)>, critical=False, value=<BasicConstraints(ca=F"
+            "alse, path_length=None)>)>])>"
+        )
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

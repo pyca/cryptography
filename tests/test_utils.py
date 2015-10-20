@@ -3363,7 +3363,7 @@ def test_load_kasvs_ecdh_kdf_vectors():
     [EB - SHA224]
 
 
-    COUNT = 0
+    COUNT = 50
     dsCAVS = 540904b67b3716823dd621ed72ad3dbc615887b4f56f910b78a57199
     QsCAVSx = 28e5f3a72d8f6b8499dd1bcdfceafcecec68a0d715789bcf4b55fe15
     QsCAVSy = 8c8006a7da7c1a19f5328d7e865522b0c0dfb9a29b2c46dc96590d2a
@@ -3385,7 +3385,7 @@ ffdfa60dd7
     expected = [
         {'errno': 12,
          'fail': True,
-         'COUNT': 0,
+         'COUNT': 50,
          'CAVS': {
              'd': int("540904b67b3716823dd621ed72ad3dbc615887b4f56f910b"
                       "78a57199", 16),

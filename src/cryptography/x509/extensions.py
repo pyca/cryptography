@@ -104,6 +104,11 @@ class Extensions(object):
     def __len__(self):
         return len(self._extensions)
 
+    def __repr__(self):
+        return (
+            "<Extensions({0})>".format(self._extensions)
+        )
+
 
 @utils.register_interface(ExtensionType)
 class AuthorityKeyIdentifier(object):

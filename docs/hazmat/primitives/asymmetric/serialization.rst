@@ -337,8 +337,6 @@ Serialization Encodings
 
 .. class:: Encoding
 
-    .. versionadded:: 0.8
-
     An enumeration for encoding types. Used with the ``private_bytes`` method
     available on
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
@@ -353,9 +351,13 @@ Serialization Encodings
 
     .. attribute:: PEM
 
+        .. versionadded:: 0.8
+
         For PEM format. This is a base64 format with delimiters.
 
     .. attribute:: DER
+
+        .. versionadded:: 0.9
 
         For DER format. This is a binary format.
 

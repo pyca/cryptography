@@ -15,4 +15,3 @@ Primitives
     constant-time
     interfaces
     twofactor
-    key-exchange-agreements

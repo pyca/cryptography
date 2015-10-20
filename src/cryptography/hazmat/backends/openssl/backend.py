@@ -1693,6 +1693,13 @@ class Backend(object):
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
 
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+        return (
+            self.elliptic_curve_supported(curve) and
+            self._lib.Cryptography_HAS_ECDH == 1 and
+            isinstance(algorithm, ec.ECDH)
+        )
+
     def _ec_cdata_to_evp_pkey(self, ec_cdata):
         evp_pkey = self._lib.EVP_PKEY_new()
         self.openssl_assert(evp_pkey != self._ffi.NULL)
@@ -1798,9 +1805,13 @@ class Backend(object):
             self.openssl_assert(res == 1)
 
             res = self._lib.BN_cmp(bn_x, check_x)
-            self.openssl_assert(res == 0)
+            if res != 0:
+                self._consume_errors()
+                raise ValueError("Invalid EC Key X point.")
             res = self._lib.BN_cmp(bn_y, check_y)
-            self.openssl_assert(res == 0)
+            if res != 0:
+                self._consume_errors()
+                raise ValueError("Invalid EC Key Y point.")
 
         res = self._lib.EC_KEY_set_public_key(ctx, point)
         self.openssl_assert(res == 1)

@@ -46,7 +46,9 @@ dependencies are included. Just run
 
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use the binaries we build for our
-release infrastructure (`32-bit`_ and `64-bit`_). Wherever you place your copy
+release infrastructure (`openssl-release`_). Be sure to download the proper
+version for your architecture and Python (2010 works for Python 2.6, 2.7, 3.3,
+and 3.4 while 2015 is required for 3.5). Wherever you place your copy
 of OpenSSL you'll need to set the ``LIB`` and ``INCLUDE`` environment variables
 to include the proper locations. For example:
 
@@ -166,7 +168,7 @@ dependencies.
     ./config no-shared no-ssl2 -fPIC --prefix=${CWD}/openssl
     make && make install
     cd ..
-    CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel cryptography
+    CFLAGS="-I${CWD}/openssl/include" LDFLAGS="-L${CWD}/openssl/lib" pip wheel --no-use-wheel cryptography
 
 Building cryptography on OS X
 -----------------------------
@@ -250,8 +252,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 
 .. _`Homebrew`: http://brew.sh
 .. _`MacPorts`: https://www.macports.org
-.. _`32-bit`: https://jenkins.cryptography.io/job/openssl-win32-release/
-.. _`64-bit`: https://jenkins.cryptography.io/job/openssl-win64-release/
+.. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
 .. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/

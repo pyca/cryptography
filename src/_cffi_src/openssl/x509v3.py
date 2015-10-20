@@ -202,6 +202,8 @@ void OTHERNAME_free(OTHERNAME *);
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 
 int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
+GENERAL_NAMES *d2i_GENERAL_NAMES(GENERAL_NAMES **, const unsigned char **,
+                                 long);
 
 int i2d_EXTENDED_KEY_USAGE(EXTENDED_KEY_USAGE *, unsigned char **);
 
