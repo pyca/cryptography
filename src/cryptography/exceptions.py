@@ -20,6 +20,7 @@ class _Reasons(Enum):
     UNSUPPORTED_ELLIPTIC_CURVE = 6
     UNSUPPORTED_SERIALIZATION = 7
     UNSUPPORTED_X509 = 8
+    UNSUPPORTED_EXCHANGE_ALGORITHM = 9
 
 
 class UnsupportedAlgorithm(Exception):

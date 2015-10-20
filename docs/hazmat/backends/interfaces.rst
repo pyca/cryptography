@@ -444,6 +444,10 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
             provider.
 
+    .. method:: elliptic_curve_exchange_algorithm_supported()
+
+        :returns: True if the ECDH algorithm is supported by this backend.
+
 .. class:: PEMSerializationBackend
 
     .. versionadded:: 0.6
