@@ -152,10 +152,7 @@ class DummyEllipticCurveBackend(object):
     ):
         return (
             isinstance(signature_algorithm, ec.ECDSA) and
-            any(
-                isinstance(curve, curve_type)
-                for curve_type in self._curves
-            )
+            self.elliptic_curve_supported(curve)
         )
 
     def generate_elliptic_curve_private_key(self, curve):
@@ -169,6 +166,12 @@ class DummyEllipticCurveBackend(object):
     def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+        return (
+            isinstance(algorithm, ec.ECDH) and
+            self.elliptic_curve_supported(curve)
+        )
 
 
 @utils.register_interface(PEMSerializationBackend)
@@ -461,6 +464,14 @@ class TestMultiBackend(object):
                     ec.SECT163K1()
                 )
             )
+
+        assert backend.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDH(), ec.SECT283K1()
+        )
+        backend2 = MultiBackend([DummyEllipticCurveBackend([])])
+        assert not backend2.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDH(), ec.SECT163K1()
+        )
 
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])

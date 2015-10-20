@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function
 import itertools
 import os
 
+from binascii import hexlify
+
 import pytest
 
 from cryptography import exceptions, utils
@@ -21,7 +23,8 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
-    load_vectors_from_file, raises_unsupported_algorithm
+    load_kasvs_ecdh_vectors, load_vectors_from_file,
+    raises_unsupported_algorithm
 )
 
 _HASH_TYPES = {
@@ -54,6 +57,17 @@ def _skip_curve_unsupported(backend, curve):
         )
 
 
+def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
+    if not backend.elliptic_curve_exchange_algorithm_supported(
+        algorithm, curve
+    ):
+        pytest.skip(
+            "Exchange algorithm is not supported by this backend {0}".format(
+                backend
+            )
+        )
+
+
 @utils.register_interface(ec.EllipticCurve)
 class DummyCurve(object):
     name = "dummy-curve"
@@ -74,6 +88,12 @@ class DummyKeyEncryption(object):
 def test_skip_curve_unsupported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_curve_unsupported(backend, DummyCurve())
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_skip_exchange_algorithm_unsupported(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), DummyCurve())
 
 
 def test_ec_numbers():
@@ -749,3 +769,78 @@ class TestECDSAVerification(object):
         public_key = key.public_key()
         with pytest.raises(TypeError):
             public_key.verifier(1234, ec.ECDSA(hashes.SHA256()))
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECDHVectors(object):
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDH",
+                "KASValidityTest_ECCStaticUnified_NOKC_ZZOnly_init.fax"),
+            load_kasvs_ecdh_vectors
+        )
+    )
+    def test_key_exchange_with_vectors(self, backend, vector):
+        _skip_exchange_algorithm_unsupported(
+            backend, ec.ECDH(), ec._CURVE_TYPES[vector['curve']]
+        )
+
+        key_numbers = vector['IUT']
+        private_numbers = ec.EllipticCurvePrivateNumbers(
+            key_numbers['d'],
+            ec.EllipticCurvePublicNumbers(
+                key_numbers['x'],
+                key_numbers['y'],
+                ec._CURVE_TYPES[vector['curve']]()
+            )
+        )
+        # Errno 5 and 6 indicates a bad public key, this doesn't test the ECDH
+        # code at all
+        if vector['fail'] and vector['errno'] in [5, 6]:
+            with pytest.raises(ValueError):
+                private_numbers.private_key(backend)
+            return
+        else:
+            private_key = private_numbers.private_key(backend)
+
+        peer_numbers = vector['CAVS']
+        public_numbers = ec.EllipticCurvePublicNumbers(
+            peer_numbers['x'],
+            peer_numbers['y'],
+            ec._CURVE_TYPES[vector['curve']]()
+        )
+        # Errno 1 and 2 indicates a bad public key, this doesn't test the ECDH
+        # code at all
+        if vector['fail'] and vector['errno'] in [1, 2]:
+            with pytest.raises(ValueError):
+                public_numbers.public_key(backend)
+            return
+        else:
+            peer_pubkey = public_numbers.public_key(backend)
+
+        z = private_key.exchange(ec.ECDH(), peer_pubkey)
+        z = int(hexlify(z).decode('ascii'), 16)
+        # At this point fail indicates that one of the underlying keys was
+        # changed. This results in a non-matching derived key.
+        if vector['fail']:
+            assert z != vector['Z']
+        else:
+            assert z == vector['Z']
+
+    def test_exchange_unsupported_algorithm(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
+        ):
+            key.exchange(None, key.public_key())

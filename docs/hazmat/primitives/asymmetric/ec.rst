@@ -122,6 +122,32 @@ Elliptic Curve Signature Algorithms
         :returns: A new instance of a :class:`EllipticCurvePublicKey`
             provider.
 
+Elliptic Curve Key Exchange algorithm
+-------------------------------------
+
+.. class:: ECDH()
+
+    .. versionadded:: 1.1
+
+    The Elliptic Curve Diffie-Hellman Key Exchange algorithm first standardized
+    in NIST publication `800-56A`_, and later in `800-56Ar2`_.
+
+    For most applications the ``shared_key`` should be passed to a key
+    derivation function.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> private_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... )
+        >>> peer_public_key = ec.generate_private_key(
+        ...     ec.SECP384R1(), default_backend()
+        ... ).public_key()
+        >>> shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
+
+
 Elliptic Curves
 ---------------
 
@@ -314,6 +340,22 @@ Key Interfaces
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
 
+    .. method:: exchange(algorithm, peer_public_key)
+
+        Perform's a key exchange operation using the provided algorithm with
+        the peer's public key.
+
+        For most applications the result should be passed to a key derivation
+        function.
+
+        :param algorithm: The key exchange algorithm, currently only
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` is
+            supported.
+        :param EllipticCurvePublicKey peer_public_key: The public key for the
+            peer.
+
+        :returns bytes: A shared key.
+
     .. method:: public_key()
 
         :return: :class:`EllipticCurvePublicKey`
@@ -419,6 +461,8 @@ Key Interfaces
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
 .. _`FIPS 186-4`: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+.. _`800-56A`: http://csrc.nist.gov/publications/nistpubs/800-56A/SP800-56A_Revision1_Mar08-2007.pdf
+.. _`800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
 .. _`elliptic curve diffie-hellman is faster than diffie-hellman`: http://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
