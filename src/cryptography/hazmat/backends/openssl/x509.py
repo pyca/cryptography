@@ -208,6 +208,9 @@ class _X509ExtensionParser(object):
                         .format(oid), oid
                     )
             else:
+                # For extensions which are not supported by OpenSSL we pass the
+                # extension object directly to the parsing routine so it can
+                # be decoded manually.
                 if self.unsupported_exts and oid in self.unsupported_exts:
                     ext_data = ext
                 else:
@@ -678,34 +681,44 @@ def _decode_crl_reason(backend, enum):
 
 
 def _decode_invalidity_date(backend, inv_date):
-        generalized_time = backend._ffi.cast(
-            "ASN1_GENERALIZEDTIME *", inv_date
+    generalized_time = backend._ffi.cast(
+        "ASN1_GENERALIZEDTIME *", inv_date
+    )
+    generalized_time = backend._ffi.gc(
+        generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
+    )
+    time = backend._ffi.string(
+        backend._lib.ASN1_STRING_data(
+            backend._ffi.cast("ASN1_STRING *", generalized_time)
         )
-        generalized_time = backend._ffi.gc(
-            generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
-        )
-        time = backend._ffi.string(
-            backend._lib.ASN1_STRING_data(
-                backend._ffi.cast("ASN1_STRING *", generalized_time)
-            )
-        ).decode("ascii")
-        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+    ).decode("ascii")
+    return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
 def _decode_cert_issuer(backend, ext):
-        data_ptr_ptr = backend._ffi.new("const unsigned char **")
-        data_ptr_ptr[0] = ext.value.data
-        gns = backend._lib.d2i_GENERAL_NAMES(
-            backend._ffi.NULL, data_ptr_ptr, ext.value.length
-        )
-        if gns == backend._ffi.NULL:
-            backend._consume_errors()
-            raise ValueError(
-                "The {0} extension is corrupted and can't be parsed".format(
-                    CRLExtensionOID.CERTIFICATE_ISSUER))
+    """
+    This handler decodes the CertificateIssuer entry extension directly
+    from the X509_EXTENSION object. This is necessary because this entry
+    extension is not directly supported by OpenSSL 0.9.8.
+    """
 
-        gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-        return x509.GeneralNames(_decode_general_names(backend, gns))
+    data_ptr_ptr = backend._ffi.new("const unsigned char **")
+    data_ptr_ptr[0] = ext.value.data
+    gns = backend._lib.d2i_GENERAL_NAMES(
+        backend._ffi.NULL, data_ptr_ptr, ext.value.length
+    )
+
+    # Check the result of d2i_GENERAL_NAMES() is valid. Usually this is covered
+    # in _X509ExtensionParser but since we are responsible for decoding this
+    # entry extension ourselves, we have to this here.
+    if gns == backend._ffi.NULL:
+        backend._consume_errors()
+        raise ValueError(
+            "The {0} extension is corrupted and can't be parsed".format(
+                CRLExtensionOID.CERTIFICATE_ISSUER))
+
+    gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
+    return x509.GeneralNames(_decode_general_names(backend, gns))
 
 
 @utils.register_interface(x509.RevokedCertificate)
