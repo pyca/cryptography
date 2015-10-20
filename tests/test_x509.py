@@ -9,6 +9,8 @@ import datetime
 import ipaddress
 import os
 
+from asn1crypto import core, x509 as asn1cryptox509
+
 import pytest
 
 import six
@@ -833,6 +835,43 @@ class TestRSACertificateRequest(object):
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
         ]
+
+    def test_build_cert_printable_string_country_name(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+        parsedasn1 = asn1cryptox509.Certificate.load(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        assert isinstance(
+            parsedasn1.subject.chosen[0][0]['value'].chosen,
+            core.PrintableString
+        )
+        assert isinstance(
+            parsedasn1.subject.chosen[1][0]['value'].chosen,
+            core.UTF8String
+        )
 
 
 class TestCertificateBuilder(object):

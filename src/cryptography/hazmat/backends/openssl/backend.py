@@ -52,7 +52,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
-from cryptography.x509.oid import ExtensionOID
+from cryptography.x509.oid import ExtensionOID, NameOID
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -119,12 +119,14 @@ def _encode_name(backend, attributes):
     for attribute in attributes:
         value = attribute.value.encode('utf8')
         obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
+        if attribute.oid == NameOID.COUNTRY_NAME:
+            # Per RFC5280 countryName should be encoded as PrintableString,
+            # not UTF8String
+            type = backend._lib.MBSTRING_ASC
+        else:
+            type = backend._lib.MBSTRING_UTF8
         res = backend._lib.X509_NAME_add_entry_by_OBJ(
-            subject,
-            obj,
-            backend._lib.MBSTRING_UTF8,
-            value,
-            -1, -1, 0,
+            subject, obj, type, value, -1, -1, 0,
         )
         backend.openssl_assert(res == 1)
     return subject
