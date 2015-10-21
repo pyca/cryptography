@@ -147,6 +147,10 @@ Elliptic Curve Key Exchange algorithm
         ... ).public_key()
         >>> shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
 
+    ECDHE (or EECDH), the ephemeral form of this exchange, is **strongly
+    preferred** over simple ECDH and provides `forward secrecy`_ when used.
+    You must generate a new private key using :func:`generate_private_key` for
+    each ``exchange`` when performing an ECDHE key exchange.
 
 Elliptic Curves
 ---------------
@@ -470,3 +474,4 @@ Key Interfaces
 .. _`SafeCurves`: http://safecurves.cr.yp.to/
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
 .. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA
+.. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
