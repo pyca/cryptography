@@ -219,7 +219,9 @@ class TestRevokedCertificate(object):
         assert len(rev0.extensions) == 0
         with pytest.raises(x509.ExtensionNotFound):
             rev0.extensions.get_extension_for_oid(x509.OID_CRL_REASON)
+        with pytest.raises(x509.ExtensionNotFound):
             rev0.extensions.get_extension_for_oid(x509.OID_CERTIFICATE_ISSUER)
+        with pytest.raises(x509.ExtensionNotFound):
             rev0.extensions.get_extension_for_oid(x509.OID_INVALIDITY_DATE)
 
         # Test manual retrieval of extension values.
