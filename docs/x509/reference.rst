@@ -153,8 +153,7 @@ Loading Certificate Revocation Lists
 
     Deserialize a certificate revocation list (CRL) from PEM encoded data. PEM
     requests are base64 decoded and have delimiters that look like
-    ``-----BEGIN X509 CRL-----``. This format is also known as
-    PKCS#10.
+    ``-----BEGIN X509 CRL-----``.
 
     :param bytes data: The PEM encoded request data.
 

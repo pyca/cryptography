@@ -744,36 +744,6 @@ class _RevokedCertificate(object):
             self._backend, self._x509_revoked
         )
 
-    def get_reason(self):
-        """
-        Returns the CRLReason extension if it exists.
-        """
-        try:
-            return self.extensions.get_extension_for_oid(
-                x509.OID_CRL_REASON).value
-        except x509.ExtensionNotFound:
-            return None
-
-    def get_invalidity_date(self):
-        """
-        Returns the InvalidityDate extension if it exists.
-        """
-        try:
-            return self.extensions.get_extension_for_oid(
-                x509.OID_INVALIDITY_DATE).value
-        except x509.ExtensionNotFound:
-            return None
-
-    def get_certificate_issuer(self):
-        """
-        Returns the CertificateIssuer extension if it exists.
-        """
-        try:
-            return self.extensions.get_extension_for_oid(
-                x509.OID_CERTIFICATE_ISSUER).value
-        except x509.ExtensionNotFound:
-            return None
-
 
 @utils.register_interface(x509.CertificateRevocationList)
 class _CertificateRevocationList(object):

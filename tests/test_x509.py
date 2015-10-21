@@ -219,10 +219,8 @@ class TestRevokedCertificate(object):
         assert len(rev0.extensions) == 0
         with pytest.raises(x509.ExtensionNotFound):
             rev0.extensions.get_extension_for_oid(x509.OID_CRL_REASON)
-
-        assert rev0.get_invalidity_date() is None
-        assert rev0.get_certificate_issuer() is None
-        assert rev0.get_reason() is None
+            rev0.extensions.get_extension_for_oid(x509.OID_CERTIFICATE_ISSUER)
+            rev0.extensions.get_extension_for_oid(x509.OID_INVALIDITY_DATE)
 
         # Test manual retrieval of extension values.
         rev1 = crl[1]
@@ -241,14 +239,17 @@ class TestRevokedCertificate(object):
         assert isinstance(date, datetime.datetime)
         assert date.isoformat() == "2015-01-01T00:00:00"
 
-        # Test convenience function.
-        assert rev1.get_invalidity_date().isoformat() == "2015-01-01T00:00:00"
-        assert rev1.get_certificate_issuer() == exp_issuer
-
         # Check if all reason flags can be found in the CRL.
         flags = set(x509.ReasonFlags)
-        for r in crl:
-            flags.discard(r.get_reason())
+        for rev in crl:
+            try:
+                r = rev.extensions.get_extension_for_oid(x509.OID_CRL_REASON)
+            except x509.ExtensionNotFound:
+                # Not all revoked certs have a reason extension.
+                pass
+            else:
+                flags.discard(r.value)
+
         assert len(flags) == 0
 
     def test_duplicate_entry_ext(self, backend):
