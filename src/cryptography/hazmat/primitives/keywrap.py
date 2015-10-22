@@ -29,8 +29,9 @@ def aes_key_wrap(wrapping_key, key_to_wrap, backend):
     n = len(r)
     for j in range(6):
         for i in range(n):
-            # every encryption operation is a discrete 16 byte chunk so
-            # it is safe to reuse the encryptor for the entire operation
+            # every encryption operation is a discrete 16 byte chunk (because
+            # AES has a 128-bit block size) and since we're using ECB it is
+            # safe to reuse the encryptor for the entire operation
             b = encryptor.update(a + r[i])
             # pack/unpack are safe as these are always 64-bit chunks
             a = struct.pack(
