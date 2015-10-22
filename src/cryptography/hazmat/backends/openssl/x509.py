@@ -328,6 +328,8 @@ class _Certificate(object):
             res = self._backend._lib.PEM_write_bio_X509(bio, self._x509)
         elif encoding is serialization.Encoding.DER:
             res = self._backend._lib.i2d_X509_bio(bio, self._x509)
+        elif encoding is serialization.Encoding.TXT:
+            res = self._backend._lib.X509_print_ex(bio, self._x509, 0, 0)
         else:
             raise TypeError("encoding must be an item from the Encoding enum")
 
@@ -885,6 +887,9 @@ class _CertificateSigningRequest(object):
             )
         elif encoding is serialization.Encoding.DER:
             res = self._backend._lib.i2d_X509_REQ_bio(bio, self._x509_req)
+        elif encoding is serialization.Encoding.TXT:
+            res = self._backend._lib.X509_REQ_print_ex(bio,
+                                                       self._x509_req, 0, 0)
         else:
             raise TypeError("encoding must be an item from the Encoding enum")
 
