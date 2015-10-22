@@ -15,6 +15,9 @@ protections offered by key wrapping are also offered by using authenticated
 
     .. versionadded:: 1.1
 
+    This function performs AES key wrap (without padding) as specified in
+    :rfc:`3394`.
+
     :param bytes wrapping_key: The wrapping key.
 
     :param bytes key_to_wrap: The key to wrap.
@@ -29,6 +32,9 @@ protections offered by key wrapping are also offered by using authenticated
 .. function:: aes_key_unwrap(wrapping_key, wrapped_key, backend)
 
     .. versionadded:: 1.1
+
+    This function performs AES key unwrap (without padding) as specified in
+    :rfc:`3394`.
 
     :param bytes wrapping_key: The wrapping key.
 
