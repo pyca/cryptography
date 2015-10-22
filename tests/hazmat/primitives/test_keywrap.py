@@ -75,6 +75,7 @@ class TestAESKeyWrap(object):
                      " is unsupported",
     )
     def test_wrap_invalid_key_length(self, backend):
+        # The wrapping key must be of length [16, 24, 32]
         with pytest.raises(ValueError):
             keywrap.aes_key_wrap(b"badkey", b"sixteen_byte_key", backend)
 
@@ -97,15 +98,19 @@ class TestAESKeyWrap(object):
                      " is unsupported",
     )
     def test_wrap_invalid_key_to_wrap_length(self, backend):
+        # Keys to wrap must be at least 16 bytes long
         with pytest.raises(ValueError):
             keywrap.aes_key_wrap(b"sixteen_byte_key", b"\x00" * 15, backend)
 
+        # Keys to wrap must be a multiple of 8 bytes
         with pytest.raises(ValueError):
             keywrap.aes_key_wrap(b"sixteen_byte_key", b"\x00" * 23, backend)
 
     def test_unwrap_invalid_wrapped_key_length(self, backend):
+        # Keys to unwrap must be at least 24 bytes
         with pytest.raises(ValueError):
             keywrap.aes_key_unwrap(b"sixteen_byte_key", b"\x00" * 16, backend)
 
+        # Keys to unwrap must be a multiple of 8 bytes
         with pytest.raises(ValueError):
             keywrap.aes_key_unwrap(b"sixteen_byte_key", b"\x00" * 27, backend)
