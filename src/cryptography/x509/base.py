@@ -40,6 +40,14 @@ def load_der_x509_csr(data, backend):
     return backend.load_der_x509_csr(data)
 
 
+def load_pem_x509_crl(data, backend):
+    return backend.load_pem_x509_crl(data)
+
+
+def load_der_x509_crl(data, backend):
+    return backend.load_der_x509_crl(data)
+
+
 class InvalidVersion(Exception):
     def __init__(self, msg, parsed_version):
         super(InvalidVersion, self).__init__(msg)
@@ -166,12 +174,6 @@ class CertificateRevocationList(object):
     def last_update(self):
         """
         Returns the date of last update for this CRL.
-        """
-
-    @abc.abstractproperty
-    def revoked_certificates(self):
-        """
-        Returns a list of RevokedCertificate objects for this CRL.
         """
 
     @abc.abstractproperty
