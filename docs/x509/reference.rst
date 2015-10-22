@@ -408,7 +408,8 @@ X.509 CRL (Certificate Revocation List) Object
 
             >>> len(crl)
             1
-            >>> type(crl[0])
+            >>> revoked_certificate = crl[0]
+            >>> type(revoked_certificate)
             <class 'cryptography.hazmat.backends.openssl.x509._RevokedCertificate'>
             >>> for r in crl:
             ...     print(r.serial_number)
@@ -699,10 +700,6 @@ X.509 Revoked Certificate Object
 .. class:: RevokedCertificate
 
     .. versionadded:: 1.0
-
-    .. doctest::
-
-        >>> revoked_certificate = crl[0]
 
     .. attribute:: serial_number
 

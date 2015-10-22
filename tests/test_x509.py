@@ -161,7 +161,7 @@ class TestCertificateRevocationList(object):
         )
 
         for r in crl:
-                assert isinstance(r, x509.RevokedCertificate)
+            assert isinstance(r, x509.RevokedCertificate)
 
         # Check that len() works for CRLs.
         assert len(crl) == 12
@@ -175,7 +175,7 @@ class TestCertificateRevocationList(object):
 
         # CRL extensions are currently not supported in the OpenSSL backend.
         with pytest.raises(NotImplementedError):
-                crl.extensions
+            crl.extensions
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)

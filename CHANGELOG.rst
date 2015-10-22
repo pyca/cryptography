@@ -9,6 +9,9 @@ Changelog
 * Added support for Elliptic Curve Diffie-Hellman with
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`.
 * Added :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF`.
+* Added support for parsing certificate revocation lists (CRLs) using
+  :func:`~cryptography.x509.load_pem_x509_crl` and
+  :func:`~cryptography.x509.load_der_x509_crl`.
 
 1.0.2 - 2015-09-27
 ~~~~~~~~~~~~~~~~~~
