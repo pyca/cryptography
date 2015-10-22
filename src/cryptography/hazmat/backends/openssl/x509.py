@@ -658,24 +658,27 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
+_CRL_REASON_CODE_TO_ENUM = {
+    0: x509.ReasonFlags.unspecified,
+    1: x509.ReasonFlags.key_compromise,
+    2: x509.ReasonFlags.ca_compromise,
+    3: x509.ReasonFlags.affiliation_changed,
+    4: x509.ReasonFlags.superseded,
+    5: x509.ReasonFlags.cessation_of_operation,
+    6: x509.ReasonFlags.certificate_hold,
+    8: x509.ReasonFlags.remove_from_crl,
+    9: x509.ReasonFlags.privilege_withdrawn,
+    10: x509.ReasonFlags.aa_compromise,
+}
+
+
 def _decode_crl_reason(backend, enum):
     enum = backend._ffi.cast("ASN1_ENUMERATED *", enum)
     enum = backend._ffi.gc(enum, backend._lib.ASN1_ENUMERATED_free)
     code = backend._lib.ASN1_ENUMERATED_get(enum)
 
     try:
-        return {
-            0: x509.ReasonFlags.unspecified,
-            1: x509.ReasonFlags.key_compromise,
-            2: x509.ReasonFlags.ca_compromise,
-            3: x509.ReasonFlags.affiliation_changed,
-            4: x509.ReasonFlags.superseded,
-            5: x509.ReasonFlags.cessation_of_operation,
-            6: x509.ReasonFlags.certificate_hold,
-            8: x509.ReasonFlags.remove_from_crl,
-            9: x509.ReasonFlags.privilege_withdrawn,
-            10: x509.ReasonFlags.aa_compromise,
-        }[code]
+        return _CRL_REASON_CODE_TO_ENUM[code]
     except KeyError:
         raise ValueError("Unsupported reason code: {0}".format(code))
 
