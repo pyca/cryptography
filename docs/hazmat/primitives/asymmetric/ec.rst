@@ -150,7 +150,8 @@ Elliptic Curve Key Exchange algorithm
     ECDHE (or EECDH), the ephemeral form of this exchange, is **strongly
     preferred** over simple ECDH and provides `forward secrecy`_ when used.
     You must generate a new private key using :func:`generate_private_key` for
-    each ``exchange`` when performing an ECDHE key exchange.
+    each :meth:`~EllipticCurvePrivateKey.exchange` when performing an ECDHE key
+    exchange.
 
 Elliptic Curves
 ---------------
@@ -345,6 +346,8 @@ Key Interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
 
     .. method:: exchange(algorithm, peer_public_key)
+
+        .. versionadded:: 1.1
 
         Perform's a key exchange operation using the provided algorithm with
         the peer's public key.
