@@ -40,6 +40,9 @@ class NameAttribute(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.oid, self.value))
+
     def __repr__(self):
         return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
 
@@ -59,6 +62,11 @@ class Name(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        # TODO: this is relatively expensive, if this looks like a bottleneck
+        # for you, consider optimizing!
+        return hash(tuple(self._attributes))
 
     def __iter__(self):
         return iter(self._attributes)
