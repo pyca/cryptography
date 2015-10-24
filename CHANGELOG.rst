@@ -15,6 +15,7 @@ Changelog
 * Add support for AES key wrapping with
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_wrap` and
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap`.
+* Added an ``__hash__`` method to :class:`~cryptography.x509.Name`.
 
 1.0.2 - 2015-09-27
 ~~~~~~~~~~~~~~~~~~
