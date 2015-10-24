@@ -2755,7 +2755,7 @@ class TestName(object):
         assert name1 != name2
         assert name1 != object()
 
-    def test_hah(self):
+    def test_hash(self):
         name1 = x509.Name([
             x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
             x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
