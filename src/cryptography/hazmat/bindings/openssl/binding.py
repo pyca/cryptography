@@ -97,7 +97,6 @@ class Binding(object):
     @classmethod
     def _register_osrandom_engine(cls):
         _openssl_assert(cls.lib, cls.lib.ERR_peek_error() == 0)
-        cls.lib.ERR_clear_error()
 
         engine = cls.lib.ENGINE_new()
         _openssl_assert(cls.lib, engine != cls.ffi.NULL)
@@ -111,7 +110,8 @@ class Binding(object):
             result = cls.lib.ENGINE_add(engine)
             if result != 1:
                 errors = _consume_errors(cls.lib)
-                assert (
+                _openssl_assert(
+                    cls.lib,
                     errors[0].reason == cls.lib.ENGINE_R_CONFLICTING_ENGINE_ID
                 )
 
@@ -172,6 +172,3 @@ class Binding(object):
                     mode, n, file, line
                 )
             )
-
-# init the static locks so we have a locking callback in C for engine init
-Binding.init_static_locks()
