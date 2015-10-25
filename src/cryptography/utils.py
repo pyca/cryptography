@@ -48,9 +48,12 @@ else:
         return result
 
 
-def int_to_bytes(integer):
+def int_to_bytes(integer, length=None):
     hex_string = '%x' % integer
-    n = len(hex_string)
+    if length is None:
+        n = len(hex_string)
+    else:
+        n = length * 2
     return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
 
 

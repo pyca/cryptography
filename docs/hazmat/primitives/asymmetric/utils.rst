@@ -28,3 +28,44 @@ Asymmetric Utilities
     :param int s: The raw signature value ``s``.
 
     :return bytes: The encoded signature.
+
+.. function:: encode_ec_point(curve, x, y)
+
+    .. versionadded:: 1.1
+
+    Encodes an elliptic curve point to a byte string as described in
+    _`SEC 1 v2.0` section 2.3.3. This function only supports uncompressed
+    points.
+
+    :param curve: A :class:`EllipticCurve` provider.
+
+    :param x: The x value of the point.
+
+    :type: int or None
+
+    :param int y: The y value of the point.
+
+    :return bytes: The encoded point.
+
+    :raises TypeError: Raised when curve is not an :class:`EllipticCurve`.
+
+.. function:: decode_ec_point(key_length, data)
+
+    .. versionadded:: 1.1
+
+    Decodes a byte string as described in _`SEC 1 v2.0` section 2.3.3 to the
+    ``x`` and ``y`` integer values. This function only supports uncompressed
+    points.
+
+    :param curve: A :class:`EllipticCurve` provider.
+
+    :param bytes data: The serialized point byte string.
+
+    :returns: The decoded tuple ``(x, y)``.
+
+    :raises ValueError: Raised on invalid point type or data length.
+
+    :raises TypeError: Raised when curve is not an :class:`EllipticCurve`.
+
+
+.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
