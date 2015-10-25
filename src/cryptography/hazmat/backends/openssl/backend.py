@@ -104,7 +104,7 @@ def _encode_asn1_utf8_str(backend, string):
     res = backend._lib.ASN1_STRING_set(
         s, string.encode("utf8"), len(string.encode("utf8"))
     )
-    assert res == 1
+    backend.openssl_assert(res == 1)
     return s
 
 
