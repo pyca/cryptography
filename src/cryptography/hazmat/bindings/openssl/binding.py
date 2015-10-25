@@ -172,3 +172,7 @@ class Binding(object):
                     mode, n, file, line
                 )
             )
+
+
+# OpenSSL is not thread safe until the locks are initialized.
+Binding.init_static_locks()
