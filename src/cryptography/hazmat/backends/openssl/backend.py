@@ -576,7 +576,7 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
     ExtensionOID.EXTENDED_KEY_USAGE: _encode_extended_key_usage,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
-    x509.OID_CERTIFICATE_POLICIES: _encode_certificate_policies,
+    ExtensionOID.CERTIFICATE_POLICIES: _encode_certificate_policies,
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
         _encode_authority_information_access
     ),
