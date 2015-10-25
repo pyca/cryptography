@@ -97,11 +97,6 @@ class Binding(object):
     @classmethod
     def _register_osrandom_engine(cls):
         _openssl_assert(cls.lib, cls.lib.ERR_peek_error() == 0)
-        looked_up_engine = cls.lib.ENGINE_by_id(cls._osrandom_engine_id)
-        if looked_up_engine != ffi.NULL:
-            raise RuntimeError("osrandom engine already registered")
-
-        cls.lib.ERR_clear_error()
 
         engine = cls.lib.ENGINE_new()
         _openssl_assert(cls.lib, engine != cls.ffi.NULL)
@@ -113,7 +108,13 @@ class Binding(object):
             result = cls.lib.ENGINE_set_RAND(engine, cls._osrandom_method)
             _openssl_assert(cls.lib, result == 1)
             result = cls.lib.ENGINE_add(engine)
-            _openssl_assert(cls.lib, result == 1)
+            if result != 1:
+                errors = _consume_errors(cls.lib)
+                _openssl_assert(
+                    cls.lib,
+                    errors[0].reason == cls.lib.ENGINE_R_CONFLICTING_ENGINE_ID
+                )
+
         finally:
             result = cls.lib.ENGINE_free(engine)
             _openssl_assert(cls.lib, result == 1)
