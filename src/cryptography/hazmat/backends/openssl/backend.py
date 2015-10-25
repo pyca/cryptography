@@ -152,23 +152,23 @@ def _encode_name_gc(backend, attributes):
 
 def _encode_certificate_policies(backend, certificate_policies):
     cp = backend._lib.sk_POLICYINFO_new_null()
-    assert cp != backend._ffi.NULL
+    backend.openssl_assert(cp != backend._ffi.NULL)
     cp = backend._ffi.gc(cp, backend._lib.sk_POLICYINFO_free)
     for policy_info in certificate_policies:
         pi = backend._lib.POLICYINFO_new()
-        assert pi != backend._ffi.NULL
+        backend.openssl_assert(pi != backend._ffi.NULL)
         res = backend._lib.sk_POLICYINFO_push(cp, pi)
-        assert res >= 1
+        backend.openssl_assert(res >= 1)
         oid = _txt2obj(backend, policy_info.policy_identifier.dotted_string)
         pi.policyid = oid
         if policy_info.policy_qualifiers:
             pqis = backend._lib.sk_POLICYQUALINFO_new_null()
-            assert pqis != backend._ffi.NULL
+            backend.openssl_assert(pqis != backend._ffi.NULL)
             for qualifier in policy_info.policy_qualifiers:
                 pqi = backend._lib.POLICYQUALINFO_new()
-                assert pqi != backend._ffi.NULL
+                backend.openssl_assert(pqi != backend._ffi.NULL)
                 res = backend._lib.sk_POLICYQUALINFO_push(pqis, pqi)
-                assert res >= 1
+                backend.openssl_assert(res >= 1)
                 if isinstance(qualifier, six.text_type):
                     pqi.pqualid = _txt2obj(
                         backend, x509.OID_CPS_QUALIFIER.dotted_string
@@ -184,7 +184,7 @@ def _encode_certificate_policies(backend, certificate_policies):
                         backend, x509.OID_CPS_USER_NOTICE.dotted_string
                     )
                     un = backend._lib.USERNOTICE_new()
-                    assert un != backend._ffi.NULL
+                    backend.openssl_assert(un != backend._ffi.NULL)
                     pqi.d.usernotice = un
                     if qualifier.explicit_text:
                         un.exptext = _encode_asn1_utf8_str(
@@ -199,7 +199,7 @@ def _encode_certificate_policies(backend, certificate_policies):
 
     pp = backend._ffi.new('unsigned char **')
     r = backend._lib.i2d_CERTIFICATEPOLICIES(cp, pp)
-    assert r > 0
+    backend.openssl_assert(r > 0)
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
     )
@@ -211,7 +211,7 @@ def _encode_notice_reference(backend, notice):
         return backend._ffi.NULL
     else:
         nr = backend._lib.NOTICEREF_new()
-        assert nr != backend._ffi.NULL
+        backend.openssl_assert(nr != backend._ffi.NULL)
         # organization is a required field
         nr.organization = _encode_asn1_utf8_str(backend, notice.organization)
 
@@ -220,7 +220,7 @@ def _encode_notice_reference(backend, notice):
         for number in notice.notice_numbers:
             num = _encode_asn1_int(backend, number)
             res = backend._lib.sk_ASN1_INTEGER_push(notice_stack, num)
-            assert res >= 1
+            backend.openssl_assert(res >= 1)
 
         return nr
 
