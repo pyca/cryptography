@@ -1694,6 +1694,95 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.sign(issuer_private_key, hashes.SHA512(), backend)
 
+    @pytest.mark.parametrize(
+        "cp",
+        [
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [u"http://other.com/cps"]
+                )
+            ]),
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    None
+                )
+            ]),
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [
+                        u"http://example.com/cps",
+                        u"http://other.com/cps",
+                        x509.UserNotice(
+                            x509.NoticeReference(u"my org", [1, 2, 3, 4]),
+                            u"thing"
+                        )
+                    ]
+                )
+            ]),
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [
+                        u"http://example.com/cps",
+                        x509.UserNotice(
+                            x509.NoticeReference(u"UTF8\u2122'", [1, 2, 3, 4]),
+                            u"We heart UTF8!\u2122"
+                        )
+                    ]
+                )
+            ]),
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [x509.UserNotice(None, u"thing")]
+                )
+            ]),
+            x509.CertificatePolicies([
+                x509.PolicyInformation(
+                    x509.ObjectIdentifier("2.16.840.1.12345.1.2.3.4.1"),
+                    [
+                        x509.UserNotice(
+                            x509.NoticeReference(u"my org", [1, 2, 3, 4]),
+                            None
+                        )
+                    ]
+                )
+            ])
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_certificate_policies(self, cp, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        ).public_key(
+            subject_private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            cp, critical=False
+        ).sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.OID_CERTIFICATE_POLICIES
+        )
+        assert ext.value == cp
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_issuer_alt_name(self, backend):
