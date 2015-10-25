@@ -2755,6 +2755,23 @@ class TestName(object):
         assert name1 != name2
         assert name1 != object()
 
+    def test_hash(self):
+        name1 = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+        ])
+        name2 = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+        ])
+        name3 = x509.Name([
+            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+        ])
+
+        assert hash(name1) == hash(name2)
+        assert hash(name1) != hash(name3)
+
     def test_repr(self):
         name = x509.Name([
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
