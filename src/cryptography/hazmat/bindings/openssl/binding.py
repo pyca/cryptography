@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import collections
+import imp
 import os
 import threading
 import types
@@ -172,3 +173,21 @@ class Binding(object):
                     mode, n, file, line
                 )
             )
+
+
+# https://github.com/pyca/cryptography/issues/2299 contains extensive
+# discussion about this workaround. In essence, we are acquiring a global lock
+# (including across all subinterpreters if we're in a mod_wsgi environment)
+# initializing some C level locks, then initializing the binding and adding the
+# OS random engine. This should prevent engine addition race conditions,
+# although it's still unclear what happens when a subinterpreter which
+# has registered the locks is destroyed. Do the callback functions still work
+# or are all the objects associated with that subinterpreter destroyed?
+# imp.acquire_lock() is global even in 3.4+ while import locks have moved to
+# per module granularity.
+try:
+    imp.acquire_lock()
+    Binding.init_static_locks()
+    Binding._ensure_ffi_initialized()
+finally:
+    imp.release_lock()
