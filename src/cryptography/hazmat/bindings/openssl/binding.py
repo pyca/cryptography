@@ -174,5 +174,7 @@ class Binding(object):
             )
 
 
-# OpenSSL is not thread safe until the locks are initialized.
+# OpenSSL is not thread safe until the locks are initialized. We initialize in
+# module scope to cause initialization whenever this module is imported (and
+# try to get some benefit from the import lock).
 Binding.init_static_locks()
