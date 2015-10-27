@@ -34,10 +34,12 @@ Asymmetric Utilities
     .. versionadded:: 1.1
 
     Encodes an elliptic curve point to a byte string as described in
-    _`SEC 1 v2.0` section 2.3.3. This function only supports uncompressed
+    `SEC 1 v2.0`_ section 2.3.3. This function only supports uncompressed
     points.
 
-    :param curve: A :class:`EllipticCurve` provider.
+    :param curve: A
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
+        provider.
 
     :param x: The x value of the point.
 
@@ -47,17 +49,20 @@ Asymmetric Utilities
 
     :return bytes: The encoded point.
 
-    :raises TypeError: Raised when curve is not an :class:`EllipticCurve`.
+    :raises TypeError: Raised when curve is not an
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
 
 .. function:: decode_ec_point(key_length, data)
 
     .. versionadded:: 1.1
 
-    Decodes a byte string as described in _`SEC 1 v2.0` section 2.3.3 to the
+    Decodes a byte string as described in `SEC 1 v2.0`_ section 2.3.3 to the
     ``x`` and ``y`` integer values. This function only supports uncompressed
     points.
 
-    :param curve: A :class:`EllipticCurve` provider.
+    :param curve: A
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
+        provider.
 
     :param bytes data: The serialized point byte string.
 
@@ -65,7 +70,8 @@ Asymmetric Utilities
 
     :raises ValueError: Raised on invalid point type or data length.
 
-    :raises TypeError: Raised when curve is not an :class:`EllipticCurve`.
+    :raises TypeError: Raised when curve is not an
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
 
 
 .. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
