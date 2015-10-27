@@ -9,6 +9,10 @@ import datetime
 import ipaddress
 import os
 
+from pyasn1.codec.der import decoder
+
+from pyasn1_modules import rfc2459
+
 import pytest
 
 import six
@@ -1082,6 +1086,43 @@ class TestRSACertificateRequest(object):
         assert list(subject_alternative_name.value) == [
             x509.DNSName(u"cryptography.io"),
         ]
+
+    def test_build_cert_printable_string_country_name(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = x509.CertificateBuilder().serial_number(
+            777
+        ).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ])).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+
+        parsed, _ = decoder.decode(
+            cert.public_bytes(serialization.Encoding.DER),
+            asn1Spec=rfc2459.Certificate()
+        )
+        tbs_cert = parsed.getComponentByName('tbsCertificate')
+        subject = tbs_cert.getComponentByName('subject')
+        issuer = tbs_cert.getComponentByName('issuer')
+        # \x13 is printable string. The first byte of the value of the
+        # node corresponds to the ASN.1 string type.
+        assert subject[0][0][0][1][0] == b"\x13"[0]
+        assert issuer[0][0][0][1][0] == b"\x13"[0]
 
 
 class TestCertificateBuilder(object):
