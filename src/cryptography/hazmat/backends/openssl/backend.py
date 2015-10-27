@@ -120,8 +120,8 @@ def _encode_name(backend, attributes):
         value = attribute.value.encode('utf8')
         obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
         if attribute.oid == NameOID.COUNTRY_NAME:
-            # Per RFC5280 countryName should be encoded as PrintableString,
-            # not UTF8String
+            # Per RFC5280 Appendix A.1 countryName should be encoded as
+            # PrintableString, not UTF8String
             type = backend._lib.MBSTRING_ASC
         else:
             type = backend._lib.MBSTRING_UTF8
