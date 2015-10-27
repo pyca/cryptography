@@ -4,14 +4,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import binascii
-
 import pytest
 
-from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    decode_dss_signature, decode_ec_point, decode_rfc6979_signature,
-    encode_dss_signature, encode_ec_point, encode_rfc6979_signature
+    decode_dss_signature, decode_rfc6979_signature,
+    encode_dss_signature, encode_rfc6979_signature
 )
 
 
@@ -79,71 +76,3 @@ def test_decode_dss_invalid_asn1():
         # This is the BER "end-of-contents octets," which older versions of
         # pyasn1 are wrongly willing to return from top-level DER decoding.
         decode_dss_signature(b"\x00\x00")
-
-
-def test_encode_ec_point_none():
-    with pytest.raises(ValueError):
-        encode_ec_point(ec.SECP384R1(), None, 100)
-
-
-def test_encode_wrong_curve_type():
-    with pytest.raises(TypeError):
-        encode_ec_point("notacurve", 3, 4)
-
-
-def test_encode_ec_point():
-    # secp256r1 point
-    x = int(
-        '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec', 16
-    )
-    y = int(
-        '3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e', 16
-    )
-    data = encode_ec_point(ec.SECP256R1(), x, y)
-    assert data == binascii.unhexlify(
-        "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec3ea"
-        "2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
-    )
-
-
-def test_decode_ec_point_none():
-    with pytest.raises(ValueError):
-        decode_ec_point(ec.SECP384R1(), b"\x00")
-
-
-def test_decode_ec_point():
-    # secp256r1 point
-    data = binascii.unhexlify(
-        "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec3ea"
-        "2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
-    )
-    x, y = decode_ec_point(ec.SECP256R1(), data)
-    assert x == int(
-        '233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec', 16
-    )
-    assert y == int(
-        '3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e', 16
-    )
-
-
-def test_decode_ec_point_invalid_length():
-    bad_data = binascii.unhexlify(
-        "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec3ea"
-        "2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460"
-    )
-    with pytest.raises(ValueError):
-        decode_ec_point(ec.SECP384R1(), bad_data)
-
-
-def test_decode_ec_point_unsupported_point_type():
-    # set to point type 2.
-    unsupported_type = binascii.unhexlify(
-        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec3e"
-    )
-    with pytest.raises(ValueError):
-        decode_ec_point(ec.SECP256R1(), unsupported_type)
-
-
-def test_decode_wrong_curve_type():
-    with pytest.raises(TypeError):
-        decode_ec_point("notacurve", b"\x02data")

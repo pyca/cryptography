@@ -13,7 +13,6 @@ from pyasn1.type import namedtype, univ
 import six
 
 from cryptography import utils
-from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurve
 
 
 class _DSSSigValue(univ.Sequence):
@@ -72,36 +71,3 @@ def encode_dss_signature(r, s):
     sig.setComponentByName('r', r)
     sig.setComponentByName('s', s)
     return encoder.encode(sig)
-
-
-def encode_ec_point(curve, x, y):
-    if not isinstance(curve, EllipticCurve):
-        raise TypeError("curve must be an EllipticCurve instance")
-
-    if x is None:
-        raise ValueError("null points are not supported")
-    else:
-        # key_size is in bits. Convert to bytes and round up
-        byte_length = (curve.key_size + 7) // 8
-        return (
-            b'\x04' + utils.int_to_bytes(x, byte_length) +
-            utils.int_to_bytes(y, byte_length)
-        )
-
-
-def decode_ec_point(curve, data):
-    if not isinstance(curve, EllipticCurve):
-        raise TypeError("curve must be an EllipticCurve instance")
-
-    if data == b'\x00':
-        raise ValueError("null points are not supported")
-    elif data.startswith(b'\x04'):
-        # key_size is in bits. Convert to bytes and round up
-        byte_length = (curve.key_size + 7) // 8
-        if len(data) == 2 * byte_length + 1:
-            return (utils.int_from_bytes(data[1:byte_length + 1], 'big'),
-                    utils.int_from_bytes(data[byte_length + 1:], 'big'))
-        else:
-            raise ValueError('Invalid elliptic curve point data length')
-    else:
-        raise ValueError('Unsupported elliptic curve point type')
