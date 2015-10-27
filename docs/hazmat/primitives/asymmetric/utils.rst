@@ -37,12 +37,11 @@ Asymmetric Utilities
     `SEC 1 v2.0`_ section 2.3.3. This function only supports uncompressed
     points.
 
-    :param curve: A
+    :param curve: An
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
-        provider.
+        instance.
 
-    :param x: The x value of the point.
-    :type x: int or `None`
+    :param int x: The x value of the point.
 
     :param int y: The y value of the point.
 
@@ -59,9 +58,9 @@ Asymmetric Utilities
     ``x`` and ``y`` integer values. This function only supports uncompressed
     points.
 
-    :param curve: A
+    :param curve: An
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
-        provider.
+        instance.
 
     :param bytes data: The serialized point byte string.
 

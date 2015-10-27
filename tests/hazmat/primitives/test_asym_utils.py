@@ -82,7 +82,8 @@ def test_decode_dss_invalid_asn1():
 
 
 def test_encode_ec_point_none():
-    assert encode_ec_point(ec.SECP384R1(), None, 100) == b"\x00"
+    with pytest.raises(ValueError):
+        encode_ec_point(ec.SECP384R1(), None, 100)
 
 
 def test_encode_wrong_curve_type():
@@ -106,7 +107,8 @@ def test_encode_ec_point():
 
 
 def test_decode_ec_point_none():
-    assert decode_ec_point(ec.SECP384R1(), b"\x00") == (None, None)
+    with pytest.raises(ValueError):
+        decode_ec_point(ec.SECP384R1(), b"\x00")
 
 
 def test_decode_ec_point():

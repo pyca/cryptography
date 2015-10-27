@@ -79,9 +79,9 @@ def encode_ec_point(curve, x, y):
         raise TypeError("curve must be an EllipticCurve instance")
 
     if x is None:
-        return b'\x00'
+        raise ValueError("null points are not supported")
     else:
-        # Get the ceiling of curve.key_size / 8
+        # key_size is in bits. Convert to bytes and round up
         byte_length = (curve.key_size + 7) // 8
         return (
             b'\x04' + utils.int_to_bytes(x, byte_length) +
@@ -94,9 +94,9 @@ def decode_ec_point(curve, data):
         raise TypeError("curve must be an EllipticCurve instance")
 
     if data == b'\x00':
-        return None, None
+        raise ValueError("null points are not supported")
     elif data.startswith(b'\x04'):
-        # Get the ceiling of curve.key_size / 8
+        # key_size is in bits. Convert to bytes and round up
         byte_length = (curve.key_size + 7) // 8
         if len(data) == 2 * byte_length + 1:
             return (utils.int_from_bytes(data[1:byte_length + 1], 'big'),
