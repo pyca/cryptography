@@ -872,8 +872,8 @@ class TestRSACertificateRequest(object):
         issuer = tbs_cert.getComponentByName('issuer')
         # \x13 is printable string. The first byte of the value of the
         # node corresponds to the ASN.1 string type.
-        assert subject[0][0][0][1][0] == "\x13"
-        assert issuer[0][0][0][1][0] == "\x13"
+        assert subject[0][0][0][1][0] == b"\x13"[0]
+        assert issuer[0][0][0][1][0] == b"\x13"[0]
 
 
 class TestCertificateBuilder(object):
