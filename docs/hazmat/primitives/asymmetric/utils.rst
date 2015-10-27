@@ -42,8 +42,7 @@ Asymmetric Utilities
         provider.
 
     :param x: The x value of the point.
-
-    :type: int or None
+    :type x: int or `None`
 
     :param int y: The y value of the point.
 
