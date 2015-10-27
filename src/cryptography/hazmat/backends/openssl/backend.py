@@ -614,8 +614,6 @@ class Backend(object):
         res = self._lib.ASN1_STRING_set_default_mask_asc(b"utf8only")
         self.openssl_assert(res == 1)
 
-        self._binding.init_static_locks()
-
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()
