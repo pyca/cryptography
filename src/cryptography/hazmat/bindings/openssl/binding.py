@@ -174,7 +174,9 @@ class Binding(object):
             )
 
 
-# OpenSSL is not thread safe until the locks are initialized. We initialize in
-# module scope to cause initialization whenever this module is imported (and
-# try to get some benefit from the import lock).
+# OpenSSL is not thread safe until the locks are initialized. We call this
+# method in module scope so that it executes with the import lock. On
+# Pythons < 3.4 this import lock is a global lock, which can prevent a race
+# condition registering the OpenSSL locks. On Python 3.4+ the import lock
+# is per module so this approach will not work.
 Binding.init_static_locks()
