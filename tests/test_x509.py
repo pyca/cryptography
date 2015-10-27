@@ -9,7 +9,9 @@ import datetime
 import ipaddress
 import os
 
-from asn1crypto import core, x509 as asn1cryptox509
+from pyasn1.codec.der import decoder
+
+from pyasn1_modules import rfc2459
 
 import pytest
 
@@ -861,17 +863,17 @@ class TestRSACertificateRequest(object):
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
-        parsedasn1 = asn1cryptox509.Certificate.load(
-            cert.public_bytes(serialization.Encoding.DER)
+        parsed, _ = decoder.decode(
+            cert.public_bytes(serialization.Encoding.DER),
+            asn1Spec=rfc2459.Certificate()
         )
-        assert isinstance(
-            parsedasn1.subject.chosen[0][0]['value'].chosen,
-            core.PrintableString
-        )
-        assert isinstance(
-            parsedasn1.subject.chosen[1][0]['value'].chosen,
-            core.UTF8String
-        )
+        tbs_cert = parsed.getComponentByName('tbsCertificate')
+        subject = tbs_cert.getComponentByName('subject')
+        issuer = tbs_cert.getComponentByName('issuer')
+        # \x13 is printable string. The first byte of the value of the
+        # node corresponds to the ASN.1 string type.
+        assert str(subject[0][0][0][1])[0] == "\x13"
+        assert str(issuer[0][0][0][1])[0] == "\x13"
 
 
 class TestCertificateBuilder(object):

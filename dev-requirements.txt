@@ -1,4 +1,3 @@
-asn1crypto
 coverage
 flake8
 flake8-import-order
@@ -6,6 +5,7 @@ invoke
 iso8601
 pep8-naming
 pretend
+pyasn1_modules
 pytest
 requests
 sphinx

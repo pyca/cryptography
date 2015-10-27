@@ -63,7 +63,7 @@ test_requirements = [
     "pretend",
     "iso8601",
     "hypothesis",
-    "asn1crypto",
+    "pyasn1_modules",
 ]
 
 # If there's no vectors locally that probably means we are in a tarball and
