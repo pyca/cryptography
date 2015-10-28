@@ -302,6 +302,12 @@ class EllipticCurvePublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def __repr__(self):
+        return (
+            "<EllipticCurvePublicNumbers(curve={0.curve.name}, x={0.x}, "
+            "y={0.y}>".format(self)
+        )
+
 
 class EllipticCurvePrivateNumbers(object):
     def __init__(self, private_value, public_numbers):
