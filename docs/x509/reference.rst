@@ -896,7 +896,7 @@ General Name Classes
     This is the generic interface that all the following classes are registered
     against.
 
-.. class:: RFC822Name
+.. class:: RFC822Name(value)
 
     .. versionadded:: 0.9
 
@@ -906,7 +906,7 @@ General Name Classes
 
         :type: :term:`text`
 
-.. class:: DNSName
+.. class:: DNSName(value)
 
     .. versionadded:: 0.9
 
@@ -916,7 +916,7 @@ General Name Classes
 
         :type: :term:`text`
 
-.. class:: DirectoryName
+.. class:: DirectoryName(value)
 
     .. versionadded:: 0.9
 
@@ -926,7 +926,7 @@ General Name Classes
 
         :type: :class:`Name`
 
-.. class:: UniformResourceIdentifier
+.. class:: UniformResourceIdentifier(value)
 
     .. versionadded:: 0.9
 
@@ -942,7 +942,7 @@ General Name Classes
 
         :type: :term:`text`
 
-.. class:: IPAddress
+.. class:: IPAddress(value)
 
     .. versionadded:: 0.9
 
@@ -954,7 +954,7 @@ General Name Classes
             :class:`~ipaddress.IPv6Address`,  :class:`~ipaddress.IPv4Network`,
             or :class:`~ipaddress.IPv6Network`.
 
-.. class:: RegisteredID
+.. class:: RegisteredID(value)
 
     .. versionadded:: 0.9
 
@@ -964,7 +964,7 @@ General Name Classes
 
         :type: :class:`ObjectIdentifier`
 
-.. class:: OtherName
+.. class:: OtherName(type_id, value)
 
     .. versionadded:: 1.0
 
@@ -1050,7 +1050,7 @@ X.509 Extensions
     This is the interface against which all the following extension types are
     registered.
 
-.. class:: KeyUsage
+.. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
 
     .. versionadded:: 0.9
 
@@ -1149,7 +1149,7 @@ X.509 Extensions
             is false.
 
 
-.. class:: BasicConstraints
+.. class:: BasicConstraints(ca, path_length)
 
     .. versionadded:: 0.9
 
@@ -1184,7 +1184,7 @@ X.509 Extensions
         means the certificate can sign a subordinate CA, but the subordinate CA
         is not allowed to create subordinates with ``ca`` set to true.
 
-.. class:: ExtendedKeyUsage
+.. class:: ExtendedKeyUsage(usages)
 
     .. versionadded:: 0.9
 
@@ -1193,6 +1193,11 @@ X.509 Extensions
     purposes indicated in the key usage extension. The object is
     iterable to obtain the list of
     :class:`~cryptography.x509.oid.ExtendedKeyUsageOID` OIDs present.
+
+    :param usages: A list of
+        :class:`~cryptography.x509.oid.ExtendedKeyUsageOID` OIDs.
+
+    :type usages: list
 
     .. attribute:: oid
 
@@ -1203,7 +1208,7 @@ X.509 Extensions
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.EXTENDED_KEY_USAGE`.
 
 
-.. class:: OCSPNoCheck
+.. class:: OCSPNoCheck()
 
     .. versionadded:: 1.0
 
@@ -1224,7 +1229,7 @@ X.509 Extensions
 
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.OCSP_NO_CHECK`.
 
-.. class:: NameConstraints
+.. class:: NameConstraints(permitted_subtrees, excluded_subtrees)
 
     .. versionadded:: 1.0
 
@@ -1258,7 +1263,7 @@ X.509 Extensions
         ``permitted_subtrees``. At least one of ``permitted_subtrees`` and
         ``excluded_subtrees`` will be non-None.
 
-.. class:: AuthorityKeyIdentifier
+.. class:: AuthorityKeyIdentifier(key_identifier, authority_cert_issuer, authority_cert_serial_number)
 
     .. versionadded:: 0.9
 
@@ -1327,7 +1332,7 @@ X.509 Extensions
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
             <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
-.. class:: SubjectKeyIdentifier
+.. class:: SubjectKeyIdentifier(digest)
 
     .. versionadded:: 0.9
 
@@ -1374,7 +1379,7 @@ X.509 Extensions
             >>> x509.SubjectKeyIdentifier.from_public_key(csr.public_key())
             <SubjectKeyIdentifier(digest='\xdb\xaa\xf0\x06\x11\xdbD\xfe\xbf\x93\x03\x8av\x88WP7\xa6\x91\xf7')>
 
-.. class:: SubjectAlternativeName
+.. class:: SubjectAlternativeName(general_names)
 
     .. versionadded:: 0.9
 
@@ -1382,6 +1387,10 @@ X.509 Extensions
     :ref:`general name <general_name_classes>` instances that provide a set
     of identities for which the certificate is valid. The object is iterable to
     get every element.
+
+    :param general_names: A list of :class:`GeneralName` instances.
+
+    :type general_names: list
 
     .. attribute:: oid
 
@@ -1413,7 +1422,7 @@ X.509 Extensions
             [u'www.cryptography.io', u'cryptography.io']
 
 
-.. class:: IssuerAlternativeName
+.. class:: IssuerAlternativeName(general_names)
 
     .. versionadded:: 1.0
 
@@ -1421,6 +1430,10 @@ X.509 Extensions
     :ref:`general name <general_name_classes>` instances that provide a set
     of identities for the certificate issuer. The object is iterable to
     get every element.
+
+    :param general_names: A list of :class:`GeneralName` instances.
+
+    :type general_names: list
 
     .. attribute:: oid
 
@@ -1439,7 +1452,7 @@ X.509 Extensions
         :returns: A list of values extracted from the matched general names.
 
 
-.. class:: AuthorityInformationAccess
+.. class:: AuthorityInformationAccess(descriptions)
 
     .. versionadded:: 0.9
 
@@ -1449,6 +1462,10 @@ X.509 Extensions
     validation services (such as OCSP) and issuer data. It is an iterable,
     containing one or more :class:`~cryptography.x509.AccessDescription`
     instances.
+
+    :param descriptions: A list of :class:`AccessDescription` objects.
+
+    :type descriptions: list
 
     .. attribute:: oid
 
@@ -1460,7 +1477,7 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.AUTHORITY_INFORMATION_ACCESS`.
 
 
-.. class:: AccessDescription
+.. class:: AccessDescription(access_method, access_location)
 
     .. versionadded:: 0.9
 
@@ -1486,13 +1503,17 @@ X.509 Extensions
 
         Where to access the information defined by the access method.
 
-.. class:: CRLDistributionPoints
+.. class:: CRLDistributionPoints(distribution_points)
 
     .. versionadded:: 0.9
 
     The CRL distribution points extension identifies how CRL information is
     obtained. It is an iterable, containing one or more
     :class:`DistributionPoint` instances.
+
+    :param distribution_points: A list of :class:`DistributionPoint` instances.
+
+    :type distribution_points: list
 
     .. attribute:: oid
 
@@ -1503,7 +1524,7 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.CRL_DISTRIBUTION_POINTS`.
 
-.. class:: DistributionPoint
+.. class:: DistributionPoint(full_name, relative_name, reasons, crl_issuer)
 
     .. versionadded:: 0.9
 
@@ -1587,7 +1608,7 @@ X.509 Extensions
         removed from the CRL. This reason cannot be used as a reason flag
         in a :class:`DistributionPoint`.
 
-.. class:: InhibitAnyPolicy
+.. class:: InhibitAnyPolicy(skip_certs)
 
     .. versionadded:: 1.0
 
@@ -1616,12 +1637,16 @@ X.509 Extensions
 
         :type: int
 
-.. class:: CertificatePolicies
+.. class:: CertificatePolicies(policies)
 
     .. versionadded:: 0.9
 
     The certificate policies extension is an iterable, containing one or more
     :class:`PolicyInformation` instances.
+
+    :param policies: A list of :class:`PolicyInformation` instances.
+
+    :type policies: list
 
     .. attribute:: oid
 
@@ -1637,7 +1662,7 @@ Certificate Policies Classes
 
 These classes may be present within a :class:`CertificatePolicies` instance.
 
-.. class:: PolicyInformation
+.. class:: PolicyInformation(policy_identifier, policy_qualifiers)
 
     .. versionadded:: 0.9
 
@@ -1657,7 +1682,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         meant for display to the relying party when the certificate is
         used.
 
-.. class:: UserNotice
+.. class:: UserNotice(notice_reference, explicit_text)
 
     .. versionadded:: 0.9
 
@@ -1679,7 +1704,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
         :type: :term:`text`
 
-.. class:: NoticeReference
+.. class:: NoticeReference(organization, notice_numbers)
 
     Notice reference can name an organization and provide information about
     notices related to the certificate. For example, it might identify the
