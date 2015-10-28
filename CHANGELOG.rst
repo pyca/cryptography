@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.1 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.1 - 2015-10-28
+~~~~~~~~~~~~~~~~
 
 * Added support for Elliptic Curve Diffie-Hellman with
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`.
@@ -15,12 +13,17 @@ Changelog
 * Add support for AES key wrapping with
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_wrap` and
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap`.
-* Added an ``__hash__`` method to :class:`~cryptography.x509.Name`.
+* Added a ``__hash__`` method to :class:`~cryptography.x509.Name`.
 * Add support for encoding and decoding elliptic curve points to a byte string
   form using
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.encode_point`
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`.
+* Added :meth:`~cryptography.x509.Extensions.get_extension_for_class`.
+* :class:`~cryptography.x509.CertificatePolicies` are now supported in the
+  :class:`~cryptography.x509.CertificateBuilder`.
+* ``countryName`` is now encoded as a ``PrintableString`` when creating subject
+  and issuer distinguished names with the Certificate and CSR builder classes.
 
 
 1.0.2 - 2015-09-27
