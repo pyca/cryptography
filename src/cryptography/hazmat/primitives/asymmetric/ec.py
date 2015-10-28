@@ -272,20 +272,17 @@ class EllipticCurvePublicNumbers(object):
         if not isinstance(curve, EllipticCurve):
             raise TypeError("curve must be an EllipticCurve instance")
 
-        if data == b'\x00':
-            raise ValueError("null points are not supported")
-        elif data.startswith(b'\x04'):
+        if data.startswith(b'\x04'):
             # key_size is in bits. Convert to bytes and round up
             byte_length = (curve.key_size + 7) // 8
             if len(data) == 2 * byte_length + 1:
                 x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
                 y = utils.int_from_bytes(data[byte_length + 1:], 'big')
+                return cls(x, y, curve)
             else:
                 raise ValueError('Invalid elliptic curve point data length')
         else:
             raise ValueError('Unsupported elliptic curve point type')
-
-        return cls(x, y, curve)
 
     curve = utils.read_only_property("_curve")
     x = utils.read_only_property("_x")

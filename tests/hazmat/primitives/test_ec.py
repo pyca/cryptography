@@ -167,13 +167,6 @@ def test_encode_point():
     )
 
 
-def test_from_encoded_point_null():
-    with pytest.raises(ValueError):
-        ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP384R1(), b"\x00"
-        )
-
-
 def test_from_encoded_point():
     # secp256r1 point
     data = binascii.unhexlify(
