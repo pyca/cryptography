@@ -16,6 +16,12 @@ Changelog
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_wrap` and
   :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap`.
 * Added an ``__hash__`` method to :class:`~cryptography.x509.Name`.
+* Add support for encoding and decoding elliptic curve points to a byte string
+  form using
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.encode_point`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`.
+
 
 1.0.2 - 2015-09-27
 ~~~~~~~~~~~~~~~~~~

@@ -122,6 +122,37 @@ Elliptic Curve Signature Algorithms
         :returns: A new instance of a :class:`EllipticCurvePublicKey`
             provider.
 
+    .. method:: encode_point()
+
+        .. versionadded:: 1.1
+
+        Encodes an elliptic curve point to a byte string as described in
+        `SEC 1 v2.0`_ section 2.3.3. This method only supports uncompressed
+        points.
+
+        :return bytes: The encoded point.
+
+    .. classmethod:: from_encoded_point(curve, data)
+
+        .. versionadded:: 1.1
+
+        Decodes a byte string as described in `SEC 1 v2.0`_ section 2.3.3 and
+        returns an :class:`EllipticCurvePublicNumbers`. This method only
+        supports uncompressed points.
+
+        :param curve: An
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`
+            instance.
+
+        :param bytes data: The serialized point byte string.
+
+        :returns: An :class:`EllipticCurvePublicNumbers` instance.
+
+        :raises ValueError: Raised on invalid point type or data length.
+
+        :raises TypeError: Raised when curve is not an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurve`.
+
 Elliptic Curve Key Exchange algorithm
 -------------------------------------
 
@@ -478,3 +509,4 @@ Key Interfaces
 .. _`ECDSA`: https://en.wikipedia.org/wiki/ECDSA
 .. _`EdDSA`: https://en.wikipedia.org/wiki/EdDSA
 .. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
+.. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf

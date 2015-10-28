@@ -259,6 +259,31 @@ class EllipticCurvePublicNumbers(object):
     def public_key(self, backend):
         return backend.load_elliptic_curve_public_numbers(self)
 
+    def encode_point(self):
+        # key_size is in bits. Convert to bytes and round up
+        byte_length = (self.curve.key_size + 7) // 8
+        return (
+            b'\x04' + utils.int_to_bytes(self.x, byte_length) +
+            utils.int_to_bytes(self.y, byte_length)
+        )
+
+    @classmethod
+    def from_encoded_point(cls, curve, data):
+        if not isinstance(curve, EllipticCurve):
+            raise TypeError("curve must be an EllipticCurve instance")
+
+        if data.startswith(b'\x04'):
+            # key_size is in bits. Convert to bytes and round up
+            byte_length = (curve.key_size + 7) // 8
+            if len(data) == 2 * byte_length + 1:
+                x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
+                y = utils.int_from_bytes(data[byte_length + 1:], 'big')
+                return cls(x, y, curve)
+            else:
+                raise ValueError('Invalid elliptic curve point data length')
+        else:
+            raise ValueError('Unsupported elliptic curve point type')
+
     curve = utils.read_only_property("_curve")
     x = utils.read_only_property("_x")
     y = utils.read_only_property("_y")
