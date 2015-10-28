@@ -1194,10 +1194,8 @@ X.509 Extensions
     iterable to obtain the list of
     :class:`~cryptography.x509.oid.ExtendedKeyUsageOID` OIDs present.
 
-    :param usages: A list of
+    :param list usages: A list of
         :class:`~cryptography.x509.oid.ExtendedKeyUsageOID` OIDs.
-
-    :type usages: list
 
     .. attribute:: oid
 
@@ -1388,9 +1386,7 @@ X.509 Extensions
     of identities for which the certificate is valid. The object is iterable to
     get every element.
 
-    :param general_names: A list of :class:`GeneralName` instances.
-
-    :type general_names: list
+    :param list general_names: A list of :class:`GeneralName` instances.
 
     .. attribute:: oid
 
@@ -1431,9 +1427,7 @@ X.509 Extensions
     of identities for the certificate issuer. The object is iterable to
     get every element.
 
-    :param general_names: A list of :class:`GeneralName` instances.
-
-    :type general_names: list
+    :param list general_names: A list of :class:`GeneralName` instances.
 
     .. attribute:: oid
 
@@ -1463,9 +1457,7 @@ X.509 Extensions
     containing one or more :class:`~cryptography.x509.AccessDescription`
     instances.
 
-    :param descriptions: A list of :class:`AccessDescription` objects.
-
-    :type descriptions: list
+    :param list descriptions: A list of :class:`AccessDescription` objects.
 
     .. attribute:: oid
 
@@ -1511,9 +1503,8 @@ X.509 Extensions
     obtained. It is an iterable, containing one or more
     :class:`DistributionPoint` instances.
 
-    :param distribution_points: A list of :class:`DistributionPoint` instances.
-
-    :type distribution_points: list
+    :param list distribution_points: A list of :class:`DistributionPoint`
+        instances.
 
     .. attribute:: oid
 
@@ -1644,9 +1635,7 @@ X.509 Extensions
     The certificate policies extension is an iterable, containing one or more
     :class:`PolicyInformation` instances.
 
-    :param policies: A list of :class:`PolicyInformation` instances.
-
-    :type policies: list
+    :param list policies: A list of :class:`PolicyInformation` instances.
 
     .. attribute:: oid
 
