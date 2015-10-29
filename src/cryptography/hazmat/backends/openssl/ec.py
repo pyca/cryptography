@@ -182,7 +182,7 @@ class _EllipticCurvePrivateKey(object):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
 
-        if type(peer_public_key.curve) is not type(self.curve):
+        if peer_public_key.curve.name != self.curve.name:
             raise ValueError(
                 "peer_public_key and self are not on the same curve"
             )
