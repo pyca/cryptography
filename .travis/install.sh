@@ -6,7 +6,7 @@ set -x
 if [[ "$(uname -s)" == 'Darwin' ]]; then
     travis_retry brew update
     brew install pyenv
-    travis_retry brew outdated pyenv
+    brew outdated pyenv || brew upgrade pyenv
 
     if [[ "${OPENSSL}" != "0.9.8" ]]; then
         travis_retry brew outdated openssl
