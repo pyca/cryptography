@@ -57,14 +57,3 @@ class InternalError(Exception):
 
 class InvalidKey(Exception):
     pass
-
-
-InvalidToken = utils.deprecated(
-    twofactor.InvalidToken,
-    __name__,
-    (
-        "The InvalidToken exception has moved to the "
-        "cryptography.hazmat.primitives.twofactor module"
-    ),
-    utils.DeprecatedIn09
-)
