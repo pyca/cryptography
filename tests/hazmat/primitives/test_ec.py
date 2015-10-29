@@ -844,7 +844,7 @@ class TestECDSAVerification(object):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-class TestECDHVectors(object):
+class TestECDH(object):
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -916,3 +916,29 @@ class TestECDHVectors(object):
             exceptions._Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
         ):
             key.exchange(None, key.public_key())
+
+    def test_exchange_non_matching_curve(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+
+        key = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read().encode(), None, backend
+            )
+        )
+        public_key = ec.EllipticCurvePublicNumbers(
+            int(
+                "3411592940847846511444973873421894778212895963519463384397662"
+                "6983900466205627792914181900767401599528349662185720855"
+            ),
+            int(
+                "3632819834244394334395622140197408878581471655319641017478501"
+                "4862750487889436098934993486739984469019130932307943998"
+            ),
+            ec.SECP384R1(),
+        ).public_key(backend)
+
+        with pytest.raises(ValueError):
+            key.exchange(ec.ECDH(), public_key)
