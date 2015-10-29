@@ -9,7 +9,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew outdated pyenv || brew upgrade pyenv
 
     if [[ "${OPENSSL}" != "0.9.8" ]]; then
-        travis_retry brew outdated openssl
+        brew outdated openssl || brew upgrade openssl
     fi
 
     if which -s pyenv; then
