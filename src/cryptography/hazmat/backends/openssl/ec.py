@@ -182,6 +182,11 @@ class _EllipticCurvePrivateKey(object):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM
             )
 
+        if type(peer_public_key.curve) is not type(self.curve):
+            raise ValueError(
+                "peer_public_key and self are not on the same curve"
+            )
+
         group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
         z_len = (self._backend._lib.EC_GROUP_get_degree(group) + 7) // 8
         self._backend.openssl_assert(z_len > 0)
