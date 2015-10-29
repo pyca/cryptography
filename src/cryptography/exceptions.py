@@ -6,9 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from cryptography import utils
-from cryptography.hazmat.primitives import twofactor
-
 
 class _Reasons(Enum):
     BACKEND_MISSING_INTERFACE = 0
@@ -57,14 +54,3 @@ class InternalError(Exception):
 
 class InvalidKey(Exception):
     pass
-
-
-InvalidToken = utils.deprecated(
-    twofactor.InvalidToken,
-    __name__,
-    (
-        "The InvalidToken exception has moved to the "
-        "cryptography.hazmat.primitives.twofactor module"
-    ),
-    utils.DeprecatedIn09
-)
