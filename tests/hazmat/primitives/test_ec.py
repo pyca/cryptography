@@ -22,6 +22,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_rfc6979_signature
 )
 
+from .fixtures_ec import EC_KEY_SECP384R1
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_kasvs_ecdh_vectors, load_vectors_from_file,
@@ -928,17 +929,7 @@ class TestECDH(object):
                 pemfile.read().encode(), None, backend
             )
         )
-        public_key = ec.EllipticCurvePublicNumbers(
-            int(
-                "3411592940847846511444973873421894778212895963519463384397662"
-                "6983900466205627792914181900767401599528349662185720855"
-            ),
-            int(
-                "3632819834244394334395622140197408878581471655319641017478501"
-                "4862750487889436098934993486739984469019130932307943998"
-            ),
-            ec.SECP384R1(),
-        ).public_key(backend)
+        public_key = EC_KEY_SECP384R1.public_numbers.public_key(backend)
 
         with pytest.raises(ValueError):
             key.exchange(ec.ECDH(), public_key)

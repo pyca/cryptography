@@ -29,7 +29,6 @@ from cryptography.x509.oid import (
 )
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
-from .hazmat.primitives.fixtures_ec import EC_KEY_SECP192R1, EC_KEY_SECT163K1
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .utils import load_vectors_from_file
@@ -1089,8 +1088,8 @@ class TestRSACertificateRequest(object):
         ]
 
     def test_build_cert_printable_string_country_name(self, backend):
-        issuer_private_key = EC_KEY_SECP192R1.private_key(backend)
-        subject_private_key = EC_KEY_SECT163K1.private_key(backend)
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
