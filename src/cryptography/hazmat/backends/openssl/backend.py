@@ -60,8 +60,8 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 def _encode_asn1_int(backend, x):
     """
-    Converts a python integer to a ASN1_INTEGER. The returned ASN1_INTEGER will
-    not be garbage collected (to support adding them to structs that take
+    Converts a python integer to an ASN1_INTEGER. The returned ASN1_INTEGER
+    will not be garbage collected (to support adding them to structs that take
     ownership of the object). Be sure to register it for GC if it will be
     discarded after use.
 
@@ -72,7 +72,7 @@ def _encode_asn1_int(backend, x):
     i = backend._int_to_bn(x)
     i = backend._ffi.gc(i, backend._lib.BN_free)
 
-    # Wrap in a ASN.1 integer.  Don't GC -- as documented.
+    # Wrap in an ASN.1 integer.  Don't GC -- as documented.
     i = backend._lib.BN_to_ASN1_INTEGER(i, backend._ffi.NULL)
     backend.openssl_assert(i != backend._ffi.NULL)
     return i
@@ -97,7 +97,7 @@ def _encode_asn1_str(backend, data, length):
 def _encode_asn1_utf8_str(backend, string):
     """
     Create an ASN1_UTF8STRING from a Python unicode string.
-    This object will be a ASN1_STRING with UTF8 type in OpenSSL and
+    This object will be an ASN1_STRING with UTF8 type in OpenSSL and
     can be decoded with ASN1_STRING_to_UTF8.
     """
     s = backend._lib.ASN1_UTF8STRING_new()
