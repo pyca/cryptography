@@ -132,7 +132,8 @@ matrix:
           env: TOXENV=docs
 
 install:
-    - ./.travis/install.sh
+    # source this so that travis_retry is available
+    - source .travis/install.sh
 
 script:
     - ./.travis/run.sh

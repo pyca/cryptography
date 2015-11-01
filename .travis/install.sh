@@ -4,7 +4,7 @@ set -e
 set -x
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
-    brew update || brew update
+    travis_retry brew update
     brew install pyenv
     brew outdated pyenv || brew upgrade pyenv
 
