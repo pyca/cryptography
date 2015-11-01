@@ -4,7 +4,11 @@ set -e
 set -x
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
+    # initialize our pyenv
+    PYENV_ROOT="$HOME/.pyenv"
+    PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
+
     if [[ "${OPENSSL}" != "0.9.8" ]]; then
         # set our flags to use homebrew openssl
         export ARCHFLAGS="-arch x86_64"
