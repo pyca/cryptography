@@ -60,8 +60,8 @@ _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 def _encode_asn1_int(backend, x):
     """
-    Converts a python integer to an ASN1_INTEGER. The returned ASN1_INTEGER will
-    not be garbage collected (to support adding them to structs that take
+    Converts a python integer to an ASN1_INTEGER. The returned ASN1_INTEGER
+    will not be garbage collected (to support adding them to structs that take
     ownership of the object). Be sure to register it for GC if it will be
     discarded after use.
 
