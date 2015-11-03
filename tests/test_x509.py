@@ -2889,6 +2889,7 @@ class TestECDSACertificate(object):
         )
 
     def test_tbs_certificate(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
             x509.load_pem_x509_certificate,
