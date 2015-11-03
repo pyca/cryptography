@@ -124,7 +124,7 @@ class Certificate(object):
         """
 
     @abc.abstractproperty
-    def tbs_certificate(self):
+    def tbs_certificate_bytes(self):
         """
         Returns the tbsCertificate payload bytes as defined in RFC 5280.
         """

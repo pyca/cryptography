@@ -354,13 +354,13 @@ class TestRSACertificate(object):
         )
         assert len(cert.signature) == cert.public_key().key_size // 8
 
-    def test_tbs_certificate(self, backend):
+    def test_tbs_certificate_bytes(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
             backend
         )
-        assert cert.tbs_certificate == binascii.unhexlify(
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
             b"308202d8a003020102020900a06cb4b955f7f4db300d06092a864886f70d010"
             b"10505003058310b3009060355040613024155311330110603550408130a536f"
             b"6d652d53746174653121301f060355040a1318496e7465726e6574205769646"
@@ -389,7 +389,7 @@ class TestRSACertificate(object):
         verifier = cert.public_key().verifier(
             cert.signature, padding.PKCS1v15(), cert.signature_hash_algorithm
         )
-        verifier.update(cert.tbs_certificate)
+        verifier.update(cert.tbs_certificate_bytes)
         verifier.verify()
 
     def test_issuer(self, backend):
@@ -2755,13 +2755,13 @@ class TestDSACertificate(object):
         assert r == 215618264820276283222494627481362273536404860490
         assert s == 532023851299196869156027211159466197586787351758
 
-    def test_tbs_certificate(self, backend):
+    def test_tbs_certificate_bytes(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
             backend
         )
-        assert cert.tbs_certificate == binascii.unhexlify(
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
             b"3082051aa003020102020900a37352e0b2142f86300906072a8648ce3804033"
             b"067310b3009060355040613025553310e300c06035504081305546578617331"
             b"0f300d0603550407130641757374696e3121301f060355040a1318496e74657"
@@ -2808,7 +2808,7 @@ class TestDSACertificate(object):
         verifier = cert.public_key().verifier(
             cert.signature, cert.signature_hash_algorithm
         )
-        verifier.update(cert.tbs_certificate)
+        verifier.update(cert.tbs_certificate_bytes)
         verifier.verify()
 
     @pytest.mark.parametrize(
@@ -2888,14 +2888,14 @@ class TestECDSACertificate(object):
             16
         )
 
-    def test_tbs_certificate(self, backend):
+    def test_tbs_certificate_bytes(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
             x509.load_pem_x509_certificate,
             backend
         )
-        assert cert.tbs_certificate == binascii.unhexlify(
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
             b"308201c5a0030201020210055556bcf25ea43535c3a40fd5ab4572300a06082"
             b"a8648ce3d0403033061310b300906035504061302555331153013060355040a"
             b"130c446967694365727420496e6331193017060355040b13107777772e64696"
@@ -2915,7 +2915,7 @@ class TestECDSACertificate(object):
         verifier = cert.public_key().verifier(
             cert.signature, ec.ECDSA(cert.signature_hash_algorithm)
         )
-        verifier.update(cert.tbs_certificate)
+        verifier.update(cert.tbs_certificate_bytes)
         verifier.verify()
 
     def test_load_ecdsa_no_named_curve(self, backend):

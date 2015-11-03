@@ -390,7 +390,7 @@ X.509 Certificate Object
 
         The bytes of the certificate's signature.
 
-    .. attribute:: tbs_certificate
+    .. attribute:: tbs_certificate_bytes
 
         .. versionadded:: 1.2
 

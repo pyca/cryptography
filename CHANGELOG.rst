@@ -8,7 +8,7 @@ Changelog
 
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
-  :attr:`~cryptography.x509.Certificate.tbs_certificate` attributes.
+  :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.
 
 1.1 - 2015-10-28
 ~~~~~~~~~~~~~~~~
