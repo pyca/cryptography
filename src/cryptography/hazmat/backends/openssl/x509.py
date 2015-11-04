@@ -322,6 +322,21 @@ class _Certificate(object):
     def extensions(self):
         return _CERTIFICATE_EXTENSION_PARSER.parse(self._backend, self._x509)
 
+    @property
+    def signature(self):
+        return self._backend._asn1_string_to_bytes(self._x509.signature)
+
+    @property
+    def tbs_certificate_bytes(self):
+        pp = self._backend._ffi.new("unsigned char **")
+        # the X509_CINF struct holds the tbsCertificate data
+        res = self._backend._lib.i2d_X509_CINF(self._x509.cert_info, pp)
+        self._backend.openssl_assert(res > 0)
+        pp = self._backend._ffi.gc(
+            pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
+        )
+        return self._backend._ffi.buffer(pp[0], res)[:]
+
     def public_bytes(self, encoding):
         bio = self._backend._create_mem_bio()
         if encoding is serialization.Encoding.PEM:

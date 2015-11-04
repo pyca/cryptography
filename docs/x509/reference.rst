@@ -382,6 +382,26 @@ X.509 Certificate Object
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.32, name=certificatePolicies)>, critical=False, value=<CertificatePolicies([<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=2.16.840.1.101.3.2.1.48.1, name=Unknown OID)>, policy_qualifiers=None)>])>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
+    .. attribute:: signature
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The bytes of the certificate's signature.
+
+    .. attribute:: tbs_certificate_bytes
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:`5280`) that is hashed
+        and then signed by the private key of the certificate's issuer. This
+        data may be used to validate a signature, but use extreme caution as
+        certificate validation is a complex problem that involves much more
+        than just signature checks.
+
     .. method:: public_bytes(encoding)
 
         .. versionadded:: 1.0

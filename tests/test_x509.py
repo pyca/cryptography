@@ -23,7 +23,10 @@ from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    decode_dss_signature
+)
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
 )
@@ -331,6 +334,63 @@ class TestRSACertificate(object):
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+
+    def test_signature(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.signature == binascii.unhexlify(
+            b"8e0f72fcbebe4755abcaf76c8ce0bae17cde4db16291638e1b1ce04a93cdb4c"
+            b"44a3486070986c5a880c14fdf8497e7d289b2630ccb21d24a3d1aa1b2d87482"
+            b"07f3a1e16ccdf8daa8a7ea1a33d49774f513edf09270bd8e665b6300a10f003"
+            b"66a59076905eb63cf10a81a0ca78a6ef3127f6cb2f6fb7f947fce22a30d8004"
+            b"8c243ba2c1a54c425fe12310e8a737638f4920354d4cce25cbd9dea25e6a2fe"
+            b"0d8579a5c8d929b9275be221975479f3f75075bcacf09526523b5fd67f7683f"
+            b"3cda420fabb1e9e6fc26bc0649cf61bb051d6932fac37066bb16f55903dfe78"
+            b"53dc5e505e2a10fbba4f9e93a0d3b53b7fa34b05d7ba6eef869bfc34b8e514f"
+            b"d5419f75"
+        )
+        assert len(cert.signature) == cert.public_key().key_size // 8
+
+    def test_tbs_certificate_bytes(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
+            b"308202d8a003020102020900a06cb4b955f7f4db300d06092a864886f70d010"
+            b"10505003058310b3009060355040613024155311330110603550408130a536f"
+            b"6d652d53746174653121301f060355040a1318496e7465726e6574205769646"
+            b"769747320507479204c74643111300f0603550403130848656c6c6f20434130"
+            b"1e170d3134313132363231343132305a170d3134313232363231343132305a3"
+            b"058310b3009060355040613024155311330110603550408130a536f6d652d53"
+            b"746174653121301f060355040a1318496e7465726e657420576964676974732"
+            b"0507479204c74643111300f0603550403130848656c6c6f2043413082012230"
+            b"0d06092a864886f70d01010105000382010f003082010a0282010100b03af70"
+            b"2059e27f1e2284b56bbb26c039153bf81f295b73a49132990645ede4d2da0a9"
+            b"13c42e7d38d3589a00d3940d194f6e6d877c2ef812da22a275e83d8be786467"
+            b"48b4e7f23d10e873fd72f57a13dec732fc56ab138b1bb308399bb412cd73921"
+            b"4ef714e1976e09603405e2556299a05522510ac4574db5e9cb2cf5f99e8f48c"
+            b"1696ab3ea2d6d2ddab7d4e1b317188b76a572977f6ece0a4ad396f0150e7d8b"
+            b"1a9986c0cb90527ec26ca56e2914c270d2a198b632fa8a2fda55079d3d39864"
+            b"b6fb96ddbe331cacb3cb8783a8494ccccd886a3525078847ca01ca5f803e892"
+            b"14403e8a4b5499539c0b86f7a0daa45b204a8e079d8a5b03db7ba1ba3d7011a"
+            b"70203010001a381bc3081b9301d0603551d0e04160414d8e89dc777e4472656"
+            b"f1864695a9f66b7b0400ae3081890603551d23048181307f8014d8e89dc777e"
+            b"4472656f1864695a9f66b7b0400aea15ca45a3058310b300906035504061302"
+            b"4155311330110603550408130a536f6d652d53746174653121301f060355040"
+            b"a1318496e7465726e6574205769646769747320507479204c74643111300f06"
+            b"03550403130848656c6c6f204341820900a06cb4b955f7f4db300c0603551d1"
+            b"3040530030101ff"
+        )
+        verifier = cert.public_key().verifier(
+            cert.signature, padding.PKCS1v15(), cert.signature_hash_algorithm
+        )
+        verifier.update(cert.tbs_certificate_bytes)
+        verifier.verify()
 
     def test_issuer(self, backend):
         cert = _load_cert(
@@ -2681,6 +2741,76 @@ class TestDSACertificate(object):
             "822ff5d234e073b901cf5941f58e1f538e71d40d", 16
         )
 
+    def test_signature(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.signature == binascii.unhexlify(
+            b"302c021425c4a84a936ab311ee017d3cbd9a3c650bb3ae4a02145d30c64b4326"
+            b"86bdf925716b4ed059184396bcce"
+        )
+        r, s = decode_dss_signature(cert.signature)
+        assert r == 215618264820276283222494627481362273536404860490
+        assert s == 532023851299196869156027211159466197586787351758
+
+    def test_tbs_certificate_bytes(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
+            b"3082051aa003020102020900a37352e0b2142f86300906072a8648ce3804033"
+            b"067310b3009060355040613025553310e300c06035504081305546578617331"
+            b"0f300d0603550407130641757374696e3121301f060355040a1318496e74657"
+            b"26e6574205769646769747320507479204c7464311430120603550403130b50"
+            b"79434120445341204341301e170d3134313132373035313431375a170d31343"
+            b"13232373035313431375a3067310b3009060355040613025553310e300c0603"
+            b"55040813055465786173310f300d0603550407130641757374696e3121301f0"
+            b"60355040a1318496e7465726e6574205769646769747320507479204c746431"
+            b"1430120603550403130b50794341204453412043413082033a3082022d06072"
+            b"a8648ce380401308202200282010100bfade6048e373cd4e48b677e878c8e5b"
+            b"08c02102ae04eb2cb5c46a523a3af1c73d16b24f34a4964781ae7e50500e217"
+            b"77754a670bd19a7420d633084e5556e33ca2c0e7d547ea5f46a07a01bf8669a"
+            b"e3bdec042d9b2ae5e6ecf49f00ba9dac99ab6eff140d2cedf722ee62c2f9736"
+            b"857971444c25d0a33d2017dc36d682a1054fe2a9428dda355a851ce6e6d61e0"
+            b"3e419fd4ca4e703313743d86caa885930f62ed5bf342d8165627681e9cc3244"
+            b"ba72aa22148400a6bbe80154e855d042c9dc2a3405f1e517be9dea50562f56d"
+            b"a93f6085f844a7e705c1f043e65751c583b80d29103e590ccb26efdaa0893d8"
+            b"33e36468f3907cfca788a3cb790f0341c8a31bf021500822ff5d234e073b901"
+            b"cf5941f58e1f538e71d40d028201004b7ced71dc353965ecc10d441a9a06fc2"
+            b"4943a32d66429dd5ef44d43e67d789d99770aec32c0415dc92970880872da45"
+            b"fef8dd1e115a3e4801387ba6d755861f062fd3b6e9ea8e2641152339b828315"
+            b"b1528ee6c7b79458d21f3db973f6fc303f9397174c2799dd2351282aa2d8842"
+            b"c357a73495bbaac4932786414c55e60d73169f5761036fba29e9eebfb049f8a"
+            b"3b1b7cee6f3fbfa136205f130bee2cf5b9c38dc1095d4006f2e73335c07352c"
+            b"64130a1ab2b89f13b48f628d3cc3868beece9bb7beade9f830eacc6fa241425"
+            b"c0b3fcc0df416a0c89f7bf35668d765ec95cdcfbe9caff49cfc156c668c76fa"
+            b"6247676a6d3ac945844a083509c6a1b436baca0382010500028201004c08bfe"
+            b"5f2d76649c80acf7d431f6ae2124b217abc8c9f6aca776ddfa9453b6656f13e"
+            b"543684cd5f6431a314377d2abfa068b7080cb8ddc065afc2dea559f0b584c97"
+            b"a2b235b9b69b46bc6de1aed422a6f341832618bcaae2198aba388099dafb05f"
+            b"f0b5efecb3b0ae169a62e1c72022af50ae68af3b033c18e6eec1f7df4692c45"
+            b"6ccafb79cc7e08da0a5786e9816ceda651d61b4bb7b81c2783da97cea62df67"
+            b"af5e85991fdc13aff10fc60e06586386b96bb78d65750f542f86951e05a6d81"
+            b"baadbcd35a2e5cad4119923ae6a2002091a3d17017f93c52970113cdc119970"
+            b"b9074ca506eac91c3dd376325df4af6b3911ef267d26623a5a1c5df4a6d13f1"
+            b"ca381cc3081c9301d0603551d0e04160414a4fb887a13fcdeb303bbae9a1dec"
+            b"a72f125a541b3081990603551d2304819130818e8014a4fb887a13fcdeb303b"
+            b"bae9a1deca72f125a541ba16ba4693067310b3009060355040613025553310e"
+            b"300c060355040813055465786173310f300d0603550407130641757374696e3"
+            b"121301f060355040a1318496e7465726e657420576964676974732050747920"
+            b"4c7464311430120603550403130b5079434120445341204341820900a37352e"
+            b"0b2142f86300c0603551d13040530030101ff"
+        )
+        verifier = cert.public_key().verifier(
+            cert.signature, cert.signature_hash_algorithm
+        )
+        verifier.update(cert.tbs_certificate_bytes)
+        verifier.verify()
+
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -2733,6 +2863,60 @@ class TestECDSACertificate(object):
             "2deae88a7a16bb543ce67dc23ff031ca3e23e", 16
         )
         assert isinstance(num.curve, ec.SECP384R1)
+
+    def test_signature(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ecdsa_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.signature == binascii.unhexlify(
+            b"3065023100adbcf26c3f124ad12d39c30a099773f488368c8827bbe6888d5085"
+            b"a763f99e32de66930ff1ccb1098fdd6cabfa6b7fa0023039665bc2648db89e50"
+            b"dca8d549a2edc7dcd1497f1701b8c8868f4e8c882ba89aa98ac5d100bdf854e2"
+            b"9ae55b7cb32717"
+        )
+        r, s = decode_dss_signature(cert.signature)
+        assert r == int(
+            "adbcf26c3f124ad12d39c30a099773f488368c8827bbe6888d5085a763f99e32"
+            "de66930ff1ccb1098fdd6cabfa6b7fa0",
+            16
+        )
+        assert s == int(
+            "39665bc2648db89e50dca8d549a2edc7dcd1497f1701b8c8868f4e8c882ba89a"
+            "a98ac5d100bdf854e29ae55b7cb32717",
+            16
+        )
+
+    def test_tbs_certificate_bytes(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        cert = _load_cert(
+            os.path.join("x509", "ecdsa_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
+            b"308201c5a0030201020210055556bcf25ea43535c3a40fd5ab4572300a06082"
+            b"a8648ce3d0403033061310b300906035504061302555331153013060355040a"
+            b"130c446967694365727420496e6331193017060355040b13107777772e64696"
+            b"769636572742e636f6d3120301e06035504031317446967694365727420476c"
+            b"6f62616c20526f6f74204733301e170d3133303830313132303030305a170d3"
+            b"338303131353132303030305a3061310b300906035504061302555331153013"
+            b"060355040a130c446967694365727420496e6331193017060355040b1310777"
+            b"7772e64696769636572742e636f6d3120301e06035504031317446967694365"
+            b"727420476c6f62616c20526f6f742047333076301006072a8648ce3d0201060"
+            b"52b8104002203620004dda7d9bb8ab80bfb0b7f21d2f0bebe73f3335d1abc34"
+            b"eadec69bbcd095f6f0ccd00bba615b51467e9e2d9fee8e630c17ec0770f5cf8"
+            b"42e40839ce83f416d3badd3a4145936789d0343ee10136c72deae88a7a16bb5"
+            b"43ce67dc23ff031ca3e23ea3423040300f0603551d130101ff040530030101f"
+            b"f300e0603551d0f0101ff040403020186301d0603551d0e04160414b3db48a4"
+            b"f9a1c5d8ae3641cc1163696229bc4bc6"
+        )
+        verifier = cert.public_key().verifier(
+            cert.signature, ec.ECDSA(cert.signature_hash_algorithm)
+        )
+        verifier.update(cert.tbs_certificate_bytes)
+        verifier.verify()
 
     def test_load_ecdsa_no_named_curve(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())

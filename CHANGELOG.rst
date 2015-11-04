@@ -6,6 +6,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* The :class:`~cryptography.x509.Certificate` class now has
+  :attr:`~cryptography.x509.Certificate.signature` and
+  :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.
+
 1.1 - 2015-10-28
 ~~~~~~~~~~~~~~~~
 
@@ -29,7 +33,6 @@ Changelog
   :class:`~cryptography.x509.CertificateBuilder`.
 * ``countryName`` is now encoded as a ``PrintableString`` when creating subject
   and issuer distinguished names with the Certificate and CSR builder classes.
-
 
 1.0.2 - 2015-09-27
 ~~~~~~~~~~~~~~~~~~

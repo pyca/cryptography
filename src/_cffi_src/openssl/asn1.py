@@ -23,7 +23,7 @@ struct asn1_string_st {
 
 typedef struct asn1_string_st ASN1_OCTET_STRING;
 typedef struct asn1_string_st ASN1_IA5STRING;
-typedef ... ASN1_BIT_STRING;
+typedef struct asn1_string_st ASN1_BIT_STRING;
 typedef ... ASN1_OBJECT;
 typedef struct asn1_string_st ASN1_STRING;
 typedef struct asn1_string_st ASN1_UTF8STRING;
