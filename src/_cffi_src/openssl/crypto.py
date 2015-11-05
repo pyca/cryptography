@@ -49,7 +49,6 @@ void OPENSSL_free(void *);
 MACROS = """
 void CRYPTO_add(int *, int, int);
 void CRYPTO_malloc_init(void);
-void CRYPTO_malloc_debug_init(void);
 """
 
 CUSTOMIZATIONS = """
