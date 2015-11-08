@@ -130,29 +130,9 @@ static const long SSL3_RANDOM_SIZE;
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
 
-typedef struct {
-    int master_key_length;
-    unsigned char master_key[...];
-    unsigned int session_id_length;
-    unsigned char session_id[...];
-    unsigned int sid_ctx_length;
-    unsigned char sid_ctx[...];
-    ...;
-} SSL_SESSION;
+typedef ... SSL_SESSION;
 
-typedef struct {
-    unsigned char server_random[...];
-    unsigned char client_random[...];
-    ...;
-} SSL3_STATE;
-
-typedef struct {
-    int version;
-    int type;
-    SSL3_STATE *s3;
-    SSL_SESSION *session;
-    ...;
-} SSL;
+typedef ... SSL;
 
 static const long TLSEXT_NAMETYPE_host_name;
 
@@ -260,6 +240,8 @@ int SSL_set_ex_data(SSL *, int, void *);
 int SSL_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
                              CRYPTO_EX_free *);
 int SSL_CTX_set_ex_data(SSL_CTX *, int, void *);
+SSL_SESSION *SSL_get_session(const SSL *);
+const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
 """
 
 MACROS = """
@@ -368,8 +350,6 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *);
-
 /* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
  * versions some special handling of these is necessary.
  */
@@ -418,6 +398,16 @@ long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
  */
 void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
 void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
+
+const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
+int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
+                                unsigned int);
+
+/* Added in 1.1 for the great opaquing of structs */
+size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
+                                  size_t);
+size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
+size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
 """
 
 CUSTOMIZATIONS = """
@@ -561,11 +551,6 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
 
-/* Workaround for #794 caused by cffi const** bug. */
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *ctx) {
-    return ctx->method;
-}
-
 /* Because OPENSSL defines macros that claim lack of support for things, rather
  * than macros that claim support for things, we need to do a version check in
  * addition to a definition check. NPN was added in 1.0.1: for any version
@@ -650,5 +635,72 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
 # else
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
 #endif
+/* Added in 1.0.1 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x1000100fL
+/* from ssl.h */
+#define SSL_F_SSL_SESSION_SET1_ID_CONTEXT 312
+#define SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG 273
+/* from ssl/ssl_sess.c */
+int SSL_SESSION_set1_id_context(SSL_SESSION *s, const unsigned char *sid_ctx,
+                                unsigned int sid_ctx_len)
+{
+    if (sid_ctx_len > SSL_MAX_SID_CTX_LENGTH) {
+        SSLerr(SSL_F_SSL_SESSION_SET1_ID_CONTEXT,
+               SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG);
+        return 0;
+    }
+    s->sid_ctx_length = sid_ctx_len;
+    memcpy(s->sid_ctx, sid_ctx, sid_ctx_len);
 
+    return 1;
+}
+#endif
+/* Added in 1.0.2 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+/* from ssl/ssl_lib.c */
+const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
+    return ctx->method;
+}
+#endif
+/* Added in 1.1 in the great opaquing, but we need to define it for older
+   OpenSSLs. Such is our burden. */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+/* from ssl/ssl_lib.c */
+size_t SSL_get_client_random(const SSL *ssl, unsigned char *out, size_t outlen)
+{
+    if (outlen == 0)
+        return sizeof(ssl->s3->client_random);
+    if (outlen > sizeof(ssl->s3->client_random))
+        outlen = sizeof(ssl->s3->client_random);
+    memcpy(out, ssl->s3->client_random, outlen);
+    return outlen;
+}
+/* from ssl/ssl_lib.c */
+size_t SSL_get_server_random(const SSL *ssl, unsigned char *out, size_t outlen)
+{
+    if (outlen == 0)
+        return sizeof(ssl->s3->server_random);
+    if (outlen > sizeof(ssl->s3->server_random))
+        outlen = sizeof(ssl->s3->server_random);
+    memcpy(out, ssl->s3->server_random, outlen);
+    return outlen;
+}
+/* from ssl/ssl_lib.c */
+size_t SSL_SESSION_get_master_key(const SSL_SESSION *session,
+                               unsigned char *out, size_t outlen)
+{
+    if (session->master_key_length < 0) {
+        /* Should never happen */
+        return 0;
+    }
+    if (outlen == 0)
+        return session->master_key_length;
+    if (outlen > (size_t)session->master_key_length)
+        outlen = session->master_key_length;
+    memcpy(out, session->master_key, outlen);
+    return outlen;
+}
+#endif
 """
