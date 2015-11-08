@@ -39,7 +39,7 @@ def _openssl_assert(lib, ok):
         raise InternalError(
             "Unknown OpenSSL error. Please file an issue at https://github.com"
             "/pyca/cryptography/issues with information on how to reproduce "
-            "this.",
+            "this. ({0!r})".format(errors),
             errors
         )
 
