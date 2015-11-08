@@ -28,56 +28,16 @@ typedef struct {
     ASN1_OBJECT *algorithm;
     ...;
 } X509_ALGOR;
-
 typedef ... X509_ATTRIBUTE;
-
-typedef struct {
-    X509_ALGOR *signature;
-    ...;
-} X509_CINF;
-
-typedef struct {
-    ASN1_OBJECT *object;
-    ASN1_BOOLEAN critical;
-    ASN1_OCTET_STRING *value;
-} X509_EXTENSION;
-
+typedef ... X509_CINF;
+typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ_INFO;
-
-typedef struct {
-    X509_REQ_INFO *req_info;
-    X509_ALGOR *sig_alg;
-    ASN1_BIT_STRING *signature;
-    ...;
-} X509_REQ;
-
-typedef struct {
-    ASN1_INTEGER *serialNumber;
-    ASN1_TIME *revocationDate;
-    X509_EXTENSIONS *extensions;
-    int sequence;
-    ...;
-} X509_REVOKED;
-
-typedef struct {
-    Cryptography_STACK_OF_X509_REVOKED *revoked;
-    ...;
-} X509_CRL_INFO;
-
-typedef struct {
-    X509_CRL_INFO *crl;
-    X509_ALGOR *sig_alg;
-    ASN1_BIT_STRING *signature;
-    ...;
-} X509_CRL;
-
-typedef struct {
-    X509_ALGOR *sig_alg;
-    X509_CINF *cert_info;
-    ASN1_BIT_STRING *signature;
-    ...;
-} X509;
+typedef ... X509_REQ;
+typedef ... X509_REVOKED;
+typedef ... X509_CRL_INFO;
+typedef ... X509_CRL;
+typedef ... X509;
 
 typedef ... NETSCAPE_SPKI;
 
@@ -276,6 +236,15 @@ int i2d_X509_CINF(X509_CINF *, unsigned char **);
 int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
 int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
 
+/* new in 1.1.0 */
+ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *);
+ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *);
+void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_CRL *crl);
+
+/* new in 1.0.2 */
+int i2d_re_X509_tbs(X509 *, unsigned char **);
+
 long X509_get_version(X509 *);
 
 ASN1_TIME *X509_get_notBefore(X509 *);
@@ -347,9 +316,76 @@ ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
 void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
 Cryptography_STACK_OF_ASN1_OBJECT *sk_ASN1_OBJECT_new_null(void);
 int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
+
+/* new in 1.0.2+ */
+void X509_REQ_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509_REQ *);
+void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
 """
 
 CUSTOMIZATIONS = """
+/* Added in 1.0.2 beta but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x_x509.c version 1.0.2 */
+void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                         const X509 *x)
+{
+    if (psig)
+        *psig = x->signature;
+    if (palg)
+        *palg = x->sig_alg;
+}
+#endif
+/* Added in 1.0.2 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x1000200fL || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x_x509.c */
+int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
+{
+    /* In 1.0.1 and below cert_info is a pointer in the struct, so
+       we don't want to pass by reference. */
+    /* ideally we also call x->cert_info->enc.modified = 1 as 1.0.2+ does, but
+       older OpenSSLs don't have the enc ASN1_ENCODING on the struct */
+    return i2d_X509_CINF(x->cert_info, pp);
+}
+#endif
+/* Added in 1.1.0 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x509_req.c */
+void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_REQ *req)
+{
+    if (psig != NULL)
+        *psig = req->signature;
+    if (palg != NULL)
+        /* In 1.0.2 and below sig_alg is a pointer in the struct, so
+           we don't want to pass by reference. */
+        *palg = req->sig_alg;
+}
+void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_CRL *crl)
+{
+    if (psig != NULL)
+        /* In 1.0.2 and below sigis a pointer in the struct, so
+           we don't want to pass by reference. */
+        *psig = crl->signature;
+    if (palg != NULL)
+        /* In 1.0.2 and below sig_alg is a pointer in the struct, so
+           we don't want to pass by reference. */
+        *palg = crl->sig_alg;
+}
+ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *x)
+{
+    return x->revocationDate;
+}
+ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *x)
+{
+    /* In 1.0.2 and below serialNumber is a pointer in the struct, so
+       we don't want to pass by reference. */
+    return x->serialNumber;
+}
+#endif
 /* OpenSSL 0.9.8e does not have this definition. */
 #if OPENSSL_VERSION_NUMBER <= 0x0090805fL
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
