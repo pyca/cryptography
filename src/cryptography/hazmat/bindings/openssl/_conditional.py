@@ -411,4 +411,22 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ],
+    "Cryptography_HAS_SSLEAY_NAMES": [
+        "SSLeay",
+        "SSLeay_version",
+        "SSLEAY_VERSION",
+        "SSLEAY_CFLAGS",
+        "SSLEAY_PLATFORM",
+        "SSLEAY_DIR",
+        "SSLEAY_BUILT_ON",
+    ],
+    "Cryptography_HAS_OPENSSL_NAMES": [
+        "OpenSSL_version_num",
+        "OpenSSL_version",
+        "OPENSSL_VERSION",
+        "OPENSSL_CFLAGS",
+        "OPENSSL_PLATFORM",
+        "OPENSSL_DIR",
+        "OPENSSL_BUILT_ON",
+    ],
 }
