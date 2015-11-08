@@ -8,6 +8,8 @@ import getpass
 import os
 import time
 
+from clint.textui.progress import Bar as ProgressBar
+
 import invoke
 
 import requests
@@ -66,15 +68,28 @@ def download_artifacts(session):
         response.raise_for_status()
         for artifact in response.json()["artifacts"]:
             response = session.get(
-                "{0}artifact/{1}".format(run["url"], artifact["relativePath"])
+                "{0}artifact/{1}".format(run["url"], artifact["relativePath"]),
+                stream=True
             )
+            assert response.headers["content-length"]
+            print("Downloading {0}".format(artifact["fileName"]))
+            bar = ProgressBar(
+                expected_size=int(response.headers["content-length"]),
+                filled_char="="
+            )
+            content = b''
+            for data in response.iter_content(chunk_size=8192):
+                content += data
+                bar.show(len(content))
+                if bar.expected_size == len(content):
+                    bar.done()
             out_path = os.path.join(
                 os.path.dirname(__file__),
                 "dist",
                 artifact["fileName"],
             )
             with open(out_path, "wb") as f:
-                f.write(response.content)
+                f.write(content)
             paths.append(out_path)
     return paths
 
