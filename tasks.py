@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import getpass
+import io
 import os
 import time
 
@@ -77,11 +78,11 @@ def download_artifacts(session):
                 expected_size=int(response.headers["content-length"]),
                 filled_char="="
             )
-            content = b''
+            content = io.BytesIO()
             for data in response.iter_content(chunk_size=8192):
-                content += data
-                bar.show(len(content))
-                if bar.expected_size == len(content):
+                content.write(data)
+                bar.show(content.tell())
+                if bar.expected_size == content.tell():
                     bar.done()
             out_path = os.path.join(
                 os.path.dirname(__file__),
@@ -89,7 +90,7 @@ def download_artifacts(session):
                 artifact["fileName"],
             )
             with open(out_path, "wb") as f:
-                f.write(content)
+                f.write(content.getvalue())
             paths.append(out_path)
     return paths
 
