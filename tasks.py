@@ -82,8 +82,8 @@ def download_artifacts(session):
             for data in response.iter_content(chunk_size=8192):
                 content.write(data)
                 bar.show(content.tell())
-                if bar.expected_size == content.tell():
-                    bar.done()
+            assert bar.expected_size == content.tell()
+            bar.done()
             out_path = os.path.join(
                 os.path.dirname(__file__),
                 "dist",
