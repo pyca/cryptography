@@ -432,6 +432,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_ST": [
         "SSL_ST_BEFORE",
         "SSL_ST_OK",
+        "SSL_ST_INIT",
         "SSL_ST_RENEGOTIATE",
     ],
     "Cryptography_HAS_TLS_ST": [

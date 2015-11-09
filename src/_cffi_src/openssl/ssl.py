@@ -711,6 +711,7 @@ static const long Cryptography_HAS_SSL_ST = 1;
 static const long Cryptography_HAS_SSL_ST = 0;
 static const long SSL_ST_BEFORE = 0;
 static const long SSL_ST_OK = 0;
+static const long SSL_ST_INIT = 0;
 static const long SSL_ST_RENEGOTIATE = 0;
 #endif
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
