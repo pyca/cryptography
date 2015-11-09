@@ -33,9 +33,7 @@ typedef ... ASN1_ENUMERATED;
 typedef ... ASN1_ITEM;
 typedef ... ASN1_VALUE;
 
-typedef struct {
-    ...;
-} ASN1_TIME;
+typedef struct asn1_string_st ASN1_TIME;
 typedef ... ASN1_ITEM_EXP;
 
 typedef ... ASN1_UTCTIME;
@@ -122,7 +120,6 @@ int i2d_ASN1_OCTET_STRING(ASN1_OCTET_STRING *, unsigned char **);
 int i2d_ASN1_INTEGER(ASN1_INTEGER *, unsigned char **);
 /* This is not a macro, but is const on some versions of OpenSSL */
 int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
-ASN1_TIME *M_ASN1_TIME_dup(void *);
 const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
 
 /* These aren't macros these arguments are all const X on openssl > 1.0.x */
