@@ -83,6 +83,7 @@ static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 1;
 #endif
 #else
 static const long Cryptography_HAS_CMS = 0;
+static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 0;
 typedef void CMS_ContentInfo;
 typedef void CMS_SignerInfo;
 typedef void CMS_CertificateChoices;
