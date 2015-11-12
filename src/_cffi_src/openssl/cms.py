@@ -17,7 +17,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_CMS;
-static const long Cryptography_HAS_MORE_CMS;
+static const long Cryptography_HAS_CMS_BIO_FUNCTIONS;
 
 typedef ... CMS_ContentInfo;
 typedef ... CMS_SignerInfo;
@@ -72,6 +72,15 @@ CMS_SignerInfo *CMS_add1_signer(CMS_ContentInfo *, X509 *, EVP_PKEY *,
 CUSTOMIZATIONS = """
 #if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_CMS = 1;
+#if OPENSSL_VERSION_NUMBER < 0x1000000fL
+static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 0;
+/* These functions were added in 1.0.0 */
+BIO *(*BIO_new_CMS)(BIO *, CMS_ContentInfo *) = NULL;
+int (*i2d_CMS_bio_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
+int (*PEM_write_bio_CMS_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
+#else
+static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 1;
+#endif
 #else
 static const long Cryptography_HAS_CMS = 0;
 typedef void CMS_ContentInfo;
@@ -115,14 +124,5 @@ int (*CMS_decrypt)(CMS_ContentInfo *, EVP_PKEY *, X509 *, BIO *, BIO *,
                    unsigned int) = NULL;
 CMS_SignerInfo *(*CMS_add1_signer)(CMS_ContentInfo *, X509 *, EVP_PKEY *,
                                    const EVP_MD *, unsigned int) = NULL;
-#endif
-#if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER < 0x1000000fL
-static const long Cryptography_HAS_MORE_CMS = 0;
-/* These functions were added in 1.0.0 */
-BIO *(*BIO_new_CMS)(BIO *, CMS_ContentInfo *) = NULL;
-int (*i2d_CMS_bio_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
-int (*PEM_write_bio_CMS_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
-#else
-static const long Cryptography_HAS_MORE_CMS = 1;
 #endif
 """
