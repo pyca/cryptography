@@ -17,6 +17,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_CMS;
+static const long Cryptography_HAS_MORE_CMS;
 
 typedef ... CMS_ContentInfo;
 typedef ... CMS_SignerInfo;
@@ -114,5 +115,14 @@ int (*CMS_decrypt)(CMS_ContentInfo *, EVP_PKEY *, X509 *, BIO *, BIO *,
                    unsigned int) = NULL;
 CMS_SignerInfo *(*CMS_add1_signer)(CMS_ContentInfo *, X509 *, EVP_PKEY *,
                                    const EVP_MD *, unsigned int) = NULL;
+#endif
+#if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER < 0x1000000fL
+static const long Cryptography_HAS_MORE_CMS = 0;
+/* These functions were added in 1.0.0 */
+BIO *(*BIO_new_CMS)(BIO *, CMS_ContentInfo *) = NULL;
+int (*i2d_CMS_bio_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
+int (*PEM_write_bio_CMS_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
+#else
+static const long Cryptography_HAS_MORE_CMS = 1;
 #endif
 """
