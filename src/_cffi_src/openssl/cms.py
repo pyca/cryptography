@@ -72,7 +72,7 @@ CMS_SignerInfo *CMS_add1_signer(CMS_ContentInfo *, X509 *, EVP_PKEY *,
 CUSTOMIZATIONS = """
 #if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_CMS = 1;
-#if OPENSSL_VERSION_NUMBER < 0x1000000fL
+#if OPENSSL_VERSION_NUMBER < 0x10000000L
 static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 0;
 /* These functions were added in 1.0.0 */
 BIO *(*BIO_new_CMS)(BIO *, CMS_ContentInfo *) = NULL;
