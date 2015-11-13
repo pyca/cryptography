@@ -74,6 +74,12 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
 class DummyCurve(object):
     name = "dummy-curve"
     key_size = 1
+    field = ec.EllipticCurvePrimeField(23)
+    a = 1
+    b = 0
+    x = 9
+    y = 5
+    n = 23
 
 
 @utils.register_interface(ec.EllipticCurveSignatureAlgorithm)
@@ -148,6 +154,21 @@ def test_ec_numbers():
             1,
             None
         )
+
+
+def test_base_point():
+    assert ec.SECP256R1.base_point() == binascii.unhexlify(
+        "046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c29"
+        "64fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5"
+    )
+
+
+def test_domain_parameters():
+    curve = ec.SECP256R1
+
+    assert curve.domain_parameters() == (
+        curve.field, curve.a, curve.b, curve.base_point(), curve.n
+    )
 
 
 def test_encode_point():
