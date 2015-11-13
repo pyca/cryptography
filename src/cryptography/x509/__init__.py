@@ -34,6 +34,10 @@ from cryptography.x509.oid import (
     CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
     ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
+from cryptography.x509.verification import (
+    CertificateVerificationContext, InvalidCertificate,
+    InvalidSigningCertificate
+)
 
 
 OID_AUTHORITY_INFORMATION_ACCESS = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -117,6 +121,8 @@ __all__ = [
     "UnsupportedExtension",
     "ExtensionNotFound",
     "UnsupportedGeneralNameType",
+    "InvalidCertificate",
+    "InvalidSigningCertificate",
     "NameAttribute",
     "Name",
     "ObjectIdentifier",
@@ -160,6 +166,7 @@ __all__ = [
     "RevokedCertificateBuilder",
     "CertificateSigningRequestBuilder",
     "CertificateBuilder",
+    "CertificateVerificationContext",
     "Version",
     "_SIG_OIDS_TO_HASH",
     "OID_CA_ISSUERS",
