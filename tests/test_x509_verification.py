@@ -12,7 +12,9 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature
 
-from cryptography.hazmat.backends.interfaces import X509Backend
+from cryptography.hazmat.backends.interfaces import (
+    EllipticCurveBackend, X509Backend
+)
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import dsa, ec
 
@@ -206,30 +208,7 @@ class TestCertificateVerificationContext(object):
         with pytest.raises(InvalidCertificate):
             verifier.update("invalid")
 
-    @pytest.mark.parametrize(
-        ("keys"),
-        [
-            (
-                [
-                    fixtures_rsa.RSA_KEY_512,
-                    fixtures_rsa.RSA_KEY_1024,
-                ]
-            ),
-            (
-                [
-                    fixtures_dsa.DSA_KEY_1024,
-                    fixtures_dsa.DSA_KEY_2048,
-                ]
-            ),
-            (
-                [
-                    fixtures_ec.EC_KEY_SECP192R1,
-                    fixtures_ec.EC_KEY_SECT163K1,
-                ]
-            ),
-        ]
-    )
-    def test_verify(self, keys, backend):
+    def _test_verify(self, keys, backend):
         for key in keys:
             _skip_backend_if_key_unsupported(key, backend)
 
@@ -257,3 +236,28 @@ class TestCertificateVerificationContext(object):
 
         with pytest.raises(InvalidSignature):
             verifier.verify()
+
+    @pytest.mark.parametrize(
+        ("keys"),
+        [
+            (
+                [
+                    fixtures_rsa.RSA_KEY_512,
+                    fixtures_rsa.RSA_KEY_1024,
+                ]
+            ),
+            (
+                [
+                    fixtures_dsa.DSA_KEY_1024,
+                    fixtures_dsa.DSA_KEY_2048,
+                ]
+            ),
+        ]
+    )
+    def test_verify(self, keys, backend):
+        self._test_verify(keys, backend)
+
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+    def test_verify_with_elliptic_curves(self, backend):
+        keys = [fixtures_ec.EC_KEY_SECP192R1, fixtures_ec.EC_KEY_SECT163K1]
+        self._test_verify(keys, backend)
