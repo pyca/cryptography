@@ -27,6 +27,7 @@ from cryptography.x509.verification import (
 
 from .hazmat.primitives import fixtures_dsa, fixtures_ec, fixtures_rsa
 
+from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .test_x509 import _load_cert
 
 
@@ -260,4 +261,6 @@ class TestCertificateVerificationContext(object):
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_verify_with_elliptic_curves(self, backend):
         keys = [fixtures_ec.EC_KEY_SECP192R1, fixtures_ec.EC_KEY_SECT163K1]
+        for key in keys:
+            _skip_curve_unsupported(backend, key.public_numbers.curve)
         self._test_verify(keys, backend)
