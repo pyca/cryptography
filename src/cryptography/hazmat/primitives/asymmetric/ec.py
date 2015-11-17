@@ -297,18 +297,6 @@ class SECT233R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT163R1(EllipticCurve):
-    name = "sect163r1"
-    key_size = 163
-    field = EllipticCurveBinaryField(163, 3, 6, 7)
-    a = 0x07b6882caaefa84f9554ff8428bd88e246d2782ae2
-    b = 0x0713612dcddcb40aab946bda29ca91f73af958afd9
-    x = 0x0369979697ab43897789566789567f787a7876a654
-    y = 0x00435edb42efafb2989d51fefce3c80988f41ff883
-    n = 0x03ffffffffffffffffffff48aab689c29ca710279b
-
-
-@utils.register_interface(EllipticCurve)
 class SECT163R2(EllipticCurve):
     name = "sect163r2"
     key_size = 163
@@ -366,18 +354,6 @@ class SECT283K1(EllipticCurve):
             "45c0e8184698e45962364e34116177dd2259", 16)
     n = int("01ffffffffffffffffffffffffffffffffff"
             "e9ae2ed07577265dff7f94451e061e163c61", 16)
-
-
-@utils.register_interface(EllipticCurve)
-class SECT239K1(EllipticCurve):
-    name = "sect239k1"
-    key_size = 239
-    field = EllipticCurveBinaryField(239, 158)
-    a = 0
-    b = 1
-    x = 0x29a0b6a887a983e9730988a68727a8b2d126c44cc2cc7b2a6555193035dc
-    y = 0x76310804f12e549bdb011c103089e73510acb275fc312a5dc6b76553f0ca
-    n = 0x2000000000000000000000000000005a79fec67cb6e91f1c1da800e478a5
 
 
 @utils.register_interface(EllipticCurve)
@@ -519,12 +495,10 @@ _CURVE_TYPES = {
 
     "sect163k1": SECT163K1,
     "sect233k1": SECT233K1,
-    "sect239k1": SECT239K1,
     "sect283k1": SECT283K1,
     "sect409k1": SECT409K1,
     "sect571k1": SECT571K1,
 
-    "sect163r1": SECT163R1,
     "sect163r2": SECT163R2,
     "sect233r1": SECT233R1,
     "sect283r1": SECT283R1,

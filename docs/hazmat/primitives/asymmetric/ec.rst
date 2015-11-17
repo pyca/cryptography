@@ -230,13 +230,6 @@ All named curves are providers of :class:`EllipticCurve`.
     SECG curve ``sect283k1``. Also called NIST K-283.
 
 
-.. class:: SECT239K1
-
-    .. versionadded:: 1.2
-
-    SECG curve ``sect239k1``.
-
-
 .. class:: SECT233K1
 
     .. versionadded:: 0.5
@@ -277,13 +270,6 @@ All named curves are providers of :class:`EllipticCurve`.
     .. versionadded:: 0.5
 
     SECG curve ``sect233r1``. Also called NIST B-233.
-
-
-.. class:: SECT163R1
-
-    .. versionadded:: 1.2
-
-    SECG curve ``sect163r1``.
 
 
 .. class:: SECT163R2
