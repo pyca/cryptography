@@ -235,6 +235,18 @@ class TestCertificateVerificationContext(object):
         verifier = CertificateVerificationContext(cert_chain[1])
         verifier.update(cert_chain[0])
 
+        with pytest.raises(InvalidCertificate):
+            verifier.verify()
+
+        # Test an invalid call with valid subject/issuer names.
+        keys.reverse()
+        alt_cert_chain = build_certificate_chain(
+            names, not_valid_before, not_valid_after, keys, extension_lists,
+            hashes.SHA1(), backend, serial_number
+        )
+        verifier = CertificateVerificationContext(cert_chain[0])
+        verifier.update(alt_cert_chain[1])
+
         with pytest.raises(InvalidSignature):
             verifier.verify()
 
