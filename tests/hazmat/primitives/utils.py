@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.kdf.counterkdf import CounterKDF
 
 from ...utils import load_vectors_from_file
 
@@ -368,6 +369,27 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
         hkdf_test(backend, algorithm, params)
 
     return test_hkdf
+
+
+def generate_counterkdf_test(param_loader, path, file_names, algorithm):
+    all_params = _load_all_params(path, file_names, param_loader)
+
+    @pytest.mark.parametrize("params", all_params)
+    def test_counterkdf(self, backend, params):
+        counterkdf_test(backend, algorithm, params)
+    return test_counterkdf
+
+
+def counterkdf_test(backend, algorithm, params):
+    ckdf = CounterKDF(hashes.SHA1(),
+                      int(params['l'])//8,
+                      None,
+                      None,
+                      backend=backend)
+
+    ckdf.fixed_data = binascii.unhexlify(params['fixedinputdata'])
+    ko = ckdf.derive(binascii.unhexlify(params['ki']))
+    assert binascii.hexlify(ko) == params["ko"]
 
 
 def generate_rsa_verification_test(param_loader, path, file_names, hash_alg,
