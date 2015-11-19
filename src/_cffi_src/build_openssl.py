@@ -90,6 +90,7 @@ ffi = build_ffi_for_binding(
         "x509v3",
         "x509_vfy",
         "pkcs7",
+        "callbacks",
     ],
     pre_include=_OSX_PRE_INCLUDE,
     post_include=_OSX_POST_INCLUDE,
