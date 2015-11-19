@@ -203,7 +203,7 @@ class TestCertificateRevocationList(object):
             b"58a472b0"
         )
 
-    def test_tbs_certificate(self, backend):
+    def test_tbs_certlist_bytes(self, backend):
         crl = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
