@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.1.1 - 2015-11-19
+~~~~~~~~~~~~~~~~~~
+
+* Fixed several small bugs related to compiling the OpenSSL bindings with
+  unusual OpenSSL configurations.
+* Resolved an issue where, depending on the method of installation and
+  which Python interpreter they were using, users on El Capitan (OS X 10.11)
+  may have seen an ``InternalError`` on import.
+
 1.1 - 2015-10-28
 ~~~~~~~~~~~~~~~~
 
