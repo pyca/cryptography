@@ -43,6 +43,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
 )
 from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.bindings.openssl import binding
+from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import (
