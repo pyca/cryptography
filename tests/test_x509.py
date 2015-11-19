@@ -184,6 +184,44 @@ class TestCertificateRevocationList(object):
         with pytest.raises(NotImplementedError):
             crl.extensions
 
+    def test_signature(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        assert crl.signature == binascii.unhexlify(
+            b"536a5a0794f68267361e7bc2f19167a3e667a2ab141535616855d8deb2ba1af"
+            b"9fd4546b1fe76b454eb436af7b28229fedff4634dfc9dd92254266219ae0ea8"
+            b"75d9ff972e9a2da23d5945f073da18c50a4265bfed9ca16586347800ef49dd1"
+            b"6856d7265f4f3c498a57f04dc04404e2bd2e2ada1f5697057aacef779a18371"
+            b"c621edc9a5c2b8ec1716e8fa22feeb7fcec0ce9156c8d344aa6ae8d1a5d99d0"
+            b"9386df36307df3b63c83908f4a61a0ff604c1e292ad63b349d1082ddd7ae1b7"
+            b"c178bba995523ec6999310c54da5706549797bfb1230f5593ba7b4353dade4f"
+            b"d2be13a57580a6eb20b5c4083f000abac3bf32cd8b75f23e4c8f4b3a79e1e2d"
+            b"58a472b0"
+        )
+
+    def test_tbs_certlist_bytes(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        ca_cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        verifier = ca_cert.public_key().verifier(
+            crl.signature, padding.PKCS1v15(), crl.signature_hash_algorithm
+        )
+        verifier.update(crl.tbs_certlist_bytes)
+        verifier.verify()
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRevokedCertificate(object):

@@ -194,6 +194,18 @@ class CertificateRevocationList(object):
         Returns an Extensions object containing a list of CRL extensions.
         """
 
+    @abc.abstractproperty
+    def signature(self):
+        """
+        Returns the signature bytes.
+        """
+
+    @abc.abstractproperty
+    def tbs_certlist_bytes(self):
+        """
+        Returns the tbsCertList payload bytes as defined in RFC 5280.
+        """
+
     @abc.abstractmethod
     def __eq__(self, other):
         """
