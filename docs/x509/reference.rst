@@ -504,6 +504,26 @@ X.509 CRL (Certificate Revocation List) Object
 
         The extensions encoded in the CRL.
 
+    .. attribute:: signature
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The bytes of the CRL's signature.
+
+    .. attribute:: tbs_certlist_bytes
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:`5280`) that is hashed
+        and then signed by the private key of the CRL's issuer. This data may be
+        used to validate a signature, but use extreme caution as CRL validation
+        is a complex problem that involves much more than just signature checks.
+
+
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
