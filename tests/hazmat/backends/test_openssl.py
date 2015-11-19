@@ -503,8 +503,21 @@ class TestOpenSSLSignX509Certificate(object):
 
 class TestOpenSSLSerialisationWithOpenSSL(object):
     def test_pem_password_cb_buffer_too_small(self):
-        ffi_cb, cb = backend._pem_password_cb(b"aa")
-        assert cb(None, 1, False, None) == 0
+        ffi_cb, userdata = backend._pem_password_cb(b"aa")
+        handle = backend._ffi.new_handle(userdata)
+        buf = backend._ffi.new('char *')
+        assert ffi_cb(buf, 1, False, handle) == 0
+        assert userdata.called == 1
+        assert isinstance(userdata.exception, ValueError)
+
+    def test_pem_password_cb(self):
+        password = b'abcdefg'
+        ffi_cb, userdata = backend._pem_password_cb(password)
+        handle = backend._ffi.new_handle(userdata)
+        buf = backend._ffi.new('char *')
+        assert ffi_cb(buf, len(password) + 1, False, handle) == len(password)
+        assert userdata.called == 1
+        assert backend._ffi.string(buf, len(password)) == password
 
     def test_unsupported_evp_pkey_type(self):
         key = pretend.stub(type="unsupported")
