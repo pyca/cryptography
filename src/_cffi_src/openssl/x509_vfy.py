@@ -173,6 +173,8 @@ int X509_STORE_CTX_get_error(X509_STORE_CTX *);
 void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
 int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
 X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
+int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
+                                    CRYPTO_EX_dup *, CRYPTO_EX_free *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
 
