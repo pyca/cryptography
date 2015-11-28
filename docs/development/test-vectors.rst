@@ -387,6 +387,7 @@ Custom Symmetric Vectors
 .. toctree::
     :maxdepth: 1
 
+    custom-vectors/arc4
     custom-vectors/cast5
     custom-vectors/idea
     custom-vectors/seed
