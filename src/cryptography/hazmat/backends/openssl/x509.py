@@ -921,6 +921,21 @@ class _CertificateSigningRequest(object):
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
+    @property
+    def tbs_certrequest_bytes(self):
+        pp = self._backend._ffi.new("unsigned char **")
+        # the X509_CINF struct holds the tbsCertificate data
+        res = self._backend._lib.i2d_X509_REQ_INFO(self._x509_req.req_info, pp)
+        self._backend.openssl_assert(res > 0)
+        pp = self._backend._ffi.gc(
+            pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
+        )
+        return self._backend._ffi.buffer(pp[0], res)[:]
+
+    @property
+    def signature(self):
+        return self._backend._asn1_string_to_bytes(self._x509_req.signature)
+
 
 _EXTENSION_HANDLERS = {
     ExtensionOID.BASIC_CONSTRAINTS: _decode_basic_constraints,
