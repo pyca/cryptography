@@ -214,9 +214,9 @@ typedef struct {
     const char *comment;
 } EC_builtin_curve;
 typedef enum {
-    POINT_CONVERSION_COMPRESSED = 0,
-    POINT_CONVERSION_UNCOMPRESSED = 1,
-    POINT_CONVERSION_HYBRID = 2,
+    POINT_CONVERSION_COMPRESSED,
+    POINT_CONVERSION_UNCOMPRESSED,
+    POINT_CONVERSION_HYBRID,
 } point_conversion_form_t;
 
 static const int OPENSSL_EC_NAMED_CURVE = 0;
