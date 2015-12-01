@@ -818,6 +818,21 @@ class _CertificateRevocationList(object):
         self._backend.openssl_assert(lu != self._backend._ffi.NULL)
         return self._backend._parse_asn1_time(lu)
 
+    @property
+    def signature(self):
+        return self._backend._asn1_string_to_bytes(self._x509_crl.signature)
+
+    @property
+    def tbs_certlist_bytes(self):
+        pp = self._backend._ffi.new("unsigned char **")
+        # the X509_CRL_INFO struct holds the tbsCertList data
+        res = self._backend._lib.i2d_X509_CRL_INFO(self._x509_crl.crl, pp)
+        self._backend.openssl_assert(res > 0)
+        pp = self._backend._ffi.gc(
+            pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
+        )
+        return self._backend._ffi.buffer(pp[0], res)[:]
+
     def _revoked_certificates(self):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
         self._backend.openssl_assert(revoked != self._backend._ffi.NULL)

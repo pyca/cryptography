@@ -65,6 +65,7 @@ typedef struct {
 typedef struct {
     X509_CRL_INFO *crl;
     X509_ALGOR *sig_alg;
+    ASN1_BIT_STRING *signature;
     ...;
 } X509_CRL;
 
@@ -147,6 +148,12 @@ X509_EXTENSION *X509_delete_ext(X509 *, int);
 X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_get_ext_by_NID(X509 *, int, int);
+
+/* CRYPTO_EX_DATA */
+int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                          CRYPTO_EX_free *);
+int X509_set_ex_data(X509 *, int, void *);
+void *X509_get_ex_data(X509 *, int);
 
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
@@ -259,6 +266,8 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 
 MACROS = """
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
+int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
+
 long X509_get_version(X509 *);
 
 ASN1_TIME *X509_get_notBefore(X509 *);

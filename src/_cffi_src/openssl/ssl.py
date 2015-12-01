@@ -251,6 +251,15 @@ char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
+
+/* CRYPTO_EX_DATA */
+int SSL_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                         CRYPTO_EX_free *);
+int SSL_set_ex_data(SSL *, int, void *);
+
+int SSL_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                             CRYPTO_EX_free *);
+int SSL_CTX_set_ex_data(SSL_CTX *, int, void *);
 """
 
 MACROS = """
@@ -336,6 +345,9 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
 const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
 const char *SSL_get_version(const SSL *);
 int SSL_version(const SSL *);
+
+void *SSL_CTX_get_ex_data(const SSL_CTX *, int);
+void *SSL_get_ex_data(const SSL *, int);
 
 /* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
  * earlier versions some special handling of these is necessary.
