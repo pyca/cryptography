@@ -29,7 +29,11 @@ typedef struct {
     int nid;
     const char *comment;
 } EC_builtin_curve;
-typedef enum { ... } point_conversion_form_t;
+typedef enum {
+    POINT_CONVERSION_COMPRESSED = 2,
+    POINT_CONVERSION_UNCOMPRESSED = 4,
+    POINT_CONVERSION_HYBRID = 6
+} point_conversion_form_t;
 """
 
 FUNCTIONS = """

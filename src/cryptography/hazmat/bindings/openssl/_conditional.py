@@ -141,6 +141,9 @@ CONDITIONAL_NAMES = {
         "i2o_ECPublicKey",
         "o2i_ECPublicKey",
         "SSL_CTX_set_tmp_ecdh",
+        "POINT_CONVERSION_COMPRESSED",
+        "POINT_CONVERSION_UNCOMPRESSED",
+        "POINT_CONVERSION_HYBRID",
     ],
 
     "Cryptography_HAS_EC_1_0_1": [
