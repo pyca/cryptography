@@ -29,7 +29,12 @@ typedef struct {
     int nid;
     const char *comment;
 } EC_builtin_curve;
-typedef enum { ... } point_conversion_form_t;
+typedef enum {
+    POINT_CONVERSION_COMPRESSED,
+    POINT_CONVERSION_UNCOMPRESSED,
+    POINT_CONVERSION_HYBRID,
+    ...
+} point_conversion_form_t;
 """
 
 FUNCTIONS = """
@@ -208,7 +213,11 @@ typedef struct {
     int nid;
     const char *comment;
 } EC_builtin_curve;
-typedef long point_conversion_form_t;
+typedef enum {
+    POINT_CONVERSION_COMPRESSED,
+    POINT_CONVERSION_UNCOMPRESSED,
+    POINT_CONVERSION_HYBRID,
+} point_conversion_form_t;
 
 static const int OPENSSL_EC_NAMED_CURVE = 0;
 
