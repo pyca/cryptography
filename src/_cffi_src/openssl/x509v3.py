@@ -195,6 +195,7 @@ int i2d_AUTHORITY_KEYID(AUTHORITY_KEYID *, unsigned char **);
 
 NAME_CONSTRAINTS *NAME_CONSTRAINTS_new(void);
 void NAME_CONSTRAINTS_free(NAME_CONSTRAINTS *);
+int Cryptography_i2d_NAME_CONSTRAINTS(NAME_CONSTRAINTS *, unsigned char **);
 
 OTHERNAME *OTHERNAME_new(void);
 void OTHERNAME_free(OTHERNAME *);
@@ -277,6 +278,8 @@ GENERAL_SUBTREE *sk_GENERAL_SUBTREE_value(
 int sk_GENERAL_SUBTREE_push(Cryptography_STACK_OF_GENERAL_SUBTREE *,
                             GENERAL_SUBTREE *);
 
+GENERAL_SUBTREE *GENERAL_SUBTREE_new(void);
+
 void sk_ASN1_INTEGER_free(Cryptography_STACK_OF_ASN1_INTEGER *);
 int sk_ASN1_INTEGER_num(Cryptography_STACK_OF_ASN1_INTEGER *);
 ASN1_INTEGER *sk_ASN1_INTEGER_value(Cryptography_STACK_OF_ASN1_INTEGER *, int);
@@ -295,4 +298,13 @@ int i2d_CRL_DIST_POINTS(Cryptography_STACK_OF_DIST_POINT *, unsigned char **);
 """
 
 CUSTOMIZATIONS = """
+/* i2d_NAME_CONSTRAINTS doesn't exist, but this is the way the macros in
+   asn1t.h would implement it. We're not using those macros in case
+   OpenSSL exposes this function in the future. */
+int Cryptography_i2d_NAME_CONSTRAINTS(NAME_CONSTRAINTS *nc,
+                                      unsigned char **out) {
+    return ASN1_item_i2d((ASN1_VALUE *)nc, out,
+                         ASN1_ITEM_rptr(NAME_CONSTRAINTS));
+}
+
 """

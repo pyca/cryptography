@@ -58,6 +58,42 @@ from cryptography.x509.oid import ExtensionOID, NameOID
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 
+def _encode_name_constraints(backend, name_constraints):
+    nc = backend._lib.NAME_CONSTRAINTS_new()
+    assert nc != backend._ffi.NULL
+    nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
+    permitted = _encode_general_subtree(
+        backend, name_constraints.permitted_subtrees
+    )
+    nc.permittedSubtrees = permitted
+    excluded = _encode_general_subtree(
+        backend, name_constraints.excluded_subtrees
+    )
+    nc.excludedSubtrees = excluded
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.Cryptography_i2d_NAME_CONSTRAINTS(nc, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_general_subtree(backend, subtrees):
+    if subtrees is None:
+        return backend._ffi.NULL
+    else:
+        general_subtrees = backend._lib.sk_GENERAL_SUBTREE_new_null()
+        for name in subtrees:
+            gs = backend._lib.GENERAL_SUBTREE_new()
+            gs.base = _encode_general_name(backend, name)
+            res = backend._lib.sk_GENERAL_SUBTREE_push(general_subtrees, gs)
+            assert res >= 1
+
+        return general_subtrees
+
+
 def _encode_asn1_int(backend, x):
     """
     Converts a python integer to an ASN1_INTEGER. The returned ASN1_INTEGER
@@ -585,6 +621,7 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
+    ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
 }
 
 
