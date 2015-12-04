@@ -924,7 +924,7 @@ class _CertificateSigningRequest(object):
     @property
     def tbs_certrequest_bytes(self):
         pp = self._backend._ffi.new("unsigned char **")
-        # the X509_CINF struct holds the tbsCertificate data
+        # the X509_REQ_INFO struct holds the CertificateRequestInfo data
         res = self._backend._lib.i2d_X509_REQ_INFO(self._x509_req.req_info, pp)
         self._backend.openssl_assert(res > 0)
         pp = self._backend._ffi.gc(
