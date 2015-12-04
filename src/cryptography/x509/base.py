@@ -270,6 +270,19 @@ class CertificateSigningRequest(object):
         Encodes the request to PEM or DER format.
         """
 
+    @abc.abstractproperty
+    def signature(self):
+        """
+        Returns the signature bytes.
+        """
+
+    @abc.abstractproperty
+    def tbs_certrequest_bytes(self):
+        """
+        Returns the PKCS#10 CertificationRequestInfo bytes as defined in RFC
+        2986.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class RevokedCertificate(object):

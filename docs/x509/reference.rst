@@ -734,6 +734,25 @@ X.509 CSR (Certificate Signing Request) Object
             over the network to be signed by the certificate
             authority.
 
+    .. attribute:: signature
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The bytes of the certificate signing request's signature.
+
+    .. attribute:: tbs_certrequest_bytes
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:`2986`) that is
+        hashed and then signed by the private key (corresponding to the public
+        key embedded in the CSR). This data may be used to validate the CSR
+        signature.
+
 X.509 Revoked Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

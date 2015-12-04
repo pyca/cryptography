@@ -43,9 +43,12 @@ typedef struct {
 } X509_EXTENSION;
 
 typedef ... X509_EXTENSIONS;
+typedef ... X509_REQ_INFO;
 
 typedef struct {
+    X509_REQ_INFO *req_info;
     X509_ALGOR *sig_alg;
+    ASN1_BIT_STRING *signature;
     ...;
 } X509_REQ;
 
@@ -267,6 +270,7 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 MACROS = """
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
 int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
+int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
 
 long X509_get_version(X509 *);
 
