@@ -3128,6 +3128,7 @@ class TestECDSACertificateRequest(object):
         ]
 
     def test_signature(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
         request = _load_cert(
             os.path.join("x509", "requests", "ec_sha256.pem"),
             x509.load_pem_x509_csr,
@@ -3141,6 +3142,7 @@ class TestECDSACertificateRequest(object):
         )
 
     def test_tbs_certrequest_bytes(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
         request = _load_cert(
             os.path.join("x509", "requests", "ec_sha256.pem"),
             x509.load_pem_x509_csr,
