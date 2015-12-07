@@ -546,11 +546,7 @@ X.509 Certificate Builder
         ...     key_size=2048,
         ...     backend=default_backend()
         ... )
-        >>> public_key = rsa.generate_private_key(
-        ...     public_exponent=65537,
-        ...     key_size=2048,
-        ...     backend=default_backend()
-        ... ).public_key()
+        >>> public_key = private_key.public_key()
         >>> builder = x509.CertificateBuilder()
         >>> builder = builder.subject_name(x509.Name([
         ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
