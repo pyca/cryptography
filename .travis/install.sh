@@ -38,8 +38,8 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.5.0
             ;;
         pypy)
-            pyenv install pypy-4.0.0
-            pyenv global pypy-4.0.0
+            pyenv install pypy-4.0.1
+            pyenv global pypy-4.0.1
             ;;
         pypy3)
             pyenv install pypy3-2.4.0
@@ -60,8 +60,8 @@ else
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv install pypy-4.0.0
-        pyenv global pypy-4.0.0
+        pyenv install pypy-4.0.1
+        pyenv global pypy-4.0.1
     fi
     pip install virtualenv
 fi
