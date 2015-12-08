@@ -9,6 +9,13 @@ Changelog
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
   :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.
+* The :class:`~cryptography.x509.CertificateSigningRequest` class now has
+  :attr:`~cryptography.x509.CertificateSigningRequest.signature` and
+  :attr:`~cryptography.x509.CertificateSigningRequest.tbs_certrequest_bytes`
+  attributes.
+* :class:`~cryptography.x509.NameConstraints` are now supported in the
+  :class:`~cryptography.x509.CertificateBuilder` and
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
 1.1.1 - 2015-11-19
 ~~~~~~~~~~~~~~~~~~
