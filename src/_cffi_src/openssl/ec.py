@@ -15,7 +15,6 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_EC;
 static const int Cryptography_HAS_EC_1_0_1;
-static const int Cryptography_HAS_EC_NISTP_64_GCC_128;
 static const int Cryptography_HAS_EC2M;
 static const int Cryptography_HAS_EC_1_0_2;
 
@@ -190,10 +189,6 @@ const EC_METHOD *EC_GFp_simple_method();
 const EC_METHOD *EC_GFp_mont_method();
 const EC_METHOD *EC_GFp_nist_method();
 
-const EC_METHOD *EC_GFp_nistp224_method();
-const EC_METHOD *EC_GFp_nistp256_method();
-const EC_METHOD *EC_GFp_nistp521_method();
-
 const EC_METHOD *EC_GF2m_simple_method();
 
 int EC_METHOD_get_field_type(const EC_METHOD *);
@@ -367,17 +362,6 @@ int (*EC_KEY_set_public_key_affine_coordinates)(
 static const long Cryptography_HAS_EC_1_0_1 = 1;
 #endif
 
-
-#if defined(OPENSSL_NO_EC) || OPENSSL_VERSION_NUMBER < 0x1000100f || \
-    defined(OPENSSL_NO_EC_NISTP_64_GCC_128)
-static const long Cryptography_HAS_EC_NISTP_64_GCC_128 = 0;
-
-const EC_METHOD *(*EC_GFp_nistp224_method)(void) = NULL;
-const EC_METHOD *(*EC_GFp_nistp256_method)(void) = NULL;
-const EC_METHOD *(*EC_GFp_nistp521_method)(void) = NULL;
-#else
-static const long Cryptography_HAS_EC_NISTP_64_GCC_128 = 1;
-#endif
 
 #if defined(OPENSSL_NO_EC) || defined(OPENSSL_NO_EC2M)
 static const long Cryptography_HAS_EC2M = 0;

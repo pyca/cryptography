@@ -153,12 +153,6 @@ CONDITIONAL_NAMES = {
         "EC_KEY_set_public_key_affine_coordinates",
     ],
 
-    "Cryptography_HAS_EC_NISTP_64_GCC_128": [
-        "EC_GFp_nistp224_method",
-        "EC_GFp_nistp256_method",
-        "EC_GFp_nistp521_method",
-    ],
-
     "Cryptography_HAS_EC2M": [
         "EC_GF2m_simple_method",
         "EC_POINT_set_affine_coordinates_GF2m",
