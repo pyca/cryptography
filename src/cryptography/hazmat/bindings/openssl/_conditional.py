@@ -192,6 +192,7 @@ CONDITIONAL_NAMES = {
         "ECDSA_get_ex_new_index",
         "ECDSA_set_ex_data",
         "ECDSA_get_ex_data",
+        "ECDSA_SIG_get0",
     ],
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
