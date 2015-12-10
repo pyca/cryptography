@@ -185,7 +185,6 @@ CONDITIONAL_NAMES = {
         "ECDSA_sign_ex",
         "ECDSA_verify",
         "ECDSA_size",
-        "ECDSA_OpenSSL",
         "ECDSA_set_default_method",
         "ECDSA_get_default_method",
         "ECDSA_set_method",

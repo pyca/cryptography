@@ -617,7 +617,9 @@ static const long Cryptography_HAS_SET_CERT_CB = 1;
 
 #if defined(OPENSSL_NO_COMP) || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_COMPRESSION = 0;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 typedef void COMP_METHOD;
+#endif
 #else
 static const long Cryptography_HAS_COMPRESSION = 1;
 #endif
