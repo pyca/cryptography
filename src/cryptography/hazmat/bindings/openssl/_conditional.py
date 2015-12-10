@@ -168,9 +168,6 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_ECDH": [
         "ECDH_compute_key",
-        "ECDH_get_ex_new_index",
-        "ECDH_set_ex_data",
-        "ECDH_get_ex_data",
     ],
     "Cryptography_HAS_ECDSA": [
         "ECDSA_SIG_new",
@@ -188,9 +185,6 @@ CONDITIONAL_NAMES = {
         "ECDSA_set_default_method",
         "ECDSA_get_default_method",
         "ECDSA_set_method",
-        "ECDSA_get_ex_new_index",
-        "ECDSA_set_ex_data",
-        "ECDSA_get_ex_data",
         "ECDSA_SIG_get0",
     ],
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
