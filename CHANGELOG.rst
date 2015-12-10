@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.1.2 - 2015-12-10
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a SIGBUS crash with the OS X wheels caused by redefinition of a
+  method.
+* Fixed a runtime error ``undefined symbol EC_GFp_nistp224_method`` that
+  occurred with some OpenSSL installations.
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2e.
+
 1.1.1 - 2015-11-19
 ~~~~~~~~~~~~~~~~~~
 
