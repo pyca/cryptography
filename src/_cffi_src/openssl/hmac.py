@@ -9,18 +9,17 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef struct { ...; } HMAC_CTX;
+typedef ... HMAC_CTX;
 """
 
 FUNCTIONS = """
-void HMAC_CTX_init(HMAC_CTX *);
-void HMAC_CTX_cleanup(HMAC_CTX *);
-
 int Cryptography_HMAC_Init_ex(HMAC_CTX *, const void *, int, const EVP_MD *,
                               ENGINE *);
 int Cryptography_HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
 int Cryptography_HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
 int Cryptography_HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
+HMAC_CTX *Cryptography_HMAC_CTX_new(void);
+void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx);
 """
 
 MACROS = """
@@ -78,6 +77,40 @@ int Cryptography_HMAC_CTX_copy(HMAC_CTX *dst_ctx, HMAC_CTX *src_ctx) {
 
     err:
         return 0;
+#endif
+}
+
+HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    return HMAC_CTX_new();
+#else
+    HMAC_CTX *ctx = (HMAC_CTX *)OPENSSL_zalloc(sizeof(HMAC_CTX));
+    if (ctx)
+        if (!HMAC_CTX_reset(ctx)) {
+            HMAC_CTX_free(ctx);
+            ctx = NULL;
+        }
+    return ctx;
+#endif
+}
+
+void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    return HMAC_CTX_free(ctx);
+#else
+    if (ctx != NULL) {
+        EVP_MD_CTX_reset(ctx->i_ctx);
+        EVP_MD_CTX_reset(ctx->o_ctx);
+        EVP_MD_CTX_reset(ctx->md_ctx);
+        ctx->md = NULL;
+        ctx->key_length = 0;
+        memset(ctx->key, 0, sizeof(HMAC_MAX_MD_CBLOCK));
+        EVP_MD_CTX_free(ctx->i_ctx);
+        EVP_MD_CTX_free(ctx->o_ctx);
+        EVP_MD_CTX_free(ctx->md_ctx);
+        OPENSSL_free(ctx);
+    }
 #endif
 }
 """
