@@ -165,6 +165,7 @@ def test_prime_field():
 
     assert field != ec.SECP384R1.field
     assert field != ec.SECT233K1.field
+    assert field != object()
 
     assert hash(field) == hash(ec.SECP256R1.field)
     assert repr(field) == "<EllipticCurvePrimeField(p={0.p})>".format(field)
@@ -177,6 +178,7 @@ def test_binary_field():
 
     assert field != ec.SECT283K1.field
     assert field != ec.SECP256R1.field
+    assert field != object()
 
     assert hash(field) == hash(ec.SECT233K1.field)
     assert (repr(field) ==

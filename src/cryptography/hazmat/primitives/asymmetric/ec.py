@@ -24,7 +24,10 @@ class EllipticCurvePrimeField(EllipticCurveField):
     p = utils.read_only_property("_p")
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.p == other.p
+        if not isinstance(other, EllipticCurvePrimeField):
+            return NotImplemented
+
+        return self.p == other.p
 
     def __ne__(self, other):
         return not self == other
@@ -45,10 +48,10 @@ class EllipticCurveBinaryField(EllipticCurveField):
     f = utils.read_only_property("_f")
 
     def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__) and
-            self.m == other.m and self.f == other.f
-        )
+        if not isinstance(other, EllipticCurveBinaryField):
+            return NotImplemented
+
+        return self.m == other.m and self.f == other.f
 
     def __ne__(self, other):
         return not self == other
