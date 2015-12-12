@@ -59,7 +59,7 @@ else:
 
 # If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
-    "pytest!=2.8.4",
+    "pytest",
     "pretend",
     "iso8601",
     "hypothesis",
