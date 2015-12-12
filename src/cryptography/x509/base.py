@@ -351,117 +351,159 @@ class CertificateSigningRequestBuilder(object):
 
 class CertificateBuilder(object):
     def __init__(self, issuer_name=None, subject_name=None,
-                 public_key=None, serial_number=None, not_valid_before=None,
-                 not_valid_after=None, extensions=[]):
+                 public_key=None, serial_number=None,
+                 not_valid_before=None, not_valid_after=None,
+                 optional_extensions=[], critical_extensions=[]):
         self._version = Version.v3
+        self._issuer_name = None
+        self._subject_name = None
+        self._public_key = None
+        self._serial_number = None
+        self._not_valid_before = None
+        self._not_valid_after = None
+        self._extensions = []
+
+        if issuer_name is not None:
+            self._set_issuer_name(issuer_name)
+
+        if subject_name is not None:
+            self._set_subject_name(subject_name)
+
+        if public_key is not None:
+            self._set_public_key(public_key)
+
+        if serial_number is not None:
+            self._set_serial_number(serial_number)
+
+        if not_valid_before is not None:
+            self._set_not_valid_before(not_valid_before)
+
+        if not_valid_after is not None:
+            self._set_not_valid_after(not_valid_after)
+
+        for extension in optional_extensions:
+            self._add_extension(extension, critical=False)
+
+        for extension in critical_extensions:
+            self._add_extension(extension, critical=True)
+
+    def _clone(self):
+        clone = self.__class__()
+        clone._issuer_name = self._issuer_name
+        clone._subject_name = self._subject_name
+        clone._public_key = self._public_key
+        clone._serial_number = self._serial_number
+        clone._not_valid_before = self._not_valid_before
+        clone._not_valid_after = self._not_valid_after
+        clone._extensions = list(self._extensions)
+        return clone
+
+    def _set_issuer_name(self, issuer_name):
+        if not isinstance(issuer_name, Name):
+            raise TypeError('Expecting x509.Name object for issuer name.')
+        if self._issuer_name is not None:
+            raise ValueError('The issuer name may only be set once.')
         self._issuer_name = issuer_name
-        self._subject_name = subject_name
-        self._public_key = public_key
-        self._serial_number = serial_number
-        self._not_valid_before = not_valid_before
-        self._not_valid_after = not_valid_after
-        self._extensions = extensions
 
     def issuer_name(self, name):
         """
         Sets the CA's distinguished name.
         """
-        if not isinstance(name, Name):
-            raise TypeError('Expecting x509.Name object.')
-        if self._issuer_name is not None:
-            raise ValueError('The issuer name may only be set once.')
-        return CertificateBuilder(
-            name, self._subject_name, self._public_key,
-            self._serial_number, self._not_valid_before,
-            self._not_valid_after, self._extensions
-        )
+        clone = self._clone()
+        clone._set_issuer_name(name)
+        return clone
+
+    def _set_subject_name(self, subject_name):
+        if not isinstance(subject_name, Name):
+            raise TypeError('Expecting x509.Name object for subject name.')
+        if self._subject_name is not None:
+            raise ValueError('The subject name may only be set once.')
+        self._subject_name = subject_name
 
     def subject_name(self, name):
         """
         Sets the requestor's distinguished name.
         """
-        if not isinstance(name, Name):
-            raise TypeError('Expecting x509.Name object.')
-        if self._subject_name is not None:
-            raise ValueError('The subject name may only be set once.')
-        return CertificateBuilder(
-            self._issuer_name, name, self._public_key,
-            self._serial_number, self._not_valid_before,
-            self._not_valid_after, self._extensions
-        )
+        clone = self._clone()
+        clone._set_subject_name(name)
+        return clone
+
+    def _set_public_key(self, public_key):
+        if not isinstance(public_key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
+                                       ec.EllipticCurvePublicKey)):
+            raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
+                            ' or EllipticCurvePublicKey.')
+        if self._public_key is not None:
+            raise ValueError('The public key may only be set once.')
+        self._public_key = public_key
 
     def public_key(self, key):
         """
         Sets the requestor's public key (as found in the signing request).
         """
-        if not isinstance(key, (dsa.DSAPublicKey, rsa.RSAPublicKey,
-                                ec.EllipticCurvePublicKey)):
-            raise TypeError('Expecting one of DSAPublicKey, RSAPublicKey,'
-                            ' or EllipticCurvePublicKey.')
-        if self._public_key is not None:
-            raise ValueError('The public key may only be set once.')
-        return CertificateBuilder(
-            self._issuer_name, self._subject_name, key,
-            self._serial_number, self._not_valid_before,
-            self._not_valid_after, self._extensions
-        )
+        clone = self._clone()
+        clone._set_public_key(key)
+        return clone
+
+    def _set_serial_number(self, serial_number):
+        if not isinstance(serial_number, six.integer_types):
+            raise TypeError('Serial number must be of integral type.')
+        if self._serial_number is not None:
+            raise ValueError('The serial number may only be set once.')
+        if serial_number < 0:
+            raise ValueError('The serial number should be non-negative.')
+        if utils.bit_length(serial_number) > 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than '
+                             '160 bits.')
+        self._serial_number = serial_number
 
     def serial_number(self, number):
         """
         Sets the certificate serial number.
         """
-        if not isinstance(number, six.integer_types):
-            raise TypeError('Serial number must be of integral type.')
-        if self._serial_number is not None:
-            raise ValueError('The serial number may only be set once.')
-        if number < 0:
-            raise ValueError('The serial number should be non-negative.')
-        if utils.bit_length(number) > 160:  # As defined in RFC 5280
-            raise ValueError('The serial number should not be more than 160 '
-                             'bits.')
-        return CertificateBuilder(
-            self._issuer_name, self._subject_name,
-            self._public_key, number, self._not_valid_before,
-            self._not_valid_after, self._extensions
-        )
+        clone = self._clone()
+        clone._set_serial_number(number)
+        return clone
+
+    def _set_not_valid_before(self, not_valid_before):
+        if not isinstance(not_valid_before, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._not_valid_before is not None:
+            raise ValueError('The not valid before may only be set once.')
+        if not_valid_before <= _UNIX_EPOCH:
+            raise ValueError('The not valid before date must be after the '
+                             'unix epoch (1970 January 1).')
+        self._not_valid_before = not_valid_before
 
     def not_valid_before(self, time):
         """
         Sets the certificate activation time.
         """
-        if not isinstance(time, datetime.datetime):
+        clone = self._clone()
+        clone._set_not_valid_before(time)
+        return clone
+
+    def _set_not_valid_after(self, not_valid_after):
+        if not isinstance(not_valid_after, datetime.datetime):
             raise TypeError('Expecting datetime object.')
-        if self._not_valid_before is not None:
-            raise ValueError('The not valid before may only be set once.')
-        if time <= _UNIX_EPOCH:
-            raise ValueError('The not valid before date must be after the unix'
-                             ' epoch (1970 January 1).')
-        return CertificateBuilder(
-            self._issuer_name, self._subject_name,
-            self._public_key, self._serial_number, time,
-            self._not_valid_after, self._extensions
-        )
+        if self._not_valid_after is not None:
+            raise ValueError('The not valid after may only be set once.')
+        if not_valid_after <= _UNIX_EPOCH:
+            raise ValueError('The not valid after date must be after the '
+                             'unix epoch (1970 January 1).')
+        self._not_valid_after = not_valid_after
 
     def not_valid_after(self, time):
         """
         Sets the certificate expiration time.
         """
-        if not isinstance(time, datetime.datetime):
-            raise TypeError('Expecting datetime object.')
-        if self._not_valid_after is not None:
-            raise ValueError('The not valid after may only be set once.')
-        if time <= _UNIX_EPOCH:
-            raise ValueError('The not valid after date must be after the unix'
-                             ' epoch (1970 January 1).')
-        return CertificateBuilder(
-            self._issuer_name, self._subject_name,
-            self._public_key, self._serial_number, self._not_valid_before,
-            time, self._extensions
-        )
+        clone = self._clone()
+        clone._set_not_valid_after(time)
+        return clone
 
-    def add_extension(self, extension, critical):
+    def _add_extension(self, extension, critical):
         """
-        Adds an X.509 extension to the certificate.
+        Adds an X.509 extension to the certificate in-place.
         """
         if not isinstance(extension, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
@@ -473,11 +515,15 @@ class CertificateBuilder(object):
             if e.oid == extension.oid:
                 raise ValueError('This extension has already been set.')
 
-        return CertificateBuilder(
-            self._issuer_name, self._subject_name,
-            self._public_key, self._serial_number, self._not_valid_before,
-            self._not_valid_after, self._extensions + [extension]
-        )
+        self._extensions.append(extension)
+
+    def add_extension(self, extension, critical):
+        """
+        Adds an X.509 extension to the certificate.
+        """
+        clone = self._clone()
+        clone._add_extension(extension, critical)
+        return clone
 
     def sign(self, private_key, algorithm, backend):
         """
