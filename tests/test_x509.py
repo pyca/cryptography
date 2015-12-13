@@ -3251,6 +3251,10 @@ class TestObjectIdentifier(object):
         oid = x509.ObjectIdentifier("2.999.1")
         assert oid._name == 'Unknown OID'
 
+    def test_bad_input(self):
+        with pytest.raises(ValueError):
+            x509.ObjectIdentifier("notavalidform")
+
 
 class TestName(object):
     def test_eq(self):
