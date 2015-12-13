@@ -18,8 +18,8 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtendedKeyUsageOID,
-    ExtensionOID, NameOID
+    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
+    NameOID, ObjectIdentifier
 )
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
@@ -1872,7 +1872,10 @@ class TestAccessDescription(object):
             )
 
     def test_valid_nonstandard_method (self):
-        ad = x509.AccessDescription("2.999.1", x509.UniformResourceIdentifier(u"http://example.com"))
+        ad = x509.AccessDescription(
+            ObjectIdentifier("2.999.1"),
+            x509.UniformResourceIdentifier(u"http://example.com")
+        )
         assert ad is not None
 
     def test_repr(self):
