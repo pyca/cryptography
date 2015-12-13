@@ -3188,15 +3188,15 @@ class TestNameAttribute(object):
     def test_init_bad_value(self):
         with pytest.raises(TypeError):
             x509.NameAttribute(
-                x509.ObjectIdentifier('oid'),
+                x509.ObjectIdentifier('2.999.1'),
                 b'bytes'
             )
 
     def test_eq(self):
         assert x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.1'), u'value'
         ) == x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.1'), u'value'
         )
 
     def test_ne(self):
@@ -3206,12 +3206,12 @@ class TestNameAttribute(object):
             x509.ObjectIdentifier('2.5.4.5'), u'value'
         )
         assert x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.1'), u'value'
         ) != x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value2'
+            x509.ObjectIdentifier('2.999.1'), u'value2'
         )
         assert x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.2'), u'value'
         ) != object()
 
     def test_repr(self):
@@ -3230,64 +3230,64 @@ class TestNameAttribute(object):
 
 class TestObjectIdentifier(object):
     def test_eq(self):
-        oid1 = x509.ObjectIdentifier('oid')
-        oid2 = x509.ObjectIdentifier('oid')
+        oid1 = x509.ObjectIdentifier('2.999.1')
+        oid2 = x509.ObjectIdentifier('2.999.1')
         assert oid1 == oid2
 
     def test_ne(self):
-        oid1 = x509.ObjectIdentifier('oid')
-        assert oid1 != x509.ObjectIdentifier('oid1')
+        oid1 = x509.ObjectIdentifier('2.999.1')
+        assert oid1 != x509.ObjectIdentifier('2.999.2')
         assert oid1 != object()
 
     def test_repr(self):
         oid = x509.ObjectIdentifier("2.5.4.3")
         assert repr(oid) == "<ObjectIdentifier(oid=2.5.4.3, name=commonName)>"
-        oid = x509.ObjectIdentifier("oid1")
-        assert repr(oid) == "<ObjectIdentifier(oid=oid1, name=Unknown OID)>"
+        oid = x509.ObjectIdentifier("2.999.1")
+        assert repr(oid) == "<ObjectIdentifier(oid=2.999.1, name=Unknown OID)>"
 
     def test_name_property(self):
         oid = x509.ObjectIdentifier("2.5.4.3")
         assert oid._name == 'commonName'
-        oid = x509.ObjectIdentifier("oid1")
+        oid = x509.ObjectIdentifier("2.999.1")
         assert oid._name == 'Unknown OID'
 
 
 class TestName(object):
     def test_eq(self):
         name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         assert name1 == name2
 
     def test_ne(self):
         name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
         ])
         assert name1 != name2
         assert name1 != object()
 
     def test_hash(self):
         name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name3 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
         ])
 
         assert hash(name1) == hash(name2)
