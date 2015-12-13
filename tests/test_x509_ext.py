@@ -604,8 +604,14 @@ class TestAuthorityKeyIdentifier(object):
     def test_authority_cert_serial_number_not_integer(self):
         dirname = x509.DirectoryName(
             x509.Name([
-                x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-                x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.1'),
+                    u'value1'
+                ),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.2'),
+                    u'value2'
+                ),
             ])
         )
         with pytest.raises(TypeError):
@@ -618,8 +624,14 @@ class TestAuthorityKeyIdentifier(object):
     def test_authority_issuer_not_none_serial_none(self):
         dirname = x509.DirectoryName(
             x509.Name([
-                x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
-                x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.1'),
+                    u'value1'
+                ),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.2'),
+                    u'value2'
+                ),
             ])
         )
         with pytest.raises(ValueError):
@@ -1849,7 +1861,6 @@ class TestExtendedKeyUsageExtension(object):
 
 class TestAccessDescription(object):
     def test_invalid_access_method(self):
-        # access_method can be *any* valid OID
         with pytest.raises(TypeError):
             x509.AccessDescription("notanoid", x509.DNSName(u"test"))
 

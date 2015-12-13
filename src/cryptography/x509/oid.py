@@ -15,7 +15,7 @@ class ObjectIdentifier(object):
         # Basic validation for being well-formed
         for part in self._dotted_string.split("."):
             try:
-                val = int(part, 0)
+                int(part, 0)
             except ValueError:
                 raise ValueError("Malformed OID: %s" % (self._dotted_string))
 
