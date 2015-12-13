@@ -239,7 +239,7 @@ class AuthorityInformationAccess(object):
 class AccessDescription(object):
     def __init__(self, access_method, access_location):
         if not isinstance(access_method, ObjectIdentifier):
-          raise TypeError("access_method must be an ObjectIdentifier")
+            raise TypeError("access_method must be an ObjectIdentifier")
 
         if not isinstance(access_location, GeneralName):
             raise TypeError("access_location must be a GeneralName")
