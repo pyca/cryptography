@@ -1293,6 +1293,38 @@ class TestCertificateBuilder(object):
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA1(), backend)
 
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_encode_nonstandard_aia(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.ObjectIdentifier("2.999.7"),
+                x509.UniformResourceIdentifier(u"http://example.com")
+            ),
+        ])
+
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(1999, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2020, 1, 1)
+        ).add_extension(
+            aia, False
+        )
+
+        builder.sign(private_key, hashes.SHA256(), backend)
+
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_subject_name(self, backend):
