@@ -1858,6 +1858,10 @@ class TestAccessDescription(object):
                 AuthorityInformationAccessOID.CA_ISSUERS, "invalid"
             )
 
+    def test_valid_nonstandard_method (self):
+        ad = x509.AccessDescription("2.999.1", x509.UniformResourceIdentifier(u"http://example.com"))
+        assert ad is not None
+
     def test_repr(self):
         ad = x509.AccessDescription(
             AuthorityInformationAccessOID.OCSP,
