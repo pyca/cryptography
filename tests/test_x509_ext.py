@@ -1861,7 +1861,6 @@ class TestExtendedKeyUsageExtension(object):
 
 class TestAccessDescription(object):
     def test_invalid_access_method(self):
-        # access_method can be *any* valid OID
         with pytest.raises(TypeError):
             x509.AccessDescription("notanoid", x509.DNSName(u"test"))
 
