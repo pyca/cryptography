@@ -1870,7 +1870,7 @@ class TestAccessDescription(object):
                 AuthorityInformationAccessOID.CA_ISSUERS, "invalid"
             )
 
-    def test_valid_nonstandard_method (self):
+    def test_valid_nonstandard_method(self):
         ad = x509.AccessDescription(
             ObjectIdentifier("2.999.1"),
             x509.UniformResourceIdentifier(u"http://example.com")
