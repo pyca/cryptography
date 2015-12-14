@@ -1293,7 +1293,6 @@ class TestCertificateBuilder(object):
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA1(), backend)
 
-
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_encode_nonstandard_aia(self, backend):
@@ -1323,7 +1322,6 @@ class TestCertificateBuilder(object):
         )
 
         builder.sign(private_key, hashes.SHA256(), backend)
-
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
