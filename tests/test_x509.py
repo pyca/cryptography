@@ -1437,6 +1437,28 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.subject_name(name)
 
+    def test_not_valid_before_after_not_valid_after(self):
+        builder = x509.CertificateBuilder()
+
+        builder = builder.not_valid_after(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        )
+        with pytest.raises(ValueError):
+            builder.not_valid_before(
+                datetime.datetime(2003, 1, 1, 12, 1)
+            )
+
+    def test_not_valid_after_before_not_valid_before(self):
+        builder = x509.CertificateBuilder()
+
+        builder = builder.not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        )
+        with pytest.raises(ValueError):
+            builder.not_valid_after(
+                datetime.datetime(2001, 1, 1, 12, 1)
+            )
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_public_key_must_be_public_key(self, backend):

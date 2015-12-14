@@ -436,6 +436,11 @@ class CertificateBuilder(object):
         if time <= _UNIX_EPOCH:
             raise ValueError('The not valid before date must be after the unix'
                              ' epoch (1970 January 1).')
+        if self._not_valid_after is not None and time > self._not_valid_after:
+            raise ValueError(
+                'The not valid before date must be before the not valid after '
+                'date.'
+            )
         return CertificateBuilder(
             self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, time,
@@ -453,6 +458,12 @@ class CertificateBuilder(object):
         if time <= _UNIX_EPOCH:
             raise ValueError('The not valid after date must be after the unix'
                              ' epoch (1970 January 1).')
+        if (self._not_valid_before is not None and
+                time < self._not_valid_before):
+            raise ValueError(
+                'The not valid after date must be after the not valid before '
+                'date.'
+            )
         return CertificateBuilder(
             self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, self._not_valid_before,
