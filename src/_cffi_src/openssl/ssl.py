@@ -433,6 +433,10 @@ const long SSL_OP_LEGACY_SERVER_CONNECT = 0;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 #endif
 
+/* Cryptography now compiles out all SSLv2 bindings. This exists to allow
+ * clients that use it to check for SSLv2 support to keep functioning as
+ * expected.
+ */
 static const long Cryptography_HAS_SSL2 = 0;
 
 #ifdef OPENSSL_NO_SSL3_METHOD
