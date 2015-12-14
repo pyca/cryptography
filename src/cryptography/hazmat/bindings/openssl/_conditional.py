@@ -276,12 +276,6 @@ CONDITIONAL_NAMES = {
         "TLSv1_2_client_method",
     ],
 
-    "Cryptography_HAS_SSL2": [
-        "SSLv2_method",
-        "SSLv2_client_method",
-        "SSLv2_server_method",
-    ],
-
     "Cryptography_HAS_SSL3_METHOD": [
         "SSLv3_method",
         "SSLv3_client_method",

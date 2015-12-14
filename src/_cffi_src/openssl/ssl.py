@@ -301,15 +301,6 @@ unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*  methods */
 
-/* SSLv2 support is compiled out of some versions of OpenSSL.  These will
- * get special support when we generate the bindings so that if they are
- * available they will be wrapped, but if they are not they won't cause
- * problems (like link errors).
- */
-const SSL_METHOD *SSLv2_method(void);
-const SSL_METHOD *SSLv2_server_method(void);
-const SSL_METHOD *SSLv2_client_method(void);
-
 /*
  * TLSv1_1 and TLSv1_2 are recent additions.  Only sufficiently new versions of
  * OpenSSL support them.
@@ -441,14 +432,8 @@ const long SSL_OP_LEGACY_SERVER_CONNECT = 0;
 #else
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 #endif
-#ifdef OPENSSL_NO_SSL2
+
 static const long Cryptography_HAS_SSL2 = 0;
-SSL_METHOD* (*SSLv2_method)(void) = NULL;
-SSL_METHOD* (*SSLv2_client_method)(void) = NULL;
-SSL_METHOD* (*SSLv2_server_method)(void) = NULL;
-#else
-static const long Cryptography_HAS_SSL2 = 1;
-#endif
 
 #ifdef OPENSSL_NO_SSL3_METHOD
 static const long Cryptography_HAS_SSL3_METHOD = 0;
