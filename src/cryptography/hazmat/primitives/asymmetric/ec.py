@@ -11,13 +11,15 @@ import six
 from cryptography import utils
 
 
+@six.add_metaclass(abc.ABCMeta)
 class EllipticCurveField(object):
     """
     Field type of an EllipticCurve
     """
 
 
-class EllipticCurvePrimeField(EllipticCurveField):
+@utils.register_interface(EllipticCurveField)
+class EllipticCurvePrimeField(object):
     def __init__(self, p):
         self._p = p
 
@@ -39,8 +41,9 @@ class EllipticCurvePrimeField(EllipticCurveField):
         return "<EllipticCurvePrimeField(p={0.p})>".format(self)
 
 
-class EllipticCurveBinaryField(EllipticCurveField):
-    def __init__(self, m, *f):
+@utils.register_interface(EllipticCurveField)
+class EllipticCurveBinaryField(object):
+    def __init__(self, m, f):
         self._m = m
         self._f = f
 
@@ -197,10 +200,10 @@ EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 
 
 @utils.register_interface(EllipticCurve)
-class SECT571R1(EllipticCurve):
+class SECT571R1(object):
     name = "sect571r1"
     key_size = 571
-    field = EllipticCurveBinaryField(571, 2, 5, 10)
+    field = EllipticCurveBinaryField(m=571, f=(2, 5, 10))
     a = 1
     b = int("02f40e7e2221f295de297117b7f3d62f5c6a97ffcb8ceff1"
             "cd6ba8ce4a9a18ad84ffabbd8efa59332be7ad6756a66e29"
@@ -217,10 +220,10 @@ class SECT571R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT409R1(EllipticCurve):
+class SECT409R1(object):
     name = "sect409r1"
     key_size = 409
-    field = EllipticCurveBinaryField(409, 87)
+    field = EllipticCurveBinaryField(m=409, f=(87,))
     a = 1
     b = int("0021a5c2c8ee9feb5c4b9a753b7b476b7fd6422ef1f3dd674761"
             "fa99d6ac27c8a9a197b272822f6cd57a55aa4f50ae317b13545f", 16)
@@ -233,10 +236,10 @@ class SECT409R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT283R1(EllipticCurve):
+class SECT283R1(object):
     name = "sect283r1"
     key_size = 283
-    field = EllipticCurveBinaryField(283, 5, 7, 12)
+    field = EllipticCurveBinaryField(m=283, f=(5, 7, 12))
     a = 1
     b = int("027b680ac8b8596da5a4af8a19a0303fca97"
             "fd7645309fa2a581485af6263e313b79a2f5", 16)
@@ -249,10 +252,10 @@ class SECT283R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT233R1(EllipticCurve):
+class SECT233R1(object):
     name = "sect233r1"
     key_size = 233
-    field = EllipticCurveBinaryField(233, 74)
+    field = EllipticCurveBinaryField(m=233, f=(74,))
     a = 1
     b = 0x0066647ede6c332c7f8c0923bb58213b333b20e9ce4281fe115f7d8f90ad
     x = 0x00fac9dfcbac8313bb2139f1bb755fef65bc391f8b36f8f8eb7371fd558b
@@ -261,10 +264,10 @@ class SECT233R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT163R2(EllipticCurve):
+class SECT163R2(object):
     name = "sect163r2"
     key_size = 163
-    field = EllipticCurveBinaryField(163, 3, 6, 7)
+    field = EllipticCurveBinaryField(m=163, f=(3, 6, 7))
     a = 1
     b = 0x020a601907b8c953ca1481eb10512f78744a3205fd
     x = 0x03f0eba16286a2d57ea0991168d4994637e8343e36
@@ -273,10 +276,10 @@ class SECT163R2(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT571K1(EllipticCurve):
+class SECT571K1(object):
     name = "sect571k1"
     key_size = 571
-    field = EllipticCurveBinaryField(571, 2, 5, 10)
+    field = EllipticCurveBinaryField(m=571, f=(2, 5, 10))
     a = 0
     b = 1
     x = int("026eb7a859923fbc82189631f8103fe4ac9ca2970012d5d4"
@@ -291,10 +294,10 @@ class SECT571K1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT409K1(EllipticCurve):
+class SECT409K1(object):
     name = "sect409k1"
     key_size = 409
-    field = EllipticCurveBinaryField(409, 87)
+    field = EllipticCurveBinaryField(m=409, f=(87,))
     a = 0
     b = 1
     x = int("0060f05f658f49c1ad3ab1890f7184210efd0987e307c84c27ac"
@@ -306,10 +309,10 @@ class SECT409K1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT283K1(EllipticCurve):
+class SECT283K1(object):
     name = "sect283k1"
     key_size = 283
-    field = EllipticCurveBinaryField(283, 5, 7, 12)
+    field = EllipticCurveBinaryField(m=283, f=(5, 7, 12))
     a = 0
     b = 1
     x = int("0503213f78ca44883f1a3b8162f188e553cd"
@@ -321,10 +324,10 @@ class SECT283K1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT233K1(EllipticCurve):
+class SECT233K1(object):
     name = "sect233k1"
     key_size = 233
-    field = EllipticCurveBinaryField(233, 74)
+    field = EllipticCurveBinaryField(m=233, f=(74,))
     a = 0
     b = 1
     x = 0x017232ba853a7e731af129f22ff4149563a419c26bf50a4c9d6eefad6126
@@ -333,10 +336,10 @@ class SECT233K1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECT163K1(EllipticCurve):
+class SECT163K1(object):
     name = "sect163k1"
     key_size = 163
-    field = EllipticCurveBinaryField(163, 3, 6, 7)
+    field = EllipticCurveBinaryField(m=163, f=(3, 6, 7))
     a = 1
     b = 1
     x = 0x02fe13c0537bbc11acaa07d793de4e6d5e5c94eee8
@@ -345,7 +348,7 @@ class SECT163K1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECP521R1(EllipticCurve):
+class SECP521R1(object):
     name = "secp521r1"
     key_size = 521
     field = EllipticCurvePrimeField(
@@ -371,7 +374,7 @@ class SECP521R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECP384R1(EllipticCurve):
+class SECP384R1(object):
     name = "secp384r1"
     key_size = 384
     field = EllipticCurvePrimeField(
@@ -391,7 +394,7 @@ class SECP384R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECP256R1(EllipticCurve):
+class SECP256R1(object):
     name = "secp256r1"
     key_size = 256
     field = EllipticCurvePrimeField(
@@ -405,7 +408,7 @@ class SECP256R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECP256K1(EllipticCurve):
+class SECP256K1(object):
     name = "secp256k1"
     key_size = 256
     field = EllipticCurvePrimeField(
@@ -419,7 +422,7 @@ class SECP256K1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECP224R1(EllipticCurve):
+class SECP224R1(object):
     name = "secp224r1"
     key_size = 224
     field = EllipticCurvePrimeField(
@@ -433,7 +436,7 @@ class SECP224R1(EllipticCurve):
 
 
 @utils.register_interface(EllipticCurve)
-class SECP192R1(EllipticCurve):
+class SECP192R1(object):
     name = "secp192r1"
     key_size = 192
     field = EllipticCurvePrimeField(
