@@ -172,7 +172,7 @@ def test_prime_field():
 
 
 def test_binary_field():
-    field = ec.EllipticCurveBinaryField(233, 74)
+    field = ec.EllipticCurveBinaryField(m=233, f=(74,))
 
     assert field == ec.SECT233K1.field
 
