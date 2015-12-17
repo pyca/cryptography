@@ -26,6 +26,11 @@ class ObjectIdentifier(object):
                     "Malformed OID: %s (non-integer nodes)" % (
                         self._dotted_string))
 
+        if len(nodes) < 2:
+            raise ValueError(
+                "Malformed OID: %s (insufficient number of nodes)" % (
+                    self._dotted_string)
+
         if intnodes[0] > 2:
             raise ValueError(
                 "Malformed OID: %s (first node outside valid range)" % (
