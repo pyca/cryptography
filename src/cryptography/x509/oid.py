@@ -29,7 +29,7 @@ class ObjectIdentifier(object):
         if len(nodes) < 2:
             raise ValueError(
                 "Malformed OID: %s (insufficient number of nodes)" % (
-                    self._dotted_string)
+                    self._dotted_string))
 
         if intnodes[0] > 2:
             raise ValueError(
