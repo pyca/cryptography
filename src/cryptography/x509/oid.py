@@ -12,6 +12,35 @@ class ObjectIdentifier(object):
     def __init__(self, dotted_string):
         self._dotted_string = dotted_string
 
+        nodes = self._dotted_string.split(".")
+        intnodes = []
+
+        # There must be at least 2 nodes, the first node must be 0..2, and
+        # if less than 2, the second node cannot have a value outside the
+        # range 0..39.  All nodes must be integers.
+        for node in nodes:
+            try:
+                intnodes.append(int(node, 0))
+            except ValueError:
+                raise ValueError(
+                    "Malformed OID: %s (non-integer nodes)" % (
+                        self._dotted_string))
+
+        if len(nodes) < 2:
+            raise ValueError(
+                "Malformed OID: %s (insufficient number of nodes)" % (
+                    self._dotted_string))
+
+        if intnodes[0] > 2:
+            raise ValueError(
+                "Malformed OID: %s (first node outside valid range)" % (
+                    self._dotted_string))
+
+        if intnodes[0] < 2 and intnodes[1] >= 40:
+            raise ValueError(
+                "Malformed OID: %s (second node outside valid range)" % (
+                    self._dotted_string))
+
     def __eq__(self, other):
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
