@@ -19,7 +19,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    encode_rfc6979_signature
+    encode_dss_signature
 )
 
 from .fixtures_ec import EC_KEY_SECP384R1
@@ -434,7 +434,7 @@ class TestECDSAVectors(object):
             curve_type()
         ).public_key(backend)
 
-        signature = encode_rfc6979_signature(vector['r'], vector['s'])
+        signature = encode_dss_signature(vector['r'], vector['s'])
 
         verifier = key.verifier(
             signature,
@@ -463,7 +463,7 @@ class TestECDSAVectors(object):
             curve_type()
         ).public_key(backend)
 
-        signature = encode_rfc6979_signature(vector['r'], vector['s'])
+        signature = encode_dss_signature(vector['r'], vector['s'])
 
         verifier = key.verifier(
             signature,

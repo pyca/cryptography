@@ -6,7 +6,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
-    encode_rfc6979_signature
+    encode_dss_signature
 )
 
 from tests.utils import (
@@ -27,7 +27,7 @@ def verify_one_vector(vector):
     message = vector['message']
     x = vector['x']
     y = vector['y']
-    signature = encode_rfc6979_signature(vector['r'], vector['s'])
+    signature = encode_dss_signature(vector['r'], vector['s'])
 
     numbers = ec.EllipticCurvePublicNumbers(
         x, y,
