@@ -87,7 +87,6 @@ class NameOID(object):
     )
 
 
-
 class SignatureAlgorithmOID(object):
     RSA_WITH_MD5 = ObjectIdentifier("1.2.840.113549.1.1.4")
     RSA_WITH_SHA1 = ObjectIdentifier("1.2.840.113549.1.1.5")
