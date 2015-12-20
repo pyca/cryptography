@@ -1851,6 +1851,22 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.2.840.113549.1.9.1"``.
 
+    .. attribute:: JURISDICTION_COUNTRY_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.3"``.
+
+    .. attribute:: JURISDICTION_LOCALITY_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.1"``.
+
+    .. attribute:: JURISDICTION_STATE_OR_PROVINCE_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.2"``.
+
+    .. attribute:: BUSINESS_CATEGORY
+
+        Corresponds to the dotted string ``"2.5.4.15"``.
+
 
 .. class:: SignatureAlgorithmOID
 
