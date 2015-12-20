@@ -157,14 +157,10 @@ _OID_NAMES = {
     NameOID.PSEUDONYM: "pseudonym",
     NameOID.DOMAIN_COMPONENT: "domainComponent",
     NameOID.EMAIL_ADDRESS: "emailAddress",
-    NameOID.JURISDICTION_COUNTRY_NAME: (
-        "jurisdictionOfIncorporationCountryName"
-    ),
-    NameOID.JURISDICTION_LOCALITY_NAME: (
-        "jurisdictionOfIncorporationLocalityName"
-    ),
+    NameOID.JURISDICTION_COUNTRY_NAME: "jurisdictionCountryName",
+    NameOID.JURISDICTION_LOCALITY_NAME: "jurisdictionLocalityName",
     NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME: (
-        "jurisdictionOfIncorporationStateOrProvinceName"
+        "jurisdictionStateOrProvinceName"
     ),
     NameOID.BUSINESS_CATEGORY: "businessCategory",
 
