@@ -85,6 +85,7 @@ class NameOID(object):
     JURISDICTION_STATE_OR_PROVINCE_NAME = ObjectIdentifier(
         "1.3.6.1.4.1.311.60.2.1.2"
     )
+    BUSINESS_CATEGORY = ObjectIdentifier("2.5.4.15")
 
 
 class SignatureAlgorithmOID(object):

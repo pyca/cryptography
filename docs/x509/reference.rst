@@ -1863,6 +1863,10 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.2"``.
 
+    .. attribute:: BUSINESS_CATEGORY
+
+        Corresponds to the dotted string ``"2.5.4.15"``.
+
 
 .. class:: SignatureAlgorithmOID
 
