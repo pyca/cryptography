@@ -518,3 +518,69 @@ class CertificateBuilder(object):
             raise ValueError("A certificate must have a public key")
 
         return backend.create_x509_certificate(self, private_key, algorithm)
+
+
+class CertificateRevocationListBuilder(object):
+    def __init__(self, issuer_name=None, last_update=None, next_update=None,
+                 extensions=[], revoked_certificates=[]):
+        self._issuer_name = issuer_name
+        self._last_update = last_update
+        self._next_update = next_update
+        self._extensions = extensions
+        self._revoked_certificates = revoked_certificates
+
+    def issuer_name(self, issuer_name):
+        if not isinstance(issuer_name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        if self._issuer_name is not None:
+            raise ValueError('The issuer name may only be set once.')
+        return CertificateRevocationListBuilder(
+            issuer_name, self._last_update, self._next_update,
+            self._extensions, self._revoked_certificates
+        )
+
+    def last_update(self, last_update):
+        if not isinstance(last_update, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._last_update is not None:
+            raise ValueError('Last update may only be set once.')
+        if last_update <= _UNIX_EPOCH:
+            raise ValueError('The last update date must be after the unix'
+                             ' epoch (1970 January 1).')
+        if self._next_update is not None and last_update > self._next_update:
+            raise ValueError(
+                'The last update date must be before the next update date.'
+            )
+        return CertificateRevocationListBuilder(
+            self._issuer_name, last_update, self._next_update,
+            self._extensions, self._revoked_certificates
+        )
+
+    def next_update(self, next_update):
+        if not isinstance(next_update, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._next_update is not None:
+            raise ValueError('Last update may only be set once.')
+        if next_update <= _UNIX_EPOCH:
+            raise ValueError('The last update date must be after the unix'
+                             ' epoch (1970 January 1).')
+        if self._last_update is not None and next_update < self._last_update:
+            raise ValueError(
+                'The next update date must be after the last update date.'
+            )
+        return CertificateRevocationListBuilder(
+            self._issuer_name, self._last_update, next_update,
+            self._extensions, self._revoked_certificates
+        )
+
+    def sign(self, private_key, algorithm, backend):
+        if self._issuer_name is None:
+            raise ValueError("A CRL must have an issuer name")
+
+        if self._last_update is None:
+            raise ValueError("A CRL must have a last update time")
+
+        if self._next_update is None:
+            raise ValueError("A CRL must have a next update time")
+
+        return backend.create_x509_crl(self, private_key, algorithm)

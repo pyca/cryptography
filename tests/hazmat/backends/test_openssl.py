@@ -501,9 +501,12 @@ class TestOpenSSLSignX509Certificate(object):
             backend.create_x509_certificate(object(), private_key, DummyHash())
 
 
-def test_crl_creation_not_implemented():
-    with pytest.raises(NotImplementedError):
-        backend.create_x509_crl("", "", "")
+class TestOpenSSLSignX509CertificateRevocationList(object):
+    def test_invalid_builder(self):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(TypeError):
+            backend.create_x509_crl(object(), private_key, hashes.SHA256())
 
 
 class TestOpenSSLSerialisationWithOpenSSL(object):

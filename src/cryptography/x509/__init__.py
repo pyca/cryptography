@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography.x509.base import (
     Certificate, CertificateBuilder, CertificateRevocationList,
+    CertificateRevocationListBuilder,
     CertificateSigningRequest, CertificateSigningRequestBuilder,
     InvalidVersion, RevokedCertificate,
     Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
@@ -152,6 +153,7 @@ __all__ = [
     "OtherName",
     "Certificate",
     "CertificateRevocationList",
+    "CertificateRevocationListBuilder",
     "CertificateSigningRequest",
     "RevokedCertificate",
     "CertificateSigningRequestBuilder",
