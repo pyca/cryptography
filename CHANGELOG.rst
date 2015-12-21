@@ -13,6 +13,10 @@ Changelog
   :attr:`~cryptography.x509.CertificateSigningRequest.signature` and
   :attr:`~cryptography.x509.CertificateSigningRequest.tbs_certrequest_bytes`
   attributes.
+* The :class:`~cryptography.x509.CertificateRevocationList` class now has
+  :attr:`~cryptography.x509.CertificateRevocationList.signature` and
+  :attr:`~cryptography.x509.CertificateRevocationList.tbs_certlist_bytes`
+  attributes.
 * :class:`~cryptography.x509.NameConstraints` are now supported in the
   :class:`~cryptography.x509.CertificateBuilder` and
   :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
