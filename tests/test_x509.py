@@ -254,6 +254,30 @@ class TestCertificateRevocationList(object):
         assert crl.last_update == datetime.datetime(2015, 1, 1, 0, 0, 0)
         assert crl.next_update == datetime.datetime(2016, 1, 1, 0, 0, 0)
 
+    @pytest.mark.parametrize(
+        ("cert_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("x509", "custom", "crl_all_reasons.pem"),
+                x509.load_pem_x509_crl,
+                serialization.Encoding.PEM,
+            ),
+            (
+                os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+                x509.load_der_x509_crl,
+                serialization.Encoding.DER,
+            ),
+        ]
+    )
+    def test_public_bytes_match(self, cert_path, loader_func, encoding,
+                                backend):
+        crl_bytes = load_vectors_from_file(
+            cert_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        crl = loader_func(crl_bytes, backend)
+        serialized = crl.public_bytes(encoding)
+        assert serialized == crl_bytes
+
     def test_public_bytes_invalid_encoding(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_empty.pem"),
