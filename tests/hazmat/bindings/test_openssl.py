@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.binding import _init_openssl, Binding
+from cryptography.hazmat.bindings.openssl.binding import Binding, _init_openssl
 
 
 class TestOpenSSL(object):
