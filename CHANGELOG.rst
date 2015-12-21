@@ -16,6 +16,9 @@ Changelog
 * :class:`~cryptography.x509.NameConstraints` are now supported in the
   :class:`~cryptography.x509.CertificateBuilder` and
   :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+* Support serialization of certificate revocation lists using the
+  :meth:`~cryptography.x509.CertificateRevocationList.public_bytes` method of
+  :class:`~cryptography.x509.CertificateRevocationList`.
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~

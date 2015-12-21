@@ -833,6 +833,20 @@ class _CertificateRevocationList(object):
         )
         return self._backend._ffi.buffer(pp[0], res)[:]
 
+    def public_bytes(self, encoding):
+        bio = self._backend._create_mem_bio()
+        if encoding is serialization.Encoding.PEM:
+            res = self._backend._lib.PEM_write_bio_X509_CRL(
+                bio, self._x509_crl
+            )
+        elif encoding is serialization.Encoding.DER:
+            res = self._backend._lib.i2d_X509_CRL_bio(bio, self._x509_crl)
+        else:
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        self._backend.openssl_assert(res == 1)
+        return self._backend._read_mem_bio(bio)
+
     def _revoked_certificates(self):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
         revoked_list = []
