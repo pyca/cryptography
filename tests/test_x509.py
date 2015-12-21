@@ -299,6 +299,14 @@ class TestRevokedCertificate(object):
 
         assert len(flags) == 0
 
+    def test_no_revoked_certs(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+        assert len(crl) == 0
+
     def test_duplicate_entry_ext(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_dup_entry_ext.pem"),
