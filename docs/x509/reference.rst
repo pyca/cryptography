@@ -523,6 +523,18 @@ X.509 CRL (Certificate Revocation List) Object
         used to validate a signature, but use extreme caution as CRL validation
         is a complex problem that involves much more than just signature checks.
 
+    .. method:: public_bytes(encoding)
+
+        .. versionadded:: 1.2
+
+        :param encoding: The
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding`
+            that will be used to serialize the certificate revocation list.
+
+        :return bytes: The data that can be written to a file or sent
+            over the network and used as part of a certificate verification
+            process.
+
 
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~

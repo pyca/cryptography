@@ -222,6 +222,48 @@ class TestCertificateRevocationList(object):
         verifier.update(crl.tbs_certlist_bytes)
         verifier.verify()
 
+    def test_public_bytes_pem(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # Encode it to PEM and load it back.
+        crl = x509.load_pem_x509_crl(crl.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+
+        assert len(crl) == 0
+        assert crl.last_update == datetime.datetime(2015, 12, 20, 23, 44, 47)
+        assert crl.next_update == datetime.datetime(2015, 12, 28, 0, 44, 47)
+
+    def test_public_bytes_der(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # Encode it to DER and load it back.
+        crl = x509.load_der_x509_crl(crl.public_bytes(
+            encoding=serialization.Encoding.DER,
+        ), backend)
+
+        assert len(crl) == 12
+        assert crl.last_update == datetime.datetime(2015, 1, 1, 0, 0, 0)
+        assert crl.next_update == datetime.datetime(2016, 1, 1, 0, 0, 0)
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(TypeError):
+            crl.public_bytes('NotAnEncoding')
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRevokedCertificate(object):
