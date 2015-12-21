@@ -304,6 +304,7 @@ Custom X.509 Certificate Revocation List Vectors
   an unsupported reason code.
 * ``crl_inval_cert_issuer_entry_ext.pem`` - Contains a CRL with one revocation
   which has one entry extension for certificate issuer with an empty value.
+* ``crl_empty.pem`` - Contains a CRL with no revoked certificates.
 
 Hashes
 ~~~~~~
