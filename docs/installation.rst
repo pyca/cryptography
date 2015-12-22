@@ -26,7 +26,6 @@ OpenSSL releases:
 
 * ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
 * ``OpenSSL 0.9.8k``
-* ``OpenSSL 0.9.8-latest`` (The most recent 0.9.8 release)
 * ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
@@ -194,6 +193,7 @@ This will install a compiler (clang) along with (most of) the required
 development headers.
 
 You'll also need OpenSSL, which you can obtain from `Homebrew`_ or `MacPorts`_.
+Cryptography does **not** support Apple's deprecated OpenSSL distribution.
 
 To build cryptography and dynamically link it:
 
