@@ -85,6 +85,7 @@ class ExtensionOID(object):
     AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
     SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
+    CRL_NUMBER = ObjectIdentifier("2.5.29.20")
 
 
 class CRLExtensionOID(object):
@@ -234,6 +235,7 @@ _OID_NAMES = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
+    ExtensionOID.CRL_NUMBER: "cRLNumber",
     AuthorityInformationAccessOID.OCSP: "OCSP",
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",

@@ -2097,6 +2097,12 @@ instances. The following common OIDs are available as constants.
         identifier for the :class:`~cryptography.x509.OCSPNoCheck` extension
         type.
 
+    .. attribute:: CRL_NUMBER
+
+        Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
+        the ``CRLNumber`` extension type. This extension only has meaning
+        for certificate revocation lists.
+
 Exceptions
 ~~~~~~~~~~
 .. currentmodule:: cryptography.x509
