@@ -175,8 +175,8 @@ class TestCertificateRevocationList(object):
 
     def test_extensions(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
-            x509.load_der_x509_crl,
+            os.path.join("x509", "custom", "crl_ian_aia_aki.pem"),
+            x509.load_pem_x509_crl,
             backend
         )
 
@@ -186,15 +186,30 @@ class TestCertificateRevocationList(object):
         aki = crl.extensions.get_extension_for_class(
             x509.AuthorityKeyIdentifier
         )
+        aia = crl.extensions.get_extension_for_class(
+            x509.AuthorityInformationAccess
+        )
+        ian = crl.extensions.get_extension_for_class(
+            x509.IssuerAlternativeName
+        )
         assert crl_number.value == 1
         assert crl_number.critical is False
         assert aki.value == x509.AuthorityKeyIdentifier(
             key_identifier=(
-                b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9'
+                b'yu\xbb\x84:\xcb,\xdez\t\xbe1\x1bC\xbc\x1c*MSX'
             ),
             authority_cert_issuer=None,
             authority_cert_serial_number=None
         )
+        assert aia.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.DNSName(u"cryptography.io")
+            )
+        ])
+        assert ian.value == x509.IssuerAlternativeName([
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
+        ])
 
     def test_signature(self, backend):
         crl = _load_cert(

@@ -987,6 +987,10 @@ _REVOKED_UNSUPPORTED_EXTENSIONS = set([
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.CRL_NUMBER: _decode_crl_number,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
+        _decode_authority_information_access
+    ),
 }
 
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
