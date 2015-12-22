@@ -235,7 +235,7 @@ _OID_NAMES = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
-    ExtensionOID.CRL_NUMBER: "CRLNumber",
+    ExtensionOID.CRL_NUMBER: "cRLNumber",
     AuthorityInformationAccessOID.OCSP: "OCSP",
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",
