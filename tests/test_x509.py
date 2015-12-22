@@ -175,14 +175,26 @@ class TestCertificateRevocationList(object):
 
     def test_extensions(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "custom", "crl_all_reasons.pem"),
-            x509.load_pem_x509_crl,
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
             backend
         )
 
-        # CRL extensions are currently not supported in the OpenSSL backend.
-        with pytest.raises(NotImplementedError):
-            crl.extensions
+        crl_number = crl.extensions.get_extension_for_oid(
+            ExtensionOID.CRL_NUMBER
+        )
+        aki = crl.extensions.get_extension_for_class(
+            x509.AuthorityKeyIdentifier
+        )
+        assert crl_number.value == 1
+        assert crl_number.critical is False
+        assert aki.value == x509.AuthorityKeyIdentifier(
+            key_identifier=(
+                b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9'
+            ),
+            authority_cert_issuer=None,
+            authority_cert_serial_number=None
+        )
 
     def test_signature(self, backend):
         crl = _load_cert(
