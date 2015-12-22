@@ -305,6 +305,9 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_inval_cert_issuer_entry_ext.pem`` - Contains a CRL with one revocation
   which has one entry extension for certificate issuer with an empty value.
 * ``crl_empty.pem`` - Contains a CRL with no revoked certificates.
+* ``crl_ian_aia_aki.pem`` - Contains a CRL with ``IssuerAlternativeName``,
+  ``AuthorityInformationAccess``, ``AuthorityKeyIdentifier`` and ``CRLNumber``
+  extensions.
 
 Hashes
 ~~~~~~
