@@ -22,6 +22,7 @@ ffi = build_ffi_for_binding(
         "seckey",
         "seckeychain",
         "sectransform",
+        "sectrust",
     ],
     extra_link_args=[
         "-framework", "Security", "-framework", "CoreFoundation"
