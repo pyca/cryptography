@@ -1488,6 +1488,25 @@ class TestRSAIssuerAlternativeNameExtension(object):
         ]
 
 
+class TestCRLNumber(object):
+    def test_eq(self):
+        crl_number = x509.CRLNumber(15)
+        assert crl_number == x509.CRLNumber(15)
+
+    def test_ne(self):
+        crl_number = x509.CRLNumber(15)
+        assert crl_number != x509.CRLNumber(14)
+        assert crl_number != object()
+
+    def test_repr(self):
+        crl_number = x509.CRLNumber(15)
+        assert repr(crl_number) == "<CRLNumber(15)>"
+
+    def test_invalid_number(self):
+        with pytest.raises(TypeError):
+            x509.CRLNumber("notanumber")
+
+
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName(

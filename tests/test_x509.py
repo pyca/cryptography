@@ -192,7 +192,7 @@ class TestCertificateRevocationList(object):
         ian = crl.extensions.get_extension_for_class(
             x509.IssuerAlternativeName
         )
-        assert crl_number.value == 1
+        assert crl_number.value == x509.CRLNumber(1)
         assert crl_number.critical is False
         assert aki.value == x509.AuthorityKeyIdentifier(
             key_identifier=(

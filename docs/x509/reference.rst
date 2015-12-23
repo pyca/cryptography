@@ -1695,6 +1695,26 @@ X.509 Extensions
 
         :type: int
 
+.. class:: CRLNumber(crl_number)
+
+    .. versionadded:: 1.2
+
+    The CRL number is a CRL extension that conveys a monotonically increasing
+    sequence number for a given CRL scope and CRL issuer. This extension allows
+    users to easily determine when a particular CRL supersedes another CRL.
+    :rfc:`5280` requires that this extension be present in conforming CRLs.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.CRL_NUMBER`.
+
+    .. attribute:: crl_number
+
+        :type: int
+
 .. class:: CertificatePolicies(policies)
 
     .. versionadded:: 0.9
