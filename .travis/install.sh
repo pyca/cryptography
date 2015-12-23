@@ -61,6 +61,26 @@ else
         pyenv install pypy-4.0.1
         pyenv global pypy-4.0.1
     fi
+    if [[ "${OPENSSL}" == "0.9.8" ]]; then
+      # download, compile, and install if it's not already present via travis cache
+      if [[ ! -f "$HOME/ossl-098/bin/openssl" ]]; then
+        curl -O https://www.openssl.org/source/openssl-0.9.8zh.tar.gz
+        tar zxvf openssl-0.9.8zh.tar.gz
+        cd openssl-0.9.8zh
+        echo "OPENSSL_0.9.8ZH_CUSTOM {
+            global:
+              *;
+        };" > openssl.ld
+        ./config no-ssl2 -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared --prefix=$HOME/ossl-098
+        make depend
+        make install
+        tree $HOME/ossl-098
+      fi
+      export PATH="$HOME/ossl-098/bin:$PATH"
+      export CFLAGS="-I$HOME/ossl-098/include"
+      export LDFLAGS="-L$HOME/ossl-098/lib"
+      export LD_LIBRARY_PATH="$HOME/ossl-098/lib"
+    fi
     pip install virtualenv
 fi
 
