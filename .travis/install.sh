@@ -63,15 +63,18 @@ else
     fi
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
       # download, compile, and install if it's not already present via travis cache
+      # This is 0.9.8l rather than zh because we have some branches for handling
+      # < 0.9.8m that won't be exercised with a newer OpenSSL. (RHEL5 is 0.9.8e with
+      # patches, but while that's in jenkins we don't get coverage data from it)
       if [[ ! -f "$HOME/ossl-098/bin/openssl" ]]; then
-        curl -O https://www.openssl.org/source/openssl-0.9.8zh.tar.gz
-        tar zxvf openssl-0.9.8zh.tar.gz
-        cd openssl-0.9.8zh
-        echo "OPENSSL_0.9.8ZH_CUSTOM {
+        curl -O https://www.openssl.org/source/openssl-0.9.8l.tar.gz
+        tar zxvf openssl-0.9.8l.tar.gz
+        cd openssl-0.9.8l
+        echo "OPENSSL_0.9.8L_CUSTOM {
             global:
               *;
         };" > openssl.ld
-        ./config no-ssl2 -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared --prefix=$HOME/ossl-098
+        ./config no-asm no-ssl2 -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared --prefix=$HOME/ossl-098
         make depend
         make install
       fi
