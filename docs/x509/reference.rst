@@ -1699,11 +1699,10 @@ X.509 Extensions
 
     .. versionadded:: 1.2
 
-    The CRL number is a non-critical CRL extension that conveys a
-    monotonically increasing sequence number for a given CRL scope and
-    CRL issuer. This extension allows users to easily determine when a
-    particular CRL supersedes another CRL. :rfc:`5280` requires that this
-    extension be present in conforming CRLs.
+    The CRL number is a CRL extension that conveys a monotonically increasing
+    sequence number for a given CRL scope and CRL issuer. This extension allows
+    users to easily determine when a particular CRL supersedes another CRL.
+    :rfc:`5280` requires that this extension be present in conforming CRLs.
 
     .. attribute:: oid
 
