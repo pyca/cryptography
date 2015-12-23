@@ -29,7 +29,7 @@ Changelog
 
   * :class:`~cryptography.x509.AuthorityInformationAccess`
   * :class:`~cryptography.x509.AuthorityKeyIdentifier`
-  * ``CRLNumber``
+  * :class:`~cryptography.x509.CRLNumber`
   * :class:`~cryptography.x509.IssuerAlternativeName`
 
 1.1.2 - 2015-12-10

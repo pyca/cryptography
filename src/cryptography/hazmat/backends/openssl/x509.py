@@ -182,7 +182,7 @@ def _decode_ocsp_no_check(backend, ext):
 def _decode_crl_number(backend, ext):
     asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    return backend._asn1_integer_to_int(asn1_int)
+    return x509.CRLNumber(backend._asn1_integer_to_int(asn1_int))
 
 
 class _X509ExtensionParser(object):

@@ -14,7 +14,7 @@ from cryptography.x509.base import (
 from cryptography.x509.extensions import (
     AccessDescription, AuthorityInformationAccess,
     AuthorityKeyIdentifier, BasicConstraints, CRLDistributionPoints,
-    CertificatePolicies, DistributionPoint, DuplicateExtension,
+    CRLNumber, CertificatePolicies, DistributionPoint, DuplicateExtension,
     ExtendedKeyUsage, Extension, ExtensionNotFound, ExtensionType, Extensions,
     GeneralNames, InhibitAnyPolicy, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
@@ -124,6 +124,7 @@ __all__ = [
     "ExtendedKeyUsage",
     "OCSPNoCheck",
     "BasicConstraints",
+    "CRLNumber",
     "KeyUsage",
     "AuthorityInformationAccess",
     "AccessDescription",

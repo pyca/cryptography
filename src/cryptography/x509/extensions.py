@@ -109,6 +109,31 @@ class Extensions(object):
 
 
 @utils.register_interface(ExtensionType)
+class CRLNumber(object):
+    oid = ExtensionOID.CRL_NUMBER
+
+    def __init__(self, crl_number):
+        if not isinstance(crl_number, six.integer_types):
+            raise TypeError("crl_number must be an integer")
+
+        self._crl_number = crl_number
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLNumber):
+            return NotImplemented
+
+        return self.crl_number == other.crl_number
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        return "<CRLNumber({0})>".format(self.crl_number)
+
+    crl_number = utils.read_only_property("_crl_number")
+
+
+@utils.register_interface(ExtensionType)
 class AuthorityKeyIdentifier(object):
     oid = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
 
