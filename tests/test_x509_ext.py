@@ -1502,6 +1502,10 @@ class TestCRLNumber(object):
         crl_number = x509.CRLNumber(15)
         assert repr(crl_number) == "<CRLNumber(15)>"
 
+    def test_invalid_number(self):
+        with pytest.raises(TypeError):
+            x509.CRLNumber("notanumber")
+
 
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
