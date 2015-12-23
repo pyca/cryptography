@@ -74,7 +74,6 @@ else
         ./config no-ssl2 -Wl,--version-script=openssl.ld -Wl,-Bsymbolic-functions -fPIC shared --prefix=$HOME/ossl-098
         make depend
         make install
-        tree $HOME/ossl-098
       fi
       export PATH="$HOME/ossl-098/bin:$PATH"
       export CFLAGS="-I$HOME/ossl-098/include"
