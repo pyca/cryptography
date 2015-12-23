@@ -12,7 +12,7 @@ TYPES = """
 """
 
 FUNCTIONS = """
-OSStatus SecTrustCopyAnchorCertificates ( CFArrayRef *anchors );
+OSStatus SecTrustCopyAnchorCertificates(CFArrayRef *);
 """
 
 MACROS = """
