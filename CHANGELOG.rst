@@ -25,7 +25,12 @@ Changelog
   :class:`~cryptography.x509.CertificateRevocationList`.
 * Add support for parsing :class:`~cryptography.x509.CertificateRevocationList`
   :meth:`~cryptography.x509.CertificateRevocationList.extensions` in the
-  OpenSSL backend.
+  OpenSSL backend. The following extensions are currently supported:
+
+  * :class:`~cryptography.x509.AuthorityInformationAccess`
+  * :class:`~cryptography.x509.AuthorityKeyIdentifier`
+  * ``CRLNumber``
+  * :class:`~cryptography.x509.IssuerAlternativeName`
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~
