@@ -156,6 +156,11 @@ class Certificate(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateRevocationList(object):
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Serializes the CRL to PEM or DER format.
+        """
 
     @abc.abstractmethod
     def fingerprint(self, algorithm):

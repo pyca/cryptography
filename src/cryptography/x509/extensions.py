@@ -18,9 +18,7 @@ from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
-from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtensionOID, ObjectIdentifier
-)
+from cryptography.x509.oid import ExtensionOID, ObjectIdentifier
 
 
 class _SubjectPublicKeyInfo(univ.Sequence):
@@ -238,11 +236,8 @@ class AuthorityInformationAccess(object):
 
 class AccessDescription(object):
     def __init__(self, access_method, access_location):
-        if not (access_method == AuthorityInformationAccessOID.OCSP or
-                access_method == AuthorityInformationAccessOID.CA_ISSUERS):
-            raise ValueError(
-                "access_method must be OID_OCSP or OID_CA_ISSUERS"
-            )
+        if not isinstance(access_method, ObjectIdentifier):
+            raise TypeError("access_method must be an ObjectIdentifier")
 
         if not isinstance(access_location, GeneralName):
             raise TypeError("access_location must be a GeneralName")

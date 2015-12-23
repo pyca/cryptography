@@ -523,6 +523,18 @@ X.509 CRL (Certificate Revocation List) Object
         used to validate a signature, but use extreme caution as CRL validation
         is a complex problem that involves much more than just signature checks.
 
+    .. method:: public_bytes(encoding)
+
+        .. versionadded:: 1.2
+
+        :param encoding: The
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding`
+            that will be used to serialize the certificate revocation list.
+
+        :return bytes: The data that can be written to a file or sent
+            over the network and used as part of a certificate verification
+            process.
+
 
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1851,6 +1863,22 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.2.840.113549.1.9.1"``.
 
+    .. attribute:: JURISDICTION_COUNTRY_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.3"``.
+
+    .. attribute:: JURISDICTION_LOCALITY_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.1"``.
+
+    .. attribute:: JURISDICTION_STATE_OR_PROVINCE_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.2"``.
+
+    .. attribute:: BUSINESS_CATEGORY
+
+        Corresponds to the dotted string ``"2.5.4.15"``.
+
 
 .. class:: SignatureAlgorithmOID
 
@@ -2068,6 +2096,12 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.5"``. The
         identifier for the :class:`~cryptography.x509.OCSPNoCheck` extension
         type.
+
+    .. attribute:: CRL_NUMBER
+
+        Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
+        the ``CRLNumber`` extension type. This extension only has meaning
+        for certificate revocation lists.
 
 Exceptions
 ~~~~~~~~~~

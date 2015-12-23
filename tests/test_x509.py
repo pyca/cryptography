@@ -175,14 +175,41 @@ class TestCertificateRevocationList(object):
 
     def test_extensions(self, backend):
         crl = _load_cert(
-            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            os.path.join("x509", "custom", "crl_ian_aia_aki.pem"),
             x509.load_pem_x509_crl,
             backend
         )
 
-        # CRL extensions are currently not supported in the OpenSSL backend.
-        with pytest.raises(NotImplementedError):
-            crl.extensions
+        crl_number = crl.extensions.get_extension_for_oid(
+            ExtensionOID.CRL_NUMBER
+        )
+        aki = crl.extensions.get_extension_for_class(
+            x509.AuthorityKeyIdentifier
+        )
+        aia = crl.extensions.get_extension_for_class(
+            x509.AuthorityInformationAccess
+        )
+        ian = crl.extensions.get_extension_for_class(
+            x509.IssuerAlternativeName
+        )
+        assert crl_number.value == 1
+        assert crl_number.critical is False
+        assert aki.value == x509.AuthorityKeyIdentifier(
+            key_identifier=(
+                b'yu\xbb\x84:\xcb,\xdez\t\xbe1\x1bC\xbc\x1c*MSX'
+            ),
+            authority_cert_issuer=None,
+            authority_cert_serial_number=None
+        )
+        assert aia.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.DNSName(u"cryptography.io")
+            )
+        ])
+        assert ian.value == x509.IssuerAlternativeName([
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
+        ])
 
     def test_signature(self, backend):
         crl = _load_cert(
@@ -221,6 +248,72 @@ class TestCertificateRevocationList(object):
         )
         verifier.update(crl.tbs_certlist_bytes)
         verifier.verify()
+
+    def test_public_bytes_pem(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # Encode it to PEM and load it back.
+        crl = x509.load_pem_x509_crl(crl.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+
+        assert len(crl) == 0
+        assert crl.last_update == datetime.datetime(2015, 12, 20, 23, 44, 47)
+        assert crl.next_update == datetime.datetime(2015, 12, 28, 0, 44, 47)
+
+    def test_public_bytes_der(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # Encode it to DER and load it back.
+        crl = x509.load_der_x509_crl(crl.public_bytes(
+            encoding=serialization.Encoding.DER,
+        ), backend)
+
+        assert len(crl) == 12
+        assert crl.last_update == datetime.datetime(2015, 1, 1, 0, 0, 0)
+        assert crl.next_update == datetime.datetime(2016, 1, 1, 0, 0, 0)
+
+    @pytest.mark.parametrize(
+        ("cert_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("x509", "custom", "crl_all_reasons.pem"),
+                x509.load_pem_x509_crl,
+                serialization.Encoding.PEM,
+            ),
+            (
+                os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+                x509.load_der_x509_crl,
+                serialization.Encoding.DER,
+            ),
+        ]
+    )
+    def test_public_bytes_match(self, cert_path, loader_func, encoding,
+                                backend):
+        crl_bytes = load_vectors_from_file(
+            cert_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        crl = loader_func(crl_bytes, backend)
+        serialized = crl.public_bytes(encoding)
+        assert serialized == crl_bytes
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(TypeError):
+            crl.public_bytes('NotAnEncoding')
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -298,6 +391,14 @@ class TestRevokedCertificate(object):
                 flags.discard(r.value)
 
         assert len(flags) == 0
+
+    def test_no_revoked_certs(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+        assert len(crl) == 0
 
     def test_duplicate_entry_ext(self, backend):
         crl = _load_cert(
@@ -1292,6 +1393,36 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA1(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_encode_nonstandard_aia(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.ObjectIdentifier("2.999.7"),
+                x509.UniformResourceIdentifier(u"http://example.com")
+            ),
+        ])
+
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(1999, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2020, 1, 1)
+        ).add_extension(
+            aia, False
+        )
+
+        builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

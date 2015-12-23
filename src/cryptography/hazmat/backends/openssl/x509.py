@@ -179,6 +179,12 @@ def _decode_ocsp_no_check(backend, ext):
     return x509.OCSPNoCheck()
 
 
+def _decode_crl_number(backend, ext):
+    asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
+    asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
+    return backend._asn1_integer_to_int(asn1_int)
+
+
 class _X509ExtensionParser(object):
     def __init__(self, ext_count, get_ext, handlers, unsupported_exts=None):
         self.ext_count = ext_count
@@ -833,16 +839,29 @@ class _CertificateRevocationList(object):
         )
         return self._backend._ffi.buffer(pp[0], res)[:]
 
+    def public_bytes(self, encoding):
+        bio = self._backend._create_mem_bio()
+        if encoding is serialization.Encoding.PEM:
+            res = self._backend._lib.PEM_write_bio_X509_CRL(
+                bio, self._x509_crl
+            )
+        elif encoding is serialization.Encoding.DER:
+            res = self._backend._lib.i2d_X509_CRL_bio(bio, self._x509_crl)
+        else:
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        self._backend.openssl_assert(res == 1)
+        return self._backend._read_mem_bio(bio)
+
     def _revoked_certificates(self):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
-        self._backend.openssl_assert(revoked != self._backend._ffi.NULL)
-
-        num = self._backend._lib.sk_X509_REVOKED_num(revoked)
         revoked_list = []
-        for i in range(num):
-            r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
-            self._backend.openssl_assert(r != self._backend._ffi.NULL)
-            revoked_list.append(_RevokedCertificate(self._backend, r))
+        if revoked != self._backend._ffi.NULL:
+            num = self._backend._lib.sk_X509_REVOKED_num(revoked)
+            for i in range(num):
+                r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
+                self._backend.openssl_assert(r != self._backend._ffi.NULL)
+                revoked_list.append(_RevokedCertificate(self._backend, r))
 
         return revoked_list
 
@@ -857,7 +876,7 @@ class _CertificateRevocationList(object):
 
     @property
     def extensions(self):
-        raise NotImplementedError()
+        return _CRL_EXTENSION_PARSER.parse(self._backend, self._x509_crl)
 
 
 @utils.register_interface(x509.CertificateSigningRequest)
@@ -965,6 +984,15 @@ _REVOKED_UNSUPPORTED_EXTENSIONS = set([
     CRLExtensionOID.CERTIFICATE_ISSUER,
 ])
 
+_CRL_EXTENSION_HANDLERS = {
+    ExtensionOID.CRL_NUMBER: _decode_crl_number,
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
+        _decode_authority_information_access
+    ),
+}
+
 _CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_get_ext(x, i),
@@ -982,4 +1010,10 @@ _REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     get_ext=lambda backend, x, i: backend._lib.X509_REVOKED_get_ext(x, i),
     handlers=_REVOKED_EXTENSION_HANDLERS,
     unsupported_exts=_REVOKED_UNSUPPORTED_EXTENSIONS
+)
+
+_CRL_EXTENSION_PARSER = _X509ExtensionParser(
+    ext_count=lambda backend, x: backend._lib.X509_CRL_get_ext_count(x),
+    get_ext=lambda backend, x, i: backend._lib.X509_CRL_get_ext(x, i),
+    handlers=_CRL_EXTENSION_HANDLERS,
 )

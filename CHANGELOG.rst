@@ -13,9 +13,24 @@ Changelog
   :attr:`~cryptography.x509.CertificateSigningRequest.signature` and
   :attr:`~cryptography.x509.CertificateSigningRequest.tbs_certrequest_bytes`
   attributes.
+* The :class:`~cryptography.x509.CertificateRevocationList` class now has
+  :attr:`~cryptography.x509.CertificateRevocationList.signature` and
+  :attr:`~cryptography.x509.CertificateRevocationList.tbs_certlist_bytes`
+  attributes.
 * :class:`~cryptography.x509.NameConstraints` are now supported in the
   :class:`~cryptography.x509.CertificateBuilder` and
   :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+* Support serialization of certificate revocation lists using the
+  :meth:`~cryptography.x509.CertificateRevocationList.public_bytes` method of
+  :class:`~cryptography.x509.CertificateRevocationList`.
+* Add support for parsing :class:`~cryptography.x509.CertificateRevocationList`
+  :meth:`~cryptography.x509.CertificateRevocationList.extensions` in the
+  OpenSSL backend. The following extensions are currently supported:
+
+  * :class:`~cryptography.x509.AuthorityInformationAccess`
+  * :class:`~cryptography.x509.AuthorityKeyIdentifier`
+  * ``CRLNumber``
+  * :class:`~cryptography.x509.IssuerAlternativeName`
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~
