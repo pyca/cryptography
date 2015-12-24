@@ -384,3 +384,12 @@ class MultiBackend(object):
             "This backend does not support X.509.",
             _Reasons.UNSUPPORTED_X509
         )
+
+    def create_x509_crl(self, builder, private_key, algorithm):
+        for b in self._filtered_backends(X509Backend):
+            return b.create_x509_crl(builder, private_key, algorithm)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
+        )

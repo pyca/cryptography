@@ -501,6 +501,11 @@ class TestOpenSSLSignX509Certificate(object):
             backend.create_x509_certificate(object(), private_key, DummyHash())
 
 
+def test_crl_creation_not_implemented():
+    with pytest.raises(NotImplementedError):
+        backend.create_x509_crl("", "", "")
+
+
 class TestOpenSSLSerialisationWithOpenSSL(object):
     def test_pem_password_cb_buffer_too_small(self):
         ffi_cb, userdata = backend._pem_password_cb(b"aa")
