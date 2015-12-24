@@ -861,24 +861,19 @@ class _CertificateRevocationList(object):
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
-    def _revoked_certificates(self):
+    def _revoked_cert(self, idx):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
-        revoked_list = []
-        for i in range(len(self)):
-            r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
-            self._backend.openssl_assert(r != self._backend._ffi.NULL)
-            revoked_certificate = _RevokedCertificate(
-                self._backend, self, r
-            )
-            revoked_list.append(revoked_certificate)
-
-        return revoked_list
+        r = self._backend._lib.sk_X509_REVOKED_value(revoked, idx)
+        self._backend.openssl_assert(r != self._backend._ffi.NULL)
+        return _RevokedCertificate(self._backend, self, r)
 
     def __iter__(self):
-        return iter(self._revoked_certificates())
+        for i in range(len(self)):
+            yield self._revoked_cert(i)
 
     def __getitem__(self, idx):
-        return self._revoked_certificates()[idx]
+        # TODO: indexing is O(n)
+        return list(self)[idx]
 
     def __len__(self):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
