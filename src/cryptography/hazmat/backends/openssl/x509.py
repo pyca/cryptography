@@ -747,8 +747,16 @@ def _decode_cert_issuer(backend, ext):
 
 @utils.register_interface(x509.RevokedCertificate)
 class _RevokedCertificate(object):
-    def __init__(self, backend, x509_revoked):
+    def __init__(self, backend, crl, x509_revoked):
         self._backend = backend
+        # The X509_REVOKED_value is a X509_REVOKED * that has
+        # no reference counting. This means when X509_CRL_free is
+        # called then the CRL and all X509_REVOKED * are freed. Since
+        # you can retain a reference to a single revoked certificate
+        # and let the CRL fall out of scope we need to retain a
+        # private reference to the CRL inside the RevokedCertificate
+        # object to prevent the gc from being called inappropriately.
+        self._crl = crl
         self._x509_revoked = x509_revoked
 
     @property
@@ -861,7 +869,10 @@ class _CertificateRevocationList(object):
             for i in range(num):
                 r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
                 self._backend.openssl_assert(r != self._backend._ffi.NULL)
-                revoked_list.append(_RevokedCertificate(self._backend, r))
+                revoked_certificate = _RevokedCertificate(
+                    self._backend, self, r
+                )
+                revoked_list.append(revoked_certificate)
 
         return revoked_list
 
