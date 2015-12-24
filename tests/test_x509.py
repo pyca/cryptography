@@ -332,7 +332,6 @@ class TestCertificateRevocationList(object):
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRevokedCertificate(object):
-
     def test_revoked_basics(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -459,6 +458,18 @@ class TestRevokedCertificate(object):
 
         with pytest.raises(ValueError):
             crl[0].extensions
+
+    def test_indexing(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(IndexError):
+            crl[-1]
+        with pytest.raises(IndexError):
+            crl[0]
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
