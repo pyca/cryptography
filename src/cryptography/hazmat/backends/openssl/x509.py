@@ -873,10 +873,18 @@ class _CertificateRevocationList(object):
             yield self._revoked_cert(i)
 
     def __getitem__(self, idx):
-        idx = operator.index(idx)
-        if not 0 <= idx < len(self):
-            raise IndexError
-        return self._revoked_cert(idx)
+        if isinstance(idx, slice):
+            start, stop, step = idx.indices(len(self))
+            return [
+                self._revoked_cert(idx) for idx in range(start, stop, step)
+            ]
+        else:
+            idx = operator.index(idx)
+            if idx < 0:
+                idx += len(self)
+            if not 0 <= idx < len(self):
+                raise IndexError
+            return self._revoked_cert(idx)
 
     def __len__(self):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
