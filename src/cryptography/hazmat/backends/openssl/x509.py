@@ -875,9 +875,7 @@ class _CertificateRevocationList(object):
     def __getitem__(self, idx):
         if isinstance(idx, slice):
             start, stop, step = idx.indices(len(self))
-            return [
-                self._revoked_cert(idx) for idx in range(start, stop, step)
-            ]
+            return [self._revoked_cert(i) for i in range(start, stop, step)]
         else:
             idx = operator.index(idx)
             if idx < 0:
