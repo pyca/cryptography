@@ -40,6 +40,7 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList, _CertificateSigningRequest,
     _DISTPOINT_TYPE_FULLNAME, _DISTPOINT_TYPE_RELATIVENAME
 )
+from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -570,6 +571,42 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
     return pp, r
 
 
+def _encode_name_constraints(backend, name_constraints):
+    nc = backend._lib.NAME_CONSTRAINTS_new()
+    assert nc != backend._ffi.NULL
+    nc = backend._ffi.gc(nc, backend._lib.NAME_CONSTRAINTS_free)
+    permitted = _encode_general_subtree(
+        backend, name_constraints.permitted_subtrees
+    )
+    nc.permittedSubtrees = permitted
+    excluded = _encode_general_subtree(
+        backend, name_constraints.excluded_subtrees
+    )
+    nc.excludedSubtrees = excluded
+
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.Cryptography_i2d_NAME_CONSTRAINTS(nc, pp)
+    assert r > 0
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_general_subtree(backend, subtrees):
+    if subtrees is None:
+        return backend._ffi.NULL
+    else:
+        general_subtrees = backend._lib.sk_GENERAL_SUBTREE_new_null()
+        for name in subtrees:
+            gs = backend._lib.GENERAL_SUBTREE_new()
+            gs.base = _encode_general_name(backend, name)
+            res = backend._lib.sk_GENERAL_SUBTREE_push(general_subtrees, gs)
+            assert res >= 1
+
+        return general_subtrees
+
+
 _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.BASIC_CONSTRAINTS: _encode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,
@@ -585,7 +622,36 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.CRL_DISTRIBUTION_POINTS: _encode_crl_distribution_points,
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
+    ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
 }
+
+
+class _PasswordUserdata(object):
+    def __init__(self, password):
+        self.password = password
+        self.called = 0
+        self.exception = None
+
+
+def _pem_password_cb(buf, size, writing, userdata_handle):
+    ud = _ffi.from_handle(userdata_handle)
+    ud.called += 1
+
+    if not ud.password:
+        ud.exception = TypeError(
+            "Password was not given but private key is encrypted."
+        )
+        return -1
+    elif len(ud.password) < size:
+        pw_buf = _ffi.buffer(buf, size)
+        pw_buf[:len(ud.password)] = ud.password
+        return len(ud.password)
+    else:
+        ud.exception = ValueError(
+            "Passwords longer than {0} bytes are not supported "
+            "by this backend.".format(size - 1)
+        )
+        return 0
 
 
 @utils.register_interface(CipherBackend)
@@ -1053,36 +1119,21 @@ class Backend(object):
 
         Useful for decrypting PKCS8 files and so on.
 
-        Returns a tuple of (cdata function pointer, callback function).
+        Returns a tuple of (cdata function pointer, userdata).
         """
+        # Forward compatibility for new static callbacks:
+        # _pem_password_cb is not a nested function because closures don't
+        # work well with static callbacks. Static callbacks are registered
+        # globally. The backend is passed in as userdata argument.
 
-        def pem_password_cb(buf, size, writing, userdata):
-            pem_password_cb.called += 1
+        userdata = _PasswordUserdata(password=password)
 
-            if not password:
-                pem_password_cb.exception = TypeError(
-                    "Password was not given but private key is encrypted."
-                )
-                return 0
-            elif len(password) < size:
-                pw_buf = self._ffi.buffer(buf, size)
-                pw_buf[:len(password)] = password
-                return len(password)
-            else:
-                pem_password_cb.exception = ValueError(
-                    "Passwords longer than {0} bytes are not supported "
-                    "by this backend.".format(size - 1)
-                )
-                return 0
-
-        pem_password_cb.called = 0
-        pem_password_cb.exception = None
-
-        return (
-            self._ffi.callback("int (char *, int, int, void *)",
-                               pem_password_cb),
-            pem_password_cb
+        pem_password_cb = self._ffi.callback(
+            "int (char *, int, int, void *)",
+            _pem_password_cb,
         )
+
+        return pem_password_cb, userdata
 
     def _mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
@@ -1335,7 +1386,7 @@ class Backend(object):
 
         # Set the subject's name.
         res = self._lib.X509_set_subject_name(
-            x509_cert, _encode_name(self, list(builder._subject_name))
+            x509_cert, _encode_name_gc(self, list(builder._subject_name))
         )
         self.openssl_assert(res == 1)
 
@@ -1386,7 +1437,7 @@ class Backend(object):
 
         # Set the issuer name.
         res = self._lib.X509_set_issuer_name(
-            x509_cert, _encode_name(self, list(builder._issuer_name))
+            x509_cert, _encode_name_gc(self, list(builder._issuer_name))
         )
         self.openssl_assert(res == 1)
 
@@ -1589,31 +1640,32 @@ class Backend(object):
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
-        password_callback, password_func = self._pem_password_cb(password)
+        password_cb, userdata = self._pem_password_cb(password)
+        userdata_handle = self._ffi.new_handle(userdata)
 
         evp_pkey = openssl_read_func(
             mem_bio.bio,
             self._ffi.NULL,
-            password_callback,
-            self._ffi.NULL
+            password_cb,
+            userdata_handle,
         )
 
         if evp_pkey == self._ffi.NULL:
-            if password_func.exception is not None:
+            if userdata.exception is not None:
                 errors = self._consume_errors()
                 self.openssl_assert(errors)
-                raise password_func.exception
+                raise userdata.exception
             else:
                 self._handle_key_loading_error()
 
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
-        if password is not None and password_func.called == 0:
+        if password is not None and userdata.called == 0:
             raise TypeError(
                 "Password was given but private key is not encrypted.")
 
         assert (
-            (password is not None and password_func.called == 1) or
+            (password is not None and userdata.called == 1) or
             password is None
         )
 

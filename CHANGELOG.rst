@@ -6,6 +6,50 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* The :class:`~cryptography.x509.Certificate` class now has
+  :attr:`~cryptography.x509.Certificate.signature` and
+  :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.
+* The :class:`~cryptography.x509.CertificateSigningRequest` class now has
+  :attr:`~cryptography.x509.CertificateSigningRequest.signature` and
+  :attr:`~cryptography.x509.CertificateSigningRequest.tbs_certrequest_bytes`
+  attributes.
+* The :class:`~cryptography.x509.CertificateRevocationList` class now has
+  :attr:`~cryptography.x509.CertificateRevocationList.signature` and
+  :attr:`~cryptography.x509.CertificateRevocationList.tbs_certlist_bytes`
+  attributes.
+* :class:`~cryptography.x509.NameConstraints` are now supported in the
+  :class:`~cryptography.x509.CertificateBuilder` and
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+* Support serialization of certificate revocation lists using the
+  :meth:`~cryptography.x509.CertificateRevocationList.public_bytes` method of
+  :class:`~cryptography.x509.CertificateRevocationList`.
+* Add support for parsing :class:`~cryptography.x509.CertificateRevocationList`
+  :meth:`~cryptography.x509.CertificateRevocationList.extensions` in the
+  OpenSSL backend. The following extensions are currently supported:
+
+  * :class:`~cryptography.x509.AuthorityInformationAccess`
+  * :class:`~cryptography.x509.AuthorityKeyIdentifier`
+  * :class:`~cryptography.x509.CRLNumber`
+  * :class:`~cryptography.x509.IssuerAlternativeName`
+
+1.1.2 - 2015-12-10
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a SIGBUS crash with the OS X wheels caused by redefinition of a
+  method.
+* Fixed a runtime error ``undefined symbol EC_GFp_nistp224_method`` that
+  occurred with some OpenSSL installations.
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2e.
+
+1.1.1 - 2015-11-19
+~~~~~~~~~~~~~~~~~~
+
+* Fixed several small bugs related to compiling the OpenSSL bindings with
+  unusual OpenSSL configurations.
+* Resolved an issue where, depending on the method of installation and
+  which Python interpreter they were using, users on El Capitan (OS X 10.11)
+  may have seen an ``InternalError`` on import.
+
 1.1 - 2015-10-28
 ~~~~~~~~~~~~~~~~
 
@@ -29,7 +73,6 @@ Changelog
   :class:`~cryptography.x509.CertificateBuilder`.
 * ``countryName`` is now encoded as a ``PrintableString`` when creating subject
   and issuer distinguished names with the Certificate and CSR builder classes.
-
 
 1.0.2 - 2015-09-27
 ~~~~~~~~~~~~~~~~~~

@@ -6,9 +6,7 @@ set -x
 if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update || brew update
 
-    if [[ "${OPENSSL}" != "0.9.8" ]]; then
-        brew outdated openssl || brew upgrade openssl
-    fi
+    brew outdated openssl || brew upgrade openssl
 
     # install pyenv
     git clone https://github.com/yyuu/pyenv.git ~/.pyenv
@@ -30,16 +28,16 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.3.6
             ;;
         py34)
-            pyenv install 3.4.2
-            pyenv global 3.4.2
+            pyenv install 3.4.4
+            pyenv global 3.4.4
             ;;
         py35)
-            pyenv install 3.5.0
-            pyenv global 3.5.0
+            pyenv install 3.5.1
+            pyenv global 3.5.1
             ;;
         pypy)
-            pyenv install pypy-4.0.0
-            pyenv global pypy-4.0.0
+            pyenv install pypy-4.0.1
+            pyenv global pypy-4.0.1
             ;;
         pypy3)
             pyenv install pypy3-2.4.0
@@ -60,8 +58,8 @@ else
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv install pypy-4.0.0
-        pyenv global pypy-4.0.0
+        pyenv install pypy-4.0.1
+        pyenv global pypy-4.0.1
     fi
     pip install virtualenv
 fi

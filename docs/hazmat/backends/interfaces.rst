@@ -547,8 +547,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the request signature.
 
-        :returns: A new object with the
-            :class:`~cryptography.x509.CertificateSigningRequest` interface.
+        :returns: A new instance of
+            :class:`~cryptography.x509.CertificateSigningRequest`.
 
     .. method:: create_x509_certificate(builder, private_key, algorithm)
 
@@ -567,8 +567,7 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the certificate signature.
 
-        :returns: A new object with the
-            :class:`~cryptography.x509.Certificate` interface.
+        :returns: A new instance of :class:`~cryptography.x509.Certificate`.
 
 
 .. class:: DHBackend

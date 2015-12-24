@@ -173,6 +173,8 @@ int X509_STORE_CTX_get_error(X509_STORE_CTX *);
 void X509_STORE_CTX_set_error(X509_STORE_CTX *, int);
 int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *);
 X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *);
+int X509_STORE_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *,
+                                    CRYPTO_EX_dup *, CRYPTO_EX_free *);
 int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *, int, void *);
 void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *, int);
 
@@ -209,7 +211,7 @@ int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 
 CUSTOMIZATIONS = """
 /* OpenSSL 1.0.2+ verification error codes */
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(LIBRESSL_VERSION_NUMBER)
+#if OPENSSL_VERSION_NUMBER >= 0x10002002L && !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
@@ -225,7 +227,7 @@ static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
 #endif
 
 /* OpenSSL 1.0.2+ verification parameters */
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(LIBRESSL_VERSION_NUMBER)
+#if OPENSSL_VERSION_NUMBER >= 0x10002002L && !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
 #else
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;

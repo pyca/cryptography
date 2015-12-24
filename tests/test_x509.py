@@ -23,7 +23,10 @@ from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding, rsa
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    decode_dss_signature
+)
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
 )
@@ -170,21 +173,165 @@ class TestCertificateRevocationList(object):
         # Check that len() works for CRLs.
         assert len(crl) == 12
 
+    def test_revoked_cert_retrieval_retain_only_revoked(self, backend):
+        """
+        This test attempts to trigger the crash condition described in
+        https://github.com/pyca/cryptography/issues/2557
+        PyPy does gc at its own pace, so it will only be reliable on CPython.
+        """
+        revoked = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )[11]
+        assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
+        assert revoked.serial_number == 11
+
     def test_extensions(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_ian_aia_aki.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        crl_number = crl.extensions.get_extension_for_oid(
+            ExtensionOID.CRL_NUMBER
+        )
+        aki = crl.extensions.get_extension_for_class(
+            x509.AuthorityKeyIdentifier
+        )
+        aia = crl.extensions.get_extension_for_class(
+            x509.AuthorityInformationAccess
+        )
+        ian = crl.extensions.get_extension_for_class(
+            x509.IssuerAlternativeName
+        )
+        assert crl_number.value == x509.CRLNumber(1)
+        assert crl_number.critical is False
+        assert aki.value == x509.AuthorityKeyIdentifier(
+            key_identifier=(
+                b'yu\xbb\x84:\xcb,\xdez\t\xbe1\x1bC\xbc\x1c*MSX'
+            ),
+            authority_cert_issuer=None,
+            authority_cert_serial_number=None
+        )
+        assert aia.value == x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.DNSName(u"cryptography.io")
+            )
+        ])
+        assert ian.value == x509.IssuerAlternativeName([
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
+        ])
+
+    def test_signature(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
             backend
         )
 
-        # CRL extensions are currently not supported in the OpenSSL backend.
-        with pytest.raises(NotImplementedError):
-            crl.extensions
+        assert crl.signature == binascii.unhexlify(
+            b"536a5a0794f68267361e7bc2f19167a3e667a2ab141535616855d8deb2ba1af"
+            b"9fd4546b1fe76b454eb436af7b28229fedff4634dfc9dd92254266219ae0ea8"
+            b"75d9ff972e9a2da23d5945f073da18c50a4265bfed9ca16586347800ef49dd1"
+            b"6856d7265f4f3c498a57f04dc04404e2bd2e2ada1f5697057aacef779a18371"
+            b"c621edc9a5c2b8ec1716e8fa22feeb7fcec0ce9156c8d344aa6ae8d1a5d99d0"
+            b"9386df36307df3b63c83908f4a61a0ff604c1e292ad63b349d1082ddd7ae1b7"
+            b"c178bba995523ec6999310c54da5706549797bfb1230f5593ba7b4353dade4f"
+            b"d2be13a57580a6eb20b5c4083f000abac3bf32cd8b75f23e4c8f4b3a79e1e2d"
+            b"58a472b0"
+        )
+
+    def test_tbs_certlist_bytes(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+            x509.load_der_x509_crl,
+            backend
+        )
+
+        ca_cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        verifier = ca_cert.public_key().verifier(
+            crl.signature, padding.PKCS1v15(), crl.signature_hash_algorithm
+        )
+        verifier.update(crl.tbs_certlist_bytes)
+        verifier.verify()
+
+    def test_public_bytes_pem(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # Encode it to PEM and load it back.
+        crl = x509.load_pem_x509_crl(crl.public_bytes(
+            encoding=serialization.Encoding.PEM,
+        ), backend)
+
+        assert len(crl) == 0
+        assert crl.last_update == datetime.datetime(2015, 12, 20, 23, 44, 47)
+        assert crl.next_update == datetime.datetime(2015, 12, 28, 0, 44, 47)
+
+    def test_public_bytes_der(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        # Encode it to DER and load it back.
+        crl = x509.load_der_x509_crl(crl.public_bytes(
+            encoding=serialization.Encoding.DER,
+        ), backend)
+
+        assert len(crl) == 12
+        assert crl.last_update == datetime.datetime(2015, 1, 1, 0, 0, 0)
+        assert crl.next_update == datetime.datetime(2016, 1, 1, 0, 0, 0)
+
+    @pytest.mark.parametrize(
+        ("cert_path", "loader_func", "encoding"),
+        [
+            (
+                os.path.join("x509", "custom", "crl_all_reasons.pem"),
+                x509.load_pem_x509_crl,
+                serialization.Encoding.PEM,
+            ),
+            (
+                os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+                x509.load_der_x509_crl,
+                serialization.Encoding.DER,
+            ),
+        ]
+    )
+    def test_public_bytes_match(self, cert_path, loader_func, encoding,
+                                backend):
+        crl_bytes = load_vectors_from_file(
+            cert_path, lambda pemfile: pemfile.read(), mode="rb"
+        )
+        crl = loader_func(crl_bytes, backend)
+        serialized = crl.public_bytes(encoding)
+        assert serialized == crl_bytes
+
+    def test_public_bytes_invalid_encoding(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(TypeError):
+            crl.public_bytes('NotAnEncoding')
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRevokedCertificate(object):
-
     def test_revoked_basics(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -258,6 +405,14 @@ class TestRevokedCertificate(object):
 
         assert len(flags) == 0
 
+    def test_no_revoked_certs(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+        assert len(crl) == 0
+
     def test_duplicate_entry_ext(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_dup_entry_ext.pem"),
@@ -304,6 +459,23 @@ class TestRevokedCertificate(object):
         with pytest.raises(ValueError):
             crl[0].extensions
 
+    def test_indexing(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(IndexError):
+            crl[-13]
+        with pytest.raises(IndexError):
+            crl[12]
+
+        assert crl[-1].serial_number == crl[11].serial_number
+        assert len(crl[2:4]) == 2
+        assert crl[2:4][0].serial_number == crl[2].serial_number
+        assert crl[2:4][1].serial_number == crl[3].serial_number
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -331,6 +503,63 @@ class TestRSACertificate(object):
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+
+    def test_signature(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.signature == binascii.unhexlify(
+            b"8e0f72fcbebe4755abcaf76c8ce0bae17cde4db16291638e1b1ce04a93cdb4c"
+            b"44a3486070986c5a880c14fdf8497e7d289b2630ccb21d24a3d1aa1b2d87482"
+            b"07f3a1e16ccdf8daa8a7ea1a33d49774f513edf09270bd8e665b6300a10f003"
+            b"66a59076905eb63cf10a81a0ca78a6ef3127f6cb2f6fb7f947fce22a30d8004"
+            b"8c243ba2c1a54c425fe12310e8a737638f4920354d4cce25cbd9dea25e6a2fe"
+            b"0d8579a5c8d929b9275be221975479f3f75075bcacf09526523b5fd67f7683f"
+            b"3cda420fabb1e9e6fc26bc0649cf61bb051d6932fac37066bb16f55903dfe78"
+            b"53dc5e505e2a10fbba4f9e93a0d3b53b7fa34b05d7ba6eef869bfc34b8e514f"
+            b"d5419f75"
+        )
+        assert len(cert.signature) == cert.public_key().key_size // 8
+
+    def test_tbs_certificate_bytes(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
+            b"308202d8a003020102020900a06cb4b955f7f4db300d06092a864886f70d010"
+            b"10505003058310b3009060355040613024155311330110603550408130a536f"
+            b"6d652d53746174653121301f060355040a1318496e7465726e6574205769646"
+            b"769747320507479204c74643111300f0603550403130848656c6c6f20434130"
+            b"1e170d3134313132363231343132305a170d3134313232363231343132305a3"
+            b"058310b3009060355040613024155311330110603550408130a536f6d652d53"
+            b"746174653121301f060355040a1318496e7465726e657420576964676974732"
+            b"0507479204c74643111300f0603550403130848656c6c6f2043413082012230"
+            b"0d06092a864886f70d01010105000382010f003082010a0282010100b03af70"
+            b"2059e27f1e2284b56bbb26c039153bf81f295b73a49132990645ede4d2da0a9"
+            b"13c42e7d38d3589a00d3940d194f6e6d877c2ef812da22a275e83d8be786467"
+            b"48b4e7f23d10e873fd72f57a13dec732fc56ab138b1bb308399bb412cd73921"
+            b"4ef714e1976e09603405e2556299a05522510ac4574db5e9cb2cf5f99e8f48c"
+            b"1696ab3ea2d6d2ddab7d4e1b317188b76a572977f6ece0a4ad396f0150e7d8b"
+            b"1a9986c0cb90527ec26ca56e2914c270d2a198b632fa8a2fda55079d3d39864"
+            b"b6fb96ddbe331cacb3cb8783a8494ccccd886a3525078847ca01ca5f803e892"
+            b"14403e8a4b5499539c0b86f7a0daa45b204a8e079d8a5b03db7ba1ba3d7011a"
+            b"70203010001a381bc3081b9301d0603551d0e04160414d8e89dc777e4472656"
+            b"f1864695a9f66b7b0400ae3081890603551d23048181307f8014d8e89dc777e"
+            b"4472656f1864695a9f66b7b0400aea15ca45a3058310b300906035504061302"
+            b"4155311330110603550408130a536f6d652d53746174653121301f060355040"
+            b"a1318496e7465726e6574205769646769747320507479204c74643111300f06"
+            b"03550403130848656c6c6f204341820900a06cb4b955f7f4db300c0603551d1"
+            b"3040530030101ff"
+        )
+        verifier = cert.public_key().verifier(
+            cert.signature, padding.PKCS1v15(), cert.signature_hash_algorithm
+        )
+        verifier.update(cert.tbs_certificate_bytes)
+        verifier.verify()
 
     def test_issuer(self, backend):
         cert = _load_cert(
@@ -953,6 +1182,52 @@ class TestRSACertificateRequest(object):
             x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
         ]
 
+    def test_signature(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.signature == binascii.unhexlify(
+            b"8364c86ffbbfe0bfc9a21f831256658ca8989741b80576d36f08a934603a43b1"
+            b"837246d00167a518abb1de7b51a1e5b7ebea14944800818b1a923c804f120a0d"
+            b"624f6310ef79e8612755c2b01dcc7f59dfdbce0db3f2630f185f504b8c17af80"
+            b"cbd364fa5fda68337153930948226cd4638287a0aed6524d3006885c19028a1e"
+            b"e2f5a91d6e77dbaa0b49996ee0a0c60b55b61bd080a08bb34aa7f3e07e91f37f"
+            b"6a11645be2d8654c1570dcda145ed7cc92017f7d53225d7f283f3459ec5bda41"
+            b"cf6dd75d43676c543483385226b7e4fa29c8739f1b0eaf199613593991979862"
+            b"e36181e8c4c270c354b7f52c128db1b70639823324c7ea24791b7bc3d7005f3b"
+        )
+
+    def test_tbs_certrequest_bytes(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.tbs_certrequest_bytes == binascii.unhexlify(
+            b"308201840201003057310b3009060355040613025553310e300c060355040813"
+            b"055465786173310f300d0603550407130641757374696e310d300b060355040a"
+            b"130450794341311830160603550403130f63727970746f6772617068792e696f"
+            b"30820122300d06092a864886f70d01010105000382010f003082010a02820101"
+            b"00a840a78460cb861066dfa3045a94ba6cf1b7ab9d24c761cffddcc2cb5e3f1d"
+            b"c3e4be253e7039ef14fe9d6d2304f50d9f2e1584c51530ab75086f357138bff7"
+            b"b854d067d1d5f384f1f2f2c39cc3b15415e2638554ef8402648ae3ef08336f22"
+            b"b7ecc6d4331c2b21c3091a7f7a9518180754a646640b60419e4cc6f5c798110a"
+            b"7f030a639fe87e33b4776dfcd993940ec776ab57a181ad8598857976dc303f9a"
+            b"573ca619ab3fe596328e92806b828683edc17cc256b41948a2bfa8d047d2158d"
+            b"3d8e069aa05fa85b3272abb1c4b4422b6366f3b70e642377b145cd6259e5d3e7"
+            b"db048d51921e50766a37b1b130ee6b11f507d20a834001e8de16a92c14f2e964"
+            b"a30203010001a000"
+        )
+        verifier = request.public_key().verifier(
+            request.signature,
+            padding.PKCS1v15(),
+            request.signature_hash_algorithm
+        )
+        verifier.update(request.tbs_certrequest_bytes)
+        verifier.verify()
+
     def test_public_bytes_invalid_encoding(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
@@ -1151,6 +1426,36 @@ class TestCertificateBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_encode_nonstandard_aia(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                x509.ObjectIdentifier("2.999.7"),
+                x509.UniformResourceIdentifier(u"http://example.com")
+            ),
+        ])
+
+        builder = x509.CertificateBuilder().subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+        ])).public_key(
+            private_key.public_key()
+        ).serial_number(
+            777
+        ).not_valid_before(
+            datetime.datetime(1999, 1, 1)
+        ).not_valid_after(
+            datetime.datetime(2020, 1, 1)
+        ).add_extension(
+            aia, False
+        )
+
+        builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_subject_name(self, backend):
         subject_private_key = RSA_KEY_2048.private_key(backend)
         builder = x509.CertificateBuilder().serial_number(
@@ -1292,6 +1597,28 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(ValueError):
             builder.subject_name(name)
+
+    def test_not_valid_before_after_not_valid_after(self):
+        builder = x509.CertificateBuilder()
+
+        builder = builder.not_valid_after(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        )
+        with pytest.raises(ValueError):
+            builder.not_valid_before(
+                datetime.datetime(2003, 1, 1, 12, 1)
+            )
+
+    def test_not_valid_after_before_not_valid_before(self):
+        builder = x509.CertificateBuilder()
+
+        builder = builder.not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        )
+        with pytest.raises(ValueError):
+            builder.not_valid_after(
+                datetime.datetime(2001, 1, 1, 12, 1)
+            )
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -1929,6 +2256,41 @@ class TestCertificateBuilder(object):
             ExtensionOID.INHIBIT_ANY_POLICY
         )
         assert ext.value == x509.InhibitAnyPolicy(3)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_name_constraints(self, backend):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        excluded = [x509.DNSName(u"name.local")]
+        nc = x509.NameConstraints(
+            permitted_subtrees=None, excluded_subtrees=excluded
+        )
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        ).public_key(
+            subject_private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            nc, critical=False
+        ).sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.NAME_CONSTRAINTS
+        )
+        assert ext.value == nc
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2681,6 +3043,80 @@ class TestDSACertificate(object):
             "822ff5d234e073b901cf5941f58e1f538e71d40d", 16
         )
 
+    def test_signature(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.signature == binascii.unhexlify(
+            b"302c021425c4a84a936ab311ee017d3cbd9a3c650bb3ae4a02145d30c64b4326"
+            b"86bdf925716b4ed059184396bcce"
+        )
+        r, s = decode_dss_signature(cert.signature)
+        assert r == 215618264820276283222494627481362273536404860490
+        assert s == 532023851299196869156027211159466197586787351758
+
+    def test_tbs_certificate_bytes(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
+            b"3082051aa003020102020900a37352e0b2142f86300906072a8648ce3804033"
+            b"067310b3009060355040613025553310e300c06035504081305546578617331"
+            b"0f300d0603550407130641757374696e3121301f060355040a1318496e74657"
+            b"26e6574205769646769747320507479204c7464311430120603550403130b50"
+            b"79434120445341204341301e170d3134313132373035313431375a170d31343"
+            b"13232373035313431375a3067310b3009060355040613025553310e300c0603"
+            b"55040813055465786173310f300d0603550407130641757374696e3121301f0"
+            b"60355040a1318496e7465726e6574205769646769747320507479204c746431"
+            b"1430120603550403130b50794341204453412043413082033a3082022d06072"
+            b"a8648ce380401308202200282010100bfade6048e373cd4e48b677e878c8e5b"
+            b"08c02102ae04eb2cb5c46a523a3af1c73d16b24f34a4964781ae7e50500e217"
+            b"77754a670bd19a7420d633084e5556e33ca2c0e7d547ea5f46a07a01bf8669a"
+            b"e3bdec042d9b2ae5e6ecf49f00ba9dac99ab6eff140d2cedf722ee62c2f9736"
+            b"857971444c25d0a33d2017dc36d682a1054fe2a9428dda355a851ce6e6d61e0"
+            b"3e419fd4ca4e703313743d86caa885930f62ed5bf342d8165627681e9cc3244"
+            b"ba72aa22148400a6bbe80154e855d042c9dc2a3405f1e517be9dea50562f56d"
+            b"a93f6085f844a7e705c1f043e65751c583b80d29103e590ccb26efdaa0893d8"
+            b"33e36468f3907cfca788a3cb790f0341c8a31bf021500822ff5d234e073b901"
+            b"cf5941f58e1f538e71d40d028201004b7ced71dc353965ecc10d441a9a06fc2"
+            b"4943a32d66429dd5ef44d43e67d789d99770aec32c0415dc92970880872da45"
+            b"fef8dd1e115a3e4801387ba6d755861f062fd3b6e9ea8e2641152339b828315"
+            b"b1528ee6c7b79458d21f3db973f6fc303f9397174c2799dd2351282aa2d8842"
+            b"c357a73495bbaac4932786414c55e60d73169f5761036fba29e9eebfb049f8a"
+            b"3b1b7cee6f3fbfa136205f130bee2cf5b9c38dc1095d4006f2e73335c07352c"
+            b"64130a1ab2b89f13b48f628d3cc3868beece9bb7beade9f830eacc6fa241425"
+            b"c0b3fcc0df416a0c89f7bf35668d765ec95cdcfbe9caff49cfc156c668c76fa"
+            b"6247676a6d3ac945844a083509c6a1b436baca0382010500028201004c08bfe"
+            b"5f2d76649c80acf7d431f6ae2124b217abc8c9f6aca776ddfa9453b6656f13e"
+            b"543684cd5f6431a314377d2abfa068b7080cb8ddc065afc2dea559f0b584c97"
+            b"a2b235b9b69b46bc6de1aed422a6f341832618bcaae2198aba388099dafb05f"
+            b"f0b5efecb3b0ae169a62e1c72022af50ae68af3b033c18e6eec1f7df4692c45"
+            b"6ccafb79cc7e08da0a5786e9816ceda651d61b4bb7b81c2783da97cea62df67"
+            b"af5e85991fdc13aff10fc60e06586386b96bb78d65750f542f86951e05a6d81"
+            b"baadbcd35a2e5cad4119923ae6a2002091a3d17017f93c52970113cdc119970"
+            b"b9074ca506eac91c3dd376325df4af6b3911ef267d26623a5a1c5df4a6d13f1"
+            b"ca381cc3081c9301d0603551d0e04160414a4fb887a13fcdeb303bbae9a1dec"
+            b"a72f125a541b3081990603551d2304819130818e8014a4fb887a13fcdeb303b"
+            b"bae9a1deca72f125a541ba16ba4693067310b3009060355040613025553310e"
+            b"300c060355040813055465786173310f300d0603550407130641757374696e3"
+            b"121301f060355040a1318496e7465726e657420576964676974732050747920"
+            b"4c7464311430120603550403130b5079434120445341204341820900a37352e"
+            b"0b2142f86300c0603551d13040530030101ff"
+        )
+        verifier = cert.public_key().verifier(
+            cert.signature, cert.signature_hash_algorithm
+        )
+        verifier.update(cert.tbs_certificate_bytes)
+        verifier.verify()
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestDSACertificateRequest(object):
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -2709,6 +3145,49 @@ class TestDSACertificate(object):
             x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
         ]
 
+    def test_signature(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "dsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.signature == binascii.unhexlify(
+            b"302c021461d58dc028d0110818a7d817d74235727c4acfdf0214097b52e198e"
+            b"ce95de17273f0a924df23ce9d8188"
+        )
+
+    def test_tbs_certrequest_bytes(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "dsa_sha1.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.tbs_certrequest_bytes == binascii.unhexlify(
+            b"3082021802010030573118301606035504030c0f63727970746f677261706879"
+            b"2e696f310d300b060355040a0c0450794341310b300906035504061302555331"
+            b"0e300c06035504080c055465786173310f300d06035504070c0641757374696e"
+            b"308201b63082012b06072a8648ce3804013082011e028181008d7fadbc09e284"
+            b"aafa69154cea24177004909e519f8b35d685cde5b4ecdc9583e74d370a0f88ad"
+            b"a98f026f27762fb3d5da7836f986dfcdb3589e5b925bea114defc03ef81dae30"
+            b"c24bbc6df3d588e93427bba64203d4a5b1687b2b5e3b643d4c614976f89f95a3"
+            b"8d3e4c89065fba97514c22c50adbbf289163a74b54859b35b7021500835de56b"
+            b"d07cf7f82e2032fe78949aed117aa2ef0281801f717b5a07782fc2e4e68e311f"
+            b"ea91a54edd36b86ac634d14f05a68a97eae9d2ef31fb1ef3de42c3d100df9ca6"
+            b"4f5bdc2aec7bfdfb474cf831fea05853b5e059f2d24980a0ac463f1e818af352"
+            b"3e3cb79a39d45fa92731897752842469cf8540b01491024eaafbce6018e8a1f4"
+            b"658c343f4ba7c0b21e5376a21f4beb8491961e038184000281800713f07641f6"
+            b"369bb5a9545274a2d4c01998367fb371bb9e13436363672ed68f82174c2de05c"
+            b"8e839bc6de568dd50ba28d8d9d8719423aaec5557df10d773ab22d6d65cbb878"
+            b"04a697bc8fd965b952f9f7e850edf13c8acdb5d753b6d10e59e0b5732e3c82ba"
+            b"fa140342bc4a3bba16bd0681c8a6a2dbbb7efe6ce2b8463b170ba000"
+        )
+        verifier = request.public_key().verifier(
+            request.signature,
+            request.signature_hash_algorithm
+        )
+        verifier.update(request.tbs_certrequest_bytes)
+        verifier.verify()
+
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2734,6 +3213,60 @@ class TestECDSACertificate(object):
         )
         assert isinstance(num.curve, ec.SECP384R1)
 
+    def test_signature(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ecdsa_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.signature == binascii.unhexlify(
+            b"3065023100adbcf26c3f124ad12d39c30a099773f488368c8827bbe6888d5085"
+            b"a763f99e32de66930ff1ccb1098fdd6cabfa6b7fa0023039665bc2648db89e50"
+            b"dca8d549a2edc7dcd1497f1701b8c8868f4e8c882ba89aa98ac5d100bdf854e2"
+            b"9ae55b7cb32717"
+        )
+        r, s = decode_dss_signature(cert.signature)
+        assert r == int(
+            "adbcf26c3f124ad12d39c30a099773f488368c8827bbe6888d5085a763f99e32"
+            "de66930ff1ccb1098fdd6cabfa6b7fa0",
+            16
+        )
+        assert s == int(
+            "39665bc2648db89e50dca8d549a2edc7dcd1497f1701b8c8868f4e8c882ba89a"
+            "a98ac5d100bdf854e29ae55b7cb32717",
+            16
+        )
+
+    def test_tbs_certificate_bytes(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        cert = _load_cert(
+            os.path.join("x509", "ecdsa_root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        assert cert.tbs_certificate_bytes == binascii.unhexlify(
+            b"308201c5a0030201020210055556bcf25ea43535c3a40fd5ab4572300a06082"
+            b"a8648ce3d0403033061310b300906035504061302555331153013060355040a"
+            b"130c446967694365727420496e6331193017060355040b13107777772e64696"
+            b"769636572742e636f6d3120301e06035504031317446967694365727420476c"
+            b"6f62616c20526f6f74204733301e170d3133303830313132303030305a170d3"
+            b"338303131353132303030305a3061310b300906035504061302555331153013"
+            b"060355040a130c446967694365727420496e6331193017060355040b1310777"
+            b"7772e64696769636572742e636f6d3120301e06035504031317446967694365"
+            b"727420476c6f62616c20526f6f742047333076301006072a8648ce3d0201060"
+            b"52b8104002203620004dda7d9bb8ab80bfb0b7f21d2f0bebe73f3335d1abc34"
+            b"eadec69bbcd095f6f0ccd00bba615b51467e9e2d9fee8e630c17ec0770f5cf8"
+            b"42e40839ce83f416d3badd3a4145936789d0343ee10136c72deae88a7a16bb5"
+            b"43ce67dc23ff031ca3e23ea3423040300f0603551d130101ff040530030101f"
+            b"f300e0603551d0f0101ff040403020186301d0603551d0e04160414b3db48a4"
+            b"f9a1c5d8ae3641cc1163696229bc4bc6"
+        )
+        verifier = cert.public_key().verifier(
+            cert.signature, ec.ECDSA(cert.signature_hash_algorithm)
+        )
+        verifier.update(cert.tbs_certificate_bytes)
+        verifier.verify()
+
     def test_load_ecdsa_no_named_curve(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         cert = _load_cert(
@@ -2744,6 +3277,10 @@ class TestECDSACertificate(object):
         with pytest.raises(NotImplementedError):
             cert.public_key()
 
+
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestECDSACertificateRequest(object):
     @pytest.mark.parametrize(
         ("path", "loader_func"),
         [
@@ -2773,6 +3310,43 @@ class TestECDSACertificate(object):
             x509.NameAttribute(NameOID.LOCALITY_NAME, u'Austin'),
         ]
 
+    def test_signature(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        request = _load_cert(
+            os.path.join("x509", "requests", "ec_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.signature == binascii.unhexlify(
+            b"306502302c1a9f7de8c1787332d2307a886b476a59f172b9b0e250262f3238b1"
+            b"b45ee112bb6eb35b0fb56a123b9296eb212dffc302310094cf440c95c52827d5"
+            b"56ae6d76500e3008255d47c29f7ee782ed7558e51bfd76aa45df6d999ed5c463"
+            b"347fe2382d1751"
+        )
+
+    def test_tbs_certrequest_bytes(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        request = _load_cert(
+            os.path.join("x509", "requests", "ec_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.tbs_certrequest_bytes == binascii.unhexlify(
+            b"3081d602010030573118301606035504030c0f63727970746f6772617068792"
+            b"e696f310d300b060355040a0c0450794341310b300906035504061302555331"
+            b"0e300c06035504080c055465786173310f300d06035504070c0641757374696"
+            b"e3076301006072a8648ce3d020106052b8104002203620004de19b514c0b3c3"
+            b"ae9b398ea3e26b5e816bdcf9102cad8f12fe02f9e4c9248724b39297ed7582e"
+            b"04d8b32a551038d09086803a6d3fb91a1a1167ec02158b00efad39c9396462f"
+            b"accff0ffaf7155812909d3726bd59fde001cff4bb9b2f5af8cbaa000"
+        )
+        verifier = request.public_key().verifier(
+            request.signature,
+            ec.ECDSA(request.signature_hash_algorithm)
+        )
+        verifier.update(request.tbs_certrequest_bytes)
+        verifier.verify()
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestOtherCertificate(object):
@@ -2797,15 +3371,15 @@ class TestNameAttribute(object):
     def test_init_bad_value(self):
         with pytest.raises(TypeError):
             x509.NameAttribute(
-                x509.ObjectIdentifier('oid'),
+                x509.ObjectIdentifier('2.999.1'),
                 b'bytes'
             )
 
     def test_eq(self):
         assert x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.1'), u'value'
         ) == x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.1'), u'value'
         )
 
     def test_ne(self):
@@ -2815,12 +3389,12 @@ class TestNameAttribute(object):
             x509.ObjectIdentifier('2.5.4.5'), u'value'
         )
         assert x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.1'), u'value'
         ) != x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value2'
+            x509.ObjectIdentifier('2.999.1'), u'value2'
         )
         assert x509.NameAttribute(
-            x509.ObjectIdentifier('oid'), u'value'
+            x509.ObjectIdentifier('2.999.2'), u'value'
         ) != object()
 
     def test_repr(self):
@@ -2839,64 +3413,87 @@ class TestNameAttribute(object):
 
 class TestObjectIdentifier(object):
     def test_eq(self):
-        oid1 = x509.ObjectIdentifier('oid')
-        oid2 = x509.ObjectIdentifier('oid')
+        oid1 = x509.ObjectIdentifier('2.999.1')
+        oid2 = x509.ObjectIdentifier('2.999.1')
         assert oid1 == oid2
 
     def test_ne(self):
-        oid1 = x509.ObjectIdentifier('oid')
-        assert oid1 != x509.ObjectIdentifier('oid1')
+        oid1 = x509.ObjectIdentifier('2.999.1')
+        assert oid1 != x509.ObjectIdentifier('2.999.2')
         assert oid1 != object()
 
     def test_repr(self):
         oid = x509.ObjectIdentifier("2.5.4.3")
         assert repr(oid) == "<ObjectIdentifier(oid=2.5.4.3, name=commonName)>"
-        oid = x509.ObjectIdentifier("oid1")
-        assert repr(oid) == "<ObjectIdentifier(oid=oid1, name=Unknown OID)>"
+        oid = x509.ObjectIdentifier("2.999.1")
+        assert repr(oid) == "<ObjectIdentifier(oid=2.999.1, name=Unknown OID)>"
 
     def test_name_property(self):
         oid = x509.ObjectIdentifier("2.5.4.3")
         assert oid._name == 'commonName'
-        oid = x509.ObjectIdentifier("oid1")
+        oid = x509.ObjectIdentifier("2.999.1")
         assert oid._name == 'Unknown OID'
+
+    def test_too_short(self):
+        with pytest.raises(ValueError):
+            x509.ObjectIdentifier("1")
+
+    def test_invalid_input(self):
+        with pytest.raises(ValueError):
+            x509.ObjectIdentifier("notavalidform")
+
+    def test_invalid_node1(self):
+        with pytest.raises(ValueError):
+            x509.ObjectIdentifier("7.1.37")
+
+    def test_invalid_node2(self):
+        with pytest.raises(ValueError):
+            x509.ObjectIdentifier("1.50.200")
+
+    def test_valid(self):
+        x509.ObjectIdentifier("0.35.200")
+        x509.ObjectIdentifier("1.39.999")
+        x509.ObjectIdentifier("2.5.29.3")
+        x509.ObjectIdentifier("2.999.37.5.22.8")
+        x509.ObjectIdentifier("2.25.305821105408246119474742976030998643995")
 
 
 class TestName(object):
     def test_eq(self):
         name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         assert name1 == name2
 
     def test_ne(self):
         name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
         ])
         assert name1 != name2
         assert name1 != object()
 
     def test_hash(self):
         name1 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
         ])
         name3 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2'),
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1'),
         ])
 
         assert hash(name1) == hash(name2)

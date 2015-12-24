@@ -251,6 +251,15 @@ char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
+
+/* CRYPTO_EX_DATA */
+int SSL_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                         CRYPTO_EX_free *);
+int SSL_set_ex_data(SSL *, int, void *);
+
+int SSL_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                             CRYPTO_EX_free *);
+int SSL_CTX_set_ex_data(SSL_CTX *, int, void *);
 """
 
 MACROS = """
@@ -292,15 +301,6 @@ unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 /*  methods */
 
-/* SSLv2 support is compiled out of some versions of OpenSSL.  These will
- * get special support when we generate the bindings so that if they are
- * available they will be wrapped, but if they are not they won't cause
- * problems (like link errors).
- */
-const SSL_METHOD *SSLv2_method(void);
-const SSL_METHOD *SSLv2_server_method(void);
-const SSL_METHOD *SSLv2_client_method(void);
-
 /*
  * TLSv1_1 and TLSv1_2 are recent additions.  Only sufficiently new versions of
  * OpenSSL support them.
@@ -336,6 +336,9 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
 const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
 const char *SSL_get_version(const SSL *);
 int SSL_version(const SSL *);
+
+void *SSL_CTX_get_ex_data(const SSL_CTX *, int);
+void *SSL_get_ex_data(const SSL *, int);
 
 /* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
  * earlier versions some special handling of these is necessary.
@@ -429,14 +432,12 @@ const long SSL_OP_LEGACY_SERVER_CONNECT = 0;
 #else
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 #endif
-#ifdef OPENSSL_NO_SSL2
+
+/* Cryptography now compiles out all SSLv2 bindings. This exists to allow
+ * clients that use it to check for SSLv2 support to keep functioning as
+ * expected.
+ */
 static const long Cryptography_HAS_SSL2 = 0;
-SSL_METHOD* (*SSLv2_method)(void) = NULL;
-SSL_METHOD* (*SSLv2_client_method)(void) = NULL;
-SSL_METHOD* (*SSLv2_server_method)(void) = NULL;
-#else
-static const long Cryptography_HAS_SSL2 = 1;
-#endif
 
 #ifdef OPENSSL_NO_SSL3_METHOD
 static const long Cryptography_HAS_SSL3_METHOD = 0;

@@ -52,6 +52,11 @@ CONDITIONAL_NAMES = {
         "CMS_USE_KEYID",
         "CMS_DEBUG_DECRYPT",
     ],
+    "Cryptography_HAS_CMS_BIO_FUNCTIONS": [
+        "BIO_new_CMS",
+        "i2d_CMS_bio_stream",
+        "PEM_write_bio_CMS_stream",
+    ],
     "Cryptography_HAS_EC": [
         "OPENSSL_EC_NAMED_CURVE",
         "EC_GROUP_new",
@@ -136,6 +141,9 @@ CONDITIONAL_NAMES = {
         "i2o_ECPublicKey",
         "o2i_ECPublicKey",
         "SSL_CTX_set_tmp_ecdh",
+        "POINT_CONVERSION_COMPRESSED",
+        "POINT_CONVERSION_UNCOMPRESSED",
+        "POINT_CONVERSION_HYBRID",
     ],
 
     "Cryptography_HAS_EC_1_0_1": [
@@ -143,12 +151,6 @@ CONDITIONAL_NAMES = {
         "EC_KEY_set_flags",
         "EC_KEY_clear_flags",
         "EC_KEY_set_public_key_affine_coordinates",
-    ],
-
-    "Cryptography_HAS_EC_NISTP_64_GCC_128": [
-        "EC_GFp_nistp224_method",
-        "EC_GFp_nistp256_method",
-        "EC_GFp_nistp521_method",
     ],
 
     "Cryptography_HAS_EC2M": [
@@ -272,12 +274,6 @@ CONDITIONAL_NAMES = {
         "TLSv1_2_method",
         "TLSv1_2_server_method",
         "TLSv1_2_client_method",
-    ],
-
-    "Cryptography_HAS_SSL2": [
-        "SSLv2_method",
-        "SSLv2_client_method",
-        "SSLv2_server_method",
     ],
 
     "Cryptography_HAS_SSL3_METHOD": [

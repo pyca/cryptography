@@ -12,6 +12,35 @@ class ObjectIdentifier(object):
     def __init__(self, dotted_string):
         self._dotted_string = dotted_string
 
+        nodes = self._dotted_string.split(".")
+        intnodes = []
+
+        # There must be at least 2 nodes, the first node must be 0..2, and
+        # if less than 2, the second node cannot have a value outside the
+        # range 0..39.  All nodes must be integers.
+        for node in nodes:
+            try:
+                intnodes.append(int(node, 0))
+            except ValueError:
+                raise ValueError(
+                    "Malformed OID: %s (non-integer nodes)" % (
+                        self._dotted_string))
+
+        if len(nodes) < 2:
+            raise ValueError(
+                "Malformed OID: %s (insufficient number of nodes)" % (
+                    self._dotted_string))
+
+        if intnodes[0] > 2:
+            raise ValueError(
+                "Malformed OID: %s (first node outside valid range)" % (
+                    self._dotted_string))
+
+        if intnodes[0] < 2 and intnodes[1] >= 40:
+            raise ValueError(
+                "Malformed OID: %s (second node outside valid range)" % (
+                    self._dotted_string))
+
     def __eq__(self, other):
         if not isinstance(other, ObjectIdentifier):
             return NotImplemented
@@ -56,6 +85,7 @@ class ExtensionOID(object):
     AUTHORITY_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.1")
     SUBJECT_INFORMATION_ACCESS = ObjectIdentifier("1.3.6.1.5.5.7.1.11")
     OCSP_NO_CHECK = ObjectIdentifier("1.3.6.1.5.5.7.48.1.5")
+    CRL_NUMBER = ObjectIdentifier("2.5.29.20")
 
 
 class CRLExtensionOID(object):
@@ -80,6 +110,12 @@ class NameOID(object):
     PSEUDONYM = ObjectIdentifier("2.5.4.65")
     DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
     EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
+    JURISDICTION_COUNTRY_NAME = ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.3")
+    JURISDICTION_LOCALITY_NAME = ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.1")
+    JURISDICTION_STATE_OR_PROVINCE_NAME = ObjectIdentifier(
+        "1.3.6.1.4.1.311.60.2.1.2"
+    )
+    BUSINESS_CATEGORY = ObjectIdentifier("2.5.4.15")
 
 
 class SignatureAlgorithmOID(object):
@@ -151,6 +187,13 @@ _OID_NAMES = {
     NameOID.PSEUDONYM: "pseudonym",
     NameOID.DOMAIN_COMPONENT: "domainComponent",
     NameOID.EMAIL_ADDRESS: "emailAddress",
+    NameOID.JURISDICTION_COUNTRY_NAME: "jurisdictionCountryName",
+    NameOID.JURISDICTION_LOCALITY_NAME: "jurisdictionLocalityName",
+    NameOID.JURISDICTION_STATE_OR_PROVINCE_NAME: (
+        "jurisdictionStateOrProvinceName"
+    ),
+    NameOID.BUSINESS_CATEGORY: "businessCategory",
+
     SignatureAlgorithmOID.RSA_WITH_MD5: "md5WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA1: "sha1WithRSAEncryption",
     SignatureAlgorithmOID.RSA_WITH_SHA224: "sha224WithRSAEncryption",
@@ -192,6 +235,7 @@ _OID_NAMES = {
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",
+    ExtensionOID.CRL_NUMBER: "cRLNumber",
     AuthorityInformationAccessOID.OCSP: "OCSP",
     AuthorityInformationAccessOID.CA_ISSUERS: "caIssuers",
     CertificatePoliciesOID.CPS_QUALIFIER: "id-qt-cps",

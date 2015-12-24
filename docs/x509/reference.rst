@@ -382,6 +382,26 @@ X.509 Certificate Object
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.32, name=certificatePolicies)>, critical=False, value=<CertificatePolicies([<PolicyInformation(policy_identifier=<ObjectIdentifier(oid=2.16.840.1.101.3.2.1.48.1, name=Unknown OID)>, policy_qualifiers=None)>])>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
+    .. attribute:: signature
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The bytes of the certificate's signature.
+
+    .. attribute:: tbs_certificate_bytes
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:`5280`) that is hashed
+        and then signed by the private key of the certificate's issuer. This
+        data may be used to validate a signature, but use extreme caution as
+        certificate validation is a complex problem that involves much more
+        than just signature checks.
+
     .. method:: public_bytes(encoding)
 
         .. versionadded:: 1.0
@@ -484,6 +504,38 @@ X.509 CRL (Certificate Revocation List) Object
 
         The extensions encoded in the CRL.
 
+    .. attribute:: signature
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The bytes of the CRL's signature.
+
+    .. attribute:: tbs_certlist_bytes
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:`5280`) that is hashed
+        and then signed by the private key of the CRL's issuer. This data may be
+        used to validate a signature, but use extreme caution as CRL validation
+        is a complex problem that involves much more than just signature checks.
+
+    .. method:: public_bytes(encoding)
+
+        .. versionadded:: 1.2
+
+        :param encoding: The
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding`
+            that will be used to serialize the certificate revocation list.
+
+        :return bytes: The data that can be written to a file or sent
+            over the network and used as part of a certificate verification
+            process.
+
+
 X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -506,11 +558,7 @@ X.509 Certificate Builder
         ...     key_size=2048,
         ...     backend=default_backend()
         ... )
-        >>> public_key = rsa.generate_private_key(
-        ...     public_exponent=65537,
-        ...     key_size=2048,
-        ...     backend=default_backend()
-        ... ).public_key()
+        >>> public_key = private_key.public_key()
         >>> builder = x509.CertificateBuilder()
         >>> builder = builder.subject_name(x509.Name([
         ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
@@ -693,6 +741,25 @@ X.509 CSR (Certificate Signing Request) Object
         :return bytes: The data that can be written to a file or sent
             over the network to be signed by the certificate
             authority.
+
+    .. attribute:: signature
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The bytes of the certificate signing request's signature.
+
+    .. attribute:: tbs_certrequest_bytes
+
+        .. versionadded:: 1.2
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:`2986`) that is
+        hashed and then signed by the private key (corresponding to the public
+        key embedded in the CSR). This data may be used to validate the CSR
+        signature.
 
 X.509 Revoked Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1628,6 +1695,26 @@ X.509 Extensions
 
         :type: int
 
+.. class:: CRLNumber(crl_number)
+
+    .. versionadded:: 1.2
+
+    The CRL number is a CRL extension that conveys a monotonically increasing
+    sequence number for a given CRL scope and CRL issuer. This extension allows
+    users to easily determine when a particular CRL supersedes another CRL.
+    :rfc:`5280` requires that this extension be present in conforming CRLs.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.CRL_NUMBER`.
+
+    .. attribute:: crl_number
+
+        :type: int
+
 .. class:: CertificatePolicies(policies)
 
     .. versionadded:: 0.9
@@ -1795,6 +1882,22 @@ instances. The following common OIDs are available as constants.
     .. attribute:: EMAIL_ADDRESS
 
         Corresponds to the dotted string ``"1.2.840.113549.1.9.1"``.
+
+    .. attribute:: JURISDICTION_COUNTRY_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.3"``.
+
+    .. attribute:: JURISDICTION_LOCALITY_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.1"``.
+
+    .. attribute:: JURISDICTION_STATE_OR_PROVINCE_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.60.2.1.2"``.
+
+    .. attribute:: BUSINESS_CATEGORY
+
+        Corresponds to the dotted string ``"2.5.4.15"``.
 
 
 .. class:: SignatureAlgorithmOID
@@ -2013,6 +2116,12 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.48.1.5"``. The
         identifier for the :class:`~cryptography.x509.OCSPNoCheck` extension
         type.
+
+    .. attribute:: CRL_NUMBER
+
+        Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
+        the ``CRLNumber`` extension type. This extension only has meaning
+        for certificate revocation lists.
 
 Exceptions
 ~~~~~~~~~~

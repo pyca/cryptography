@@ -18,7 +18,8 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID, NameOID
+    AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
+    NameOID, ObjectIdentifier
 )
 
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
@@ -603,8 +604,14 @@ class TestAuthorityKeyIdentifier(object):
     def test_authority_cert_serial_number_not_integer(self):
         dirname = x509.DirectoryName(
             x509.Name([
-                x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-                x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.1'),
+                    u'value1'
+                ),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.2'),
+                    u'value2'
+                ),
             ])
         )
         with pytest.raises(TypeError):
@@ -617,8 +624,14 @@ class TestAuthorityKeyIdentifier(object):
     def test_authority_issuer_not_none_serial_none(self):
         dirname = x509.DirectoryName(
             x509.Name([
-                x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1'),
-                x509.NameAttribute(x509.ObjectIdentifier('oid2'), u'value2'),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.1'),
+                    u'value1'
+                ),
+                x509.NameAttribute(
+                    x509.ObjectIdentifier('2.999.2'),
+                    u'value2'
+                ),
             ])
         )
         with pytest.raises(ValueError):
@@ -1166,10 +1179,10 @@ class TestDirectoryName(object):
 
     def test_eq(self):
         name = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
         ])
         gn = x509.DirectoryName(x509.Name([name]))
         gn2 = x509.DirectoryName(x509.Name([name2]))
@@ -1177,10 +1190,10 @@ class TestDirectoryName(object):
 
     def test_ne(self):
         name = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value1')
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.1'), u'value1')
         ])
         name2 = x509.Name([
-            x509.NameAttribute(x509.ObjectIdentifier('oid'), u'value2')
+            x509.NameAttribute(x509.ObjectIdentifier('2.999.2'), u'value2')
         ])
         gn = x509.DirectoryName(x509.Name([name]))
         gn2 = x509.DirectoryName(x509.Name([name2]))
@@ -1473,6 +1486,25 @@ class TestRSAIssuerAlternativeNameExtension(object):
         assert list(ext.value) == [
             x509.UniformResourceIdentifier(u"http://path.to.root/root.crt"),
         ]
+
+
+class TestCRLNumber(object):
+    def test_eq(self):
+        crl_number = x509.CRLNumber(15)
+        assert crl_number == x509.CRLNumber(15)
+
+    def test_ne(self):
+        crl_number = x509.CRLNumber(15)
+        assert crl_number != x509.CRLNumber(14)
+        assert crl_number != object()
+
+    def test_repr(self):
+        crl_number = x509.CRLNumber(15)
+        assert repr(crl_number) == "<CRLNumber(15)>"
+
+    def test_invalid_number(self):
+        with pytest.raises(TypeError):
+            x509.CRLNumber("notanumber")
 
 
 class TestSubjectAlternativeName(object):
@@ -1848,7 +1880,7 @@ class TestExtendedKeyUsageExtension(object):
 
 class TestAccessDescription(object):
     def test_invalid_access_method(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             x509.AccessDescription("notanoid", x509.DNSName(u"test"))
 
     def test_invalid_access_location(self):
@@ -1856,6 +1888,13 @@ class TestAccessDescription(object):
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS, "invalid"
             )
+
+    def test_valid_nonstandard_method(self):
+        ad = x509.AccessDescription(
+            ObjectIdentifier("2.999.1"),
+            x509.UniformResourceIdentifier(u"http://example.com")
+        )
+        assert ad is not None
 
     def test_repr(self):
         ad = x509.AccessDescription(

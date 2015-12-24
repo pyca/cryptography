@@ -117,6 +117,18 @@ class Certificate(object):
         Returns an Extensions object.
         """
 
+    @abc.abstractproperty
+    def signature(self):
+        """
+        Returns the signature bytes.
+        """
+
+    @abc.abstractproperty
+    def tbs_certificate_bytes(self):
+        """
+        Returns the tbsCertificate payload bytes as defined in RFC 5280.
+        """
+
     @abc.abstractmethod
     def __eq__(self, other):
         """
@@ -144,6 +156,11 @@ class Certificate(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class CertificateRevocationList(object):
+    @abc.abstractmethod
+    def public_bytes(self, encoding):
+        """
+        Serializes the CRL to PEM or DER format.
+        """
 
     @abc.abstractmethod
     def fingerprint(self, algorithm):
@@ -180,6 +197,18 @@ class CertificateRevocationList(object):
     def extensions(self):
         """
         Returns an Extensions object containing a list of CRL extensions.
+        """
+
+    @abc.abstractproperty
+    def signature(self):
+        """
+        Returns the signature bytes.
+        """
+
+    @abc.abstractproperty
+    def tbs_certlist_bytes(self):
+        """
+        Returns the tbsCertList payload bytes as defined in RFC 5280.
         """
 
     @abc.abstractmethod
@@ -244,6 +273,19 @@ class CertificateSigningRequest(object):
     def public_bytes(self, encoding):
         """
         Encodes the request to PEM or DER format.
+        """
+
+    @abc.abstractproperty
+    def signature(self):
+        """
+        Returns the signature bytes.
+        """
+
+    @abc.abstractproperty
+    def tbs_certrequest_bytes(self):
+        """
+        Returns the PKCS#10 CertificationRequestInfo bytes as defined in RFC
+        2986.
         """
 
 
@@ -399,6 +441,11 @@ class CertificateBuilder(object):
         if time <= _UNIX_EPOCH:
             raise ValueError('The not valid before date must be after the unix'
                              ' epoch (1970 January 1).')
+        if self._not_valid_after is not None and time > self._not_valid_after:
+            raise ValueError(
+                'The not valid before date must be before the not valid after '
+                'date.'
+            )
         return CertificateBuilder(
             self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, time,
@@ -416,6 +463,12 @@ class CertificateBuilder(object):
         if time <= _UNIX_EPOCH:
             raise ValueError('The not valid after date must be after the unix'
                              ' epoch (1970 January 1).')
+        if (self._not_valid_before is not None and
+                time < self._not_valid_before):
+            raise ValueError(
+                'The not valid after date must be after the not valid before '
+                'date.'
+            )
         return CertificateBuilder(
             self._issuer_name, self._subject_name,
             self._public_key, self._serial_number, self._not_valid_before,

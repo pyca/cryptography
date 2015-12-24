@@ -18,9 +18,7 @@ from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
-from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, ExtensionOID, ObjectIdentifier
-)
+from cryptography.x509.oid import ExtensionOID, ObjectIdentifier
 
 
 class _SubjectPublicKeyInfo(univ.Sequence):
@@ -108,6 +106,31 @@ class Extensions(object):
         return (
             "<Extensions({0})>".format(self._extensions)
         )
+
+
+@utils.register_interface(ExtensionType)
+class CRLNumber(object):
+    oid = ExtensionOID.CRL_NUMBER
+
+    def __init__(self, crl_number):
+        if not isinstance(crl_number, six.integer_types):
+            raise TypeError("crl_number must be an integer")
+
+        self._crl_number = crl_number
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLNumber):
+            return NotImplemented
+
+        return self.crl_number == other.crl_number
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        return "<CRLNumber({0})>".format(self.crl_number)
+
+    crl_number = utils.read_only_property("_crl_number")
 
 
 @utils.register_interface(ExtensionType)
@@ -238,11 +261,8 @@ class AuthorityInformationAccess(object):
 
 class AccessDescription(object):
     def __init__(self, access_method, access_location):
-        if not (access_method == AuthorityInformationAccessOID.OCSP or
-                access_method == AuthorityInformationAccessOID.CA_ISSUERS):
-            raise ValueError(
-                "access_method must be OID_OCSP or OID_CA_ISSUERS"
-            )
+        if not isinstance(access_method, ObjectIdentifier):
+            raise TypeError("access_method must be an ObjectIdentifier")
 
         if not isinstance(access_location, GeneralName):
             raise TypeError("access_location must be a GeneralName")
