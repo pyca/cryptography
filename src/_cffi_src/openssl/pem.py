@@ -79,6 +79,7 @@ MACROS = """
 int PEM_write_bio_ECPrivateKey(BIO *, EC_KEY *, const EVP_CIPHER *,
                                unsigned char *, int, pem_password_cb *,
                                void *);
+int PEM_write_bio_DHparams(BIO *, DH *);
 """
 
 CUSTOMIZATIONS = """
