@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import datetime
-import gc
 import ipaddress
 import os
 
@@ -178,17 +177,13 @@ class TestCertificateRevocationList(object):
         """
         This test attempts to trigger the crash condition described in
         https://github.com/pyca/cryptography/issues/2557
+        PyPy does gc at its own pace, so it will only be reliable on CPython.
         """
-        crl = _load_cert(
+        revoked = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
             backend
-        )
-        revoked = crl[11]
-        crl = "overwritten"
-        # force a gc collection to potentially X509_CRL_free if there are
-        # no references to the X509_CRL left.
-        gc.collect()
+        )[11]
         assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
         assert revoked.serial_number == 11
 
