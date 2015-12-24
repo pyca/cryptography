@@ -173,6 +173,20 @@ class TestCertificateRevocationList(object):
         # Check that len() works for CRLs.
         assert len(crl) == 12
 
+    def test_revoked_cert_retrieval_retain_only_revoked(self, backend):
+        """
+        This test attempts to trigger the crash condition described in
+        https://github.com/pyca/cryptography/issues/2557
+        PyPy does gc at its own pace, so it will only be reliable on CPython.
+        """
+        revoked = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )[11]
+        assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
+        assert revoked.serial_number == 11
+
     def test_extensions(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_ian_aia_aki.pem"),
