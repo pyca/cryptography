@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import ipaddress
+import operator
 
 from email.utils import parseaddr
 
@@ -872,8 +873,10 @@ class _CertificateRevocationList(object):
             yield self._revoked_cert(i)
 
     def __getitem__(self, idx):
-        # TODO: indexing is O(n)
-        return list(self)[idx]
+        idx = operator.index(idx)
+        if not 0 <= idx < len(self):
+            raise IndexError
+        return self._revoked_cert(idx)
 
     def __len__(self):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
