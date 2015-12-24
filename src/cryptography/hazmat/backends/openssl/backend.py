@@ -1456,7 +1456,7 @@ class Backend(object):
         return _Certificate(self, x509_cert)
 
     def create_x509_crl(self, builder, private_key, algorithm):
-        pass
+        raise NotImplementedError
 
     def load_pem_private_key(self, data, password):
         return self._load_key(
