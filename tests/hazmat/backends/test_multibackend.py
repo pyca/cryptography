@@ -218,6 +218,9 @@ class DummyX509Backend(object):
     def create_x509_certificate(self, builder, private_key, algorithm):
         pass
 
+    def create_x509_crl(self, builder, private_key, algorithm):
+        pass
+
 
 class TestMultiBackend(object):
     def test_ciphers(self):
@@ -514,6 +517,7 @@ class TestMultiBackend(object):
         backend.load_der_x509_csr(b"reqdata")
         backend.create_x509_csr(object(), b"privatekey", hashes.SHA1())
         backend.create_x509_certificate(object(), b"privatekey", hashes.SHA1())
+        backend.create_x509_crl(object(), b"privatekey", hashes.SHA1())
 
         backend = MultiBackend([])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
@@ -532,5 +536,9 @@ class TestMultiBackend(object):
             backend.create_x509_csr(object(), b"privatekey", hashes.SHA1())
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.create_x509_certificate(
+                object(), b"privatekey", hashes.SHA1()
+            )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.create_x509_crl(
                 object(), b"privatekey", hashes.SHA1()
             )
