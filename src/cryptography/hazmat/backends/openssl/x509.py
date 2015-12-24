@@ -865,8 +865,7 @@ class _CertificateRevocationList(object):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
         revoked_list = []
         if revoked != self._backend._ffi.NULL:
-            num = self._backend._lib.sk_X509_REVOKED_num(revoked)
-            for i in range(num):
+            for i in range(len(self)):
                 r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
                 self._backend.openssl_assert(r != self._backend._ffi.NULL)
                 revoked_certificate = _RevokedCertificate(
@@ -883,7 +882,11 @@ class _CertificateRevocationList(object):
         return self._revoked_certificates()[idx]
 
     def __len__(self):
-        return len(self._revoked_certificates())
+        revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
+        if revoked == self._backend._ffi.NULL:
+            return 0
+        else:
+            return self._backend._lib.sk_X509_REVOKED_num(revoked)
 
     @property
     def extensions(self):
