@@ -591,6 +591,19 @@ class CertificateRevocationListBuilder(object):
             self._extensions + [extension], self._revoked_certificates
         )
 
+    def add_revoked_certificate(self, revoked_certificate):
+        """
+        Adds a revoked certificate to the CRL.
+        """
+        if not isinstance(revoked_certificate, RevokedCertificate):
+            raise TypeError("Must be an instance of RevokedCertificate")
+
+        return CertificateRevocationListBuilder(
+            self._issuer_name, self._last_update,
+            self._next_update, self._extensions,
+            self._revoked_certificates + [revoked_certificate]
+        )
+
     def sign(self, private_key, algorithm, backend):
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")

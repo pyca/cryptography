@@ -104,6 +104,12 @@ class TestCertificateRevocationListBuilder(object):
                 object(), False
             )
 
+    def test_add_invalid_revoked_certificate(self):
+        builder = x509.CertificateRevocationListBuilder()
+
+        with pytest.raises(TypeError):
+            builder.add_revoked_certificate(object())
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_issuer_name(self, backend):
@@ -338,3 +344,44 @@ class TestCertificateRevocationListBuilder(object):
 
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_with_revoked_certificates(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        revoked_cert0 = x509.RevokedCertificateBuilder().serial_number(
+            38
+        ).revocation_date(
+            datetime.datetime(2011, 1, 1, 1, 1)
+        ).build(backend)
+        revoked_cert1 = x509.RevokedCertificateBuilder().serial_number(
+            2
+        ).revocation_date(
+            datetime.datetime(2012, 1, 1, 1, 1)
+        ).build(backend)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(
+            last_update
+        ).next_update(
+            next_update
+        ).add_revoked_certificate(
+            revoked_cert0
+        ).add_revoked_certificate(
+            revoked_cert1
+        )
+
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert len(crl) == 2
+        assert crl.last_update == last_update
+        assert crl.next_update == next_update
+        assert crl[0].serial_number == revoked_cert0.serial_number
+        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        assert len(crl[0].extensions) == 0
+        assert crl[1].serial_number == revoked_cert1.serial_number
+        assert crl[1].revocation_date == revoked_cert1.revocation_date
+        assert len(crl[1].extensions) == 0
