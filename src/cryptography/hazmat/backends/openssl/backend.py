@@ -1558,6 +1558,9 @@ class Backend(object):
             res = add_func(x509_obj, x509_extension, i)
             self.openssl_assert(res >= 1)
 
+    def create_x509_revoked_certificate(self, builder):
+        raise NotImplementedError("Not yet implemented")
+
     def load_pem_private_key(self, data, password):
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,

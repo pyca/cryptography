@@ -393,3 +393,12 @@ class MultiBackend(object):
             "This backend does not support X.509.",
             _Reasons.UNSUPPORTED_X509
         )
+
+    def create_x509_revoked_certificate(self, builder):
+        for b in self._filtered_backends(X509Backend):
+            return b.create_x509_revoked_certificate(builder)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support X.509.",
+            _Reasons.UNSUPPORTED_X509
+        )

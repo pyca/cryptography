@@ -589,6 +589,15 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: A new instance of
             :class:`~cryptography.x509.CertificateRevocationList`.
 
+    .. method:: create_x509_revoked_certificate(builder)
+
+        .. versionadded:: 1.2
+
+        :param builder: An instance of RevokedCertificateBuilder.
+
+        :returns: A new instance of
+            :class:`~cryptography.x509.RevokedCertificate`.
+
 .. class:: DHBackend
 
     .. versionadded:: 0.9
