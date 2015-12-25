@@ -895,6 +895,54 @@ X.509 Revoked Certificate Object
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.24, name=invalidityDate)>, critical=False, value=2015-01-01 00:00:00)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.21, name=cRLReason)>, critical=False, value=ReasonFlags.key_compromise)>
 
+X.509 Revoked Certificate Builder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: RevokedCertificateBuilder
+
+    This class is used to create :class:`~cryptography.x509.RevokedCertificate`
+    objects that can be used with the
+    :class:`~cryptography.x509.CertificateRevocationListBuilder`.
+
+    .. versionadded:: 1.2
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> import datetime
+        >>> builder = x509.RevokedCertificateBuilder()
+        >>> builder = builder.revocation_date(datetime.datetime.today())
+        >>> builder = builder.serial_number(3333)
+        >>> revoked_certificate = builder.build(default_backend())
+        >>> isinstance(revoked_certificate, x509.RevokedCertificate)
+        True
+
+    .. method:: serial_number(serial_number)
+
+        Sets the revoked certificate's serial number.
+
+        :param serial_number: Integer number that is used to identify the
+            revoked certificate.
+
+    .. method:: revocation_date(time)
+
+        Sets the certificate's revocation date.
+
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
+            revocation time for the certificate.
+
+    .. method:: build(backend)
+
+        Create a revoked certificate object using the provided backend.
+
+        :param backend: Backend that will be used to build the revoked
+            certificate.  Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :returns: :class:`~cryptography.x509.RevokedCertificate`
+
 X.509 CSR (Certificate Signing Request) Builder Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

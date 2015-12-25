@@ -38,7 +38,7 @@ from cryptography.hazmat.backends.openssl.rsa import (
 )
 from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList, _CertificateSigningRequest,
-    _DISTPOINT_TYPE_FULLNAME, _DISTPOINT_TYPE_RELATIVENAME
+    _DISTPOINT_TYPE_FULLNAME, _DISTPOINT_TYPE_RELATIVENAME, _RevokedCertificate
 )
 from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.bindings.openssl import binding
@@ -1559,7 +1559,24 @@ class Backend(object):
             self.openssl_assert(res >= 1)
 
     def create_x509_revoked_certificate(self, builder):
-        raise NotImplementedError("Not yet implemented")
+        if not isinstance(builder, x509.RevokedCertificateBuilder):
+            raise TypeError('Builder type mismatch.')
+
+        x509_revoked = self._lib.X509_REVOKED_new()
+        self.openssl_assert(x509_revoked != self._ffi.NULL)
+        x509_revoked = self._ffi.gc(x509_revoked, self._lib.X509_REVOKED_free)
+        serial_number = _encode_asn1_int_gc(self, builder._serial_number)
+        res = self._lib.X509_REVOKED_set_serialNumber(
+            x509_revoked, serial_number
+        )
+        self.openssl_assert(res == 1)
+        res = self._lib.ASN1_TIME_set(
+            x509_revoked.revocationDate,
+            calendar.timegm(builder._revocation_date.timetuple())
+        )
+        self.openssl_assert(res != self._ffi.NULL)
+        # TODO: add crl entry extensions
+        return _RevokedCertificate(self, None, x509_revoked)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(

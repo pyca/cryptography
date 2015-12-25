@@ -510,8 +510,8 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
 
 
 class TestOpenSSLCreateRevokedCertificate(object):
-    def test_not_yet_implemented(self):
-        with pytest.raises(NotImplementedError):
+    def test_invalid_builder(self):
+        with pytest.raises(TypeError):
             backend.create_x509_revoked_certificate(object())
 
 
