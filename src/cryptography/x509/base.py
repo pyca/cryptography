@@ -602,3 +602,47 @@ class CertificateRevocationListBuilder(object):
             raise ValueError("A CRL must have a next update time")
 
         return backend.create_x509_crl(self, private_key, algorithm)
+
+
+class RevokedCertificateBuilder(object):
+    def __init__(self, serial_number=None, revocation_date=None,
+                 extensions=[]):
+        self._serial_number = serial_number
+        self._revocation_date = revocation_date
+        self._extensions = extensions
+
+    def serial_number(self, number):
+        if not isinstance(number, six.integer_types):
+            raise TypeError('Serial number must be of integral type.')
+        if self._serial_number is not None:
+            raise ValueError('The serial number may only be set once.')
+        if number < 0:
+            raise ValueError('The serial number should be non-negative.')
+        if utils.bit_length(number) > 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than 160 '
+                             'bits.')
+        return RevokedCertificateBuilder(
+            number, self._revocation_date, self._extensions
+        )
+
+    def revocation_date(self, time):
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._revocation_date is not None:
+            raise ValueError('The revocation date may only be set once.')
+        if time <= _UNIX_EPOCH:
+            raise ValueError('The revocation date must be after the unix'
+                             ' epoch (1970 January 1).')
+        return RevokedCertificateBuilder(
+            self._serial_number, time, self._extensions
+        )
+
+    def build(self, backend):
+        if self._serial_number is None:
+            raise ValueError("A revoked certificate must have a serial number")
+        if self._revocation_date is None:
+            raise ValueError(
+                "A revoked certificate must have a revocation date"
+            )
+
+        return backend.create_x509_revoked_certificate(self)
