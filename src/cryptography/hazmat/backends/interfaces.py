@@ -299,6 +299,13 @@ class X509Backend(object):
         CertificateRevocationListBuilder object.
         """
 
+    @abc.abstractmethod
+    def create_x509_revoked_certificate(self, builder):
+        """
+        Create a RevokedCertificate object from a RevokedCertificateBuilder
+        object.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):
