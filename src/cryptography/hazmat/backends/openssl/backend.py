@@ -1513,15 +1513,17 @@ class Backend(object):
 
             pp, r = encode(self, extension.value)
             obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            extension = self._lib.X509_EXTENSION_create_by_OBJ(
+            x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
                 self._ffi.NULL,
                 obj,
                 1 if extension.critical else 0,
                 _encode_asn1_str_gc(self, pp[0], r)
             )
-            self.openssl_assert(extension != self._ffi.NULL)
-            extension = self._ffi.gc(extension, self._lib.X509_EXTENSION_free)
-            x509_extensions.append(extension)
+            self.openssl_assert(x509_extension != self._ffi.NULL)
+            x509_extension = self._ffi.gc(
+                x509_extension, self._lib.X509_EXTENSION_free
+            )
+            x509_extensions.append(x509_extension)
 
         return x509_extensions
 
