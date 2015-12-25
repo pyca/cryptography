@@ -506,7 +506,7 @@ def test_crl_creation_not_implemented():
         backend.create_x509_crl("", "", "")
 
 
-class TestOpenSSLSerialisationWithOpenSSL(object):
+class TestOpenSSLSerializationWithOpenSSL(object):
     def test_pem_password_cb_buffer_too_small(self):
         ffi_cb, userdata = backend._pem_password_cb(b"aa")
         handle = backend._ffi.new_handle(userdata)
