@@ -509,7 +509,7 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
             backend.create_x509_crl(object(), private_key, hashes.SHA256())
 
 
-class TestOpenSSLSerialisationWithOpenSSL(object):
+class TestOpenSSLSerializationWithOpenSSL(object):
     def test_pem_password_cb_buffer_too_small(self):
         ffi_cb, userdata = backend._pem_password_cb(b"aa")
         handle = backend._ffi.new_handle(userdata)
