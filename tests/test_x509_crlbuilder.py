@@ -96,6 +96,14 @@ class TestCertificateRevocationListBuilder(object):
         with pytest.raises(ValueError):
             builder.add_extension(x509.CRLNumber(2), False)
 
+    def test_add_invalid_extension(self):
+        builder = x509.CertificateRevocationListBuilder()
+
+        with pytest.raises(TypeError):
+            builder.add_extension(
+                object(), False
+            )
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_issuer_name(self, backend):
