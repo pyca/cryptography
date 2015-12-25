@@ -804,27 +804,27 @@ X.509 Certificate Revocation List Builder
 
     .. method:: last_update(time)
 
-        Sets the CRL's activation time.  This is the time from which
-        clients can start trusting the CRL.  It may be different from
-        the time at which the CRL was created. This is also known as the
+        Sets this CRL's activation time.  This is the time from which
+        clients can start trusting this CRL.  It may be different from
+        the time at which this CRL was created. This is also known as the
         ``thisUpdate`` time.
 
-        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
-            activation time for the CRL.  The CRL may not be trusted if it is
-            used before this time.
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks
+            the activation time for this CRL.  The CRL may not be trusted if it
+            is used before this time.
 
     .. method:: next_update(time)
 
-        Sets the CRL's next update time. This is the time by which
-        a new CRL will be issued. The next CRL could be issued before this
-        , but it will not be issued any later than the indicated date.
+        Sets this CRL's next update time. This is the time by which
+        a new CRL will be issued. The CA is allowed to issue a new CRL before
+        this date, however clients are not required to check for it.
 
-        :param time: The :class:`datetime.datetime` object (in UTC) that marks the
-            next update time for the CRL.
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks
+            the next update time for this CRL.
 
     .. method:: sign(private_key, algorithm, backend)
 
-        Sign the CRL using the CA's private key.
+        Sign this CRL using the CA's private key.
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
