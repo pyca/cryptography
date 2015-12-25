@@ -153,6 +153,17 @@ def _encode_name_gc(backend, attributes):
     return subject
 
 
+def _encode_crl_number(backend, crl_number):
+    asn1int = _encode_asn1_int_gc(backend, crl_number.crl_number)
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_ASN1_INTEGER(asn1int, pp)
+    backend.openssl_assert(r > 0)
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
 def _encode_certificate_policies(backend, certificate_policies):
     cp = backend._lib.sk_POLICYINFO_new_null()
     backend.openssl_assert(cp != backend._ffi.NULL)
@@ -623,6 +634,15 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
+}
+
+_CRL_EXTENSION_ENCODE_HANDLERS = {
+    ExtensionOID.ISSUER_ALTERNATIVE_NAME: _encode_alt_name,
+    ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _encode_authority_key_identifier,
+    ExtensionOID.AUTHORITY_INFORMATION_ACCESS: (
+        _encode_authority_information_access
+    ),
+    ExtensionOID.CRL_NUMBER: _encode_crl_number,
 }
 
 
@@ -1490,7 +1510,15 @@ class Backend(object):
         self.openssl_assert(res == 1)
         # TODO: support revoked certificates
 
-        # TODO: add support for CRL extensions
+        # Add extensions.
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_CRL_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=x509_crl,
+            add_func=self._lib.X509_CRL_add_ext,
+            gc=True
+        )
+
         res = self._lib.X509_CRL_sign(
             x509_crl, private_key._evp_pkey, evp_md
         )

@@ -822,6 +822,16 @@ X.509 Certificate Revocation List Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks
             the next update time for this CRL.
 
+    .. method:: add_extension(extension, critical)
+
+        Adds an X.509 extension to this CRL.
+
+        :param extension: An extension with the
+            :class:`~cryptography.x509.ExtensionType` interface.
+
+        :param critical: Set to ``True`` if the extension must be understood and
+             handled by whoever reads the CRL.
+
     .. method:: sign(private_key, algorithm, backend)
 
         Sign this CRL using the CA's private key.
