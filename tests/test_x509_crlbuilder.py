@@ -14,7 +14,7 @@ from cryptography.hazmat.backends.interfaces import (
 )
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509.oid import NameOID
+from cryptography.x509.oid import AuthorityInformationAccessOID, NameOID
 
 from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
@@ -88,6 +88,14 @@ class TestCertificateRevocationListBuilder(object):
         with pytest.raises(ValueError):
             builder.next_update(datetime.datetime(2001, 1, 1, 12, 1))
 
+    def test_add_extension_checks_for_duplicates(self):
+        builder = x509.CertificateRevocationListBuilder().add_extension(
+            x509.CRLNumber(1), False
+        )
+
+        with pytest.raises(ValueError):
+            builder.add_extension(x509.CRLNumber(2), False)
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_issuer_name(self, backend):
@@ -143,6 +151,108 @@ class TestCertificateRevocationListBuilder(object):
         assert len(crl) == 0
         assert crl.last_update == last_update
         assert crl.next_update == next_update
+
+    @pytest.mark.parametrize(
+        "extension",
+        [
+            x509.CRLNumber(13),
+            x509.AuthorityKeyIdentifier(
+                b"\xc3\x9c\xf3\xfc\xd3F\x084\xbb\xceF\x7f\xa0|[\xf3\xe2\x08"
+                b"\xcbY",
+                None,
+                None
+            ),
+            x509.AuthorityInformationAccess([
+                x509.AccessDescription(
+                    AuthorityInformationAccessOID.CA_ISSUERS,
+                    x509.DNSName(u"cryptography.io")
+                )
+            ]),
+            x509.IssuerAlternativeName([
+                x509.UniformResourceIdentifier(u"https://cryptography.io"),
+            ])
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_extensions(self, backend, extension):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(
+            last_update
+        ).next_update(
+            next_update
+        ).add_extension(
+            extension, False
+        )
+
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert len(crl) == 0
+        assert len(crl.extensions) == 1
+        ext = crl.extensions.get_extension_for_class(extension.__class__)
+        assert ext.critical is False
+        assert ext.value == extension
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_sign_multiple_extensions_critical(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        ian = x509.IssuerAlternativeName([
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
+        ])
+        crl_number = x509.CRLNumber(13)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(
+            last_update
+        ).next_update(
+            next_update
+        ).add_extension(
+            crl_number, False
+        ).add_extension(
+            ian, True
+        )
+
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert len(crl) == 0
+        assert len(crl.extensions) == 2
+        ext1 = crl.extensions.get_extension_for_class(x509.CRLNumber)
+        assert ext1.critical is False
+        assert ext1.value == crl_number
+        ext2 = crl.extensions.get_extension_for_class(
+            x509.IssuerAlternativeName
+        )
+        assert ext2.critical is True
+        assert ext2.value == ian
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_add_unsupported_extension(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = x509.CertificateRevocationListBuilder().issuer_name(
+            x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u"cryptography.io CA")
+            ])
+        ).last_update(
+            last_update
+        ).next_update(
+            next_update
+        ).add_extension(
+            x509.OCSPNoCheck(), False
+        )
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)

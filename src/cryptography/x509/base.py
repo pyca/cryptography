@@ -573,6 +573,24 @@ class CertificateRevocationListBuilder(object):
             self._extensions, self._revoked_certificates
         )
 
+    def add_extension(self, extension, critical):
+        """
+        Adds an X.509 extension to the certificate revocation list.
+        """
+        if not isinstance(extension, ExtensionType):
+            raise TypeError("extension must be an ExtensionType")
+
+        extension = Extension(extension.oid, critical, extension)
+
+        # TODO: This is quadratic in the number of extensions
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        return CertificateRevocationListBuilder(
+            self._issuer_name, self._last_update, self._next_update,
+            self._extensions + [extension], self._revoked_certificates
+        )
+
     def sign(self, private_key, algorithm, backend):
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
