@@ -761,6 +761,88 @@ X.509 CSR (Certificate Signing Request) Object
         key embedded in the CSR). This data may be used to validate the CSR
         signature.
 
+X.509 Certificate Revocation List Builder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: CertificateRevocationListBuilder
+
+    .. versionadded:: 1.2
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.asymmetric import rsa
+        >>> from cryptography.x509.oid import NameOID
+        >>> import datetime
+        >>> one_day = datetime.timedelta(1, 0, 0)
+        >>> private_key = rsa.generate_private_key(
+        ...     public_exponent=65537,
+        ...     key_size=2048,
+        ...     backend=default_backend()
+        ... )
+        >>> builder = x509.CertificateRevocationListBuilder()
+        >>> builder = builder.issuer_name(x509.Name([
+        ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io CA'),
+        ... ]))
+        >>> builder = builder.last_update(datetime.datetime.today())
+        >>> builder = builder.next_update(datetime.datetime.today() + one_day)
+        >>> crl = builder.sign(
+        ...     private_key=private_key, algorithm=hashes.SHA256(),
+        ...     backend=default_backend()
+        ... )
+        >>> isinstance(crl, x509.CertificateRevocationList)
+        True
+
+    .. method:: issuer_name(name)
+
+        Sets the issuer's distinguished name.
+
+        :param name: The :class:`~cryptography.x509.Name` that describes the
+            issuer (CA).
+
+    .. method:: last_update(time)
+
+        Sets this CRL's activation time.  This is the time from which
+        clients can start trusting this CRL.  It may be different from
+        the time at which this CRL was created. This is also known as the
+        ``thisUpdate`` time.
+
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks
+            the activation time for this CRL.  The CRL may not be trusted if it
+            is used before this time.
+
+    .. method:: next_update(time)
+
+        Sets this CRL's next update time. This is the time by which
+        a new CRL will be issued. The CA is allowed to issue a new CRL before
+        this date, however clients are not required to check for it.
+
+        :param time: The :class:`datetime.datetime` object (in UTC) that marks
+            the next update time for this CRL.
+
+    .. method:: sign(private_key, algorithm, backend)
+
+        Sign this CRL using the CA's private key.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
+            will be used to generate the signature.
+
+        :param backend: Backend that will be used to build the CRL.
+            Must support the
+            :class:`~cryptography.hazmat.backends.interfaces.X509Backend`
+            interface.
+
+        :returns: :class:`~cryptography.x509.CertificateRevocationList`
+
 X.509 Revoked Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

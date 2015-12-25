@@ -574,7 +574,7 @@ A specific ``backend`` may provide one or more of these interfaces.
         .. versionadded:: 1.2
 
         :param builder: An instance of
-            CertificateRevocationListBuilder.
+            :class:`~cryptography.x509.CertificateRevocationListBuilder`.
 
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -588,7 +588,6 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: A new instance of
             :class:`~cryptography.x509.CertificateRevocationList`.
-
 
 .. class:: DHBackend
 

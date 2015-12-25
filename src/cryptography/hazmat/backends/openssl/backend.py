@@ -1456,7 +1456,73 @@ class Backend(object):
         return _Certificate(self, x509_cert)
 
     def create_x509_crl(self, builder, private_key, algorithm):
-        raise NotImplementedError
+        if not isinstance(builder, x509.CertificateRevocationListBuilder):
+            raise TypeError('Builder type mismatch.')
+        if not isinstance(algorithm, hashes.HashAlgorithm):
+            raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if isinstance(private_key, _DSAPrivateKey):
+            raise NotImplementedError(
+                "CRL signatures aren't implemented for DSA"
+                " keys at this time."
+            )
+        if isinstance(private_key, _EllipticCurvePrivateKey):
+            raise NotImplementedError(
+                "CRL signatures aren't implemented for EC"
+                " keys at this time."
+            )
+
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode('ascii')
+        )
+        self.openssl_assert(evp_md != self._ffi.NULL)
+
+        # Create an empty CRL.
+        x509_crl = self._lib.X509_CRL_new()
+        x509_crl = self._ffi.gc(x509_crl, backend._lib.X509_CRL_free)
+
+        # Set the x509 CRL version. We only support v2 (integer value 1).
+        res = self._lib.X509_CRL_set_version(x509_crl, 1)
+        self.openssl_assert(res == 1)
+
+        # Set the issuer name.
+        res = self._lib.X509_CRL_set_issuer_name(
+            x509_crl, _encode_name_gc(self, list(builder._issuer_name))
+        )
+        self.openssl_assert(res == 1)
+
+        # Set the last update time.
+        last_update = self._lib.ASN1_TIME_set(
+            self._ffi.NULL, calendar.timegm(builder._last_update.timetuple())
+        )
+        self.openssl_assert(last_update != self._ffi.NULL)
+        last_update = self._ffi.gc(last_update, self._lib.ASN1_TIME_free)
+        res = self._lib.X509_CRL_set_lastUpdate(x509_crl, last_update)
+        self.openssl_assert(res == 1)
+
+        # Set the next update time.
+        next_update = self._lib.ASN1_TIME_set(
+            self._ffi.NULL, calendar.timegm(builder._next_update.timetuple())
+        )
+        self.openssl_assert(next_update != self._ffi.NULL)
+        next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
+        res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
+        self.openssl_assert(res == 1)
+        # TODO: support revoked certificates
+
+        # TODO: add support for CRL extensions
+        res = self._lib.X509_CRL_sign(
+            x509_crl, private_key._evp_pkey, evp_md
+        )
+        if res == 0:
+            errors = self._consume_errors()
+            self.openssl_assert(errors[0][1] == self._lib.ERR_LIB_RSA)
+            self.openssl_assert(
+                errors[0][3] == self._lib.RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY
+            )
+            raise ValueError("Digest too big for RSA key")
+
+        return _CertificateRevocationList(self, x509_crl)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(
