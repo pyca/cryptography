@@ -1312,18 +1312,20 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         # Add extensions.
-        extensions = self._create_x509_extensions(
-            builder._extensions, _EXTENSION_ENCODE_HANDLERS
-        )
         sk_extension = self._lib.sk_X509_EXTENSION_new_null()
         self.openssl_assert(sk_extension != self._ffi.NULL)
         sk_extension = self._ffi.gc(
             sk_extension, self._lib.sk_X509_EXTENSION_free
         )
-        for extension in extensions:
-            res = self._lib.sk_X509_EXTENSION_push(sk_extension, extension)
-            self.openssl_assert(res >= 1)
-
+        # gc is not necessary for CSRs, as sk_X509_EXTENSION_free
+        # will release all the X509_EXTENSIONs.
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=sk_extension,
+            add_func=self._lib.sk_X509_EXTENSION_insert,
+            gc=False
+        )
         res = self._lib.X509_REQ_add_extensions(x509_req, sk_extension)
         self.openssl_assert(res == 1)
 
@@ -1405,12 +1407,13 @@ class Backend(object):
         self.openssl_assert(res != self._ffi.NULL)
 
         # Add extensions.
-        extensions = self._create_x509_extensions(
-            builder._extensions, _EXTENSION_ENCODE_HANDLERS
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=x509_cert,
+            add_func=self._lib.X509_add_ext,
+            gc=True
         )
-        for i, extension in enumerate(extensions):
-            res = self._lib.X509_add_ext(x509_cert, extension, i)
-            self.openssl_assert(res == 1)
 
         # Set the issuer name.
         res = self._lib.X509_set_issuer_name(
@@ -1501,9 +1504,9 @@ class Backend(object):
 
         return _CertificateRevocationList(self, x509_crl)
 
-    def _create_x509_extensions(self, extensions, handlers):
-        x509_extensions = []
-        for extension in extensions:
+    def _create_x509_extensions(self, extensions, handlers, x509_obj,
+                                add_func, gc):
+        for i, extension in enumerate(extensions):
             try:
                 encode = handlers[extension.oid]
             except KeyError:
@@ -1520,12 +1523,12 @@ class Backend(object):
                 _encode_asn1_str_gc(self, pp[0], r)
             )
             self.openssl_assert(x509_extension != self._ffi.NULL)
-            x509_extension = self._ffi.gc(
-                x509_extension, self._lib.X509_EXTENSION_free
-            )
-            x509_extensions.append(x509_extension)
-
-        return x509_extensions
+            if gc:
+                x509_extension = self._ffi.gc(
+                    x509_extension, self._lib.X509_EXTENSION_free
+                )
+            res = add_func(x509_obj, x509_extension, i)
+            self.openssl_assert(res >= 1)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(
