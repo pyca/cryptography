@@ -12,9 +12,6 @@ import sys
 import warnings
 
 
-DeprecatedIn10 = DeprecationWarning
-
-
 def read_only_property(name):
     return property(lambda self: getattr(self, name))
 
