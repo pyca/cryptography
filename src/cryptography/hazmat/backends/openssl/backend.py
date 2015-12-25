@@ -1510,26 +1510,14 @@ class Backend(object):
         self.openssl_assert(res == 1)
         # TODO: support revoked certificates
 
-        for i, extension in enumerate(builder._extensions):
-            try:
-                encode = _CRL_EXTENSION_ENCODE_HANDLERS[extension.oid]
-            except KeyError:
-                raise NotImplementedError(
-                    'Extension not supported: {0}'.format(extension.oid)
-                )
-
-            pp, r = encode(self, extension.value)
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                _encode_asn1_str_gc(self, pp[0], r)
-            )
-            self.openssl_assert(extension != self._ffi.NULL)
-            extension = self._ffi.gc(extension, self._lib.X509_EXTENSION_free)
-            res = self._lib.X509_CRL_add_ext(x509_crl, extension, i)
-            self.openssl_assert(res == 1)
+        # Add extensions.
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_CRL_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=x509_crl,
+            add_func=self._lib.X509_CRL_add_ext,
+            gc=True
+        )
 
         res = self._lib.X509_CRL_sign(
             x509_crl, private_key._evp_pkey, evp_md
