@@ -1312,30 +1312,21 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         # Add extensions.
-        extensions = self._lib.sk_X509_EXTENSION_new_null()
-        self.openssl_assert(extensions != self._ffi.NULL)
-        extensions = self._ffi.gc(
-            extensions,
-            self._lib.sk_X509_EXTENSION_free,
+        sk_extension = self._lib.sk_X509_EXTENSION_new_null()
+        self.openssl_assert(sk_extension != self._ffi.NULL)
+        sk_extension = self._ffi.gc(
+            sk_extension, self._lib.sk_X509_EXTENSION_free
         )
-        for extension in builder._extensions:
-            try:
-                encode = _EXTENSION_ENCODE_HANDLERS[extension.oid]
-            except KeyError:
-                raise NotImplementedError('Extension not yet supported.')
-
-            pp, r = encode(self, extension.value)
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                _encode_asn1_str_gc(self, pp[0], r),
-            )
-            self.openssl_assert(extension != self._ffi.NULL)
-            res = self._lib.sk_X509_EXTENSION_push(extensions, extension)
-            self.openssl_assert(res >= 1)
-        res = self._lib.X509_REQ_add_extensions(x509_req, extensions)
+        # gc is not necessary for CSRs, as sk_X509_EXTENSION_free
+        # will release all the X509_EXTENSIONs.
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=sk_extension,
+            add_func=self._lib.sk_X509_EXTENSION_insert,
+            gc=False
+        )
+        res = self._lib.X509_REQ_add_extensions(x509_req, sk_extension)
         self.openssl_assert(res == 1)
 
         # Sign the request using the requester's private key.
@@ -1416,24 +1407,13 @@ class Backend(object):
         self.openssl_assert(res != self._ffi.NULL)
 
         # Add extensions.
-        for i, extension in enumerate(builder._extensions):
-            try:
-                encode = _EXTENSION_ENCODE_HANDLERS[extension.oid]
-            except KeyError:
-                raise NotImplementedError('Extension not yet supported.')
-
-            pp, r = encode(self, extension.value)
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                _encode_asn1_str_gc(self, pp[0], r)
-            )
-            self.openssl_assert(extension != self._ffi.NULL)
-            extension = self._ffi.gc(extension, self._lib.X509_EXTENSION_free)
-            res = self._lib.X509_add_ext(x509_cert, extension, i)
-            self.openssl_assert(res == 1)
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=x509_cert,
+            add_func=self._lib.X509_add_ext,
+            gc=True
+        )
 
         # Set the issuer name.
         res = self._lib.X509_set_issuer_name(
@@ -1523,6 +1503,32 @@ class Backend(object):
             raise ValueError("Digest too big for RSA key")
 
         return _CertificateRevocationList(self, x509_crl)
+
+    def _create_x509_extensions(self, extensions, handlers, x509_obj,
+                                add_func, gc):
+        for i, extension in enumerate(extensions):
+            try:
+                encode = handlers[extension.oid]
+            except KeyError:
+                raise NotImplementedError(
+                    'Extension not supported: {0}'.format(extension.oid)
+                )
+
+            pp, r = encode(self, extension.value)
+            obj = _txt2obj_gc(self, extension.oid.dotted_string)
+            x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
+                obj,
+                1 if extension.critical else 0,
+                _encode_asn1_str_gc(self, pp[0], r)
+            )
+            self.openssl_assert(x509_extension != self._ffi.NULL)
+            if gc:
+                x509_extension = self._ffi.gc(
+                    x509_extension, self._lib.X509_EXTENSION_free
+                )
+            res = add_func(x509_obj, x509_extension, i)
+            self.openssl_assert(res >= 1)
 
     def load_pem_private_key(self, data, password):
         return self._load_key(
