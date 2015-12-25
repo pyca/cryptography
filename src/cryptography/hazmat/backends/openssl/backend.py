@@ -1519,6 +1519,17 @@ class Backend(object):
             gc=True
         )
 
+        # add revoked certificates
+        for revoked_cert in builder._revoked_certificates:
+            # Duplicating because the X509_CRL takes ownership and will free
+            # this memory when X509_CRL_free is called.
+            revoked = self._lib.Cryptography_X509_REVOKED_dup(
+                revoked_cert._x509_revoked
+            )
+            self.openssl_assert(revoked != self._ffi.NULL)
+            res = self._lib.X509_CRL_add0_revoked(x509_crl, revoked)
+            self.openssl_assert(res == 1)
+
         res = self._lib.X509_CRL_sign(
             x509_crl, private_key._evp_pkey, evp_md
         )

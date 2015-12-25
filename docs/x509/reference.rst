@@ -788,12 +788,18 @@ X.509 Certificate Revocation List Builder
         ... ]))
         >>> builder = builder.last_update(datetime.datetime.today())
         >>> builder = builder.next_update(datetime.datetime.today() + one_day)
+        >>> revoked_cert = x509.RevokedCertificateBuilder().serial_number(
+        ...     333
+        ... ).revocation_date(
+        ...     datetime.datetime.today()
+        ... ).build(default_backend())
+        >>> builder = builder.add_revoked_certificate(revoked_cert)
         >>> crl = builder.sign(
         ...     private_key=private_key, algorithm=hashes.SHA256(),
         ...     backend=default_backend()
         ... )
-        >>> isinstance(crl, x509.CertificateRevocationList)
-        True
+        >>> len(crl)
+        1
 
     .. method:: issuer_name(name)
 
@@ -831,6 +837,15 @@ X.509 Certificate Revocation List Builder
 
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the CRL.
+
+    .. method:: add_revoked_certificate(revoked_certificate)
+
+        Adds a revoked certificate to this CRL.
+
+        :param revoked_certificate: An instance of
+            :class:`~cryptography.x509.RevokedCertificate`. These can be
+            obtained from an existing CRL or created with
+            :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
     .. method:: sign(private_key, algorithm, backend)
 

@@ -270,6 +270,8 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
+
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
 int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
 int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
@@ -365,4 +367,12 @@ int (*i2d_ECPrivateKey_bio)(BIO *, EC_KEY *) = NULL;
 EC_KEY *(*o2i_ECPublicKey)(EC_KEY **, const unsigned char **, long) = NULL;
 int (*i2o_ECPublicKey)(EC_KEY *, unsigned char **) = NULL;
 #endif
+
+/* X509_REVOKED_dup only exists on 1.0.2+. It is implemented using
+   IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
+   it available on all OpenSSLs. */
+X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
+    return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
+}
+
 """
