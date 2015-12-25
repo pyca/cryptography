@@ -743,7 +743,7 @@ def _decode_cert_issuer(backend, ext):
                 CRLEntryExtensionOID.CERTIFICATE_ISSUER))
 
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-    return x509.GeneralNames(_decode_general_names(backend, gns))
+    return x509.CertificateIssuer(_decode_general_names(backend, gns))
 
 
 @utils.register_interface(x509.RevokedCertificate)

@@ -74,6 +74,44 @@ class TestExtension(object):
         assert ext1 != object()
 
 
+class TestCertificateIssuer(object):
+    def test_iter_names(self):
+        ci = x509.CertificateIssuer([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ])
+        assert len(ci) == 2
+        assert list(ci) == [
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+        ]
+
+    def test_eq(self):
+        ci1 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        ci2 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        assert ci1 == ci2
+
+    def test_ne(self):
+        ci1 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        ci2 = x509.CertificateIssuer([x509.DNSName(u"somethingelse.tld")])
+        assert ci1 != ci2
+        assert ci1 != object()
+
+    def test_repr(self):
+        ci = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
+        assert repr(ci) == (
+            "<CertificateIssuer(<GeneralNames([<DNSName(value=cryptography.io"
+            ")>])>)>"
+        )
+
+    def test_get_values_for_type(self):
+        ci = x509.CertificateIssuer(
+            [x509.DNSName(u"cryptography.io")]
+        )
+        names = ci.get_values_for_type(x509.DNSName)
+        assert names == [u"cryptography.io"]
+
+
 class TestNoticeReference(object):
     def test_notice_numbers_not_all_int(self):
         with pytest.raises(TypeError):

@@ -6,6 +6,17 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:**
+  :class:`~cryptography.x509.RevokedCertificate`
+  :attr:`~cryptography.x509.RevokedCertificate.extensions` now uses extension
+  classes rather than returning raw values inside the
+  :class:`~cryptography.x509.Extension`
+  :attr:`~cryptography.x509.Extension.value`. The new classes
+  are:
+
+  * :class:`~cryptography.x509.CertificateIssuer`
+  * ``CRLReason``
+  * ``InvalidityDate``
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
   :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.

@@ -1956,6 +1956,40 @@ These classes may be present within a :class:`CertificatePolicies` instance.
 
         A list of integers.
 
+CRL Entry Extensions
+~~~~~~~~~~~~~~~~~~~~
+
+These extensions are only valid within a :class:`RevokedCertificate` object.
+
+.. class:: CertificateIssuer(general_names)
+
+    .. versionadded:: 1.2
+
+    The certificate issuer is an extension that is only valid inside
+    :class:`~cryptography.x509.RevokedCertificate` objects.  If the
+    ``indirectCRL`` property of the parent CRL's IssuingDistributionPoint
+    extension is set, then this extension identifies the certificate issuer
+    associated with the revoked certificate. The object is iterable to get
+    every element.
+
+    :param list general_names: A list of :class:`GeneralName` instances.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.CRLEntryExtensionOID.CERTIFICATE_ISSUER`.
+
+    .. method:: get_values_for_type(type)
+
+        :param type: A :class:`GeneralName` instance. This is one of the
+            :ref:`general name classes <general_name_classes>`.
+
+        :returns: A list of values extracted from the matched general names.
+            The type of the returned values depends on the :class:`GeneralName`.
+
+
 Object Identifiers
 ~~~~~~~~~~~~~~~~~~
 

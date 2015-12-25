@@ -18,7 +18,9 @@ from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
-from cryptography.x509.oid import ExtensionOID, ObjectIdentifier
+from cryptography.x509.oid import (
+    CRLEntryExtensionOID, ExtensionOID, ObjectIdentifier
+)
 
 
 class _SubjectPublicKeyInfo(univ.Sequence):
@@ -936,6 +938,35 @@ class IssuerAlternativeName(object):
 
     def __eq__(self, other):
         if not isinstance(other, IssuerAlternativeName):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+
+@utils.register_interface(ExtensionType)
+class CertificateIssuer(object):
+    oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
+
+    def __init__(self, general_names):
+        self._general_names = GeneralNames(general_names)
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return self._general_names.get_values_for_type(type)
+
+    def __repr__(self):
+        return "<CertificateIssuer({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, CertificateIssuer):
             return NotImplemented
 
         return self._general_names == other._general_names
