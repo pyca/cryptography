@@ -202,7 +202,7 @@ class TestCertificateRevocationListBuilder(object):
         crl = builder.sign(private_key, hashes.SHA256(), backend)
         assert len(crl) == 0
         assert len(crl.extensions) == 1
-        ext = crl.extensions.get_extension_for_class(extension.__class__)
+        ext = crl.extensions.get_extension_for_class(type(extension))
         assert ext.critical is False
         assert ext.value == extension
 
