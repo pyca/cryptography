@@ -907,7 +907,7 @@ X.509 Revoked Certificate Object
 
             >>> for ext in revoked_certificate.extensions:
             ...     print(ext)
-            <Extension(oid=<ObjectIdentifier(oid=2.5.29.24, name=invalidityDate)>, critical=False, value=2015-01-01 00:00:00)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.24, name=invalidityDate)>, critical=False, value=<InvalidityDate(invalidity_date=2015-01-01 00:00:00)>)>
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.21, name=cRLReason)>, critical=False, value=<CRLReason(reason=ReasonFlags.key_compromise)>)>
 
 X.509 Revoked Certificate Builder
@@ -2010,6 +2010,31 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
     .. attribute:: reason
 
         :type: An element from :class:`~cryptography.x509.ReasonFlags`
+
+.. class:: InvalidityDate(invalidity_date)
+
+    .. versionadded:: 1.2
+
+    Invalidity date is an extension that is only valid inside
+    :class:`~cryptography.x509.RevokedCertificate` objects. It provides
+    the date on which it is known or suspected that the private key was
+    compromised or that the certificate otherwise became invalid.
+    This date may be earlier than the revocation date in the CRL entry,
+    which is the date at which the CA processed the revocation.
+
+    :param invalidity_date: The :class:`datetime.datetime` when it is known
+        or suspected that the private key was compromised.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.CRLEntryExtensionOID.INVALIDITY_DATE`.
+
+    .. attribute:: invalidity_date
+
+        :type: :class:`datetime.datetime`
 
 
 Object Identifiers

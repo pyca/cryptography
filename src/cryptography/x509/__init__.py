@@ -18,7 +18,7 @@ from cryptography.x509.extensions import (
     CRLNumber, CRLReason, CertificateIssuer, CertificatePolicies,
     DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
     ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
-    InhibitAnyPolicy, IssuerAlternativeName, KeyUsage,
+    InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
     ReasonFlags, SubjectAlternativeName, SubjectKeyIdentifier,
     UnsupportedExtension, UserNotice
@@ -168,4 +168,5 @@ __all__ = [
     "CRLExtensionOID",
     "CertificateIssuer",
     "CRLReason",
+    "InvalidityDate",
 ]

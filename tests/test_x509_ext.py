@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+import datetime
 import ipaddress
 import os
 
@@ -133,6 +134,36 @@ class TestCRLReason(object):
         assert repr(reason1) == (
             "<CRLReason(reason=ReasonFlags.unspecified)>"
         )
+
+
+class TestInvalidityDate(object):
+    def test_invalid_invalidity_date(self):
+        with pytest.raises(TypeError):
+            x509.InvalidityDate("notadate")
+
+    def test_eq(self):
+        invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        invalid2 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        assert invalid1 == invalid2
+
+    def test_ne(self):
+        invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        invalid2 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 2))
+        assert invalid1 != invalid2
+        assert invalid1 != object()
+
+    def test_repr(self):
+        invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        assert repr(invalid1) == (
+            "<InvalidityDate(invalidity_date=2015-01-01 01:01:00)>"
+        )
+
+    def test_hash(self):
+        invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        invalid2 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        invalid3 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 2))
+        assert hash(invalid1) == hash(invalid2)
+        assert hash(invalid1) != hash(invalid3)
 
 
 class TestNoticeReference(object):
