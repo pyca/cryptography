@@ -1579,6 +1579,13 @@ class TestCRLNumber(object):
         with pytest.raises(TypeError):
             x509.CRLNumber("notanumber")
 
+    def test_hash(self):
+        c1 = x509.CRLNumber(1)
+        c2 = x509.CRLNumber(1)
+        c3 = x509.CRLNumber(2)
+        assert hash(c1) == hash(c2)
+        assert hash(c1) != hash(c3)
+
 
 class TestSubjectAlternativeName(object):
     def test_get_values_for_type(self):
