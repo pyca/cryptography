@@ -2278,6 +2278,22 @@ instances. The following common OIDs are available as constants.
         the ``CRLNumber`` extension type. This extension only has meaning
         for certificate revocation lists.
 
+.. class:: CRLEntryExtensionOID
+
+    .. versionadded:: 1.2
+
+    .. attribute:: CERTIFICATE_ISSUER
+
+        Corresponds to the dotted string ``"2.5.29.29"``.
+
+    .. attribute:: CRL_REASON
+
+        Corresponds to the dotted string ``"2.5.29.21"``.
+
+    .. attribute:: INVALIDITY_DATE
+
+        Corresponds to the dotted string ``"2.5.29.24"``.
+
 Exceptions
 ~~~~~~~~~~
 .. currentmodule:: cryptography.x509

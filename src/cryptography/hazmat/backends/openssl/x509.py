@@ -20,7 +20,7 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.oid import (
-    CRLExtensionOID, CertificatePoliciesOID, ExtensionOID
+    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
 )
 
 
@@ -740,7 +740,7 @@ def _decode_cert_issuer(backend, ext):
         backend._consume_errors()
         raise ValueError(
             "The {0} extension is corrupted and can't be parsed".format(
-                CRLExtensionOID.CERTIFICATE_ISSUER))
+                CRLEntryExtensionOID.CERTIFICATE_ISSUER))
 
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
     return x509.GeneralNames(_decode_general_names(backend, gns))
@@ -992,13 +992,13 @@ _EXTENSION_HANDLERS = {
 }
 
 _REVOKED_EXTENSION_HANDLERS = {
-    CRLExtensionOID.CRL_REASON: _decode_crl_reason,
-    CRLExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
-    CRLExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
+    CRLEntryExtensionOID.CRL_REASON: _decode_crl_reason,
+    CRLEntryExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
 
 _REVOKED_UNSUPPORTED_EXTENSIONS = set([
-    CRLExtensionOID.CERTIFICATE_ISSUER,
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER,
 ])
 
 _CRL_EXTENSION_HANDLERS = {

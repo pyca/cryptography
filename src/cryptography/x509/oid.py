@@ -88,10 +88,18 @@ class ExtensionOID(object):
     CRL_NUMBER = ObjectIdentifier("2.5.29.20")
 
 
-class CRLExtensionOID(object):
+class CRLEntryExtensionOID(object):
     CERTIFICATE_ISSUER = ObjectIdentifier("2.5.29.29")
     CRL_REASON = ObjectIdentifier("2.5.29.21")
     INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
+
+
+CRLExtensionOID = utils.deprecated(
+    CRLEntryExtensionOID,
+    __name__,
+    "CRLExtensionOID has been renamed to CRLEntryExtensionOID",
+    utils.DeprecatedIn12
+)
 
 
 class NameOID(object):
@@ -220,9 +228,9 @@ _OID_NAMES = {
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
     ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
-    CRLExtensionOID.CRL_REASON: "cRLReason",
-    CRLExtensionOID.INVALIDITY_DATE: "invalidityDate",
-    CRLExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
+    CRLEntryExtensionOID.CRL_REASON: "cRLReason",
+    CRLEntryExtensionOID.INVALIDITY_DATE: "invalidityDate",
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: "certificateIssuer",
     ExtensionOID.NAME_CONSTRAINTS: "nameConstraints",
     ExtensionOID.CRL_DISTRIBUTION_POINTS: "cRLDistributionPoints",
     ExtensionOID.CERTIFICATE_POLICIES: "certificatePolicies",
