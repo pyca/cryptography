@@ -165,6 +165,7 @@ class TestInvalidityDate(object):
         assert hash(invalid1) == hash(invalid2)
         assert hash(invalid1) != hash(invalid3)
 
+
 class TestNoticeReference(object):
     def test_notice_numbers_not_all_int(self):
         with pytest.raises(TypeError):
