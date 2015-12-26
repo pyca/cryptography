@@ -858,6 +858,18 @@ class TestExtensions(object):
             exts.get_extension_for_class(x509.IssuerAlternativeName)
         assert exc.value.oid == ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
+    def test_indexing(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        exts = cert.extensions
+        assert exts[-1] == exts[7]
+        assert len(exts[3:5]) == 2
+        assert exts[2:4][0] == exts[2]
+        assert exts[2:4][1] == exts[3]
+
     def test_one_extension_get_for_class(self, backend):
         cert = _load_cert(
             os.path.join(
