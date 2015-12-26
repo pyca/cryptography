@@ -387,9 +387,9 @@ class TestRevokedCertificate(object):
             x509.CertificateIssuer).value
         assert issuer == x509.CertificateIssuer(exp_issuer)
 
-        date = rev1.extensions.get_extension_for_oid(
-            x509.OID_INVALIDITY_DATE).value
-        assert date == datetime.datetime(2015, 1, 1, 0, 0)
+        date = rev1.extensions.get_extension_for_class(
+            x509.InvalidityDate).value
+        assert date == x509.InvalidityDate(datetime.datetime(2015, 1, 1, 0, 0))
 
         # Check if all reason flags can be found in the CRL.
         flags = set(x509.ReasonFlags)

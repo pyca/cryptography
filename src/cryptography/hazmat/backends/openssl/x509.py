@@ -717,7 +717,9 @@ def _decode_invalidity_date(backend, inv_date):
             backend._ffi.cast("ASN1_STRING *", generalized_time)
         )
     ).decode("ascii")
-    return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+    return x509.InvalidityDate(
+        datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+    )
 
 
 def _decode_cert_issuer(backend, ext):

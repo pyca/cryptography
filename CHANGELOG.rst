@@ -16,7 +16,7 @@ Changelog
 
   * :class:`~cryptography.x509.CertificateIssuer`
   * :class:`~cryptography.x509.CRLReason`
-  * ``InvalidityDate``
+  * :class:`~cryptography.x509.InvalidityDate`
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
   :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.

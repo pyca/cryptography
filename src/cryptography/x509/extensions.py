@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import datetime
 import hashlib
 import ipaddress
 from enum import Enum
@@ -1001,3 +1002,30 @@ class CRLReason(object):
         return not self == other
 
     reason = utils.read_only_property("_reason")
+
+
+@utils.register_interface(ExtensionType)
+class InvalidityDate(object):
+    oid = CRLEntryExtensionOID.INVALIDITY_DATE
+
+    def __init__(self, invalidity_date):
+        if not isinstance(invalidity_date, datetime.datetime):
+            raise TypeError("invalidity_date must be a datetime.datetime")
+
+        self._invalidity_date = invalidity_date
+
+    def __repr__(self):
+        return "<InvalidityDate(invalidity_date={0})>".format(
+            self._invalidity_date
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, InvalidityDate):
+            return NotImplemented
+
+        return self.invalidity_date == other.invalidity_date
+
+    def __ne__(self, other):
+        return not self == other
+
+    invalidity_date = utils.read_only_property("_invalidity_date")
