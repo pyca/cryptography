@@ -112,6 +112,29 @@ class TestCertificateIssuer(object):
         assert names == [u"cryptography.io"]
 
 
+class TestCRLReason(object):
+    def test_invalid_reason_flags(self):
+        with pytest.raises(TypeError):
+            x509.CRLReason("notareason")
+
+    def test_eq(self):
+        reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
+        reason2 = x509.CRLReason(x509.ReasonFlags.unspecified)
+        assert reason1 == reason2
+
+    def test_ne(self):
+        reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
+        reason2 = x509.CRLReason(x509.ReasonFlags.ca_compromise)
+        assert reason1 != reason2
+        assert reason1 != object()
+
+    def test_repr(self):
+        reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
+        assert repr(reason1) == (
+            "<CRLReason(reason=ReasonFlags.unspecified)>"
+        )
+
+
 class TestNoticeReference(object):
     def test_notice_numbers_not_all_int(self):
         with pytest.raises(TypeError):

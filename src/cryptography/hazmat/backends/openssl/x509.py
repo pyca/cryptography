@@ -700,7 +700,7 @@ def _decode_crl_reason(backend, enum):
     code = backend._lib.ASN1_ENUMERATED_get(enum)
 
     try:
-        return _CRL_REASON_CODE_TO_ENUM[code]
+        return x509.CRLReason(_CRL_REASON_CODE_TO_ENUM[code])
     except KeyError:
         raise ValueError("Unsupported reason code: {0}".format(code))
 

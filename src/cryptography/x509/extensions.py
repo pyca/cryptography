@@ -976,3 +976,28 @@ class CertificateIssuer(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+@utils.register_interface(ExtensionType)
+class CRLReason(object):
+    oid = CRLEntryExtensionOID.CRL_REASON
+
+    def __init__(self, reason):
+        if not isinstance(reason, ReasonFlags):
+            raise TypeError("reason must be an element from ReasonFlags")
+
+        self._reason = reason
+
+    def __repr__(self):
+        return "<CRLReason(reason={0})>".format(self._reason)
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLReason):
+            return NotImplemented
+
+        return self.reason == other.reason
+
+    def __ne__(self, other):
+        return not self == other
+
+    reason = utils.read_only_property("_reason")

@@ -908,7 +908,7 @@ X.509 Revoked Certificate Object
             >>> for ext in revoked_certificate.extensions:
             ...     print(ext)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.24, name=invalidityDate)>, critical=False, value=2015-01-01 00:00:00)>
-            <Extension(oid=<ObjectIdentifier(oid=2.5.29.21, name=cRLReason)>, critical=False, value=ReasonFlags.key_compromise)>
+            <Extension(oid=<ObjectIdentifier(oid=2.5.29.21, name=cRLReason)>, critical=False, value=<CRLReason(reason=ReasonFlags.key_compromise)>)>
 
 X.509 Revoked Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1988,6 +1988,28 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 
         :returns: A list of values extracted from the matched general names.
             The type of the returned values depends on the :class:`GeneralName`.
+
+.. class:: CRLReason(reason)
+
+    .. versionadded:: 1.2
+
+    CRL reason (also known as ``reasonCode``) is an extension that is only
+    valid inside :class:`~cryptography.x509.RevokedCertificate` objects. It
+    identifies a reason for the certificate revocation.
+
+    :param reason: A value from the
+        :class:`~cryptography.x509.oid.CRLEntryExtensionOID` enum.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.CRLEntryExtensionOID.CRL_REASON`.
+
+    .. attribute:: reason
+
+        :type: An element from :class:`~cryptography.x509.ReasonFlags`
 
 
 Object Identifiers

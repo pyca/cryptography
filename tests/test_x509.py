@@ -379,9 +379,9 @@ class TestRevokedCertificate(object):
         rev1 = crl[1]
         assert isinstance(rev1.extensions, x509.Extensions)
 
-        reason = rev1.extensions.get_extension_for_oid(
-            x509.OID_CRL_REASON).value
-        assert reason == x509.ReasonFlags.unspecified
+        reason = rev1.extensions.get_extension_for_class(
+            x509.CRLReason).value
+        assert reason == x509.CRLReason(x509.ReasonFlags.unspecified)
 
         issuer = rev1.extensions.get_extension_for_class(
             x509.CertificateIssuer).value
@@ -395,12 +395,12 @@ class TestRevokedCertificate(object):
         flags = set(x509.ReasonFlags)
         for rev in crl:
             try:
-                r = rev.extensions.get_extension_for_oid(x509.OID_CRL_REASON)
+                r = rev.extensions.get_extension_for_class(x509.CRLReason)
             except x509.ExtensionNotFound:
                 # Not all revoked certs have a reason extension.
                 pass
             else:
-                flags.discard(r.value)
+                flags.discard(r.value.reason)
 
         assert len(flags) == 0
 
