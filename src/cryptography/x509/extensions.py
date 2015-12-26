@@ -132,6 +132,9 @@ class CRLNumber(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.crl_number)
+
     def __repr__(self):
         return "<CRLNumber({0})>".format(self.crl_number)
 
