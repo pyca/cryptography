@@ -894,6 +894,9 @@ class GeneralNames(object):
     def __ne__(self, other):
         return not self == other
 
+    def __getitem__(self, idx):
+        return self._general_names[idx]
+
 
 @utils.register_interface(ExtensionType)
 class SubjectAlternativeName(object):
@@ -919,6 +922,9 @@ class SubjectAlternativeName(object):
             return NotImplemented
 
         return self._general_names == other._general_names
+
+    def __getitem__(self, idx):
+        return self._general_names[idx]
 
     def __ne__(self, other):
         return not self == other

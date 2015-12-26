@@ -1483,6 +1483,19 @@ class TestGeneralNames(object):
             x509.DNSName(u"crypto.local"),
         ]
 
+    def test_indexing(self):
+        gn = x509.GeneralNames([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
+            x509.RFC822Name(u"email@another.local"),
+            x509.UniformResourceIdentifier(u"http://another.local"),
+        ])
+        assert gn[-1] == gn[4]
+        assert len(gn[1:3]) == 2
+        assert gn[2:4][0] == gn[2]
+        assert gn[2:5:2][1] == gn[4]
+
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
             x509.GeneralNames(
@@ -1636,6 +1649,19 @@ class TestSubjectAlternativeName(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
         ]
+
+    def test_indexing(self):
+        san = x509.SubjectAlternativeName([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
+            x509.RFC822Name(u"email@another.local"),
+            x509.UniformResourceIdentifier(u"http://another.local"),
+        ])
+        assert san[-1] == san[4]
+        assert len(san[1:3]) == 2
+        assert san[2:4][0] == san[2]
+        assert san[2:5:2][1] == san[4]
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
