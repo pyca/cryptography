@@ -687,6 +687,20 @@ class TestSubjectKeyIdentifier(object):
         assert ski != ski2
         assert ski != object()
 
+    def test_hash(self):
+        ski1 = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        ski2 = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"092384932230498bc980aa8098456f6ff7ff3ac9")
+        )
+        ski3 = x509.SubjectKeyIdentifier(
+            binascii.unhexlify(b"aa8098456f6ff7ff3ac9092384932230498bc980")
+        )
+
+        assert hash(ski1) == hash(ski2)
+        assert hash(ski1) != hash(ski3)
+
 
 class TestAuthorityKeyIdentifier(object):
     def test_authority_cert_issuer_not_generalname(self):

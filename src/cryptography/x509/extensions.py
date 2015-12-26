@@ -235,6 +235,9 @@ class SubjectKeyIdentifier(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.digest)
+
 
 @utils.register_interface(ExtensionType)
 class AuthorityInformationAccess(object):
