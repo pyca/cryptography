@@ -158,6 +158,12 @@ class TestInvalidityDate(object):
             "<InvalidityDate(invalidity_date=2015-01-01 01:01:00)>"
         )
 
+    def test_hash(self):
+        invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        invalid2 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
+        invalid3 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 2))
+        assert hash(invalid1) == hash(invalid2)
+        assert hash(invalid1) != hash(invalid3)
 
 class TestNoticeReference(object):
     def test_notice_numbers_not_all_int(self):

@@ -1028,4 +1028,7 @@ class InvalidityDate(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.invalidity_date)
+
     invalidity_date = utils.read_only_property("_invalidity_date")
