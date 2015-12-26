@@ -42,6 +42,9 @@ Changelog
   * :class:`~cryptography.x509.AuthorityKeyIdentifier`
   * :class:`~cryptography.x509.CRLNumber`
   * :class:`~cryptography.x509.IssuerAlternativeName`
+* Added :class:`~cryptography.x509.CertificateRevocationListBuilder` and
+  :class:`~cryptography.x509.RevokedCertificateBuilder` to allow creation of
+  CRLs.
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~
