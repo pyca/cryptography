@@ -37,8 +37,9 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _Certificate, _CertificateRevocationList, _CertificateSigningRequest,
-    _DISTPOINT_TYPE_FULLNAME, _DISTPOINT_TYPE_RELATIVENAME, _RevokedCertificate
+    _CRL_ENTRY_REASON_ENUM_TO_CODE, _Certificate, _CertificateRevocationList,
+    _CertificateSigningRequest, _DISTPOINT_TYPE_FULLNAME,
+    _DISTPOINT_TYPE_RELATIVENAME, _RevokedCertificate
 )
 from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.bindings.openssl import binding
@@ -164,26 +165,12 @@ def _encode_crl_number(backend, crl_number):
     return pp, r
 
 
-_CRL_ENTRY_REASONFLAGS = {
-    x509.ReasonFlags.unspecified: 0,
-    x509.ReasonFlags.key_compromise: 1,
-    x509.ReasonFlags.ca_compromise: 2,
-    x509.ReasonFlags.affiliation_changed: 3,
-    x509.ReasonFlags.superseded: 4,
-    x509.ReasonFlags.cessation_of_operation: 5,
-    x509.ReasonFlags.certificate_hold: 6,
-    x509.ReasonFlags.remove_from_crl: 8,
-    x509.ReasonFlags.privilege_withdrawn: 9,
-    x509.ReasonFlags.aa_compromise: 10
-}
-
-
 def _encode_crl_reason(backend, crl_reason):
     asn1enum = backend._lib.ASN1_ENUMERATED_new()
     backend.openssl_assert(asn1enum != backend._ffi.NULL)
     asn1enum = backend._ffi.gc(asn1enum, backend._lib.ASN1_ENUMERATED_free)
     res = backend._lib.ASN1_ENUMERATED_set(
-        asn1enum, _CRL_ENTRY_REASONFLAGS[crl_reason.reason]
+        asn1enum, _CRL_ENTRY_REASON_ENUM_TO_CODE[crl_reason.reason]
     )
     backend.openssl_assert(res == 1)
     pp = backend._ffi.new('unsigned char **')
