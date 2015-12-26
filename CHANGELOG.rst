@@ -15,7 +15,7 @@ Changelog
   are:
 
   * :class:`~cryptography.x509.CertificateIssuer`
-  * ``CRLReason``
+  * :class:`~cryptography.x509.CRLReason`
   * ``InvalidityDate``
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
