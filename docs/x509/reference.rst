@@ -947,6 +947,16 @@ X.509 Revoked Certificate Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             revocation time for the certificate.
 
+    .. method:: add_extension(extension, critical)
+
+        Adds an X.509 extension to this revoked certificate.
+
+        :param extension: An instance of one of the
+            :ref:`CRL entry extensions <crl_entry_extensions>`.
+
+        :param critical: Set to ``True`` if the extension must be understood and
+             handled.
+
     .. method:: build(backend)
 
         Create a revoked certificate object using the provided backend.
@@ -1955,6 +1965,8 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         :type: list
 
         A list of integers.
+
+.. _crl_entry_extensions:
 
 CRL Entry Extensions
 ~~~~~~~~~~~~~~~~~~~~
