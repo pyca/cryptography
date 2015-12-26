@@ -2270,6 +2270,9 @@ class Backend(object):
         generalized_time = self._ffi.gc(
             generalized_time, self._lib.ASN1_GENERALIZEDTIME_free
         )
+        return self._parse_asn1_generalized_time(generalized_time)
+
+    def _parse_asn1_generalized_time(self, generalized_time):
         time = self._asn1_string_to_ascii(
             self._ffi.cast("ASN1_STRING *", generalized_time)
         )
