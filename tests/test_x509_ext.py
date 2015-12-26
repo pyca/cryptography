@@ -87,6 +87,17 @@ class TestCertificateIssuer(object):
             x509.DNSName(u"crypto.local"),
         ]
 
+    def test_indexing(self):
+        ci = x509.CertificateIssuer([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
+            x509.RFC822Name(u"email@another.local"),
+            x509.UniformResourceIdentifier(u"http://another.local"),
+        ])
+        assert ci[-1] == ci[4]
+        assert ci[2:6:2] == [ci[2], ci[4]]
+
     def test_eq(self):
         ci1 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
         ci2 = x509.CertificateIssuer([x509.DNSName(u"cryptography.io")])
@@ -1560,6 +1571,17 @@ class TestIssuerAlternativeName(object):
             x509.DNSName(u"cryptography.io"),
             x509.DNSName(u"crypto.local"),
         ]
+
+    def test_indexing(self):
+        ian = x509.IssuerAlternativeName([
+            x509.DNSName(u"cryptography.io"),
+            x509.DNSName(u"crypto.local"),
+            x509.DNSName(u"another.local"),
+            x509.RFC822Name(u"email@another.local"),
+            x509.UniformResourceIdentifier(u"http://another.local"),
+        ])
+        assert ian[-1] == ian[4]
+        assert ian[2:6:2] == [ian[2], ian[4]]
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
