@@ -102,6 +102,9 @@ class Extensions(object):
     def __len__(self):
         return len(self._extensions)
 
+    def __getitem__(self, idx):
+        return self._extensions[idx]
+
     def __repr__(self):
         return (
             "<Extensions({0})>".format(self._extensions)
