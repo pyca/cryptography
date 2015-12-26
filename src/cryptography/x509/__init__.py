@@ -15,9 +15,10 @@ from cryptography.x509.base import (
 from cryptography.x509.extensions import (
     AccessDescription, AuthorityInformationAccess,
     AuthorityKeyIdentifier, BasicConstraints, CRLDistributionPoints,
-    CRLNumber, CertificatePolicies, DistributionPoint, DuplicateExtension,
-    ExtendedKeyUsage, Extension, ExtensionNotFound, ExtensionType, Extensions,
-    GeneralNames, InhibitAnyPolicy, IssuerAlternativeName, KeyUsage,
+    CRLNumber, CertificateIssuer, CertificatePolicies,
+    DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
+    ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
+    InhibitAnyPolicy, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
     ReasonFlags, SubjectAlternativeName, SubjectKeyIdentifier,
     UnsupportedExtension, UserNotice
@@ -165,4 +166,5 @@ __all__ = [
     "OID_OCSP",
     "_GENERAL_NAMES",
     "CRLExtensionOID",
+    "CertificateIssuer",
 ]

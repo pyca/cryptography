@@ -355,12 +355,12 @@ class TestRevokedCertificate(object):
             backend
         )
 
-        exp_issuer = x509.GeneralNames([
+        exp_issuer = [
             x509.DirectoryName(x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
                 x509.NameAttribute(x509.OID_COMMON_NAME, u"cryptography.io"),
             ]))
-        ])
+        ]
 
         # First revoked cert doesn't have extensions, test if it is handled
         # correctly.
@@ -383,14 +383,13 @@ class TestRevokedCertificate(object):
             x509.OID_CRL_REASON).value
         assert reason == x509.ReasonFlags.unspecified
 
-        issuer = rev1.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_ISSUER).value
-        assert issuer == exp_issuer
+        issuer = rev1.extensions.get_extension_for_class(
+            x509.CertificateIssuer).value
+        assert issuer == x509.CertificateIssuer(exp_issuer)
 
         date = rev1.extensions.get_extension_for_oid(
             x509.OID_INVALIDITY_DATE).value
-        assert isinstance(date, datetime.datetime)
-        assert date.isoformat() == "2015-01-01T00:00:00"
+        assert date == datetime.datetime(2015, 1, 1, 0, 0)
 
         # Check if all reason flags can be found in the CRL.
         flags = set(x509.ReasonFlags)
