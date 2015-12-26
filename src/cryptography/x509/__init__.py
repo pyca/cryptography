@@ -29,7 +29,7 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, CRLEntryExtensionOID,
+    AuthorityInformationAccessOID, CRLEntryExtensionOID, CRLExtensionOID,
     CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
     ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
@@ -164,4 +164,5 @@ __all__ = [
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "_GENERAL_NAMES",
+    "CRLExtensionOID",
 ]
