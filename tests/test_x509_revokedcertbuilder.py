@@ -58,6 +58,12 @@ class TestRevokedCertificateBuilder(object):
                 x509.CRLReason(x509.ReasonFlags.ca_compromise), False
             )
 
+    def test_add_invalid_extension(self):
+        with pytest.raises(TypeError):
+            x509.RevokedCertificateBuilder().add_extension(
+                "notanextension", False
+            )
+
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_no_serial_number(self, backend):
         builder = x509.RevokedCertificateBuilder().revocation_date(
