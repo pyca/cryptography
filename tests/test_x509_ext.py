@@ -972,9 +972,7 @@ class TestExtensions(object):
         )
         exts = cert.extensions
         assert exts[-1] == exts[7]
-        assert len(exts[3:5]) == 2
-        assert exts[2:4][0] == exts[2]
-        assert exts[2:4][1] == exts[3]
+        assert exts[2:6:2] == [exts[2], exts[4]]
 
     def test_one_extension_get_for_class(self, backend):
         cert = _load_cert(
@@ -1506,9 +1504,7 @@ class TestGeneralNames(object):
             x509.UniformResourceIdentifier(u"http://another.local"),
         ])
         assert gn[-1] == gn[4]
-        assert len(gn[1:3]) == 2
-        assert gn[2:4][0] == gn[2]
-        assert gn[2:5:2][1] == gn[4]
+        assert gn[2:6:2] == [gn[2], gn[4]]
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):
@@ -1673,9 +1669,7 @@ class TestSubjectAlternativeName(object):
             x509.UniformResourceIdentifier(u"http://another.local"),
         ])
         assert san[-1] == san[4]
-        assert len(san[1:3]) == 2
-        assert san[2:4][0] == san[2]
-        assert san[2:5:2][1] == san[4]
+        assert san[2:6:2] == [san[2], san[4]]
 
     def test_invalid_general_names(self):
         with pytest.raises(TypeError):

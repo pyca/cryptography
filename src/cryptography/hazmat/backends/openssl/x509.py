@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import datetime
 import ipaddress
 import operator
 
@@ -712,13 +711,8 @@ def _decode_invalidity_date(backend, inv_date):
     generalized_time = backend._ffi.gc(
         generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
     )
-    time = backend._ffi.string(
-        backend._lib.ASN1_STRING_data(
-            backend._ffi.cast("ASN1_STRING *", generalized_time)
-        )
-    ).decode("ascii")
     return x509.InvalidityDate(
-        datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+        backend._parse_asn1_generalized_time(generalized_time)
     )
 
 
