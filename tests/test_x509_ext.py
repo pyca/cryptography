@@ -380,6 +380,16 @@ class TestCertificatePolicies(object):
         assert cp != cp2
         assert cp != object()
 
+    def test_indexing(self):
+        pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), [u"test"])
+        pi2 = x509.PolicyInformation(x509.ObjectIdentifier("1.2.4"), [u"test"])
+        pi3 = x509.PolicyInformation(x509.ObjectIdentifier("1.2.5"), [u"test"])
+        pi4 = x509.PolicyInformation(x509.ObjectIdentifier("1.2.6"), [u"test"])
+        pi5 = x509.PolicyInformation(x509.ObjectIdentifier("1.2.7"), [u"test"])
+        cp = x509.CertificatePolicies([pi, pi2, pi3, pi4, pi5])
+        assert cp[-1] == cp[4]
+        assert cp[2:6:2] == [cp[2], cp[4]]
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
