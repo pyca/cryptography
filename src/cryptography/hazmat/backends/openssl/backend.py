@@ -512,9 +512,9 @@ def _encode_extended_key_usage(backend, extended_key_usage):
         res = backend._lib.sk_ASN1_OBJECT_push(eku, obj)
         backend.openssl_assert(res >= 1)
 
-    eku = backend._ffi.cast("EXTENDED_KEY_USAGE *", eku)
+    eku_ptr = backend._ffi.cast("EXTENDED_KEY_USAGE *", eku)
     return _encode_extension_to_der(
-        backend, backend._lib.i2d_EXTENDED_KEY_USAGE, eku
+        backend, backend._lib.i2d_EXTENDED_KEY_USAGE, eku_ptr
     )
 
 
