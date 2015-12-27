@@ -1453,16 +1453,17 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if isinstance(private_key, _DSAPrivateKey):
-            raise NotImplementedError(
-                "CRL signatures aren't implemented for DSA"
-                " keys at this time."
-            )
-        if isinstance(private_key, _EllipticCurvePrivateKey):
-            raise NotImplementedError(
-                "CRL signatures aren't implemented for EC"
-                " keys at this time."
-            )
+        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+            if isinstance(private_key, _DSAPrivateKey):
+                raise NotImplementedError(
+                    "CRL signatures aren't implemented for DSA"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
+            if isinstance(private_key, _EllipticCurvePrivateKey):
+                raise NotImplementedError(
+                    "CRL signatures aren't implemented for EC"
+                    " keys on OpenSSL versions less than 1.0.1."
+                )
 
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')

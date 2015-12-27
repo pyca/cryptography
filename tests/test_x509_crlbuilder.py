@@ -308,8 +308,23 @@ class TestCertificateRevocationListBuilder(object):
 
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_dsa_key_unsupported(self, backend):
+    def test_sign_dsa_key(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
         private_key = DSA_KEY_2048.private_key(backend)
+        invalidity_date = x509.InvalidityDate(
+            datetime.datetime(2002, 1, 1, 0, 0)
+        )
+        ian = x509.IssuerAlternativeName([
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
+        ])
+        revoked_cert0 = x509.RevokedCertificateBuilder().serial_number(
+            2
+        ).revocation_date(
+            datetime.datetime(2012, 1, 1, 1, 1)
+        ).add_extension(
+            invalidity_date, False
+        ).build(backend)
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = x509.CertificateRevocationListBuilder().issuer_name(
@@ -320,16 +335,43 @@ class TestCertificateRevocationListBuilder(object):
             last_update
         ).next_update(
             next_update
+        ).add_revoked_certificate(
+            revoked_cert0
+        ).add_extension(
+            ian, False
         )
 
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert crl.extensions.get_extension_for_class(
+            x509.IssuerAlternativeName
+        ).value == ian
+        assert crl[0].serial_number == revoked_cert0.serial_number
+        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        assert len(crl[0].extensions) == 1
+        ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
+        assert ext.critical is False
+        assert ext.value == invalidity_date
 
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_sign_ec_key_unsupported(self, backend):
+        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+            pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        invalidity_date = x509.InvalidityDate(
+            datetime.datetime(2002, 1, 1, 0, 0)
+        )
+        ian = x509.IssuerAlternativeName([
+            x509.UniformResourceIdentifier(u"https://cryptography.io"),
+        ])
+        revoked_cert0 = x509.RevokedCertificateBuilder().serial_number(
+            2
+        ).revocation_date(
+            datetime.datetime(2012, 1, 1, 1, 1)
+        ).add_extension(
+            invalidity_date, False
+        ).build(backend)
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = x509.CertificateRevocationListBuilder().issuer_name(
@@ -340,10 +382,22 @@ class TestCertificateRevocationListBuilder(object):
             last_update
         ).next_update(
             next_update
+        ).add_revoked_certificate(
+            revoked_cert0
+        ).add_extension(
+            ian, False
         )
 
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        assert crl.extensions.get_extension_for_class(
+            x509.IssuerAlternativeName
+        ).value == ian
+        assert crl[0].serial_number == revoked_cert0.serial_number
+        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        assert len(crl[0].extensions) == 1
+        ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
+        assert ext.critical is False
+        assert ext.value == invalidity_date
 
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
