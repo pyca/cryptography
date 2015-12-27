@@ -1739,57 +1739,6 @@ class TestCertificateBuilder(object):
         with pytest.raises(TypeError):
             builder.sign(private_key, object(), backend)
 
-    @pytest.mark.requires_backend_interface(interface=DSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_with_dsa_private_key_is_unsupported(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
-            pytest.skip("Requires an older OpenSSL. Must be < 1.0.1")
-
-        private_key = DSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateBuilder()
-        builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).serial_number(
-            1
-        ).public_key(
-            private_key.public_key()
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
-
-    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_with_ec_private_key_is_unsupported(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
-            pytest.skip("Requires an older OpenSSL. Must be < 1.0.1")
-
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        builder = x509.CertificateBuilder()
-        builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).serial_number(
-            1
-        ).public_key(
-            private_key.public_key()
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
-
     @pytest.mark.parametrize(
         "cdp",
         [

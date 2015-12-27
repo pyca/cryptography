@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import os
 import subprocess
 import sys
@@ -13,7 +14,7 @@ import pretend
 
 import pytest
 
-from cryptography import utils
+from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
@@ -499,6 +500,55 @@ class TestOpenSSLSignX509Certificate(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_certificate(object(), private_key, DummyHash())
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_dsa_private_key_is_unsupported(self):
+        private_key = DSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA512(), backend)
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_ec_private_key_is_unsupported(self):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA512(), backend)
 
 
 class TestOpenSSLSignX509CertificateRevocationList(object):
