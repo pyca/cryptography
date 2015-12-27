@@ -116,15 +116,21 @@ def _encode_asn1_str_gc(backend, data, length):
     return s
 
 
-def _encode_inhibit_any_policy(backend, inhibit_any_policy):
-    asn1int = _encode_asn1_int_gc(backend, inhibit_any_policy.skip_certs)
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_ASN1_INTEGER(asn1int, pp)
+def _encode_extension_to_der(backend, i2d_func, value):
+    pp = backend._ffi.new("unsigned char **")
+    r = i2d_func(value, pp)
     backend.openssl_assert(r > 0)
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
     )
     return pp, r
+
+
+def _encode_inhibit_any_policy(backend, inhibit_any_policy):
+    asn1int = _encode_asn1_int_gc(backend, inhibit_any_policy.skip_certs)
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_ASN1_INTEGER, asn1int
+    )
 
 
 def _encode_name(backend, attributes):
@@ -156,13 +162,9 @@ def _encode_name_gc(backend, attributes):
 
 def _encode_crl_number(backend, crl_number):
     asn1int = _encode_asn1_int_gc(backend, crl_number.crl_number)
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_ASN1_INTEGER(asn1int, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_ASN1_INTEGER, asn1int
     )
-    return pp, r
 
 
 def _encode_crl_reason(backend, crl_reason):
@@ -173,13 +175,10 @@ def _encode_crl_reason(backend, crl_reason):
         asn1enum, _CRL_ENTRY_REASON_ENUM_TO_CODE[crl_reason.reason]
     )
     backend.openssl_assert(res == 1)
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_ASN1_ENUMERATED(asn1enum, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_ASN1_ENUMERATED, asn1enum
     )
-    return pp, r
 
 
 def _encode_invalidity_date(backend, invalidity_date):
@@ -190,13 +189,10 @@ def _encode_invalidity_date(backend, invalidity_date):
     )
     backend.openssl_assert(time != backend._ffi.NULL)
     time = backend._ffi.gc(time, backend._lib.ASN1_GENERALIZEDTIME_free)
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_ASN1_GENERALIZEDTIME(time, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_ASN1_GENERALIZEDTIME, time
     )
-    return pp, r
 
 
 def _encode_certificate_policies(backend, certificate_policies):
@@ -246,13 +242,9 @@ def _encode_certificate_policies(backend, certificate_policies):
 
             pi.qualifiers = pqis
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_CERTIFICATEPOLICIES(cp, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_CERTIFICATEPOLICIES, cp
     )
-    return pp, r
 
 
 def _encode_notice_reference(backend, notice):
@@ -328,13 +320,9 @@ def _encode_key_usage(backend, key_usage):
         res = set_bit(ku, 8, 0)
         backend.openssl_assert(res == 1)
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_ASN1_BIT_STRING(ku, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_ASN1_BIT_STRING, ku
     )
-    return pp, r
 
 
 def _encode_authority_key_identifier(backend, authority_keyid):
@@ -358,13 +346,9 @@ def _encode_authority_key_identifier(backend, authority_keyid):
             backend, authority_keyid.authority_cert_serial_number
         )
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_AUTHORITY_KEYID(akid, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_AUTHORITY_KEYID, akid
     )
-    return pp, r
 
 
 def _encode_basic_constraints(backend, basic_constraints):
@@ -378,14 +362,9 @@ def _encode_basic_constraints(backend, basic_constraints):
             backend, basic_constraints.path_length
         )
 
-    # Fetch the encoded payload.
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_BASIC_CONSTRAINTS(constraints, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_BASIC_CONSTRAINTS, constraints
     )
-    return pp, r
 
 
 def _encode_authority_information_access(backend, authority_info_access):
@@ -405,13 +384,9 @@ def _encode_authority_information_access(backend, authority_info_access):
         res = backend._lib.sk_ACCESS_DESCRIPTION_push(aia, ad)
         backend.openssl_assert(res >= 1)
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_AUTHORITY_INFO_ACCESS(aia, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_AUTHORITY_INFO_ACCESS, aia
     )
-    return pp, r
 
 
 def _encode_general_names(backend, names):
@@ -430,24 +405,16 @@ def _encode_alt_name(backend, san):
     general_names = backend._ffi.gc(
         general_names, backend._lib.GENERAL_NAMES_free
     )
-    pp = backend._ffi.new("unsigned char **")
-    r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_GENERAL_NAMES, general_names
     )
-    return pp, r
 
 
 def _encode_subject_key_identifier(backend, ski):
     asn1_str = _encode_asn1_str_gc(backend, ski.digest, len(ski.digest))
-    pp = backend._ffi.new("unsigned char **")
-    r = backend._lib.i2d_ASN1_OCTET_STRING(asn1_str, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_ASN1_OCTET_STRING, asn1_str
     )
-    return pp, r
 
 
 def _encode_general_name(backend, name):
@@ -545,15 +512,10 @@ def _encode_extended_key_usage(backend, extended_key_usage):
         res = backend._lib.sk_ASN1_OBJECT_push(eku, obj)
         backend.openssl_assert(res >= 1)
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_EXTENDED_KEY_USAGE(
-        backend._ffi.cast("EXTENDED_KEY_USAGE *", eku), pp
+    eku = backend._ffi.cast("EXTENDED_KEY_USAGE *", eku)
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_EXTENDED_KEY_USAGE, eku
     )
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
-    )
-    return pp, r
 
 
 _CRLREASONFLAGS = {
@@ -608,13 +570,9 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
         res = backend._lib.sk_DIST_POINT_push(cdp, dp)
         backend.openssl_assert(res >= 1)
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.i2d_CRL_DIST_POINTS(cdp, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.i2d_CRL_DIST_POINTS, cdp
     )
-    return pp, r
 
 
 def _encode_name_constraints(backend, name_constraints):
@@ -630,13 +588,9 @@ def _encode_name_constraints(backend, name_constraints):
     )
     nc.excludedSubtrees = excluded
 
-    pp = backend._ffi.new('unsigned char **')
-    r = backend._lib.Cryptography_i2d_NAME_CONSTRAINTS(nc, pp)
-    assert r > 0
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    return _encode_extension_to_der(
+        backend, backend._lib.Cryptography_i2d_NAME_CONSTRAINTS, nc
     )
-    return pp, r
 
 
 def _encode_general_subtree(backend, subtrees):
