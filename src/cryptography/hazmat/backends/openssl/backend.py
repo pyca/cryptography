@@ -199,20 +199,6 @@ def _encode_invalidity_date(backend, invalidity_date):
     return pp, r
 
 
-def _encode_certificate_issuer(backend, certificate_issuer):
-    general_names = _encode_general_names(backend, certificate_issuer)
-    general_names = backend._ffi.gc(
-        general_names, backend._lib.GENERAL_NAMES_free
-    )
-    pp = backend._ffi.new("unsigned char **")
-    r = backend._lib.i2d_GENERAL_NAMES(general_names, pp)
-    backend.openssl_assert(r > 0)
-    pp = backend._ffi.gc(
-        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
-    )
-    return pp, r
-
-
 def _encode_certificate_policies(backend, certificate_policies):
     cp = backend._lib.sk_POLICYINFO_new_null()
     backend.openssl_assert(cp != backend._ffi.NULL)
@@ -695,7 +681,7 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
 }
 
 _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {
-    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_certificate_issuer,
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
     CRLEntryExtensionOID.CRL_REASON: _encode_crl_reason,
     CRLEntryExtensionOID.INVALIDITY_DATE: _encode_invalidity_date,
 }
