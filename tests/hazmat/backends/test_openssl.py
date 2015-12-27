@@ -558,6 +558,43 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
         with pytest.raises(TypeError):
             backend.create_x509_crl(object(), private_key, hashes.SHA256())
 
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_dsa_private_key_is_unsupported(self):
+        private_key = DSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateRevocationListBuilder()
+        builder = builder.issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).last_update(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).next_update(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA1(), backend)
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_ec_private_key_is_unsupported(self):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = x509.CertificateRevocationListBuilder()
+        builder = builder.issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).last_update(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).next_update(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA512(), backend)
+
 
 class TestOpenSSLCreateRevokedCertificate(object):
     def test_invalid_builder(self):
