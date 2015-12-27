@@ -2938,6 +2938,32 @@ class TestCRLDistributionPoints(object):
         assert cdp != cdp4
         assert cdp != object()
 
+    def test_indexing(self):
+        ci = x509.CRLDistributionPoints([
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(u"uri://thing")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(u"uri://thing2")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(u"uri://thing3")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(u"uri://thing4")],
+            ),
+            x509.DistributionPoint(
+                None, None, None,
+                [x509.UniformResourceIdentifier(u"uri://thing5")],
+            ),
+        ])
+        assert ci[-1] == ci[4]
+        assert ci[2:6:2] == [ci[2], ci[4]]
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)

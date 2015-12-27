@@ -379,6 +379,9 @@ class CRLDistributionPoints(object):
     def __ne__(self, other):
         return not self == other
 
+    def __getitem__(self, idx):
+        return self._distribution_points[idx]
+
 
 class DistributionPoint(object):
     def __init__(self, full_name, relative_name, reasons, crl_issuer):
