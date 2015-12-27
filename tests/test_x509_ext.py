@@ -840,7 +840,9 @@ class TestBasicConstraints(object):
     def test_hash(self):
         na = x509.BasicConstraints(ca=True, path_length=None)
         na2 = x509.BasicConstraints(ca=True, path_length=None)
+        na3 = x509.BasicConstraints(ca=True, path_length=0)
         assert hash(na) == hash(na2)
+        assert hash(na) != hash(na3)
 
     def test_eq(self):
         na = x509.BasicConstraints(ca=True, path_length=None)
