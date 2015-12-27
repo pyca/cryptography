@@ -650,6 +650,21 @@ class RevokedCertificateBuilder(object):
             self._serial_number, time, self._extensions
         )
 
+    def add_extension(self, extension, critical):
+        if not isinstance(extension, ExtensionType):
+            raise TypeError("extension must be an ExtensionType")
+
+        extension = Extension(extension.oid, critical, extension)
+
+        # TODO: This is quadratic in the number of extensions
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        return RevokedCertificateBuilder(
+            self._serial_number, self._revocation_date,
+            self._extensions + [extension]
+        )
+
     def build(self, backend):
         if self._serial_number is None:
             raise ValueError("A revoked certificate must have a serial number")

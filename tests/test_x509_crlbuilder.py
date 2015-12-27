@@ -351,6 +351,9 @@ class TestCertificateRevocationListBuilder(object):
         private_key = RSA_KEY_2048.private_key(backend)
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        invalidity_date = x509.InvalidityDate(
+            datetime.datetime(2002, 1, 1, 0, 0)
+        )
         revoked_cert0 = x509.RevokedCertificateBuilder().serial_number(
             38
         ).revocation_date(
@@ -360,6 +363,8 @@ class TestCertificateRevocationListBuilder(object):
             2
         ).revocation_date(
             datetime.datetime(2012, 1, 1, 1, 1)
+        ).add_extension(
+            invalidity_date, False
         ).build(backend)
         builder = x509.CertificateRevocationListBuilder().issuer_name(
             x509.Name([
@@ -384,4 +389,7 @@ class TestCertificateRevocationListBuilder(object):
         assert len(crl[0].extensions) == 0
         assert crl[1].serial_number == revoked_cert1.serial_number
         assert crl[1].revocation_date == revoked_cert1.revocation_date
-        assert len(crl[1].extensions) == 0
+        assert len(crl[1].extensions) == 1
+        ext = crl[1].extensions.get_extension_for_class(x509.InvalidityDate)
+        assert ext.critical is False
+        assert ext.value == invalidity_date

@@ -37,8 +37,9 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
 from cryptography.hazmat.backends.openssl.x509 import (
-    _Certificate, _CertificateRevocationList, _CertificateSigningRequest,
-    _DISTPOINT_TYPE_FULLNAME, _DISTPOINT_TYPE_RELATIVENAME, _RevokedCertificate
+    _CRL_ENTRY_REASON_ENUM_TO_CODE, _Certificate, _CertificateRevocationList,
+    _CertificateSigningRequest, _DISTPOINT_TYPE_FULLNAME,
+    _DISTPOINT_TYPE_RELATIVENAME, _RevokedCertificate
 )
 from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.bindings.openssl import binding
@@ -53,7 +54,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC, CFB, CFB8, CTR, ECB, GCM, OFB
 )
-from cryptography.x509.oid import ExtensionOID, NameOID
+from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID, NameOID
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -157,6 +158,40 @@ def _encode_crl_number(backend, crl_number):
     asn1int = _encode_asn1_int_gc(backend, crl_number.crl_number)
     pp = backend._ffi.new('unsigned char **')
     r = backend._lib.i2d_ASN1_INTEGER(asn1int, pp)
+    backend.openssl_assert(r > 0)
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_crl_reason(backend, crl_reason):
+    asn1enum = backend._lib.ASN1_ENUMERATED_new()
+    backend.openssl_assert(asn1enum != backend._ffi.NULL)
+    asn1enum = backend._ffi.gc(asn1enum, backend._lib.ASN1_ENUMERATED_free)
+    res = backend._lib.ASN1_ENUMERATED_set(
+        asn1enum, _CRL_ENTRY_REASON_ENUM_TO_CODE[crl_reason.reason]
+    )
+    backend.openssl_assert(res == 1)
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_ASN1_ENUMERATED(asn1enum, pp)
+    backend.openssl_assert(r > 0)
+    pp = backend._ffi.gc(
+        pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+    )
+    return pp, r
+
+
+def _encode_invalidity_date(backend, invalidity_date):
+    time = backend._lib.ASN1_GENERALIZEDTIME_set(
+        backend._ffi.NULL, calendar.timegm(
+            invalidity_date.invalidity_date.timetuple()
+        )
+    )
+    backend.openssl_assert(time != backend._ffi.NULL)
+    time = backend._ffi.gc(time, backend._lib.ASN1_GENERALIZEDTIME_free)
+    pp = backend._ffi.new('unsigned char **')
+    r = backend._lib.i2d_ASN1_GENERALIZEDTIME(time, pp)
     backend.openssl_assert(r > 0)
     pp = backend._ffi.gc(
         pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
@@ -643,6 +678,12 @@ _CRL_EXTENSION_ENCODE_HANDLERS = {
         _encode_authority_information_access
     ),
     ExtensionOID.CRL_NUMBER: _encode_crl_number,
+}
+
+_CRL_ENTRY_EXTENSION_ENCODE_HANDLERS = {
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _encode_alt_name,
+    CRLEntryExtensionOID.CRL_REASON: _encode_crl_reason,
+    CRLEntryExtensionOID.INVALIDITY_DATE: _encode_invalidity_date,
 }
 
 
@@ -1505,7 +1546,6 @@ class Backend(object):
         next_update = self._ffi.gc(next_update, self._lib.ASN1_TIME_free)
         res = self._lib.X509_CRL_set_nextUpdate(x509_crl, next_update)
         self.openssl_assert(res == 1)
-        # TODO: support revoked certificates
 
         # Add extensions.
         self._create_x509_extensions(
@@ -1583,7 +1623,14 @@ class Backend(object):
             calendar.timegm(builder._revocation_date.timetuple())
         )
         self.openssl_assert(res != self._ffi.NULL)
-        # TODO: add crl entry extensions
+        # add CRL entry extensions
+        self._create_x509_extensions(
+            extensions=builder._extensions,
+            handlers=_CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
+            x509_obj=x509_revoked,
+            add_func=self._lib.X509_REVOKED_add_ext,
+            gc=True
+        )
         return _RevokedCertificate(self, None, x509_revoked)
 
     def load_pem_private_key(self, data, password):
