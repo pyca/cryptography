@@ -342,6 +342,9 @@ class BasicConstraints(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.ca, self.path_length))
+
 
 @utils.register_interface(ExtensionType)
 class CRLDistributionPoints(object):
