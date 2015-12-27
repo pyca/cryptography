@@ -961,6 +961,9 @@ class IssuerAlternativeName(object):
     def __ne__(self, other):
         return not self == other
 
+    def __getitem__(self, idx):
+        return self._general_names[idx]
+
 
 @utils.register_interface(ExtensionType)
 class CertificateIssuer(object):
@@ -989,6 +992,9 @@ class CertificateIssuer(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __getitem__(self, idx):
+        return self._general_names[idx]
 
 
 @utils.register_interface(ExtensionType)
