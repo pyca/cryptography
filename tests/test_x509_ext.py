@@ -2210,6 +2210,32 @@ class TestAuthorityInformationAccess(object):
         assert aia != aia2
         assert aia != object()
 
+    def test_indexing(self):
+        aia = x509.AuthorityInformationAccess([
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.CA_ISSUERS,
+                x509.UniformResourceIdentifier(u"http://domain.com/ca.crt")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp2.domain.com")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp3.domain.com")
+            ),
+            x509.AccessDescription(
+                AuthorityInformationAccessOID.OCSP,
+                x509.UniformResourceIdentifier(u"http://ocsp4.domain.com")
+            ),
+        ])
+        assert aia[-1] == aia[4]
+        assert aia[2:6:2] == [aia[2], aia[4]]
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
