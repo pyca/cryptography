@@ -1019,6 +1019,9 @@ class CRLReason(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.reason)
+
     reason = utils.read_only_property("_reason")
 
 

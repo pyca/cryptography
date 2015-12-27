@@ -140,6 +140,14 @@ class TestCRLReason(object):
         assert reason1 != reason2
         assert reason1 != object()
 
+    def test_hash(self):
+        reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
+        reason2 = x509.CRLReason(x509.ReasonFlags.unspecified)
+        reason3 = x509.CRLReason(x509.ReasonFlags.ca_compromise)
+
+        assert hash(reason1) == hash(reason2)
+        assert hash(reason1) != hash(reason3)
+
     def test_repr(self):
         reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
         assert repr(reason1) == (
