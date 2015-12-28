@@ -30,9 +30,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
 
 from ..primitives.fixtures_dsa import DSA_KEY_2048
-from ..primitives.fixtures_rsa import (
-    RSA_KEY_2048, RSA_KEY_512, RSA_KEY_512_ALT
-)
+from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ..primitives.test_ec import _skip_curve_unsupported
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
@@ -455,32 +453,6 @@ class TestOpenSSLRSA(object):
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
                     label=b"label"
-                )
-            )
-
-    def test_invalid_oaep_decryption(self):
-        # More recent versions of OpenSSL may raise RSA_R_OAEP_DECODING_ERROR
-        # This test triggers it and confirms that we properly handle it.
-        private_key = RSA_KEY_512.private_key(backend)
-
-        ciphertext = private_key.public_key().encrypt(
-            b'secure data',
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                algorithm=hashes.SHA1(),
-                label=None
-            )
-        )
-
-        private_key_alt = RSA_KEY_512_ALT.private_key(backend)
-
-        with pytest.raises(ValueError):
-            private_key_alt.decrypt(
-                ciphertext,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=None
                 )
             )
 
