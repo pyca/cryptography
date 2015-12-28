@@ -138,12 +138,10 @@ def _handle_rsa_enc_dec_error(backend, key):
         decoding_errors = [
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01,
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02,
+            backend._lib.RSA_R_OAEP_DECODING_ERROR,
         ]
         if backend._lib.Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR:
             decoding_errors.append(backend._lib.RSA_R_PKCS_DECODING_ERROR)
-
-        if backend._lib.Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR:
-            decoding_errors.append(backend._lib.RSA_R_OAEP_DECODING_ERROR)
 
         assert errors[0].reason in decoding_errors
         raise ValueError("Decryption failed.")

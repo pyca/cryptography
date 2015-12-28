@@ -14,7 +14,6 @@ static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
 static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
-static const int Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR;
 
 struct ERR_string_data_st {
     unsigned long error;
@@ -335,12 +334,5 @@ static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
 #else
 static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
 static const long RSA_R_PKCS_DECODING_ERROR = 0;
-#endif
-
-#ifdef RSA_R_OAEP_DECODING_ERROR
-static const long Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR = 1;
-#else
-static const long Cryptography_HAS_RSA_R_OAEP_DECODING_ERROR = 0;
-static const long RSA_R_OAEP_DECODING_ERROR = 0;
 #endif
 """
