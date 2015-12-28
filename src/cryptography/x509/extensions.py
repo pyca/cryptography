@@ -507,6 +507,9 @@ class CertificatePolicies(object):
     def __ne__(self, other):
         return not self == other
 
+    def __getitem__(self, idx):
+        return self._policies[idx]
+
 
 class PolicyInformation(object):
     def __init__(self, policy_identifier, policy_qualifiers):
