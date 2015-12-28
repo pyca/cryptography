@@ -6,6 +6,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Meaningless change.
 * **BACKWARDS INCOMPATIBLE:**
   :class:`~cryptography.x509.RevokedCertificate`
   :attr:`~cryptography.x509.RevokedCertificate.extensions` now uses extension
