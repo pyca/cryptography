@@ -1880,6 +1880,27 @@ X.509 Extensions
 
         :type: int
 
+.. class:: UnrecognizedExtension
+
+    .. versionadded:: 1.2
+
+    A generic extension class used to hold the raw value of **non-critical**
+    extensions that ``cryptography`` does not know how to parse. Extensions
+    marked critical will still raise
+    :class:`~cryptography.x509.UnsupportedExtension`.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID associated with this extension.
+
+    .. attribute:: value
+
+        :type: byte
+
+        Returns the DER encoded bytes payload of the extension.
+
 .. class:: CertificatePolicies(policies)
 
     .. versionadded:: 0.9

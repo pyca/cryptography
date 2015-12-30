@@ -1065,3 +1065,34 @@ class InvalidityDate(object):
         return hash(self.invalidity_date)
 
     invalidity_date = utils.read_only_property("_invalidity_date")
+
+
+@utils.register_interface(ExtensionType)
+class UnrecognizedExtension(object):
+    def __init__(self, oid, value):
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError("oid must be an ObjectIdentifier")
+        self._oid = oid
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return (
+            "<UnrecognizedExtension(oid={0.oid}, value={0.value!r})>".format(
+                self
+            )
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, UnrecognizedExtension):
+            return NotImplemented
+
+        return self.oid == other.oid and self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((self.oid, self.value))
