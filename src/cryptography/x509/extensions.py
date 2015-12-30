@@ -856,7 +856,7 @@ class Extension(object):
 
     def __repr__(self):
         return ("<Extension(oid={0.oid}, critical={0.critical}, "
-                "value={0.value})>").format(self)
+                "value={0.value!r})>").format(self)
 
     def __eq__(self, other):
         if not isinstance(other, Extension):
