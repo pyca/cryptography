@@ -1886,7 +1886,7 @@ X.509 Extensions
 
     A generic extension class used to hold the raw value of **non-critical**
     extensions that ``cryptography`` does not know how to parse. Extensions
-    marked critical will still raise
+    marked critical will raise
     :class:`~cryptography.x509.UnsupportedExtension`.
 
     .. attribute:: oid
