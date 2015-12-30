@@ -107,10 +107,16 @@ class TestUnrecognizedExtension(object):
         ext1 = x509.UnrecognizedExtension(
             x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
         )
-        assert repr(ext1) == (
-            "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, name="
-            "Unknown OID)>, value='\\x03\\x02\\x01')>"
-        )
+        if six.PY3:
+            assert repr(ext1) == (
+                "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
+                "name=Unknown OID)>, value=b'\\x03\\x02\\x01')>"
+            )
+        else:
+            assert repr(ext1) == (
+                "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
+                "name=Unknown OID)>, value='\\x03\\x02\\x01')>"
+            )
 
     def test_hash(self):
         ext1 = x509.UnrecognizedExtension(
