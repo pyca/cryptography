@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.binding import Binding
+from cryptography.hazmat.bindings.openssl.binding import Binding, _init_openssl
 
 
 class TestOpenSSL(object):
@@ -87,9 +87,9 @@ class TestOpenSSL(object):
         assert lock.acquire(False)
         lock.release()
 
-    def test_add_engine_more_than_once(self):
+    def test_init_more_than_once(self):
         b = Binding()
-        b._register_osrandom_engine()
+        _init_openssl()
         assert b.lib.ERR_get_error() == 0
 
     def test_ssl_ctx_options(self):
