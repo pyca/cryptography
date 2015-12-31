@@ -45,6 +45,8 @@ Changelog
 * Added :class:`~cryptography.x509.CertificateRevocationListBuilder` and
   :class:`~cryptography.x509.RevokedCertificateBuilder` to allow creation of
   CRLs.
+* Unrecognized non-critical X.509 extensions are now parsed into an
+  :class:`~cryptography.x509.UnrecognizedExtension` object.
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~

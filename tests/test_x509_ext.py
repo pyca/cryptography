@@ -1032,17 +1032,33 @@ class TestExtensions(object):
 
         assert exc.value.oid == x509.ObjectIdentifier("1.2.3.4")
 
+    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     def test_unsupported_extension(self, backend):
-        # TODO: this will raise an exception when all extensions are complete
         cert = _load_cert(
             os.path.join(
-                "x509", "custom", "unsupported_extension.pem"
+                "x509", "custom", "unsupported_extension_2.pem"
             ),
             x509.load_pem_x509_certificate,
             backend
         )
         extensions = cert.extensions
-        assert len(extensions) == 0
+        assert len(extensions) == 2
+        assert extensions[0].critical is False
+        assert extensions[0].oid == x509.ObjectIdentifier(
+            "1.3.6.1.4.1.41482.2"
+        )
+        assert extensions[0].value == x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.3.6.1.4.1.41482.2"),
+            b"1.3.6.1.4.1.41482.1.2"
+        )
+        assert extensions[1].critical is False
+        assert extensions[1].oid == x509.ObjectIdentifier(
+            "1.3.6.1.4.1.45724.2.1.1"
+        )
+        assert extensions[1].value == x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.3.6.1.4.1.45724.2.1.1"),
+            b"\x03\x02\x040"
+        )
 
     def test_no_extensions_get_for_class(self, backend):
         cert = _load_cert(
