@@ -518,3 +518,159 @@ class CertificateBuilder(object):
             raise ValueError("A certificate must have a public key")
 
         return backend.create_x509_certificate(self, private_key, algorithm)
+
+
+class CertificateRevocationListBuilder(object):
+    def __init__(self, issuer_name=None, last_update=None, next_update=None,
+                 extensions=[], revoked_certificates=[]):
+        self._issuer_name = issuer_name
+        self._last_update = last_update
+        self._next_update = next_update
+        self._extensions = extensions
+        self._revoked_certificates = revoked_certificates
+
+    def issuer_name(self, issuer_name):
+        if not isinstance(issuer_name, Name):
+            raise TypeError('Expecting x509.Name object.')
+        if self._issuer_name is not None:
+            raise ValueError('The issuer name may only be set once.')
+        return CertificateRevocationListBuilder(
+            issuer_name, self._last_update, self._next_update,
+            self._extensions, self._revoked_certificates
+        )
+
+    def last_update(self, last_update):
+        if not isinstance(last_update, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._last_update is not None:
+            raise ValueError('Last update may only be set once.')
+        if last_update <= _UNIX_EPOCH:
+            raise ValueError('The last update date must be after the unix'
+                             ' epoch (1970 January 1).')
+        if self._next_update is not None and last_update > self._next_update:
+            raise ValueError(
+                'The last update date must be before the next update date.'
+            )
+        return CertificateRevocationListBuilder(
+            self._issuer_name, last_update, self._next_update,
+            self._extensions, self._revoked_certificates
+        )
+
+    def next_update(self, next_update):
+        if not isinstance(next_update, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._next_update is not None:
+            raise ValueError('Last update may only be set once.')
+        if next_update <= _UNIX_EPOCH:
+            raise ValueError('The last update date must be after the unix'
+                             ' epoch (1970 January 1).')
+        if self._last_update is not None and next_update < self._last_update:
+            raise ValueError(
+                'The next update date must be after the last update date.'
+            )
+        return CertificateRevocationListBuilder(
+            self._issuer_name, self._last_update, next_update,
+            self._extensions, self._revoked_certificates
+        )
+
+    def add_extension(self, extension, critical):
+        """
+        Adds an X.509 extension to the certificate revocation list.
+        """
+        if not isinstance(extension, ExtensionType):
+            raise TypeError("extension must be an ExtensionType")
+
+        extension = Extension(extension.oid, critical, extension)
+
+        # TODO: This is quadratic in the number of extensions
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        return CertificateRevocationListBuilder(
+            self._issuer_name, self._last_update, self._next_update,
+            self._extensions + [extension], self._revoked_certificates
+        )
+
+    def add_revoked_certificate(self, revoked_certificate):
+        """
+        Adds a revoked certificate to the CRL.
+        """
+        if not isinstance(revoked_certificate, RevokedCertificate):
+            raise TypeError("Must be an instance of RevokedCertificate")
+
+        return CertificateRevocationListBuilder(
+            self._issuer_name, self._last_update,
+            self._next_update, self._extensions,
+            self._revoked_certificates + [revoked_certificate]
+        )
+
+    def sign(self, private_key, algorithm, backend):
+        if self._issuer_name is None:
+            raise ValueError("A CRL must have an issuer name")
+
+        if self._last_update is None:
+            raise ValueError("A CRL must have a last update time")
+
+        if self._next_update is None:
+            raise ValueError("A CRL must have a next update time")
+
+        return backend.create_x509_crl(self, private_key, algorithm)
+
+
+class RevokedCertificateBuilder(object):
+    def __init__(self, serial_number=None, revocation_date=None,
+                 extensions=[]):
+        self._serial_number = serial_number
+        self._revocation_date = revocation_date
+        self._extensions = extensions
+
+    def serial_number(self, number):
+        if not isinstance(number, six.integer_types):
+            raise TypeError('Serial number must be of integral type.')
+        if self._serial_number is not None:
+            raise ValueError('The serial number may only be set once.')
+        if number < 0:
+            raise ValueError('The serial number should be non-negative.')
+        if utils.bit_length(number) > 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than 160 '
+                             'bits.')
+        return RevokedCertificateBuilder(
+            number, self._revocation_date, self._extensions
+        )
+
+    def revocation_date(self, time):
+        if not isinstance(time, datetime.datetime):
+            raise TypeError('Expecting datetime object.')
+        if self._revocation_date is not None:
+            raise ValueError('The revocation date may only be set once.')
+        if time <= _UNIX_EPOCH:
+            raise ValueError('The revocation date must be after the unix'
+                             ' epoch (1970 January 1).')
+        return RevokedCertificateBuilder(
+            self._serial_number, time, self._extensions
+        )
+
+    def add_extension(self, extension, critical):
+        if not isinstance(extension, ExtensionType):
+            raise TypeError("extension must be an ExtensionType")
+
+        extension = Extension(extension.oid, critical, extension)
+
+        # TODO: This is quadratic in the number of extensions
+        for e in self._extensions:
+            if e.oid == extension.oid:
+                raise ValueError('This extension has already been set.')
+        return RevokedCertificateBuilder(
+            self._serial_number, self._revocation_date,
+            self._extensions + [extension]
+        )
+
+    def build(self, backend):
+        if self._serial_number is None:
+            raise ValueError("A revoked certificate must have a serial number")
+        if self._revocation_date is None:
+            raise ValueError(
+                "A revoked certificate must have a revocation date"
+            )
+
+        return backend.create_x509_revoked_certificate(self)

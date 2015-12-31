@@ -108,18 +108,6 @@ matrix:
           env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=0
         - language: generic
           os: osx
-          osx_image: xcode7
-          env: TOXENV=py26 OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          osx_image: xcode7
-          env: TOXENV=py27 OPENSSL=0.9.8
-        - language: generic
-          os: osx
-          osx_image: xcode7
-          env: TOXENV=pypy OPENSSL=0.9.8
-        - language: generic
-          os: osx
           osx_image: osx10.11
           env: TOXENV=py26 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
         - language: generic
@@ -129,7 +117,7 @@ matrix:
         - language: generic
           os: osx
           osx_image: xcode7
-          env: TOXENV=docs
+          env: TOXENV=docs CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
 
 install:
     - ./.travis/install.sh

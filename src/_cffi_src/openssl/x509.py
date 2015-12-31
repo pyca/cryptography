@@ -193,6 +193,8 @@ X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 int X509_REVOKED_add_ext(X509_REVOKED *, X509_EXTENSION*, int);
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
 
+int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
+
 X509_CRL *X509_CRL_new(void);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
@@ -268,6 +270,8 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
+
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
 int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
 int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
@@ -290,6 +294,7 @@ X509_EXTENSIONS *sk_X509_EXTENSION_new_null(void);
 int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
 X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
 int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
+int sk_X509_EXTENSION_insert(X509_EXTENSIONS *, X509_EXTENSION *, int);
 X509_EXTENSION *sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 
@@ -362,4 +367,12 @@ int (*i2d_ECPrivateKey_bio)(BIO *, EC_KEY *) = NULL;
 EC_KEY *(*o2i_ECPublicKey)(EC_KEY **, const unsigned char **, long) = NULL;
 int (*i2o_ECPublicKey)(EC_KEY *, unsigned char **) = NULL;
 #endif
+
+/* X509_REVOKED_dup only exists on 1.0.2+. It is implemented using
+   IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
+   it available on all OpenSSLs. */
+X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
+    return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
+}
+
 """

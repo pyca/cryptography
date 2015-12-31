@@ -173,6 +173,20 @@ class TestCertificateRevocationList(object):
         # Check that len() works for CRLs.
         assert len(crl) == 12
 
+    def test_revoked_cert_retrieval_retain_only_revoked(self, backend):
+        """
+        This test attempts to trigger the crash condition described in
+        https://github.com/pyca/cryptography/issues/2557
+        PyPy does gc at its own pace, so it will only be reliable on CPython.
+        """
+        revoked = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )[11]
+        assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
+        assert revoked.serial_number == 11
+
     def test_extensions(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_ian_aia_aki.pem"),
@@ -192,7 +206,7 @@ class TestCertificateRevocationList(object):
         ian = crl.extensions.get_extension_for_class(
             x509.IssuerAlternativeName
         )
-        assert crl_number.value == 1
+        assert crl_number.value == x509.CRLNumber(1)
         assert crl_number.critical is False
         assert aki.value == x509.AuthorityKeyIdentifier(
             key_identifier=(
@@ -318,7 +332,6 @@ class TestCertificateRevocationList(object):
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestRevokedCertificate(object):
-
     def test_revoked_basics(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
@@ -342,12 +355,12 @@ class TestRevokedCertificate(object):
             backend
         )
 
-        exp_issuer = x509.GeneralNames([
+        exp_issuer = [
             x509.DirectoryName(x509.Name([
                 x509.NameAttribute(x509.OID_COUNTRY_NAME, u"US"),
                 x509.NameAttribute(x509.OID_COMMON_NAME, u"cryptography.io"),
             ]))
-        ])
+        ]
 
         # First revoked cert doesn't have extensions, test if it is handled
         # correctly.
@@ -366,29 +379,28 @@ class TestRevokedCertificate(object):
         rev1 = crl[1]
         assert isinstance(rev1.extensions, x509.Extensions)
 
-        reason = rev1.extensions.get_extension_for_oid(
-            x509.OID_CRL_REASON).value
-        assert reason == x509.ReasonFlags.unspecified
+        reason = rev1.extensions.get_extension_for_class(
+            x509.CRLReason).value
+        assert reason == x509.CRLReason(x509.ReasonFlags.unspecified)
 
-        issuer = rev1.extensions.get_extension_for_oid(
-            x509.OID_CERTIFICATE_ISSUER).value
-        assert issuer == exp_issuer
+        issuer = rev1.extensions.get_extension_for_class(
+            x509.CertificateIssuer).value
+        assert issuer == x509.CertificateIssuer(exp_issuer)
 
-        date = rev1.extensions.get_extension_for_oid(
-            x509.OID_INVALIDITY_DATE).value
-        assert isinstance(date, datetime.datetime)
-        assert date.isoformat() == "2015-01-01T00:00:00"
+        date = rev1.extensions.get_extension_for_class(
+            x509.InvalidityDate).value
+        assert date == x509.InvalidityDate(datetime.datetime(2015, 1, 1, 0, 0))
 
         # Check if all reason flags can be found in the CRL.
         flags = set(x509.ReasonFlags)
         for rev in crl:
             try:
-                r = rev.extensions.get_extension_for_oid(x509.OID_CRL_REASON)
+                r = rev.extensions.get_extension_for_class(x509.CRLReason)
             except x509.ExtensionNotFound:
                 # Not all revoked certs have a reason extension.
                 pass
             else:
-                flags.discard(r.value)
+                flags.discard(r.value.reason)
 
         assert len(flags) == 0
 
@@ -445,6 +457,23 @@ class TestRevokedCertificate(object):
 
         with pytest.raises(ValueError):
             crl[0].extensions
+
+    def test_indexing(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            x509.load_pem_x509_crl,
+            backend
+        )
+
+        with pytest.raises(IndexError):
+            crl[-13]
+        with pytest.raises(IndexError):
+            crl[12]
+
+        assert crl[-1].serial_number == crl[11].serial_number
+        assert len(crl[2:4]) == 2
+        assert crl[2:4][0].serial_number == crl[2].serial_number
+        assert crl[2:4][1].serial_number == crl[3].serial_number
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -1709,57 +1738,6 @@ class TestCertificateBuilder(object):
 
         with pytest.raises(TypeError):
             builder.sign(private_key, object(), backend)
-
-    @pytest.mark.requires_backend_interface(interface=DSABackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_with_dsa_private_key_is_unsupported(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
-            pytest.skip("Requires an older OpenSSL. Must be < 1.0.1")
-
-        private_key = DSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateBuilder()
-        builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).serial_number(
-            1
-        ).public_key(
-            private_key.public_key()
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
-
-    @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
-    @pytest.mark.requires_backend_interface(interface=X509Backend)
-    def test_sign_with_ec_private_key_is_unsupported(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
-            pytest.skip("Requires an older OpenSSL. Must be < 1.0.1")
-
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        builder = x509.CertificateBuilder()
-        builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
-        ).serial_number(
-            1
-        ).public_key(
-            private_key.public_key()
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
 
     @pytest.mark.parametrize(
         "cdp",

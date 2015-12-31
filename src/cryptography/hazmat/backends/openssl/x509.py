@@ -4,8 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import datetime
 import ipaddress
+import operator
 
 from email.utils import parseaddr
 
@@ -19,7 +19,7 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.x509.oid import (
-    CRLExtensionOID, CertificatePoliciesOID, ExtensionOID
+    CRLEntryExtensionOID, CertificatePoliciesOID, ExtensionOID
 )
 
 
@@ -182,7 +182,7 @@ def _decode_ocsp_no_check(backend, ext):
 def _decode_crl_number(backend, ext):
     asn1_int = backend._ffi.cast("ASN1_INTEGER *", ext)
     asn1_int = backend._ffi.gc(asn1_int, backend._lib.ASN1_INTEGER_free)
-    return backend._asn1_integer_to_int(asn1_int)
+    return x509.CRLNumber(backend._asn1_integer_to_int(asn1_int))
 
 
 class _X509ExtensionParser(object):
@@ -679,7 +679,19 @@ def _decode_inhibit_any_policy(backend, asn1_int):
     return x509.InhibitAnyPolicy(skip_certs)
 
 
-_CRL_REASON_CODE_TO_ENUM = {
+#    CRLReason ::= ENUMERATED {
+#        unspecified             (0),
+#        keyCompromise           (1),
+#        cACompromise            (2),
+#        affiliationChanged      (3),
+#        superseded              (4),
+#        cessationOfOperation    (5),
+#        certificateHold         (6),
+#             -- value 7 is not used
+#        removeFromCRL           (8),
+#        privilegeWithdrawn      (9),
+#        aACompromise           (10) }
+_CRL_ENTRY_REASON_CODE_TO_ENUM = {
     0: x509.ReasonFlags.unspecified,
     1: x509.ReasonFlags.key_compromise,
     2: x509.ReasonFlags.ca_compromise,
@@ -693,13 +705,27 @@ _CRL_REASON_CODE_TO_ENUM = {
 }
 
 
+_CRL_ENTRY_REASON_ENUM_TO_CODE = {
+    x509.ReasonFlags.unspecified: 0,
+    x509.ReasonFlags.key_compromise: 1,
+    x509.ReasonFlags.ca_compromise: 2,
+    x509.ReasonFlags.affiliation_changed: 3,
+    x509.ReasonFlags.superseded: 4,
+    x509.ReasonFlags.cessation_of_operation: 5,
+    x509.ReasonFlags.certificate_hold: 6,
+    x509.ReasonFlags.remove_from_crl: 8,
+    x509.ReasonFlags.privilege_withdrawn: 9,
+    x509.ReasonFlags.aa_compromise: 10
+}
+
+
 def _decode_crl_reason(backend, enum):
     enum = backend._ffi.cast("ASN1_ENUMERATED *", enum)
     enum = backend._ffi.gc(enum, backend._lib.ASN1_ENUMERATED_free)
     code = backend._lib.ASN1_ENUMERATED_get(enum)
 
     try:
-        return _CRL_REASON_CODE_TO_ENUM[code]
+        return x509.CRLReason(_CRL_ENTRY_REASON_CODE_TO_ENUM[code])
     except KeyError:
         raise ValueError("Unsupported reason code: {0}".format(code))
 
@@ -711,12 +737,9 @@ def _decode_invalidity_date(backend, inv_date):
     generalized_time = backend._ffi.gc(
         generalized_time, backend._lib.ASN1_GENERALIZEDTIME_free
     )
-    time = backend._ffi.string(
-        backend._lib.ASN1_STRING_data(
-            backend._ffi.cast("ASN1_STRING *", generalized_time)
-        )
-    ).decode("ascii")
-    return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
+    return x509.InvalidityDate(
+        backend._parse_asn1_generalized_time(generalized_time)
+    )
 
 
 def _decode_cert_issuer(backend, ext):
@@ -739,16 +762,24 @@ def _decode_cert_issuer(backend, ext):
         backend._consume_errors()
         raise ValueError(
             "The {0} extension is corrupted and can't be parsed".format(
-                CRLExtensionOID.CERTIFICATE_ISSUER))
+                CRLEntryExtensionOID.CERTIFICATE_ISSUER))
 
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-    return x509.GeneralNames(_decode_general_names(backend, gns))
+    return x509.CertificateIssuer(_decode_general_names(backend, gns))
 
 
 @utils.register_interface(x509.RevokedCertificate)
 class _RevokedCertificate(object):
-    def __init__(self, backend, x509_revoked):
+    def __init__(self, backend, crl, x509_revoked):
         self._backend = backend
+        # The X509_REVOKED_value is a X509_REVOKED * that has
+        # no reference counting. This means when X509_CRL_free is
+        # called then the CRL and all X509_REVOKED * are freed. Since
+        # you can retain a reference to a single revoked certificate
+        # and let the CRL fall out of scope we need to retain a
+        # private reference to the CRL inside the RevokedCertificate
+        # object to prevent the gc from being called inappropriately.
+        self._crl = crl
         self._x509_revoked = x509_revoked
 
     @property
@@ -853,26 +884,34 @@ class _CertificateRevocationList(object):
         self._backend.openssl_assert(res == 1)
         return self._backend._read_mem_bio(bio)
 
-    def _revoked_certificates(self):
+    def _revoked_cert(self, idx):
         revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
-        revoked_list = []
-        if revoked != self._backend._ffi.NULL:
-            num = self._backend._lib.sk_X509_REVOKED_num(revoked)
-            for i in range(num):
-                r = self._backend._lib.sk_X509_REVOKED_value(revoked, i)
-                self._backend.openssl_assert(r != self._backend._ffi.NULL)
-                revoked_list.append(_RevokedCertificate(self._backend, r))
-
-        return revoked_list
+        r = self._backend._lib.sk_X509_REVOKED_value(revoked, idx)
+        self._backend.openssl_assert(r != self._backend._ffi.NULL)
+        return _RevokedCertificate(self._backend, self, r)
 
     def __iter__(self):
-        return iter(self._revoked_certificates())
+        for i in range(len(self)):
+            yield self._revoked_cert(i)
 
     def __getitem__(self, idx):
-        return self._revoked_certificates()[idx]
+        if isinstance(idx, slice):
+            start, stop, step = idx.indices(len(self))
+            return [self._revoked_cert(i) for i in range(start, stop, step)]
+        else:
+            idx = operator.index(idx)
+            if idx < 0:
+                idx += len(self)
+            if not 0 <= idx < len(self):
+                raise IndexError
+            return self._revoked_cert(idx)
 
     def __len__(self):
-        return len(self._revoked_certificates())
+        revoked = self._backend._lib.X509_CRL_get_REVOKED(self._x509_crl)
+        if revoked == self._backend._ffi.NULL:
+            return 0
+        else:
+            return self._backend._lib.sk_X509_REVOKED_num(revoked)
 
     @property
     def extensions(self):
@@ -975,13 +1014,13 @@ _EXTENSION_HANDLERS = {
 }
 
 _REVOKED_EXTENSION_HANDLERS = {
-    CRLExtensionOID.CRL_REASON: _decode_crl_reason,
-    CRLExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
-    CRLExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
+    CRLEntryExtensionOID.CRL_REASON: _decode_crl_reason,
+    CRLEntryExtensionOID.INVALIDITY_DATE: _decode_invalidity_date,
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
 
 _REVOKED_UNSUPPORTED_EXTENSIONS = set([
-    CRLExtensionOID.CERTIFICATE_ISSUER,
+    CRLEntryExtensionOID.CERTIFICATE_ISSUER,
 ])
 
 _CRL_EXTENSION_HANDLERS = {

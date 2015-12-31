@@ -292,6 +292,20 @@ class X509Backend(object):
         Create and sign an X.509 certificate from a CertificateBuilder object.
         """
 
+    @abc.abstractmethod
+    def create_x509_crl(self, builder, private_key, algorithm):
+        """
+        Create and sign an X.509 CertificateRevocationList from a
+        CertificateRevocationListBuilder object.
+        """
+
+    @abc.abstractmethod
+    def create_x509_revoked_certificate(self, builder):
+        """
+        Create a RevokedCertificate object from a RevokedCertificateBuilder
+        object.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):

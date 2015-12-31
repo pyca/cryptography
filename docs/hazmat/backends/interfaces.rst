@@ -547,8 +547,8 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the request signature.
 
-        :returns: A new object with the
-            :class:`~cryptography.x509.CertificateSigningRequest` interface.
+        :returns: A new instance of
+            :class:`~cryptography.x509.CertificateSigningRequest`.
 
     .. method:: create_x509_certificate(builder, private_key, algorithm)
 
@@ -567,9 +567,36 @@ A specific ``backend`` may provide one or more of these interfaces.
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the certificate signature.
 
-        :returns: A new object with the
-            :class:`~cryptography.x509.Certificate` interface.
+        :returns: A new instance of :class:`~cryptography.x509.Certificate`.
 
+    .. method:: create_x509_crl(builder, private_key, algorithm)
+
+        .. versionadded:: 1.2
+
+        :param builder: An instance of
+            :class:`~cryptography.x509.CertificateRevocationListBuilder`.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the CRL.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the CRL signature.
+
+        :returns: A new instance of
+            :class:`~cryptography.x509.CertificateRevocationList`.
+
+    .. method:: create_x509_revoked_certificate(builder)
+
+        .. versionadded:: 1.2
+
+        :param builder: An instance of RevokedCertificateBuilder.
+
+        :returns: A new instance of
+            :class:`~cryptography.x509.RevokedCertificate`.
 
 .. class:: DHBackend
 

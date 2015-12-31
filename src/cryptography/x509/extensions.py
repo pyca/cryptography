@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import datetime
 import hashlib
 import ipaddress
 from enum import Enum
@@ -18,7 +19,9 @@ from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
-from cryptography.x509.oid import ExtensionOID, ObjectIdentifier
+from cryptography.x509.oid import (
+    CRLEntryExtensionOID, ExtensionOID, ObjectIdentifier
+)
 
 
 class _SubjectPublicKeyInfo(univ.Sequence):
@@ -102,10 +105,41 @@ class Extensions(object):
     def __len__(self):
         return len(self._extensions)
 
+    def __getitem__(self, idx):
+        return self._extensions[idx]
+
     def __repr__(self):
         return (
             "<Extensions({0})>".format(self._extensions)
         )
+
+
+@utils.register_interface(ExtensionType)
+class CRLNumber(object):
+    oid = ExtensionOID.CRL_NUMBER
+
+    def __init__(self, crl_number):
+        if not isinstance(crl_number, six.integer_types):
+            raise TypeError("crl_number must be an integer")
+
+        self._crl_number = crl_number
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLNumber):
+            return NotImplemented
+
+        return self.crl_number == other.crl_number
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self.crl_number)
+
+    def __repr__(self):
+        return "<CRLNumber({0})>".format(self.crl_number)
+
+    crl_number = utils.read_only_property("_crl_number")
 
 
 @utils.register_interface(ExtensionType)
@@ -201,6 +235,9 @@ class SubjectKeyIdentifier(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.digest)
+
 
 @utils.register_interface(ExtensionType)
 class AuthorityInformationAccess(object):
@@ -232,6 +269,9 @@ class AuthorityInformationAccess(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __getitem__(self, idx):
+        return self._descriptions[idx]
 
 
 class AccessDescription(object):
@@ -305,6 +345,9 @@ class BasicConstraints(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.ca, self.path_length))
+
 
 @utils.register_interface(ExtensionType)
 class CRLDistributionPoints(object):
@@ -338,6 +381,9 @@ class CRLDistributionPoints(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __getitem__(self, idx):
+        return self._distribution_points[idx]
 
 
 class DistributionPoint(object):
@@ -460,6 +506,9 @@ class CertificatePolicies(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __getitem__(self, idx):
+        return self._policies[idx]
 
 
 class PolicyInformation(object):
@@ -860,6 +909,9 @@ class GeneralNames(object):
     def __ne__(self, other):
         return not self == other
 
+    def __getitem__(self, idx):
+        return self._general_names[idx]
+
 
 @utils.register_interface(ExtensionType)
 class SubjectAlternativeName(object):
@@ -885,6 +937,9 @@ class SubjectAlternativeName(object):
             return NotImplemented
 
         return self._general_names == other._general_names
+
+    def __getitem__(self, idx):
+        return self._general_names[idx]
 
     def __ne__(self, other):
         return not self == other
@@ -917,3 +972,127 @@ class IssuerAlternativeName(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __getitem__(self, idx):
+        return self._general_names[idx]
+
+
+@utils.register_interface(ExtensionType)
+class CertificateIssuer(object):
+    oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
+
+    def __init__(self, general_names):
+        self._general_names = GeneralNames(general_names)
+
+    def __iter__(self):
+        return iter(self._general_names)
+
+    def __len__(self):
+        return len(self._general_names)
+
+    def get_values_for_type(self, type):
+        return self._general_names.get_values_for_type(type)
+
+    def __repr__(self):
+        return "<CertificateIssuer({0})>".format(self._general_names)
+
+    def __eq__(self, other):
+        if not isinstance(other, CertificateIssuer):
+            return NotImplemented
+
+        return self._general_names == other._general_names
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __getitem__(self, idx):
+        return self._general_names[idx]
+
+
+@utils.register_interface(ExtensionType)
+class CRLReason(object):
+    oid = CRLEntryExtensionOID.CRL_REASON
+
+    def __init__(self, reason):
+        if not isinstance(reason, ReasonFlags):
+            raise TypeError("reason must be an element from ReasonFlags")
+
+        self._reason = reason
+
+    def __repr__(self):
+        return "<CRLReason(reason={0})>".format(self._reason)
+
+    def __eq__(self, other):
+        if not isinstance(other, CRLReason):
+            return NotImplemented
+
+        return self.reason == other.reason
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self.reason)
+
+    reason = utils.read_only_property("_reason")
+
+
+@utils.register_interface(ExtensionType)
+class InvalidityDate(object):
+    oid = CRLEntryExtensionOID.INVALIDITY_DATE
+
+    def __init__(self, invalidity_date):
+        if not isinstance(invalidity_date, datetime.datetime):
+            raise TypeError("invalidity_date must be a datetime.datetime")
+
+        self._invalidity_date = invalidity_date
+
+    def __repr__(self):
+        return "<InvalidityDate(invalidity_date={0})>".format(
+            self._invalidity_date
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, InvalidityDate):
+            return NotImplemented
+
+        return self.invalidity_date == other.invalidity_date
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(self.invalidity_date)
+
+    invalidity_date = utils.read_only_property("_invalidity_date")
+
+
+@utils.register_interface(ExtensionType)
+class UnrecognizedExtension(object):
+    def __init__(self, oid, value):
+        if not isinstance(oid, ObjectIdentifier):
+            raise TypeError("oid must be an ObjectIdentifier")
+        self._oid = oid
+        self._value = value
+
+    oid = utils.read_only_property("_oid")
+    value = utils.read_only_property("_value")
+
+    def __repr__(self):
+        return (
+            "<UnrecognizedExtension(oid={0.oid}, value={0.value!r})>".format(
+                self
+            )
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, UnrecognizedExtension):
+            return NotImplemented
+
+        return self.oid == other.oid and self.value == other.value
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((self.oid, self.value))
