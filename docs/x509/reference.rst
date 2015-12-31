@@ -2435,7 +2435,8 @@ Exceptions
 
 .. class:: UnsupportedExtension
 
-    This is raised when a certificate contains an unsupported extension type.
+    This is raised when a certificate contains an unsupported extension type
+    that is marked ``critical``.
 
     .. attribute:: oid
 
