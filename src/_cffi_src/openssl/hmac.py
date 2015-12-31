@@ -84,12 +84,14 @@ HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     return HMAC_CTX_new();
 #else
-    HMAC_CTX *ctx = (HMAC_CTX *)OPENSSL_zalloc(sizeof(HMAC_CTX));
-    if (ctx)
+    /* This uses OPENSSL_zalloc in 1.1.0, which is malloc + memset */
+    HMAC_CTX *ctx = (HMAC_CTX *)OPENSSL_malloc(sizeof(HMAC_CTX));
+    memset(ctx, 0, sizeof(HMAC_CTX));
+    /*if (ctx)
         if (!HMAC_CTX_reset(ctx)) {
             HMAC_CTX_free(ctx);
             ctx = NULL;
-        }
+        }*/
     return ctx;
 #endif
 }
@@ -100,15 +102,10 @@ void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx)
     return HMAC_CTX_free(ctx);
 #else
     if (ctx != NULL) {
-        EVP_MD_CTX_reset(ctx->i_ctx);
-        EVP_MD_CTX_reset(ctx->o_ctx);
-        EVP_MD_CTX_reset(ctx->md_ctx);
         ctx->md = NULL;
         ctx->key_length = 0;
         memset(ctx->key, 0, sizeof(HMAC_MAX_MD_CBLOCK));
-        EVP_MD_CTX_free(ctx->i_ctx);
-        EVP_MD_CTX_free(ctx->o_ctx);
-        EVP_MD_CTX_free(ctx->md_ctx);
+        HMAC_CTX_cleanup(ctx);
         OPENSSL_free(ctx);
     }
 #endif

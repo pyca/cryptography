@@ -245,6 +245,10 @@ void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
 /* new in 1.0.2 */
 int i2d_re_X509_tbs(X509 *, unsigned char **);
 
+/* new in 1.1.0 */
+int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
+int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
+
 long X509_get_version(X509 *);
 
 ASN1_TIME *X509_get_notBefore(X509 *);
@@ -363,6 +367,16 @@ void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
            we don't want to pass by reference. */
         *palg = req->sig_alg;
 }
+int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
+{
+    req->req_info->enc.modified = 1;
+    return i2d_X509_REQ_INFO(req->req_info, pp);
+}
+int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
+    crl->crl->enc.modified = 1;
+    return i2d_X509_CRL_INFO(crl->crl, pp);
+}
+
 void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
                              X509_CRL *crl)
 {

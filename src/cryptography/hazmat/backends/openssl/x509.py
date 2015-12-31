@@ -888,13 +888,17 @@ class _CertificateRevocationList(object):
 
     @property
     def signature(self):
-        return self._backend._asn1_string_to_bytes(self._x509_crl.signature)
+        sig = self._backend._ffi.new("ASN1_BIT_STRING **")
+        self._backend._lib.X509_CRL_get0_signature(
+            sig, self._backend._ffi.NULL, self._x509_crl
+        )
+        self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
+        return self._backend._asn1_string_to_bytes(sig[0])
 
     @property
     def tbs_certlist_bytes(self):
         pp = self._backend._ffi.new("unsigned char **")
-        # the X509_CRL_INFO struct holds the tbsCertList data
-        res = self._backend._lib.i2d_X509_CRL_INFO(self._x509_crl.crl, pp)
+        res = self._backend._lib.i2d_re_X509_CRL_tbs(self._x509_crl, pp)
         self._backend.openssl_assert(res > 0)
         pp = self._backend._ffi.gc(
             pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
@@ -1018,8 +1022,7 @@ class _CertificateSigningRequest(object):
     @property
     def tbs_certrequest_bytes(self):
         pp = self._backend._ffi.new("unsigned char **")
-        # the X509_REQ_INFO struct holds the CertificateRequestInfo data
-        res = self._backend._lib.i2d_X509_REQ_INFO(self._x509_req.req_info, pp)
+        res = self._backend._lib.i2d_re_X509_REQ_tbs(self._x509_req, pp)
         self._backend.openssl_assert(res > 0)
         pp = self._backend._ffi.gc(
             pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
@@ -1028,7 +1031,12 @@ class _CertificateSigningRequest(object):
 
     @property
     def signature(self):
-        return self._backend._asn1_string_to_bytes(self._x509_req.signature)
+        sig = self._backend._ffi.new("ASN1_BIT_STRING **")
+        self._backend._lib.X509_REQ_get0_signature(
+            sig, self._backend._ffi.NULL, self._x509_req
+        )
+        self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
+        return self._backend._asn1_string_to_bytes(sig[0])
 
 
 _EXTENSION_HANDLERS = {
