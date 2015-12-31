@@ -19,7 +19,6 @@ class _Reasons(Enum):
     UNSUPPORTED_X509 = 8
     UNSUPPORTED_EXCHANGE_ALGORITHM = 9
 
-
 class UnsupportedAlgorithm(Exception):
     def __init__(self, message, reason=None):
         super(UnsupportedAlgorithm, self).__init__(message)
@@ -54,3 +53,8 @@ class InternalError(Exception):
 
 class InvalidKey(Exception):
     pass
+
+
+class UnnecessaryPassphrase(Exception):
+    def __str__ (self):
+        return "Password was given but key is not encrypted"
