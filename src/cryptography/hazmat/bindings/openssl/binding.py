@@ -8,6 +8,7 @@ import collections
 import os
 import threading
 import types
+import warnings
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
@@ -180,3 +181,11 @@ class Binding(object):
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
 Binding.init_static_locks()
+
+if Binding.lib.SSLeay() < 0x10001000:
+    warnings.warn(
+        "OpenSSL versions less than 1.0.1 are no longer supported by the "
+        "OpenSSL project, please upgrade. A future version of cryptography "
+        "will drop support for these versions.",
+        DeprecationWarning
+    )
