@@ -47,7 +47,7 @@ class _HMACContext(object):
         copied_ctx = self._backend._lib.Cryptography_HMAC_CTX_new()
         self._backend.openssl_assert(copied_ctx != self._backend._ffi.NULL)
         copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.HMAC_CTX_free
+            copied_ctx, self._backend._lib.Cryptography_HMAC_CTX_free
         )
         res = self._backend._lib.Cryptography_HMAC_CTX_copy(
             copied_ctx, self._ctx
@@ -72,7 +72,6 @@ class _HMACContext(object):
         )
         self._backend.openssl_assert(res != 0)
         self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
-        self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def verify(self, signature):
