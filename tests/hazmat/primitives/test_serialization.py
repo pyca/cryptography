@@ -12,7 +12,7 @@ import textwrap
 import pytest
 
 from cryptography.exceptions import (
-    UnsupportedAlgorithm, UnnecessaryPassphrase, _Reasons
+    UnnecessaryPassphrase, UnsupportedAlgorithm, _Reasons
 )
 from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DSABackend, EllipticCurveBackend,
