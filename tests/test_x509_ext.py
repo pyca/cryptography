@@ -75,6 +75,63 @@ class TestExtension(object):
         assert ext1 != object()
 
 
+class TestUnrecognizedExtension(object):
+    def test_invalid_oid(self):
+        with pytest.raises(TypeError):
+            x509.UnrecognizedExtension("notanoid", b"somedata")
+
+    def test_eq(self):
+        ext1 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
+        )
+        ext2 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
+        )
+        assert ext1 == ext2
+
+    def test_ne(self):
+        ext1 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
+        )
+        ext2 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x02"
+        )
+        ext3 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.5"), b"\x03\x02\x01"
+        )
+        assert ext1 != ext2
+        assert ext1 != ext3
+        assert ext1 != object()
+
+    def test_repr(self):
+        ext1 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
+        )
+        if six.PY3:
+            assert repr(ext1) == (
+                "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
+                "name=Unknown OID)>, value=b'\\x03\\x02\\x01')>"
+            )
+        else:
+            assert repr(ext1) == (
+                "<UnrecognizedExtension(oid=<ObjectIdentifier(oid=1.2.3.4, "
+                "name=Unknown OID)>, value='\\x03\\x02\\x01')>"
+            )
+
+    def test_hash(self):
+        ext1 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
+        )
+        ext2 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x03\x02\x01"
+        )
+        ext3 = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.5"), b"\x03\x02\x01"
+        )
+        assert hash(ext1) == hash(ext2)
+        assert hash(ext1) != hash(ext3)
+
+
 class TestCertificateIssuer(object):
     def test_iter_names(self):
         ci = x509.CertificateIssuer([
