@@ -1057,6 +1057,11 @@ class TestExtensions(object):
             exts.get_extension_for_class(x509.IssuerAlternativeName)
         assert exc.value.oid == ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
+    def test_unrecognized_extension_for_class(self):
+        exts = x509.Extensions([])
+        with pytest.raises(TypeError):
+            exts.get_extension_for_class(x509.UnrecognizedExtension)
+
     def test_indexing(self, backend):
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
