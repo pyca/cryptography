@@ -112,12 +112,6 @@ X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_get_ext_by_NID(X509 *, int, int);
 
-/* CRYPTO_EX_DATA */
-int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
-                          CRYPTO_EX_free *);
-int X509_set_ex_data(X509 *, int, void *);
-void *X509_get_ex_data(X509 *, int);
-
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
@@ -230,6 +224,12 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+/* these CRYPTO_EX_DATA became macros in 1.1.0 */
+int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                          CRYPTO_EX_free *);
+int X509_set_ex_data(X509 *, int, void *);
+void *X509_get_ex_data(X509 *, int);
+
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
