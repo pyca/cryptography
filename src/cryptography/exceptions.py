@@ -57,5 +57,5 @@ class InvalidKey(Exception):
 
 
 class UnnecessaryPassphrase(Exception):
-    def __str__ (self):
+    def __str__(self):
         return "Password was given but key is not encrypted"
