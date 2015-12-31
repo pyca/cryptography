@@ -91,6 +91,13 @@ class Extensions(object):
         raise ExtensionNotFound("No {0} extension was found".format(oid), oid)
 
     def get_extension_for_class(self, extclass):
+        if extclass is UnrecognizedExtension:
+            raise TypeError(
+                "UnrecognizedExtension can't be used with "
+                "get_extension_for_class because more than one instance of the"
+                " class may be present."
+            )
+
         for ext in self:
             if isinstance(ext.value, extclass):
                 return ext
