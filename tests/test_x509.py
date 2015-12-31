@@ -1093,7 +1093,9 @@ class TestRSACertificateRequest(object):
             backend
         )
         extensions = request.extensions
-        assert len(extensions) == 0
+        assert len(extensions) == 1
+        assert extensions[0].oid == x509.ObjectIdentifier("1.2.3.4")
+        assert extensions[0].value == b"value"
 
     def test_request_basic_constraints(self, backend):
         request = _load_cert(

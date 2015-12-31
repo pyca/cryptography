@@ -364,7 +364,7 @@ X.509 Certificate Object
             extension of the same type is found within the certificate.
 
         :raises cryptography.x509.UnsupportedExtension: If the certificate
-            contains an extension that is not supported.
+            contains an extension marked critical that is not supported.
 
         :raises cryptography.x509.UnsupportedGeneralNameType: If an extension
             contains a general name that is not supported.
@@ -1274,6 +1274,8 @@ X.509 Extensions
     .. attribute:: value
 
         Returns an instance of the extension type corresponding to the OID.
+        Unrecognized extensions will return the DER encoded byte string rather
+        than a class instance.
 
 .. class:: ExtensionType
 
@@ -2435,7 +2437,8 @@ Exceptions
 
 .. class:: UnsupportedExtension
 
-    This is raised when a certificate contains an unsupported extension type.
+    This is raised when a certificate contains an unsupported extension type
+    that is marked critical.
 
     .. attribute:: oid
 

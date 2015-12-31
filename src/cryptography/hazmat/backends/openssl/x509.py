@@ -213,6 +213,12 @@ class _X509ExtensionParser(object):
                         "Critical extension {0} is not currently supported"
                         .format(oid), oid
                     )
+                else:
+                    # grab the DER payload and output it
+                    value = backend._lib.X509_EXTENSION_get_data(ext)
+                    backend.openssl_assert(value != backend._ffi.NULL)
+                    der = backend._ffi.buffer(value.data, value.length)[:]
+                    extensions.append(x509.Extension(oid, critical, der))
             else:
                 # For extensions which are not supported by OpenSSL we pass the
                 # extension object directly to the parsing routine so it can
