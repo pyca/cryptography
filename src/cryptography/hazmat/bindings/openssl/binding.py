@@ -182,7 +182,7 @@ class Binding(object):
 # is per module so this approach will not work.
 Binding.init_static_locks()
 
-if Binding.lib.SSLeay() < 0x10001000:
+if Binding.lib.Cryptography_openssl_version_num() < 0x10001000:
     warnings.warn(
         "OpenSSL versions less than 1.0.1 are no longer supported by the "
         "OpenSSL project, please upgrade. A future version of cryptography "
