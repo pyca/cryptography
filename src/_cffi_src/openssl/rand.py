@@ -22,7 +22,6 @@ int RAND_load_file(const char *, long);
 int RAND_write_file(const char *);
 void RAND_cleanup(void);
 int RAND_bytes(unsigned char *, int);
-int RAND_pseudo_bytes(unsigned char *, int);
 """
 
 MACROS = """
