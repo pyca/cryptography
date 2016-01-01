@@ -58,6 +58,8 @@ to include the proper locations. For example:
     C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
     C:\> pip install cryptography
 
+If you need to rebuild ``cryptography`` for any reason be sure to clear the
+local `wheel cache`_.
 
 .. _build-on-linux:
 
@@ -227,6 +229,9 @@ You can also build cryptography statically:
     $ sudo port install openssl
     $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
 
+If you need to rebuild ``cryptography`` for any reason be sure to clear the
+local `wheel cache`_.
+
 Building cryptography with conda
 --------------------------------
 
@@ -257,3 +262,4 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://openssl.org/source/
+.. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching
