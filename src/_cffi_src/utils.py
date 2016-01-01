@@ -5,6 +5,8 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+from distutils.ccompiler import new_compiler
+from distutils.dist import Distribution
 
 from cffi import FFI
 
@@ -79,10 +81,23 @@ def build_ffi(module_name, cdef_source, verify_source, libraries=[],
     return ffi
 
 
-def extra_link_args(platform):
-    if platform != "win32":
-        return []
+def extra_link_args(compiler_type):
+    if compiler_type == 'msvc':
+        # Enable NX and ASLR for Windows builds on MSVC. These are enabled by
+        # default on Python 3.3+ but not on 2.x.
+        return ['/NXCOMPAT', '/DYNAMICBASE']
     else:
-        # Enable NX and ASLR for Windows builds. These are enabled by default
-        # on Python 3.3+ but not on 2.x.
-        return ["/NXCOMPAT", "/DYNAMICBASE"]
+        return []
+
+
+def compiler_type():
+    """
+    Gets the compiler type from distutils. On Windows with MSVC it will be
+    "msvc". On OS X and linux it is "unix".
+    """
+    dist = Distribution()
+    dist.parse_config_files()
+    cmd = dist.get_command_obj('build')
+    cmd.ensure_finalized()
+    compiler = new_compiler(compiler=cmd.compiler)
+    return compiler.compiler_type
