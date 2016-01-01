@@ -141,7 +141,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     .. versionadded:: 0.6
 
     Deserialize a public key from PEM encoded data to one of the supported
-    asymmetric public key types.
+    asymmetric public key types. The PEM encoded data is typically a
+    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
 
     .. doctest::
 
@@ -226,7 +227,8 @@ the rest.
     .. versionadded:: 0.8
 
     Deserialize a public key from DER encoded data to one of the supported
-    asymmetric public key types.
+    asymmetric public key types. The DER encoded data is typically a
+    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
 
     :param bytes data: The DER encoded key data.
 
