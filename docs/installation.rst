@@ -173,7 +173,7 @@ Building cryptography on OS X
 -----------------------------
 
 The wheel package on OS X is a statically linked build (as of 1.0.1) so for
-users on 10.10 (Yosemite) and above you only need one step:
+users with pip 1.5 or above you only need one step:
 
 .. code-block:: console
 
@@ -182,8 +182,8 @@ users on 10.10 (Yosemite) and above you only need one step:
 If you want to build cryptography yourself or are on an older OS X version
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On OS X much of this is provided by Apple's Xcode
-development tools.  To install the Xcode command line tools open a terminal
-window and run:
+development tools.  To install the Xcode command line tools (on 10.9+) open a
+terminal window and run:
 
 .. code-block:: console
 
