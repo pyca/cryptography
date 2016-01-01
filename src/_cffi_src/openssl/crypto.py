@@ -61,6 +61,7 @@ const char *OpenSSL_version(int);
 void CRYPTO_add(int *, int, int);
 void CRYPTO_malloc_init(void);
 const char *Cryptography_openssl_version_text(void);
+unsigned long Cryptography_openssl_version_num(void);
 """
 
 CUSTOMIZATIONS = """
@@ -71,6 +72,14 @@ const char *Cryptography_openssl_version_text(void) {
     return SSLeay_version(SSLEAY_VERSION);
 #else
     return OpenSSL_version(OPENSSL_VERSION);
+#endif
+}
+
+unsigned long Cryptography_openssl_version_num(void) {
+#if defined(SSLEAY_VERSION)
+    return SSLeay();
+#else
+    return OpenSSL_version_num();
 #endif
 }
 
