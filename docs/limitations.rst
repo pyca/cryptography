@@ -15,5 +15,5 @@ software in Python is potentially vulnerable to this attack. The
 Likelihood: unlikely, Remediation Cost: expensive to repair" and we do not
 consider this a high risk for most users.
 
-.. _`Memory wiping`:  http://blogs.msdn.com/b/oldnewthing/archive/2013/05/29/10421912.aspx
+.. _`Memory wiping`:  https://blogs.msdn.microsoft.com/oldnewthing/20130529-00/?p=4223/
 .. _`CERT secure coding guidelines`: https://www.securecoding.cert.org/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
