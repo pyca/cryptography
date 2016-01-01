@@ -151,6 +151,6 @@ So, specifically:
 
 .. _`Write comments as complete sentences.`: http://nedbatchelder.com/blog/201401/comments_should_be_sentences.html
 .. _`syntax`: http://sphinx-doc.org/domains.html#info-field-lists
-.. _`Studies have shown`: https://smartbear.com/smartbear/media/pdfs/wp-cc-11-best-practices-of-peer-code-review.pdf
+.. _`Studies have shown`: https://smartbear.com/SmartBear/media/pdfs/11_Best_Practices_for_Peer_Code_Review.pdf
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
-.. _`doc8`: https://github.com/stackforge/doc8
+.. _`doc8`: https://github.com/openstack/doc8
