@@ -21,6 +21,10 @@ Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 * x86-64 Debian Wheezy (7.x), Jessie (8.x), and Debian Sid (unstable)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2012
 
+.. warning::
+    Python 2.6 is no longer supported by the Python core team. A future version
+    of cryptography will drop support for this version.
+
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
@@ -32,6 +36,11 @@ OpenSSL releases:
 * ``OpenSSL 1.0.1j-freebsd``
 * ``OpenSSL 1.0.1f``
 * ``OpenSSL 1.0.2-latest``
+
+.. warning::
+    OpenSSL versions 0.9.8 and 1.0.0 are no longer supported by the OpenSSL
+    project. A future version of cryptography will drop support for these
+    releases.
 
 On Windows
 ----------
@@ -58,6 +67,8 @@ to include the proper locations. For example:
     C:\> set INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
     C:\> pip install cryptography
 
+If you need to rebuild ``cryptography`` for any reason be sure to clear the
+local `wheel cache`_.
 
 .. _build-on-linux:
 
@@ -173,7 +184,7 @@ Building cryptography on OS X
 -----------------------------
 
 The wheel package on OS X is a statically linked build (as of 1.0.1) so for
-users on 10.10 (Yosemite) and above you only need one step:
+users with pip 1.5 or above you only need one step:
 
 .. code-block:: console
 
@@ -182,8 +193,8 @@ users on 10.10 (Yosemite) and above you only need one step:
 If you want to build cryptography yourself or are on an older OS X version
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On OS X much of this is provided by Apple's Xcode
-development tools.  To install the Xcode command line tools open a terminal
-window and run:
+development tools.  To install the Xcode command line tools (on OS X 10.9+)
+open a terminal window and run:
 
 .. code-block:: console
 
@@ -227,6 +238,9 @@ You can also build cryptography statically:
     $ sudo port install openssl
     $ env CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 LDFLAGS="/opt/local/lib/libssl.a /opt/local/lib/libcrypto.a" CFLAGS="-I/opt/local/include" pip install cryptography
 
+If you need to rebuild ``cryptography`` for any reason be sure to clear the
+local `wheel cache`_.
+
 Building cryptography with conda
 --------------------------------
 
@@ -257,3 +271,4 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://openssl.org/source/
+.. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching

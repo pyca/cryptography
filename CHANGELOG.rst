@@ -6,6 +6,21 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:**
+  :class:`~cryptography.x509.RevokedCertificate`
+  :attr:`~cryptography.x509.RevokedCertificate.extensions` now uses extension
+  classes rather than returning raw values inside the
+  :class:`~cryptography.x509.Extension`
+  :attr:`~cryptography.x509.Extension.value`. The new classes
+  are:
+
+  * :class:`~cryptography.x509.CertificateIssuer`
+  * :class:`~cryptography.x509.CRLReason`
+  * :class:`~cryptography.x509.InvalidityDate`
+* Deprecated support for OpenSSL 0.9.8 and 1.0.0. At this time there is no time
+  table for actually dropping support, however we strongly encourage all users
+  to upgrade, as those versions no longer receives support from the OpenSSL
+  project.
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
   :attr:`~cryptography.x509.Certificate.tbs_certificate_bytes` attributes.
@@ -31,6 +46,11 @@ Changelog
   * :class:`~cryptography.x509.AuthorityKeyIdentifier`
   * :class:`~cryptography.x509.CRLNumber`
   * :class:`~cryptography.x509.IssuerAlternativeName`
+* Added :class:`~cryptography.x509.CertificateRevocationListBuilder` and
+  :class:`~cryptography.x509.RevokedCertificateBuilder` to allow creation of
+  CRLs.
+* Unrecognized non-critical X.509 extensions are now parsed into an
+  :class:`~cryptography.x509.UnrecognizedExtension` object.
 
 1.1.2 - 2015-12-10
 ~~~~~~~~~~~~~~~~~~

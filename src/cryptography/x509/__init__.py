@@ -6,20 +6,22 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography.x509.base import (
     Certificate, CertificateBuilder, CertificateRevocationList,
+    CertificateRevocationListBuilder,
     CertificateSigningRequest, CertificateSigningRequestBuilder,
-    InvalidVersion, RevokedCertificate,
+    InvalidVersion, RevokedCertificate, RevokedCertificateBuilder,
     Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
     load_pem_x509_certificate, load_pem_x509_crl, load_pem_x509_csr,
 )
 from cryptography.x509.extensions import (
     AccessDescription, AuthorityInformationAccess,
     AuthorityKeyIdentifier, BasicConstraints, CRLDistributionPoints,
-    CRLNumber, CertificatePolicies, DistributionPoint, DuplicateExtension,
-    ExtendedKeyUsage, Extension, ExtensionNotFound, ExtensionType, Extensions,
-    GeneralNames, InhibitAnyPolicy, IssuerAlternativeName, KeyUsage,
+    CRLNumber, CRLReason, CertificateIssuer, CertificatePolicies,
+    DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
+    ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
+    InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
     NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
     ReasonFlags, SubjectAlternativeName, SubjectKeyIdentifier,
-    UnsupportedExtension, UserNotice
+    UnrecognizedExtension, UnsupportedExtension, UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -28,9 +30,9 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, CRLExtensionOID, CertificatePoliciesOID,
-    ExtendedKeyUsageOID, ExtensionOID, NameOID, ObjectIdentifier,
-    SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
+    AuthorityInformationAccessOID, CRLEntryExtensionOID, CRLExtensionOID,
+    CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
+    ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
 
 
@@ -95,9 +97,9 @@ OID_ANY_POLICY = CertificatePoliciesOID.ANY_POLICY
 OID_CPS_QUALIFIER = CertificatePoliciesOID.CPS_QUALIFIER
 OID_CPS_USER_NOTICE = CertificatePoliciesOID.CPS_USER_NOTICE
 
-OID_CERTIFICATE_ISSUER = CRLExtensionOID.CERTIFICATE_ISSUER
-OID_CRL_REASON = CRLExtensionOID.CRL_REASON
-OID_INVALIDITY_DATE = CRLExtensionOID.INVALIDITY_DATE
+OID_CERTIFICATE_ISSUER = CRLEntryExtensionOID.CERTIFICATE_ISSUER
+OID_CRL_REASON = CRLEntryExtensionOID.CRL_REASON
+OID_INVALIDITY_DATE = CRLEntryExtensionOID.INVALIDITY_DATE
 
 OID_CA_ISSUERS = AuthorityInformationAccessOID.CA_ISSUERS
 OID_OCSP = AuthorityInformationAccessOID.OCSP
@@ -152,8 +154,10 @@ __all__ = [
     "OtherName",
     "Certificate",
     "CertificateRevocationList",
+    "CertificateRevocationListBuilder",
     "CertificateSigningRequest",
     "RevokedCertificate",
+    "RevokedCertificateBuilder",
     "CertificateSigningRequestBuilder",
     "CertificateBuilder",
     "Version",
@@ -161,4 +165,9 @@ __all__ = [
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "_GENERAL_NAMES",
+    "CRLExtensionOID",
+    "CertificateIssuer",
+    "CRLReason",
+    "InvalidityDate",
+    "UnrecognizedExtension",
 ]

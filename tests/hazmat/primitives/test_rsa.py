@@ -1194,6 +1194,43 @@ class TestRSADecryption(object):
         )
         assert message == binascii.unhexlify(example["message"])
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            )
+        ),
+        skip_message="Does not support OAEP."
+    )
+    def test_invalid_oaep_decryption(self, backend):
+        # More recent versions of OpenSSL may raise RSA_R_OAEP_DECODING_ERROR
+        # This test triggers it and confirms that we properly handle it. Other
+        # backends should also return the proper ValueError.
+        private_key = RSA_KEY_512.private_key(backend)
+
+        ciphertext = private_key.public_key().encrypt(
+            b'secure data',
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            )
+        )
+
+        private_key_alt = RSA_KEY_512_ALT.private_key(backend)
+
+        with pytest.raises(ValueError):
+            private_key_alt.decrypt(
+                ciphertext,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                    algorithm=hashes.SHA1(),
+                    label=None
+                )
+            )
+
     def test_unsupported_oaep_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
