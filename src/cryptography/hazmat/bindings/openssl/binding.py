@@ -80,9 +80,9 @@ def build_conditional_library(lib, conditional_names):
     conditional_lib = types.ModuleType("lib")
     conditional_lib._original_lib = lib
     excluded_names = set()
-    for condition, names in conditional_names.items():
+    for condition, names_cb in conditional_names.items():
         if not getattr(lib, condition):
-            excluded_names |= set(names)
+            excluded_names.update(names_cb())
 
     for attr in dir(lib):
         if attr not in excluded_names:
