@@ -68,7 +68,7 @@ else
       # patches, but while that's in jenkins we don't get coverage data from it)
       if [[ ! -f "$HOME/ossl-098l/bin/openssl" ]]; then
         curl -O https://www.openssl.org/source/openssl-0.9.8l.tar.gz
-        tar zxvf openssl-0.9.8l.tar.gz
+        tar zxf openssl-0.9.8l.tar.gz
         cd openssl-0.9.8l
         echo "OPENSSL_0.9.8L_CUSTOM {
             global:
