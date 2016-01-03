@@ -69,7 +69,7 @@ else
         OPENSSL_DIR="ossl-098l"
     fi
     # download, compile, and install if it's not already present via travis cache
-    if [ ! -z "$OPENSSL_DIR" ]; then
+    if [ -n "$OPENSSL_DIR" ]; then
         if [[ ! -f "$HOME/$OPENSSL_DIR/bin/openssl" ]]; then
             curl -O https://www.openssl.org/source/openssl-$OPENSSL_VERSION_NUMBER.tar.gz
             tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
