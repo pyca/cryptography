@@ -75,6 +75,11 @@ else
             tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
             cd openssl-$OPENSSL_VERSION_NUMBER
             ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
+            # modify the shlib version to a unique one to make sure the dynamic linker
+            # doesn't load the system one.
+            sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
+            sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
+            sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile
             make depend
             make install
         fi
