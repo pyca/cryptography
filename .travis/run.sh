@@ -15,6 +15,9 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
         export LDFLAGS="/usr/local/opt/openssl/lib/libssl.a /usr/local/opt/openssl/lib/libcrypto.a"
     else
         export LDFLAGS="-L/usr/local/opt/openssl/lib"
+        # on a dynamic build we only need to test against OpenSSL -- CC is not affected by
+        # dynamic vs static
+        export TOX_FLAGS="--backend=openssl"
     fi
     export CFLAGS="-I/usr/local/opt/openssl/include"
 else
