@@ -67,6 +67,9 @@ else
         # patches, but while that's in jenkins we don't get coverage data from it).
         OPENSSL_VERSION_NUMBER="0.9.8l"
         OPENSSL_DIR="ossl-098l"
+    elif [[ "${OPENSSL}" == "1.0.0" ]]; then
+        OPENSSL_VERSION_NUMBER="1.0.0t"
+        OPENSSL_DIR="ossl-100t"
     fi
     # download, compile, and install if it's not already present via travis cache
     if [ -n "$OPENSSL_DIR" ]; then
