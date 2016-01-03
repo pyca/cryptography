@@ -28,6 +28,8 @@ else
     fi
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
         OPENSSL_DIR="ossl-098l"
+    elif [[ "${OPENSSL}" == "1.0.0" ]]; then
+        OPENSSL_DIR="ossl-100t"
     fi
 
     if [ -n "$OPENSSL_DIR" ]; then

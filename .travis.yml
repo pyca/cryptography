@@ -6,6 +6,7 @@ cache:
     directories:
         - $HOME/.cache/pip
         - $HOME/ossl-098l
+        - $HOME/ossl-100t
 
 matrix:
     include:
@@ -21,6 +22,8 @@ matrix:
           env: TOXENV=py35
         - python: pypy
           env: TOXENV=pypy
+        - python: 3.5
+          env: TOXENV=py35 OPENSSL=1.0.0
         - python: 2.6
           env: TOXENV=py26 OPENSSL=0.9.8
         - python: 2.7
