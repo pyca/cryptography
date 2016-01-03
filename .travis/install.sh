@@ -74,7 +74,7 @@ else
             curl -O https://www.openssl.org/source/openssl-$OPENSSL_VERSION_NUMBER.tar.gz
             tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
             cd openssl-$OPENSSL_VERSION_NUMBER
-            ./config shared no-asm no-ssl2 -fPIC --prefix=$HOME/$OPENSSL_DIR
+            ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
             make depend
             make install
         fi
