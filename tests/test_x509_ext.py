@@ -1480,6 +1480,14 @@ class TestUniformResourceIdentifier(object):
         )
         assert gn.value == u"ldap://cryptography:90/path?query=true#somedata"
 
+    def test_hash(self):
+        g1 = x509.UniformResourceIdentifier(u"http://host.com")
+        g2 = x509.UniformResourceIdentifier(u"http://host.com")
+        g3 = x509.UniformResourceIdentifier(u"http://other.com")
+
+        assert hash(g1) == hash(g2)
+        assert hash(g1) != hash(g3)
+
 
 class TestRegisteredID(object):
     def test_not_oid(self):
