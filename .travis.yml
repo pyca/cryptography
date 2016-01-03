@@ -33,12 +33,6 @@ matrix:
           env: TOXENV=py35 OPENSSL=0.9.8
         - python: pypy
           env: TOXENV=pypy OPENSSL=0.9.8
-          addons:
-              apt:
-                  sources:
-                      - lucid
-                  packages:
-                      - libssl-dev/lucid
         - python: 2.7
           env: TOXENV=docs
           addons:
