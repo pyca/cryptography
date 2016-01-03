@@ -24,10 +24,14 @@ else
         eval "$(pyenv init -)"
     fi
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
-      export PATH="$HOME/ossl-098l/bin:$PATH"
-      export CFLAGS="-I$HOME/ossl-098l/include"
-      export LDFLAGS="-L$HOME/ossl-098l/lib"
-      export LD_LIBRARY_PATH="$HOME/ossl-098l/lib"
+        OPENSSL_DIR="ossl-098l"
+    fi
+
+    if [ ! -z "$OPENSSL_DIR" ]; then
+        export PATH="$HOME/$OPENSSL_DIR/bin:$PATH"
+        export CFLAGS="-I$HOME/$OPENSSL_DIR/include"
+        # rpath on linux will cause it to use an absolute path so we don't need to do LD_LIBRARY_PATH
+        export LDFLAGS="-L$HOME/$OPENSSL_DIR/lib -Wl,-rpath=$HOME/$OPENSSL_DIR/lib"
     fi
 fi
 source ~/.venv/bin/activate
