@@ -1448,6 +1448,14 @@ class TestRFC822Name(object):
         assert gn.value == u"email@em\xe5\xefl.com"
         assert gn._encoded == b"email@xn--eml-vla4c.com"
 
+    def test_hash(self):
+        g1 = x509.RFC822Name(u"email@host.com")
+        g2 = x509.RFC822Name(u"email@host.com")
+        g3 = x509.RFC822Name(u"admin@host.com")
+
+        assert hash(g1) == hash(g2)
+        assert hash(g1) != hash(g3)
+
 
 class TestUniformResourceIdentifier(object):
     def test_no_parsed_hostname(self):
