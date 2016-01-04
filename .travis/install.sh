@@ -35,7 +35,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv install 3.5.1
             pyenv global 3.5.1
             ;;
-        pypy)
+        pypy*)
             pyenv install pypy-4.0.1
             pyenv global pypy-4.0.1
             ;;
