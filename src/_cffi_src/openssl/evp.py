@@ -17,9 +17,7 @@ typedef struct {
     ...;
 } EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct env_md_ctx_st {
-    ...;
-} EVP_MD_CTX;
+typedef ... EVP_MD_CTX;
 
 typedef struct evp_pkey_st {
     int type;
@@ -64,13 +62,10 @@ EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
 
-EVP_MD_CTX *EVP_MD_CTX_create(void);
 int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
-int EVP_MD_CTX_cleanup(EVP_MD_CTX *);
-void EVP_MD_CTX_destroy(EVP_MD_CTX *);
 const EVP_MD *EVP_get_digestbyname(const char *);
 
 EVP_PKEY *EVP_PKEY_new(void);
@@ -171,6 +166,11 @@ int Cryptography_EVP_PKEY_encrypt(EVP_PKEY_CTX *ctx, unsigned char *out,
 int Cryptography_EVP_PKEY_decrypt(EVP_PKEY_CTX *ctx, unsigned char *out,
                                   size_t *outlen, const unsigned char *in,
                                   size_t inlen);
+
+/* in 1.1.0 _create and _destroy were renamed to _new and _free. We
+   invent these symbols and implement them in customizations to handle it */
+EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
+void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 """
 
 CUSTOMIZATIONS = """
@@ -230,4 +230,18 @@ int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
 int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
+EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+    return EVP_MD_CTX_create();
+#else
+    return EVP_MD_CTX_new();
+#endif
+}
+void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+    EVP_MD_CTX_destroy(ctx);
+#else
+    EVP_MD_CTX_free(ctx);
+#endif
+}
 """

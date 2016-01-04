@@ -29,7 +29,6 @@ FUNCTIONS = """
 DH *DH_new(void);
 void DH_free(DH *);
 int DH_size(const DH *);
-DH *DH_generate_parameters(int, int, void (*)(int, int, void *), void *);
 int DH_check(const DH *, int *);
 int DH_check_pub_key(const DH *, const BIGNUM *, int *);
 int DH_generate_key(DH *);

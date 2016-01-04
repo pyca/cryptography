@@ -139,19 +139,37 @@ def _encode_name(backend, attributes):
     """
     subject = backend._lib.X509_NAME_new()
     for attribute in attributes:
-        value = attribute.value.encode('utf8')
-        obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
-        if attribute.oid == NameOID.COUNTRY_NAME:
-            # Per RFC5280 Appendix A.1 countryName should be encoded as
-            # PrintableString, not UTF8String
-            type = backend._lib.MBSTRING_ASC
-        else:
-            type = backend._lib.MBSTRING_UTF8
-        res = backend._lib.X509_NAME_add_entry_by_OBJ(
-            subject, obj, type, value, -1, -1, 0,
-        )
+        name_entry = _encode_name_entry(backend, attribute)
+        res = backend._lib.X509_NAME_add_entry(subject, name_entry, -1, 0)
         backend.openssl_assert(res == 1)
     return subject
+
+
+def _encode_sk_name_entry(backend, attributes):
+    """
+    The sk_X50_NAME_ENTRY created will not be gc'd.
+    """
+    stack = backend._lib.sk_X509_NAME_ENTRY_new_null()
+    for attribute in attributes:
+        name_entry = _encode_name_entry(backend, attribute)
+        res = backend._lib.sk_X509_NAME_ENTRY_push(stack, name_entry)
+        backend.openssl_assert(res == 1)
+    return stack
+
+
+def _encode_name_entry(backend, attribute):
+    value = attribute.value.encode('utf8')
+    obj = _txt2obj_gc(backend, attribute.oid.dotted_string)
+    if attribute.oid == NameOID.COUNTRY_NAME:
+        # Per RFC5280 Appendix A.1 countryName should be encoded as
+        # PrintableString, not UTF8String
+        type = backend._lib.MBSTRING_ASC
+    else:
+        type = backend._lib.MBSTRING_UTF8
+    name_entry = backend._lib.X509_NAME_ENTRY_create_by_OBJ(
+        backend._ffi.NULL, obj, type, value, -1
+    )
+    return name_entry
 
 
 def _encode_name_gc(backend, attributes):
@@ -558,8 +576,7 @@ def _encode_crl_distribution_points(backend, crl_distribution_points):
             dpn = backend._lib.DIST_POINT_NAME_new()
             backend.openssl_assert(dpn != backend._ffi.NULL)
             dpn.type = _DISTPOINT_TYPE_RELATIVENAME
-            name = _encode_name_gc(backend, point.relative_name)
-            relativename = backend._lib.sk_X509_NAME_ENTRY_dup(name.entries)
+            relativename = _encode_sk_name_entry(backend, point.relative_name)
             backend.openssl_assert(relativename != backend._ffi.NULL)
             dpn.name.relativename = relativename
             dp.distpoint = dpn
@@ -745,7 +762,7 @@ class Backend(object):
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """
         return self._ffi.string(
-            self._lib.SSLeay_version(self._lib.SSLEAY_VERSION)
+            self._lib.Cryptography_openssl_version_text()
         ).decode("ascii")
 
     def create_hmac_ctx(self, key, algorithm):
@@ -1573,11 +1590,14 @@ class Backend(object):
             x509_revoked, serial_number
         )
         self.openssl_assert(res == 1)
-        res = self._lib.ASN1_TIME_set(
-            x509_revoked.revocationDate,
+        rev_date = self._lib.ASN1_TIME_set(
+            self._ffi.NULL,
             calendar.timegm(builder._revocation_date.timetuple())
         )
-        self.openssl_assert(res != self._ffi.NULL)
+        self.openssl_assert(rev_date != self._ffi.NULL)
+        rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
+        res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
+        self.openssl_assert(res == 1)
         # add CRL entry extensions
         self._create_x509_extensions(
             extensions=builder._extensions,

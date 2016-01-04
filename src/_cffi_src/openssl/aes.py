@@ -10,6 +10,7 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_AES_WRAP;
+static const int Cryptography_HAS_AES_CTR128_ENCRYPT;
 
 struct aes_key_st {
     ...;
@@ -50,5 +51,13 @@ int (*AES_wrap_key)(AES_KEY *, const unsigned char *, unsigned char *,
 int (*AES_unwrap_key)(AES_KEY *, const unsigned char *, unsigned char *,
                       const unsigned char *, unsigned int) = NULL;
 #endif
-
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+static const int Cryptography_HAS_AES_CTR128_ENCRYPT = 0;
+void (*AES_ctr128_encrypt)(const unsigned char *, unsigned char *,
+                           const size_t, const AES_KEY *,
+                           unsigned char[], unsigned char[],
+                           unsigned int *) = NULL;
+#else
+static const int Cryptography_HAS_AES_CTR128_ENCRYPT = 1;
+#endif
 """

@@ -73,7 +73,6 @@ int BN_mask_bits(BIGNUM *, int);
 MACROS = """
 int BN_num_bytes(const BIGNUM *);
 
-int BN_zero(BIGNUM *);
 int BN_one(BIGNUM *);
 int BN_mod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
 

@@ -168,9 +168,6 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_ECDH": [
         "ECDH_compute_key",
-        "ECDH_get_ex_new_index",
-        "ECDH_set_ex_data",
-        "ECDH_get_ex_data",
     ],
     "Cryptography_HAS_ECDSA": [
         "ECDSA_SIG_new",
@@ -185,13 +182,10 @@ CONDITIONAL_NAMES = {
         "ECDSA_sign_ex",
         "ECDSA_verify",
         "ECDSA_size",
-        "ECDSA_OpenSSL",
         "ECDSA_set_default_method",
         "ECDSA_get_default_method",
         "ECDSA_set_method",
-        "ECDSA_get_ex_new_index",
-        "ECDSA_set_ex_data",
-        "ECDSA_get_ex_data",
+        "ECDSA_SIG_get0",
     ],
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
@@ -410,5 +404,36 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
+    ],
+    "Cryptography_HAS_SSLEAY_NAMES": [
+        "SSLeay",
+        "SSLeay_version",
+        "SSLEAY_VERSION",
+        "SSLEAY_CFLAGS",
+        "SSLEAY_PLATFORM",
+        "SSLEAY_DIR",
+        "SSLEAY_BUILT_ON",
+    ],
+    "Cryptography_HAS_OPENSSL_NAMES": [
+        "OpenSSL_version_num",
+        "OpenSSL_version",
+        "OPENSSL_VERSION",
+        "OPENSSL_CFLAGS",
+        "OPENSSL_PLATFORM",
+        "OPENSSL_DIR",
+        "OPENSSL_BUILT_ON",
+    ],
+    "Cryptography_HAS_SSL_ST": [
+        "SSL_ST_BEFORE",
+        "SSL_ST_OK",
+        "SSL_ST_INIT",
+        "SSL_ST_RENEGOTIATE",
+    ],
+    "Cryptography_HAS_TLS_ST": [
+        "TLS_ST_BEFORE",
+        "TLS_ST_OK",
+    ],
+    "Cryptography_HAS_AES_CTR128_ENCRYPT": [
+        "AES_ctr128_encrypt",
     ],
 }

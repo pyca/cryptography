@@ -18,9 +18,10 @@ class _HashContext(object):
         self._backend = backend
 
         if ctx is None:
-            ctx = self._backend._lib.EVP_MD_CTX_create()
-            ctx = self._backend._ffi.gc(ctx,
-                                        self._backend._lib.EVP_MD_CTX_destroy)
+            ctx = self._backend._lib.Cryptography_EVP_MD_CTX_new()
+            ctx = self._backend._ffi.gc(
+                ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
+            )
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode("ascii"))
             if evp_md == self._backend._ffi.NULL:
@@ -38,9 +39,9 @@ class _HashContext(object):
     algorithm = utils.read_only_property("_algorithm")
 
     def copy(self):
-        copied_ctx = self._backend._lib.EVP_MD_CTX_create()
+        copied_ctx = self._backend._lib.Cryptography_EVP_MD_CTX_new()
         copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.EVP_MD_CTX_destroy
+            copied_ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
         )
         res = self._backend._lib.EVP_MD_CTX_copy_ex(copied_ctx, self._ctx)
         self._backend.openssl_assert(res != 0)
@@ -57,6 +58,4 @@ class _HashContext(object):
         res = self._backend._lib.EVP_DigestFinal_ex(self._ctx, buf, outlen)
         self._backend.openssl_assert(res != 0)
         self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
-        res = self._backend._lib.EVP_MD_CTX_cleanup(self._ctx)
-        self._backend.openssl_assert(res == 1)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
