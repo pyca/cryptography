@@ -63,7 +63,7 @@ Signing
 ~~~~~~~
 
 Using a :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-provider.
+provider which can be created like this:
 
 .. doctest::
 
@@ -74,8 +74,55 @@ provider.
     ...     key_size=1024,
     ...     backend=default_backend()
     ... )
-    >>> signer = private_key.signer(hashes.SHA256())
     >>> data = b"this is some data I'd like to sign"
+
+Signing using a :class:`cryptography.hazmat.primitives.hashes.HashContext` (preferred method):
+
+.. doctest::
+
+    >>> digester = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    >>> digester.update(data)
+    >>> signature = private_key.sign(digester)
+
+One-line signing:
+
+.. doctest::
+
+    >>> signature = private_key.sign(data, hashes.SHA256())
+
+Signing a precomputed digest:
+
+.. warning::
+
+    Only use this for digests, do NOT sign raw data. The data will get truncated
+    to the size of DSA's "q" parameter, which is just a few bytes.
+
+.. doctest::
+
+    >>> digester = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    >>> digester.update(data)
+    >>> digest = digester.finalize()
+    >>> signature = private_key.sign(digest, already_hashed=True)
+
+Specifying the per-message key k:
+
+.. warning::
+
+    Only do this when you really understand what you're doing. The slightest mistake will compromise
+    your private key! Any signature calculated with below code compromises your private key!
+
+.. doctest::
+
+    >>> msg_key = private_key.create_per_message_key(31337)  # DO NOT DO THAT!
+    >>> digester = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    >>> digester.update(data)
+    >>> signature = private_key.sign(digester, per_msg_key=msg_key)
+
+Legacy signing:
+
+.. doctest::
+
+    >>> signer = private_key.signer(hashes.SHA256())
     >>> signer.update(data)
     >>> signature = signer.finalize()
 
@@ -98,6 +145,35 @@ You can get a public key object with
 .. doctest::
 
     >>> public_key = private_key.public_key()
+    >>> data = b"this is some data I'd like to sign"
+
+Verifying using a :class:`cryptography.hazmat.primitives.hashes.HashContext` (preferred method):
+
+.. doctest::
+
+    >>> digester = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    >>> digester.update(data)
+    >>> public_key.verify(signature, digester)
+
+One-line verification:
+
+.. doctest::
+
+    >>> public_key.verify(signature, data, hashes.SHA256())
+
+Verifying a precomputed digest:
+
+.. doctest::
+
+    >>> digester = hashes.Hash(hashes.SHA256(), backend=default_backend())
+    >>> digester.update(data)
+    >>> digest = digester.finalize()
+    >>> public_key.verify(signature, digest, already_hashed=True)
+
+Legacy verification:
+
+.. doctest::
+
     >>> verifier = public_key.verifier(signature, hashes.SHA256())
     >>> verifier.update(data)
     >>> verifier.verify()
@@ -264,6 +340,59 @@ Key interfaces
 
         The DSAParameters object associated with this private key.
 
+    .. method:: sign(message, hash_algorithm, \*, already_hashed, per_msg_key)
+
+        .. versionadded:: 1.XXX
+
+        Sign data which can be verified later by others using the public key.
+        The signature is formatted as DER-encoded bytes, as specified in
+        :rfc:`3279`.
+
+        :param message: The message to sign. Either an instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashContext`
+            provider or a digest as bytes or the message as bytes.
+
+        :param hash_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            provider. Used only if message is a bytes object and already_hashed
+            is False.
+
+        :param bool already_hashed: Set this to True if and only if message is already
+            the output of a hash function.
+
+        :param per_msg_key: Per message key parameter as returned by :meth:`create_per_message_key`.
+
+        :return: Serialized signature.
+        :rtype: bytes
+
+        :raises ValueError: This is raised when a signature cannot be computed, e.g. a provided per_msg_key is
+            unusable for this message.
+
+    .. method:: create_per_message_key(k)
+
+        .. versionadded:: 1.XXX
+
+        Create a new per message key, with a specified or random *k*. This computes the inverse of *k* and *r*
+        to speed up a subsequent signing operation. Use of this function may compromise your private key!
+
+        :param int k: The *k* parameter to use.
+
+        :return: Inverse of *k* and *r*
+        :rtype: XXX
+
+        :raises ValueError: This is raised if *k* is unsuitable because the computed *r* is zero.
+
+    .. method:: calculate_k(signature, message, hash_algorithm, \*, already_hashed)
+
+        .. versionadded:: 1.XXX
+
+        Given a signature and a message, use the private key to calculate the *k* value which was originally
+        used to sign the message. Never disclose the result, as this will compromise your key immediately!
+
+        See :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey.verify` for parameters.
+
+        :return: int
+
     .. method:: signer(algorithm, backend)
 
         .. versionadded:: 0.4
@@ -351,6 +480,31 @@ Key interfaces
         :return: :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
 
         The DSAParameters object associated with this public key.
+
+    .. method:: verify(signature, message, hash_algorithm, \*, already_hashed)
+
+        .. versionadded:: 1.XXX
+
+        Verify data was signed by the private key associated with this public
+        Key.
+
+        :param bytes signature: The signature to verify. DER encoded as
+            specified in :rfc:`3279`.
+
+        :param message: The message to sign. Either an instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashContext`
+            provider or a digest as bytes or the message as bytes.
+
+        :param hash_algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            provider. Used only if message is a bytes object and already_hashed
+            is False.
+
+        :param bool already_hashed: Set this to True if and only if message is already
+            the output of a hash function.
+
+        :raises cryptography.exceptions.InvalidSignature: This is raised when
+            the provided signature does not match the expected signature.
 
     .. method:: verifier(signature, algorithm, backend)
 

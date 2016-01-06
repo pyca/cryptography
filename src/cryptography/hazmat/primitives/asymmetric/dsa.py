@@ -50,6 +50,24 @@ class DSAPrivateKey(object):
         """
 
     @abc.abstractmethod
+    def create_per_message_key(self, k=None):
+        """
+        Returns per-message key for use with sign function.
+        """
+
+    @abc.abstractmethod
+    def sign(self, message, hash_algorithm=None, *, already_hashed=False, msg_key=None):
+        """
+        Create a signature.
+        """
+
+    @abc.abstractmethod
+    def calculate_k(self, signature, message, hash_algorithm=None, *, already_hashed=False):
+        """
+        Calculate the *k* parameter of a signature.
+        """
+
+    @abc.abstractmethod
     def signer(self, signature_algorithm):
         """
         Returns an AsymmetricSignatureContext used for signing data.
@@ -89,6 +107,12 @@ class DSAPublicKey(object):
     def verifier(self, signature, signature_algorithm):
         """
         Returns an AsymmetricVerificationContext used for signing data.
+        """
+
+    @abc.abstractmethod
+    def verify(self, signature, message, hash_algorithm=None, *, already_hashed=False):
+        """
+        Verifies signature, raises InvalidSignature on error.
         """
 
     @abc.abstractmethod
