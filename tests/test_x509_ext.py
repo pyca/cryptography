@@ -835,6 +835,13 @@ class TestAuthorityKeyIdentifier(object):
         assert aki.authority_cert_issuer is None
         assert aki.authority_cert_serial_number is None
 
+    def test_authority_cert_serial_zero(self):
+        dns = x509.DNSName(u"SomeIssuer")
+        aki = x509.AuthorityKeyIdentifier(b"id", [dns], 0)
+        assert aki.key_identifier == b"id"
+        assert aki.authority_cert_issuer == [dns]
+        assert aki.authority_cert_serial_number == 0
+
     def test_repr(self):
         dirname = x509.DirectoryName(
             x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'myCN')])
