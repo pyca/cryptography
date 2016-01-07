@@ -10,8 +10,6 @@ import subprocess
 import sys
 import textwrap
 
-import pretend
-
 import pytest
 
 from cryptography import utils, x509
