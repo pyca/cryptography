@@ -1077,7 +1077,7 @@ class Backend(object):
         pointer.
         """
 
-        key_type = evp_pkey.type
+        key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
@@ -1104,7 +1104,7 @@ class Backend(object):
         pointer.
         """
 
-        key_type = evp_pkey.type
+        key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
@@ -2132,19 +2132,20 @@ class Backend(object):
         else:
             raise ValueError("Unsupported encryption type")
 
+        key_type = self._lib.EVP_PKEY_id(evp_pkey)
         if encoding is serialization.Encoding.PEM:
             if format is serialization.PrivateFormat.PKCS8:
                 write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
                 key = evp_pkey
             else:
                 assert format is serialization.PrivateFormat.TraditionalOpenSSL
-                if evp_pkey.type == self._lib.EVP_PKEY_RSA:
+                if key_type == self._lib.EVP_PKEY_RSA:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
-                elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
+                elif key_type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
                 else:
                     assert self._lib.Cryptography_HAS_EC == 1
-                    assert evp_pkey.type == self._lib.EVP_PKEY_EC
+                    assert key_type == self._lib.EVP_PKEY_EC
                     write_bio = self._lib.PEM_write_bio_ECPrivateKey
 
                 key = cdata
@@ -2158,9 +2159,7 @@ class Backend(object):
                         "traditional OpenSSL keys"
                     )
 
-                return self._private_key_bytes_traditional_der(
-                    evp_pkey.type, cdata
-                )
+                return self._private_key_bytes_traditional_der(key_type, cdata)
             else:
                 assert format is serialization.PrivateFormat.PKCS8
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
@@ -2210,7 +2209,7 @@ class Backend(object):
             key = evp_pkey
         elif format is serialization.PublicFormat.PKCS1:
             # Only RSA is supported here.
-            assert evp_pkey.type == self._lib.EVP_PKEY_RSA
+            assert self._lib.EVP_PKEY_id(evp_pkey) == self._lib.EVP_PKEY_RSA
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_RSAPublicKey
             else:

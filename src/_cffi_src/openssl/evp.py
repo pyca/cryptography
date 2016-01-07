@@ -21,10 +21,7 @@ typedef struct env_md_ctx_st {
     ...;
 } EVP_MD_CTX;
 
-typedef struct evp_pkey_st {
-    int type;
-    ...;
-} EVP_PKEY;
+typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
