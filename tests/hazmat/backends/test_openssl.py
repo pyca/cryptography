@@ -10,8 +10,6 @@ import subprocess
 import sys
 import textwrap
 
-import pretend
-
 import pytest
 
 from cryptography import utils, x509
@@ -621,7 +619,7 @@ class TestOpenSSLSerializationWithOpenSSL(object):
         assert backend._ffi.string(buf, len(password)) == password
 
     def test_unsupported_evp_pkey_type(self):
-        key = pretend.stub(type="unsupported")
+        key = backend._create_evp_pkey_gc()
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_private_key(key)
         with raises_unsupported_algorithm(None):
