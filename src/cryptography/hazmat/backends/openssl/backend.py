@@ -1045,7 +1045,7 @@ class Backend(object):
 
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
 
-    def _create_mem_bio(self):
+    def _create_mem_bio_gc(self):
         """
         Creates an empty memory BIO.
         """
@@ -2168,7 +2168,7 @@ class Backend(object):
         else:
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        bio = self._create_mem_bio()
+        bio = self._create_mem_bio_gc()
         res = write_bio(
             bio,
             key,
@@ -2191,7 +2191,7 @@ class Backend(object):
             self.openssl_assert(key_type == self._lib.EVP_PKEY_DSA)
             write_bio = self._lib.i2d_DSAPrivateKey_bio
 
-        bio = self._create_mem_bio()
+        bio = self._create_mem_bio_gc()
         res = write_bio(bio, cdata)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
@@ -2223,7 +2223,7 @@ class Backend(object):
                 "format must be an item from the PublicFormat enum"
             )
 
-        bio = self._create_mem_bio()
+        bio = self._create_mem_bio_gc()
         res = write_bio(bio, key)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
