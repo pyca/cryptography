@@ -648,7 +648,21 @@ class _PasswordUserdata(object):
         self.exception = None
 
 
+@binding.ffi_callback("int (char *, int, int, void *)",
+                      name="Cryptography_pem_password_cb")
 def _pem_password_cb(buf, size, writing, userdata_handle):
+    """
+    A pem_password_cb function pointer that copied the password to
+    OpenSSL as required and returns the number of bytes copied.
+
+    typedef int pem_password_cb(char *buf, int size,
+                                int rwflag, void *userdata);
+
+    Useful for decrypting PKCS8 files and so on.
+
+    The userdata pointer must point to a cffi handle of a
+    _PasswordUserdata instance.
+    """
     ud = _ffi.from_handle(userdata_handle)
     ud.called += 1
 
@@ -1143,13 +1157,7 @@ class Backend(object):
         # globally. The backend is passed in as userdata argument.
 
         userdata = _PasswordUserdata(password=password)
-
-        pem_password_cb = self._ffi.callback(
-            "int (char *, int, int, void *)",
-            _pem_password_cb,
-        )
-
-        return pem_password_cb, userdata
+        return _pem_password_cb, userdata
 
     def _mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
