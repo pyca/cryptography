@@ -229,8 +229,13 @@ int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
 int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
-/* EVP_PKEY_id is not available on RHEL5 0.9.8e so we'll define our own */
+/* EVP_PKEY_id is not available on 0.9.8 so we'll define our own. This can
+   be removed when we remove 0.9.8 support. */
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
-    return key->type;
+    #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+        return EVP_PKEY_id(key);
+    #else
+        return key->type;
+    #endif
 }
 """
