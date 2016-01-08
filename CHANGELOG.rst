@@ -22,7 +22,7 @@ Changelog
   * :class:`~cryptography.x509.InvalidityDate`
 * Deprecated support for OpenSSL 0.9.8 and 1.0.0. At this time there is no time
   table for actually dropping support, however we strongly encourage all users
-  to upgrade, as those versions no longer receives support from the OpenSSL
+  to upgrade, as those versions no longer receive support from the OpenSSL
   project.
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
