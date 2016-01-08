@@ -1022,10 +1022,14 @@ class Backend(object):
 
         return _RSAPublicKey(self, rsa_cdata, evp_pkey)
 
-    def _rsa_cdata_to_evp_pkey(self, rsa_cdata):
+    def _create_evp_pkey_gc(self):
         evp_pkey = self._lib.EVP_PKEY_new()
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return evp_pkey
+
+    def _rsa_cdata_to_evp_pkey(self, rsa_cdata):
+        evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
         self.openssl_assert(res == 1)
         return evp_pkey
@@ -1249,9 +1253,7 @@ class Backend(object):
         return _DSAParameters(self, dsa_cdata)
 
     def _dsa_cdata_to_evp_pkey(self, dsa_cdata):
-        evp_pkey = self._lib.EVP_PKEY_new()
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set1_DSA(evp_pkey, dsa_cdata)
         self.openssl_assert(res == 1)
         return evp_pkey
@@ -1976,9 +1978,7 @@ class Backend(object):
         )
 
     def _ec_cdata_to_evp_pkey(self, ec_cdata):
-        evp_pkey = self._lib.EVP_PKEY_new()
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, ec_cdata)
         self.openssl_assert(res == 1)
         return evp_pkey
