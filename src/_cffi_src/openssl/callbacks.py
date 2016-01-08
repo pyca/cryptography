@@ -32,67 +32,6 @@ extern "Python" int Cryptography_pem_password_cb(char *, int, int, void *);
  */
 extern "Python" int Cryptography_rand_bytes(unsigned char *, int);
 extern "Python" int Cryptography_rand_status(void);
-
-/* ssl.h
- *
- * SSL_CTX_set_cert_verify_callback
- * int (*cert_verify_callback)(X509_STORE_CTX *ctx, void *userdata)
- */
-extern "Python" int Cryptography_cert_verify_cb(
-    X509_STORE_CTX *, void *);
-
-/* SSL_CTX_set_info_callback
- * void (*info_callback)(const SSL *ssl, int type, int val)
- */
-extern "Python" void Cryptography_ssl_info_cb(
-    const SSL *, int, int);
-
-/* SSL_CTX_set_msg_callback
- * void (*info_callback)(int write_p, int version, int content_type,
- *                       const void *buf, size_t len, SSL *ssl, void *arg)
- */
-extern "Python" void Cryptography_msg_cb(
-    int, int, int, const void *, size_t, SSL *, void *);
-
-/* SSL_CTX_set_client_cert_cb
- * int (*client_cert_cb) (SSL *ssl, X509 **x509, EVP_PKEY **pkey)
- */
-extern "Python" int Cryptography_client_cert_cb(
-    SSL *, X509 **, EVP_PKEY **);
-
-/* SSL_CTX_set_next_protos_advertised_cb
- * int (*cb)(SSL *ssl, const unsigned char **out, unsigned int *outlen,
- *           void *arg
- */
-extern "Python" int Cryptography_next_proto_advertised_cb(
-    SSL *, const unsigned char **, unsigned int *, void *);
-
-/* SSL_CTX_set_next_proto_select_cb
- * int (*cb) (SSL *ssl, unsigned char **out, unsigned char *outlen,
- *            const unsigned char *in, unsigned int inlen, void *arg)
- */
-extern "Python" int Cryptography_next_proto_select_cb(
-    SSL *, unsigned char **, unsigned char *, const unsigned char *,
-    unsigned int, void *);
-
-/* SSL_CTX_set_alpn_select_cb
- * int (*cb) (SSL *ssl, const unsigned char **out, unsigned char *outlen,
-              const unsigned char *in, unsigned int inlen, void *arg)
- */
-extern "Python" int Cryptography_alpn_select_cb(
-    SSL *, const unsigned char **, unsigned char *, const unsigned char *,
-    unsigned int, void *arg);
-
-/* tls1.h
- * SSL_CTX_set_tlsext_servername_callback
- */
-extern "Python" int Cryptography_tlsext_servername_cb(
-    const SSL *, int *, void *);
-
-/* x509_vfy.h
- * int (*verify_cb)(int ok, X509_STORE_CTX *ctx)
- */
-extern "Python" int Cryptography_verify_cb(int, X509_STORE_CTX *);
 """
 
 FUNCTIONS = """
