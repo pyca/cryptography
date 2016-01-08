@@ -119,6 +119,8 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
+
+int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 """
 
 MACROS = """
@@ -227,4 +229,8 @@ int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
 int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
+/* EVP_PKEY_id is not available on RHEL5 0.9.8e so we'll define our own */
+int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
+    return key->type;
+}
 """
