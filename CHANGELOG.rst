@@ -6,6 +6,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+1.2.1 - 2016-01-08
+~~~~~~~~~~~~~~~~~~
+
+* Reverts a change to an OpenSSL ``EVP_PKEY`` object that caused errors with
+  ``pyOpenSSL``.
+
 1.2 - 2016-01-08
 ~~~~~~~~~~~~~~~~
 
