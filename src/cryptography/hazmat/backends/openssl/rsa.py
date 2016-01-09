@@ -214,17 +214,16 @@ class _RSASignatureContext(object):
             )
             self._backend.openssl_assert(res > 0)
 
-            if self._backend._lib.Cryptography_HAS_MGF1_MD:
-                # MGF1 MD is configurable in OpenSSL 1.0.1+
-                mgf1_md = self._backend._lib.EVP_get_digestbyname(
-                    self._padding._mgf._algorithm.name.encode("ascii"))
-                self._backend.openssl_assert(
-                    mgf1_md != self._backend._ffi.NULL
-                )
-                res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
-                    pkey_ctx, mgf1_md
-                )
-                self._backend.openssl_assert(res > 0)
+            mgf1_md = self._backend._lib.EVP_get_digestbyname(
+                self._padding._mgf._algorithm.name.encode("ascii"))
+            self._backend.openssl_assert(
+                mgf1_md != self._backend._ffi.NULL
+            )
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+                pkey_ctx, mgf1_md
+            )
+            self._backend.openssl_assert(res > 0)
+
         data_to_sign = self._hash_ctx.finalize()
         buflen = self._backend._ffi.new("size_t *")
         res = self._backend._lib.EVP_PKEY_sign(
@@ -344,17 +343,16 @@ class _RSAVerificationContext(object):
                 )
             )
             self._backend.openssl_assert(res > 0)
-            if self._backend._lib.Cryptography_HAS_MGF1_MD:
-                # MGF1 MD is configurable in OpenSSL 1.0.1+
-                mgf1_md = self._backend._lib.EVP_get_digestbyname(
-                    self._padding._mgf._algorithm.name.encode("ascii"))
-                self._backend.openssl_assert(
-                    mgf1_md != self._backend._ffi.NULL
-                )
-                res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
-                    pkey_ctx, mgf1_md
-                )
-                self._backend.openssl_assert(res > 0)
+
+            mgf1_md = self._backend._lib.EVP_get_digestbyname(
+                self._padding._mgf._algorithm.name.encode("ascii"))
+            self._backend.openssl_assert(
+                mgf1_md != self._backend._ffi.NULL
+            )
+            res = self._backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(
+                pkey_ctx, mgf1_md
+            )
+            self._backend.openssl_assert(res > 0)
 
         data_to_verify = self._hash_ctx.finalize()
         res = self._backend._lib.EVP_PKEY_verify(

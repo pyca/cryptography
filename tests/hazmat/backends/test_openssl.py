@@ -168,18 +168,6 @@ class TestOpenSSL(object):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
 
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
-        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
-    )
-    def test_large_key_size_on_new_openssl(self):
-        parameters = dsa.generate_parameters(2048, backend)
-        param_num = parameters.parameter_numbers()
-        assert utils.bit_length(param_num.p) == 2048
-        parameters = dsa.generate_parameters(3072, backend)
-        param_num = parameters.parameter_numbers()
-        assert utils.bit_length(param_num.p) == 3072
-
     def test_int_to_bn(self):
         value = (2 ** 4242) - 4242
         bn = backend._int_to_bn(value)
@@ -337,35 +325,6 @@ class TestOpenSSLRSA(object):
             backend.generate_rsa_private_key(public_exponent=65537,
                                              key_size=256)
 
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            private_key.signer(
-                padding.PSS(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA256(),
-                    ),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA1()
-            )
-        public_key = private_key.public_key()
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            public_key.verifier(
-                b"sig",
-                padding.PSS(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA256(),
-                    ),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA1()
-            )
-
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(
             padding.PSS(mgf=padding.MGF1(DummyHash()), salt_length=0)
@@ -439,20 +398,6 @@ class TestOpenSSLRSA(object):
                     label=b"label"
                 )
             )
-
-
-@pytest.mark.skipif(
-    backend._lib.OPENSSL_VERSION_NUMBER <= 0x10001000,
-    reason="Requires an OpenSSL version >= 1.0.1"
-)
-class TestOpenSSLCMAC(object):
-    def test_unsupported_cipher(self):
-        @utils.register_interface(BlockCipherAlgorithm)
-        class FakeAlgorithm(object):
-            block_size = 64
-
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            backend.create_cmac_ctx(FakeAlgorithm())
 
 
 class TestOpenSSLSignX509Certificate(object):

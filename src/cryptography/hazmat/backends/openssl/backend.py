@@ -856,13 +856,7 @@ class Backend(object):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            return self.hmac_supported(algorithm)
-        else:
-            # OpenSSL < 1.0.0 has an explicit PBKDF2-HMAC-SHA1 function,
-            # so if the PBKDF2_HMAC function is missing we only support
-            # SHA1 via PBKDF2_HMAC_SHA1.
-            return isinstance(algorithm, hashes.SHA1)
+        return self.hmac_supported(algorithm)
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
