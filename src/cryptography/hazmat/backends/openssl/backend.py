@@ -776,12 +776,7 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        if self._evp_cipher_supported(cipher, mode):
-            return True
-        elif isinstance(mode, CTR) and isinstance(cipher, AES):
-            return True
-        else:
-            return False
+        return self._evp_cipher_supported(cipher, mode):
 
     def _evp_cipher_supported(self, cipher, mode):
         try:
@@ -855,24 +850,10 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
-                not self._evp_cipher_supported(cipher, mode)):
-            # This is needed to provide support for AES CTR mode in OpenSSL
-            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
-            # extended life ends 2020).
-            return _AESCTRCipherContext(self, cipher, mode)
-        else:
-            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
-                not self._evp_cipher_supported(cipher, mode)):
-            # This is needed to provide support for AES CTR mode in OpenSSL
-            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
-            # extended life ends 2020).
-            return _AESCTRCipherContext(self, cipher, mode)
-        else:
-            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
         if self._lib.Cryptography_HAS_PBKDF2_HMAC:
@@ -886,38 +867,20 @@ class Backend(object):
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         buf = self._ffi.new("char[]", length)
-        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            evp_md = self._lib.EVP_get_digestbyname(
-                algorithm.name.encode("ascii"))
-            self.openssl_assert(evp_md != self._ffi.NULL)
-            res = self._lib.PKCS5_PBKDF2_HMAC(
-                key_material,
-                len(key_material),
-                salt,
-                len(salt),
-                iterations,
-                evp_md,
-                length,
-                buf
-            )
-            self.openssl_assert(res == 1)
-        else:
-            if not isinstance(algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "This version of OpenSSL only supports PBKDF2HMAC with "
-                    "SHA1.",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-            res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
-                key_material,
-                len(key_material),
-                salt,
-                len(salt),
-                iterations,
-                length,
-                buf
-            )
-            self.openssl_assert(res == 1)
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii"))
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        res = self._lib.PKCS5_PBKDF2_HMAC(
+            key_material,
+            len(key_material),
+            salt,
+            len(salt),
+            iterations,
+            evp_md,
+            length,
+            buf
+        )
+        self.openssl_assert(res == 1)
 
         return self._ffi.buffer(buf)[:]
 
@@ -1160,10 +1123,7 @@ class Backend(object):
         return _pem_password_cb, userdata
 
     def _mgf1_hash_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_MGF1_MD:
-            return self.hash_supported(algorithm)
-        else:
-            return isinstance(algorithm, hashes.SHA1)
+        return self.hash_supported(algorithm)
 
     def rsa_padding_supported(self, padding):
         if isinstance(padding, PKCS1v15):
@@ -1178,12 +1138,6 @@ class Backend(object):
     def generate_dsa_parameters(self, key_size):
         if key_size not in (1024, 2048, 3072):
             raise ValueError("Key size must be 1024 or 2048 or 3072 bits.")
-
-        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
-                key_size > 1024):
-            raise ValueError(
-                "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
-                "support larger key sizes.")
 
         ctx = self._lib.DSA_new()
         self.openssl_assert(ctx != self._ffi.NULL)
@@ -1267,16 +1221,10 @@ class Backend(object):
         return evp_pkey
 
     def dsa_hash_supported(self, algorithm):
-        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return isinstance(algorithm, hashes.SHA1)
-        else:
-            return self.hash_supported(algorithm)
+        return self.hash_supported(algorithm)
 
     def dsa_parameters_supported(self, p, q, g):
-        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160
-        else:
-            return True
+        return True
 
     def cmac_algorithm_supported(self, algorithm):
         return (
@@ -1292,18 +1240,6 @@ class Backend(object):
     def create_x509_csr(self, builder, private_key, algorithm):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "Certificate signing requests aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "Certificate signing requests aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -1370,18 +1306,6 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "Certificate signatures aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "Certificate signatures aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -1462,18 +1386,6 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
-
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
-            if isinstance(private_key, _DSAPrivateKey):
-                raise NotImplementedError(
-                    "CRL signatures aren't implemented for DSA"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
-            if isinstance(private_key, _EllipticCurvePrivateKey):
-                raise NotImplementedError(
-                    "CRL signatures aren't implemented for EC"
-                    " keys on OpenSSL versions less than 1.0.1."
-                )
 
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
@@ -1908,13 +1820,6 @@ class Backend(object):
 
         # We only support ECDSA right now.
         if not isinstance(signature_algorithm, ec.ECDSA):
-            return False
-
-        # Before 0.9.8m OpenSSL can't cope with digests longer than the curve.
-        if (
-            self._lib.OPENSSL_VERSION_NUMBER < 0x009080df and
-            curve.key_size < signature_algorithm.algorithm.digest_size * 8
-        ):
             return False
 
         return self.elliptic_curve_supported(curve)

@@ -205,9 +205,7 @@ class Binding(object):
 Binding.init_static_locks()
 
 if Binding.lib.SSLeay() < 0x10001000:
-    warnings.warn(
+    raise RuntimeError(
         "OpenSSL versions less than 1.0.1 are no longer supported by the "
-        "OpenSSL project, please upgrade. A future version of cryptography "
-        "will drop support for these versions.",
-        DeprecationWarning
+        "OpenSSL project, please upgrade."
     )
