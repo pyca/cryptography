@@ -8,7 +8,6 @@ import collections
 import os
 import threading
 import types
-import warnings
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib

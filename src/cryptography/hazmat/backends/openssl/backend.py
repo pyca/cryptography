@@ -22,7 +22,7 @@ from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
-    _AESCTRCipherContext, _CipherContext
+    _CipherContext
 )
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dsa import (
@@ -776,7 +776,7 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        return self._evp_cipher_supported(cipher, mode):
+        return self._evp_cipher_supported(cipher, mode)
 
     def _evp_cipher_supported(self, cipher, mode):
         try:
