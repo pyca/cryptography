@@ -85,6 +85,9 @@ class RFC822Name(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.value)
+
 
 @utils.register_interface(GeneralName)
 class DNSName(object):
@@ -154,6 +157,9 @@ class UniformResourceIdentifier(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 @utils.register_interface(GeneralName)

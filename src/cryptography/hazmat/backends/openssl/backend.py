@@ -648,7 +648,21 @@ class _PasswordUserdata(object):
         self.exception = None
 
 
+@binding.ffi_callback("int (char *, int, int, void *)",
+                      name="Cryptography_pem_password_cb")
 def _pem_password_cb(buf, size, writing, userdata_handle):
+    """
+    A pem_password_cb function pointer that copied the password to
+    OpenSSL as required and returns the number of bytes copied.
+
+    typedef int pem_password_cb(char *buf, int size,
+                                int rwflag, void *userdata);
+
+    Useful for decrypting PKCS8 files and so on.
+
+    The userdata pointer must point to a cffi handle of a
+    _PasswordUserdata instance.
+    """
     ud = _ffi.from_handle(userdata_handle)
     ud.called += 1
 
@@ -1022,10 +1036,14 @@ class Backend(object):
 
         return _RSAPublicKey(self, rsa_cdata, evp_pkey)
 
-    def _rsa_cdata_to_evp_pkey(self, rsa_cdata):
+    def _create_evp_pkey_gc(self):
         evp_pkey = self._lib.EVP_PKEY_new()
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        return evp_pkey
+
+    def _rsa_cdata_to_evp_pkey(self, rsa_cdata):
+        evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
         self.openssl_assert(res == 1)
         return evp_pkey
@@ -1045,7 +1063,7 @@ class Backend(object):
 
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_char_p)
 
-    def _create_mem_bio(self):
+    def _create_mem_bio_gc(self):
         """
         Creates an empty memory BIO.
         """
@@ -1073,7 +1091,7 @@ class Backend(object):
         pointer.
         """
 
-        key_type = evp_pkey.type
+        key_type = self._lib.Cryptography_EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
@@ -1100,7 +1118,7 @@ class Backend(object):
         pointer.
         """
 
-        key_type = evp_pkey.type
+        key_type = self._lib.Cryptography_EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
@@ -1139,13 +1157,7 @@ class Backend(object):
         # globally. The backend is passed in as userdata argument.
 
         userdata = _PasswordUserdata(password=password)
-
-        pem_password_cb = self._ffi.callback(
-            "int (char *, int, int, void *)",
-            _pem_password_cb,
-        )
-
-        return pem_password_cb, userdata
+        return _pem_password_cb, userdata
 
     def _mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
@@ -1249,9 +1261,7 @@ class Backend(object):
         return _DSAParameters(self, dsa_cdata)
 
     def _dsa_cdata_to_evp_pkey(self, dsa_cdata):
-        evp_pkey = self._lib.EVP_PKEY_new()
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set1_DSA(evp_pkey, dsa_cdata)
         self.openssl_assert(res == 1)
         return evp_pkey
@@ -1976,9 +1986,7 @@ class Backend(object):
         )
 
     def _ec_cdata_to_evp_pkey(self, ec_cdata):
-        evp_pkey = self._lib.EVP_PKEY_new()
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
+        evp_pkey = self._create_evp_pkey_gc()
         res = self._lib.EVP_PKEY_set1_EC_KEY(evp_pkey, ec_cdata)
         self.openssl_assert(res == 1)
         return evp_pkey
@@ -2132,19 +2140,20 @@ class Backend(object):
         else:
             raise ValueError("Unsupported encryption type")
 
+        key_type = self._lib.Cryptography_EVP_PKEY_id(evp_pkey)
         if encoding is serialization.Encoding.PEM:
             if format is serialization.PrivateFormat.PKCS8:
                 write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
                 key = evp_pkey
             else:
                 assert format is serialization.PrivateFormat.TraditionalOpenSSL
-                if evp_pkey.type == self._lib.EVP_PKEY_RSA:
+                if key_type == self._lib.EVP_PKEY_RSA:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
-                elif evp_pkey.type == self._lib.EVP_PKEY_DSA:
+                elif key_type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
                 else:
                     assert self._lib.Cryptography_HAS_EC == 1
-                    assert evp_pkey.type == self._lib.EVP_PKEY_EC
+                    assert key_type == self._lib.EVP_PKEY_EC
                     write_bio = self._lib.PEM_write_bio_ECPrivateKey
 
                 key = cdata
@@ -2158,9 +2167,7 @@ class Backend(object):
                         "traditional OpenSSL keys"
                     )
 
-                return self._private_key_bytes_traditional_der(
-                    evp_pkey.type, cdata
-                )
+                return self._private_key_bytes_traditional_der(key_type, cdata)
             else:
                 assert format is serialization.PrivateFormat.PKCS8
                 write_bio = self._lib.i2d_PKCS8PrivateKey_bio
@@ -2168,7 +2175,7 @@ class Backend(object):
         else:
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        bio = self._create_mem_bio()
+        bio = self._create_mem_bio_gc()
         res = write_bio(
             bio,
             key,
@@ -2191,7 +2198,7 @@ class Backend(object):
             self.openssl_assert(key_type == self._lib.EVP_PKEY_DSA)
             write_bio = self._lib.i2d_DSAPrivateKey_bio
 
-        bio = self._create_mem_bio()
+        bio = self._create_mem_bio_gc()
         res = write_bio(bio, cdata)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
@@ -2210,7 +2217,9 @@ class Backend(object):
             key = evp_pkey
         elif format is serialization.PublicFormat.PKCS1:
             # Only RSA is supported here.
-            assert evp_pkey.type == self._lib.EVP_PKEY_RSA
+            assert self._lib.Cryptography_EVP_PKEY_id(
+                evp_pkey
+            ) == self._lib.EVP_PKEY_RSA
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_RSAPublicKey
             else:
@@ -2223,7 +2232,7 @@ class Backend(object):
                 "format must be an item from the PublicFormat enum"
             )
 
-        bio = self._create_mem_bio()
+        bio = self._create_mem_bio_gc()
         res = write_bio(bio, key)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)

@@ -353,7 +353,7 @@ class _Certificate(object):
         return self._backend._ffi.buffer(pp[0], res)[:]
 
     def public_bytes(self, encoding):
-        bio = self._backend._create_mem_bio()
+        bio = self._backend._create_mem_bio_gc()
         if encoding is serialization.Encoding.PEM:
             res = self._backend._lib.PEM_write_bio_X509(bio, self._x509)
         elif encoding is serialization.Encoding.DER:
@@ -827,7 +827,7 @@ class _CertificateRevocationList(object):
 
     def fingerprint(self, algorithm):
         h = hashes.Hash(algorithm, self._backend)
-        bio = self._backend._create_mem_bio()
+        bio = self._backend._create_mem_bio_gc()
         res = self._backend._lib.i2d_X509_CRL_bio(
             bio, self._x509_crl
         )
@@ -880,7 +880,7 @@ class _CertificateRevocationList(object):
         return self._backend._ffi.buffer(pp[0], res)[:]
 
     def public_bytes(self, encoding):
-        bio = self._backend._create_mem_bio()
+        bio = self._backend._create_mem_bio_gc()
         if encoding is serialization.Encoding.PEM:
             res = self._backend._lib.PEM_write_bio_X509_CRL(
                 bio, self._x509_crl
@@ -975,7 +975,7 @@ class _CertificateSigningRequest(object):
         return _CSR_EXTENSION_PARSER.parse(self._backend, x509_exts)
 
     def public_bytes(self, encoding):
-        bio = self._backend._create_mem_bio()
+        bio = self._backend._create_mem_bio_gc()
         if encoding is serialization.Encoding.PEM:
             res = self._backend._lib.PEM_write_bio_X509_REQ(
                 bio, self._x509_req

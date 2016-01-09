@@ -35,7 +35,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv install 3.5.1
             pyenv global 3.5.1
             ;;
-        pypy)
+        pypy*)
             pyenv install pypy-4.0.1
             pyenv global pypy-4.0.1
             ;;
@@ -53,7 +53,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
 else
     # temporary pyenv installation to get latest pypy before container infra upgrade
     # now using the -latest because of a segfault bug we're encountering in 2.6.1
-    if [[ "${TOXENV}" == "pypy" ]]; then
+    if [[ "${TOXENV}" = pypy* ]]; then
         git clone https://github.com/yyuu/pyenv.git ~/.pyenv
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
@@ -67,6 +67,9 @@ else
         # patches, but while that's in jenkins we don't get coverage data from it).
         OPENSSL_VERSION_NUMBER="0.9.8l"
         OPENSSL_DIR="ossl-098l"
+    elif [[ "${OPENSSL}" == "1.0.0" ]]; then
+        OPENSSL_VERSION_NUMBER="1.0.0t"
+        OPENSSL_DIR="ossl-100t"
     fi
     # download, compile, and install if it's not already present via travis cache
     if [ -n "$OPENSSL_DIR" ]; then
@@ -75,6 +78,11 @@ else
             tar zxf openssl-$OPENSSL_VERSION_NUMBER.tar.gz
             cd openssl-$OPENSSL_VERSION_NUMBER
             ./config shared no-asm no-ssl2 -fPIC --prefix="$HOME/$OPENSSL_DIR"
+            # modify the shlib version to a unique one to make sure the dynamic linker
+            # doesn't load the system one.
+            sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
+            sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
+            sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile
             make depend
             make install
         fi

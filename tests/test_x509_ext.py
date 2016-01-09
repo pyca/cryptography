@@ -835,6 +835,13 @@ class TestAuthorityKeyIdentifier(object):
         assert aki.authority_cert_issuer is None
         assert aki.authority_cert_serial_number is None
 
+    def test_authority_cert_serial_zero(self):
+        dns = x509.DNSName(u"SomeIssuer")
+        aki = x509.AuthorityKeyIdentifier(b"id", [dns], 0)
+        assert aki.key_identifier == b"id"
+        assert aki.authority_cert_issuer == [dns]
+        assert aki.authority_cert_serial_number == 0
+
     def test_repr(self):
         dirname = x509.DirectoryName(
             x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, u'myCN')])
@@ -1448,6 +1455,14 @@ class TestRFC822Name(object):
         assert gn.value == u"email@em\xe5\xefl.com"
         assert gn._encoded == b"email@xn--eml-vla4c.com"
 
+    def test_hash(self):
+        g1 = x509.RFC822Name(u"email@host.com")
+        g2 = x509.RFC822Name(u"email@host.com")
+        g3 = x509.RFC822Name(u"admin@host.com")
+
+        assert hash(g1) == hash(g2)
+        assert hash(g1) != hash(g3)
+
 
 class TestUniformResourceIdentifier(object):
     def test_no_parsed_hostname(self):
@@ -1479,6 +1494,14 @@ class TestUniformResourceIdentifier(object):
             u"ldap://cryptography:90/path?query=true#somedata"
         )
         assert gn.value == u"ldap://cryptography:90/path?query=true#somedata"
+
+    def test_hash(self):
+        g1 = x509.UniformResourceIdentifier(u"http://host.com")
+        g2 = x509.UniformResourceIdentifier(u"http://host.com")
+        g3 = x509.UniformResourceIdentifier(u"http://other.com")
+
+        assert hash(g1) == hash(g2)
+        assert hash(g1) != hash(g3)
 
 
 class TestRegisteredID(object):

@@ -155,25 +155,28 @@ class AuthorityKeyIdentifier(object):
 
     def __init__(self, key_identifier, authority_cert_issuer,
                  authority_cert_serial_number):
-        if authority_cert_issuer or authority_cert_serial_number:
-            if not authority_cert_issuer or not authority_cert_serial_number:
-                raise ValueError(
-                    "authority_cert_issuer and authority_cert_serial_number "
-                    "must both be present or both None"
-                )
+        if (authority_cert_issuer is None) != (
+            authority_cert_serial_number is None
+        ):
+            raise ValueError(
+                "authority_cert_issuer and authority_cert_serial_number "
+                "must both be present or both None"
+            )
 
-            if not all(
-                isinstance(x, GeneralName) for x in authority_cert_issuer
-            ):
-                raise TypeError(
-                    "authority_cert_issuer must be a list of GeneralName "
-                    "objects"
-                )
+        if authority_cert_issuer is not None and not all(
+            isinstance(x, GeneralName) for x in authority_cert_issuer
+        ):
+            raise TypeError(
+                "authority_cert_issuer must be a list of GeneralName "
+                "objects"
+            )
 
-            if not isinstance(authority_cert_serial_number, six.integer_types):
-                raise TypeError(
-                    "authority_cert_serial_number must be an integer"
-                )
+        if authority_cert_serial_number is not None and not isinstance(
+            authority_cert_serial_number, six.integer_types
+        ):
+            raise TypeError(
+                "authority_cert_serial_number must be an integer"
+            )
 
         self._key_identifier = key_identifier
         self._authority_cert_issuer = authority_cert_issuer

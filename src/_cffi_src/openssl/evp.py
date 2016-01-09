@@ -21,10 +21,7 @@ typedef struct env_md_ctx_st {
     ...;
 } EVP_MD_CTX;
 
-typedef struct evp_pkey_st {
-    int type;
-    ...;
-} EVP_PKEY;
+typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_DSA;
@@ -122,6 +119,8 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
+
+int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 """
 
 MACROS = """
@@ -230,4 +229,13 @@ int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
 int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
+/* EVP_PKEY_id is not available on 0.9.8 so we'll define our own. This can
+   be removed when we remove 0.9.8 support. */
+int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
+    #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+        return EVP_PKEY_id(key);
+    #else
+        return key->type;
+    #endif
+}
 """
