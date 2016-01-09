@@ -162,12 +162,6 @@ class TestOpenSSL(object):
         with pytest.raises(InternalError):
             enc.finalize()
 
-    def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
-        if backend.pbkdf2_hmac_supported(hashes.SHA256()):
-            pytest.skip("Requires an older OpenSSL")
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
-
     def test_int_to_bn(self):
         value = (2 ** 4242) - 4242
         bn = backend._int_to_bn(value)

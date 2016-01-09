@@ -158,13 +158,6 @@ class _RSASignatureContext(object):
                 raise ValueError("Digest too large for key size. Use a larger "
                                  "key.")
 
-            if not self._backend._mgf1_hash_supported(padding._mgf._algorithm):
-                raise UnsupportedAlgorithm(
-                    "When OpenSSL is older than 1.0.1 then only SHA1 is "
-                    "supported with MGF1.",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-
             self._finalize_method = self._finalize_pkey_ctx
             self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
@@ -286,13 +279,6 @@ class _RSAVerificationContext(object):
                 raise ValueError(
                     "Digest too large for key size. Check that you have the "
                     "correct key and digest algorithm."
-                )
-
-            if not self._backend._mgf1_hash_supported(padding._mgf._algorithm):
-                raise UnsupportedAlgorithm(
-                    "When OpenSSL is older than 1.0.1 then only SHA1 is "
-                    "supported with MGF1.",
-                    _Reasons.UNSUPPORTED_HASH
                 )
 
             self._verify_method = self._verify_pkey_ctx
