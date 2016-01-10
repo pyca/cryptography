@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import calendar
-import collections
 
 import idna
 
@@ -17,9 +16,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _DISTPOINT_TYPE_RELATIVENAME
 )
 from cryptography.x509.oid import CRLEntryExtensionOID, ExtensionOID, NameOID
-
-
-_MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 
 def _encode_asn1_int(backend, x):
