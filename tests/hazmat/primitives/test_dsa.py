@@ -35,6 +35,29 @@ class DummyKeyEncryption(object):
     pass
 
 
+@utils.register_interface(hashes.HashAlgorithm)
+class DummyHashAlgorithm(object):
+    name = "dummy"
+    digest_size = 32
+    block_size = 64
+
+
+def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
+    if (
+        not backend.dsa_parameters_supported(p, q, g) or
+        not backend.dsa_hash_supported(algorithm)
+    ):
+        pytest.skip(
+            "{0} does not support the provided parameters".format(backend)
+        )
+
+
+@pytest.mark.requires_backend_interface(interface=DSABackend)
+def test_skip_if_dsa_not_supported(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_if_dsa_not_supported(backend, DummyHashAlgorithm(), 1, 1, 1)
+
+
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSA(object):
     def test_generate_dsa_parameters(self, backend):
@@ -552,14 +575,10 @@ class TestDSAVerification(object):
     def test_dsa_verification(self, vector, backend):
         digest_algorithm = vector['digest_algorithm'].replace("-", "")
         algorithm = self._algorithms_dict[digest_algorithm]
-        if (
-            not backend.dsa_parameters_supported(
-                vector['p'], vector['q'], vector['g']
-            ) or not backend.dsa_hash_supported(algorithm)
-        ):
-            pytest.skip(
-                "{0} does not support the provided parameters".format(backend)
-            )
+
+        _skip_if_dsa_not_supported(
+            backend, algorithm, vector['p'], vector['q'], vector['g']
+        )
 
         public_key = dsa.DSAPublicNumbers(
             parameter_numbers=dsa.DSAParameterNumbers(
@@ -620,14 +639,10 @@ class TestDSASignature(object):
     def test_dsa_signing(self, vector, backend):
         digest_algorithm = vector['digest_algorithm'].replace("-", "")
         algorithm = self._algorithms_dict[digest_algorithm]
-        if (
-            not backend.dsa_parameters_supported(
-                vector['p'], vector['q'], vector['g']
-            ) or not backend.dsa_hash_supported(algorithm)
-        ):
-            pytest.skip(
-                "{0} does not support the provided parameters".format(backend)
-            )
+
+        _skip_if_dsa_not_supported(
+            backend, algorithm, vector['p'], vector['q'], vector['g']
+        )
 
         private_key = dsa.DSAPrivateNumbers(
             public_numbers=dsa.DSAPublicNumbers(

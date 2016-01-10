@@ -53,6 +53,13 @@ class DummyKeyEncryption(object):
     pass
 
 
+@utils.register_interface(hashes.HashAlgorithm)
+class DummyHashAlgorithm(object):
+    name = "dummy-hash"
+    digest_size = 32
+    block_size = 64
+
+
 def _flatten_pkcs1_examples(vectors):
     flattened_vectors = []
     for vector in vectors:
@@ -62,6 +69,24 @@ def _flatten_pkcs1_examples(vectors):
             flattened_vectors.append(merged_vector)
 
     return flattened_vectors
+
+
+def _skip_pss_hash_algorithm_unsupported(backend, hash_alg):
+    if not backend.rsa_padding_supported(
+        padding.PSS(
+            mgf=padding.MGF1(hash_alg),
+            salt_length=padding.PSS.MAX_LENGTH
+        )
+    ):
+        pytest.skip(
+            "Does not support {0} in MGF1 using PSS.".format(hash_alg.name)
+        )
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+def test_skip_pss_hash_algorithm_unsupported(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_pss_hash_algorithm_unsupported(backend, DummyHashAlgorithm())
 
 
 def test_modular_inverse():
@@ -268,15 +293,7 @@ class TestRSASignature(object):
         [hashes.SHA224(), hashes.SHA256(), hashes.SHA384(), hashes.SHA512()]
     )
     def test_pss_signing_sha2(self, hash_alg, backend):
-        if not backend.rsa_padding_supported(
-            padding.PSS(
-                mgf=padding.MGF1(hash_alg),
-                salt_length=padding.PSS.MAX_LENGTH
-            )
-        ):
-            pytest.skip(
-                "Does not support {0} in MGF1 using PSS.".format(hash_alg.name)
-            )
+        _skip_pss_hash_algorithm_unsupported(backend, hash_alg)
         private_key = RSA_KEY_768.private_key(backend)
         public_key = private_key.public_key()
         pss = padding.PSS(
