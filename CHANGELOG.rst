@@ -1,10 +1,19 @@
 Changelog
 =========
 
-1.2 - `master`_
+1.3 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+1.2.1 - 2016-01-08
+~~~~~~~~~~~~~~~~~~
+
+* Reverts a change to an OpenSSL ``EVP_PKEY`` object that caused errors with
+  ``pyOpenSSL``.
+
+1.2 - 2016-01-08
+~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:**
   :class:`~cryptography.x509.RevokedCertificate`
@@ -19,7 +28,7 @@ Changelog
   * :class:`~cryptography.x509.InvalidityDate`
 * Deprecated support for OpenSSL 0.9.8 and 1.0.0. At this time there is no time
   table for actually dropping support, however we strongly encourage all users
-  to upgrade, as those versions no longer receives support from the OpenSSL
+  to upgrade, as those versions no longer receive support from the OpenSSL
   project.
 * The :class:`~cryptography.x509.Certificate` class now has
   :attr:`~cryptography.x509.Certificate.signature` and
