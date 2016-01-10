@@ -124,6 +124,8 @@ int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
 BIO_METHOD *BIO_f_null(void);
 BIO_METHOD *BIO_f_buffer(void);
+
+int BIO_method_type(const BIO *);
 """
 
 MACROS = """
@@ -160,10 +162,6 @@ long BIO_set_read_buffer_size(BIO *, long);
 long BIO_set_write_buffer_size(BIO *, long);
 long BIO_set_buffer_size(BIO *, long);
 long BIO_set_buffer_read_data(BIO *, void *, long);
-
-/* The following was a macro in 0.9.8e. Once we drop support for RHEL/CentOS 5
-   we should move this back to FUNCTIONS. */
-int BIO_method_type(const BIO *);
 """
 
 CUSTOMIZATIONS = """

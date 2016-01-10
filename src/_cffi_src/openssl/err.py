@@ -70,6 +70,10 @@ static const int ASN1_F_OID_MODULE_INIT;
 static const int ASN1_F_PARSE_TAGGING;
 static const int ASN1_F_PKCS5_PBE_SET;
 static const int ASN1_F_X509_CINF_NEW;
+static const int ASN1_F_B64_READ_ASN1;
+static const int ASN1_F_B64_WRITE_ASN1;
+static const int ASN1_F_SMIME_READ_ASN1;
+static const int ASN1_F_SMIME_TEXT;
 
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
@@ -95,6 +99,9 @@ static const int ASN1_R_UNSUPPORTED_PUBLIC_KEY_TYPE;
 static const int ASN1_R_UNSUPPORTED_TYPE;
 static const int ASN1_R_WRONG_TAG;
 static const int ASN1_R_WRONG_TYPE;
+static const int ASN1_R_NO_CONTENT_TYPE;
+static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
+static const int ASN1_R_NO_MULTIPART_BOUNDARY;
 
 static const int DH_F_COMPUTE_KEY;
 
@@ -135,6 +142,7 @@ static const int EVP_F_PKCS5_V2_PBE_KEYIVGEN;
 static const int EVP_F_PKCS8_SET_BROKEN;
 static const int EVP_F_RC2_MAGIC_TO_METH;
 static const int EVP_F_RC5_CTRL;
+static const int EVP_F_CAMELLIA_INIT_KEY;
 
 static const int EVP_R_AES_KEY_SETUP_FAILED;
 static const int EVP_R_ASN1_LIB;
@@ -172,6 +180,7 @@ static const int EVP_R_UNSUPPORTED_SALT_TYPE;
 static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int EVP_R_WRONG_FINAL_BLOCK_LENGTH;
 static const int EVP_R_WRONG_PUBLIC_KEY_TYPE;
+static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 
 static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME;
 
@@ -273,52 +282,14 @@ int ERR_FATAL_ERROR(unsigned long);
  * supporting 0.9.8
  */
 void ERR_remove_thread_state(const CRYPTO_THREADID *);
-
-/* These were added in OpenSSL 0.9.8h. When we drop support for RHEL/CentOS 5
-   we should be able to move these back to TYPES. */
-static const int ASN1_F_B64_READ_ASN1;
-static const int ASN1_F_B64_WRITE_ASN1;
-static const int ASN1_F_SMIME_READ_ASN1;
-static const int ASN1_F_SMIME_TEXT;
-static const int ASN1_R_NO_CONTENT_TYPE;
-static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
-static const int ASN1_R_NO_MULTIPART_BOUNDARY;
-/* These were added in OpenSSL 0.9.8c. */
-static const int EVP_F_CAMELLIA_INIT_KEY;
-static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 """
 
 CUSTOMIZATIONS = """
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 static const long Cryptography_HAS_REMOVE_THREAD_STATE = 1;
-#else
-static const long Cryptography_HAS_REMOVE_THREAD_STATE = 0;
-typedef uint32_t CRYPTO_THREADID;
-void (*ERR_remove_thread_state)(const CRYPTO_THREADID *) = NULL;
-#endif
 
-/* OpenSSL 0.9.8h+ */
-#if OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_098H_ERROR_CODES = 1;
-#else
-static const long Cryptography_HAS_098H_ERROR_CODES = 0;
-static const int ASN1_F_B64_READ_ASN1 = 0;
-static const int ASN1_F_B64_WRITE_ASN1 = 0;
-static const int ASN1_F_SMIME_READ_ASN1 = 0;
-static const int ASN1_F_SMIME_TEXT = 0;
-static const int ASN1_R_NO_CONTENT_TYPE = 0;
-static const int ASN1_R_NO_MULTIPART_BODY_FAILURE = 0;
-static const int ASN1_R_NO_MULTIPART_BOUNDARY = 0;
-#endif
 
-/* OpenSSL 0.9.8c+ */
-#ifdef EVP_F_CAMELLIA_INIT_KEY
 static const long Cryptography_HAS_098C_CAMELLIA_CODES = 1;
-#else
-static const long Cryptography_HAS_098C_CAMELLIA_CODES = 0;
-static const int EVP_F_CAMELLIA_INIT_KEY = 0;
-static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED = 0;
-#endif
 
 // OpenSSL without EC. e.g. RHEL
 #ifndef OPENSSL_NO_EC
