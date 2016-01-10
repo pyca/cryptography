@@ -56,6 +56,7 @@ class DummyMode(object):
 class DummyCipher(object):
     name = "dummy-cipher"
     key_size = None
+    block_size = 128
 
 
 @utils.register_interface(padding.AsymmetricPadding)
@@ -117,6 +118,11 @@ class TestOpenSSL(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
+
+    def test_cmac_unsupported_algorithm(self):
+        b = Backend()
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+            b.create_cmac_ctx(DummyCipher())
 
     def test_openssl_assert(self):
         backend.openssl_assert(True)
