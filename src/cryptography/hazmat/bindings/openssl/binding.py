@@ -202,9 +202,3 @@ class Binding(object):
 # condition registering the OpenSSL locks. On Python 3.4+ the import lock
 # is per module so this approach will not work.
 Binding.init_static_locks()
-
-if Binding.lib.SSLeay() < 0x10001000:
-    raise RuntimeError(
-        "OpenSSL versions less than 1.0.1 are no longer supported by the "
-        "OpenSSL project, please upgrade."
-    )
