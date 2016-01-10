@@ -98,6 +98,12 @@ def test_skip_exchange_algorithm_unsupported(backend):
         _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), DummyCurve())
 
 
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+def test_skip_ecdsa_vector(backend):
+    with pytest.raises(pytest.skip.Exception):
+        _skip_ecdsa_vector(backend, DummyCurve, hashes.SHA256)
+
+
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
         1,
