@@ -11,7 +11,7 @@ import idna
 import six
 
 from cryptography import x509
-from cryptography.hazmat.backends.openssl.x509 import (
+from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CRL_ENTRY_REASON_ENUM_TO_CODE, _DISTPOINT_TYPE_FULLNAME,
     _DISTPOINT_TYPE_RELATIVENAME
 )
