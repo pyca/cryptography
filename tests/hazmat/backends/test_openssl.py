@@ -21,7 +21,7 @@ from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers import (
-    Cipher, CipherAlgorithm
+    BlockCipherAlgorithm, Cipher, CipherAlgorithm
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
@@ -56,7 +56,6 @@ class DummyMode(object):
 class DummyCipher(object):
     name = "dummy-cipher"
     key_size = None
-    block_size = 128
 
 
 @utils.register_interface(padding.AsymmetricPadding)
@@ -118,11 +117,6 @@ class TestOpenSSL(object):
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
-
-    def test_cmac_unsupported_algorithm(self):
-        b = Backend()
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            b.create_cmac_ctx(DummyCipher())
 
     def test_openssl_assert(self):
         backend.openssl_assert(True)
@@ -398,6 +392,16 @@ class TestOpenSSLRSA(object):
                     label=b"label"
                 )
             )
+
+
+class TestOpenSSLCMAC(object):
+    def test_unsupported_cipher(self):
+        @utils.register_interface(BlockCipherAlgorithm)
+        class FakeAlgorithm(object):
+            block_size = 64
+
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+            backend.create_cmac_ctx(FakeAlgorithm())
 
 
 class TestOpenSSLSignX509Certificate(object):

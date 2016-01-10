@@ -203,9 +203,3 @@ def test_invalid_backend():
 
     with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
         CMAC(AES(key), pretend_backend)
-
-
-def test_unsupported_algorithm():
-    backend = DummyCMACBackend([TripleDES])
-    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-        CMAC(AES(fake_key), backend)
