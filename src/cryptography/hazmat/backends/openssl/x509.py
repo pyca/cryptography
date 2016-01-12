@@ -11,7 +11,8 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CERTIFICATE_EXTENSION_PARSER, _CRL_EXTENSION_PARSER,
     _CSR_EXTENSION_PARSER, _REVOKED_CERTIFICATE_EXTENSION_PARSER,
-    _decode_x509_name, _obj2txt,
+    _asn1_integer_to_int, _asn1_string_to_bytes, _decode_x509_name, _obj2txt,
+    _parse_asn1_time
 )
 from cryptography.hazmat.primitives import hashes, serialization
 
@@ -59,7 +60,7 @@ class _Certificate(object):
     def serial(self):
         asn1_int = self._backend._lib.X509_get_serialNumber(self._x509)
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
-        return self._backend._asn1_integer_to_int(asn1_int)
+        return _asn1_integer_to_int(self._backend, asn1_int)
 
     def public_key(self):
         pkey = self._backend._lib.X509_get_pubkey(self._x509)
@@ -75,12 +76,12 @@ class _Certificate(object):
     @property
     def not_valid_before(self):
         asn1_time = self._backend._lib.X509_get_notBefore(self._x509)
-        return self._backend._parse_asn1_time(asn1_time)
+        return _parse_asn1_time(self._backend, asn1_time)
 
     @property
     def not_valid_after(self):
         asn1_time = self._backend._lib.X509_get_notAfter(self._x509)
-        return self._backend._parse_asn1_time(asn1_time)
+        return _parse_asn1_time(self._backend, asn1_time)
 
     @property
     def issuer(self):
@@ -110,7 +111,7 @@ class _Certificate(object):
 
     @property
     def signature(self):
-        return self._backend._asn1_string_to_bytes(self._x509.signature)
+        return _asn1_string_to_bytes(self._backend, self._x509.signature)
 
     @property
     def tbs_certificate_bytes(self):
@@ -154,12 +155,12 @@ class _RevokedCertificate(object):
     def serial_number(self):
         asn1_int = self._x509_revoked.serialNumber
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
-        return self._backend._asn1_integer_to_int(asn1_int)
+        return _asn1_integer_to_int(self._backend, asn1_int)
 
     @property
     def revocation_date(self):
-        return self._backend._parse_asn1_time(
-            self._x509_revoked.revocationDate)
+        return _parse_asn1_time(
+            self._backend, self._x509_revoked.revocationDate)
 
     @property
     def extensions(self):
@@ -215,17 +216,17 @@ class _CertificateRevocationList(object):
     def next_update(self):
         nu = self._backend._lib.X509_CRL_get_nextUpdate(self._x509_crl)
         self._backend.openssl_assert(nu != self._backend._ffi.NULL)
-        return self._backend._parse_asn1_time(nu)
+        return _parse_asn1_time(self._backend, nu)
 
     @property
     def last_update(self):
         lu = self._backend._lib.X509_CRL_get_lastUpdate(self._x509_crl)
         self._backend.openssl_assert(lu != self._backend._ffi.NULL)
-        return self._backend._parse_asn1_time(lu)
+        return _parse_asn1_time(self._backend, lu)
 
     @property
     def signature(self):
-        return self._backend._asn1_string_to_bytes(self._x509_crl.signature)
+        return _asn1_string_to_bytes(self._backend, self._x509_crl.signature)
 
     @property
     def tbs_certlist_bytes(self):
@@ -360,4 +361,4 @@ class _CertificateSigningRequest(object):
 
     @property
     def signature(self):
-        return self._backend._asn1_string_to_bytes(self._x509_req.signature)
+        return _asn1_string_to_bytes(self._backend, self._x509_req.signature)
