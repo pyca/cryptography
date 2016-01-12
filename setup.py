@@ -62,7 +62,7 @@ test_requirements = [
     "pytest",
     "pretend",
     "iso8601",
-    "hypothesis",
+    # "hypothesis",  # This is deliberately not present: see #2666.
     "pyasn1_modules",
 ]
 
@@ -104,7 +104,14 @@ class PyTest(test):
     def run_tests(self):
         # Import here because in module scope the eggs are not loaded.
         import pytest
-        test_args = [os.path.join(base_dir, "tests")]
+
+        # Exclude some tests when running "python setup.py test". This
+        # specifically excludes Hypothesis tests: see #2666.
+        testdir = os.path.join(base_dir, "tests")
+        hypothesis_testdir = os.path.join(testdir, "hypothesis")
+        exclude_filter = '--ignore=' + hypothesis_testdir
+        test_args = ["--collect-only", exclude_filter, testdir]
+
         errno = pytest.main(test_args)
         sys.exit(errno)
 
