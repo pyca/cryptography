@@ -288,6 +288,12 @@ class CertificateSigningRequest(object):
         2986.
         """
 
+    @abc.abstractmethod
+    def verify(self):
+        """
+        Verifies signature of signing request.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class RevokedCertificate(object):

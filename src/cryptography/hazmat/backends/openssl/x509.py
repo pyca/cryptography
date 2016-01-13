@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 import operator
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.exceptions import UnsupportedAlgorithm, InvalidSignature
 from cryptography.hazmat.backends.openssl.decode_asn1 import (
     _CERTIFICATE_EXTENSION_PARSER, _CRL_EXTENSION_PARSER,
     _CSR_EXTENSION_PARSER, _REVOKED_CERTIFICATE_EXTENSION_PARSER,
@@ -362,3 +362,13 @@ class _CertificateSigningRequest(object):
     @property
     def signature(self):
         return _asn1_string_to_bytes(self._backend, self._x509_req.signature)
+
+    def verify(self):
+        pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
+        self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
+        pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
+        res = self._backend._lib.X509_REQ_verify(self._x509_req, pkey)
+
+        if res != 1:
+            self._backend._consume_errors()
+            raise InvalidSignature
