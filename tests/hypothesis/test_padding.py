@@ -3,15 +3,16 @@
 # for complete details.
 
 from hypothesis import given
-from hypothesis.strategies import binary
+from hypothesis.strategies import binary, integers
 
 from cryptography.hazmat.primitives.padding import PKCS7
 
 
-@given(binary())
-def test_pkcs7(data):
-    # TODO: add additional tests with arbitrary block sizes
-    p = PKCS7(block_size=128)
+@given(integers(min_value=1, max_value=31), binary())
+def test_pkcs7(block_size, data):
+    # Generate in [1, 31] so we can easily get block_size in bits by
+    # multiplying by 8.
+    p = PKCS7(block_size=block_size * 8)
     padder = p.padder()
     unpadder = p.unpadder()
 
