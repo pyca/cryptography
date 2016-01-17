@@ -62,7 +62,7 @@ test_requirements = [
     "pytest",
     "pretend",
     "iso8601",
-    "hypothesis",
+    "hypothesis>=1.11.4",
     "pyasn1_modules",
 ]
 
@@ -308,6 +308,9 @@ setup(
 
     install_requires=requirements,
     tests_require=test_requirements,
+    extras_require={
+        "test": test_requirements,
+    },
 
     # for cffi
     zip_safe=False,
