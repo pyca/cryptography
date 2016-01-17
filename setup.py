@@ -57,12 +57,11 @@ else:
     requirements.append("cffi>=1.4.1")
     setup_requirements.append("cffi>=1.4.1")
 
-# If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
     "pytest",
     "pretend",
     "iso8601",
-    "hypothesis",
+    "hypothesis>=1.11.4",
     "pyasn1_modules",
 ]
 
@@ -308,6 +307,9 @@ setup(
 
     install_requires=requirements,
     tests_require=test_requirements,
+    extras_require={
+        "test": test_requirements,
+    },
 
     # for cffi
     zip_safe=False,
