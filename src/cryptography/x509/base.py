@@ -288,8 +288,8 @@ class CertificateSigningRequest(object):
         2986.
         """
 
-    @abc.abstractmethod
-    def verify(self):
+    @abc.abstractproperty
+    def is_signature_valid(self):
         """
         Verifies signature of signing request.
         """

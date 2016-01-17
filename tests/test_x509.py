@@ -18,7 +18,7 @@ import pytest
 import six
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm, InvalidSignature
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
@@ -1241,23 +1241,21 @@ class TestRSACertificateRequest(object):
         with pytest.raises(TypeError):
             request.public_bytes('NotAnEncoding')
 
-    def test_verify_bad(self, backend):
+    def test_signature_invalid(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "invalid_signature.pem"),
             x509.load_pem_x509_csr,
             backend
         )
+        assert not request.is_signature_valid
 
-        with pytest.raises(InvalidSignature):
-            request.verify()
-
-    def test_verify_good(self, backend):
+    def test_signature_valid(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
             backend
         )
-        request.verify()
+        assert request.is_signature_valid
 
     @pytest.mark.parametrize(
         ("request_path", "loader_func", "encoding"),
