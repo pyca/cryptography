@@ -310,6 +310,19 @@ setup(
     tests_require=test_requirements,
     extras_require={
         "test": test_requirements,
+        "docs-test": [
+            "doc8",
+            "pyenchant",
+            "readme_renderer",
+            "sphinx",
+            "sphinx_rtd_theme",
+            "sphinxcontrib-spelling",
+        ],
+        "pep8-test": [
+            "flake8",
+            "flake8-import-order",
+            "pep8-naming",
+        ],
     },
 
     # for cffi
