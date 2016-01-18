@@ -83,6 +83,7 @@ ffi = build_ffi_for_binding(
         "hmac",
         "nid",
         "objects",
+        "ocsp",
         "opensslv",
         "pem",
         "pkcs12",
