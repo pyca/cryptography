@@ -57,7 +57,6 @@ else:
     requirements.append("cffi>=1.4.1")
     setup_requirements.append("cffi>=1.4.1")
 
-# If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
     "pytest",
     "pretend",
