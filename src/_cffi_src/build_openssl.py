@@ -37,7 +37,11 @@ def _osx_libraries(build_static):
         return ["ssl", "crypto"]
 
 
-_OSX_PRE_INCLUDE = """
+_PRE_INCLUDE = """
+#include <openssl/e_os2.h>
+#if defined(OPENSSL_SYS_WINDOWS)
+#include <windows.h>
+#endif
 #ifdef __APPLE__
 #include <AvailabilityMacros.h>
 #define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
@@ -47,7 +51,7 @@ _OSX_PRE_INCLUDE = """
 #endif
 """
 
-_OSX_POST_INCLUDE = """
+_POST_INCLUDE = """
 #ifdef __APPLE__
 #undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
 #define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
@@ -92,8 +96,8 @@ ffi = build_ffi_for_binding(
         "pkcs7",
         "callbacks",
     ],
-    pre_include=_OSX_PRE_INCLUDE,
-    post_include=_OSX_POST_INCLUDE,
+    pre_include=_PRE_INCLUDE,
+    post_include=_POST_INCLUDE,
     libraries=_get_openssl_libraries(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )
