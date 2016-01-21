@@ -103,6 +103,15 @@ class TestFernet(object):
         with pytest.raises(TypeError):
             f.decrypt(u"")
 
+    def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        pt = b"encrypt me"
+        token = f.encrypt(pt)
+        ts = "1985-10-26T01:20:01-07:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.decrypt(token, ttl=None) == pt
+
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
         f = Fernet(Fernet.generate_key(), backend=backend)
