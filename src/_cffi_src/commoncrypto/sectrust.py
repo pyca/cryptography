@@ -30,6 +30,10 @@ OSStatus SecTrustCopyAnchorCertificates(CFArrayRef *);
 """
 
 MACROS = """
+/* The first argument changed from CFArrayRef to CFTypeRef in 10.8, so this
+ * has to go here for compatibility.
+ */
+OSStatus SecTrustCreateWithCertificates(CFTypeRef, CFTypeRef, SecTrustRef *);
 """
 
 CUSTOMIZATIONS = """
