@@ -9,9 +9,24 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef ... *SecTrustRef;
+typedef uint32_t SecTrustResultType;
+
+enum {
+   kSecTrustResultInvalid,
+   kSecTrustResultProceed,
+   kSecTrustResultConfirm,
+   kSecTrustResultDeny,
+   kSecTrustResultUnspecified,
+   kSecTrustResultRecoverableTrustFailure,
+   kSecTrustResultFatalTrustFailure,
+   kSecTrustResultOtherError
+   };
 """
 
 FUNCTIONS = """
+OSStatus SecTrustCreateWithCertificates(CFTypeRef, CFTypeRef, SecTrustRef *);
+OSStatus SecTrustEvaluate(SecTrustRef, SecTrustResultType *);
 OSStatus SecTrustCopyAnchorCertificates(CFArrayRef *);
 """
 
