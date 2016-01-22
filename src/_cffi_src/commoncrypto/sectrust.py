@@ -25,7 +25,6 @@ enum {
 """
 
 FUNCTIONS = """
-OSStatus SecTrustCreateWithCertificates(CFTypeRef, CFTypeRef, SecTrustRef *);
 OSStatus SecTrustEvaluate(SecTrustRef, SecTrustResultType *);
 OSStatus SecTrustCopyAnchorCertificates(CFArrayRef *);
 """
