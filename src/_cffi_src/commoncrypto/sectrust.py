@@ -21,7 +21,7 @@ enum {
    kSecTrustResultRecoverableTrustFailure,
    kSecTrustResultFatalTrustFailure,
    kSecTrustResultOtherError
-   };
+};
 """
 
 FUNCTIONS = """
