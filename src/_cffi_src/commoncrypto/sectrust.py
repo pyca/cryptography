@@ -13,14 +13,14 @@ typedef ... *SecTrustRef;
 typedef uint32_t SecTrustResultType;
 
 enum {
-   kSecTrustResultInvalid,
-   kSecTrustResultProceed,
-   kSecTrustResultConfirm,
-   kSecTrustResultDeny,
-   kSecTrustResultUnspecified,
-   kSecTrustResultRecoverableTrustFailure,
-   kSecTrustResultFatalTrustFailure,
-   kSecTrustResultOtherError
+    kSecTrustResultInvalid,
+    kSecTrustResultProceed,
+    kSecTrustResultConfirm,
+    kSecTrustResultDeny,
+    kSecTrustResultUnspecified,
+    kSecTrustResultRecoverableTrustFailure,
+    kSecTrustResultFatalTrustFailure,
+    kSecTrustResultOtherError
 };
 """
 
