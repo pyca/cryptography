@@ -20,6 +20,7 @@ typedef ... *CFDataRef;
 typedef signed long long CFIndex;
 typedef ... *CFStringRef;
 typedef ... *CFArrayRef;
+typedef ... *CFMutableArrayRef;
 typedef ... *CFBooleanRef;
 typedef ... *CFErrorRef;
 typedef ... *CFNumberRef;
@@ -35,6 +36,9 @@ typedef struct {
 typedef struct {
     ...;
 } CFRange;
+typedef struct {
+    ...;
+} CFArrayCallBacks;
 
 typedef UInt32 CFStringEncoding;
 enum {
@@ -65,6 +69,8 @@ typedef int CFNumberType;
 const CFDictionaryKeyCallBacks kCFTypeDictionaryKeyCallBacks;
 const CFDictionaryValueCallBacks kCFTypeDictionaryValueCallBacks;
 
+const CFArrayCallBacks kCFTypeArrayCallBacks;
+
 const CFBooleanRef kCFBooleanTrue;
 const CFBooleanRef kCFBooleanFalse;
 """
@@ -94,6 +100,10 @@ Boolean CFBooleanGetValue(CFBooleanRef);
 CFNumberRef CFNumberCreate(CFAllocatorRef, CFNumberType, const void *);
 void CFRelease(CFTypeRef);
 CFTypeRef CFRetain(CFTypeRef);
+
+CFMutableArrayRef CFArrayCreateMutable(CFAllocatorRef, CFIndex,
+                                       const CFArrayCallBacks *);
+void CFArrayAppendValue(CFMutableArrayRef, const void *);
 """
 
 MACROS = """

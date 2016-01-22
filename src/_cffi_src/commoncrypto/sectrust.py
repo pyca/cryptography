@@ -9,13 +9,31 @@ INCLUDES = """
 """
 
 TYPES = """
+typedef ... *SecTrustRef;
+typedef uint32_t SecTrustResultType;
+
+enum {
+    kSecTrustResultInvalid,
+    kSecTrustResultProceed,
+    kSecTrustResultConfirm,
+    kSecTrustResultDeny,
+    kSecTrustResultUnspecified,
+    kSecTrustResultRecoverableTrustFailure,
+    kSecTrustResultFatalTrustFailure,
+    kSecTrustResultOtherError
+};
 """
 
 FUNCTIONS = """
+OSStatus SecTrustEvaluate(SecTrustRef, SecTrustResultType *);
 OSStatus SecTrustCopyAnchorCertificates(CFArrayRef *);
 """
 
 MACROS = """
+/* The first argument changed from CFArrayRef to CFTypeRef in 10.8, so this
+ * has to go here for compatibility.
+ */
+OSStatus SecTrustCreateWithCertificates(CFTypeRef, CFTypeRef, SecTrustRef *);
 """
 
 CUSTOMIZATIONS = """
