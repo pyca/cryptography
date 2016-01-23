@@ -37,7 +37,7 @@ requirements = [
     "idna>=2.0",
     "pyasn1>=0.1.8",
     "six>=1.4.1",
-    "setuptools>=1.0",
+    "setuptools>=11.3",
 ]
 setup_requirements = []
 
