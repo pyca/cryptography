@@ -15,7 +15,6 @@ typedef uint32_t SecTrustResultType;
 enum {
     kSecTrustResultInvalid,
     kSecTrustResultProceed,
-    kSecTrustResultConfirm,
     kSecTrustResultDeny,
     kSecTrustResultUnspecified,
     kSecTrustResultRecoverableTrustFailure,
