@@ -10,6 +10,7 @@ import threading
 import types
 import warnings
 
+from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
@@ -204,7 +205,14 @@ class Binding(object):
 # is per module so this approach will not work.
 Binding.init_static_locks()
 
-if Binding.lib.SSLeay() < 0x10001000:
+if Binding.lib.SSLeay() < 0x10000000:
+    warnings.warn(
+        "OpenSSL version 0.9.8 is no longer supported by the OpenSSL project, "
+        "please upgrade. The next version of cryptography will drop support "
+        "for it.",
+        utils.DeprecatedIn12
+    )
+elif Binding.lib.SSLeay() < 0x10001000:
     warnings.warn(
         "OpenSSL versions less than 1.0.1 are no longer supported by the "
         "OpenSSL project, please upgrade. A future version of cryptography "

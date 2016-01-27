@@ -6,6 +6,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated support for OpenSSL 0.9.8. Support will be removed in
+  ``cryptography`` 1.4.
+
 1.2.1 - 2016-01-08
 ~~~~~~~~~~~~~~~~~~
 
