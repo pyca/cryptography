@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.2 - 2016-01-29
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2f.
+
 1.2.1 - 2016-01-08
 ~~~~~~~~~~~~~~~~~~
 
