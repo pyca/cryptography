@@ -271,7 +271,7 @@ Padding
         Pass this attribute to ``salt_length`` to get the maximum salt length
         available.
 
-.. class:: OAEP(mgf, label)
+.. class:: OAEP(mgf, algorithm, label)
 
     .. versionadded:: 0.4
 
@@ -282,6 +282,10 @@ Padding
 
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider.
 
     :param bytes label: A label to apply. This is a rarely used field and
         should typically be set to ``None`` or ``b""``, which are equivalent.
