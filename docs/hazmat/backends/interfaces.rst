@@ -133,12 +133,14 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported for HMAC
             by this backend, otherwise ``False``.
 
-    .. method:: create_hmac_ctx(algorithm)
+    .. method:: create_hmac_ctx(key, algorithm)
 
         Create a
         :class:`~cryptography.hazmat.primitives.hashes.HashContext` that
         uses the specified ``algorithm`` to calculate a hash-based message
         authentication code.
+
+        :param bytes key: Secret key as ``bytes``.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
