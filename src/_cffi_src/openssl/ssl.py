@@ -260,6 +260,8 @@ int SSL_set_ex_data(SSL *, int, void *);
 int SSL_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
                              CRYPTO_EX_free *);
 int SSL_CTX_set_ex_data(SSL_CTX *, int, void *);
+
+Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 """
 
 MACROS = """
