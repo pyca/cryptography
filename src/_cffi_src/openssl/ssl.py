@@ -234,6 +234,8 @@ int SSL_CTX_check_private_key(const SSL_CTX *);
 void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
                                       int (*)(X509_STORE_CTX *,void *),
                                       void *);
+int SSL_CTX_set_session_id_context(SSL_CTX *, const unsigned char *,
+                                   unsigned int);
 
 void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
