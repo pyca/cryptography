@@ -2228,6 +2228,22 @@ class TestAccessDescription(object):
         assert ad != ad3
         assert ad != object()
 
+    def test_hash(self):
+        ad = x509.AccessDescription(
+            AuthorityInformationAccessOID.OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad2 = x509.AccessDescription(
+            AuthorityInformationAccessOID.OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad3 = x509.AccessDescription(
+            AuthorityInformationAccessOID.CA_ISSUERS,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        assert hash(ad) == hash(ad2)
+        assert hash(ad) != hash(ad3)
+
 
 class TestAuthorityInformationAccess(object):
     def test_invalid_descriptions(self):
