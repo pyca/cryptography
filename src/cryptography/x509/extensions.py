@@ -313,6 +313,9 @@ class AccessDescription(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.access_method, self.access_location))
+
     access_method = utils.read_only_property("_access_method")
     access_location = utils.read_only_property("_access_location")
 
