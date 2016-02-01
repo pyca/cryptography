@@ -693,6 +693,9 @@ class InhibitAnyPolicy(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash(self.skip_certs)
+
     skip_certs = utils.read_only_property("_skip_certs")
 
 

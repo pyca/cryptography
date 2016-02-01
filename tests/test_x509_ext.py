@@ -3398,6 +3398,13 @@ class TestInhibitAnyPolicy(object):
         assert iap != iap2
         assert iap != object()
 
+    def test_hash(self):
+        iap = x509.InhibitAnyPolicy(1)
+        iap2 = x509.InhibitAnyPolicy(1)
+        iap3 = x509.InhibitAnyPolicy(4)
+        assert hash(iap) == hash(iap2)
+        assert hash(iap) != hash(iap3)
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
