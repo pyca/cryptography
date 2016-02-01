@@ -107,8 +107,8 @@ class Fernet(object):
         decryptor = Cipher(
             algorithms.AES(self._encryption_key), modes.CBC(iv), self._backend
         ).decryptor()
-        plaintext_padded = decryptor.update(ciphertext)
         try:
+            plaintext_padded = decryptor.update(ciphertext)
             plaintext_padded += decryptor.finalize()
         except ValueError:
             raise InvalidToken
