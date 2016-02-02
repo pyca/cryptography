@@ -534,11 +534,9 @@ class _RSAPrivateKey(object):
         return _enc_dec_rsa(self._backend, self, ciphertext, padding)
 
     def public_key(self):
-        ctx = self._backend._lib.RSA_new()
+        ctx = self._backend._lib.RSAPublicKey_dup(self._rsa_cdata)
         self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
         ctx = self._backend._ffi.gc(ctx, self._backend._lib.RSA_free)
-        ctx.e = self._backend._lib.BN_dup(self._rsa_cdata.e)
-        ctx.n = self._backend._lib.BN_dup(self._rsa_cdata.n)
         res = self._backend._lib.RSA_blinding_on(ctx, self._backend._ffi.NULL)
         self._backend.openssl_assert(res == 1)
         evp_pkey = self._backend._rsa_cdata_to_evp_pkey(ctx)
