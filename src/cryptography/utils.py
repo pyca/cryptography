@@ -45,6 +45,7 @@ else:
         while len(data) > 0:
             digit, = struct.unpack('>I', data[:4])
             result = (result << 32) + digit
+            # TODO: this is quadratic in the length of data
             data = data[4:]
 
         return result
