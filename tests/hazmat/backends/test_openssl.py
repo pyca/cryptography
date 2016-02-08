@@ -611,10 +611,11 @@ class TestOpenSSLSerializationWithOpenSSL(object):
 
     def test_pem_password_cb(self):
         password = b'abcdefg'
+        buf_size = len(password) + 1
         ffi_cb, userdata = backend._pem_password_cb(password)
         handle = backend._ffi.new_handle(userdata)
-        buf = backend._ffi.new('char *')
-        assert ffi_cb(buf, len(password) + 1, False, handle) == len(password)
+        buf = backend._ffi.new('char[]', buf_size)
+        assert ffi_cb(buf, buf_size, False, handle) == len(password)
         assert userdata.called == 1
         assert backend._ffi.string(buf, len(password)) == password
 
