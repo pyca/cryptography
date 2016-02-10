@@ -334,6 +334,9 @@ Modes
 
     :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
 
+    An example of securely encrypting and decrypting data with ``AES`` in the
+    ``GCM`` mode looks like:
+
     .. testcode::
 
         import os
