@@ -1,7 +1,7 @@
 Tutorial
 ========
 
-X.509 certificates are used to authenticate clients on servers. The most common
+X.509 certificates are used to authenticate clients and servers. The most common
 use case is for web servers using HTTPS.
 
 Creating a Certificate Signing Request (CSR)
