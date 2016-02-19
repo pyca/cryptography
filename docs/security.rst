@@ -9,7 +9,7 @@ What is a security issue?
 -------------------------
 
 Anytime it's possible to write code using ``cryptography``'s public API which
-does not provide the guarntees that a reasonable developer would expect it to
+does not provide the guarantees that a reasonable developer would expect it to
 based on our documentation.
 
 That's a bit academic, but basically it means the scope of what we consider a
