@@ -28,8 +28,8 @@ To give a few examples of things we would consider security issues:
 
 Examples of things we wouldn't consider security issues:
 
-* Offering ECB mode for symmetric encryption. Though ECB is critically weak, it
-  is documented as being weak in our documentation.
+* Offering ECB mode for symmetric encryption in the *Hazmat* layer. Though ECB
+  is critically weak, it is documented as being weak in our documentation.
 * Using a variable time comparison somewhere, if it's not possible to
   articulate any particular program in which this would result in problematic
   information disclosure.
