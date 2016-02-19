@@ -62,9 +62,11 @@ test_requirements = [
     "pytest",
     "pretend",
     "iso8601",
-    "hypothesis",
     "pyasn1_modules",
 ]
+if sys.version_info[:2] > (2, 6):
+    test_requirements.append("hypothesis>=1.11.4")
+
 
 # If there's no vectors locally that probably means we are in a tarball and
 # need to go and get the matching vectors package from PyPi
