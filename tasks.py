@@ -103,12 +103,12 @@ def release(version):
     invoke.run("git tag -s {0} -m '{0} release'".format(version))
     invoke.run("git push --tags")
 
-    invoke.run("python setup.py sdist")
-    invoke.run("cd vectors/ && python setup.py sdist bdist_wheel")
+    invoke.run("cd cryptography/ && python setup.py sdist")
+    invoke.run("cd cryptography-vectors/ && python setup.py sdist bdist_wheel")
 
     invoke.run(
-        "twine upload -s dist/cryptography-{0}* "
-        "vectors/dist/cryptography_vectors-{0}*".format(version)
+        "twine upload -s cryptography/dist/cryptography-{0}* "
+        "cryptography-vectors/dist/cryptography_vectors-{0}*".format(version)
     )
 
     session = requests.Session()

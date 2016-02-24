@@ -8,19 +8,20 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import platform
-import subprocess
 import sys
 from distutils.command.build import build
-
-import pkg_resources
 
 from setuptools import find_packages, setup
 from setuptools.command.install import install
 from setuptools.command.test import test
 
 
-base_dir = os.path.dirname(__file__)
+base_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(base_dir, "src")
+
+# When executing the setup.py, we need to ensure that the current directory is
+# the directory that contains the setup.py
+os.chdir(base_dir)
 
 # When executing the setup.py, we need to be able to import ourselves, this
 # means that we need to add the src/ directory to the sys.path.
@@ -62,15 +63,10 @@ test_requirements = [
     "pretend",
     "iso8601",
     "pyasn1_modules",
+    VECTORS_DEPENDENCY,
 ]
 if sys.version_info[:2] > (2, 6):
     test_requirements.append("hypothesis>=1.11.4")
-
-
-# If there's no vectors locally that probably means we are in a tarball and
-# need to go and get the matching vectors package from PyPi
-if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
-    test_requirements.append(VECTORS_DEPENDENCY)
 
 
 def cc_is_available():
@@ -93,14 +89,6 @@ class PyTest(test):
         test.finalize_options(self)
         self.test_args = []
         self.test_suite = True
-
-        # This means there's a vectors/ folder with the package in here.
-        # cd into it, install the vectors package and then refresh sys.path
-        if VECTORS_DEPENDENCY not in test_requirements:
-            subprocess.check_call(
-                [sys.executable, "setup.py", "install"], cwd="vectors"
-            )
-            pkg_resources.get_distribution("cryptography_vectors").activate()
 
     def run_tests(self):
         # Import here because in module scope the eggs are not loaded.

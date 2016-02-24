@@ -1,14 +1,16 @@
 [run]
 branch = True
-source =
+source_pkg =
     cryptography
-    tests/
+source =
+    cryptography/src/cryptography/
+    cryptography/tests/
 
 [paths]
 source =
-   src/cryptography
-   .tox/*/lib/python*/site-packages/cryptography
-   .tox/pypy/site-packages/cryptography
+    cryptography/src/cryptography
+    .tox/*/lib/python*/site-packages/cryptography
+    .tox/pypy/site-packages/cryptography
 
 [report]
 exclude_lines =

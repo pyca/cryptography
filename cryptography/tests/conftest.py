@@ -37,10 +37,3 @@ def pytest_generate_tests(metafunc):
 @pytest.mark.trylast
 def pytest_runtest_setup(item):
     check_backend_support(item)
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--backend", action="store", metavar="NAME",
-        help="Only run tests matching the backend NAME."
-    )
