@@ -98,7 +98,7 @@ typedef const CERT_CONTEXT *PCCERT_CONTEXT;
 """
 
 FUNCTIONS = """
-HCERTSTORE CertOpenStore(
+HCERTSTORE WINAPI CertOpenStore(
   LPCSTR,
   DWORD,
   HCRYPTPROV_LEGACY,
@@ -106,12 +106,12 @@ HCERTSTORE CertOpenStore(
   const void*
 );
 
-BOOL CertCloseStore(
+BOOL WINAPI CertCloseStore(
   HCERTSTORE,
   DWORD
 );
 
-BOOL CertAddEncodedCertificateToStore(
+BOOL WINAPI CertAddEncodedCertificateToStore(
   HCERTSTORE,
   DWORD,
   const BYTE *,
@@ -120,11 +120,11 @@ BOOL CertAddEncodedCertificateToStore(
   PCCERT_CONTEXT *
 );
 
-BOOL CertFreeCertificateContext(
+BOOL WINAPI CertFreeCertificateContext(
   PCCERT_CONTEXT
 );
 
-BOOL CertGetCertificateChain(
+BOOL WINAPI CertGetCertificateChain(
   HCERTCHAINENGINE,
   PCCERT_CONTEXT,
   LPFILETIME,
@@ -135,11 +135,11 @@ BOOL CertGetCertificateChain(
   PCCERT_CHAIN_CONTEXT *
 );
 
-VOID CertFreeCertificateChain(
+VOID WINAPI CertFreeCertificateChain(
   PCCERT_CHAIN_CONTEXT
 );
 
-BOOL CertVerifyCertificateChainPolicy(
+BOOL WINAPI CertVerifyCertificateChainPolicy(
   LPCSTR,
   PCCERT_CHAIN_CONTEXT,
   PCERT_CHAIN_POLICY_PARA,
