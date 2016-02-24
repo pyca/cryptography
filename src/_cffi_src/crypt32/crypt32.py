@@ -59,7 +59,8 @@ typedef struct _HTTPSPolicyCallbackData {
   DWORD dwAuthType;
   DWORD fdwChecks;
   WCHAR *pwszServerName;
-} HTTPSPolicyCallbackData, *PHTTPSPolicyCallbackData, SSL_EXTRA_CERT_CHAIN_POLICY_PARA, *PSSL_EXTRA_CERT_CHAIN_POLICY_PARA;
+} HTTPSPolicyCallbackData, *PHTTPSPolicyCallbackData,
+SSL_EXTRA_CERT_CHAIN_POLICY_PARA, *PSSL_EXTRA_CERT_CHAIN_POLICY_PARA;
 
 typedef struct _CERT_CHAIN_POLICY_PARA {
   DWORD cbSize;
