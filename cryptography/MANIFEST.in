@@ -8,6 +8,6 @@ include README.rst
 
 recursive-include docs *
 recursive-include src/_cffi_src *.py *.c *.h
-prune docs/_build
 recursive-include tests *.py
-recursive-exclude vectors *
+
+prune docs/_build

@@ -2,7 +2,7 @@
 branch = True
 source =
     cryptography
-    tests/
+    cryptography/tests/
 
 [paths]
 source =

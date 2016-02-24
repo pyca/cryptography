@@ -19,7 +19,7 @@ from setuptools.command.install import install
 from setuptools.command.test import test
 
 
-base_dir = os.path.dirname(__file__)
+base_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(base_dir, "src")
 
 # When executing the setup.py, we need to be able to import ourselves, this
@@ -62,15 +62,10 @@ test_requirements = [
     "pretend",
     "iso8601",
     "pyasn1_modules",
+    VECTORS_DEPENDENCY,
 ]
 if sys.version_info[:2] > (2, 6):
     test_requirements.append("hypothesis>=1.11.4")
-
-
-# If there's no vectors locally that probably means we are in a tarball and
-# need to go and get the matching vectors package from PyPi
-if not os.path.exists(os.path.join(base_dir, "vectors/setup.py")):
-    test_requirements.append(VECTORS_DEPENDENCY)
 
 
 def cc_is_available():
