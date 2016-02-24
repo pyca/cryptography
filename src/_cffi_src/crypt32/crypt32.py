@@ -74,7 +74,7 @@ typedef struct _CERT_TRUST_STATUS {
     DWORD dwInfoStatus;
 } CERT_TRUST_STATUS, *PCERT_TRUST_STATUS;
 
-typedef const struct _CERT_CHAIN_CONTEXT* PCCERT_CHAIN_CONTEXT;
+typedef const struct _CERT_CHAIN_CONTEXT *PCCERT_CHAIN_CONTEXT;
 typedef struct _CERT_CHAIN_CONTEXT {
     DWORD cbSize;
     CERT_TRUST_STATUS TrustStatus;
