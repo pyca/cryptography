@@ -30,121 +30,93 @@ typedef ... *PCCERT_STRONG_SIGN_PARA;
 typedef ... *PCERT_SIMPLE_CHAIN;
 
 typedef struct _CTL_USAGE {
-  DWORD cUsageIdentifier;
-  LPSTR *rgpszUsageIdentifier;
+    DWORD cUsageIdentifier;
+    LPSTR *rgpszUsageIdentifier;
 } CTL_USAGE, *PCTL_USAGE, CERT_ENHKEY_USAGE, *PCERT_ENHKEY_USAGE;
 
 typedef struct _CERT_USAGE_MATCH {
-  DWORD             dwType;
-  CERT_ENHKEY_USAGE Usage;
+    DWORD dwType;
+    CERT_ENHKEY_USAGE Usage;
 } CERT_USAGE_MATCH, *PCERT_USAGE_MATCH;
 
 typedef struct _CERT_CHAIN_PARA {
-  DWORD                   cbSize;
-  CERT_USAGE_MATCH        RequestedUsage;
-  ...;
+    DWORD cbSize;
+    CERT_USAGE_MATCH RequestedUsage;
+    ...;
 } CERT_CHAIN_PARA, *PCERT_CHAIN_PARA;
 
 typedef struct _HTTPSPolicyCallbackData {
-  union {
-    DWORD cbStruct;
-    DWORD cbSize;
-  };
-  DWORD dwAuthType;
-  DWORD fdwChecks;
-  WCHAR *pwszServerName;
+    union {
+        DWORD cbStruct;
+        DWORD cbSize;
+    };
+    DWORD dwAuthType;
+    DWORD fdwChecks;
+    WCHAR *pwszServerName;
 } HTTPSPolicyCallbackData, *PHTTPSPolicyCallbackData,
 SSL_EXTRA_CERT_CHAIN_POLICY_PARA, *PSSL_EXTRA_CERT_CHAIN_POLICY_PARA;
 
 typedef struct _CERT_CHAIN_POLICY_PARA {
-  DWORD cbSize;
-  DWORD dwFlags;
-  void  *pvExtraPolicyPara;
+    DWORD cbSize;
+    DWORD dwFlags;
+    void *pvExtraPolicyPara;
 } CERT_CHAIN_POLICY_PARA, *PCERT_CHAIN_POLICY_PARA;
 
 typedef struct _CERT_CHAIN_POLICY_STATUS {
-  DWORD cbSize;
-  DWORD dwError;
-  LONG  lChainIndex;
-  LONG  lElementIndex;
-  void  *pvExtraPolicyStatus;
+    DWORD cbSize;
+    DWORD dwError;
+    LONG lChainIndex;
+    LONG lElementIndex;
+    void *pvExtraPolicyStatus;
 } CERT_CHAIN_POLICY_STATUS, *PCERT_CHAIN_POLICY_STATUS;
 
 typedef struct _CERT_TRUST_STATUS {
-  DWORD dwErrorStatus;
-  DWORD dwInfoStatus;
+    DWORD dwErrorStatus;
+    DWORD dwInfoStatus;
 } CERT_TRUST_STATUS, *PCERT_TRUST_STATUS;
 
 typedef const struct _CERT_CHAIN_CONTEXT* PCCERT_CHAIN_CONTEXT;
 typedef struct _CERT_CHAIN_CONTEXT {
-  DWORD cbSize;
-  CERT_TRUST_STATUS TrustStatus;
-  DWORD  cChain;
-  PCERT_SIMPLE_CHAIN *rgpChain;
-  DWORD cLowerQualityChainContext;
-  PCCERT_CHAIN_CONTEXT *rgpLowerQualityChainContext;
-  BOOL fHasRevocationFreshnessTime;
-  DWORD dwRevocationFreshnessTime;
+    DWORD cbSize;
+    CERT_TRUST_STATUS TrustStatus;
+    DWORD cChain;
+    PCERT_SIMPLE_CHAIN *rgpChain;
+    DWORD cLowerQualityChainContext;
+    PCCERT_CHAIN_CONTEXT *rgpLowerQualityChainContext;
+    BOOL fHasRevocationFreshnessTime;
+    DWORD dwRevocationFreshnessTime;
 } CERT_CHAIN_CONTEXT, *PCERT_CHAIN_CONTEXT;
 
 typedef struct _CERT_CONTEXT {
-  DWORD dwCertEncodingType;
-  BYTE *pbCertEncoded;
-  DWORD cbCertEncoded;
-  PCERT_INFO pCertInfo;
-  HCERTSTORE hCertStore;
+    DWORD dwCertEncodingType;
+    BYTE *pbCertEncoded;
+    DWORD cbCertEncoded;
+    PCERT_INFO pCertInfo;
+    HCERTSTORE hCertStore;
 } CERT_CONTEXT, *PCERT_CONTEXT;
 typedef const CERT_CONTEXT *PCCERT_CONTEXT;
 """
 
 FUNCTIONS = """
-HCERTSTORE WINAPI CertOpenStore(
-  LPCSTR,
-  DWORD,
-  HCRYPTPROV_LEGACY,
-  DWORD,
-  const void*
-);
+HCERTSTORE WINAPI CertOpenStore(LPCSTR, DWORD, HCRYPTPROV_LEGACY, DWORD,
+                                const void*);
 
-BOOL WINAPI CertCloseStore(
-  HCERTSTORE,
-  DWORD
-);
+BOOL WINAPI CertCloseStore(HCERTSTORE, DWORD);
 
-BOOL WINAPI CertAddEncodedCertificateToStore(
-  HCERTSTORE,
-  DWORD,
-  const BYTE *,
-  DWORD,
-  DWORD,
-  PCCERT_CONTEXT *
-);
+BOOL WINAPI CertAddEncodedCertificateToStore(HCERTSTORE, DWORD, const BYTE *,
+                                             DWORD, DWORD, PCCERT_CONTEXT *);
 
-BOOL WINAPI CertFreeCertificateContext(
-  PCCERT_CONTEXT
-);
+BOOL WINAPI CertFreeCertificateContext(PCCERT_CONTEXT);
 
-BOOL WINAPI CertGetCertificateChain(
-  HCERTCHAINENGINE,
-  PCCERT_CONTEXT,
-  LPFILETIME,
-  HCERTSTORE,
-  PCERT_CHAIN_PARA,
-  DWORD,
-  LPVOID,
-  PCCERT_CHAIN_CONTEXT *
-);
+BOOL WINAPI CertGetCertificateChain(HCERTCHAINENGINE, PCCERT_CONTEXT,
+                                    LPFILETIME, HCERTSTORE, PCERT_CHAIN_PARA,
+                                    DWORD, LPVOID, PCCERT_CHAIN_CONTEXT *);
 
-VOID WINAPI CertFreeCertificateChain(
-  PCCERT_CHAIN_CONTEXT
-);
+VOID WINAPI CertFreeCertificateChain(PCCERT_CHAIN_CONTEXT);
 
-BOOL WINAPI CertVerifyCertificateChainPolicy(
-  LPCSTR,
-  PCCERT_CHAIN_CONTEXT,
-  PCERT_CHAIN_POLICY_PARA,
-  PCERT_CHAIN_POLICY_STATUS
-);
+BOOL WINAPI CertVerifyCertificateChainPolicy(LPCSTR, PCCERT_CHAIN_CONTEXT,
+                                             PCERT_CHAIN_POLICY_PARA,
+                                             PCERT_CHAIN_POLICY_STATUS);
 """
 
 MACROS = """
