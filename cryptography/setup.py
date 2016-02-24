@@ -19,6 +19,10 @@ from setuptools.command.test import test
 base_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(base_dir, "src")
 
+# When executing the setup.py, we need to ensure that the current directory is
+# the directory that contains the setup.py
+os.chdir(base_dir)
+
 # When executing the setup.py, we need to be able to import ourselves, this
 # means that we need to add the src/ directory to the sys.path.
 sys.path.insert(0, src_dir)
