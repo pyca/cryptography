@@ -8,11 +8,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import platform
-import subprocess
 import sys
 from distutils.command.build import build
-
-import pkg_resources
 
 from setuptools import find_packages, setup
 from setuptools.command.install import install
@@ -88,14 +85,6 @@ class PyTest(test):
         test.finalize_options(self)
         self.test_args = []
         self.test_suite = True
-
-        # This means there's a vectors/ folder with the package in here.
-        # cd into it, install the vectors package and then refresh sys.path
-        if VECTORS_DEPENDENCY not in test_requirements:
-            subprocess.check_call(
-                [sys.executable, "setup.py", "install"], cwd="vectors"
-            )
-            pkg_resources.get_distribution("cryptography_vectors").activate()
 
     def run_tests(self):
         # Import here because in module scope the eggs are not loaded.
