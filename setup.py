@@ -78,6 +78,10 @@ def cc_is_available():
         int, platform.mac_ver()[0].split("."))) >= [10, 8, 0]
 
 
+def crypt32_is_available():
+    return sys.platform == "win32"
+
+
 backends = [
     "openssl = cryptography.hazmat.backends.openssl:backend"
 ]
@@ -214,6 +218,8 @@ def keywords_with_side_effects(argv):
         ]
         if cc_is_available():
             cffi_modules.append("src/_cffi_src/build_commoncrypto.py:ffi")
+        if crypt32_is_available():
+            cffi_modules.append("src/_cffi_src/build_crypt32.py:ffi")
 
         return {
             "setup_requires": setup_requirements,
