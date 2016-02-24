@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#define CERT_CHAIN_PARA_HAS_EXTRA_FIELDS
 #include <windows.h>
 #include <Wincrypt.h>
 #include <schannel.h>
