@@ -28,7 +28,7 @@ class PaddingContext(object):
         """
 
 
-class PKCS7(object):
+class _BytePadding(object):
     def __init__(self, block_size):
         if not (0 <= block_size < 256):
             raise ValueError("block_size must be in range(0, 256).")
@@ -38,15 +38,8 @@ class PKCS7(object):
 
         self.block_size = block_size
 
-    def padder(self):
-        return _PKCS7PaddingContext(self.block_size)
 
-    def unpadder(self):
-        return _PKCS7UnpaddingContext(self.block_size)
-
-
-@utils.register_interface(PaddingContext)
-class _PKCS7PaddingContext(object):
+class _BytePaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
         # TODO: more copies than necessary, we should use zero-buffer (#193)
@@ -69,7 +62,7 @@ class _PKCS7PaddingContext(object):
         return result
 
     def _padding(self, size):
-        return six.int2byte(size) * size
+        return NotImplemented
 
     def finalize(self):
         if self._buffer is None:
@@ -81,8 +74,7 @@ class _PKCS7PaddingContext(object):
         return result
 
 
-@utils.register_interface(PaddingContext)
-class _PKCS7UnpaddingContext(object):
+class _ByteUnpaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
         # TODO: more copies than necessary, we should use zero-buffer (#193)
@@ -108,9 +100,7 @@ class _PKCS7UnpaddingContext(object):
         return result
 
     def _check_padding(self):
-        return lib.Cryptography_check_pkcs7_padding(
-            self._buffer, self.block_size // 8
-        )
+        return NotImplemented
 
     def finalize(self):
         if self._buffer is None:
@@ -130,7 +120,32 @@ class _PKCS7UnpaddingContext(object):
         return res
 
 
-class ANSIX923(PKCS7):
+class PKCS7(_BytePadding):
+
+    def padder(self):
+        return _PKCS7PaddingContext(self.block_size)
+
+    def unpadder(self):
+        return _PKCS7UnpaddingContext(self.block_size)
+
+
+@utils.register_interface(PaddingContext)
+class _PKCS7PaddingContext(_BytePaddingContext):
+
+    def _padding(self, size):
+        return six.int2byte(size) * size
+
+
+@utils.register_interface(PaddingContext)
+class _PKCS7UnpaddingContext(_ByteUnpaddingContext):
+
+    def _check_padding(self):
+        return lib.Cryptography_check_pkcs7_padding(
+            self._buffer, self.block_size // 8
+        )
+
+
+class ANSIX923(_BytePadding):
 
     def padder(self):
         return _ANSIX923PaddingContext(self.block_size)
@@ -140,14 +155,14 @@ class ANSIX923(PKCS7):
 
 
 @utils.register_interface(PaddingContext)
-class _ANSIX923PaddingContext(_PKCS7PaddingContext):
+class _ANSIX923PaddingContext(_BytePaddingContext):
 
     def _padding(self, size):
         return six.int2byte(0) * (size - 1) + six.int2byte(size)
 
 
 @utils.register_interface(PaddingContext)
-class _ANSIX923UnpaddingContext(_PKCS7UnpaddingContext):
+class _ANSIX923UnpaddingContext(_ByteUnpaddingContext):
 
     def _check_padding(self):
         return True
