@@ -54,6 +54,47 @@ multiple of the block size.
             provider.
 
 
+.. class:: ANSIX923(block_size)
+
+    ANSI X.923 padding works by appending ``N-1`` bytes with the value of ``0``
+    and a last byte with the value of ``chr(N)``, where ``N`` is the number of
+    bytes required to make the final block of data the same size as the block
+    size. A simple example of padding is:
+
+    .. doctest::
+
+        >>> padder = padding.ANSIX923(128).padder()
+        >>> padded_data = padder.update(b"11111111111111112222222222")
+        >>> padded_data
+        '1111111111111111'
+        >>> padded_data += padder.finalize()
+        >>> padded_data
+        '11111111111111112222222222\x00\x00\x00\x00\x00\x06'
+        >>> unpadder = padding.ANSIX923(128).unpadder()
+        >>> data = unpadder.update(padded_data)
+        >>> data
+        '1111111111111111'
+        >>> data + unpadder.finalize()
+        '11111111111111112222222222'
+
+    :param block_size: The size of the block in bits that the data is being
+        padded to.
+    :raises ValueError: Raised if block size is not a multiple of 8 or is not
+        between 0 and 256.
+
+    .. method:: padder()
+
+        :returns: A padding
+            :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
+            provider
+
+    .. method:: unpadder()
+
+        :returns: An unpadding
+            :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
+            provider.
+
+
 .. class:: PaddingContext
 
     When calling ``padder()`` or ``unpadder()`` the result will conform to the

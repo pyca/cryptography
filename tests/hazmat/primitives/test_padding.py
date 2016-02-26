@@ -99,3 +99,51 @@ class TestPKCS7(object):
             unpadder.update(b"")
         with pytest.raises(AlreadyFinalized):
             unpadder.finalize()
+
+
+class TestANSIX923(object):
+    @pytest.mark.parametrize(("size", "unpadded", "padded"), [
+        (
+            128,
+            b"1111111111",
+            b"1111111111\x00\x00\x00\x00\x00\x06",
+        ),
+        (
+            128,
+            b"111111111111111122222222222222",
+            b"111111111111111122222222222222\x00\x02",
+        ),
+        (
+            128,
+            b"1" * 16,
+            b"1" * 16 + b"\x00" * 15 + b"\x10",
+        ),
+        (
+            128,
+            b"1" * 17,
+            b"1" * 17 + b"\x00" * 14 + b"\x0F",
+        )
+    ])
+    def test_pad(self, size, unpadded, padded):
+        padder = padding.ANSIX923(size).padder()
+        result = padder.update(unpadded)
+        result += padder.finalize()
+        assert result == padded
+
+    @pytest.mark.parametrize(("size", "unpadded", "padded"), [
+        (
+            128,
+            b"1111111111",
+            b"1111111111\x00\x00\x00\x00\x00\x06",
+        ),
+        (
+            128,
+            b"111111111111111122222222222222",
+            b"111111111111111122222222222222\x00\x02",
+        ),
+    ])
+    def test_unpad(self, size, unpadded, padded):
+        unpadder = padding.ANSIX923(size).unpadder()
+        result = unpadder.update(padded)
+        result += unpadder.finalize()
+        assert result == unpadded
