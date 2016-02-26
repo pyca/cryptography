@@ -110,6 +110,9 @@ X.509
   containing a SAN extension with an ``ediPartyName`` general name.
 * ``san_x400address.der`` - A DSA certificate from a `Mozilla bug`_ containing
   a SAN extension with an ``x400Address`` general name.
+* ``department-of-state-root.pem`` - The intermediary CA for the Department of
+  State, issued by the United States Federal Government's Common Policy CA.
+  Notably has a ``critical`` policy constraints extensions.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
