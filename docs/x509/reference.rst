@@ -2435,7 +2435,7 @@ instances. The following common OIDs are available as constants.
     .. attribute:: POLICY_CONSTRAINTS
 
         Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
-        :class:`PolicyConstraints` extension type.
+        :class:`~cryptography.x509.PolicyConstraints` extension type.
 
 
 .. class:: CRLEntryExtensionOID
