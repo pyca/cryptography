@@ -1864,10 +1864,8 @@ X.509 Extensions
 
     .. versionadded:: 1.3
 
-    The policy constraints extension can be used in certificates issued
-    to CAs.  The policy constraints extension constrains path validation
-    in two ways.  It can be used to prohibit policy mapping or require
-    that each certificate in a path contain an acceptable policy
+    The policy constraints extension is used to inhibit policy mapping or
+    require that each certificate in a chain contain an acceptable policy
     identifier. For more information about the use of this extension see
     :rfc:`5280`.
 
@@ -1881,10 +1879,10 @@ X.509 Extensions
 
         :type: int or None
 
-        If this field is present, the value indicates the number of additional
-        certificates that may appear in the path before an explicit policy is
+        If this field is not None, the value indicates the number of additional
+        certificates that may appear in the chain before an explicit policy is
         required for the entire path. When an explicit policy is required, it
-        is necessary for all certificates in the path to contain an acceptable
+        is necessary for all certificates in the chain to contain an acceptable
         policy identifier in the certificate policies extension.  An
         acceptable policy identifier is the identifier of a policy required
         by the user of the certification path or the identifier of a policy
@@ -1894,11 +1892,11 @@ X.509 Extensions
 
         :type: int or None
 
-        If this field is present, the value indicates the number of additional
-        certificates that may appear in the path before policy mapping is no
+        If this field is not None, the value indicates the number of additional
+        certificates that may appear in the chain before policy mapping is no
         longer permitted.  For example, a value of one indicates that policy
         mapping may be processed in certificates issued by the subject of this
-        certificate, but not in additional certificates in the path.
+        certificate, but not in additional certificates in the chain.
 
 .. class:: CRLNumber(crl_number)
 
