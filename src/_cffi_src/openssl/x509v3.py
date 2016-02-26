@@ -78,6 +78,11 @@ typedef struct {
     Cryptography_STACK_OF_GENERAL_SUBTREE *excludedSubtrees;
 } NAME_CONSTRAINTS;
 
+typedef struct {
+    ASN1_INTEGER *requireExplicitPolicy;
+    ASN1_INTEGER *inhibitPolicyMapping;
+} POLICY_CONSTRAINTS;
+
 
 typedef struct {
     int type;
