@@ -56,10 +56,10 @@ multiple of the block size.
 
 .. class:: ANSIX923(block_size)
 
-    ANSI X.923 padding works by appending ``N-1`` bytes with the value of ``0``
-    and a last byte with the value of ``chr(N)``, where ``N`` is the number of
-    bytes required to make the final block of data the same size as the block
-    size. A simple example of padding is:
+    `ANSI X.923`_ padding works by appending ``N-1`` bytes with the value of
+    ``0`` and a last byte with the value of ``chr(N)``, where ``N`` is the
+    number of bytes required to make the final block of data the same size as
+    the block size. A simple example of padding is:
 
     .. doctest::
 
@@ -123,3 +123,5 @@ multiple of the block size.
         :raises TypeError: Raised if data is not bytes.
         :raises ValueError: When trying to remove padding from incorrectly
                             padded data.
+
+.. _`ANSI X.923`: https://en.wikipedia.org/wiki/Padding_%28cryptography%29#ANSI_X.923
