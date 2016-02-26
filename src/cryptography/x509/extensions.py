@@ -491,6 +491,8 @@ class ReasonFlags(Enum):
 
 @utils.register_interface(ExtensionType)
 class PolicyConstraints(object):
+    oid = ExtensionOID.POLICY_CONSTRAINTS
+
     def __init__(self, require_explicit_policy, inhibit_policy_mapping):
         if require_explicit_policy is not None and not isinstance(
             require_explicit_policy, six.integer_types

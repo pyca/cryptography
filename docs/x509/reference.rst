@@ -1871,6 +1871,12 @@ X.509 Extensions
     identifier. For more information about the use of this extension see
     :rfc:`5280`.
 
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.POLICY_CONSTRAINTS`.
+
     .. attribute:: require_explicit_policy
 
         :type: int or None
