@@ -165,4 +165,6 @@ class _ANSIX923PaddingContext(_BytePaddingContext):
 class _ANSIX923UnpaddingContext(_ByteUnpaddingContext):
 
     def _check_padding(self):
-        return True
+        return lib.Cryptography_check_ansix923_padding(
+            self._buffer, self.block_size // 8
+        )

@@ -3,3 +3,4 @@
 // repository for complete details.
 
 uint8_t Cryptography_check_pkcs7_padding(const uint8_t *, uint8_t);
+uint8_t Cryptography_check_ansix923_padding(const uint8_t *, uint8_t);

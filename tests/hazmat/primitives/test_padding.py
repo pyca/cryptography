@@ -102,6 +102,21 @@ class TestPKCS7(object):
 
 
 class TestANSIX923(object):
+    @pytest.mark.parametrize(("size", "padded"), [
+        (128, b"1111"),
+        (128, b"1111111111111111"),
+        (128, b"111111111111111\x06"),
+        (128, b"1111111111\x06\x06\x06\x06\x06\x06"),
+        (128, b""),
+        (128, b"\x06" * 6),
+        (128, b"\x00" * 16),
+    ])
+    def test_invalid_padding(self, size, padded):
+        unpadder = padding.ANSIX923(size).unpadder()
+        with pytest.raises(ValueError):
+            unpadder.update(padded)
+            unpadder.finalize()
+
     @pytest.mark.parametrize(("size", "unpadded", "padded"), [
         (
             128,

@@ -37,3 +37,27 @@ uint8_t Cryptography_check_pkcs7_padding(const uint8_t *data,
     /* Now check the low bit to see if it's set */
     return (mismatch & 1) == 0;
 }
+
+uint8_t Cryptography_check_ansix923_padding(const uint8_t *data,
+                                            uint8_t block_len) {
+    uint8_t i;
+    uint8_t pad_size = data[block_len - 1];
+    uint8_t mismatch = 0;
+    /* Skip the first one with the pad size */
+    for (i = 1; i < block_len; i++) {
+        unsigned int mask = Cryptography_constant_time_lt(i, pad_size);
+        uint8_t b = data[block_len - 1 - i];
+        mismatch |= (mask & b);
+    }
+
+    /* Check to make sure the pad_size was within the valid range. */
+    mismatch |= ~Cryptography_constant_time_lt(0, pad_size);
+    mismatch |= Cryptography_constant_time_lt(block_len, pad_size);
+
+    /* Make sure any bits set are copied to the lowest bit */
+    mismatch |= mismatch >> 4;
+    mismatch |= mismatch >> 2;
+    mismatch |= mismatch >> 1;
+    /* Now check the low bit to see if it's set */
+    return (mismatch & 1) == 0;
+}
