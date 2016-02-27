@@ -2285,9 +2285,7 @@ class TestPolicyConstraints(object):
 class TestPolicyConstraintsExtension(object):
     def test_inhibit_policy_mapping(self, backend):
         cert = _load_cert(
-            os.path.join(
-                "x509", "department-of-state-root.pem"
-            ),
+            os.path.join("x509", "department-of-state-root.pem"),
             x509.load_pem_x509_certificate,
             backend
         )
@@ -2298,6 +2296,20 @@ class TestPolicyConstraintsExtension(object):
 
         assert ext.value == x509.PolicyConstraints(
             require_explicit_policy=None, inhibit_policy_mapping=0,
+        )
+
+    def test_require_explicit_policy(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "policy_constraints_explicit.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.POLICY_CONSTRAINTS
+        )
+        assert ext.critical is True
+        assert ext.value == x509.PolicyConstraints(
+            require_explicit_policy=1, inhibit_policy_mapping=None,
         )
 
 
