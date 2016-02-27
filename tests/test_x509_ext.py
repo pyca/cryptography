@@ -2283,7 +2283,7 @@ class TestPolicyConstraints(object):
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPolicyConstraintsExtension(object):
-    def test_SOMETHING(self, backend):
+    def test_inhibit_policy_mapping(self, backend):
         cert = _load_cert(
             os.path.join(
                 "x509", "department-of-state-root.pem"
