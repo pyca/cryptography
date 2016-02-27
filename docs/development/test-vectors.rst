@@ -263,6 +263,8 @@ Custom X.509 Vectors
   policy constraints extension with a require explicit policy element.
 * ``unsupported_subject_public_key_info.pem`` - A certificate whose public key
   is an unknown OID (``1.3.6.1.4.1.8432.1.1.2``).
+* ``policy_constraints_explicit.pem`` - A self-signed certificate containing
+  a ``policyConstraints`` extension with a ``requireExplicitPolicy`` value.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
