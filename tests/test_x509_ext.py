@@ -2245,6 +2245,41 @@ class TestAccessDescription(object):
         assert hash(ad) != hash(ad3)
 
 
+class TestPolicyConstraints(object):
+    def test_invalid_explicit_policy(self):
+        with pytest.raises(TypeError):
+            x509.PolicyConstraints("invalid", None)
+
+    def test_invalid_inhibit_policy(self):
+        with pytest.raises(TypeError):
+            x509.PolicyConstraints(None, "invalid")
+
+    def test_both_none(self):
+        with pytest.raises(ValueError):
+            x509.PolicyConstraints(None, None)
+
+    def test_repr(self):
+        pc = x509.PolicyConstraints(0, None)
+
+        assert repr(pc) == (
+            u"<PolicyConstraints(require_explicit_policy=0, inhibit_policy_ma"
+            u"pping=None)>"
+        )
+
+    def test_eq(self):
+        pc = x509.PolicyConstraints(2, 1)
+        pc2 = x509.PolicyConstraints(2, 1)
+        assert pc == pc2
+
+    def test_ne(self):
+        pc = x509.PolicyConstraints(2, 1)
+        pc2 = x509.PolicyConstraints(2, 2)
+        pc3 = x509.PolicyConstraints(3, 1)
+        assert pc != pc2
+        assert pc != pc3
+        assert pc != object()
+
+
 class TestAuthorityInformationAccess(object):
     def test_invalid_descriptions(self):
         with pytest.raises(TypeError):
