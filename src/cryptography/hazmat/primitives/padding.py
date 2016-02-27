@@ -39,6 +39,7 @@ class _BytePadding(object):
         self.block_size = block_size
 
 
+@six.add_metaclass(abc.ABCMeta)
 class _BytePaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
@@ -61,8 +62,11 @@ class _BytePaddingContext(object):
 
         return result
 
+    @abc.abstractmethod
     def _padding(self, size):
-        return NotImplemented
+        """
+        Returns the padding for the size.
+        """
 
     def finalize(self):
         if self._buffer is None:
@@ -74,6 +78,7 @@ class _BytePaddingContext(object):
         return result
 
 
+@six.add_metaclass(abc.ABCMeta)
 class _ByteUnpaddingContext(object):
     def __init__(self, block_size):
         self.block_size = block_size
@@ -99,8 +104,11 @@ class _ByteUnpaddingContext(object):
 
         return result
 
+    @abc.abstractmethod
     def _check_padding(self):
-        return NotImplemented
+        """
+        Returns if the padding is valid.
+        """
 
     def finalize(self):
         if self._buffer is None:
