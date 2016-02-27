@@ -452,6 +452,29 @@ def _decode_general_subtrees(backend, stack_subtrees):
     return subtrees
 
 
+def _decode_policy_constraints(backend, pc):
+    pc = backend._ffi.cast("POLICY_CONSTRAINTS *", pc)
+    pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
+
+    if pc.requireExplicitPolicy == backend._ffi.NULL:
+        require_explicit_policy = None
+    else:
+        require_explicit_policy = _asn1_integer_to_int(
+            backend, pc.requireExplicitPolicy
+        )
+
+    if pc.inhibitPolicyMapping == backend._ffi.NULL:
+        inhibit_policy_mapping = None
+    else:
+        inhibit_policy_mapping = _asn1_integer_to_int(
+            backend, pc.inhibitPolicyMapping
+        )
+
+    return x509.PolicyConstraints(
+        require_explicit_policy, inhibit_policy_mapping
+    )
+
+
 def _decode_extended_key_usage(backend, sk):
     sk = backend._ffi.cast("Cryptography_STACK_OF_ASN1_OBJECT *", sk)
     sk = backend._ffi.gc(sk, backend._lib.sk_ASN1_OBJECT_free)
@@ -729,6 +752,7 @@ _EXTENSION_HANDLERS = {
     ExtensionOID.INHIBIT_ANY_POLICY: _decode_inhibit_any_policy,
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: _decode_issuer_alt_name,
     ExtensionOID.NAME_CONSTRAINTS: _decode_name_constraints,
+    ExtensionOID.POLICY_CONSTRAINTS: _decode_policy_constraints,
 }
 
 _REVOKED_EXTENSION_HANDLERS = {
