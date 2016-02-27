@@ -205,6 +205,9 @@ int Cryptography_i2d_NAME_CONSTRAINTS(NAME_CONSTRAINTS *, unsigned char **);
 OTHERNAME *OTHERNAME_new(void);
 void OTHERNAME_free(OTHERNAME *);
 
+POLICY_CONSTRAINTS *POLICY_CONSTRAINTS_new(void);
+void POLICY_CONSTRAINTS_free(POLICY_CONSTRAINTS *);
+
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 
 int i2d_GENERAL_NAMES(GENERAL_NAMES *, unsigned char **);
