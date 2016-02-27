@@ -2280,6 +2280,28 @@ class TestPolicyConstraints(object):
         assert pc != object()
 
 
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestPolicyConstraintsExtension(object):
+    def test_SOMETHING(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "department-of-state-root.pem"
+            ),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.POLICY_CONSTRAINTS,
+        )
+        assert ext.critical is True
+
+        assert ext.value == x509.PolicyConstraints(
+            require_explicit_policy=None, inhibit_policy_mapping=0,
+        )
+
+
 class TestAuthorityInformationAccess(object):
     def test_invalid_descriptions(self):
         with pytest.raises(TypeError):
