@@ -320,10 +320,9 @@ def _decode_basic_constraints(backend, bc_st):
     # chooses to just map this to its ordinal value, so true is 255 and
     # false is 0.
     ca = basic_constraints.ca == 255
-    if basic_constraints.pathlen == backend._ffi.NULL:
-        path_length = None
-    else:
-        path_length = _asn1_integer_to_int(backend, basic_constraints.pathlen)
+    path_length = _asn1_integer_to_int_or_none(
+        backend, basic_constraints.pathlen
+    )
 
     return x509.BasicConstraints(ca, path_length)
 
@@ -343,7 +342,6 @@ def _decode_authority_key_identifier(backend, akid):
     akid = backend._ffi.gc(akid, backend._lib.AUTHORITY_KEYID_free)
     key_identifier = None
     authority_cert_issuer = None
-    authority_cert_serial_number = None
 
     if akid.keyid != backend._ffi.NULL:
         key_identifier = backend._ffi.buffer(
@@ -355,10 +353,9 @@ def _decode_authority_key_identifier(backend, akid):
             backend, akid.issuer
         )
 
-    if akid.serial != backend._ffi.NULL:
-        authority_cert_serial_number = _asn1_integer_to_int(
-            backend, akid.serial
-        )
+    authority_cert_serial_number = _asn1_integer_to_int_or_none(
+        backend, akid.serial
+    )
 
     return x509.AuthorityKeyIdentifier(
         key_identifier, authority_cert_issuer, authority_cert_serial_number
@@ -456,19 +453,12 @@ def _decode_policy_constraints(backend, pc):
     pc = backend._ffi.cast("POLICY_CONSTRAINTS *", pc)
     pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
 
-    if pc.requireExplicitPolicy == backend._ffi.NULL:
-        require_explicit_policy = None
-    else:
-        require_explicit_policy = _asn1_integer_to_int(
-            backend, pc.requireExplicitPolicy
-        )
-
-    if pc.inhibitPolicyMapping == backend._ffi.NULL:
-        inhibit_policy_mapping = None
-    else:
-        inhibit_policy_mapping = _asn1_integer_to_int(
-            backend, pc.inhibitPolicyMapping
-        )
+    require_explicit_policy = _asn1_integer_to_int_or_none(
+        backend, pc.requireExplicitPolicy
+    )
+    inhibit_policy_mapping = _asn1_integer_to_int_or_none(
+        backend, pc.inhibitPolicyMapping
+    )
 
     return x509.PolicyConstraints(
         require_explicit_policy, inhibit_policy_mapping
@@ -696,6 +686,13 @@ def _asn1_integer_to_int(backend, asn1_int):
     backend.openssl_assert(bn != backend._ffi.NULL)
     bn = backend._ffi.gc(bn, backend._lib.BN_free)
     return backend._bn_to_int(bn)
+
+
+def _asn1_integer_to_int_or_none(backend, asn1_int):
+    if asn1_int == backend._ffi.NULL:
+        return None
+    else:
+        return _asn1_integer_to_int(backend, asn1_int)
 
 
 def _asn1_string_to_bytes(backend, asn1_string):
