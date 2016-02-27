@@ -2280,7 +2280,6 @@ class TestPolicyConstraints(object):
         assert pc != object()
 
 
-
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestPolicyConstraintsExtension(object):
