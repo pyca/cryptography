@@ -353,7 +353,6 @@ def _decode_authority_key_identifier(backend, akid):
             backend, akid.issuer
         )
 
-
     authority_cert_serial_number = _asn1_integer_to_int_or_none(
         backend, akid.serial
     )
