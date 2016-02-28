@@ -8,6 +8,8 @@ Changelog
 
 * Deprecated support for OpenSSL 0.9.8. Support will be removed in
   ``cryptography`` 1.4.
+* Added support for the :class:`~cryptography.x509.PolicyConstraints` X.509
+  extension.
 
 1.2.2 - 2016-01-29
 ~~~~~~~~~~~~~~~~~~
