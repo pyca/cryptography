@@ -185,7 +185,7 @@ class _AEADCipherContext(object):
         self._aad_bytes_processed += len(data)
         if self._aad_bytes_processed > self._ctx._mode._MAX_AAD_BYTES:
             raise ValueError(
-                "{0} has a maximum AAD byte limit of {0}".format(
+                "{0} has a maximum AAD byte limit of {1}".format(
                     self._ctx._mode.name, self._ctx._mode._MAX_AAD_BYTES
                 )
             )
