@@ -268,7 +268,8 @@ class TestOpenSSLRandomEngine(object):
             subprocess.check_call(
                 [sys.executable, "-c", engine_printer],
                 env=env,
-                stdout=out
+                stdout=out,
+                stderr=subprocess.PIPE,
             )
 
         osrandom_engine_name = backend._ffi.string(
