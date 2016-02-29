@@ -17,9 +17,10 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.kdf.counterkdf import CounterKDF
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives.kdf.counterkdf import CounterKDF
+
 
 from ...utils import load_vectors_from_file
 
@@ -381,8 +382,8 @@ def generate_counterkdf_test(param_loader, path, file_names, algorithm):
 
 
 def counterkdf_test(backend, algorithm, params):
-    ckdf = CounterKDF(hashes.SHA1(),
-                      int(params['l'])//8,
+    ckdf = CounterKDF(algorithm,
+                      int(params['l']) // 8,
                       None,
                       None,
                       backend=backend)

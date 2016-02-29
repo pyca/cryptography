@@ -27,3 +27,45 @@ class TestCounterKDFSHA1(object):
         ["NIST-800-108-counterkdf-SHA1.txt"],
         hashes.SHA1()
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA224()),
+    skip_message="Does not support SHA224."
+)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+class TestCounterKDFSHA224(object):
+    test_HKDFSHA224 = generate_counterkdf_test(
+        load_nist_vectors,
+        os.path.join("KDF"),
+        ["NIST-800-108-counterkdf-SHA224.txt"],
+        hashes.SHA224()
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
+    skip_message="Does not support SHA256."
+)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+class TestCounterKDFSHA256(object):
+    test_HKDFSHA256 = generate_counterkdf_test(
+        load_nist_vectors,
+        os.path.join("KDF"),
+        ["NIST-800-108-counterkdf-SHA256.txt"],
+        hashes.SHA256()
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
+    skip_message="Does not support SHA256."
+)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+class TestCounterKDFSHA512(object):
+    test_HKDFSHA256 = generate_counterkdf_test(
+        load_nist_vectors,
+        os.path.join("KDF"),
+        ["NIST-800-108-counterkdf-SHA512.txt"],
+        hashes.SHA512()
+    )
