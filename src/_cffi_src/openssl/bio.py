@@ -99,7 +99,7 @@ BIO *BIO_pop(BIO *);
 BIO *BIO_next(BIO *);
 BIO *BIO_find_type(BIO *, int);
 BIO_METHOD *BIO_s_mem(void);
-BIO *BIO_new_mem_buf(void *, int);
+BIO *BIO_new_mem_buf(const void *, int);
 BIO_METHOD *BIO_s_file(void);
 BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_fp(FILE *, int);
