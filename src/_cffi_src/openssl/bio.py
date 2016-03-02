@@ -99,7 +99,6 @@ BIO *BIO_pop(BIO *);
 BIO *BIO_next(BIO *);
 BIO *BIO_find_type(BIO *, int);
 BIO_METHOD *BIO_s_mem(void);
-BIO *BIO_new_mem_buf(void *, int);
 BIO_METHOD *BIO_s_file(void);
 BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_fp(FILE *, int);
@@ -127,6 +126,8 @@ BIO_METHOD *BIO_f_buffer(void);
 """
 
 MACROS = """
+/* BIO_new_mem_buf became const void * in 1.0.2g */
+BIO *BIO_new_mem_buf(void *, int);
 long BIO_set_fd(BIO *, long, int);
 long BIO_get_fd(BIO *, char *);
 long BIO_set_mem_eof_return(BIO *, int);
