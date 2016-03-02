@@ -231,7 +231,7 @@ Loading Certificate Signing Requests
     >>> from cryptography import x509
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
-    >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
+    >>> csr = x509.load_der_x509_csr(der_req_data, default_backend())
     >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
     True
 
