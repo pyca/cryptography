@@ -140,7 +140,7 @@ Loading Certificates
 
     >>> from cryptography import x509
     >>> from cryptography.hazmat.backends import default_backend
-    >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+    >>> cert = x509.load_der_x509_certificate(der_data, default_backend())
     >>> cert.serial
     2
 
@@ -185,7 +185,7 @@ Loading Certificate Revocation Lists
     >>> from cryptography import x509
     >>> from cryptography.hazmat.backends import default_backend
     >>> from cryptography.hazmat.primitives import hashes
-    >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
+    >>> crl = x509.load_der_x509_crl(der_crl_data, default_backend())
     >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
     True
 
