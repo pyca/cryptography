@@ -1267,7 +1267,7 @@ class TestRSADecryption(object):
         ),
         skip_message="Does not support OAEP."
     )
-    def test_invalid_oaep_decryption_modulus_too_large(self, backend):
+    def test_invalid_oaep_decryption_data_to_large_for_modulus(self, backend):
         key = RSA_KEY_2048_ALT.private_key(backend)
 
         ciphertext = (
