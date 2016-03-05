@@ -48,7 +48,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     python -m pip install --user virtualenv
 else
     # temporary pyenv installation to get latest pypy until the travis
-    # container infra is upgrade
+    # container infra is upgraded
     if [[ "${TOXENV}" = pypy* ]]; then
         git clone https://github.com/yyuu/pyenv.git ~/.pyenv
         PYENV_ROOT="$HOME/.pyenv"
