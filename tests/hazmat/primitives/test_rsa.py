@@ -11,7 +11,6 @@ import os
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -33,31 +32,17 @@ from .fixtures_rsa import (
 from .utils import (
     _check_rsa_private_numbers, generate_rsa_verification_test
 )
+from ...doubles import (
+    DummyAsymmetricPadding, DummyHashAlgorithm, DummyKeySerializationEncryption
+)
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
     raises_unsupported_algorithm
 )
 
 
-@utils.register_interface(padding.AsymmetricPadding)
-class DummyPadding(object):
-    name = "UNSUPPORTED-PADDING"
-
-
 class DummyMGF(object):
     _salt_length = 0
-
-
-@utils.register_interface(serialization.KeySerializationEncryption)
-class DummyKeyEncryption(object):
-    pass
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHashAlgorithm(object):
-    name = "dummy-hash"
-    digest_size = 32
-    block_size = 64
 
 
 def _check_rsa_private_numbers_if_serializable(key):
@@ -405,7 +390,7 @@ class TestRSASignature(object):
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.signer(DummyPadding(), hashes.SHA1())
+            private_key.signer(DummyAsymmetricPadding(), hashes.SHA1())
 
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
@@ -703,7 +688,9 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            public_key.verifier(b"sig", DummyPadding(), hashes.SHA1())
+            public_key.verifier(
+                b"sig", DummyAsymmetricPadding(), hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1130,7 +1117,7 @@ class TestRSADecryption(object):
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(b"0" * 64, DummyPadding())
+            private_key.decrypt(b"0" * 64, DummyAsymmetricPadding())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1370,7 +1357,7 @@ class TestRSAEncryption(object):
         public_key = private_key.public_key()
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            public_key.encrypt(b"somedata", DummyPadding())
+            public_key.encrypt(b"somedata", DummyAsymmetricPadding())
         with pytest.raises(TypeError):
             public_key.encrypt(b"somedata", padding=object())
 
@@ -1995,7 +1982,7 @@ class TestRSAPrivateKeySerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeyEncryption()
+                DummyKeySerializationEncryption()
             )
 
 

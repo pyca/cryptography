@@ -9,20 +9,13 @@ import os
 
 import pytest
 
-from cryptography import utils
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
+from ...doubles import DummyHashAlgorithm
 from ...utils import load_vectors_from_file, load_x963_vectors
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class UnsupportedDummyHash(object):
-    name = "unsupported-dummy-hash"
-    block_size = None
-    digest_size = None
 
 
 def _skip_hashfn_unsupported(backend, hashfn):
@@ -69,4 +62,4 @@ class TestX963(object):
         xkdf.verify(key, key_data)
 
     def test_unsupported_hash(self, backend):
-        _skip_hashfn_unsupported(backend, UnsupportedDummyHash())
+        _skip_hashfn_unsupported(backend, DummyHashAlgorithm())

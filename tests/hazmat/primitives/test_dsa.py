@@ -9,7 +9,6 @@ import os
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, PEMSerializationBackend
@@ -24,22 +23,11 @@ from cryptography.utils import bit_length
 from .fixtures_dsa import (
     DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 )
+from ...doubles import DummyHashAlgorithm, DummyKeySerializationEncryption
 from ...utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_vectors_from_file,
 )
-
-
-@utils.register_interface(serialization.KeySerializationEncryption)
-class DummyKeyEncryption(object):
-    pass
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHashAlgorithm(object):
-    name = "dummy"
-    digest_size = 32
-    block_size = 64
 
 
 def _skip_if_dsa_not_supported(backend, algorithm, p, q, g):
@@ -994,7 +982,7 @@ class TestDSASerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeyEncryption()
+                DummyKeySerializationEncryption()
             )
 
 
