@@ -10,6 +10,8 @@ Changelog
   ``cryptography`` 1.4.
 * Added support for the :class:`~cryptography.x509.PolicyConstraints` X.509
   extension.
+* Fixed an intermittent ``AssertionError`` when performing an RSA decryption on
+  an invalid ciphertext, ``ValueError`` is now correctly raised in all cases.
 
 1.2.3 - 2016-03-01
 ~~~~~~~~~~~~~~~~~~

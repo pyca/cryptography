@@ -226,6 +226,7 @@ static const int PKCS12_F_PKCS12_PBE_CRYPT;
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 
 static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
+static const int RSA_R_DATA_TOO_LARGE_FOR_MODULUS;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_02;

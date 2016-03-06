@@ -27,8 +27,8 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
     RSA_KEY_1029, RSA_KEY_1030, RSA_KEY_1031, RSA_KEY_1536, RSA_KEY_2048,
-    RSA_KEY_512, RSA_KEY_512_ALT, RSA_KEY_522, RSA_KEY_599, RSA_KEY_745,
-    RSA_KEY_768,
+    RSA_KEY_2048_ALT, RSA_KEY_512, RSA_KEY_512_ALT, RSA_KEY_522, RSA_KEY_599,
+    RSA_KEY_745, RSA_KEY_768,
 )
 from .utils import (
     _check_rsa_private_numbers, generate_rsa_verification_test
@@ -1253,6 +1253,44 @@ class TestRSADecryption(object):
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
+                    label=None
+                )
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            )
+        ),
+        skip_message="Does not support OAEP."
+    )
+    def test_invalid_oaep_decryption_data_to_large_for_modulus(self, backend):
+        key = RSA_KEY_2048_ALT.private_key(backend)
+
+        ciphertext = (
+            b'\xb1ph\xc0\x0b\x1a|\xe6\xda\xea\xb5\xd7%\x94\x07\xf96\xfb\x96'
+            b'\x11\x9b\xdc4\xea.-\x91\x80\x13S\x94\x04m\xe9\xc5/F\x1b\x9b:\\'
+            b'\x1d\x04\x16ML\xae\xb32J\x01yuA\xbb\x83\x1c\x8f\xf6\xa5\xdbp\xcd'
+            b'\nx\xc7\xf6\x15\xb2/\xdcH\xae\xe7\x13\x13by\r4t\x99\x0fc\x1f\xc1'
+            b'\x1c\xb1\xdd\xc5\x08\xd1\xee\xa1XQ\xb8H@L5v\xc3\xaf\xf2\r\x97'
+            b'\xed\xaa\xe7\xf1\xd4xai\xd3\x83\xd9\xaa9\xbfx\xe1\x87F \x01\xff'
+            b'L\xccv}ae\xb3\xfa\xf2B\xb8\xf9\x04H\x94\x85\xcb\x86\xbb\\ghx!W31'
+            b'\xc7;t\na_E\xc2\x16\xb0;\xa1\x18\t\x1b\xe1\xdb\x80>)\x15\xc6\x12'
+            b'\xcb\xeeg`\x8b\x9b\x1b\x05y4\xb0\x84M6\xcd\xa1\x827o\xfd\x96\xba'
+            b'Z#\x8d\xae\x01\xc9\xf2\xb6\xde\x89{8&eQ\x1e8\x03\x01#?\xb66\\'
+            b'\xad.\xe9\xfa!\x95 c{\xcaz\xe0*\tP\r\x91\x9a)B\xb5\xadN\xf4$\x83'
+            b'\t\xb5u\xab\x19\x99'
+        )
+
+        with pytest.raises(ValueError):
+            key.decrypt(
+                ciphertext,
+                padding.OAEP(
+                    algorithm=hashes.SHA1(),
+                    mgf=padding.MGF1(hashes.SHA1()),
                     label=None
                 )
             )

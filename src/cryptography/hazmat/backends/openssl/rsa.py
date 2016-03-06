@@ -139,6 +139,10 @@ def _handle_rsa_enc_dec_error(backend, key):
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01,
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02,
             backend._lib.RSA_R_OAEP_DECODING_ERROR,
+            # Though this error looks similar to the
+            # RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE, this occurs on decrypts,
+            # rather then on encrypts
+            backend._lib.RSA_R_DATA_TOO_LARGE_FOR_MODULUS,
         ]
         if backend._lib.Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR:
             decoding_errors.append(backend._lib.RSA_R_PKCS_DECODING_ERROR)
