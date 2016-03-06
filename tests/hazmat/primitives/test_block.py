@@ -8,7 +8,6 @@ import binascii
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, _Reasons
 )
@@ -20,21 +19,8 @@ from cryptography.hazmat.primitives.ciphers import (
 from .utils import (
     generate_aead_exception_test, generate_aead_tag_exception_test
 )
+from ...doubles import DummyCipherAlgorithm, DummyMode
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(modes.Mode)
-class DummyMode(object):
-    name = "dummy-mode"
-
-    def validate_for_algorithm(self, algorithm):
-        pass
-
-
-@utils.register_interface(base.CipherAlgorithm)
-class DummyCipher(object):
-    name = "dummy-cipher"
-    key_size = None
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -107,7 +93,7 @@ class TestCipherContext(object):
     @pytest.mark.parametrize("mode", [DummyMode(), None])
     def test_nonexistent_cipher(self, backend, mode):
         cipher = Cipher(
-            DummyCipher(), mode, backend
+            DummyCipherAlgorithm(), mode, backend
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()

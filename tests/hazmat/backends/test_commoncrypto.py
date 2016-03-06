@@ -6,21 +6,14 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends import _available_backends
-from cryptography.hazmat.primitives.ciphers import Cipher, CipherAlgorithm
+from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, GCM
 
+from ...doubles import DummyCipherAlgorithm
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(CipherAlgorithm)
-class DummyCipher(object):
-    name = "dummy-cipher"
-    block_size = None
-    key_size = None
 
 
 @pytest.mark.skipif("commoncrypto" not in
@@ -55,7 +48,7 @@ class TestCommonCrypto(object):
         from cryptography.hazmat.backends.commoncrypto.backend import Backend
         b = Backend()
         cipher = Cipher(
-            DummyCipher(), GCM(b"fake_iv_here"), backend=b,
+            DummyCipherAlgorithm(), GCM(b"fake_iv_here"), backend=b,
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()

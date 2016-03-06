@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 )
 
 from .fixtures_ec import EC_KEY_SECP384R1
+from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_kasvs_ecdh_vectors, load_vectors_from_file,
@@ -79,11 +80,6 @@ class DummyCurve(object):
 @utils.register_interface(ec.EllipticCurveSignatureAlgorithm)
 class DummySignatureAlgorithm(object):
     algorithm = None
-
-
-@utils.register_interface(serialization.KeySerializationEncryption)
-class DummyKeyEncryption(object):
-    pass
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
@@ -741,7 +737,7 @@ class TestECSerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeyEncryption()
+                DummyKeySerializationEncryption()
             )
 
     def test_public_bytes_from_derived_public_key(self, backend):
