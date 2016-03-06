@@ -22,7 +22,7 @@ class NameAttribute(object):
                 "value argument must be a text type."
             )
 
-        if oid == NameOID.COUNTRY_NAME and len(value.encode("ascii")) != 2:
+        if oid == NameOID.COUNTRY_NAME and len(value.encode("utf8")) != 2:
             raise ValueError(
                 "Country name must be a 2 character country code"
             )
