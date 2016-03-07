@@ -117,18 +117,8 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
             "Compressed elliptic curve points are not supported"
         )
 
-    # key_size is in bits, and sometimes it's not evenly divisible by 8, so we
-    # add 7 to round up the number of bytes.
-    if len(data) != 1 + 2 * ((curve.key_size + 7) // 8):
-        raise ValueError("Malformed key bytes")
-
-    x = utils.int_from_bytes(
-        data[1:1 + (curve.key_size + 7) // 8], byteorder='big'
-    )
-    y = utils.int_from_bytes(
-        data[1 + (curve.key_size + 7) // 8:], byteorder='big'
-    )
-    return ec.EllipticCurvePublicNumbers(x, y, curve).public_key(backend)
+    numbers = ec.EllipticCurvePublicNumbers.from_encoded_point(curve, data)
+    return numbers.public_key(backend)
 
 
 def _read_next_string(data):
