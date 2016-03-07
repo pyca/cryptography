@@ -173,7 +173,7 @@ class GCM(object):
             raise TypeError("initialization_vector must be bytes")
 
         if tag is not None and not isinstance(tag, bytes):
-            raise TypeError("tag must be bytes when provided")
+            raise TypeError("tag must be bytes or None")
 
         self._initialization_vector = initialization_vector
         self._tag = tag
