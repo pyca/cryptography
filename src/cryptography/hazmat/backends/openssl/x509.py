@@ -362,3 +362,16 @@ class _CertificateSigningRequest(object):
     @property
     def signature(self):
         return _asn1_string_to_bytes(self._backend, self._x509_req.signature)
+
+    @property
+    def is_signature_valid(self):
+        pkey = self._backend._lib.X509_REQ_get_pubkey(self._x509_req)
+        self._backend.openssl_assert(pkey != self._backend._ffi.NULL)
+        pkey = self._backend._ffi.gc(pkey, self._backend._lib.EVP_PKEY_free)
+        res = self._backend._lib.X509_REQ_verify(self._x509_req, pkey)
+
+        if res != 1:
+            self._backend._consume_errors()
+            return False
+
+        return True

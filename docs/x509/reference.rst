@@ -761,6 +761,12 @@ X.509 CSR (Certificate Signing Request) Object
         key embedded in the CSR). This data may be used to validate the CSR
         signature.
 
+    .. attribute:: is_signature_valid
+
+        .. versionadded:: 1.3
+
+        Returns True if the CSR signature is correct, False otherwise.
+
 X.509 Certificate Revocation List Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

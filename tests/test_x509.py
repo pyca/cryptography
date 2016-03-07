@@ -1241,6 +1241,22 @@ class TestRSACertificateRequest(object):
         with pytest.raises(TypeError):
             request.public_bytes('NotAnEncoding')
 
+    def test_signature_invalid(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "invalid_signature.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert not request.is_signature_valid
+
+    def test_signature_valid(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.is_signature_valid
+
     @pytest.mark.parametrize(
         ("request_path", "loader_func", "encoding"),
         [
