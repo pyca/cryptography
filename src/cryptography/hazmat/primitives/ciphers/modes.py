@@ -67,6 +67,9 @@ class CBC(object):
     name = "CBC"
 
     def __init__(self, initialization_vector):
+        if not isinstance(initialization_vector, bytes):
+            raise TypeError("initialization_vector must be bytes")
+
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -87,6 +90,9 @@ class OFB(object):
     name = "OFB"
 
     def __init__(self, initialization_vector):
+        if not isinstance(initialization_vector, bytes):
+            raise TypeError("initialization_vector must be bytes")
+
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -99,6 +105,9 @@ class CFB(object):
     name = "CFB"
 
     def __init__(self, initialization_vector):
+        if not isinstance(initialization_vector, bytes):
+            raise TypeError("initialization_vector must be bytes")
+
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -111,6 +120,9 @@ class CFB8(object):
     name = "CFB8"
 
     def __init__(self, initialization_vector):
+        if not isinstance(initialization_vector, bytes):
+            raise TypeError("initialization_vector must be bytes")
+
         self._initialization_vector = initialization_vector
 
     initialization_vector = utils.read_only_property("_initialization_vector")
@@ -123,6 +135,9 @@ class CTR(object):
     name = "CTR"
 
     def __init__(self, nonce):
+        if not isinstance(nonce, bytes):
+            raise TypeError("nonce must be bytes")
+
         self._nonce = nonce
 
     nonce = utils.read_only_property("_nonce")
@@ -153,6 +168,12 @@ class GCM(object):
                 "Authentication tag must be {0} bytes or longer.".format(
                     min_tag_length)
             )
+
+        if not isinstance(initialization_vector, bytes):
+            raise TypeError("initialization_vector must be bytes")
+
+        if tag is not None and not isinstance(tag, bytes):
+            raise TypeError("tag must be bytes or None")
 
         self._initialization_vector = initialization_vector
         self._tag = tag

@@ -177,3 +177,33 @@ class TestModeValidation(object):
                 modes.CTR(b"abc"),
                 backend,
             )
+
+
+class TestModesRequireBytes(object):
+    def test_cbc(self):
+        with pytest.raises(TypeError):
+            modes.CBC([1] * 16)
+
+    def test_cfb(self):
+        with pytest.raises(TypeError):
+            modes.CFB([1] * 16)
+
+    def test_cfb8(self):
+        with pytest.raises(TypeError):
+            modes.CFB8([1] * 16)
+
+    def test_ofb(self):
+        with pytest.raises(TypeError):
+            modes.OFB([1] * 16)
+
+    def test_ctr(self):
+        with pytest.raises(TypeError):
+            modes.CTR([1] * 16)
+
+    def test_gcm_iv(self):
+        with pytest.raises(TypeError):
+            modes.GCM([1] * 16)
+
+    def test_gcm_tag(self):
+        with pytest.raises(TypeError):
+            modes.GCM(b"\x00" * 16, [1] * 16)
