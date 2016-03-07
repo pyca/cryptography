@@ -45,7 +45,7 @@ def test_default_backend():
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
 )
@@ -126,7 +126,7 @@ class TestFernet(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
 )

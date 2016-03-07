@@ -120,7 +120,7 @@ class TestCipherContext(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+        algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
     ),
     skip_message="Does not support AES GCM",
 )

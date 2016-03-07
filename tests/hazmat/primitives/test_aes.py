@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CBC("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
 )
@@ -84,7 +84,7 @@ class TestAESModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.OFB("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.OFB(b"\x00" * 16)
     ),
     skip_message="Does not support AES OFB",
 )
@@ -117,7 +117,7 @@ class TestAESModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CFB("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CFB(b"\x00" * 16)
     ),
     skip_message="Does not support AES CFB",
 )
@@ -150,7 +150,7 @@ class TestAESModeCFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CFB8("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CFB8(b"\x00" * 16)
     ),
     skip_message="Does not support AES CFB8",
 )
@@ -183,7 +183,7 @@ class TestAESModeCFB8(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CTR(b"\x00" * 16)
     ),
     skip_message="Does not support AES CTR",
 )
@@ -200,7 +200,7 @@ class TestAESModeCTR(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+        algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
     ),
     skip_message="Does not support AES GCM",
 )
