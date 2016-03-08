@@ -17,8 +17,8 @@ from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 _OpenSSLError = collections.namedtuple("_OpenSSLError",
                                        ["code", "lib", "func", "reason"])
-_OpenSSLErrorText = collections.namedtuple(
-    "_OpenSSLErrorText", ["code", "lib", "func", "reason", "reason_text"]
+_OpenSSLErrorWithText = collections.namedtuple(
+    "_OpenSSLErrorWithText", ["code", "lib", "func", "reason", "reason_text"]
 )
 
 
@@ -47,7 +47,7 @@ def _openssl_assert(lib, ok):
                 lib.ERR_error_string(err.code, ffi.NULL)
             )
             errors_with_text.append(
-                _OpenSSLErrorText(
+                _OpenSSLErrorWithText(
                     err.code, err.lib, err.func, err.reason, err_text_reason
                 )
             )

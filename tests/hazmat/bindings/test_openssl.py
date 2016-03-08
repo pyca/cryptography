@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _OpenSSLErrorText, _openssl_assert
+    Binding, _OpenSSLErrorWithText, _openssl_assert
 )
 
 
@@ -155,17 +155,26 @@ class TestOpenSSL(object):
 
     def test_openssl_assert_error_on_stack(self):
         b = Binding()
-        b.lib.ERR_put_error(4, 160, 110, b"", -1)
+        b.lib.ERR_put_error(
+            b.lib.ERR_LIB_RSA,
+            # the following value corresponds to
+            # RSA_F_RSA_PADDING_ADD_PKCS1_OAEP_MGF1 but we don't really bind
+            # func codes in our bindings.
+            160,
+            b.lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE,
+            b"",
+            -1
+        )
         with pytest.raises(InternalError) as exc_info:
             _openssl_assert(b.lib, False)
 
-        exc_info.value.err_code == _OpenSSLErrorText(
+        assert exc_info.value.err_code == [_OpenSSLErrorWithText(
             code=67764334,
-            lib=4,
+            lib=b.lib.ERR_LIB_RSA,
             func=160,
-            reason=110,
+            reason=b.lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE,
             reason_text=(
                 b'error:040A006E:rsa routines:RSA_padding_add_PKCS1_OAEP_mgf1'
                 b':data too large for key size'
             )
-        )
+        )]
