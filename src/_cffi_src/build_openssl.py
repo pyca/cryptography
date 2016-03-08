@@ -42,21 +42,6 @@ _PRE_INCLUDE = """
 #if defined(OPENSSL_SYS_WINDOWS)
 #include <windows.h>
 #endif
-#ifdef __APPLE__
-#include <AvailabilityMacros.h>
-#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
-"""
-
-_POST_INCLUDE = """
-#ifdef __APPLE__
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
 """
 
 
@@ -98,7 +83,6 @@ ffi = build_ffi_for_binding(
         "callbacks",
     ],
     pre_include=_PRE_INCLUDE,
-    post_include=_POST_INCLUDE,
     libraries=_get_openssl_libraries(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )
