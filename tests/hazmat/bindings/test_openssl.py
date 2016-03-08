@@ -156,12 +156,9 @@ class TestOpenSSL(object):
     def test_openssl_assert_error_on_stack(self):
         b = Binding()
         b.lib.ERR_put_error(
-            b.lib.ERR_LIB_RSA,
-            # the following value corresponds to
-            # RSA_F_RSA_PADDING_ADD_PKCS1_OAEP_MGF1 but we don't really bind
-            # func codes in our bindings.
-            160,
-            b.lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE,
+            b.lib.ERR_LIB_EVP,
+            b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
             b"",
             -1
         )
@@ -169,12 +166,12 @@ class TestOpenSSL(object):
             _openssl_assert(b.lib, False)
 
         assert exc_info.value.err_code == [_OpenSSLErrorWithText(
-            code=67764334,
-            lib=b.lib.ERR_LIB_RSA,
-            func=160,
-            reason=b.lib.RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE,
+            code=101183626,
+            lib=b.lib.ERR_LIB_EVP,
+            func=b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            reason=b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
             reason_text=(
-                b'error:040A006E:rsa routines:RSA_padding_add_PKCS1_OAEP_mgf1'
-                b':data too large for key size'
+                b'error:0607F08A:digital envelope routines:EVP_EncryptFinal_'
+                b'ex:data not multiple of block length'
             )
         )]
