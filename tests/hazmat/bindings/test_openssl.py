@@ -6,7 +6,10 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography.hazmat.bindings.openssl.binding import Binding
+from cryptography.exceptions import InternalError
+from cryptography.hazmat.bindings.openssl.binding import (
+    Binding, _OpenSSLErrorText, _openssl_assert
+)
 
 
 class TestOpenSSL(object):
@@ -149,3 +152,20 @@ class TestOpenSSL(object):
         else:
             with pytest.raises(AttributeError):
                 b.lib.CMAC_Init
+
+    def test_openssl_assert_error_on_stack(self):
+        b = Binding()
+        b.lib.ERR_put_error(4, 160, 110, b"", -1)
+        with pytest.raises(InternalError) as exc_info:
+            _openssl_assert(b.lib, False)
+
+        exc_info.value.err_code == _OpenSSLErrorText(
+            code=67764334,
+            lib=4,
+            func=160,
+            reason=110,
+            reason_text=(
+                b'error:040A006E:rsa routines:RSA_padding_add_PKCS1_OAEP_mgf1'
+                b':data too large for key size'
+            )
+        )
