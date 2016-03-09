@@ -179,7 +179,7 @@ class Backend(object):
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """
         return self._ffi.string(
-            self._lib.SSLeay_version(self._lib.SSLEAY_VERSION)
+            self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
         ).decode("ascii")
 
     def create_hmac_ctx(self, key, algorithm):
