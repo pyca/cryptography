@@ -14,9 +14,6 @@ to NaCl.
 
 If you prefer NaCl's design, we highly recommend `PyNaCl`_.
 
-.. _`NaCl`: https://nacl.cr.yp.to/
-.. _`PyNaCl`: https://pynacl.readthedocs.org
-
 Compiling ``cryptography`` on OS X produces a ``fatal error: 'openssl/aes.h' file not found`` error
 ----------------------------------------------------------------------------------------------------
 
@@ -25,3 +22,6 @@ This happens because OS X 10.11 no longer includes a copy of OpenSSL.
 OpenSSL. You're seeing this error because your copy of pip is too old to find
 our wheel files. Upgrade your copy of pip with ``pip install -U pip`` and then
 try install ``cryptography`` again.
+
+.. _`NaCl`: https://nacl.cr.yp.to/
+.. _`PyNaCl`: https://pynacl.readthedocs.org
