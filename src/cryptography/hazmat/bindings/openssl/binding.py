@@ -17,6 +17,9 @@ from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 _OpenSSLError = collections.namedtuple("_OpenSSLError",
                                        ["code", "lib", "func", "reason"])
+_OpenSSLErrorWithText = collections.namedtuple(
+    "_OpenSSLErrorWithText", ["code", "lib", "func", "reason", "reason_text"]
+)
 
 
 def _consume_errors(lib):
@@ -31,17 +34,33 @@ def _consume_errors(lib):
         err_reason = lib.ERR_GET_REASON(code)
 
         errors.append(_OpenSSLError(code, err_lib, err_func, err_reason))
+
     return errors
 
 
 def _openssl_assert(lib, ok):
     if not ok:
         errors = _consume_errors(lib)
+        errors_with_text = []
+        for err in errors:
+            err_text_reason = ffi.string(
+                lib.ERR_error_string(err.code, ffi.NULL)
+            )
+            errors_with_text.append(
+                _OpenSSLErrorWithText(
+                    err.code, err.lib, err.func, err.reason, err_text_reason
+                )
+            )
+
         raise InternalError(
-            "Unknown OpenSSL error. Please file an issue at https://github.com"
-            "/pyca/cryptography/issues with information on how to reproduce "
-            "this. ({0!r})".format(errors),
-            errors
+            "Unknown OpenSSL error. This error is commonly encountered when "
+            "another library is not cleaning up the OpenSSL error stack. If "
+            "you are using cryptography with another library that uses "
+            "OpenSSL try disabling it before reporting a bug. Otherwise "
+            "please file an issue at https://github.com/pyca/cryptography/"
+            "issues with information on how to reproduce "
+            "this. ({0!r})".format(errors_with_text),
+            errors_with_text
         )
 
 
