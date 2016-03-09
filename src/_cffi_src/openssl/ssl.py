@@ -162,9 +162,6 @@ typedef ... COMP_METHOD;
 """
 
 FUNCTIONS = """
-void SSL_load_error_strings(void);
-int SSL_library_init(void);
-
 /*  SSL */
 const char *SSL_state_string_long(const SSL *);
 SSL_SESSION *SSL_get1_session(SSL *);
@@ -253,20 +250,25 @@ char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
+"""
 
-/* CRYPTO_EX_DATA */
+MACROS = """
+/* These became macros in 1.1.0 */
+int SSL_library_init(void);
+void SSL_load_error_strings(void);
+
+/* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
 int SSL_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
                          CRYPTO_EX_free *);
 int SSL_set_ex_data(SSL *, int, void *);
-
 int SSL_CTX_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
                              CRYPTO_EX_free *);
 int SSL_CTX_set_ex_data(SSL_CTX *, int, void *);
 
 Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
-"""
+SSL_SESSION *SSL_get_session(const SSL *);
+const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
 
-MACROS = """
 /* not a macro, but older OpenSSLs don't pass the args as const */
 char *SSL_CIPHER_description(const SSL_CIPHER *, char *, int);
 int SSL_SESSION_print(BIO *, const SSL_SESSION *);
