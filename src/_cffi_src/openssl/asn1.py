@@ -155,4 +155,11 @@ ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
+/* This macro is removed in 1.1.0. We re-add it if required to support
+   pyOpenSSL versions older than whatever resolves
+   https://github.com/pyca/pyopenssl/issues/431 */
+#if !defined(M_ASN1_TIME_dup)
+#define M_ASN1_TIME_dup(a) (ASN1_TIME *)\
+    ASN1_STRING_dup((const ASN1_STRING *)a)
+#endif
 """
