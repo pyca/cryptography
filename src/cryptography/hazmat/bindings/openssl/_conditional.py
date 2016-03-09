@@ -411,4 +411,7 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ],
+    "Cryptography_HAS_AES_CTR128_ENCRYPT": [
+        "AES_ctr128_encrypt",
+    ],
 }
