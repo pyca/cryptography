@@ -34,6 +34,7 @@ typedef ... Cryptography_STACK_OF_POLICYINFO;
 typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
 typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
 typedef ... EXTENDED_KEY_USAGE;
+typedef ... CONF;
 
 typedef struct {
     X509 *issuer_cert;
