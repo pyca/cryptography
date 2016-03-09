@@ -113,7 +113,6 @@ long BIO_callback_ctrl(
     int,
     void (*)(struct bio_st *, int, const char *, int, long, long)
 );
-char *BIO_ptr_ctrl(BIO *, int, long);
 long BIO_int_ctrl(BIO *, int, long, int);
 size_t BIO_ctrl_pending(BIO *);
 size_t BIO_ctrl_wpending(BIO *);
