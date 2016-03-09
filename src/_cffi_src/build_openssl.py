@@ -55,7 +55,6 @@ ffi = build_ffi_for_binding(
         "bio",
         "cmac",
         "cms",
-        "conf",
         "crypto",
         "dh",
         "dsa",
