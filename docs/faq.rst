@@ -15,7 +15,7 @@ to NaCl.
 If you prefer NaCl's design, we highly recommend `PyNaCl`_.
 
 Compiling ``cryptography`` on OS X produces a ``fatal error: 'openssl/aes.h' file not found`` error
-----------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 This happens because OS X 10.11 no longer includes a copy of OpenSSL.
 ``cryptography`` now provides wheels which include a statically linked copy of
