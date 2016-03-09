@@ -185,13 +185,6 @@ CONDITIONAL_NAMES = {
         "ECDSA_sign_ex",
         "ECDSA_verify",
         "ECDSA_size",
-        "ECDSA_OpenSSL",
-        "ECDSA_set_default_method",
-        "ECDSA_get_default_method",
-        "ECDSA_set_method",
-        "ECDSA_get_ex_new_index",
-        "ECDSA_set_ex_data",
-        "ECDSA_get_ex_data",
     ],
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
