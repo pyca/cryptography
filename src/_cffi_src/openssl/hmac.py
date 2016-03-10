@@ -103,10 +103,6 @@ void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx) {
     return HMAC_CTX_free(ctx);
 #else
     if (ctx != NULL) {
-        ctx->md = NULL;
-        ctx->key_length = 0;
-        memset(ctx->key, 0, sizeof(HMAC_MAX_MD_CBLOCK));
-
         HMAC_CTX_cleanup(ctx);
         OPENSSL_free(ctx);
     }
