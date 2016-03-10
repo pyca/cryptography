@@ -13,10 +13,7 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_ECDSA;
 
-typedef struct {
-    BIGNUM *r;
-    BIGNUM *s;
-} ECDSA_SIG;
+typedef ... ECDSA_SIG;
 
 typedef ... CRYPTO_EX_new;
 typedef ... CRYPTO_EX_dup;
