@@ -87,11 +87,6 @@ HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
     /* This uses OPENSSL_zalloc in 1.1.0, which is malloc + memset */
     HMAC_CTX *ctx = (HMAC_CTX *)OPENSSL_malloc(sizeof(HMAC_CTX));
     memset(ctx, 0, sizeof(HMAC_CTX));
-    /*if (ctx)
-        if (!HMAC_CTX_reset(ctx)) {
-            HMAC_CTX_free(ctx);
-            ctx = NULL;
-        }*/
     return ctx;
 #endif
 }
