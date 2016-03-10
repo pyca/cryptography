@@ -16,10 +16,7 @@ typedef STACK_OF(X509_NAME_ENTRY) Cryptography_STACK_OF_X509_NAME_ENTRY;
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_X509_NAME_ENTRY;
-typedef struct {
-    Cryptography_STACK_OF_X509_NAME_ENTRY *entries;
-    ...;
-} X509_NAME;
+typedef ... X509_NAME;
 typedef ... X509_NAME_ENTRY;
 typedef ... Cryptography_STACK_OF_X509_NAME;
 """
@@ -47,6 +44,10 @@ int X509_NAME_get_index_by_NID(X509_NAME *, int, int);
 int X509_NAME_cmp(const X509_NAME *, const X509_NAME *);
 char *X509_NAME_oneline(X509_NAME *, char *, int);
 X509_NAME *X509_NAME_dup(X509_NAME *);
+X509_NAME_ENTRY *X509_NAME_ENTRY_create_by_OBJ(X509_NAME_ENTRY **,
+                                               ASN1_OBJECT *, int,
+                                               const unsigned char *, int);
+int X509_NAME_add_entry(X509_NAME *, X509_NAME_ENTRY *, int, int);
 """
 
 MACROS = """
@@ -56,6 +57,9 @@ int sk_X509_NAME_push(Cryptography_STACK_OF_X509_NAME *, X509_NAME *);
 X509_NAME *sk_X509_NAME_value(Cryptography_STACK_OF_X509_NAME *, int);
 void sk_X509_NAME_free(Cryptography_STACK_OF_X509_NAME *);
 int sk_X509_NAME_ENTRY_num(Cryptography_STACK_OF_X509_NAME_ENTRY *);
+Cryptography_STACK_OF_X509_NAME_ENTRY *sk_X509_NAME_ENTRY_new_null(void);
+int sk_X509_NAME_ENTRY_push(Cryptography_STACK_OF_X509_NAME_ENTRY *,
+                            X509_NAME_ENTRY *);
 X509_NAME_ENTRY *sk_X509_NAME_ENTRY_value(
     Cryptography_STACK_OF_X509_NAME_ENTRY *, int);
 Cryptography_STACK_OF_X509_NAME_ENTRY *sk_X509_NAME_ENTRY_dup(
