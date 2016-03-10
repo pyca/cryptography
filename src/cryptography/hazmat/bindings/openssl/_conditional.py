@@ -9,11 +9,11 @@ from __future__ import absolute_import, division, print_function
 # cffi supports #if in cdef
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_AES_WRAP": [
+    "Cryptography_HAS_AES_WRAP": lambda: [
         "AES_wrap_key",
         "AES_unwrap_key",
     ],
-    "Cryptography_HAS_CMAC": [
+    "Cryptography_HAS_CMAC": lambda: [
         "CMAC_CTX_new",
         "CMAC_Init",
         "CMAC_Update",
@@ -21,7 +21,7 @@ CONDITIONAL_NAMES = {
         "CMAC_CTX_copy",
         "CMAC_CTX_free",
     ],
-    "Cryptography_HAS_CMS": [
+    "Cryptography_HAS_CMS": lambda: [
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",
         "PEM_write_bio_CMS_stream",
@@ -52,12 +52,12 @@ CONDITIONAL_NAMES = {
         "CMS_USE_KEYID",
         "CMS_DEBUG_DECRYPT",
     ],
-    "Cryptography_HAS_CMS_BIO_FUNCTIONS": [
+    "Cryptography_HAS_CMS_BIO_FUNCTIONS": lambda: [
         "BIO_new_CMS",
         "i2d_CMS_bio_stream",
         "PEM_write_bio_CMS_stream",
     ],
-    "Cryptography_HAS_EC": [
+    "Cryptography_HAS_EC": lambda: [
         "OPENSSL_EC_NAMED_CURVE",
         "EC_GROUP_new",
         "EC_GROUP_free",
@@ -146,14 +146,14 @@ CONDITIONAL_NAMES = {
         "POINT_CONVERSION_HYBRID",
     ],
 
-    "Cryptography_HAS_EC_1_0_1": [
+    "Cryptography_HAS_EC_1_0_1": lambda: [
         "EC_KEY_get_flags",
         "EC_KEY_set_flags",
         "EC_KEY_clear_flags",
         "EC_KEY_set_public_key_affine_coordinates",
     ],
 
-    "Cryptography_HAS_EC2M": [
+    "Cryptography_HAS_EC2M": lambda: [
         "EC_GF2m_simple_method",
         "EC_POINT_set_affine_coordinates_GF2m",
         "EC_POINT_get_affine_coordinates_GF2m",
@@ -163,13 +163,13 @@ CONDITIONAL_NAMES = {
         "EC_GROUP_new_curve_GF2m",
     ],
 
-    "Cryptography_HAS_EC_1_0_2": [
+    "Cryptography_HAS_EC_1_0_2": lambda: [
         "EC_curve_nid2nist",
     ],
-    "Cryptography_HAS_ECDH": [
+    "Cryptography_HAS_ECDH": lambda: [
         "ECDH_compute_key",
     ],
-    "Cryptography_HAS_ECDSA": [
+    "Cryptography_HAS_ECDSA": lambda: [
         "ECDSA_SIG_new",
         "ECDSA_SIG_free",
         "i2d_ECDSA_SIG",
@@ -183,13 +183,13 @@ CONDITIONAL_NAMES = {
         "ECDSA_verify",
         "ECDSA_size",
     ],
-    "Cryptography_HAS_ENGINE_CRYPTODEV": [
+    "Cryptography_HAS_ENGINE_CRYPTODEV": lambda: [
         "ENGINE_load_cryptodev"
     ],
-    "Cryptography_HAS_REMOVE_THREAD_STATE": [
+    "Cryptography_HAS_REMOVE_THREAD_STATE": lambda: [
         "ERR_remove_thread_state"
     ],
-    "Cryptography_HAS_098H_ERROR_CODES": [
+    "Cryptography_HAS_098H_ERROR_CODES": lambda: [
         "ASN1_F_B64_READ_ASN1",
         "ASN1_F_B64_WRITE_ASN1",
         "ASN1_F_SMIME_READ_ASN1",
@@ -198,26 +198,26 @@ CONDITIONAL_NAMES = {
         "ASN1_R_NO_MULTIPART_BODY_FAILURE",
         "ASN1_R_NO_MULTIPART_BOUNDARY",
     ],
-    "Cryptography_HAS_098C_CAMELLIA_CODES": [
+    "Cryptography_HAS_098C_CAMELLIA_CODES": lambda: [
         "EVP_F_CAMELLIA_INIT_KEY",
         "EVP_R_CAMELLIA_KEY_SETUP_FAILED"
     ],
-    "Cryptography_HAS_EC_CODES": [
+    "Cryptography_HAS_EC_CODES": lambda: [
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
     ],
-    "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
+    "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": lambda: [
         "RSA_R_PKCS_DECODING_ERROR"
     ],
-    "Cryptography_HAS_GCM": [
+    "Cryptography_HAS_GCM": lambda: [
         "EVP_CTRL_GCM_GET_TAG",
         "EVP_CTRL_GCM_SET_TAG",
         "EVP_CTRL_GCM_SET_IVLEN",
     ],
-    "Cryptography_HAS_PBKDF2_HMAC": [
+    "Cryptography_HAS_PBKDF2_HMAC": lambda: [
         "PKCS5_PBKDF2_HMAC"
     ],
-    "Cryptography_HAS_PKEY_CTX": [
+    "Cryptography_HAS_PKEY_CTX": lambda: [
         "EVP_PKEY_CTX_new",
         "EVP_PKEY_CTX_new_id",
         "EVP_PKEY_CTX_dup",
@@ -235,122 +235,122 @@ CONDITIONAL_NAMES = {
         "EVP_PKEY_CTX_set_rsa_padding",
         "EVP_PKEY_CTX_set_rsa_pss_saltlen",
     ],
-    "Cryptography_HAS_ECDSA_SHA2_NIDS": [
+    "Cryptography_HAS_ECDSA_SHA2_NIDS": lambda: [
         "NID_ecdsa_with_SHA224",
         "NID_ecdsa_with_SHA256",
         "NID_ecdsa_with_SHA384",
         "NID_ecdsa_with_SHA512",
     ],
-    "Cryptography_HAS_EGD": [
+    "Cryptography_HAS_EGD": lambda: [
         "RAND_egd",
         "RAND_egd_bytes",
         "RAND_query_egd_bytes",
     ],
-    "Cryptography_HAS_PSS_PADDING": [
+    "Cryptography_HAS_PSS_PADDING": lambda: [
         "RSA_PKCS1_PSS_PADDING",
     ],
-    "Cryptography_HAS_MGF1_MD": [
+    "Cryptography_HAS_MGF1_MD": lambda: [
         "EVP_PKEY_CTX_set_rsa_mgf1_md",
     ],
-    "Cryptography_HAS_TLSv1_1": [
+    "Cryptography_HAS_TLSv1_1": lambda: [
         "SSL_OP_NO_TLSv1_1",
         "TLSv1_1_method",
         "TLSv1_1_server_method",
         "TLSv1_1_client_method",
     ],
 
-    "Cryptography_HAS_TLSv1_2": [
+    "Cryptography_HAS_TLSv1_2": lambda: [
         "SSL_OP_NO_TLSv1_2",
         "TLSv1_2_method",
         "TLSv1_2_server_method",
         "TLSv1_2_client_method",
     ],
 
-    "Cryptography_HAS_SSL3_METHOD": [
+    "Cryptography_HAS_SSL3_METHOD": lambda: [
         "SSLv3_method",
         "SSLv3_client_method",
         "SSLv3_server_method",
     ],
 
-    "Cryptography_HAS_TLSEXT_HOSTNAME": [
+    "Cryptography_HAS_TLSEXT_HOSTNAME": lambda: [
         "SSL_set_tlsext_host_name",
         "SSL_get_servername",
         "SSL_CTX_set_tlsext_servername_callback",
     ],
 
-    "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": [
+    "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": lambda: [
         "SSL_CTX_set_tlsext_status_cb",
         "SSL_CTX_set_tlsext_status_arg"
     ],
 
-    "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
+    "Cryptography_HAS_STATUS_REQ_OCSP_RESP": lambda: [
         "SSL_set_tlsext_status_ocsp_resp",
         "SSL_get_tlsext_status_ocsp_resp",
     ],
 
-    "Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE": [
+    "Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE": lambda: [
         "SSL_set_tlsext_status_type",
     ],
 
-    "Cryptography_HAS_RELEASE_BUFFERS": [
+    "Cryptography_HAS_RELEASE_BUFFERS": lambda: [
         "SSL_MODE_RELEASE_BUFFERS",
     ],
 
-    "Cryptography_HAS_OP_NO_COMPRESSION": [
+    "Cryptography_HAS_OP_NO_COMPRESSION": lambda: [
         "SSL_OP_NO_COMPRESSION",
     ],
 
-    "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": [
+    "Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING": lambda: [
         "SSL_OP_MSIE_SSLV2_RSA_PADDING",
     ],
 
-    "Cryptography_HAS_SSL_OP_NO_TICKET": [
+    "Cryptography_HAS_SSL_OP_NO_TICKET": lambda: [
         "SSL_OP_NO_TICKET",
     ],
 
-    "Cryptography_HAS_SSL_SET_SSL_CTX": [
+    "Cryptography_HAS_SSL_SET_SSL_CTX": lambda: [
         "SSL_set_SSL_CTX",
         "TLSEXT_NAMETYPE_host_name",
     ],
 
-    "Cryptography_HAS_NETBSD_D1_METH": [
+    "Cryptography_HAS_NETBSD_D1_METH": lambda: [
         "DTLSv1_method",
     ],
 
-    "Cryptography_HAS_NEXTPROTONEG": [
+    "Cryptography_HAS_NEXTPROTONEG": lambda: [
         "SSL_CTX_set_next_protos_advertised_cb",
         "SSL_CTX_set_next_proto_select_cb",
         "SSL_select_next_proto",
         "SSL_get0_next_proto_negotiated",
     ],
 
-    "Cryptography_HAS_SECURE_RENEGOTIATION": [
+    "Cryptography_HAS_SECURE_RENEGOTIATION": lambda: [
         "SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION",
         "SSL_OP_LEGACY_SERVER_CONNECT",
         "SSL_get_secure_renegotiation_support",
     ],
 
-    "Cryptography_HAS_ALPN": [
+    "Cryptography_HAS_ALPN": lambda: [
         "SSL_CTX_set_alpn_protos",
         "SSL_set_alpn_protos",
         "SSL_CTX_set_alpn_select_cb",
         "SSL_get0_alpn_selected",
     ],
 
-    "Cryptography_HAS_COMPRESSION": [
+    "Cryptography_HAS_COMPRESSION": lambda: [
         "SSL_get_current_compression",
         "SSL_get_current_expansion",
         "SSL_COMP_get_name",
     ],
 
-    "Cryptography_HAS_GET_SERVER_TMP_KEY": [
+    "Cryptography_HAS_GET_SERVER_TMP_KEY": lambda: [
         "SSL_get_server_tmp_key",
     ],
 
-    "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
+    "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": lambda: [
         "SSL_CTX_set_client_cert_engine",
     ],
-    "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
+    "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": lambda: [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
         'X509_V_ERR_SUITE_B_INVALID_CURVE',
@@ -361,7 +361,7 @@ CONDITIONAL_NAMES = {
         'X509_V_ERR_EMAIL_MISMATCH',
         'X509_V_ERR_IP_ADDRESS_MISMATCH'
     ],
-    "Cryptography_HAS_102_VERIFICATION_PARAMS": [
+    "Cryptography_HAS_102_VERIFICATION_PARAMS": lambda: [
         "X509_V_FLAG_SUITEB_128_LOS_ONLY",
         "X509_V_FLAG_SUITEB_192_LOS",
         "X509_V_FLAG_SUITEB_128_LOS",
@@ -371,13 +371,13 @@ CONDITIONAL_NAMES = {
         "X509_VERIFY_PARAM_set1_ip_asc",
         "X509_VERIFY_PARAM_set_hostflags",
     ],
-    "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": [
+    "Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST": lambda: [
         "X509_V_FLAG_TRUSTED_FIRST",
     ],
-    "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": [
+    "Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN": lambda: [
         "X509_V_FLAG_PARTIAL_CHAIN",
     ],
-    "Cryptography_HAS_100_VERIFICATION_ERROR_CODES": [
+    "Cryptography_HAS_100_VERIFICATION_ERROR_CODES": lambda: [
         'X509_V_ERR_DIFFERENT_CRL_SCOPE',
         'X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE',
         'X509_V_ERR_UNNESTED_RESOURCE',
@@ -389,15 +389,15 @@ CONDITIONAL_NAMES = {
         'X509_V_ERR_UNSUPPORTED_NAME_SYNTAX',
         'X509_V_ERR_CRL_PATH_VALIDATION_ERROR',
     ],
-    "Cryptography_HAS_100_VERIFICATION_PARAMS": [
+    "Cryptography_HAS_100_VERIFICATION_PARAMS": lambda: [
         "Cryptography_HAS_100_VERIFICATION_PARAMS",
         "X509_V_FLAG_EXTENDED_CRL_SUPPORT",
         "X509_V_FLAG_USE_DELTAS",
     ],
-    "Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE": [
+    "Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE": lambda: [
         "X509_V_FLAG_CHECK_SS_SIGNATURE",
     ],
-    "Cryptography_HAS_SET_CERT_CB": [
+    "Cryptography_HAS_SET_CERT_CB": lambda: [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ],
