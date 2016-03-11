@@ -36,6 +36,8 @@ typedef struct {
     ...;
 } X509_CINF;
 
+/* TODO: opaque X509_EXTENSION. Cryptography no longer depends on it being
+   non-opaque but pyOpenSSL needs a release where it doesn't depend on this */
 typedef struct {
     ASN1_OBJECT *object;
     ASN1_BOOLEAN critical;

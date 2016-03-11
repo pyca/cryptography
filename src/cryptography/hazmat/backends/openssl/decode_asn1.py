@@ -198,7 +198,9 @@ class _X509ExtensionParser(object):
             backend.openssl_assert(ext != backend._ffi.NULL)
             crit = backend._lib.X509_EXTENSION_get_critical(ext)
             critical = crit == 1
-            oid = x509.ObjectIdentifier(_obj2txt(backend, ext.object))
+            oid = x509.ObjectIdentifier(
+                _obj2txt(backend, backend._lib.X509_EXTENSION_get_object(ext))
+            )
             if oid in seen_oids:
                 raise x509.DuplicateExtension(
                     "Duplicate {0} extension found".format(oid), oid
@@ -652,9 +654,10 @@ def _decode_cert_issuer(backend, ext):
     """
 
     data_ptr_ptr = backend._ffi.new("const unsigned char **")
-    data_ptr_ptr[0] = ext.value.data
+    value = backend._lib.X509_EXTENSION_get_data(ext)
+    data_ptr_ptr[0] = value.data
     gns = backend._lib.d2i_GENERAL_NAMES(
-        backend._ffi.NULL, data_ptr_ptr, ext.value.length
+        backend._ffi.NULL, data_ptr_ptr, value.length
     )
 
     # Check the result of d2i_GENERAL_NAMES() is valid. Usually this is covered
