@@ -12,9 +12,7 @@ TYPES = """
 typedef ... EVP_CIPHER;
 typedef ... EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef struct env_md_ctx_st {
-    ...;
-} EVP_MD_CTX;
+typedef ... EVP_MD_CTX;
 
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
@@ -56,13 +54,11 @@ EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
 
-EVP_MD_CTX *EVP_MD_CTX_create(void);
 int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
 int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
 int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
 int EVP_MD_CTX_cleanup(EVP_MD_CTX *);
-void EVP_MD_CTX_destroy(EVP_MD_CTX *);
 const EVP_MD *EVP_get_digestbyname(const char *);
 
 EVP_PKEY *EVP_PKEY_new(void);
@@ -116,6 +112,12 @@ int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
+
+/* in 1.1.0 _create and _destroy were renamed to _new and _free. The following
+   two functions wrap both the old and new functions so we can call them
+   without worrying about what OpenSSL we're running against. */
+EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
+void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 """
 
 MACROS = """
@@ -232,5 +234,19 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
     #else
         return key->type;
     #endif
+}
+EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+    return EVP_MD_CTX_create();
+#else
+    return EVP_MD_CTX_new();
+#endif
+}
+void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+    EVP_MD_CTX_destroy(ctx);
+#else
+    EVP_MD_CTX_free(ctx);
+#endif
 }
 """
