@@ -426,9 +426,33 @@ void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 
 /* Added in 1.0.2 */
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
+/* Added in 1.0.1 */
+int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
+                                unsigned int);
 """
 
 CUSTOMIZATIONS = """
+/* Added in 1.0.1 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x1000100fL
+/* from ssl.h */
+#define SSL_F_SSL_SESSION_SET1_ID_CONTEXT 312
+#define SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG 273
+/* from ssl/ssl_sess.c */
+int SSL_SESSION_set1_id_context(SSL_SESSION *s, const unsigned char *sid_ctx,
+                                unsigned int sid_ctx_len)
+{
+    if (sid_ctx_len > SSL_MAX_SID_CTX_LENGTH) {
+        SSLerr(SSL_F_SSL_SESSION_SET1_ID_CONTEXT,
+               SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG);
+        return 0;
+    }
+    s->sid_ctx_length = sid_ctx_len;
+    memcpy(s->sid_ctx, sid_ctx, sid_ctx_len);
+
+    return 1;
+}
+#endif
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
 #if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
