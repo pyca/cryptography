@@ -369,7 +369,7 @@ void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
 #endif
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
-#if OPENSSL_VERSION_NUMBER < 0x1000200fL || defined(LIBRESSL_VERSION_NUMBER)
+#if OPENSSL_VERSION_NUMBER < 0x10002003L || defined(LIBRESSL_VERSION_NUMBER)
 /* from x509/x_x509.c */
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {
