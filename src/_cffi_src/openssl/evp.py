@@ -12,7 +12,7 @@ TYPES = """
 typedef ... EVP_CIPHER;
 typedef ... EVP_CIPHER_CTX;
 typedef ... EVP_MD;
-typedef { ...; } EVP_MD_CTX;
+typedef struct { ...; } EVP_MD_CTX;
 
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
