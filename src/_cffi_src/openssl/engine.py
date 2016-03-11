@@ -16,12 +16,10 @@ typedef ... RSA_METHOD;
 typedef ... DSA_METHOD;
 typedef ... DH_METHOD;
 typedef struct {
-    void (*seed)(const void *, int);
     int (*bytes)(unsigned char *, int);
-    void (*cleanup)();
-    void (*add)(const void *, int, double);
     int (*pseudorand)(unsigned char *, int);
     int (*status)();
+    ...;
 } RAND_METHOD;
 typedef int (*ENGINE_GEN_INT_FUNC_PTR)(ENGINE *);
 typedef ... *ENGINE_CTRL_FUNC_PTR;
