@@ -153,14 +153,20 @@ class _RevokedCertificate(object):
 
     @property
     def serial_number(self):
-        asn1_int = self._x509_revoked.serialNumber
+        asn1_int = self._backend._lib.X509_REVOKED_get0_serialNumber(
+            self._x509_revoked
+        )
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
         return _asn1_integer_to_int(self._backend, asn1_int)
 
     @property
     def revocation_date(self):
         return _parse_asn1_time(
-            self._backend, self._x509_revoked.revocationDate)
+            self._backend,
+            self._backend._lib.X509_REVOKED_get0_revocationDate(
+                self._x509_revoked
+            )
+        )
 
     @property
     def extensions(self):
@@ -198,7 +204,12 @@ class _CertificateRevocationList(object):
 
     @property
     def signature_hash_algorithm(self):
-        oid = _obj2txt(self._backend, self._x509_crl.sig_alg.algorithm)
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_CRL_get0_signature(
+            self._backend._ffi.NULL, alg, self._x509_crl
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
@@ -226,13 +237,17 @@ class _CertificateRevocationList(object):
 
     @property
     def signature(self):
-        return _asn1_string_to_bytes(self._backend, self._x509_crl.signature)
+        sig = self._backend._ffi.new("ASN1_BIT_STRING **")
+        self._backend._lib.X509_CRL_get0_signature(
+            sig, self._backend._ffi.NULL, self._x509_crl
+        )
+        self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
+        return _asn1_string_to_bytes(self._backend, sig[0])
 
     @property
     def tbs_certlist_bytes(self):
         pp = self._backend._ffi.new("unsigned char **")
-        # the X509_CRL_INFO struct holds the tbsCertList data
-        res = self._backend._lib.i2d_X509_CRL_INFO(self._x509_crl.crl, pp)
+        res = self._backend._lib.i2d_re_X509_CRL_tbs(self._x509_crl, pp)
         self._backend.openssl_assert(res > 0)
         pp = self._backend._ffi.gc(
             pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
@@ -321,7 +336,12 @@ class _CertificateSigningRequest(object):
 
     @property
     def signature_hash_algorithm(self):
-        oid = _obj2txt(self._backend, self._x509_req.sig_alg.algorithm)
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_REQ_get0_signature(
+            self._backend._ffi.NULL, alg, self._x509_req
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
@@ -351,8 +371,7 @@ class _CertificateSigningRequest(object):
     @property
     def tbs_certrequest_bytes(self):
         pp = self._backend._ffi.new("unsigned char **")
-        # the X509_REQ_INFO struct holds the CertificateRequestInfo data
-        res = self._backend._lib.i2d_X509_REQ_INFO(self._x509_req.req_info, pp)
+        res = self._backend._lib.i2d_re_X509_REQ_tbs(self._x509_req, pp)
         self._backend.openssl_assert(res > 0)
         pp = self._backend._ffi.gc(
             pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
@@ -361,7 +380,12 @@ class _CertificateSigningRequest(object):
 
     @property
     def signature(self):
-        return _asn1_string_to_bytes(self._backend, self._x509_req.signature)
+        sig = self._backend._ffi.new("ASN1_BIT_STRING **")
+        self._backend._lib.X509_REQ_get0_signature(
+            sig, self._backend._ffi.NULL, self._x509_req
+        )
+        self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
+        return _asn1_string_to_bytes(self._backend, sig[0])
 
     @property
     def is_signature_valid(self):
