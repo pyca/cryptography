@@ -152,12 +152,6 @@ X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_get_ext_by_NID(X509 *, int, int);
 
-/* CRYPTO_EX_DATA */
-int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
-                          CRYPTO_EX_free *);
-int X509_set_ex_data(X509 *, int, void *);
-void *X509_get_ex_data(X509 *, int);
-
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
@@ -270,11 +264,21 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+/* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
+int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                          CRYPTO_EX_free *);
+int X509_set_ex_data(X509 *, int, void *);
+void *X509_get_ex_data(X509 *, int);
+
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
 int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
 int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
+
+/* new in 1.0.2 */
+int i2d_re_X509_tbs(X509 *, unsigned char **);
+void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
 
 long X509_get_version(X509 *);
 
@@ -350,6 +354,33 @@ int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
 """
 
 CUSTOMIZATIONS = """
+/* Added in 1.0.2 beta but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x_x509.c version 1.0.2 */
+void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                         const X509 *x)
+{
+    if (psig)
+        *psig = x->signature;
+    if (palg)
+        *palg = x->sig_alg;
+}
+#endif
+/* Added in 1.0.2 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x1000200fL || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x_x509.c */
+int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
+{
+    /* In 1.0.1 and below cert_info is a pointer in the struct, so
+       we don't want to pass by reference. */
+    /* ideally we also call x->cert_info->enc.modified = 1 as 1.0.2+ does, but
+       older OpenSSLs don't have the enc ASN1_ENCODING on the struct */
+    return i2d_X509_CINF(x->cert_info, pp);
+}
+#endif
+
 /* OpenSSL 0.9.8e does not have this definition. */
 #if OPENSSL_VERSION_NUMBER <= 0x0090805fL
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;

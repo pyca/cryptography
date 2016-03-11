@@ -97,7 +97,12 @@ class _Certificate(object):
 
     @property
     def signature_hash_algorithm(self):
-        oid = _obj2txt(self._backend, self._x509.sig_alg.algorithm)
+        alg = self._backend._ffi.new("X509_ALGOR **")
+        self._backend._lib.X509_get0_signature(
+            self._backend._ffi.NULL, alg, self._x509
+        )
+        self._backend.openssl_assert(alg[0] != self._backend._ffi.NULL)
+        oid = _obj2txt(self._backend, alg[0].algorithm)
         try:
             return x509._SIG_OIDS_TO_HASH[oid]
         except KeyError:
@@ -111,13 +116,17 @@ class _Certificate(object):
 
     @property
     def signature(self):
-        return _asn1_string_to_bytes(self._backend, self._x509.signature)
+        sig = self._backend._ffi.new("ASN1_BIT_STRING **")
+        self._backend._lib.X509_get0_signature(
+            sig, self._backend._ffi.NULL, self._x509
+        )
+        self._backend.openssl_assert(sig[0] != self._backend._ffi.NULL)
+        return _asn1_string_to_bytes(self._backend, sig[0])
 
     @property
     def tbs_certificate_bytes(self):
         pp = self._backend._ffi.new("unsigned char **")
-        # the X509_CINF struct holds the tbsCertificate data
-        res = self._backend._lib.i2d_X509_CINF(self._x509.cert_info, pp)
+        res = self._backend._lib.i2d_re_X509_tbs(self._x509, pp)
         self._backend.openssl_assert(res > 0)
         pp = self._backend._ffi.gc(
             pp, lambda pointer: self._backend._lib.OPENSSL_free(pointer[0])
