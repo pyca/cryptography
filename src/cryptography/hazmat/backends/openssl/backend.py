@@ -1003,11 +1003,14 @@ class Backend(object):
             x509_revoked, serial_number
         )
         self.openssl_assert(res == 1)
-        res = self._lib.ASN1_TIME_set(
-            x509_revoked.revocationDate,
+        rev_date = self._lib.ASN1_TIME_set(
+            self._ffi.NULL,
             calendar.timegm(builder._revocation_date.timetuple())
         )
-        self.openssl_assert(res != self._ffi.NULL)
+        self.openssl_assert(rev_date != self._ffi.NULL)
+        rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
+        res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
+        self.openssl_assert(res == 1)
         # add CRL entry extensions
         self._create_x509_extensions(
             extensions=builder._extensions,
