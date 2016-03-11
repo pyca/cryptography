@@ -429,6 +429,11 @@ const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
 /* Added in 1.0.1 */
 int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
                                 unsigned int);
+/* Added in 1.1.0 for the great opaquing of structs */
+size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
+                                  size_t);
+size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
+size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
 """
 
 CUSTOMIZATIONS = """
@@ -459,6 +464,47 @@ int SSL_SESSION_set1_id_context(SSL_SESSION *s, const unsigned char *sid_ctx,
 /* from ssl/ssl_lib.c */
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
+}
+#endif
+/* Added in 1.1.0 in the great opaquing, but we need to define it for older
+   OpenSSLs. Such is our burden. */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+/* from ssl/ssl_lib.c */
+size_t SSL_get_client_random(const SSL *ssl, unsigned char *out, size_t outlen)
+{
+    if (outlen == 0)
+        return sizeof(ssl->s3->client_random);
+    if (outlen > sizeof(ssl->s3->client_random))
+        outlen = sizeof(ssl->s3->client_random);
+    memcpy(out, ssl->s3->client_random, outlen);
+    return outlen;
+}
+/* Added in 1.1.0 as well */
+/* from ssl/ssl_lib.c */
+size_t SSL_get_server_random(const SSL *ssl, unsigned char *out, size_t outlen)
+{
+    if (outlen == 0)
+        return sizeof(ssl->s3->server_random);
+    if (outlen > sizeof(ssl->s3->server_random))
+        outlen = sizeof(ssl->s3->server_random);
+    memcpy(out, ssl->s3->server_random, outlen);
+    return outlen;
+}
+/* Added in 1.1.0 as well */
+/* from ssl/ssl_lib.c */
+size_t SSL_SESSION_get_master_key(const SSL_SESSION *session,
+                               unsigned char *out, size_t outlen)
+{
+    if (session->master_key_length < 0) {
+        /* Should never happen */
+        return 0;
+    }
+    if (outlen == 0)
+        return session->master_key_length;
+    if (outlen > (size_t)session->master_key_length)
+        outlen = session->master_key_length;
+    memcpy(out, session->master_key, outlen);
+    return outlen;
 }
 #endif
 
