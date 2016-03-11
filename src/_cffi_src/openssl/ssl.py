@@ -374,8 +374,6 @@ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
    RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
 SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *);
-
 /* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
  * versions some special handling of these is necessary.
  */
@@ -424,9 +422,21 @@ long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
  */
 void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
 void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
+
+/* Added in 1.0.2 */
+const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
+/* Added in 1.0.2 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+/* from ssl/ssl_lib.c */
+const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
+    return ctx->method;
+}
+#endif
+
 /** Secure renegotiation is supported in OpenSSL >= 0.9.8m
  *  But some Linux distributions have back ported some features.
  */
@@ -566,11 +576,6 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #else
 static const long Cryptography_HAS_NETBSD_D1_METH = 1;
 #endif
-
-/* Workaround for #794 caused by cffi const** bug. */
-const SSL_METHOD *Cryptography_SSL_CTX_get_method(const SSL_CTX *ctx) {
-    return ctx->method;
-}
 
 /* Because OPENSSL defines macros that claim lack of support for things, rather
  * than macros that claim support for things, we need to do a version check in
