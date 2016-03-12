@@ -113,6 +113,9 @@ X.509
 * ``department-of-state-root.pem`` - The intermediary CA for the Department of
   State, issued by the United States Federal Government's Common Policy CA.
   Notably has a ``critical`` policy constraints extensions.
+* ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
+  cipher and containing numerous unusual encodings such as NUMERICSTRING in
+  the subject DN.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -450,3 +453,4 @@ header format (substituting the correct information):
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
+.. _`Russian CA`: http://e-trust.gosuslugi.ru/MainCA
