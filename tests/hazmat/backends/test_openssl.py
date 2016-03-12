@@ -676,4 +676,4 @@ class TestGOSTCertificate(object):
         # We assert on the message in this case because if the certificate
         # fails to load it will also raise a ValueError and this test could
         # erroneously pass.
-        assert exc.value.message == "Unsupported ASN1 string type. Type: 18"
+        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
