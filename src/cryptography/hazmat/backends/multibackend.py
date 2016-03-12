@@ -31,7 +31,7 @@ class MultiBackend(object):
         if len(backends) == 0:
             raise ValueError(
                 "Multibackend cannot be initialized with no backends. If you "
-                "are seeing this error when trying to use default_backend "
+                "are seeing this error when trying to use default_backend() "
                 "please try uninstalling and reinstalling cryptography."
             )
 
