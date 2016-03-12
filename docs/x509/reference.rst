@@ -1541,6 +1541,13 @@ X.509 Extensions
 
         .. versionadded:: 1.0
 
+        .. note::
+
+            This method should be used if the issuer certificate does not
+            contain a :class:`~cryptography.x509.SubjectKeyIdentifier`.
+            Otherwise, use
+            :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`.
+
         Creates a new AuthorityKeyIdentifier instance using the public key
         provided to generate the appropriate digest. This should be the
         **issuer's public key**. The resulting object will contain
@@ -1571,6 +1578,11 @@ X.509 Extensions
     .. classmethod:: from_issuer_subject_key_identifier(ski)
 
         .. versionadded:: 1.3
+
+        .. note::
+            This method should be used if the issuer certificate contains a
+            :class:`~cryptography.x509.SubjectKeyIdentifier`.  Otherwise, use
+            :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_public_key`.
 
         Creates a new AuthorityKeyIdentifier instance using the
         SubjectKeyIdentifier from the issuer certificate. The resulting object
