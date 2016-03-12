@@ -20,10 +20,10 @@ class _HMACContext(object):
         self._backend = backend
 
         if ctx is None:
-            ctx = self._backend._ffi.new("HMAC_CTX *")
-            self._backend._lib.HMAC_CTX_init(ctx)
+            ctx = self._backend._lib.Cryptography_HMAC_CTX_new()
+            self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
             ctx = self._backend._ffi.gc(
-                ctx, self._backend._lib.HMAC_CTX_cleanup
+                ctx, self._backend._lib.Cryptography_HMAC_CTX_free
             )
             evp_md = self._backend._lib.EVP_get_digestbyname(
                 algorithm.name.encode('ascii'))
@@ -44,10 +44,10 @@ class _HMACContext(object):
     algorithm = utils.read_only_property("_algorithm")
 
     def copy(self):
-        copied_ctx = self._backend._ffi.new("HMAC_CTX *")
-        self._backend._lib.HMAC_CTX_init(copied_ctx)
+        copied_ctx = self._backend._lib.Cryptography_HMAC_CTX_new()
+        self._backend.openssl_assert(copied_ctx != self._backend._ffi.NULL)
         copied_ctx = self._backend._ffi.gc(
-            copied_ctx, self._backend._lib.HMAC_CTX_cleanup
+            copied_ctx, self._backend._lib.Cryptography_HMAC_CTX_free
         )
         res = self._backend._lib.Cryptography_HMAC_CTX_copy(
             copied_ctx, self._ctx
@@ -72,7 +72,6 @@ class _HMACContext(object):
         )
         self._backend.openssl_assert(res != 0)
         self._backend.openssl_assert(outlen[0] == self.algorithm.digest_size)
-        self._backend._lib.HMAC_CTX_cleanup(self._ctx)
         return self._backend._ffi.buffer(buf)[:outlen[0]]
 
     def verify(self, signature):
