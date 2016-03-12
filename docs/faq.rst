@@ -23,5 +23,20 @@ OpenSSL. You're seeing this error because your copy of pip is too old to find
 our wheel files. Upgrade your copy of pip with ``pip install -U pip`` and then
 try install ``cryptography`` again.
 
+Starting ``cryptography`` using ``mod_wsgi`` produces an ``InternalError`` during a call in ``_register_osrandom_engine``
+-------------------------------------------------------------------------------------------------------------------------
+
+This happens because ``mod_wsgi`` uses sub-interpreters, which can cause a
+problem during initialization of the OpenSSL backend. To resolve this set the
+`WSGIApplicationGroup`_ to ``%{GLOBAL}`` in the ``mod_wsgi`` configuration.
+
+``cryptography`` raised an ``InternalError`` and I'm not sure what to do?
+-------------------------------------------------------------------------
+
+Frequently ``InternalError`` is raised when there are errors on the OpenSSL
+error stack that were placed there by other libraries that are also using
+OpenSSL. Try removing the other libraries and see if the problem persists.
+
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.org
+.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.org/en/develop/configuration-directives/WSGIApplicationGroup.html
