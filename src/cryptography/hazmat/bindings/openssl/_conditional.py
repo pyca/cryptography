@@ -404,4 +404,14 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_AES_CTR128_ENCRYPT": [
         "AES_ctr128_encrypt",
     ],
+    "Cryptography_HAS_SSL_ST": [
+        "SSL_ST_BEFORE",
+        "SSL_ST_OK",
+        "SSL_ST_INIT",
+        "SSL_ST_RENEGOTIATE",
+    ],
+    "Cryptography_HAS_TLS_ST": [
+        "TLS_ST_BEFORE",
+        "TLS_ST_OK",
+    ],
 }

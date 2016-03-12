@@ -11,9 +11,8 @@ typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 """
 
 TYPES = """
-/*
- * Internally invented symbols to tell which versions of SSL/TLS are supported.
-*/
+static const long Cryptography_HAS_SSL_ST;
+static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_SSL2;
 static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
@@ -126,6 +125,8 @@ static const long SSL_MODE_ENABLE_PARTIAL_WRITE;
 static const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const long SSL_MODE_AUTO_RETRY;
 static const long SSL3_RANDOM_SIZE;
+static const long TLS_ST_BEFORE;
+static const long TLS_ST_OK;
 
 typedef ... SSL_METHOD;
 typedef ... SSL_CTX;
@@ -657,4 +658,22 @@ static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
 #endif
 
+/* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
+   removed */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+static const long Cryptography_HAS_SSL_ST = 1;
+#else
+static const long Cryptography_HAS_SSL_ST = 0;
+static const long SSL_ST_BEFORE = 0;
+static const long SSL_ST_OK = 0;
+static const long SSL_ST_INIT = 0;
+static const long SSL_ST_RENEGOTIATE = 0;
+#endif
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+static const long Cryptography_HAS_TLS_ST = 1;
+#else
+static const long Cryptography_HAS_TLS_ST = 0;
+static const long TLS_ST_BEFORE = 0;
+static const long TLS_ST_OK = 0;
+#endif
 """
