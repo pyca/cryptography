@@ -31,6 +31,7 @@ from ..primitives.test_ec import _skip_curve_unsupported
 from ...doubles import (
     DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
 )
+from ...test_x509 import _load_cert
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -656,3 +657,23 @@ class TestRSAPEMSerialization(object):
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password)
             )
+
+
+class TestGOSTCertificate(object):
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
+        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
+    )
+    def test_numeric_string_x509_name_entry(self):
+        cert = _load_cert(
+            os.path.join("x509", "e-trust.ru.der"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        with pytest.raises(ValueError) as exc:
+            cert.subject
+
+        # We assert on the message in this case because if the certificate
+        # fails to load it will also raise a ValueError and this test could
+        # erroneously pass.
+        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"

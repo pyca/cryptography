@@ -709,7 +709,11 @@ def _asn1_string_to_ascii(backend, asn1_string):
 def _asn1_string_to_utf8(backend, asn1_string):
     buf = backend._ffi.new("unsigned char **")
     res = backend._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
-    backend.openssl_assert(res >= 0)
+    if res == -1:
+        raise ValueError(
+            "Unsupported ASN1 string type. Type: {0}".format(asn1_string.type)
+        )
+
     backend.openssl_assert(buf[0] != backend._ffi.NULL)
     buf = backend._ffi.gc(
         buf, lambda buffer: backend._lib.OPENSSL_free(buffer[0])
