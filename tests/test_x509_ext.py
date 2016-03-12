@@ -2634,6 +2634,28 @@ class TestAuthorityKeyIdentifierExtension(object):
         )
         assert ext.value == aki
 
+    def test_from_issuer_subject_key_identifier(self, backend):
+        issuer_cert = _load_cert(
+            os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
+        )
+        ski = issuer_cert.extensions.get_extension_for_class(
+            x509.SubjectKeyIdentifier
+        )
+        aki = x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(
+            ski
+        )
+        assert ext.value == aki
+
 
 class TestNameConstraints(object):
     def test_ipaddress_wrong_type(self):

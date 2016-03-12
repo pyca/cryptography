@@ -191,6 +191,14 @@ class AuthorityKeyIdentifier(object):
             authority_cert_serial_number=None
         )
 
+    @classmethod
+    def from_issuer_subject_key_identifier(cls, ski):
+        return cls(
+            key_identifier=ski.value.digest,
+            authority_cert_issuer=None,
+            authority_cert_serial_number=None
+        )
+
     def __repr__(self):
         return (
             "<AuthorityKeyIdentifier(key_identifier={0.key_identifier!r}, "
