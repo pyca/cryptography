@@ -3157,6 +3157,18 @@ class TestDSACertificateRequest(object):
         verifier.verify()
 
 
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestGOSTCertificate(object):
+    def test_numeric_string_x509_name_entry(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "e-trust.ru.der"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        with pytest.raises(TypeError):
+            cert.subject
+
+
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestECDSACertificate(object):
