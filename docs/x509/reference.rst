@@ -1568,6 +1568,32 @@ X.509 Extensions
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
             <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
+    .. classmethod:: from_issuer_subject_key_identifier(ski)
+
+        .. versionadded:: 1.3
+
+        Creates a new AuthorityKeyIdentifier instance using the
+        SubjectKeyIdentifier from the issuer certificate. The resulting object
+        will contain
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.key_identifier`, but
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.authority_cert_issuer`
+        and
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.authority_cert_serial_number`
+        will be None.
+
+        :param ski: The
+            :class:`~cryptography.x509.SubjectKeyIdentifier` from the issuer
+            certificate.
+
+        .. doctest::
+
+            >>> from cryptography import x509
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> ski = issuer_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
+            >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski)
+            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
+
 .. class:: SubjectKeyIdentifier(digest)
 
     .. versionadded:: 0.9

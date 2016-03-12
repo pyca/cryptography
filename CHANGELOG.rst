@@ -14,6 +14,8 @@ Changelog
   to :class:`~cryptography.x509.CertificateSigningRequest`.
 * Fixed an intermittent ``AssertionError`` when performing an RSA decryption on
   an invalid ciphertext, ``ValueError`` is now correctly raised in all cases.
+* Added
+  :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`.
 
 1.2.3 - 2016-03-01
 ~~~~~~~~~~~~~~~~~~
