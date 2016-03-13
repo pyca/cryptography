@@ -242,7 +242,7 @@ def _encode_ocsp_nocheck(backend, ext):
     The OCSP No Check extension is defined as a null ASN.1 value embedded in
     an ASN.1 string.
     """
-    return _encode_asn1_str_gc(backend, "\x05\x00", 2)
+    return _encode_asn1_str_gc(backend, b"\x05\x00", 2)
 
 
 def _encode_key_usage(backend, key_usage):
