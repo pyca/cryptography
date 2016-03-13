@@ -975,7 +975,9 @@ class Backend(object):
                 )
 
             ext_struct = encode(self, extension.value)
-            nid = self._lib.OBJ_txt2nid(extension.oid.dotted_string)
+            nid = self._lib.OBJ_txt2nid(
+                extension.oid.dotted_string.encode("ascii")
+            )
             x509_extension = self._lib.X509V3_EXT_i2d(
                 nid, 1 if extension.critical else 0, ext_struct
             )
