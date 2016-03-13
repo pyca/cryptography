@@ -373,10 +373,11 @@ void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
 /* from x509/x_x509.c */
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {
-    /* In 1.0.1 and below cert_info is a pointer in the struct, so
-       we don't want to pass by reference. */
-    /* ideally we also call x->cert_info->enc.modified = 1 as 1.0.2+ does, but
-       older OpenSSLs don't have the enc ASN1_ENCODING on the struct */
+    /* in 1.0.2+ this function also sets x->cert_info->enc.modified = 1
+       but older OpenSSLs don't have the enc ASN1_ENCODING member in the
+       X509 struct.  Setting modified to 1 marks the encoding
+       (x->cert_info->enc.enc) as invalid, but since the entire struct isn't
+       present we don't care. */
     return i2d_X509_CINF(x->cert_info, pp);
 }
 #endif
