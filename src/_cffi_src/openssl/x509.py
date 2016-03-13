@@ -353,6 +353,15 @@ ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
 void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
 Cryptography_STACK_OF_ASN1_OBJECT *sk_ASN1_OBJECT_new_null(void);
 int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
+
+/* these functions were added in 1.1.0 */
+ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *);
+ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *);
+void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_CRL *crl);
+int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
+int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
+void X509_REQ_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509_REQ *);
 """
 
 CUSTOMIZATIONS = """
@@ -409,4 +418,43 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
     return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
 }
 
+/* Added in 1.1.0 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x509_req.c */
+void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_REQ *req)
+{
+    if (psig != NULL)
+        *psig = req->signature;
+    if (palg != NULL)
+        *palg = req->sig_alg;
+}
+int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
+{
+    req->req_info->enc.modified = 1;
+    return i2d_X509_REQ_INFO(req->req_info, pp);
+}
+int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
+    crl->crl->enc.modified = 1;
+    return i2d_X509_CRL_INFO(crl->crl, pp);
+}
+
+void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_CRL *crl)
+{
+    if (psig != NULL)
+        *psig = crl->signature;
+    if (palg != NULL)
+        *palg = crl->sig_alg;
+}
+ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *x)
+{
+    return x->revocationDate;
+}
+ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *x)
+{
+    return x->serialNumber;
+}
+#endif
 """
