@@ -975,15 +975,38 @@ class Backend(object):
                     'Extension not supported: {0}'.format(extension.oid)
                 )
 
-            pp, r = encode(self, extension.value)
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                _encode_asn1_str_gc(self, pp[0], r)
+            ext_struct = encode(self, extension.value)
+            nid = self._lib.OBJ_txt2nid(
+                extension.oid.dotted_string.encode("ascii")
             )
+            backend.openssl_assert(nid != self._lib.NID_undef)
+            x509_extension = self._lib.X509V3_EXT_i2d(
+                nid, 1 if extension.critical else 0, ext_struct
+            )
+            if (
+                x509_extension == self._ffi.NULL and
+                extension.oid == x509.OID_CERTIFICATE_ISSUER
+            ):
+                # This path exists to support OpenSSL 0.9.8, which does
+                # not know how to encode a CERTIFICATE_ISSUER for CRLs. Once we
+                # drop 0.9.8 support we can remove this.
+                self._consume_errors()
+                pp = backend._ffi.new("unsigned char **")
+                r = self._lib.i2d_GENERAL_NAMES(ext_struct, pp)
+                backend.openssl_assert(r > 0)
+                pp = backend._ffi.gc(
+                    pp, lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+                )
+                obj = _txt2obj_gc(self, extension.oid.dotted_string)
+                x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
+                    self._ffi.NULL,
+                    obj,
+                    1 if extension.critical else 0,
+                    _encode_asn1_str_gc(self, pp[0], r)
+                )
+
             self.openssl_assert(x509_extension != self._ffi.NULL)
+
             if gc:
                 x509_extension = self._ffi.gc(
                     x509_extension, self._lib.X509_EXTENSION_free
