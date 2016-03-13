@@ -396,8 +396,6 @@ void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
     if (psig != NULL)
         *psig = req->signature;
     if (palg != NULL)
-        /* In 1.0.2 and below sig_alg is a pointer in the struct, so
-           we don't want to pass by reference. */
         *palg = req->sig_alg;
 }
 int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
@@ -414,12 +412,8 @@ void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
                              X509_CRL *crl)
 {
     if (psig != NULL)
-        /* In 1.0.2 and below sigis a pointer in the struct, so
-           we don't want to pass by reference. */
         *psig = crl->signature;
     if (palg != NULL)
-        /* In 1.0.2 and below sig_alg is a pointer in the struct, so
-           we don't want to pass by reference. */
         *palg = crl->sig_alg;
 }
 ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *x)
@@ -428,8 +422,6 @@ ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *x)
 }
 ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *x)
 {
-    /* In 1.0.2 and below serialNumber is a pointer in the struct, so
-       we don't want to pass by reference. */
     return x->serialNumber;
 }
 #endif
