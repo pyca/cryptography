@@ -31,8 +31,7 @@ from cryptography.hazmat.backends.openssl.ec import (
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
-    _encode_asn1_int_gc, _encode_asn1_str_gc, _encode_name_gc,
-    _txt2obj_gc,
+    _encode_asn1_int_gc, _encode_name_gc,
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
@@ -975,13 +974,10 @@ class Backend(object):
                     'Extension not supported: {0}'.format(extension.oid)
                 )
 
-            pp, r = encode(self, extension.value)
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                _encode_asn1_str_gc(self, pp[0], r)
+            ext_struct = encode(self, extension.value)
+            nid = self._lib.OBJ_txt2nid(extension.oid.dotted_string)
+            x509_extension = self._lib.X509V3_EXT_i2d(
+                nid, 1 if extension.critical else 0, ext_struct
             )
             self.openssl_assert(x509_extension != self._ffi.NULL)
             if gc:
