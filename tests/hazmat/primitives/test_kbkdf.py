@@ -11,7 +11,7 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.counterkdf import CounterKDF
+from cryptography.hazmat.primitives.kdf.kbkdf import KBKDF
 
 from ...utils import raises_unsupported_algorithm
 
@@ -24,65 +24,65 @@ class UnsupportedMockHash(object):
 
 class TestCounterKDF(object):
     def test_invalid_key(self):
-        kdf = CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                         backend=default_backend())
+        kdf = KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                    backend=default_backend())
         key = kdf.derive(b"material")
 
-        kdf = CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                         backend=default_backend())
+        kdf = KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                    backend=default_backend())
         with pytest.raises(InvalidKey):
             kdf.verify(b"material2", key)
 
     def test_already_finalized(self):
-        kdf = CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                         backend=default_backend())
+        kdf = KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                    backend=default_backend())
         kdf.derive(b'material')
         with pytest.raises(AlreadyFinalized):
             kdf.derive(b'material2')
 
-        kdf = CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                         backend=default_backend())
+        kdf = KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                    backend=default_backend())
         key = kdf.derive(b'material')
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b'material', key)
 
-        kdf = CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                         backend=default_backend())
+        kdf = KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                    backend=default_backend())
         kdf.verify(b'material', key)
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b"material", key)
 
     def test_key_length(self):
-        kdf = CounterKDF(hashes.SHA1(), 40960, b'label', b'context',
-                         backend=default_backend())
+        kdf = KBKDF(hashes.SHA1(), KBKDF.CTR_MODE, 40960, b'label', b'context',
+                    backend=default_backend())
         with pytest.raises(ValueError):
             kdf.derive(b'material')
 
     def test_unsupported_algorithm(self):
         mock_hash = UnsupportedMockHash
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            CounterKDF(mock_hash(), 32, b'label', b'context',
-                       backend=default_backend())
+            KBKDF(mock_hash(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                  backend=default_backend())
 
     def test_invalid_backend(self):
         mock_backend = object
 
         with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
-            CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                       backend=mock_backend())
+            KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', b'context',
+                  backend=mock_backend())
 
     def test_unicode_error_label(self):
         with pytest.raises(TypeError):
-            CounterKDF(hashes.SHA256(), 32, u'label', b'context',
-                       backend=default_backend())
+            KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, u'label', b'context',
+                  backend=default_backend())
 
     def test_unicode_error_context(self):
         with pytest.raises(TypeError):
-            CounterKDF(hashes.SHA256(), 32, b'label', u'context',
-                       backend=default_backend())
+            KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label', u'context',
+                  backend=default_backend())
 
     def test_unicode_error_key_material(self):
         with pytest.raises(TypeError):
-            kdf = CounterKDF(hashes.SHA256(), 32, b'label', b'context',
-                             backend=default_backend())
+            kdf = KBKDF(hashes.SHA256(), KBKDF.CTR_MODE, 32, b'label',
+                        b'context', backend=default_backend())
             kdf.derive(u'material')

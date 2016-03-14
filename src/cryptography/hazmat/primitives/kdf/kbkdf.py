@@ -18,8 +18,10 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
 @utils.register_interface(KeyDerivationFunction)
-class CounterKDF(object):
-    def __init__(self, algorithm, length, label, context, backend):
+class KBKDF(object):
+    CTR_MODE = 'ctr'
+
+    def __init__(self, algorithm, mode, length, label, context, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
@@ -32,6 +34,9 @@ class CounterKDF(object):
                 _Reasons.UNSUPPORTED_HASH
             )
 
+        if mode is None:
+            mode = KBKDF.CTR_MODE
+
         if label is None:
             label = b''
 
@@ -43,6 +48,7 @@ class CounterKDF(object):
             raise TypeError('label and context must be of type bytes')
 
         self._algorithm = algorithm
+        self._mode = mode
         self._length = length
         self._label = label
         self._context = context

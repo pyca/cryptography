@@ -11,7 +11,7 @@ import pytest
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 
-from .utils import generate_counterkdf_test
+from .utils import generate_kbkdf_test
 from ...utils import load_nist_vectors
 
 
@@ -21,7 +21,7 @@ from ...utils import load_nist_vectors
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestCounterKDFSHA1(object):
-    test_HKDFSHA1 = generate_counterkdf_test(
+    test_HKDFSHA1 = generate_kbkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),
         ["NIST-800-108-counterkdf-SHA1.txt"],
@@ -35,7 +35,7 @@ class TestCounterKDFSHA1(object):
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestCounterKDFSHA224(object):
-    test_HKDFSHA224 = generate_counterkdf_test(
+    test_HKDFSHA224 = generate_kbkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),
         ["NIST-800-108-counterkdf-SHA224.txt"],
@@ -49,7 +49,7 @@ class TestCounterKDFSHA224(object):
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestCounterKDFSHA256(object):
-    test_HKDFSHA256 = generate_counterkdf_test(
+    test_HKDFSHA256 = generate_kbkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),
         ["NIST-800-108-counterkdf-SHA256.txt"],
@@ -63,7 +63,7 @@ class TestCounterKDFSHA256(object):
 )
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 class TestCounterKDFSHA512(object):
-    test_HKDFSHA256 = generate_counterkdf_test(
+    test_HKDFSHA256 = generate_kbkdf_test(
         load_nist_vectors,
         os.path.join("KDF"),
         ["NIST-800-108-counterkdf-SHA512.txt"],

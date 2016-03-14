@@ -17,8 +17,8 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.kdf.counterkdf import CounterKDF
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
+from cryptography.hazmat.primitives.kdf.kbkdf import KBKDF
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
@@ -372,24 +372,25 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
     return test_hkdf
 
 
-def generate_counterkdf_test(param_loader, path, file_names, algorithm):
+def generate_kbkdf_test(param_loader, path, file_names, algorithm):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
-    def test_counterkdf(self, backend, params):
-        counterkdf_test(backend, algorithm, params)
-    return test_counterkdf
+    def test_kbkdf(self, backend, params):
+        kbkdf_test(backend, algorithm, params)
+    return test_kbkdf
 
 
-def counterkdf_test(backend, algorithm, params):
-    ckdf = CounterKDF(algorithm,
-                      int(params['l']) // 8,
-                      None,
-                      None,
-                      backend=backend)
+def kbkdf_test(backend, algorithm, params):
+    ctrkdf = KBKDF(algorithm,
+                   None,
+                   int(params['l']) // 8,
+                   None,
+                   None,
+                   backend=backend)
 
-    ckdf.fixed_data = binascii.unhexlify(params['fixedinputdata'])
-    ko = ckdf.derive(binascii.unhexlify(params['ki']))
+    ctrkdf.fixed_data = binascii.unhexlify(params['fixedinputdata'])
+    ko = ctrkdf.derive(binascii.unhexlify(params['ki']))
     assert binascii.hexlify(ko) == params["ko"]
 
 
