@@ -8,8 +8,10 @@ Changelog
 
 * Deprecated support for OpenSSL 0.9.8. Support will be removed in
   ``cryptography`` 1.4.
-* Added support for the :class:`~cryptography.x509.PolicyConstraints` X.509
-  extension.
+* Added support for the :class:`~cryptography.x509.PolicyConstraints`
+  X.509 extension including both parsing and generation using
+  :class:`~cryptography.x509.CertificateBuilder` and
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 * Added :attr:`~cryptography.x509.CertificateSigningRequest.is_signature_valid`
   to :class:`~cryptography.x509.CertificateSigningRequest`.
 * Fixed an intermittent ``AssertionError`` when performing an RSA decryption on
