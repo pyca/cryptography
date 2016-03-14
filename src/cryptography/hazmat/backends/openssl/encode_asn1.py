@@ -528,7 +528,7 @@ def _encode_name_constraints(backend, name_constraints):
 
 def _encode_policy_constraints(backend, policy_constraints):
     pc = backend._lib.POLICY_CONSTRAINTS_new()
-    assert pc != backend._ffi.NULL
+    backend.openssl_assert(pc != backend._ffi.NULL)
     pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
     if policy_constraints.require_explicit_policy is not None:
         pc.requireExplicitPolicy = _encode_asn1_int(
