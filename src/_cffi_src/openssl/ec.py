@@ -90,19 +90,6 @@ unsigned int EC_KEY_get_enc_flags(const EC_KEY *);
 void EC_KEY_set_enc_flags(EC_KEY *eckey, unsigned int);
 point_conversion_form_t EC_KEY_get_conv_form(const EC_KEY *);
 void EC_KEY_set_conv_form(EC_KEY *, point_conversion_form_t);
-void *EC_KEY_get_key_method_data(
-    EC_KEY *,
-    void *(*)(void *),
-    void (*)(void *),
-    void (*)(void *)
-);
-void EC_KEY_insert_key_method_data(
-    EC_KEY *,
-    void *,
-    void *(*)(void *),
-    void (*)(void *),
-    void (*)(void *)
-);
 void EC_KEY_set_asn1_flag(EC_KEY *, int);
 int EC_KEY_precompute_mult(EC_KEY *, BN_CTX *);
 int EC_KEY_generate_key(EC_KEY *);
@@ -237,11 +224,6 @@ unsigned int (*EC_KEY_get_enc_flags)(const EC_KEY *) = NULL;
 void (*EC_KEY_set_enc_flags)(EC_KEY *eckey, unsigned int) = NULL;
 point_conversion_form_t (*EC_KEY_get_conv_form)(const EC_KEY *) = NULL;
 void (*EC_KEY_set_conv_form)(EC_KEY *, point_conversion_form_t) = NULL;
-void *(*EC_KEY_get_key_method_data)(
-    EC_KEY *, void *(*)(void *), void (*)(void *), void (*)(void *)) = NULL;
-void (*EC_KEY_insert_key_method_data)(
-    EC_KEY *, void *,
-    void *(*)(void *), void (*)(void *), void (*)(void *)) = NULL;
 void (*EC_KEY_set_asn1_flag)(EC_KEY *, int) = NULL;
 int (*EC_KEY_precompute_mult)(EC_KEY *, BN_CTX *) = NULL;
 int (*EC_KEY_generate_key)(EC_KEY *) = NULL;
