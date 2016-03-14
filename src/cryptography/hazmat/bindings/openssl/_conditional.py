@@ -86,8 +86,6 @@ CONDITIONAL_NAMES = {
         "EC_KEY_get_enc_flags",
         "EC_KEY_set_enc_flags",
         "EC_KEY_set_conv_form",
-        "EC_KEY_get_key_method_data",
-        "EC_KEY_insert_key_method_data",
         "EC_KEY_set_asn1_flag",
         "EC_KEY_precompute_mult",
         "EC_KEY_generate_key",
