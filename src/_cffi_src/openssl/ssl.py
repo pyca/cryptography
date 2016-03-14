@@ -399,7 +399,7 @@ void SSL_get0_next_proto_negotiated(const SSL *,
                                     const unsigned char **, unsigned *);
 
 int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
-SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
+const SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 
 /* ALPN APIs were introduced in OpenSSL 1.0.2.  To continue to support earlier
  * versions some special handling of these is necessary.
