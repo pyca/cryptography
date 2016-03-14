@@ -88,7 +88,7 @@ Creating a self-signed certificate
 
 While most of the time you want a certificate that has been *signed* by someone
 else (i.e. a certificate authority), so that trust is established, sometimes
-you want to create self-signed certificate. Self-signed certificates are not
+you want to create a self-signed certificate. Self-signed certificates are not
 issued by a certificate authority, but are instead signed by themselves.
 
 This means that other people don't trust these certificates, but it also means
