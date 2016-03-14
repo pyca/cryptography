@@ -526,6 +526,23 @@ def _encode_name_constraints(backend, name_constraints):
     return nc
 
 
+def _encode_policy_constraints(backend, policy_constraints):
+    pc = backend._lib.POLICY_CONSTRAINTS_new()
+    assert pc != backend._ffi.NULL
+    pc = backend._ffi.gc(pc, backend._lib.POLICY_CONSTRAINTS_free)
+    if policy_constraints.require_explicit_policy is not None:
+        pc.requireExplicitPolicy = _encode_asn1_int(
+            backend, policy_constraints.require_explicit_policy
+        )
+
+    if policy_constraints.inhibit_policy_mapping is not None:
+        pc.inhibitPolicyMapping = _encode_asn1_int(
+            backend, policy_constraints.inhibit_policy_mapping
+        )
+
+    return pc
+
+
 def _encode_general_subtree(backend, subtrees):
     if subtrees is None:
         return backend._ffi.NULL
@@ -556,6 +573,7 @@ _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.INHIBIT_ANY_POLICY: _encode_inhibit_any_policy,
     ExtensionOID.OCSP_NO_CHECK: _encode_ocsp_nocheck,
     ExtensionOID.NAME_CONSTRAINTS: _encode_name_constraints,
+    ExtensionOID.POLICY_CONSTRAINTS: _encode_policy_constraints,
 }
 
 _CRL_EXTENSION_ENCODE_HANDLERS = {

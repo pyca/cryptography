@@ -2225,6 +2225,54 @@ class TestCertificateBuilder(object):
         )
         assert ext.value == x509.InhibitAnyPolicy(3)
 
+    @pytest.mark.parametrize(
+        "pc",
+        [
+            x509.PolicyConstraints(
+                require_explicit_policy=None,
+                inhibit_policy_mapping=1
+            ),
+            x509.PolicyConstraints(
+                require_explicit_policy=3,
+                inhibit_policy_mapping=1
+            ),
+            x509.PolicyConstraints(
+                require_explicit_policy=0,
+                inhibit_policy_mapping=None
+            ),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_policy_constraints(self, backend, pc):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        ).public_key(
+            subject_private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            pc, critical=False
+        ).sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_class(
+            x509.PolicyConstraints
+        )
+        assert ext.critical is False
+        assert ext.value == pc
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_name_constraints(self, backend):
