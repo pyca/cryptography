@@ -82,3 +82,71 @@ a few details:
     ...     f.write(csr.public_bytes(serialization.Encoding.PEM))
 
 Now we can give our CSR to a CA, who will give a certificate to us in return.
+
+Creating a self-signed certificate
+----------------------------------
+
+While most of the time you want a certificate that has been *signed* by someone
+else (i.e. a certificate authority), so that trust is established, sometimes
+you want to create a self-signed certificate. Self-signed certificates are not
+issued by a certificate authority, but instead they are signed by the private
+key corresponding to the public key they embed.
+
+This means that other people don't trust these certificates, but it also means
+they can be issued very easily. In general the only use case for a self-signed
+certificate is local testing, where you don't need anyone else to trust your
+certificate.
+
+Like generating a CSR, we start with creating a new private key:
+
+.. code-block:: pycon
+
+    >>> # Generate our key
+    >>> key = rsa.generate_private_key(
+    ...     public_exponent=65537,
+    ...     key_size=2048,
+    ...     backend=default_backend()
+    ... )
+    >>> # Write our key to disk for safe keeping
+    >>> with open("path/to/store/key.pem", "wb") as f:
+    ...     f.write(key.private_bytes(
+    ...         encoding=serialization.Encoding.PEM,
+    ...         format=serialization.PrivateFormat.TraditionalOpenSSL,
+    ...         encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
+    ...     ))
+
+Then we generate the certificate itself:
+
+.. code-block:: pycon
+
+    >>> # Various details about who we are. For a self-signed certificate the
+    >>> # subject and issuer are always the same.
+    >>> subject = issuer = x509.Name([
+    ...     x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+    ...     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"CA"),
+    ...     x509.NameAttribute(NameOID.LOCALITY_NAME, u"San Francisco"),
+    ...     x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"My Company"),
+    ...     x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
+    ... ])
+    >>> cert = x509.CertificateBuilder().subject_name(
+    ...     subject
+    ... ).issuer_name(
+    ...     issuer
+    ... ).public_key(
+    ...     private_key.public_key()
+    ... ).not_valid_before(
+    ...     datetime.datetime.utcnow()
+    ... ).not_valid_after(
+    ...     # Our certificate will be valid for 10 days
+    ...     datetime.datetime.utcnow() + datetime.timedelta(days=10)
+    ... ).add_extension(
+    ...     x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
+    ...     critical=False,
+    ... # Sign our certificate with our private key
+    ... ).sign(private_key, hashes.SHA256(), default_backend())
+    >>> # Write our certificate out to disk.
+    >>> with open("path/to/certificate.pem", "wb") as f:
+    ...     f.write(cert.public_bytes(serialization.Encoding.PEM))
+
+And now we have a private key and certificate that can be used for local
+testing.
