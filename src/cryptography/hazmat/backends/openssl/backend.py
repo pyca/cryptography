@@ -967,49 +967,9 @@ class Backend(object):
     def _create_x509_extensions(self, extensions, handlers, x509_obj,
                                 add_func, gc):
         for i, extension in enumerate(extensions):
-            if isinstance(extension.value, x509.UnrecognizedExtension):
-                x509_extension = self._create_unrecognized_x509_extension(
-                    extension
-                )
-            else:
-                try:
-                    encode = handlers[extension.oid]
-                except KeyError:
-                    raise NotImplementedError(
-                        'Extension not supported: {0}'.format(extension.oid)
-                    )
-
-                ext_struct = encode(self, extension.value)
-                nid = self._lib.OBJ_txt2nid(
-                    extension.oid.dotted_string.encode("ascii")
-                )
-                backend.openssl_assert(nid != self._lib.NID_undef)
-                x509_extension = self._lib.X509V3_EXT_i2d(
-                    nid, 1 if extension.critical else 0, ext_struct
-                )
-                if (
-                    x509_extension == self._ffi.NULL and
-                    extension.oid == x509.OID_CERTIFICATE_ISSUER
-                ):
-                    # This path exists to support OpenSSL 0.9.8, which does not
-                    # know how to encode a CERTIFICATE_ISSUER for CRLs. Once we
-                    # drop 0.9.8 support we can remove this.
-                    self._consume_errors()
-                    pp = backend._ffi.new("unsigned char **")
-                    r = self._lib.i2d_GENERAL_NAMES(ext_struct, pp)
-                    backend.openssl_assert(r > 0)
-                    pp = backend._ffi.gc(
-                        pp,
-                        lambda pointer: backend._lib.OPENSSL_free(pointer[0])
-                    )
-                    obj = _txt2obj_gc(self, extension.oid.dotted_string)
-                    x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                        self._ffi.NULL,
-                        obj,
-                        1 if extension.critical else 0,
-                        _encode_asn1_str_gc(self, pp[0], r)
-                    )
-
+            x509_extension = self._create_x509_extension(
+                handlers, extension
+            )
             self.openssl_assert(x509_extension != self._ffi.NULL)
 
             if gc:
@@ -1019,17 +979,57 @@ class Backend(object):
             res = add_func(x509_obj, x509_extension, i)
             self.openssl_assert(res >= 1)
 
-    def _create_unrecognized_x509_extension(self, extension):
-        obj = _txt2obj_gc(self, extension.oid.dotted_string)
-        value = _encode_asn1_str_gc(
-            self, extension.value.value, len(extension.value.value)
-        )
-        return self._lib.X509_EXTENSION_create_by_OBJ(
-            self._ffi.NULL,
-            obj,
-            1 if extension.critical else 0,
-            value
-        )
+    def _create_x509_extension(self, handlers, extension):
+        if isinstance(extension.value, x509.UnrecognizedExtension):
+            obj = _txt2obj_gc(self, extension.oid.dotted_string)
+            value = _encode_asn1_str_gc(
+                self, extension.value.value, len(extension.value.value)
+            )
+            return self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
+                obj,
+                1 if extension.critical else 0,
+                value
+            )
+        else:
+            try:
+                encode = handlers[extension.oid]
+            except KeyError:
+                raise NotImplementedError(
+                    'Extension not supported: {0}'.format(extension.oid)
+                )
+
+            ext_struct = encode(self, extension.value)
+            nid = self._lib.OBJ_txt2nid(
+                extension.oid.dotted_string.encode("ascii")
+            )
+            backend.openssl_assert(nid != self._lib.NID_undef)
+            x509_extension = self._lib.X509V3_EXT_i2d(
+                nid, 1 if extension.critical else 0, ext_struct
+            )
+            if (
+                x509_extension == self._ffi.NULL and
+                extension.oid == x509.OID_CERTIFICATE_ISSUER
+            ):
+                # This path exists to support OpenSSL 0.9.8, which does not
+                # know how to encode a CERTIFICATE_ISSUER for CRLs. Once we
+                # drop 0.9.8 support we can remove this.
+                self._consume_errors()
+                pp = backend._ffi.new("unsigned char **")
+                r = self._lib.i2d_GENERAL_NAMES(ext_struct, pp)
+                backend.openssl_assert(r > 0)
+                pp = backend._ffi.gc(
+                    pp,
+                    lambda pointer: backend._lib.OPENSSL_free(pointer[0])
+                )
+                obj = _txt2obj_gc(self, extension.oid.dotted_string)
+                return self._lib.X509_EXTENSION_create_by_OBJ(
+                    self._ffi.NULL,
+                    obj,
+                    1 if extension.critical else 0,
+                    _encode_asn1_str_gc(self, pp[0], r)
+                )
+            return x509_extension
 
     def create_x509_revoked_certificate(self, builder):
         if not isinstance(builder, x509.RevokedCertificateBuilder):
