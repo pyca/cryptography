@@ -557,6 +557,10 @@ def _encode_general_subtree(backend, subtrees):
         return general_subtrees
 
 
+def _encode_unrecognized_extension(backend, ext):
+    return ext.value
+
+
 _EXTENSION_ENCODE_HANDLERS = {
     ExtensionOID.BASIC_CONSTRAINTS: _encode_basic_constraints,
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: _encode_subject_key_identifier,

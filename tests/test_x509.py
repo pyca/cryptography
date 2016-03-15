@@ -2382,6 +2382,39 @@ class TestCertificateBuilder(object):
         )
         assert basic_constraints.value.path_length is None
 
+    @pytest.mark.parametrize(
+        "unrecognized", [
+            x509.UnrecognizedExtension(
+                x509.ObjectIdentifier("1.2.3.4.5"),
+                b"abcdef",
+            )
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_unrecognized_extension(self, backend, unrecognized):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        ).public_key(
+            private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            unrecognized, critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(unrecognized.oid)
+
+        assert ext.value == unrecognized
+
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
 class TestCertificateSigningRequestBuilder(object):
