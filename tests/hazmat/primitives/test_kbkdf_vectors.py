@@ -9,16 +9,15 @@ import os
 import pytest
 
 from cryptography.hazmat.backends.interfaces import HMACBackend
-from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_kbkdf_test
 from ...utils import load_nist_kbkdf_vectors
 
 
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
-class TestCounterKDFSHA1(object):
+class TestCounterKDFCounterMode(object):
     test_HKDFSHA1 = generate_kbkdf_test(
         load_nist_kbkdf_vectors,
         os.path.join("KDF"),
-        ["NIST-800-108-counterkdf-SHA1.txt"]
+        ["nist-800-108-KBKDF-CTR.txt"]
     )

@@ -827,8 +827,12 @@ def load_nist_kbkdf_vectors(vector_data):
 
         if line.startswith("[") and line.endswith("]"):
             tag_data = line[1:-1]
-            tag.update({tag_data.split("=")[0].strip().lower():
-                        tag_data.split("=")[1].strip().lower()})
+            # Check if RLEN
+            name, value = [c.strip() for c in tag_data.split("=")]
+            if value.endswith('_BITS'):
+                value = value.split('_')[0]
+
+            tag.update({name.lower(): value.lower()})
         elif line.startswith("COUNT="):
             test_data = dict()
             test_data.update(tag)

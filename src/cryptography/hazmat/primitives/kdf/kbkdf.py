@@ -19,9 +19,13 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 @utils.register_interface(KeyDerivationFunction)
 class KBKDF(object):
-    CTR_MODE = 'ctr'
+    COUNTER_MODE = 'ctr'
 
-    def __init__(self, algorithm, mode, length, label, context, backend):
+    LOCATION_BEFORE_FIXED = 'before_fixed'
+    LOCATION_AFTER_FIXED = 'after_fixed'
+
+    def __init__(self, algorithm, mode, length, rlen,
+                 location, label, context, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
@@ -35,7 +39,13 @@ class KBKDF(object):
             )
 
         if mode is None:
-            mode = KBKDF.CTR_MODE
+            mode = KBKDF.COUNTER_MODE
+
+        if location is None:
+            location = KBKDF.LOCATION_BEFORE_FIXED
+
+        if rlen is None:
+            rlen = 8
 
         if label is None:
             label = b''
@@ -47,9 +57,14 @@ class KBKDF(object):
                 or not isinstance(context, bytes):
             raise TypeError('label and context must be of type bytes')
 
+        if rlen not in [1, 2, 4]:
+            raise ValueError('rlen must be 2, 4 or 8')
+
         self._algorithm = algorithm
         self._mode = mode
         self._length = length
+        self._rlen = rlen
+        self._location = location
         self._label = label
         self._context = context
         self._backend = backend
@@ -72,10 +87,21 @@ class KBKDF(object):
         if rounds > pow(2, 8) - 1:
             raise ValueError('There are too many iterations.')
 
+        struct_frmt = '>I'
+        if self._rlen == 1:
+            struct_frmt = '>B'
+        if self._rlen == 2:
+            struct_frmt = '>H'
+
         for i in range(1, rounds + 1):
             h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
-            h.update(struct.pack('>I', i))
+            if self._location == KBKDF.LOCATION_BEFORE_FIXED:
+                h.update(struct.pack(struct_frmt, i))
+
             h.update(self.generate_fixed_input())
+
+            if self._location == KBKDF.LOCATION_AFTER_FIXED:
+                h.update(struct.pack(struct_frmt, i))
             output.append(h.finalize())
 
         return b''.join(output)[:self._length]
