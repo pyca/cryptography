@@ -372,16 +372,33 @@ def generate_hkdf_test(param_loader, path, file_names, algorithm):
     return test_hkdf
 
 
-def generate_kbkdf_test(param_loader, path, file_names, algorithm):
+def generate_kbkdf_test(param_loader, path, file_names):
     all_params = _load_all_params(path, file_names, param_loader)
 
     @pytest.mark.parametrize("params", all_params)
     def test_kbkdf(self, backend, params):
-        kbkdf_test(backend, algorithm, params)
+        kbkdf_test(backend, params)
     return test_kbkdf
 
 
-def kbkdf_test(backend, algorithm, params):
+def kbkdf_test(backend,  params):
+    algorithm = None
+    if params.get('prf') == 'hmac_sha1':
+        algorithm = hashes.SHA1()
+    else:
+        pytest.skip('Does not support {hash}'.format(hash=params.get('prf')))
+
+    if params.get('rlen') != '32_bits':
+        pytest.skip('Does not support R length {length}'
+                    .format(length=params.get('rlen')))
+
+    if params.get('ctrlocation') != 'before_fixed':
+        pytest.skip('Does not support counter location {location}'
+                    .format(location=params.get('ctrlocation')))
+
+    if not backend.hmac_supported(algorithm):
+        pytest.skip('Does not support {hash}'.format(hash=params.get('prf')))
+
     ctrkdf = KBKDF(algorithm,
                    None,
                    int(params['l']) // 8,
