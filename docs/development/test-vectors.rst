@@ -347,6 +347,8 @@ Key derivation functions
 * PBKDF2 (HMAC-SHA1) from :rfc:`6070`.
 * scrypt from the `draft RFC`_.
 * X9.63 KDF from `NIST CAVP`_.
+* SP 800-108 Counter Mode KDF (HMAC-SHA1, HMAC-SHA224, HMAC-SHA256,
+  HMAC-SHA384, HMAC-SHA512) from `NIST CAVP`_.
 
 Key wrapping
 ~~~~~~~~~~~~
