@@ -56,6 +56,8 @@ multiple of the block size.
 
 .. class:: ANSIX923(block_size)
 
+    .. versionadded:: 1.3
+
     `ANSI X.923`_ padding works by appending ``N-1`` bytes with the value of
     ``0`` and a last byte with the value of ``chr(N)``, where ``N`` is the
     number of bytes required to make the final block of data the same size as
