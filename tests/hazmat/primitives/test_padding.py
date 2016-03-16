@@ -102,6 +102,11 @@ class TestPKCS7(object):
 
 
 class TestANSIX923(object):
+    @pytest.mark.parametrize("size", [127, 4096, -2])
+    def test_invalid_block_size(self, size):
+        with pytest.raises(ValueError):
+            padding.ANSIX923(size)
+
     @pytest.mark.parametrize(("size", "padded"), [
         (128, b"1111"),
         (128, b"1111111111111111"),
@@ -116,6 +121,14 @@ class TestANSIX923(object):
         with pytest.raises(ValueError):
             unpadder.update(padded)
             unpadder.finalize()
+
+    def test_non_bytes(self):
+        padder = padding.ANSIX923(128).padder()
+        with pytest.raises(TypeError):
+            padder.update(u"abc")
+        unpadder = padding.ANSIX923(128).unpadder()
+        with pytest.raises(TypeError):
+            unpadder.update(u"abc")
 
     @pytest.mark.parametrize(("size", "unpadded", "padded"), [
         (
@@ -162,3 +175,19 @@ class TestANSIX923(object):
         result = unpadder.update(padded)
         result += unpadder.finalize()
         assert result == unpadded
+
+    def test_use_after_finalize(self):
+        padder = padding.ANSIX923(128).padder()
+        b = padder.finalize()
+        with pytest.raises(AlreadyFinalized):
+            padder.update(b"")
+        with pytest.raises(AlreadyFinalized):
+            padder.finalize()
+
+        unpadder = padding.ANSIX923(128).unpadder()
+        unpadder.update(b)
+        unpadder.finalize()
+        with pytest.raises(AlreadyFinalized):
+            unpadder.update(b"")
+        with pytest.raises(AlreadyFinalized):
+            unpadder.finalize()
