@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for padding ANSI X.923 with
+  :class:`~cryptography.hazmat.primitives.padding.ANSIX923`.
 * Deprecated support for OpenSSL 0.9.8. Support will be removed in
   ``cryptography`` 1.4.
 * Added support for the :class:`~cryptography.x509.PolicyConstraints`
