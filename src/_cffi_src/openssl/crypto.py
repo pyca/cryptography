@@ -25,11 +25,6 @@ static const int CRYPTO_MEM_CHECK_ON;
 static const int CRYPTO_MEM_CHECK_OFF;
 static const int CRYPTO_MEM_CHECK_ENABLE;
 static const int CRYPTO_MEM_CHECK_DISABLE;
-static const int CRYPTO_LOCK;
-static const int CRYPTO_UNLOCK;
-static const int CRYPTO_READ;
-static const int CRYPTO_WRITE;
-static const int CRYPTO_LOCK_SSL;
 """
 
 FUNCTIONS = """
@@ -38,14 +33,16 @@ int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on(void);
 void CRYPTO_mem_leaks(struct bio_st *);
 void CRYPTO_cleanup_all_ex_data(void);
-int CRYPTO_num_locks(void);
-void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
-void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
-void CRYPTO_lock(int, int, const char *, int);
 
 """
 
 MACROS = """
+/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
+   have become macros that are no ops */
+int CRYPTO_num_locks(void);
+void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
+void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+
 /* SSLeay was removed in 1.1.0 */
 unsigned long SSLeay(void);
 const char *SSLeay_version(int);
