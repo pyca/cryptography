@@ -381,7 +381,7 @@ def generate_kbkdf_test(param_loader, path, file_names):
     return test_kbkdf
 
 
-def kbkdf_test(backend,  params):
+def kbkdf_test(backend, params):
     supported_algorithms = {
         'hmac_sha1': hashes.SHA1,
         'hmac_sha224': hashes.SHA224,

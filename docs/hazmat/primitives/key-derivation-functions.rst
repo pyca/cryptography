@@ -600,6 +600,131 @@ Different KDFs are suitable for different tasks such as:
         raises an exception if they do not match.
 
 
+.. currentmodule:: cryptography.hazmat.primitives.kdf.kbkdf
+
+.. class:: KBKDF(algorithm, mode, length, rlen, llen, location,
+                 label, context, fixed, backend)
+
+    .. versionadded:: 1.3
+
+    KBKDF (Key Based Derivation Function) is defined by NIST SP 800-108
+    in the `NIST-800-108`_ document, to be used to derive additional
+    keys from a key that has been established through an automated
+    key-establishment scheme.
+
+    .. warning::
+
+        KBKDF should not be used for password storage.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.kbkdf import KBKDF
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> label = b"KBKDF Label"
+        >>> context = b"KBKDF Context"
+        >>> kdf = KBKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     mode=KBKDF.COUNTER_MODE,
+        ...     length=256,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=KBKDF.LOCATION_BEFORE_FIXED,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ...     backend=backend
+        ... )
+        >>> key = kdf.derive(b"input key")
+        >>> kdf = KBKDF(
+        ...     algorithm=hashes.SHA256(),
+        ...     mode=KBKDF.COUNTER_MODE,
+        ...     length=256,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=KBKDF.LOCATION_BEFORE_FIXED,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ...     backend=backend
+        ... )
+        >>> kdf.verify(b"input key", key)
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider
+
+    :param str mode: The desired mode of PRF. If ``None`` is explicitly
+    passed counter mode will be used. Currently only ``ctr`` (counter mode)
+    is supported.
+
+    :param int length: The desired length of the derived key in bytes.
+
+    :param int rlen: The desired length of the binary representation of R
+    in bytes. If ``None`` is explicitly passed, 4 (the max) will be used.
+
+    :param int llen: The desired length of the binary representation of L
+    in bytes. If ``None`` is explicitly passed, 4 (the max) will be used.
+
+    :param str location: The desired location of the counter. Options are
+    ``before_fixed`` and ``after_fixed``.
+
+    :param bytes label: Application specific label information. If ``None``
+    is explicitly passed an empty byte string will be used.
+
+    :param bytes context: Application specific context information. If ``None``
+    is explicitly passed an empty byte string will be used.
+
+    :param bytes fixed: Instead of specifying ``label`` and ``context`` you
+    may supply your own fixed data. If ``fixed`` is specified, ``label`` and
+    ``context`` is ignored.
+
+    :param backend: A cryptography backend
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+        if the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+
+    :raises TypeError: This exception is raised if ``label`` or ``context``
+    is not ``bytes``. Also raised if ``rlen`` or ``llen`` is not ``int``.
+
+    :raises ValueError: This exception is raised if ``rlen`` or ``llen``
+    is greater than 4 or less than 1. This exception is also raised if
+    you specify a ``label`` or ``context`` and ``fixed``.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is
+                            not ``bytes``.
+
+        Derives a new key from the input key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
 Interface
 ~~~~~~~~~
 

@@ -24,8 +24,8 @@ from .utils import (
     load_hash_vectors, load_kasvs_dh_vectors,
     load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors, load_nist_kbkdf_vectors,
-    raises_unsupported_algorithm, select_backends, skip_if_empty
+    load_x963_vectors, raises_unsupported_algorithm, select_backends,
+    skip_if_empty
 )
 
 
@@ -3533,7 +3533,7 @@ HMAC with key sizes:	SHA1  SHA224  SHA256  SHA384  SHA512
 76f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242',
          'ko': b'0611e1903609b47ad7a5fc2c82e47702',
          },
-        ]
+    ]
 
 
 def test_vector_version():

@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import binascii
+
 import pytest
 
 from cryptography.exceptions import (
@@ -81,6 +82,12 @@ class TestCounterKDF(object):
         assert binascii.hexlify(d) == b'ed1a1b496e9b1cf9a05c969702113a553c88' \
                                       b'05234e83034e3ad055269c4a7849'
 
+    def test_r_type(self):
+        with pytest.raises(TypeError):
+            KBKDF(hashes.SHA1(), KBKDF.COUNTER_MODE, 32, b'r', 4,
+                  KBKDF.LOCATION_BEFORE_FIXED, b'label', b'context', None,
+                  backend=default_backend())
+
     def test_llen(self):
         with pytest.raises(ValueError):
             KBKDF(hashes.SHA1(), KBKDF.COUNTER_MODE, 32, 4, 5,
@@ -95,6 +102,12 @@ class TestCounterKDF(object):
         d = kdf.derive(b'material')
         assert binascii.hexlify(d) == b'ed1a1b496e9b1cf9a05c969702113a553c88' \
                                       b'05234e83034e3ad055269c4a7849'
+
+    def test_l_type(self):
+        with pytest.raises(TypeError):
+            KBKDF(hashes.SHA1(), KBKDF.COUNTER_MODE, 32, 4, b'l',
+                  KBKDF.LOCATION_BEFORE_FIXED, b'label', b'context', None,
+                  backend=default_backend())
 
     def test_int_binary_length(self):
         kdf = KBKDF(hashes.SHA256(), KBKDF.COUNTER_MODE, 32, 4, 4,
@@ -122,12 +135,11 @@ class TestCounterKDF(object):
         assert binascii.hexlify(d) == b'ed1a1b496e9b1cf9a05c969702113a553c88' \
                                       b'05234e83034e3ad055269c4a7849'
 
-
     def test_unsupported_parameters(self):
         with pytest.raises(ValueError):
-           kdf = KBKDF(hashes.SHA256(), KBKDF.COUNTER_MODE, 32, 4, 4,
-                       None, b'label', b'context', b'fixed',
-                       backend=default_backend())
+            KBKDF(hashes.SHA256(), KBKDF.COUNTER_MODE, 32, 4, 4,
+                  None, b'label', b'context', b'fixed',
+                  backend=default_backend())
 
     def test_unsupported_algorithm(self):
         mock_hash = UnsupportedMockHash
@@ -159,6 +171,6 @@ class TestCounterKDF(object):
     def test_unicode_error_key_material(self):
         with pytest.raises(TypeError):
             kdf = KBKDF(hashes.SHA256(), KBKDF.COUNTER_MODE, 32, 4, 4,
-                        KBKDF.LOCATION_BEFORE_FIXED, b'label', b'context', None,
-                        backend=default_backend())
+                        KBKDF.LOCATION_BEFORE_FIXED, b'label', b'context',
+                        None, backend=default_backend())
             kdf.derive(u'material')

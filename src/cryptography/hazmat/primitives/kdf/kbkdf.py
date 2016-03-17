@@ -4,8 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import struct
 import binascii
+import struct
+
 import six
 
 from cryptography import utils
@@ -65,10 +66,10 @@ class KBKDF(object):
             raise TypeError('label and context must be of type bytes')
 
         if not self._valid_byte_length(rlen):
-            raise ValueError('rlen must be 1, 2 or 4')
+            raise ValueError('rlen must be between 1 and 4')
 
         if not self._valid_byte_length(llen):
-            raise ValueError('llen must be 1, 2 or 4')
+            raise ValueError('llen must be between 1 and 4')
 
         self._algorithm = algorithm
         self._mode = mode
@@ -83,13 +84,16 @@ class KBKDF(object):
         self._fixed_data = fixed
 
     def _valid_byte_length(self, value):
+        if not isinstance(value, int):
+            raise TypeError('value must be of type int')
+
         if not 1 <= value <= 4:
             return False
         return True
 
     def _int_as_binary_representation(self, length, value):
         if not self._valid_byte_length(length):
-            raise  ValueError('binary length must be between 1 and 4')
+            raise ValueError('binary length must be between 1 and 4')
 
         if length == 1:
             return struct.pack(">B", value)
@@ -123,7 +127,7 @@ class KBKDF(object):
             if self._location == KBKDF.LOCATION_BEFORE_FIXED:
                 h.update(counter)
 
-            h.update(self.generate_fixed_input())
+            h.update(self._generate_fixed_input())
 
             if self._location == KBKDF.LOCATION_AFTER_FIXED:
                 h.update(counter)
@@ -132,7 +136,7 @@ class KBKDF(object):
 
         return b''.join(output)[:self._length]
 
-    def generate_fixed_input(self):
+    def _generate_fixed_input(self):
         """
         Combine the fixed data (label and context) to a binary string
 
