@@ -417,5 +417,6 @@ CONDITIONAL_NAMES = {
         "CRYPTO_UNLOCK",
         "CRYPTO_READ",
         "CRYPTO_LOCK_SSL",
+        "CRYPTO_lock",
     ]
 }

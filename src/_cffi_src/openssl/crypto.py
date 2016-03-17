@@ -60,6 +60,9 @@ void CRYPTO_add(int *, int, int);
 
 /* this is a macro in 1.1.0 */
 void OPENSSL_free(void *);
+
+/* This was removed in 1.1.0 */
+void CRYPTO_lock(int, int, const char *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -92,6 +95,7 @@ static const long CRYPTO_LOCK = 0;
 static const long CRYPTO_UNLOCK = 0;
 static const long CRYPTO_READ = 0;
 static const long CRYPTO_LOCK_SSL = 0;
+void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
 #else
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
 #endif
