@@ -116,7 +116,6 @@ static const int EVP_F_EVP_OPENINIT;
 static const int EVP_F_EVP_PBE_ALG_ADD;
 static const int EVP_F_EVP_PBE_CIPHERINIT;
 static const int EVP_F_EVP_PKCS82PKEY;
-static const int EVP_F_EVP_PKEY2PKCS8_BROKEN;
 static const int EVP_F_EVP_PKEY_COPY_PARAMETERS;
 static const int EVP_F_EVP_PKEY_DECRYPT;
 static const int EVP_F_EVP_PKEY_ENCRYPT;
