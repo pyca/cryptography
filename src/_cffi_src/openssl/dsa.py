@@ -22,10 +22,6 @@ typedef struct dsa_st {
     BIGNUM *pub_key;
     ...;
 } DSA;
-typedef struct {
-    BIGNUM *r;
-    BIGNUM *s;
-} DSA_SIG;
 """
 
 FUNCTIONS = """
@@ -34,10 +30,6 @@ DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
 int DSA_generate_key(DSA *);
 DSA *DSA_new(void);
 void DSA_free(DSA *);
-DSA_SIG *DSA_SIG_new(void);
-void DSA_SIG_free(DSA_SIG *);
-int i2d_DSA_SIG(const DSA_SIG *, unsigned char **);
-DSA_SIG *d2i_DSA_SIG(DSA_SIG **, const unsigned char **, long);
 int DSA_size(const DSA *);
 int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
              DSA *);
