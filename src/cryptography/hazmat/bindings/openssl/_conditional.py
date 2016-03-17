@@ -412,4 +412,8 @@ CONDITIONAL_NAMES = {
         "TLS_ST_BEFORE",
         "TLS_ST_OK",
     ],
+    "Cryptography_HAS_LOCKING_CALLBACKS": [
+        "CRYPTO_LOCK",
+        "CRYPTO_UNLOCK",
+    ]
 }
