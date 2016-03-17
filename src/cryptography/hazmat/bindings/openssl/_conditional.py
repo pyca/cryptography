@@ -415,5 +415,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_LOCKING_CALLBACKS": [
         "CRYPTO_LOCK",
         "CRYPTO_UNLOCK",
+        "CRYPTO_LOCK_SSL",
     ]
 }
