@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import struct
-
+import binascii
 import six
 
 from cryptography import utils
@@ -24,8 +24,8 @@ class KBKDF(object):
     LOCATION_BEFORE_FIXED = 'before_fixed'
     LOCATION_AFTER_FIXED = 'after_fixed'
 
-    def __init__(self, algorithm, mode, length, rlen,
-                 location, label, context, backend):
+    def __init__(self, algorithm, mode, length, rlen, llen,
+                 location, label, context, fixed, backend):
         if not isinstance(backend, HMACBackend):
             raise UnsupportedAlgorithm(
                 "Backend object does not implement HMACBackend.",
@@ -38,6 +38,10 @@ class KBKDF(object):
                 _Reasons.UNSUPPORTED_HASH
             )
 
+        if (label or context) and fixed:
+            raise ValueError("When supplying fixed data, "
+                             "label and context is ignored.")
+
         if mode is None:
             mode = KBKDF.COUNTER_MODE
 
@@ -45,7 +49,10 @@ class KBKDF(object):
             location = KBKDF.LOCATION_BEFORE_FIXED
 
         if rlen is None:
-            rlen = 8
+            rlen = 4
+
+        if llen is None:
+            llen = 4
 
         if label is None:
             label = b''
@@ -57,19 +64,41 @@ class KBKDF(object):
                 or not isinstance(context, bytes):
             raise TypeError('label and context must be of type bytes')
 
-        if rlen not in [1, 2, 4]:
-            raise ValueError('rlen must be 2, 4 or 8')
+        if not self._valid_byte_length(rlen):
+            raise ValueError('rlen must be 1, 2 or 4')
+
+        if not self._valid_byte_length(llen):
+            raise ValueError('llen must be 1, 2 or 4')
 
         self._algorithm = algorithm
         self._mode = mode
         self._length = length
         self._rlen = rlen
+        self._llen = llen
         self._location = location
         self._label = label
         self._context = context
         self._backend = backend
         self._used = False
-        self.fixed_data = None
+        self._fixed_data = fixed
+
+    def _valid_byte_length(self, value):
+        if not 1 <= value <= 4:
+            return False
+        return True
+
+    def _int_as_binary_representation(self, length, value):
+        if not self._valid_byte_length(length):
+            raise  ValueError('binary length must be between 1 and 4')
+
+        if length == 1:
+            return struct.pack(">B", value)
+        elif length == 2:
+            return struct.pack(">H", value)
+        elif length == 3:
+            return struct.pack(">L", value)[1:]
+        else:
+            return struct.pack(">L", value)
 
     def derive(self, key_material):
         if self._used:
@@ -79,29 +108,26 @@ class KBKDF(object):
             raise TypeError('key_material must be bytes')
         self._used = True
 
-        output = [b'']
         # inverse floor division (equivalent to ceiling)
         rounds = -(-self._length // self._algorithm.digest_size)
 
-        # 8 is the length of an unsigned int used by struct.pack('>I', n)
-        if rounds > pow(2, 8) - 1:
+        output = [b'']
+        r_bin_len = self._int_as_binary_representation(self._rlen, 1)
+        r_bin_rep = binascii.hexlify(r_bin_len)
+        if rounds > pow(2, min(len(r_bin_rep), 32)) - 1:
             raise ValueError('There are too many iterations.')
-
-        struct_frmt = '>I'
-        if self._rlen == 1:
-            struct_frmt = '>B'
-        if self._rlen == 2:
-            struct_frmt = '>H'
 
         for i in range(1, rounds + 1):
             h = hmac.HMAC(key_material, self._algorithm, backend=self._backend)
+            counter = self._int_as_binary_representation(self._rlen, i)
             if self._location == KBKDF.LOCATION_BEFORE_FIXED:
-                h.update(struct.pack(struct_frmt, i))
+                h.update(counter)
 
             h.update(self.generate_fixed_input())
 
             if self._location == KBKDF.LOCATION_AFTER_FIXED:
-                h.update(struct.pack(struct_frmt, i))
+                h.update(counter)
+
             output.append(h.finalize())
 
         return b''.join(output)[:self._length]
@@ -112,15 +138,17 @@ class KBKDF(object):
 
         :return: binary string
         """
-        if self.fixed_data and isinstance(self.fixed_data, bytes):
-            # NIST's test vectors only supply Fixed input data
-            return self.fixed_data
+        if self._fixed_data and isinstance(self._fixed_data, bytes):
+            # NIST's test vectors are only supply Fixed input data
+            return self._fixed_data
+
+        l = self._int_as_binary_representation(self._llen, self._length * 8)
 
         fixed_input = list()
         fixed_input.append(self._label)
         fixed_input.append(six.int2byte(0))
         fixed_input.append(self._context)
-        fixed_input.append(struct.pack('>I', self._length * 8))
+        fixed_input.append(l)
         return b''.join(fixed_input)
 
     def verify(self, key_material, expected_key):

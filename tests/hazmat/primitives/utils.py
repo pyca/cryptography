@@ -391,30 +391,24 @@ def kbkdf_test(backend,  params):
     }
 
     algorithm = supported_algorithms.get(params.get('prf'))
-    if algorithm is None:
+    if algorithm is None or not backend.hmac_supported(algorithm()):
         pytest.skip('Does not support algorithm')
-
-    if int(params.get('rlen')) == 24:
-        pytest.skip('Does not support rlen {length}'
-                    .format(length=params.get('rlen')))
 
     if params.get('ctrlocation') == 'middle_fixed':
         pytest.skip('Does not support counter location {location}'
                     .format(location=params.get('ctrlocation')))
 
-    if not backend.hmac_supported(algorithm()):
-        pytest.skip('Does not support {hash}'.format(hash=params.get('prf')))
-
     ctrkdf = KBKDF(algorithm(),
+                   KBKDF.COUNTER_MODE,
+                   params['l'] // 8,
+                   params['rlen'] // 8,
                    None,
-                   int(params['l']) // 8,
-                   int(params['rlen']) // 8,
                    params['ctrlocation'],
                    None,
                    None,
+                   binascii.unhexlify(params['fixedinputdata']),
                    backend=backend)
 
-    ctrkdf.fixed_data = binascii.unhexlify(params['fixedinputdata'])
     ko = ctrkdf.derive(binascii.unhexlify(params['ki']))
     assert binascii.hexlify(ko) == params["ko"]
 

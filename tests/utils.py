@@ -827,16 +827,20 @@ def load_nist_kbkdf_vectors(vector_data):
 
         if line.startswith("[") and line.endswith("]"):
             tag_data = line[1:-1]
-            # Check if RLEN
             name, value = [c.strip() for c in tag_data.split("=")]
             if value.endswith('_BITS'):
-                value = value.split('_')[0]
+                value = int(value.split('_')[0])
+                tag.update({name.lower(): value})
+                continue
 
             tag.update({name.lower(): value.lower()})
         elif line.startswith("COUNT="):
             test_data = dict()
             test_data.update(tag)
             vectors.append(test_data)
+        elif line.startswith("L"):
+            name, value = [c.strip() for c in line.split("=")]
+            test_data[name.lower()] = int(value)
         else:
             name, value = [c.strip() for c in line.split("=")]
             test_data[name.lower()] = value.encode("ascii")
