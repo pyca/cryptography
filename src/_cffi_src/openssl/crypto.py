@@ -29,6 +29,7 @@ static const int CRYPTO_MEM_CHECK_ENABLE;
 static const int CRYPTO_MEM_CHECK_DISABLE;
 static const int CRYPTO_LOCK;
 static const int CRYPTO_UNLOCK;
+static const int CRYPTO_READ;
 static const int CRYPTO_LOCK_SSL;
 """
 
@@ -89,6 +90,7 @@ CUSTOMIZATIONS = """
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
 static const long CRYPTO_LOCK = 0;
 static const long CRYPTO_UNLOCK = 0;
+static const long CRYPTO_READ = 0;
 static const long CRYPTO_LOCK_SSL = 0;
 #else
 static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
