@@ -247,7 +247,6 @@ void SSL_SESSION_free(SSL_SESSION *);
 /* Information about actually used cipher */
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
-char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
@@ -255,6 +254,8 @@ Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 """
 
 MACROS = """
+/* Function signature changed to const char * in 1.1.0 */
+const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 /* These became macros in 1.1.0 */
 int SSL_library_init(void);
 void SSL_load_error_strings(void);
