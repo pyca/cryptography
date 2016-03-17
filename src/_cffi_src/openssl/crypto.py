@@ -43,7 +43,6 @@ void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
 void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
 void CRYPTO_lock(int, int, const char *, int);
 
-void OPENSSL_free(void *);
 """
 
 MACROS = """
@@ -55,6 +54,9 @@ unsigned long OpenSSL_version_num(void);
 const char *OpenSSL_version(int);
 
 void CRYPTO_add(int *, int, int);
+
+/* this is a macro in 1.1.0 */
+void OPENSSL_free(void *);
 """
 
 CUSTOMIZATIONS = """
