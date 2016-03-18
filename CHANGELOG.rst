@@ -1,10 +1,8 @@
 Changelog
 =========
 
-1.3 - `master`_
-~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+1.3 - 2016-03-18
+~~~~~~~~~~~~~~~~
 
 * Added support for padding ANSI X.923 with
   :class:`~cryptography.hazmat.primitives.padding.ANSIX923`.
