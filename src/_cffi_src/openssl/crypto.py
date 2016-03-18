@@ -9,6 +9,8 @@ INCLUDES = """
 """
 
 TYPES = """
+static const long Cryptography_HAS_LOCKING_CALLBACKS;
+
 typedef ... CRYPTO_THREADID;
 
 static const int SSLEAY_VERSION;
@@ -28,7 +30,6 @@ static const int CRYPTO_MEM_CHECK_DISABLE;
 static const int CRYPTO_LOCK;
 static const int CRYPTO_UNLOCK;
 static const int CRYPTO_READ;
-static const int CRYPTO_WRITE;
 static const int CRYPTO_LOCK_SSL;
 """
 
@@ -38,14 +39,16 @@ int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on(void);
 void CRYPTO_mem_leaks(struct bio_st *);
 void CRYPTO_cleanup_all_ex_data(void);
-int CRYPTO_num_locks(void);
-void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
-void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
-void CRYPTO_lock(int, int, const char *, int);
 
 """
 
 MACROS = """
+/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
+   have become macros that are no ops */
+int CRYPTO_num_locks(void);
+void CRYPTO_set_locking_callback(void(*)(int, int, const char *, int));
+void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+
 /* SSLeay was removed in 1.1.0 */
 unsigned long SSLeay(void);
 const char *SSLeay_version(int);
@@ -57,6 +60,9 @@ void CRYPTO_add(int *, int, int);
 
 /* this is a macro in 1.1.0 */
 void OPENSSL_free(void *);
+
+/* This was removed in 1.1.0 */
+void CRYPTO_lock(int, int, const char *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -82,5 +88,15 @@ CUSTOMIZATIONS = """
 # define OPENSSL_BUILT_ON        SSLEAY_BUILT_ON
 # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
 # define OPENSSL_DIR             SSLEAY_DIR
+#endif
+#if !defined(CRYPTO_LOCK)
+static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
+static const long CRYPTO_LOCK = 0;
+static const long CRYPTO_UNLOCK = 0;
+static const long CRYPTO_READ = 0;
+static const long CRYPTO_LOCK_SSL = 0;
+void (*CRYPTO_lock)(int, int, const char *, int) = NULL;
+#else
+static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
 #endif
 """
