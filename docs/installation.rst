@@ -39,8 +39,8 @@ OpenSSL releases:
 
 .. warning::
     OpenSSL versions 0.9.8 and 1.0.0 are no longer supported by the OpenSSL
-    project. Support for OpenSSL 0.9.8 will be removed in the next
-    ``cryptography`` release.
+    project. Cryptography 1.4 has dropped support for OpenSSL 0.9.8, see the
+    :doc:`FAQ </faq>` for more details.
 
 On Windows
 ----------
