@@ -13,7 +13,7 @@ from .utils import check_backend_support, select_backends, skip_if_empty
 
 
 def pytest_report_header(config):
-    return "OpenSSL: {}".format(openssl_backend.openssl_version_text())
+    return "OpenSSL: {0}".format(openssl_backend.openssl_version_text())
 
 
 def pytest_generate_tests(metafunc):
