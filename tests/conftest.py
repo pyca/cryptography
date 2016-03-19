@@ -7,8 +7,13 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from cryptography.hazmat.backends import _available_backends
+from cryptography.hazmat.backends.openssl import backend as openssl_backend
 
 from .utils import check_backend_support, select_backends, skip_if_empty
+
+
+def pytest_report_header(config):
+    return "OpenSSL: {0}".format(openssl_backend.openssl_version_text())
 
 
 def pytest_generate_tests(metafunc):
