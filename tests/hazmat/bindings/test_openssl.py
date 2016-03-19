@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _OpenSSLErrorWithText, _openssl_assert
+    Binding, _OpenSSLErrorWithText, _openssl_assert, _verify_openssl_version
 )
 
 
@@ -175,3 +175,10 @@ class TestOpenSSL(object):
                 b'ex:data not multiple of block length'
             )
         )]
+
+    def test_verify_openssl_version(self, monkeypatch):
+        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_098", raising=False)
+        # TODO: what exception type?
+        with pytest.raises(Exception):
+            # OpenSSL 0.9.8zg
+            _verify_openssl_version(0x9081DF)
