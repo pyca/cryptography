@@ -227,8 +227,7 @@ def _verify_openssl_version(version):
                 utils.DeprecatedIn12
             )
         else:
-            # TODO: what exception type?
-            raise Exception(
+            raise RuntimeError(
                 "You are linking against OpenSSL 0.9.8, which is no longer "
                 "support by the OpenSSL project. You need to upgrade to a "
                 "newer version of OpenSSL."
