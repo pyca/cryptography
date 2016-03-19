@@ -6,6 +6,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
+  will need to upgrade.
 
 1.3 - 2016-03-18
 ~~~~~~~~~~~~~~~~
