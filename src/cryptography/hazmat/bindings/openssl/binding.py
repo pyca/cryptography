@@ -217,6 +217,31 @@ class Binding(object):
             )
 
 
+def _verify_openssl_version(version):
+    if version < 0x10000000:
+        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_098"):
+            warnings.warn(
+                "OpenSSL version 0.9.8 is no longer supported by the OpenSSL "
+                "project, please upgrade. The next version of cryptography "
+                "will completely remove support for it.",
+                utils.DeprecatedIn12
+            )
+        else:
+            # TODO: what exception type?
+            raise Exception(
+                "You are linking against OpenSSL 0.9.8, which is no longer "
+                "support by the OpenSSL project. You need to upgrade to a "
+                "newer version of OpenSSL."
+            )
+    elif version < 0x10001000:
+        warnings.warn(
+            "OpenSSL versions less than 1.0.1 are no longer supported by the "
+            "OpenSSL project, please upgrade. A future version of "
+            "cryptography will drop support for these versions of OpenSSL.",
+            DeprecationWarning
+        )
+
+
 # OpenSSL is not thread safe until the locks are initialized. We call this
 # method in module scope so that it executes with the import lock. On
 # Pythons < 3.4 this import lock is a global lock, which can prevent a race
@@ -224,17 +249,4 @@ class Binding(object):
 # is per module so this approach will not work.
 Binding.init_static_locks()
 
-if Binding.lib.SSLeay() < 0x10000000:
-    warnings.warn(
-        "OpenSSL version 0.9.8 is no longer supported by the OpenSSL project, "
-        "please upgrade. The next version of cryptography will drop support "
-        "for it.",
-        utils.DeprecatedIn12
-    )
-elif Binding.lib.SSLeay() < 0x10001000:
-    warnings.warn(
-        "OpenSSL versions less than 1.0.1 are no longer supported by the "
-        "OpenSSL project, please upgrade. A future version of cryptography "
-        "will drop support for these versions.",
-        DeprecationWarning
-    )
+_verify_openssl_version(Binding.lib.SSLeay())
