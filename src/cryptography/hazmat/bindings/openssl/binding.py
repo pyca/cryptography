@@ -10,7 +10,6 @@ import threading
 import types
 import warnings
 
-from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
@@ -224,7 +223,7 @@ def _verify_openssl_version(version):
                 "OpenSSL version 0.9.8 is no longer supported by the OpenSSL "
                 "project, please upgrade. The next version of cryptography "
                 "will completely remove support for it.",
-                utils.DeprecatedIn12
+                DeprecationWarning
             )
         else:
             raise RuntimeError(
