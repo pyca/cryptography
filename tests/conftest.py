@@ -15,6 +15,7 @@ from .utils import check_backend_support, select_backends, skip_if_empty
 def pytest_report_header(config):
     return "OpenSSL: {}".format(openssl_backend.openssl_version_text())
 
+
 def pytest_generate_tests(metafunc):
     if "backend" in metafunc.fixturenames:
         names = metafunc.config.getoption("--backend")
