@@ -46,7 +46,7 @@ Importing cryptography causes a ``RuntimeError`` about OpenSSL 0.9.8
 The OpenSSL project has dropped support for the 0.9.8 release series. Since it
 is no longer receiving security patches from upstream, ``cryptography`` is also
 dropping support for it. To fix this issue you should upgrade to a newer
-version of OpenSSL (1.0.1 or later), this may require you to upgrade to a newer
+version of OpenSSL (1.0.1 or later). This may require you to upgrade to a newer
 operating system.
 
 For the 1.4 release, you can set the ``CRYPTOGRAPHY_ALLOW_OPENSSL_098``
