@@ -183,8 +183,13 @@ dependencies.
 Building cryptography on OS X
 -----------------------------
 
+.. note::
+
+    If installation gives a ``fatal error: 'openssl/aes.h' file not found``
+    see the :doc:`FAQ </faq>` for information about how to fix this issue.
+
 The wheel package on OS X is a statically linked build (as of 1.0.1) so for
-users with pip 1.5 or above you only need one step:
+users with pip 8 or above you only need one step:
 
 .. code-block:: console
 
