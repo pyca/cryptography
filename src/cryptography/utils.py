@@ -120,6 +120,10 @@ class _ModuleWithDeprecations(object):
         setattr(self._module, attr, value)
 
     def __delattr__(self, attr):
+        obj = getattr(self._module, attr)
+        if isinstance(obj, _DeprecatedValue):
+            warnings.warn(obj.message, obj.warning_class, stacklevel=2)
+
         delattr(self._module, attr)
 
     def __dir__(self):
