@@ -9,6 +9,12 @@ Changelog
 * Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 
+1.3.1 - 2016-03-21
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug that caused an ``AttributeError`` when using ``mock`` to patch
+  some ``cryptography`` modules.
+
 1.3 - 2016-03-18
 ~~~~~~~~~~~~~~~~
 
