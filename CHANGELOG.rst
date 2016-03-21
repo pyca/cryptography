@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.3.1 - 2016-03-21
+~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug that caused an ``AttributeError`` when using mock to patch some cryptography
+  modules.
+
 1.3 - 2016-03-18
 ~~~~~~~~~~~~~~~~
 
