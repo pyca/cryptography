@@ -119,6 +119,9 @@ class _ModuleWithDeprecations(object):
     def __setattr__(self, attr, value):
         setattr(self._module, attr, value)
 
+    def __delattr__(self, attr):
+        delattr(self._module, attr)
+
     def __dir__(self):
         return ["_module"] + dir(self._module)
 
