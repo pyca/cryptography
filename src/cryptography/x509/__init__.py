@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from cryptography import utils
 from cryptography.x509.base import (
     Certificate, CertificateBuilder, CertificateRevocationList,
     CertificateRevocationListBuilder,
@@ -37,13 +36,6 @@ from cryptography.x509.oid import (
     ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
 
-
-CRLExtensionOID = utils.deprecated(
-    CRLEntryExtensionOID,
-    __name__,
-    "CRLExtensionOID has been renamed to CRLEntryExtensionOID",
-    utils.DeprecatedIn12
-)
 
 OID_AUTHORITY_INFORMATION_ACCESS = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 OID_AUTHORITY_KEY_IDENTIFIER = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -174,7 +166,6 @@ __all__ = [
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "_GENERAL_NAMES",
-    "CRLExtensionOID",
     "CertificateIssuer",
     "CRLReason",
     "InvalidityDate",
