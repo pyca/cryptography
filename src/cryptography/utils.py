@@ -15,7 +15,6 @@ import warnings
 # the functions deprecated in 1.0 are on an arbitrarily extended deprecation
 # cycle and should not be removed until we agree on when that cycle ends.
 DeprecatedIn10 = DeprecationWarning
-DeprecatedIn12 = DeprecationWarning
 
 
 def read_only_property(name):

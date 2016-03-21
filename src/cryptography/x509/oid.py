@@ -94,14 +94,6 @@ class CRLEntryExtensionOID(object):
     INVALIDITY_DATE = ObjectIdentifier("2.5.29.24")
 
 
-CRLExtensionOID = utils.deprecated(
-    CRLEntryExtensionOID,
-    __name__,
-    "CRLExtensionOID has been renamed to CRLEntryExtensionOID",
-    utils.DeprecatedIn12
-)
-
-
 class NameOID(object):
     COMMON_NAME = ObjectIdentifier("2.5.4.3")
     COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
