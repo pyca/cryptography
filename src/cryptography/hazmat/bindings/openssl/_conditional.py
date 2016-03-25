@@ -250,6 +250,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_MGF1_MD": [
         "EVP_PKEY_CTX_set_rsa_mgf1_md",
     ],
+    "Cryptography_HAS_RSA_OAEP_MD": [
+        "EVP_PKEY_CTX_set_rsa_oaep_md",
+    ],
     "Cryptography_HAS_TLSv1_1": [
         "SSL_OP_NO_TLSv1_1",
         "TLSv1_1_method",
