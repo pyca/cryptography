@@ -17,6 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
@@ -32,23 +33,30 @@ class _SubjectPublicKeyInfo(univ.Sequence):
 
 
 def _key_identifier_from_public_key(public_key):
-    # This is a very slow way to do this.
-    serialized = public_key.public_bytes(
-        serialization.Encoding.DER,
-        serialization.PublicFormat.SubjectPublicKeyInfo
-    )
-    spki, remaining = decoder.decode(
-        serialized, asn1Spec=_SubjectPublicKeyInfo()
-    )
-    assert not remaining
-    # the univ.BitString object is a tuple of bits. We need bytes and
-    # pyasn1 really doesn't want to give them to us. To get it we'll
-    # build an integer and convert that to bytes.
-    bits = 0
-    for bit in spki.getComponentByName("subjectPublicKey"):
-        bits = bits << 1 | bit
+    if isinstance(public_key, RSAPublicKey):
+        data = public_key.public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.PKCS1,
+        )
+    else:
+        # This is a very slow way to do this.
+        serialized = public_key.public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        spki, remaining = decoder.decode(
+            serialized, asn1Spec=_SubjectPublicKeyInfo()
+        )
+        assert not remaining
+        # the univ.BitString object is a tuple of bits. We need bytes and
+        # pyasn1 really doesn't want to give them to us. To get it we'll
+        # build an integer and convert that to bytes.
+        bits = 0
+        for bit in spki.getComponentByName("subjectPublicKey"):
+            bits = bits << 1 | bit
 
-    data = utils.int_to_bytes(bits)
+        data = utils.int_to_bytes(bits)
+
     return hashlib.sha1(data).digest()
 
 
