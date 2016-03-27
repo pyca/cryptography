@@ -17,6 +17,7 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
@@ -38,6 +39,8 @@ def _key_identifier_from_public_key(public_key):
             serialization.Encoding.DER,
             serialization.PublicFormat.PKCS1,
         )
+    elif isinstance(public_key, EllipticCurvePublicKey):
+        data = public_key.public_numbers().encode_point()
     else:
         # This is a very slow way to do this.
         serialized = public_key.public_bytes(
