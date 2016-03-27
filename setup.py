@@ -302,9 +302,7 @@ setup(
     ],
 
     package_dir={"": "src"},
-    packages=find_packages(
-        where="src", exclude=["_cffi_src", "_cffi_src.*", "tests", "tests.*"]
-    ),
+    packages=find_packages(where="src", exclude=["_cffi_src", "_cffi_src.*"]),
     include_package_data=True,
 
     install_requires=requirements,
