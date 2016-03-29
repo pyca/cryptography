@@ -46,7 +46,7 @@ _PRE_INCLUDE = """
 #if !defined(LIBRESSL_VERSION_NUMBER)
 #include <openssl/e_os2.h>
 #endif
-#if defined(OPENSSL_SYS_WINDOWS) || defined(_WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 """
