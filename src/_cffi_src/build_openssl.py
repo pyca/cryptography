@@ -38,8 +38,15 @@ def _osx_libraries(build_static):
 
 
 _PRE_INCLUDE = """
+#include <openssl/opensslv.h>
+/*
+    LibreSSL removed e_os2.h from the public headers so we'll only include it
+    if we're using vanilla OpenSSL.
+*/
+#if !defined(LIBRESSL_VERSION_NUMBER)
 #include <openssl/e_os2.h>
-#if defined(OPENSSL_SYS_WINDOWS)
+#endif
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 """
