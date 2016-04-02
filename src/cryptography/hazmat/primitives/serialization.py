@@ -127,7 +127,13 @@ def _read_next_string(data):
 
     While the RFC calls these strings, in Python they are bytes objects.
     """
+    if len(data) < 4:
+        raise ValueError("Key is not in the proper format")
+
     str_len, = struct.unpack('>I', data[:4])
+    if len(data) < str_len + 4:
+        raise ValueError("Key is not in the proper format")
+
     return data[4:4 + str_len], data[4 + str_len:]
 
 

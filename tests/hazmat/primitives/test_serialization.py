@@ -854,6 +854,17 @@ class TestRSASSHSerialization(object):
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
+    def test_load_ssh_public_key_truncated_int(self, backend):
+        ssh_key = b'ssh-rsa AAAAB3NzaC1yc2EAAAA='
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+        ssh_key = b'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAACKr+IHXo'
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
     def test_load_ssh_public_key_rsa_comment_with_spaces(self, backend):
         ssh_key = (
             b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
