@@ -336,7 +336,9 @@ Custom Hashes
 ~~~~~~~~~~~~~
 
 * Blake2 - Generated as part of the OpenSSL commit that added Blake2
-  functionality. Verified against the reference implementation of Blake2.
+  functionality. Can be found in the OpenSSL repository under
+  ``test/evptests.txt``. Verified against the reference implementation of
+  Blake2.
 
 HMAC
 ~~~~
@@ -462,3 +464,4 @@ header format (substituting the correct information):
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
 .. _`Russian CA`: http://e-trust.gosuslugi.ru/MainCA
+.. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
