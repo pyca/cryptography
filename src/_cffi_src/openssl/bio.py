@@ -158,7 +158,7 @@ long BIO_set_read_buffer_size(BIO *, long);
 long BIO_set_write_buffer_size(BIO *, long);
 long BIO_set_buffer_size(BIO *, long);
 long BIO_set_buffer_read_data(BIO *, void *, long);
-long BIO_set_nbio(BIO *b, long n);
+long BIO_set_nbio(BIO *, long);
 
 /* The following was a macro in 0.9.8e. Once we drop support for RHEL/CentOS 5
    we should move this back to FUNCTIONS. */
