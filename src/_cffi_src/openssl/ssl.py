@@ -367,7 +367,7 @@ void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *));
 void SSL_CTX_set_tlsext_servername_arg(
-    SSL_CTX *, void*);
+    SSL_CTX *, void *);
 
 /* These were added in OpenSSL 0.9.8h, but since version testing in OpenSSL
    is fraught with peril thanks to OS distributions we check some constants
@@ -448,18 +448,18 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
 size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
 
-long SSL_CTX_sess_number(SSL_CTX *ctx);
-long SSL_CTX_sess_connect(SSL_CTX *ctx);
-long SSL_CTX_sess_connect_good(SSL_CTX *ctx);
-long SSL_CTX_sess_connect_renegotiate(SSL_CTX *ctx);
-long SSL_CTX_sess_accept(SSL_CTX *ctx);
-long SSL_CTX_sess_accept_good(SSL_CTX *ctx);
-long SSL_CTX_sess_accept_renegotiate(SSL_CTX *ctx);
-long SSL_CTX_sess_hits(SSL_CTX *ctx);
-long SSL_CTX_sess_cb_hits(SSL_CTX *ctx);
-long SSL_CTX_sess_misses(SSL_CTX *ctx);
-long SSL_CTX_sess_timeouts(SSL_CTX *ctx);
-long SSL_CTX_sess_cache_full(SSL_CTX *ctx);
+long SSL_CTX_sess_number(SSL_CTX *);
+long SSL_CTX_sess_connect(SSL_CTX *);
+long SSL_CTX_sess_connect_good(SSL_CTX *);
+long SSL_CTX_sess_connect_renegotiate(SSL_CTX *);
+long SSL_CTX_sess_accept(SSL_CTX *);
+long SSL_CTX_sess_accept_good(SSL_CTX *);
+long SSL_CTX_sess_accept_renegotiate(SSL_CTX *);
+long SSL_CTX_sess_hits(SSL_CTX *);
+long SSL_CTX_sess_cb_hits(SSL_CTX *);
+long SSL_CTX_sess_misses(SSL_CTX *);
+long SSL_CTX_sess_timeouts(SSL_CTX *);
+long SSL_CTX_sess_cache_full(SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
@@ -571,7 +571,7 @@ void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *)) = NULL;
 void (*SSL_CTX_set_tlsext_servername_arg)(
-    SSL_CTX *, void*) = NULL;
+    SSL_CTX *, void *) = NULL;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB
