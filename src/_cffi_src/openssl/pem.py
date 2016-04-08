@@ -46,6 +46,8 @@ X509_CRL *PEM_read_bio_X509_CRL(BIO *, X509_CRL **, pem_password_cb *, void *);
 
 int PEM_write_bio_X509_CRL(BIO *, X509_CRL *);
 
+X509 *PEM_read_bio_X509_AUX(BIO *, X509 **, pem_password_cb *, void *);
+
 PKCS7 *PEM_read_bio_PKCS7(BIO *, PKCS7 **, pem_password_cb *, void *);
 int PEM_write_bio_PKCS7(BIO *, PKCS7 *);
 

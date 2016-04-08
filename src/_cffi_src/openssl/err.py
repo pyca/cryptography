@@ -13,6 +13,7 @@ static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
+static const int Cryptography_HAS_TLSEXT_ERROR_CODES;
 static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
 
 struct ERR_string_data_st {
@@ -28,6 +29,8 @@ static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_RSA;
 static const int ERR_LIB_PKCS12;
+static const int ERR_LIB_SSL;
+static const int ERR_LIB_X509;
 
 static const int ASN1_F_ASN1_ENUMERATED_TO_BN;
 static const int ASN1_F_ASN1_EX_C2I;
@@ -224,6 +227,15 @@ static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
 static const int RSA_R_PKCS_DECODING_ERROR;
 static const int RSA_R_OAEP_DECODING_ERROR;
 static const int RSA_F_RSA_SIGN;
+
+static const int SSL_TLSEXT_ERR_OK;
+static const int SSL_TLSEXT_ERR_ALERT_WARNING;
+static const int SSL_TLSEXT_ERR_ALERT_FATAL;
+static const int SSL_TLSEXT_ERR_NOACK;
+
+static const int SSL_AD_INTERNAL_ERROR;
+static const int SSL_AD_ACCESS_DENIED;
+static const int SSL_AD_HANDSHAKE_FAILURE;
 """
 
 FUNCTIONS = """
@@ -317,6 +329,16 @@ static const long Cryptography_HAS_EC_CODES = 1;
 static const long Cryptography_HAS_EC_CODES = 0;
 static const int EC_R_UNKNOWN_GROUP = 0;
 static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
+#endif
+
+#ifdef SSL_TLSEXT_ERR_OK
+static const int Cryptography_HAS_TLSEXT_ERROR_CODES = 1;
+#else
+static const int Cryptography_HAS_TLSEXT_ERROR_CODES = 0;
+static const int SSL_TLSEXT_ERR_OK = 0;
+static const int SSL_TLSEXT_ERR_ALERT_WARNING = 0;
+static const int SSL_TLSEXT_ERR_ALERT_FATAL = 0;
+static const int SSL_TLSEXT_ERR_NOACK = 0;
 #endif
 
 #ifdef RSA_R_PKCS_DECODING_ERROR
