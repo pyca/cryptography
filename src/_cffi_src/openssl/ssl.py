@@ -24,6 +24,7 @@ static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
+static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -758,6 +759,16 @@ int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
 # else
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
+#endif
+
+/* SSL_CTX_clear_options() and SSL_clear_options() were first added in
+ * OpenSSL 0.9.8m but do not appear in some 0.9.9-dev versions such the
+ * 0.9.9 from "May 2008" that NetBSD 5.0 uses. */
+#if OPENSSL_VERSION_NUMBER >= 0x009080dfL && OPENSSL_VERSION_NUMBER != 0x00909000L
+static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
+#else
+unsigned long (*SSL_CTX_clear_options)(SSL_CTX *, unsigned long) = NULL;
+static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 0;
 #endif
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
