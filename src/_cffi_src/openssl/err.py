@@ -28,6 +28,8 @@ static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_RSA;
 static const int ERR_LIB_PKCS12;
+static const int ERR_LIB_SSL;
+static const int ERR_LIB_X509;
 
 static const int ASN1_F_ASN1_ENUMERATED_TO_BN;
 static const int ASN1_F_ASN1_EX_C2I;
@@ -224,6 +226,15 @@ static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
 static const int RSA_R_PKCS_DECODING_ERROR;
 static const int RSA_R_OAEP_DECODING_ERROR;
 static const int RSA_F_RSA_SIGN;
+
+static const int SSL_TLSEXT_ERR_OK;
+static const int SSL_TLSEXT_ERR_ALERT_WARNING;
+static const int SSL_TLSEXT_ERR_ALERT_FATAL;
+static const int SSL_TLSEXT_ERR_NOACK;
+
+static const int SSL_AD_INTERNAL_ERROR;
+static const int SSL_AD_ACCESS_DENIED;
+static const int SSL_AD_HANDSHAKE_FAILURE;
 """
 
 FUNCTIONS = """
