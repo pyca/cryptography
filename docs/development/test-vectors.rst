@@ -331,14 +331,7 @@ Hashes
 * SHA1 from `NIST CAVP`_.
 * SHA2 (224, 256, 384, 512) from `NIST CAVP`_.
 * Whirlpool from the `Whirlpool website`_.
-
-Custom Hashes
-~~~~~~~~~~~~~
-
-* Blake2 - Generated as part of the OpenSSL commit that added Blake2
-  functionality. Can be found in the OpenSSL repository under
-  ``test/evptests.txt``. Verified against the reference implementation of
-  Blake2.
+* Blake2s and Blake2b from OpenSSL `test/evptests.txt`_.
 
 HMAC
 ~~~~
