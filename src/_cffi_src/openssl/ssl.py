@@ -24,6 +24,7 @@ static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
 static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
+static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 
 /* Internally invented symbol to tell us if SNI is supported */
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
@@ -53,6 +54,7 @@ static const long SSL_ERROR_ZERO_RETURN;
 static const long SSL_ERROR_WANT_READ;
 static const long SSL_ERROR_WANT_WRITE;
 static const long SSL_ERROR_WANT_X509_LOOKUP;
+static const long SSL_ERROR_WANT_CONNECT;
 static const long SSL_ERROR_SYSCALL;
 static const long SSL_ERROR_SSL;
 static const long SSL_SENT_SHUTDOWN;
@@ -177,6 +179,9 @@ void (*SSL_get_info_callback(const SSL *))(const SSL *, int, int);
 SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
 int SSL_set_fd(SSL *, int);
+SSL_CTX *SSL_get_SSL_CTX(const SSL *);
+BIO *SSL_get_rbio(const SSL *);
+BIO *SSL_get_wbio(const SSL *);
 void SSL_set_bio(SSL *, BIO *, BIO *);
 void SSL_set_connect_state(SSL *);
 void SSL_set_accept_state(SSL *);
@@ -287,6 +292,10 @@ unsigned long SSL_get_mode(SSL *);
 unsigned long SSL_set_options(SSL *, unsigned long);
 unsigned long SSL_get_options(SSL *);
 
+void SSL_set_app_data(SSL *, char *);
+char * SSL_get_app_data(SSL *);
+void SSL_set_read_ahead(SSL *, int);
+
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
@@ -296,6 +305,7 @@ long SSL_get_secure_renegotiation_support(SSL *);
 /* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
    and Windows defines long as 32-bit. */
 unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
+unsigned long SSL_CTX_clear_options(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_options(SSL_CTX *);
 unsigned long SSL_CTX_set_mode(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_mode(SSL_CTX *);
@@ -356,6 +366,8 @@ void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *));
+void SSL_CTX_set_tlsext_servername_arg(
+    SSL_CTX *, void *);
 
 /* These were added in OpenSSL 0.9.8h, but since version testing in OpenSSL
    is fraught with peril thanks to OS distributions we check some constants
@@ -435,6 +447,19 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
                                   size_t);
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
 size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
+
+long SSL_CTX_sess_number(SSL_CTX *);
+long SSL_CTX_sess_connect(SSL_CTX *);
+long SSL_CTX_sess_connect_good(SSL_CTX *);
+long SSL_CTX_sess_connect_renegotiate(SSL_CTX *);
+long SSL_CTX_sess_accept(SSL_CTX *);
+long SSL_CTX_sess_accept_good(SSL_CTX *);
+long SSL_CTX_sess_accept_renegotiate(SSL_CTX *);
+long SSL_CTX_sess_hits(SSL_CTX *);
+long SSL_CTX_sess_cb_hits(SSL_CTX *);
+long SSL_CTX_sess_misses(SSL_CTX *);
+long SSL_CTX_sess_timeouts(SSL_CTX *);
+long SSL_CTX_sess_cache_full(SSL_CTX *);
 """
 
 CUSTOMIZATIONS = """
@@ -545,6 +570,8 @@ const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
 void (*SSL_CTX_set_tlsext_servername_callback)(
     SSL_CTX *,
     int (*)(const SSL *, int *, void *)) = NULL;
+void (*SSL_CTX_set_tlsext_servername_arg)(
+    SSL_CTX *, void *) = NULL;
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB
@@ -732,6 +759,17 @@ int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
 # else
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
+#endif
+
+/* SSL_CTX_clear_options() and SSL_clear_options() were first added in
+ * OpenSSL 0.9.8m but do not appear in some 0.9.9-dev versions such the
+ * 0.9.9 from "May 2008" that NetBSD 5.0 uses. */
+#if OPENSSL_VERSION_NUMBER >= 0x009080dfL && \
+    OPENSSL_VERSION_NUMBER != 0x00909000L
+static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
+#else
+unsigned long (*SSL_CTX_clear_options)(SSL_CTX *, unsigned long) = NULL;
+static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 0;
 #endif
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were

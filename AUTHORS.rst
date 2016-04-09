@@ -27,3 +27,5 @@ PGP key fingerprints are enclosed in parentheses.
 * Jiangge Zhang <tonyseek@gmail.com> (BBEC 782B 015F 71B1 5FF7  EACA 1A8C AA98 255F 5000)
 * Major Hayden <major@mhtx.net> (1BF9 9264 9596 0033 698C  252B 7370 51E0 C101 1FB1)
 * Phoebe Queen <foibey@gmail.com> (10D4 7741 AB65 50F4 B264 3888 DA40 201A 072B C1FA)
+* Google Inc.
+* Amaury Forgeot d'Arc <amauryfa@google.com>

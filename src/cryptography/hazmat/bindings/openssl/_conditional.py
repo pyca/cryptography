@@ -204,6 +204,12 @@ CONDITIONAL_NAMES = {
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
     ],
+    "Cryptography_HAS_TLSEXT_ERROR_CODES": [
+        "SSL_TLSEXT_ERR_OK",
+        "SSL_TLSEXT_ERR_ALERT_WARNING",
+        "SSL_TLSEXT_ERR_ALERT_FATAL",
+        "SSL_TLSEXT_ERR_NOACK",
+    ],
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
     ],
@@ -350,6 +356,9 @@ CONDITIONAL_NAMES = {
 
     "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
         "SSL_CTX_set_client_cert_engine",
+    ],
+    "Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS": [
+        "SSL_CTX_clear_options",
     ],
     "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
