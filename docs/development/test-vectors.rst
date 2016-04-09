@@ -456,5 +456,5 @@ header format (substituting the correct information):
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
-.. _`Russian CA`: http://e-trust.gosuslugi.ru/MainCA
+.. _`Russian CA`: https://e-trust.gosuslugi.ru/MainCA
 .. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt
