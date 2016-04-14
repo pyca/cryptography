@@ -326,7 +326,7 @@ public class Verify_RSA_OAEP_SHA2 {
 
 	public void testDecrypt(byte[] plaintext, byte[] ciphertext) throws Exception {
 		System.out.println("Verifying OAEP with mgf1_hash: " + m_mgf1_hash + " alg_hash: " + m_alg_hash + " - "
-				+ ciphertext.length + " bytes ciphertext - " 
+				+ ciphertext.length + " bytes ciphertext - "
 				+ plaintext.length + " bytes plaintext");
 
 		m_cipher.init(Cipher.DECRYPT_MODE, m_private_key, m_algo_param);
@@ -339,14 +339,14 @@ public class Verify_RSA_OAEP_SHA2 {
 
 	public static void main(String[] args) {
 		Security.addProvider(new BouncyCastleProvider());
-		
+
 		// assume current directory if no path given on command line
 		String vector_path = "./";
 
 		if (args.length > 0) {
 			vector_path = args[0];
 		}
-		
+
 		System.out.println("Vector file path: " + vector_path);
 
 		try {
@@ -354,16 +354,16 @@ public class Verify_RSA_OAEP_SHA2 {
 			// to verify for each
 			for (SHAHash mgf1_hash : SHAHash.values()) {
 				for (SHAHash alg_hash : SHAHash.values()) {
-					String filename = "oaep-" + mgf1_hash.name().toLowerCase() + 
+					String filename = "oaep-" + mgf1_hash.name().toLowerCase() +
 										  "-" + alg_hash.name().toLowerCase() + ".txt";
 
 					System.out.println("Loading " + filename + "...");
-					
+
 					TestVectorLoader loader = new TestVectorLoader();
 					loader.open(vector_path + filename);
 
 					TestVectorData test_data;
-					
+
 					// load each test in the file and verify
 					while ((test_data = loader.loadNextTest()) != null) {
 						Verify_RSA_OAEP_SHA2 verify = new Verify_RSA_OAEP_SHA2(mgf1_hash, alg_hash, test_data);
