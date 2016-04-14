@@ -1,3 +1,7 @@
+# RSA OAEP SHA2 vectors built for https://github.com/pyca/cryptography
+# # Derived from the NIST OAEP SHA1 vectors.
+# # Verified against the Bouncy Castle OAEP SHA2 implementation
+#
 # =============================================
 # Example
 # Public key
