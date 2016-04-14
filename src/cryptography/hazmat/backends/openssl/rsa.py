@@ -49,21 +49,21 @@ def _enc_dec_rsa(backend, key, data, padding):
                 _Reasons.UNSUPPORTED_MGF
             )
 
-        # if not isinstance(padding._mgf._algorithm, hashes.SHA1):
-        #     raise UnsupportedAlgorithm(
-        #         "This backend supports only SHA1 inside MGF1 when "
-        #         "using OAEP.",
-        #         _Reasons.UNSUPPORTED_HASH
-        #     )
+        if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+            raise UnsupportedAlgorithm(
+                "This backend supports only SHA1 inside MGF1 when "
+                "using OAEP.",
+                _Reasons.UNSUPPORTED_HASH
+            )
 
         if padding._label is not None and padding._label != b"":
             raise ValueError("This backend does not support OAEP labels.")
 
-        # if not isinstance(padding._algorithm, hashes.SHA1):
-        #     raise UnsupportedAlgorithm(
-        #         "This backend only supports SHA1 when using OAEP.",
-        #         _Reasons.UNSUPPORTED_HASH
-        #     )
+        if not isinstance(padding._algorithm, hashes.SHA1):
+            raise UnsupportedAlgorithm(
+                "This backend only supports SHA1 when using OAEP.",
+                _Reasons.UNSUPPORTED_HASH
+            )
     else:
         raise UnsupportedAlgorithm(
             "{0} is not supported by this backend.".format(
@@ -73,12 +73,12 @@ def _enc_dec_rsa(backend, key, data, padding):
         )
 
     if backend._lib.Cryptography_HAS_PKEY_CTX:
-        return _enc_dec_rsa_pkey_ctx(backend, key, data, padding, padding_enum)
+        return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum)
     else:
         return _enc_dec_rsa_098(backend, key, data, padding_enum)
 
 
-def _enc_dec_rsa_pkey_ctx(backend, key, data, padding, padding_enum):
+def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum):
     if isinstance(key, _RSAPublicKey):
         init = backend._lib.EVP_PKEY_encrypt_init
         crypt = backend._lib.Cryptography_EVP_PKEY_encrypt
@@ -96,19 +96,6 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding, padding_enum):
     res = backend._lib.EVP_PKEY_CTX_set_rsa_padding(
         pkey_ctx, padding_enum)
     backend.openssl_assert(res > 0)
-    if isinstance(padding, OAEP):
-        # TODO: handle < 1.0.2 which doesn't support this
-        mgf1_md = backend._lib.EVP_get_digestbyname(
-            padding._mgf._algorithm.name.encode("ascii"))
-        backend.openssl_assert(mgf1_md != backend._ffi.NULL)
-        res = backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx, mgf1_md)
-        backend.openssl_assert(res > 0)
-        oaep_md = backend._lib.EVP_get_digestbyname(
-            padding._algorithm.name.encode("ascii"))
-        backend.openssl_assert(oaep_md != backend._ffi.NULL)
-        res = backend._lib.EVP_PKEY_CTX_set_rsa_oaep_md(pkey_ctx, oaep_md)
-        backend.openssl_assert(res > 0)
-
     buf_size = backend._lib.EVP_PKEY_size(key._evp_pkey)
     backend.openssl_assert(buf_size > 0)
     outlen = backend._ffi.new("size_t *", buf_size)
