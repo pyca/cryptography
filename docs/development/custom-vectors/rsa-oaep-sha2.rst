@@ -21,8 +21,8 @@ Download link: :download:`generate_rsa_oaep_sha2.py
 Verification
 ------------
 
-A Java 8 program was written using the Bouncy Castle (https://www.bouncycastle.org/)
-cryptographic provider to load and verify the test vectors.
+A Java 8 program was written using `Bouncy Castle`_ to load and verify the test
+vectors.
 
 
 .. literalinclude:: /development/custom-vectors/rsa-oaep-sha2/Verify_RSA_OAEP_SHA2.java
@@ -30,23 +30,28 @@ cryptographic provider to load and verify the test vectors.
 Download link: :download:`Verify_RSA_OAEP_SHA2.java
 </development/custom-vectors/rsa-oaep-sha2/Verify_RSA_OAEP_SHA2.java>`
 
-Building Verification for OSX
-----------------
-Download and install the Java 8 SDK (http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-The following was used for the initial verification: jdk-8u77-macosx-x64.dmg
+Using the Verifier
+------------------
 
-Download Bouncy Castle Jar from https://www.bouncycastle.org/latest_releases.html
-The following was used for the initial verification: bcprov-jdk15on-154.jar
+Download and install the `Java 8 SDK`_. Initial verification was performed
+using ``jdk-8u77-macosx-x64.dmg``.
 
-Set the CLASSPATH to include the Bouncy Castle jar and the path to Verify_RSA_OAEP_SHA2.java
-(with colon : separation of paths)
+Download the latest `Bouncy Castle`_ JAR.  Initial verification was performed
+using ``bcprov-jdk15on-154.jar``.
 
-i.e. export CLASSPATH=~/Downloads/bcprov-jdk15on-154.jar:./
+Set the CLASSPATH to include the Bouncy Castle jar and the path to
+Verify_RSA_OAEP_SHA2.java and compile the program.
 
-Compile:
-javac Verify_RSA_OAEP_SHA2.java
+.. code-block:: console
 
-And run with the path to the vectors:
-java Verify_RSA_OAEP_SHA2 <path to test vector files>
+    $ export CLASSPATH=~/Downloads/bcprov-jdk15on-154.jar:./
+    $ javac Verify_RSA_OAEP_SHA2.java
 
-e.g. java Verify_RSA_OAEP_SHA2 ./vectors/
+Finally, run the program with the path to the SHA-2 vectors:
+
+.. code-block:: console
+
+    $ java Verify_RSA_OAEP_SHA2 <path to test vector files>
+
+.. _`Bouncy Castle`: https://www.bouncycastle.org/
+.. _`Java 8 SDK`: https://www.oracle.com/technetwork/java/javase/downloads/index.html
