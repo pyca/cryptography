@@ -240,7 +240,7 @@ Modes
 
     **This mode does not require padding.**
 
-    :param bytes nonce: Should be :doc:`random bytes </random-numbers>`. It is
+    :param bytes nonce: Should be unique, a :term:`nonce`. It is
         critical to never reuse a ``nonce`` with a given key.  Any reuse of a
         nonce with the same key compromises the security of every message
         encrypted with that key. Must be the same number of bytes as the
@@ -305,12 +305,11 @@ Modes
 
     **This mode does not require padding.**
 
-    :param bytes initialization_vector: Must be :doc:`random bytes
-        </random-numbers>`. They do not need to be kept secret and they can be
-        included in a transmitted message. NIST `recommends a 96-bit IV
-        length`_ for performance critical situations but it can be up to
-        2\ :sup:`64` - 1 bits. Do not reuse an ``initialization_vector`` with a
-        given ``key``.
+    :param bytes initialization_vector: Must be unique, a :term:`nonce`.
+        They do not need to be kept secret and they can be included in a
+        transmitted message. NIST `recommends a 96-bit IV length`_ for
+        performance critical situations but it can be up to 2\ :sup:`64` - 1
+        bits. Do not reuse an ``initialization_vector`` with a given ``key``.
 
     .. note::
 
@@ -334,6 +333,9 @@ Modes
         truncation is strongly discouraged for most applications.
 
     :raises ValueError: This is raised if ``len(tag) < min_tag_length``.
+
+    An example of securely encrypting and decrypting data with ``AES`` in the
+    ``GCM`` mode looks like:
 
     .. testcode::
 
@@ -608,7 +610,7 @@ Interfaces used by the symmetric cipher modes described in
 .. _`NIST SP-800-38D`: http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf
 .. _`Communications Security Establishment`: https://www.cse-cst.gc.ca
 .. _`encrypt`: https://ssd.eff.org/en/module/what-encryption
-.. _`CRYPTREC`: http://www.cryptrec.go.jp/english/
+.. _`CRYPTREC`: https://www.cryptrec.go.jp/english/
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_Codebook_.28ECB.29
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: http://www.openpgp.org

@@ -4,16 +4,15 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime
 import os
 import subprocess
 import sys
 import textwrap
 
-import pretend
-
 import pytest
 
-from cryptography import utils
+from cryptography import utils, x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
@@ -21,41 +20,33 @@ from cryptography.hazmat.backends.openssl.backend import (
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, padding
-from cryptography.hazmat.primitives.ciphers import (
-    BlockCipherAlgorithm, Cipher, CipherAlgorithm
-)
+from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
+from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
+from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 
+from ..primitives.fixtures_dsa import DSA_KEY_2048
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..primitives.test_ec import _skip_curve_unsupported
+from ...doubles import (
+    DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
+)
+from ...test_x509 import _load_cert
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
-@utils.register_interface(Mode)
-class DummyMode(object):
-    name = "dummy-mode"
-
-    def validate_for_algorithm(self, algorithm):
-        pass
+def skip_if_libre_ssl(openssl_version):
+    if u'LibreSSL' in openssl_version:
+        pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
 
 
-@utils.register_interface(CipherAlgorithm)
-class DummyCipher(object):
-    name = "dummy-cipher"
-    key_size = None
+class TestLibreSkip(object):
+    def test_skip_no(self):
+        assert skip_if_libre_ssl(u"OpenSSL 0.9.8zf 19 Mar 2015") is None
 
-
-@utils.register_interface(padding.AsymmetricPadding)
-class DummyPadding(object):
-    name = "dummy-cipher"
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHash(object):
-    name = "dummy-hash"
-    block_size = None
-    digest_size = None
+    def test_skip_yes(self):
+        with pytest.raises(pytest.skip.Exception):
+            skip_if_libre_ssl(u"LibreSSL 2.1.6")
 
 
 class DummyMGF(object):
@@ -96,15 +87,20 @@ class TestOpenSSL(object):
     def test_nonexistent_cipher(self, mode):
         b = Backend()
         b.register_cipher_adapter(
-            DummyCipher,
+            DummyCipherAlgorithm,
             type(mode),
             lambda backend, cipher, mode: backend._ffi.NULL
         )
         cipher = Cipher(
-            DummyCipher(), mode, backend=b,
+            DummyCipherAlgorithm(), mode, backend=b,
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
+
+    def test_openssl_assert(self):
+        backend.openssl_assert(True)
+        with pytest.raises(InternalError):
+            backend.openssl_assert(False)
 
     def test_consume_errors(self):
         for i in range(10):
@@ -117,23 +113,6 @@ class TestOpenSSL(object):
 
         assert backend._lib.ERR_peek_error() == 0
         assert len(errors) == 10
-
-    def test_openssl_error_string(self):
-        backend._lib.ERR_put_error(
-            backend._lib.ERR_LIB_EVP,
-            backend._lib.EVP_F_EVP_DECRYPTFINAL_EX,
-            0,
-            b"test_openssl.py",
-            -1
-        )
-
-        errors = backend._consume_errors()
-        exc = backend._unknown_error(errors[0])
-
-        assert (
-            "digital envelope routines:"
-            "EVP_DecryptFinal_ex:digital envelope routines" in str(exc)
-        )
 
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLSv1_method()
@@ -214,6 +193,19 @@ class TestOpenSSL(object):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
 
+    def test_actual_osrandom_bytes(self, monkeypatch):
+        skip_if_libre_ssl(backend.openssl_version_text())
+        sample_data = (b"\x01\x02\x03\x04" * 4)
+        length = len(sample_data)
+
+        def notrandom(size):
+            assert size == length
+            return sample_data
+        monkeypatch.setattr(os, "urandom", notrandom)
+        buf = backend._ffi.new("char[]", length)
+        backend._lib.RAND_bytes(buf, length)
+        assert backend._ffi.buffer(buf)[0:length] == sample_data
+
 
 class TestOpenSSLRandomEngine(object):
     def teardown_method(self, method):
@@ -222,7 +214,7 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
+        assert name == backend._binding._osrandom_engine_name
 
     def test_osrandom_engine_is_default(self, tmpdir):
         engine_printer = textwrap.dedent(
@@ -252,11 +244,12 @@ class TestOpenSSLRandomEngine(object):
             subprocess.check_call(
                 [sys.executable, "-c", engine_printer],
                 env=env,
-                stdout=out
+                stdout=out,
+                stderr=subprocess.PIPE,
             )
 
         osrandom_engine_name = backend._ffi.string(
-            backend._lib.Cryptography_osrandom_engine_name
+            backend._binding._osrandom_engine_name
         )
 
         assert engine_name.read().encode('ascii') == osrandom_engine_name
@@ -275,7 +268,7 @@ class TestOpenSSLRandomEngine(object):
         backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
+        assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
 
@@ -283,7 +276,7 @@ class TestOpenSSLRandomEngine(object):
         e = backend._lib.ENGINE_get_default_RAND()
         assert e != backend._ffi.NULL
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
+        assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
         backend.activate_builtin_random()
@@ -301,13 +294,13 @@ class TestOpenSSLRandomEngine(object):
     def test_activate_osrandom_already_default(self):
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
+        assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
         backend.activate_osrandom_engine()
         e = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(e)
-        assert name == backend._lib.Cryptography_osrandom_engine_name
+        assert name == backend._binding._osrandom_engine_name
         res = backend._lib.ENGINE_free(e)
         assert res == 1
 
@@ -366,11 +359,11 @@ class TestOpenSSLRSA(object):
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(
-            padding.PSS(mgf=padding.MGF1(DummyHash()), salt_length=0)
+            padding.PSS(mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0)
         ) is False
 
     def test_rsa_padding_unsupported(self):
-        assert backend.rsa_padding_supported(DummyPadding()) is False
+        assert backend.rsa_padding_supported(DummyAsymmetricPadding()) is False
 
     def test_rsa_padding_supported_pkcs1v15(self):
         assert backend.rsa_padding_supported(padding.PKCS1v15()) is True
@@ -445,21 +438,164 @@ class TestOpenSSLRSA(object):
 )
 class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
-        @utils.register_interface(BlockCipherAlgorithm)
-        class FakeAlgorithm(object):
-            block_size = 64
-
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            backend.create_cmac_ctx(FakeAlgorithm())
+            backend.create_cmac_ctx(DummyCipherAlgorithm())
 
 
-class TestOpenSSLSerialisationWithOpenSSL(object):
+class TestOpenSSLCreateX509CSR(object):
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_unsupported_dsa_keys(self):
+        private_key = DSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(NotImplementedError):
+            backend.create_x509_csr(object(), private_key, hashes.SHA1())
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_unsupported_ec_keys(self):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+
+        with pytest.raises(NotImplementedError):
+            backend.create_x509_csr(object(), private_key, hashes.SHA1())
+
+
+class TestOpenSSLSignX509Certificate(object):
+    def test_requires_certificate_builder(self):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(TypeError):
+            backend.create_x509_certificate(
+                object(), private_key, DummyHashAlgorithm()
+            )
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_dsa_private_key_is_unsupported(self):
+        private_key = DSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA512(), backend)
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_ec_private_key_is_unsupported(self):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA512(), backend)
+
+
+class TestOpenSSLSignX509CertificateRevocationList(object):
+    def test_invalid_builder(self):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        with pytest.raises(TypeError):
+            backend.create_x509_crl(object(), private_key, hashes.SHA256())
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_dsa_private_key_is_unsupported(self):
+        private_key = DSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateRevocationListBuilder()
+        builder = builder.issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).last_update(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).next_update(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA1(), backend)
+
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        reason="Requires an older OpenSSL. Must be < 1.0.1"
+    )
+    def test_sign_with_ec_private_key_is_unsupported(self):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        builder = x509.CertificateRevocationListBuilder()
+        builder = builder.issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
+        ).last_update(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).next_update(
+            datetime.datetime(2032, 1, 1, 12, 1)
+        )
+
+        with pytest.raises(NotImplementedError):
+            builder.sign(private_key, hashes.SHA512(), backend)
+
+
+class TestOpenSSLCreateRevokedCertificate(object):
+    def test_invalid_builder(self):
+        with pytest.raises(TypeError):
+            backend.create_x509_revoked_certificate(object())
+
+
+class TestOpenSSLSerializationWithOpenSSL(object):
     def test_pem_password_cb_buffer_too_small(self):
-        ffi_cb, cb = backend._pem_password_cb(b"aa")
-        assert cb(None, 1, False, None) == 0
+        ffi_cb, userdata = backend._pem_password_cb(b"aa")
+        handle = backend._ffi.new_handle(userdata)
+        buf = backend._ffi.new('char *')
+        assert ffi_cb(buf, 1, False, handle) == 0
+        assert userdata.called == 1
+        assert isinstance(userdata.exception, ValueError)
+
+    def test_pem_password_cb(self):
+        password = b'abcdefg'
+        buf_size = len(password) + 1
+        ffi_cb, userdata = backend._pem_password_cb(password)
+        handle = backend._ffi.new_handle(userdata)
+        buf = backend._ffi.new('char[]', buf_size)
+        assert ffi_cb(buf, buf_size, False, handle) == len(password)
+        assert userdata.called == 1
+        assert backend._ffi.string(buf, len(password)) == password
 
     def test_unsupported_evp_pkey_type(self):
-        key = pretend.stub(type="unsupported")
+        key = backend._create_evp_pkey_gc()
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_private_key(key)
         with raises_unsupported_algorithm(None):
@@ -482,14 +618,18 @@ class TestOpenSSLSerialisationWithOpenSSL(object):
             )
 
 
+class DummyLibrary(object):
+    Cryptography_HAS_EC = 0
+
+
 class TestOpenSSLEllipticCurve(object):
     def test_elliptic_curve_supported(self, monkeypatch):
-        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+        monkeypatch.setattr(backend, "_lib", DummyLibrary())
 
         assert backend.elliptic_curve_supported(None) is False
 
     def test_elliptic_curve_signature_algorithm_supported(self, monkeypatch):
-        monkeypatch.setattr(backend._lib, "Cryptography_HAS_EC", 0)
+        monkeypatch.setattr(backend, "_lib", DummyLibrary())
 
         assert backend.elliptic_curve_signature_algorithm_supported(
             None, None
@@ -498,6 +638,12 @@ class TestOpenSSLEllipticCurve(object):
     def test_sn_to_elliptic_curve_not_supported(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
             _sn_to_elliptic_curve(backend, b"fake")
+
+    def test_elliptic_curve_exchange_algorithm_supported(self, monkeypatch):
+        monkeypatch.setattr(backend, "_lib", DummyLibrary())
+        assert not backend.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDH(), ec.SECP256R1()
+        )
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
@@ -511,3 +657,23 @@ class TestRSAPEMSerialization(object):
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password)
             )
+
+
+class TestGOSTCertificate(object):
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
+        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
+    )
+    def test_numeric_string_x509_name_entry(self):
+        cert = _load_cert(
+            os.path.join("x509", "e-trust.ru.der"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        with pytest.raises(ValueError) as exc:
+            cert.subject
+
+        # We assert on the message in this case because if the certificate
+        # fails to load it will also raise a ValueError and this test could
+        # erroneously pass.
+        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"

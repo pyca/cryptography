@@ -6,9 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from cryptography import utils
-from cryptography.hazmat.primitives import twofactor
-
 
 class _Reasons(Enum):
     BACKEND_MISSING_INTERFACE = 0
@@ -20,6 +17,7 @@ class _Reasons(Enum):
     UNSUPPORTED_ELLIPTIC_CURVE = 6
     UNSUPPORTED_SERIALIZATION = 7
     UNSUPPORTED_X509 = 8
+    UNSUPPORTED_EXCHANGE_ALGORITHM = 9
 
 
 class UnsupportedAlgorithm(Exception):
@@ -49,19 +47,10 @@ class InvalidSignature(Exception):
 
 
 class InternalError(Exception):
-    pass
+    def __init__(self, msg, err_code):
+        super(InternalError, self).__init__(msg)
+        self.err_code = err_code
 
 
 class InvalidKey(Exception):
     pass
-
-
-InvalidToken = utils.deprecated(
-    twofactor.InvalidToken,
-    __name__,
-    (
-        "The InvalidToken exception has moved to the "
-        "cryptography.hazmat.primitives.twofactor module"
-    ),
-    utils.DeprecatedIn09
-)

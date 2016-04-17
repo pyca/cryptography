@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import binascii
 import collections
+import math
 import re
 from contextlib import contextmanager
 
@@ -53,10 +54,11 @@ def skip_if_empty(backend_list, required_interfaces):
 def check_backend_support(item):
     supported = item.keywords.get("supported")
     if supported and "backend" in item.funcargs:
-        if not supported.kwargs["only_if"](item.funcargs["backend"]):
-            pytest.skip("{0} ({1})".format(
-                supported.kwargs["skip_message"], item.funcargs["backend"]
-            ))
+        for mark in supported:
+            if not mark.kwargs["only_if"](item.funcargs["backend"]):
+                pytest.skip("{0} ({1})".format(
+                    mark.kwargs["skip_message"], item.funcargs["backend"]
+                ))
     elif supported:
         raise ValueError("This mark is only available on methods that take a "
                          "backend")
@@ -397,10 +399,7 @@ def load_fips_dsa_key_pair_vectors(vector_data):
         elif line.startswith("[mod = L=3072"):
             continue
 
-        if not reading_key_data:
-            continue
-
-        elif reading_key_data:
+        if reading_key_data:
             if line.startswith("P"):
                 vectors.append({'p': int(line.split("=")[1], 16)})
             elif line.startswith("Q"):
@@ -498,6 +497,7 @@ _ECDSA_CURVE_NAMES = {
 
     "K-163": "sect163k1",
     "K-233": "sect233k1",
+    "K-256": "secp256k1",
     "K-283": "sect283k1",
     "K-409": "sect409k1",
     "K-571": "sect571k1",
@@ -540,8 +540,8 @@ def load_fips_ecdsa_key_pair_vectors(vector_data):
             elif line.startswith("Qy = "):
                 key_data["y"] = int(line.split("=")[1], 16)
 
-    if key_data is not None:
-        vectors.append(key_data)
+    assert key_data is not None
+    vectors.append(key_data)
 
     return vectors
 
@@ -559,9 +559,6 @@ def load_fips_ecdsa_signing_vectors(vector_data):
     data = None
     for line in vector_data:
         line = line.strip()
-
-        if not line or line.startswith("#"):
-            continue
 
         curve_match = curve_rx.match(line)
         if curve_match:
@@ -594,8 +591,8 @@ def load_fips_ecdsa_signing_vectors(vector_data):
             elif line.startswith("Result = "):
                 data["fail"] = line.split("=")[1].strip()[0] == "F"
 
-    if data is not None:
-        vectors.append(data)
+    assert data is not None
+    vectors.append(data)
     return vectors
 
 
@@ -654,5 +651,198 @@ def load_kasvs_dh_vectors(vector_data):
                 "fail_z": False,
                 "fail_agree": False
             }
+
+    return vectors
+
+
+def load_kasvs_ecdh_vectors(vector_data):
+    """
+    Loads data out of the KASVS key exchange vector data
+    """
+
+    curve_name_map = {
+        "P-192": "secp192r1",
+        "P-224": "secp224r1",
+        "P-256": "secp256r1",
+        "P-384": "secp384r1",
+        "P-521": "secp521r1",
+    }
+
+    result_rx = re.compile(r"([FP]) \(([0-9]+) -")
+
+    tags = []
+    sets = {}
+    vectors = []
+
+    # find info in header
+    for line in vector_data:
+        line = line.strip()
+
+        if line.startswith("#"):
+            parm = line.split("Parameter set(s) supported:")
+            if len(parm) == 2:
+                names = parm[1].strip().split()
+                for n in names:
+                    tags.append("[%s]" % n)
+                break
+
+    # Sets Metadata
+    tag = None
+    curve = None
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line in tags:
+            tag = line
+            curve = None
+        elif line.startswith("[Curve selected:"):
+            curve = curve_name_map[line.split(':')[1].strip()[:-1]]
+
+        if tag is not None and curve is not None:
+            sets[tag.strip("[]")] = curve
+            tag = None
+        if len(tags) == len(sets):
+            break
+
+    # Data
+    data = {
+        "CAVS": {},
+        "IUT": {},
+    }
+    tag = None
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("["):
+            tag = line.split()[0][1:]
+        elif line.startswith("COUNT = "):
+            data["COUNT"] = int(line.split("=")[1])
+        elif line.startswith("dsCAVS = "):
+            data["CAVS"]["d"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsCAVSx = "):
+            data["CAVS"]["x"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsCAVSy = "):
+            data["CAVS"]["y"] = int(line.split("=")[1], 16)
+        elif line.startswith("dsIUT = "):
+            data["IUT"]["d"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsIUTx = "):
+            data["IUT"]["x"] = int(line.split("=")[1], 16)
+        elif line.startswith("QsIUTy = "):
+            data["IUT"]["y"] = int(line.split("=")[1], 16)
+        elif line.startswith("OI = "):
+            data["OI"] = int(line.split("=")[1], 16)
+        elif line.startswith("Z = "):
+            data["Z"] = int(line.split("=")[1], 16)
+        elif line.startswith("DKM = "):
+            data["DKM"] = int(line.split("=")[1], 16)
+        elif line.startswith("Result = "):
+            result_str = line.split("=")[1].strip()
+            match = result_rx.match(result_str)
+
+            if match.group(1) == "F":
+                data["fail"] = True
+            else:
+                data["fail"] = False
+            data["errno"] = int(match.group(2))
+
+            data["curve"] = sets[tag]
+
+            vectors.append(data)
+
+            data = {
+                "CAVS": {},
+                "IUT": {},
+            }
+
+    return vectors
+
+
+def load_x963_vectors(vector_data):
+    """
+    Loads data out of the X9.63 vector data
+    """
+
+    vectors = []
+
+    # Sets Metadata
+    hashname = None
+    vector = {}
+    for line in vector_data:
+        line = line.strip()
+
+        if line.startswith("[SHA"):
+            hashname = line[1:-1]
+            shared_secret_len = 0
+            shared_info_len = 0
+            key_data_len = 0
+        elif line.startswith("[shared secret length"):
+            shared_secret_len = int(line[1:-1].split("=")[1].strip())
+        elif line.startswith("[SharedInfo length"):
+            shared_info_len = int(line[1:-1].split("=")[1].strip())
+        elif line.startswith("[key data length"):
+            key_data_len = int(line[1:-1].split("=")[1].strip())
+        elif line.startswith("COUNT"):
+            count = int(line.split("=")[1].strip())
+            vector["hash"] = hashname
+            vector["count"] = count
+            vector["shared_secret_length"] = shared_secret_len
+            vector["sharedinfo_length"] = shared_info_len
+            vector["key_data_length"] = key_data_len
+        elif line.startswith("Z"):
+            vector["Z"] = line.split("=")[1].strip()
+            assert math.ceil(shared_secret_len / 8) * 2 == len(vector["Z"])
+        elif line.startswith("SharedInfo"):
+            if shared_info_len != 0:
+                vector["sharedinfo"] = line.split("=")[1].strip()
+                silen = len(vector["sharedinfo"])
+                assert math.ceil(shared_info_len / 8) * 2 == silen
+        elif line.startswith("key_data"):
+            vector["key_data"] = line.split("=")[1].strip()
+            assert math.ceil(key_data_len / 8) * 2 == len(vector["key_data"])
+            vectors.append(vector)
+            vector = {}
+
+    return vectors
+
+
+def load_nist_kbkdf_vectors(vector_data):
+    """
+    Load NIST SP 800-108 KDF Vectors
+    """
+    vectors = []
+    test_data = None
+    tag = {}
+
+    for line in vector_data:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("[") and line.endswith("]"):
+            tag_data = line[1:-1]
+            name, value = [c.strip() for c in tag_data.split("=")]
+            if value.endswith('_BITS'):
+                value = int(value.split('_')[0])
+                tag.update({name.lower(): value})
+                continue
+
+            tag.update({name.lower(): value.lower()})
+        elif line.startswith("COUNT="):
+            test_data = dict()
+            test_data.update(tag)
+            vectors.append(test_data)
+        elif line.startswith("L"):
+            name, value = [c.strip() for c in line.split("=")]
+            test_data[name.lower()] = int(value)
+        else:
+            name, value = [c.strip() for c in line.split("=")]
+            test_data[name.lower()] = value.encode("ascii")
 
     return vectors

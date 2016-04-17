@@ -4,130 +4,175 @@
 
 from __future__ import absolute_import, division, print_function
 
+import collections
 import os
-import sys
 import threading
+import types
+import warnings
 
-from cryptography.hazmat.bindings.utils import (
-    build_ffi_for_binding, load_library_for_binding,
+from cryptography.exceptions import InternalError
+from cryptography.hazmat.bindings._openssl import ffi, lib
+from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
+
+_OpenSSLError = collections.namedtuple("_OpenSSLError",
+                                       ["code", "lib", "func", "reason"])
+_OpenSSLErrorWithText = collections.namedtuple(
+    "_OpenSSLErrorWithText", ["code", "lib", "func", "reason", "reason_text"]
 )
 
 
-_OSX_PRE_INCLUDE = """
-#ifdef __APPLE__
-#include <AvailabilityMacros.h>
-#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
-"""
+def _consume_errors(lib):
+    errors = []
+    while True:
+        code = lib.ERR_get_error()
+        if code == 0:
+            break
 
-_OSX_POST_INCLUDE = """
-#ifdef __APPLE__
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
-"""
+        err_lib = lib.ERR_GET_LIB(code)
+        err_func = lib.ERR_GET_FUNC(code)
+        err_reason = lib.ERR_GET_REASON(code)
+
+        errors.append(_OpenSSLError(code, err_lib, err_func, err_reason))
+
+    return errors
 
 
-def _get_libraries(platform):
-    # OpenSSL goes by a different library name on different operating systems.
-    if platform != "win32":
-        # In some circumstances, the order in which these libs are
-        # specified on the linker command-line is significant;
-        # libssl must come before libcrypto
-        # (http://marc.info/?l=openssl-users&m=135361825921871)
-        return ["ssl", "crypto"]
-    else:
-        link_type = os.environ.get("PYCA_WINDOWS_LINK_TYPE", "static")
-        return _get_windows_libraries(link_type)
+def _openssl_assert(lib, ok):
+    if not ok:
+        errors = _consume_errors(lib)
+        errors_with_text = []
+        for err in errors:
+            err_text_reason = ffi.string(
+                lib.ERR_error_string(err.code, ffi.NULL)
+            )
+            errors_with_text.append(
+                _OpenSSLErrorWithText(
+                    err.code, err.lib, err.func, err.reason, err_text_reason
+                )
+            )
 
-
-def _get_windows_libraries(link_type):
-    if link_type == "dynamic":
-        return ["libeay32", "ssleay32", "advapi32"]
-    elif link_type == "static" or link_type == "":
-        return ["libeay32mt", "ssleay32mt", "advapi32",
-                "crypt32", "gdi32", "user32", "ws2_32"]
-    else:
-        raise ValueError(
-            "PYCA_WINDOWS_LINK_TYPE must be 'static' or 'dynamic'"
+        raise InternalError(
+            "Unknown OpenSSL error. This error is commonly encountered when "
+            "another library is not cleaning up the OpenSSL error stack. If "
+            "you are using cryptography with another library that uses "
+            "OpenSSL try disabling it before reporting a bug. Otherwise "
+            "please file an issue at https://github.com/pyca/cryptography/"
+            "issues with information on how to reproduce "
+            "this. ({0!r})".format(errors_with_text),
+            errors_with_text
         )
+
+
+def ffi_callback(signature, name, **kwargs):
+    """Callback dispatcher
+
+    The ffi_callback() dispatcher keeps callbacks compatible between dynamic
+    and static callbacks.
+    """
+    def wrapper(func):
+        if lib.Cryptography_STATIC_CALLBACKS:
+            # def_extern() returns a decorator that sets the internal
+            # function pointer and returns the original function unmodified.
+            ffi.def_extern(name=name, **kwargs)(func)
+            callback = getattr(lib, name)
+        else:
+            # callback() wraps the function in a cdata function.
+            callback = ffi.callback(signature, **kwargs)(func)
+        return callback
+    return wrapper
+
+
+@ffi_callback("int (*)(unsigned char *, int)",
+              name="Cryptography_rand_bytes",
+              error=-1)
+def _osrandom_rand_bytes(buf, size):
+    signed = ffi.cast("char *", buf)
+    result = os.urandom(size)
+    signed[0:size] = result
+    return 1
+
+
+@ffi_callback("int (*)(void)", name="Cryptography_rand_status")
+def _osrandom_rand_status():
+    return 1
+
+
+def build_conditional_library(lib, conditional_names):
+    conditional_lib = types.ModuleType("lib")
+    excluded_names = set()
+    for condition, names in conditional_names.items():
+        if not getattr(lib, condition):
+            excluded_names |= set(names)
+
+    for attr in dir(lib):
+        if attr not in excluded_names:
+            setattr(conditional_lib, attr, getattr(lib, attr))
+
+    return conditional_lib
 
 
 class Binding(object):
     """
     OpenSSL API wrapper.
     """
-    _module_prefix = "cryptography.hazmat.bindings.openssl."
-    _modules = [
-        "aes",
-        "asn1",
-        "bignum",
-        "bio",
-        "cmac",
-        "cms",
-        "conf",
-        "crypto",
-        "dh",
-        "dsa",
-        "ec",
-        "ecdh",
-        "ecdsa",
-        "engine",
-        "err",
-        "evp",
-        "hmac",
-        "nid",
-        "objects",
-        "opensslv",
-        "osrandom_engine",
-        "pem",
-        "pkcs7",
-        "pkcs12",
-        "rand",
-        "rsa",
-        "ssl",
-        "x509",
-        "x509name",
-        "x509v3",
-        "x509_vfy"
-    ]
-
+    lib = None
+    ffi = ffi
+    _lib_loaded = False
     _locks = None
     _lock_cb_handle = None
     _init_lock = threading.Lock()
     _lock_init_lock = threading.Lock()
 
-    ffi = build_ffi_for_binding(
-        module_prefix=_module_prefix,
-        modules=_modules,
-        pre_include=_OSX_PRE_INCLUDE,
-        post_include=_OSX_POST_INCLUDE,
-        libraries=_get_libraries(sys.platform)
+    _osrandom_engine_id = ffi.new("const char[]", b"osrandom")
+    _osrandom_engine_name = ffi.new("const char[]", b"osrandom_engine")
+    _osrandom_method = ffi.new(
+        "RAND_METHOD *",
+        dict(bytes=_osrandom_rand_bytes,
+             pseudorand=_osrandom_rand_bytes,
+             status=_osrandom_rand_status)
     )
-    lib = None
 
     def __init__(self):
         self._ensure_ffi_initialized()
 
     @classmethod
-    def _ensure_ffi_initialized(cls):
-        if cls.lib is not None:
-            return
+    def _register_osrandom_engine(cls):
+        _openssl_assert(cls.lib, cls.lib.ERR_peek_error() == 0)
 
-        with cls._init_lock:
-            if cls.lib is None:
-                cls.lib = load_library_for_binding(
-                    cls.ffi,
-                    cls._module_prefix,
-                    cls._modules,
+        engine = cls.lib.ENGINE_new()
+        _openssl_assert(cls.lib, engine != cls.ffi.NULL)
+        try:
+            result = cls.lib.ENGINE_set_id(engine, cls._osrandom_engine_id)
+            _openssl_assert(cls.lib, result == 1)
+            result = cls.lib.ENGINE_set_name(engine, cls._osrandom_engine_name)
+            _openssl_assert(cls.lib, result == 1)
+            result = cls.lib.ENGINE_set_RAND(engine, cls._osrandom_method)
+            _openssl_assert(cls.lib, result == 1)
+            result = cls.lib.ENGINE_add(engine)
+            if result != 1:
+                errors = _consume_errors(cls.lib)
+                _openssl_assert(
+                    cls.lib,
+                    errors[0].reason == cls.lib.ENGINE_R_CONFLICTING_ENGINE_ID
                 )
 
-                res = cls.lib.Cryptography_add_osrandom_engine()
-                assert res != 0
+        finally:
+            result = cls.lib.ENGINE_free(engine)
+            _openssl_assert(cls.lib, result == 1)
+
+    @classmethod
+    def _ensure_ffi_initialized(cls):
+        with cls._init_lock:
+            if not cls._lib_loaded:
+                cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
+                cls._lib_loaded = True
+                # initialize the SSL library
+                cls.lib.SSL_library_init()
+                # adds all ciphers/digests for EVP
+                cls.lib.OpenSSL_add_all_algorithms()
+                # loads error strings for libcrypto and libssl functions
+                cls.lib.SSL_load_error_strings()
+                cls._register_osrandom_engine()
 
     @classmethod
     def init_static_locks(cls):
@@ -135,10 +180,11 @@ class Binding(object):
             cls._ensure_ffi_initialized()
 
             if not cls._lock_cb_handle:
-                cls._lock_cb_handle = cls.ffi.callback(
+                wrapper = ffi_callback(
                     "void(int, int, const char *, int)",
-                    cls._lock_cb
+                    name="Cryptography_locking_cb",
                 )
+                cls._lock_cb_handle = wrapper(cls._lock_cb)
 
             # Use Python's implementation if available, importing _ssl triggers
             # the setup for this.
@@ -168,3 +214,37 @@ class Binding(object):
                     mode, n, file, line
                 )
             )
+
+
+def _verify_openssl_version(version):
+    if version < 0x10000000:
+        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_098"):
+            warnings.warn(
+                "OpenSSL version 0.9.8 is no longer supported by the OpenSSL "
+                "project, please upgrade. The next version of cryptography "
+                "will completely remove support for it.",
+                DeprecationWarning
+            )
+        else:
+            raise RuntimeError(
+                "You are linking against OpenSSL 0.9.8, which is no longer "
+                "support by the OpenSSL project. You need to upgrade to a "
+                "newer version of OpenSSL."
+            )
+    elif version < 0x10001000:
+        warnings.warn(
+            "OpenSSL versions less than 1.0.1 are no longer supported by the "
+            "OpenSSL project, please upgrade. A future version of "
+            "cryptography will drop support for these versions of OpenSSL.",
+            DeprecationWarning
+        )
+
+
+# OpenSSL is not thread safe until the locks are initialized. We call this
+# method in module scope so that it executes with the import lock. On
+# Pythons < 3.4 this import lock is a global lock, which can prevent a race
+# condition registering the OpenSSL locks. On Python 3.4+ the import lock
+# is per module so this approach will not work.
+Binding.init_static_locks()
+
+_verify_openssl_version(Binding.lib.SSLeay())

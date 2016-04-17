@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CBC("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
 )
@@ -84,7 +84,7 @@ class TestAESModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.OFB("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.OFB(b"\x00" * 16)
     ),
     skip_message="Does not support AES OFB",
 )
@@ -117,7 +117,7 @@ class TestAESModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CFB("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CFB(b"\x00" * 16)
     ),
     skip_message="Does not support AES CFB",
 )
@@ -150,7 +150,7 @@ class TestAESModeCFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CFB8("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CFB8(b"\x00" * 16)
     ),
     skip_message="Does not support AES CFB8",
 )
@@ -183,7 +183,7 @@ class TestAESModeCFB8(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.CTR("\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CTR(b"\x00" * 16)
     ),
     skip_message="Does not support AES CTR",
 )
@@ -200,7 +200,7 @@ class TestAESModeCTR(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 16), modes.GCM("\x00" * 12)
+        algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
     ),
     skip_message="Does not support AES GCM",
 )
@@ -253,3 +253,53 @@ class TestAESModeGCM(object):
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert computed_ct == ct
         assert encryptor.tag == tag
+
+    def test_gcm_ciphertext_limit(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor._bytes_processed = modes.GCM._MAX_ENCRYPTED_BYTES - 16
+        encryptor.update(b"0" * 16)
+        assert (
+            encryptor._bytes_processed == modes.GCM._MAX_ENCRYPTED_BYTES
+        )
+        with pytest.raises(ValueError):
+            encryptor.update(b"0")
+
+    def test_gcm_aad_limit(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor._aad_bytes_processed = modes.GCM._MAX_AAD_BYTES - 16
+        encryptor.authenticate_additional_data(b"0" * 16)
+        assert encryptor._aad_bytes_processed == modes.GCM._MAX_AAD_BYTES
+        with pytest.raises(ValueError):
+            encryptor.authenticate_additional_data(b"0")
+
+    def test_gcm_ciphertext_increments(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor.update(b"0" * 8)
+        assert encryptor._bytes_processed == 8
+        encryptor.update(b"0" * 7)
+        assert encryptor._bytes_processed == 15
+        encryptor.update(b"0" * 18)
+        assert encryptor._bytes_processed == 33
+
+    def test_gcm_aad_increments(self, backend):
+        encryptor = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(b"\x01" * 16),
+            backend=backend
+        ).encryptor()
+        encryptor.authenticate_additional_data(b"0" * 8)
+        assert encryptor._aad_bytes_processed == 8
+        encryptor.authenticate_additional_data(b"0" * 18)
+        assert encryptor._aad_bytes_processed == 26

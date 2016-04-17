@@ -3,7 +3,7 @@ _build/
 build/
 dist/
 htmlcov/
-src/cryptography/_Cryptography_cffi_*
+*.so
 .tox/
 .cache/
 .coverage
@@ -11,3 +11,4 @@ src/cryptography/_Cryptography_cffi_*
 *.egg
 .eggs/
 *.py[co]
+.hypothesis/

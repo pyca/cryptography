@@ -91,8 +91,10 @@ class Fernet(object):
         if ttl is not None:
             if timestamp + ttl < current_time:
                 raise InvalidToken
-        if current_time + _MAX_CLOCK_SKEW < timestamp:
-            raise InvalidToken
+
+            if current_time + _MAX_CLOCK_SKEW < timestamp:
+                raise InvalidToken
+
         h = HMAC(self._signing_key, hashes.SHA256(), backend=self._backend)
         h.update(data[:-32])
         try:

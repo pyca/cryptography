@@ -92,6 +92,19 @@ class TestHOTP(object):
         with pytest.raises(TypeError):
             HOTP(secret, b"foo", SHA1(), backend)
 
+    def test_get_provisioning_uri(self, backend):
+        secret = b"12345678901234567890"
+        hotp = HOTP(secret, 6, SHA1(), backend)
+
+        assert hotp.get_provisioning_uri("Alice Smith", 1, None) == (
+            "otpauth://hotp/Alice%20Smith?digits=6&secret=GEZDGNBV"
+            "GY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&counter=1")
+
+        assert hotp.get_provisioning_uri("Alice Smith", 1, 'Foo') == (
+            "otpauth://hotp/Foo:Alice%20Smith?digits=6&secret=GEZD"
+            "GNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=Foo"
+            "&counter=1")
+
 
 def test_invalid_backend():
     secret = b"12345678901234567890"

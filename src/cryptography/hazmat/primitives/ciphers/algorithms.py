@@ -101,7 +101,7 @@ class CAST5(object):
 @utils.register_interface(CipherAlgorithm)
 class ARC4(object):
     name = "RC4"
-    key_sizes = frozenset([40, 56, 64, 80, 128, 192, 256])
+    key_sizes = frozenset([40, 56, 64, 80, 128, 160, 192, 256])
 
     def __init__(self, key):
         self.key = _verify_key_size(self, key)

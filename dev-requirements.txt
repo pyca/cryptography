@@ -1,16 +1,8 @@
+clint
 coverage
-flake8
-flake8-import-order
 invoke
-iso8601
-pep8-naming
-pretend
-pytest
 requests
-sphinx
-sphinx_rtd_theme
-sphinxcontrib-spelling
 tox
 twine
--e .
+-e .[test,docs-test,pep8-test]
 -e vectors

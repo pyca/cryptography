@@ -45,7 +45,7 @@ def test_default_backend():
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
 )
@@ -99,9 +99,18 @@ class TestFernet(object):
     def test_unicode(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
-            f.encrypt(six.u(""))
+            f.encrypt(u"")
         with pytest.raises(TypeError):
-            f.decrypt(six.u(""))
+            f.decrypt(u"")
+
+    def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        pt = b"encrypt me"
+        token = f.encrypt(pt)
+        ts = "1985-10-26T01:20:01-07:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.decrypt(token, ttl=None) == pt
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
@@ -117,7 +126,7 @@ class TestFernet(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES("\x00" * 32), modes.CBC("\x00" * 16)
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
 )

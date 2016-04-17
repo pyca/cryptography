@@ -12,12 +12,20 @@ PGP key fingerprints are enclosed in parentheses.
 * Jarret Raim <jarito@gmail.com>
 * Alex Stapleton <alexs@prol.etari.at> (A1C7 E50B 66DE 39ED C847 9665 8E3C 20D1 9BD9 5C4C)
 * David Reid <dreid@dreid.org> (0F83 CC87 B32F 482B C726  B58A 9FBF D8F4 DA89 6D74)
+* Matthew Lefkowitz <glyph@twistedmatrix.com> (06AB F638 E878 CD29 1264  18AB 7EC2 8125 0FBC 4A07)
 * Konstantinos Koukopoulos <koukopoulos@gmail.com> (D6BD 52B6 8C99 A91C E2C8  934D 3300 566B 3A46 726E)
 * Stephen Holsapple <sholsapp@gmail.com>
 * Terry Chia <terrycwk1994@gmail.com>
 * Matthew Iversen <matt@notevencode.com> (2F04 3DCC D6E6 D5AC D262  2E0B C046 E8A8 7452 2973)
-* Mohammed Attia <skeuomorf@gmail.com> (854A F9C5 9FF5 6E38 B17D 9587 2D70 E1ED 5290 D357)
+* Mohammed Attia <skeuomorf@gmail.com>
 * Michael Hart <michael.hart1994@gmail.com>
 * Mark Adams <mark@markadams.me> (A18A 7DD3 283C CF2A B0CE FE0E C7A0 5E3F C972 098C)
 * Gregory Haynes <greg@greghaynes.net> (6FB6 44BF 9FD0 EBA2 1CE9  471F B08F 42F9 0DC6 599F)
 * Chelsea Winfree <chelsea.winfree@gmail.com>
+* Steven Buss <steven.buss@gmail.com> (1FB9 2EC1 CF93 DFD6 B47F F583 B1A5 6C22 290D A4C3)
+* Andre Caron <andre.l.caron@gmail.com>
+* Jiangge Zhang <tonyseek@gmail.com> (BBEC 782B 015F 71B1 5FF7  EACA 1A8C AA98 255F 5000)
+* Major Hayden <major@mhtx.net> (1BF9 9264 9596 0033 698C  252B 7370 51E0 C101 1FB1)
+* Phoebe Queen <foibey@gmail.com> (10D4 7741 AB65 50F4 B264 3888 DA40 201A 072B C1FA)
+* Google Inc.
+* Amaury Forgeot d'Arc <amauryfa@google.com>

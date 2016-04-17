@@ -3,12 +3,27 @@ Doing a release
 
 Doing a release of ``cryptography`` requires a few steps.
 
-Verifying OpenSSL version
--------------------------
+Verifying and upgrading OpenSSL version
+---------------------------------------
 
-The release process uses a static build for Windows wheels. Check that the
-Windows Jenkins builders have the latest version of OpenSSL installed
-before performing the release.
+The release process uses a static build for Windows and OS X wheels. Check that
+the Windows and OS X Jenkins builders have the latest version of OpenSSL
+installed before performing the release. If they do not:
+
+Upgrading Windows
+~~~~~~~~~~~~~~~~~
+
+Run the ``openssl-release`` Jenkins job, then copy the resulting artifacts to
+the Windows builders and unzip them in the root of the file system.
+
+Upgrading OS X
+~~~~~~~~~~~~~~
+
+``brew update`` and then ``brew upgrade openssl --universal --build-bottle`` to
+build a universal library (32-bit and 64-bit) compatible with all Intel Macs.
+This can be confirmed by using
+``lipo -info /usr/local/opt/openssl/lib/libssl.dylib`` to see the available
+architectures.
 
 Bumping the version number
 --------------------------

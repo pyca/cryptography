@@ -44,6 +44,13 @@ class EllipticCurvePrivateKey(object):
         """
 
     @abc.abstractmethod
+    def exchange(self, algorithm, peer_public_key):
+        """
+        Performs a key exchange operation using the provided algorithm with the
+        provided peer's public key.
+        """
+
+    @abc.abstractmethod
     def public_key(self):
         """
         The EllipticCurvePublicKey for this private key.
@@ -71,17 +78,6 @@ class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
         """
 
 
-EllipticCurvePrivateKeyWithNumbers = utils.deprecated(
-    EllipticCurvePrivateKeyWithSerialization,
-    __name__,
-    (
-        "The EllipticCurvePrivateKeyWithNumbers interface has been renamed to "
-        "EllipticCurvePrivateKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePublicKey(object):
     @abc.abstractmethod
@@ -96,9 +92,6 @@ class EllipticCurvePublicKey(object):
         The EllipticCurve that this key is on.
         """
 
-
-@six.add_metaclass(abc.ABCMeta)
-class EllipticCurvePublicKeyWithSerialization(EllipticCurvePublicKey):
     @abc.abstractmethod
     def public_numbers(self):
         """
@@ -112,15 +105,7 @@ class EllipticCurvePublicKeyWithSerialization(EllipticCurvePublicKey):
         """
 
 
-EllipticCurvePublicKeyWithNumbers = utils.deprecated(
-    EllipticCurvePublicKeyWithSerialization,
-    __name__,
-    (
-        "The EllipticCurvePublicKeyWithNumbers interface has been renamed to "
-        "EllipticCurvePublicKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
+EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 
 
 @utils.register_interface(EllipticCurve)
@@ -202,6 +187,12 @@ class SECP256R1(object):
 
 
 @utils.register_interface(EllipticCurve)
+class SECP256K1(object):
+    name = "secp256k1"
+    key_size = 256
+
+
+@utils.register_interface(EllipticCurve)
 class SECP224R1(object):
     name = "secp224r1"
     key_size = 224
@@ -222,6 +213,7 @@ _CURVE_TYPES = {
     "secp256r1": SECP256R1,
     "secp384r1": SECP384R1,
     "secp521r1": SECP521R1,
+    "secp256k1": SECP256K1,
 
     "sect163k1": SECT163K1,
     "sect233k1": SECT233K1,
@@ -267,6 +259,31 @@ class EllipticCurvePublicNumbers(object):
     def public_key(self, backend):
         return backend.load_elliptic_curve_public_numbers(self)
 
+    def encode_point(self):
+        # key_size is in bits. Convert to bytes and round up
+        byte_length = (self.curve.key_size + 7) // 8
+        return (
+            b'\x04' + utils.int_to_bytes(self.x, byte_length) +
+            utils.int_to_bytes(self.y, byte_length)
+        )
+
+    @classmethod
+    def from_encoded_point(cls, curve, data):
+        if not isinstance(curve, EllipticCurve):
+            raise TypeError("curve must be an EllipticCurve instance")
+
+        if data.startswith(b'\x04'):
+            # key_size is in bits. Convert to bytes and round up
+            byte_length = (curve.key_size + 7) // 8
+            if len(data) == 2 * byte_length + 1:
+                x = utils.int_from_bytes(data[1:byte_length + 1], 'big')
+                y = utils.int_from_bytes(data[byte_length + 1:], 'big')
+                return cls(x, y, curve)
+            else:
+                raise ValueError('Invalid elliptic curve point data length')
+        else:
+            raise ValueError('Unsupported elliptic curve point type')
+
     curve = utils.read_only_property("_curve")
     x = utils.read_only_property("_x")
     y = utils.read_only_property("_y")
@@ -284,6 +301,12 @@ class EllipticCurvePublicNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __repr__(self):
+        return (
+            "<EllipticCurvePublicNumbers(curve={0.curve.name}, x={0.x}, "
+            "y={0.y}>".format(self)
+        )
 
 
 class EllipticCurvePrivateNumbers(object):
@@ -317,3 +340,7 @@ class EllipticCurvePrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+
+class ECDH(object):
+    pass

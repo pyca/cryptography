@@ -22,7 +22,7 @@ Asymmetric ciphers
 * RSA FIPS 186-2 and PKCS1 v1.5 vulnerability test vectors from `NIST CAVP`_.
 * FIPS 186-2 and FIPS 186-3 DSA test vectors from `NIST CAVP`_.
 * FIPS 186-2 and FIPS 186-3 ECDSA test vectors from `NIST CAVP`_.
-* DH and ECDH test vectors from `NIST CAVP`_.
+* DH and ECDH and ECDH+KDF(17.4) test vectors from `NIST CAVP`_.
 * Ed25519 test vectors from the `Ed25519 website_`.
 * OpenSSL PEM RSA serialization vectors from the `OpenSSL example key`_ and
   `GnuTLS key parsing tests`_.
@@ -37,8 +37,13 @@ Asymmetric ciphers
   Ruby test suite.
 
 
-Custom Asymmetric Vectors
+Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+    :maxdepth: 1
+
+    custom-vectors/secp256k1
 
 * ``asymmetric/PEM_Serialization/ec_private_key.pem`` and
   ``asymmetric/DER_Serialization/ec_private_key.der`` - Contains an Elliptic
@@ -78,6 +83,13 @@ Custom Asymmetric Vectors
   ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
   key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
 
+
+Key exchange
+~~~~~~~~~~~~
+
+* ``vectors/cryptography_vectors/asymmetric/DH/RFC5114.txt`` contains
+  Diffie-Hellman examples from appendix A.1, A.2 and A.3 of :rfc:`5114`.
+
 X.509
 ~~~~~
 
@@ -90,6 +102,20 @@ X.509
   tree.
 * ``cryptography.io.pem`` - A leaf certificate issued by RapidSSL for the
   cryptography website.
+* ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the
+  ``cryptography.io.pem`` certificate.
+* ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
+  ``langui.sh`` that contains wildcard entries in the SAN extension.
+* ``san_edipartyname.der`` - A DSA certificate from a `Mozilla bug`_
+  containing a SAN extension with an ``ediPartyName`` general name.
+* ``san_x400address.der`` - A DSA certificate from a `Mozilla bug`_ containing
+  a SAN extension with an ``x400Address`` general name.
+* ``department-of-state-root.pem`` - The intermediary CA for the Department of
+  State, issued by the United States Federal Government's Common Policy CA.
+  Notably has a ``critical`` policy constraints extensions.
+* ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
+  cipher and containing numerous unusual encodings such as NUMERICSTRING in
+  the subject DN.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
@@ -121,6 +147,10 @@ Custom X.509 Vectors
 * ``unsupported_extension.pem`` - An RSA 2048 bit self-signed certificate
   containing an unsupported extension type. The OID was encoded as
   "1.2.3.4" with an ``extnValue`` of "value".
+* ``unsupported_extension_2.pem`` - A ``secp256r1`` certificate
+  containing two unsupported extensions. The OIDs are ``1.3.6.1.4.1.41482.2``
+  with an ``extnValue`` of ``1.3.6.1.4.1.41482.1.2`` and
+  ``1.3.6.1.4.1.45724.2.1.1`` with an ``extnValue`` of ``\x03\x02\x040``
 * ``unsupported_extension_critical.pem`` - An RSA 2048 bit self-signed
   certificate containing an unsupported extension type marked critical. The OID
   was encoded as "1.2.3.4" with an ``extnValue`` of "value".
@@ -128,12 +158,116 @@ Custom X.509 Vectors
   certificate containing a subject alternative name extension with the
   following general names: ``rfc822Name``, ``dNSName``, ``iPAddress``,
   ``directoryName``, and ``uniformResourceIdentifier``.
+* ``san_empty_hostname.pem`` - An RSA 2048 bit self-signed certificate
+  containing a subject alternative extension with an empty ``dNSName``
+  general name.
 * ``san_other_name.pem`` - An RSA 2048 bit self-signed certificate containing
   a subject alternative name extension with the ``otherName`` general name.
 * ``san_registered_id.pem`` - An RSA 1024 bit certificate containing a
   subject alternative name extension with the ``registeredID`` general name.
 * ``all_key_usages.pem`` - An RSA 2048 bit self-signed certificate containing
   a key usage extension with all nine purposes set to true.
+* ``extended_key_usage.pem`` - An RSA 2048 bit self-signed certificate
+  containing an extended key usage extension with eight usages.
+* ``san_idna_names.pem`` - An RSA 2048 bit self-signed certificate containing
+  a subject alternative name extension with ``rfc822Name``, ``dNSName``, and
+  ``uniformResourceIdentifier`` general names with IDNA (:rfc:`5895`) encoding.
+* ``san_wildcard_idna.pem`` - An RSA 2048 bit self-signed certificate
+  containing a subject alternative name extension with a ``dNSName`` general
+  name with a wildcard IDNA (:rfc:`5895`) domain.
+* ``san_idna2003_dnsname.pem`` - An RSA 2048 bit self-signed certificate
+  containing a subject alternative name extension with an IDNA 2003
+  (:rfc:`3490`) ``dNSName``.
+* ``san_rfc822_names.pem`` - An RSA 2048 bit self-signed certificate containing
+  a subject alternative name extension with various ``rfc822Name`` values.
+* ``san_rfc822_idna.pem`` - An RSA 2048 bit self-signed certificate containing
+  a subject alternative name extension with an IDNA ``rfc822Name``.
+* ``san_uri_with_port.pem`` - An RSA 2048 bit self-signed certificate
+  containing a subject alternative name extension with various
+  ``uniformResourceIdentifier`` values.
+* ``san_ipaddr.pem`` - An RSA 2048 bit self-signed certificate containing a
+  subject alternative name extension with an ``iPAddress`` value.
+* ``san_dirname.pem`` - An RSA 2048 bit self-signed certificate containing a
+  subject alternative name extension with a ``directoryName`` value.
+* ``inhibit_any_policy_5.pem`` - An RSA 2048 bit self-signed certificate
+  containing an inhibit any policy extension with the value 5.
+* ``inhibit_any_policy_negative.pem`` - An RSA 2048 bit self-signed certificate
+  containing an inhibit any policy extension with the value -1.
+* ``authority_key_identifier.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority key identifier extension with key identifier,
+  authority certificate issuer, and authority certificate serial number fields.
+* ``authority_key_identifier_no_keyid.pem`` - An RSA 2048 bit self-signed
+  certificate containing an authority key identifier extension with authority
+  certificate issuer and authority certificate serial number fields.
+* ``aia_ocsp_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with two OCSP and one
+  CA issuers entry.
+* ``aia_ocsp.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with an OCSP entry.
+* ``aia_ca_issuers.pem`` - An RSA 2048 bit self-signed certificate
+  containing an authority information access extension with a CA issuers entry.
+* ``cdp_empty_hostname.pem`` - An RSA 2048 bit self-signed certificate
+  containing a CRL distribution point extension with ``fullName`` URI without
+  a hostname.
+* ``cdp_fullname_reasons_crl_issuer.pem`` - An RSA 1024 bit certificate
+  containing a CRL distribution points extension with ``fullName``,
+  ``cRLIssuer``, and ``reasons`` data.
+* ``cdp_crl_issuer.pem`` - An RSA 1024 bit certificate containing a CRL
+  distribution points extension with ``cRLIssuer`` data.
+* ``cdp_all_reasons.pem`` - An RSA 1024 bit certificate containing a CRL
+  distribution points extension with all ``reasons`` bits set.
+* ``cdp_reason_aa_compromise.pem`` - An RSA 1024 bit certificate containing a
+  CRL distribution points extension with the ``AACompromise`` ``reasons`` bit
+  set.
+* ``nc_permitted_excluded.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with both permitted and excluded
+  elements. Contains ``IPv4`` and ``IPv6`` addresses with network mask as well
+  as ``dNSName`` with a leading period.
+* ``nc_permitted_excluded_2.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with both permitted and excluded
+  elements. Unlike ``nc_permitted_excluded.pem``, the general names do not
+  contain any name constraints specific values.
+* ``nc_permitted.pem`` - An RSA 2048 bit self-signed certificate containing a
+  name constraints extension with permitted elements.
+* ``nc_permitted_2.pem`` - An RSA 2048 bit self-signed certificate containing a
+  name constraints extension with permitted elements that do not contain any
+  name constraints specific values.
+* ``nc_excluded.pem`` - An RSA 2048 bit self-signed certificate containing a
+  name constraints extension with excluded elements.
+* ``nc_invalid_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with a permitted element that has an
+  ``IPv6`` IP and an invalid network mask.
+* ``nc_single_ip_netmask.pem`` - An RSA 2048 bit self-signed certificate
+  containing a name constraints extension with a permitted element that has two
+  IPs with ``/32`` and ``/128`` network masks.
+* ``cp_user_notice_with_notice_reference.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with a
+  notice reference in the user notice.
+* ``cp_user_notice_with_explicit_text.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with explicit
+  text and no notice reference.
+* ``cp_cps_uri.pem`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with a CPS URI and no user notice.
+* ``cp_user_notice_no_explicit_text.pem`` - An RSA 2048 bit self-signed
+  certificate containing a certificate policies extension with a user notice
+  with no explicit text.
+* ``cp_invalid.pem`` - An RSA 2048 bit self-signed certificate containing a
+  certificate policies extension with invalid data.
+* ``ian_uri.pem`` - An RSA 2048 bit certificate containing an issuer
+  alternative name extension with a ``URI`` general name.
+* ``ocsp_nocheck.pem`` - An RSA 2048 bit self-signed certificate containing
+  an ``OCSPNoCheck`` extension.
+* ``pc_inhibit_require.pem`` - An RSA 2048 bit self-signed certificate
+  containing a policy constraints extension with both inhibit policy mapping
+  and require explicit policy elements.
+* ``pc_inhibit.pem`` - An RSA 2048 bit self-signed certificate containing a
+  policy constraints extension with an inhibit policy mapping element.
+* ``pc_require.pem`` - An RSA 2048 bit self-signed certificate containing a
+  policy constraints extension with a require explicit policy element.
+* ``unsupported_subject_public_key_info.pem`` - A certificate whose public key
+  is an unknown OID (``1.3.6.1.4.1.8432.1.1.2``).
+* ``policy_constraints_explicit.pem`` - A self-signed certificate containing
+  a ``policyConstraints`` extension with a ``requireExplicitPolicy`` value.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,6 +285,43 @@ Custom X.509 Request Vectors
 * ``san_rsa_sha1.pem`` and ``san_rsa_sha1.der`` - Contain a certificate
   request using RSA and SHA1 with a subject alternative name extension
   generated using OpenSSL.
+* ``two_basic_constraints.pem`` - A certificate signing request
+  for an RSA 2048 bit key containing two basic constraints extensions.
+* ``unsupported_extension.pem`` - A certificate signing request
+  for an RSA 2048 bit key containing containing an unsupported
+  extension type. The OID was encoded as "1.2.3.4" with an
+  ``extnValue`` of "value".
+* ``unsupported_extension_critical.pem`` - A certificate signing
+  request for an RSA 2048 bit key containing containing an unsupported
+  extension type marked critical. The OID was encoded as "1.2.3.4"
+  with an ``extnValue`` of "value".
+* ``basic_constraints.pem`` - A certificate signing request for an RSA
+  2048 bit key containing a basic constraints extension marked as
+  critical.
+* ``invalid_signature.pem`` - A certificate signing request for an RSA
+  1024 bit key containing an invalid signature with correct padding.
+
+Custom X.509 Certificate Revocation List Vectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``crl_all_reasons.pem`` - Contains a CRL with 12 revoked certificates, whose
+  serials match their list position. It includes one revocation without
+  any entry extensions, 10 revocations with every supported reason code and one
+  revocation with an unsupported, non-critical entry extension with the OID
+  value set to "1.2.3.4".
+* ``crl_dup_entry_ext.pem`` - Contains a CRL with one revocation which has a
+  duplicate entry extension.
+* ``crl_md2_unknown_crit_entry_ext.pem`` - Contains a CRL with one revocation
+  which contains an unsupported critical entry extension with the OID value set
+  to "1.2.3.4". The CRL uses an unsupported MD2 signature algorithm.
+* ``crl_unsupported_reason.pem`` - Contains a CRL with one revocation which has
+  an unsupported reason code.
+* ``crl_inval_cert_issuer_entry_ext.pem`` - Contains a CRL with one revocation
+  which has one entry extension for certificate issuer with an empty value.
+* ``crl_empty.pem`` - Contains a CRL with no revoked certificates.
+* ``crl_ian_aia_aki.pem`` - Contains a CRL with ``IssuerAlternativeName``,
+  ``AuthorityInformationAccess``, ``AuthorityKeyIdentifier`` and ``CRLNumber``
+  extensions.
 
 Hashes
 ~~~~~~
@@ -160,6 +331,7 @@ Hashes
 * SHA1 from `NIST CAVP`_.
 * SHA2 (224, 256, 384, 512) from `NIST CAVP`_.
 * Whirlpool from the `Whirlpool website`_.
+* Blake2s and Blake2b from OpenSSL `test/evptests.txt`_.
 
 HMAC
 ~~~~
@@ -175,6 +347,9 @@ Key derivation functions
 * HKDF (SHA1, SHA256) from :rfc:`5869`.
 * PBKDF2 (HMAC-SHA1) from :rfc:`6070`.
 * scrypt from the `draft RFC`_.
+* X9.63 KDF from `NIST CAVP`_.
+* SP 800-108 Counter Mode KDF (HMAC-SHA1, HMAC-SHA224, HMAC-SHA256,
+  HMAC-SHA384, HMAC-SHA512) from `NIST CAVP`_.
 
 Key wrapping
 ~~~~~~~~~~~~
@@ -192,7 +367,9 @@ Symmetric ciphers
 * AES (CBC, CFB, ECB, GCM, OFB) from `NIST CAVP`_.
 * AES CTR from :rfc:`3686`.
 * 3DES (CBC, CFB, ECB, OFB) from `NIST CAVP`_.
-* ARC4 from :rfc:`6229`.
+* ARC4 (KEY-LENGTH: 40, 56, 64, 80, 128, 192, 256) from :rfc:`6229`.
+* ARC4 (KEY-LENGTH: 160) generated by this project.
+  See: :doc:`/development/custom-vectors/arc4`
 * Blowfish (CBC, CFB, ECB, OFB) from `Bruce Schneier's vectors`_.
 * Camellia (ECB) from NTT's `Camellia page`_ as linked by `CRYPTREC`_.
 * Camellia (CBC, CFB, OFB) from `OpenSSL's test vectors`_.
@@ -231,6 +408,7 @@ Custom Symmetric Vectors
 .. toctree::
     :maxdepth: 1
 
+    custom-vectors/arc4
     custom-vectors/cast5
     custom-vectors/idea
     custom-vectors/seed
@@ -252,14 +430,14 @@ header format (substituting the correct information):
 .. _`IETF`: https://www.ietf.org/
 .. _`NIST CAVP`: http://csrc.nist.gov/groups/STM/cavp/
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/code/vectors.txt
-.. _`Camellia page`: http://info.isl.ntt.co.jp/crypt/eng/camellia/
-.. _`CRYPTREC`: http://www.cryptrec.go.jp
+.. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
+.. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
 .. _`RIPEMD website`: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 .. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
-.. _`errata`: http://www.rfc-editor.org/errata_search.php?rfc=6238
+.. _`errata`: https://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`OpenSSL example key`: https://github.com/openssl/openssl/blob/d02b48c63a58ea4367a0e905979f140b7d090f86/test/testrsa.pem
 .. _`GnuTLS key parsing tests`: https://gitlab.com/gnutls/gnutls/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
 .. _`enc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/encpkcs8.pem
@@ -277,3 +455,6 @@ header format (substituting the correct information):
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
 .. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
+.. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
+.. _`Russian CA`: https://e-trust.gosuslugi.ru/MainCA
+.. _`test/evptests.txt`: https://github.com/openssl/openssl/blob/2d0b44126763f989a4cbffbffe9d0c7518158bb7/test/evptests.txt

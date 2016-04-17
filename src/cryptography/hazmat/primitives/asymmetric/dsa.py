@@ -71,17 +71,6 @@ class DSAPrivateKeyWithSerialization(DSAPrivateKey):
         """
 
 
-DSAPrivateKeyWithNumbers = utils.deprecated(
-    DSAPrivateKeyWithSerialization,
-    __name__,
-    (
-        "The DSAPrivateKeyWithNumbers interface has been renamed to "
-        "DSAPrivateKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class DSAPublicKey(object):
     @abc.abstractproperty
@@ -102,9 +91,6 @@ class DSAPublicKey(object):
         Returns an AsymmetricVerificationContext used for signing data.
         """
 
-
-@six.add_metaclass(abc.ABCMeta)
-class DSAPublicKeyWithSerialization(DSAPublicKey):
     @abc.abstractmethod
     def public_numbers(self):
         """
@@ -118,15 +104,7 @@ class DSAPublicKeyWithSerialization(DSAPublicKey):
         """
 
 
-DSAPublicKeyWithNumbers = utils.deprecated(
-    DSAPublicKeyWithSerialization,
-    __name__,
-    (
-        "The DSAPublicKeyWithNumbers interface has been renamed to "
-        "DSAPublicKeyWithSerialization"
-    ),
-    utils.DeprecatedIn08
-)
+DSAPublicKeyWithSerialization = DSAPublicKey
 
 
 def generate_parameters(key_size, backend):

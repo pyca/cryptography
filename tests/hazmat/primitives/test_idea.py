@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA("\x00" * 16), modes.ECB()
+        algorithms.IDEA(b"\x00" * 16), modes.ECB()
     ),
     skip_message="Does not support IDEA ECB",
 )
@@ -35,7 +35,7 @@ class TestIDEAModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA("\x00" * 16), modes.CBC("\x00" * 8)
+        algorithms.IDEA(b"\x00" * 16), modes.CBC(b"\x00" * 8)
     ),
     skip_message="Does not support IDEA CBC",
 )
@@ -52,7 +52,7 @@ class TestIDEAModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA("\x00" * 16), modes.OFB("\x00" * 8)
+        algorithms.IDEA(b"\x00" * 16), modes.OFB(b"\x00" * 8)
     ),
     skip_message="Does not support IDEA OFB",
 )
@@ -69,7 +69,7 @@ class TestIDEAModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.IDEA("\x00" * 16), modes.CFB("\x00" * 8)
+        algorithms.IDEA(b"\x00" * 16), modes.CFB(b"\x00" * 8)
     ),
     skip_message="Does not support IDEA CFB",
 )

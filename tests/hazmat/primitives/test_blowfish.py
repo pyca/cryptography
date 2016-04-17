@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish("\x00" * 56), modes.ECB()
+        algorithms.Blowfish(b"\x00" * 56), modes.ECB()
     ),
     skip_message="Does not support Blowfish ECB",
 )
@@ -35,7 +35,7 @@ class TestBlowfishModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish("\x00" * 56), modes.CBC("\x00" * 8)
+        algorithms.Blowfish(b"\x00" * 56), modes.CBC(b"\x00" * 8)
     ),
     skip_message="Does not support Blowfish CBC",
 )
@@ -52,7 +52,7 @@ class TestBlowfishModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish("\x00" * 56), modes.OFB("\x00" * 8)
+        algorithms.Blowfish(b"\x00" * 56), modes.OFB(b"\x00" * 8)
     ),
     skip_message="Does not support Blowfish OFB",
 )
@@ -69,7 +69,7 @@ class TestBlowfishModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Blowfish("\x00" * 56), modes.CFB("\x00" * 8)
+        algorithms.Blowfish(b"\x00" * 56), modes.CFB(b"\x00" * 8)
     ),
     skip_message="Does not support Blowfish CFB",
 )

@@ -113,10 +113,8 @@ It is also possible to serialize without encryption using
     >>> pem.splitlines()[0]
     '-----BEGIN RSA PRIVATE KEY-----'
 
-Similarly, if your public key implements
-:class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
-interface you can use
-:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization.public_bytes`
+For public keys you can use
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.public_bytes`
 to serialize the key.
 
 .. doctest::
@@ -165,9 +163,15 @@ Verification
 ~~~~~~~~~~~~
 
 The previous section describes what to do if you have a private key and want to
-sign something. If you have a public key, a message, and a signature, you can
-check that the public key genuinely was used to sign that specific message. You
-also need to know which signing algorithm was used:
+sign something. If you have a public key, a message, a signature, and the
+signing algorithm that was used you can check that the private key associated
+with a given public key was used to sign that specific message.  You can obtain
+a public key to use in verification using
+:func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
+:func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers.public_key`
+, or
+:meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.public_key`.
 
 .. doctest::
 
@@ -267,7 +271,7 @@ Padding
         Pass this attribute to ``salt_length`` to get the maximum salt length
         available.
 
-.. class:: OAEP(mgf, label)
+.. class:: OAEP(mgf, algorithm, label)
 
     .. versionadded:: 0.4
 
@@ -278,6 +282,10 @@ Padding
 
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider.
 
     :param bytes label: A label to apply. This is a rarely used field and
         should typically be set to ``None`` or ``b""``, which are equivalent.
@@ -423,7 +431,7 @@ Handling partial RSA private keys
 If you are trying to load RSA private keys yourself you may find that not all
 parameters required by ``RSAPrivateNumbers`` are available. In particular the
 `Chinese Remainder Theorem`_ (CRT) values ``dmp1``, ``dmq1``, ``iqmp`` may be
-missing or present in a different form. For example `OpenPGP`_ does not include
+missing or present in a different form. For example, `OpenPGP`_ does not include
 the ``iqmp``, ``dmp1`` or ``dmq1`` parameters.
 
 The following functions are provided for users who want to work with keys like
@@ -518,23 +526,6 @@ Key interfaces
         The bit length of the modulus.
 
 
-.. class:: RSAPrivateKeyWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`RSAPrivateKey`.
-
-    .. method:: private_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers`
-            instance.
-
-
 .. class:: RSAPrivateKeyWithSerialization
 
     .. versionadded:: 0.8
@@ -625,30 +616,6 @@ Key interfaces
 
         The bit length of the modulus.
 
-
-.. class:: RSAPublicKeyWithNumbers
-
-    .. versionadded:: 0.5
-
-    Extends :class:`RSAPublicKey`.
-
-    .. method:: public_numbers()
-
-        Create a
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-        object.
-
-        :returns: An
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicNumbers`
-            instance.
-
-
-.. class:: RSAPublicKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Extends :class:`RSAPublicKey`.
-
     .. method:: public_numbers()
 
         Create a
@@ -679,6 +646,13 @@ Key interfaces
         :return bytes: Serialized key.
 
 
+.. class:: RSAPublicKeyWithSerialization
+
+    .. versionadded:: 0.8
+
+    Alias for :class:`RSAPublicKey`.
+
+
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`specific mathematical properties`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Key_generation
@@ -686,6 +660,6 @@ Key interfaces
 .. _`at least 2048`: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf
 .. _`OpenPGP`: https://en.wikipedia.org/wiki/Pretty_Good_Privacy
 .. _`Chinese Remainder Theorem`: https://en.wikipedia.org/wiki/RSA_%28cryptosystem%29#Using_the_Chinese_remainder_algorithm
-.. _`security proof`: http://eprint.iacr.org/2001/062.pdf
+.. _`security proof`: https://eprint.iacr.org/2001/062.pdf
 .. _`recommended padding algorithm`: http://www.daemonology.net/blog/2009-06-11-cryptographic-right-answers.html
-.. _`proven secure`: http://cseweb.ucsd.edu/users/mihir/papers/oae.pdf
+.. _`proven secure`: https://cseweb.ucsd.edu/~mihir/papers/oae.pdf

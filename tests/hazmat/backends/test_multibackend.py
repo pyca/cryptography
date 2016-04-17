@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -19,6 +21,10 @@ from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from ...utils import raises_unsupported_algorithm
+
+
+class DummyBackend(object):
+    pass
 
 
 @utils.register_interface(CipherBackend)
@@ -152,10 +158,7 @@ class DummyEllipticCurveBackend(object):
     ):
         return (
             isinstance(signature_algorithm, ec.ECDSA) and
-            any(
-                isinstance(curve, curve_type)
-                for curve_type in self._curves
-            )
+            self.elliptic_curve_supported(curve)
         )
 
     def generate_elliptic_curve_private_key(self, curve):
@@ -169,6 +172,12 @@ class DummyEllipticCurveBackend(object):
     def load_elliptic_curve_public_numbers(self, numbers):
         if not self.elliptic_curve_supported(numbers.curve):
             raise UnsupportedAlgorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE)
+
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+        return (
+            isinstance(algorithm, ec.ECDH) and
+            self.elliptic_curve_supported(curve)
+        )
 
 
 @utils.register_interface(PEMSerializationBackend)
@@ -197,14 +206,36 @@ class DummyX509Backend(object):
     def load_der_x509_certificate(self, data):
         pass
 
+    def load_pem_x509_crl(self, data):
+        pass
+
+    def load_der_x509_crl(self, data):
+        pass
+
     def load_pem_x509_csr(self, data):
         pass
 
     def load_der_x509_csr(self, data):
         pass
 
+    def create_x509_csr(self, builder, private_key, algorithm):
+        pass
+
+    def create_x509_certificate(self, builder, private_key, algorithm):
+        pass
+
+    def create_x509_crl(self, builder, private_key, algorithm):
+        pass
+
+    def create_x509_revoked_certificate(self, builder):
+        pass
+
 
 class TestMultiBackend(object):
+    def test_raises_error_with_empty_list(self):
+        with pytest.raises(ValueError):
+            MultiBackend([])
+
     def test_ciphers(self):
         backend = MultiBackend([
             DummyHashBackend([]),
@@ -214,6 +245,9 @@ class TestMultiBackend(object):
         ])
         assert backend.cipher_supported(
             algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
+        )
+        assert not backend.cipher_supported(
+            algorithms.TripleDES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
         )
 
         cipher = Cipher(
@@ -239,6 +273,7 @@ class TestMultiBackend(object):
             DummyHashBackend([hashes.MD5])
         ])
         assert backend.hash_supported(hashes.MD5())
+        assert not backend.hash_supported(hashes.SHA256())
 
         hashes.Hash(hashes.MD5(), backend=backend)
 
@@ -250,6 +285,7 @@ class TestMultiBackend(object):
             DummyHMACBackend([hashes.MD5])
         ])
         assert backend.hmac_supported(hashes.MD5())
+        assert not backend.hmac_supported(hashes.SHA256())
 
         hmac.HMAC(b"", hashes.MD5(), backend=backend)
 
@@ -284,7 +320,7 @@ class TestMultiBackend(object):
 
         backend.load_rsa_public_numbers("public_numbers")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
@@ -327,7 +363,7 @@ class TestMultiBackend(object):
         backend.load_dsa_public_numbers("numbers")
         backend.load_dsa_parameter_numbers("numbers")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
@@ -375,8 +411,10 @@ class TestMultiBackend(object):
 
         fake_key = b"\x00" * 16
 
-        assert backend.cmac_algorithm_supported(
-            algorithms.AES(fake_key)) is True
+        assert backend.cmac_algorithm_supported(algorithms.AES(fake_key))
+        assert not backend.cmac_algorithm_supported(
+            algorithms.TripleDES(fake_key)
+        )
 
         cmac.CMAC(algorithms.AES(fake_key), backend)
 
@@ -449,13 +487,21 @@ class TestMultiBackend(object):
                 )
             )
 
+        assert backend.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDH(), ec.SECT283K1()
+        )
+        backend2 = MultiBackend([DummyEllipticCurveBackend([])])
+        assert not backend2.elliptic_curve_exchange_algorithm_supported(
+            ec.ECDH(), ec.SECT163K1()
+        )
+
     def test_pem_serialization_backend(self):
         backend = MultiBackend([DummyPEMSerializationBackend()])
 
         backend.load_pem_private_key(b"keydata", None)
         backend.load_pem_public_key(b"keydata")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pem_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
@@ -467,7 +513,7 @@ class TestMultiBackend(object):
         backend.load_der_private_key(b"keydata", None)
         backend.load_der_public_key(b"keydata")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_der_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
@@ -478,15 +524,37 @@ class TestMultiBackend(object):
 
         backend.load_pem_x509_certificate(b"certdata")
         backend.load_der_x509_certificate(b"certdata")
+        backend.load_pem_x509_crl(b"crldata")
+        backend.load_der_x509_crl(b"crldata")
         backend.load_pem_x509_csr(b"reqdata")
         backend.load_der_x509_csr(b"reqdata")
+        backend.create_x509_csr(object(), b"privatekey", hashes.SHA1())
+        backend.create_x509_certificate(object(), b"privatekey", hashes.SHA1())
+        backend.create_x509_crl(object(), b"privatekey", hashes.SHA1())
+        backend.create_x509_revoked_certificate(object())
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_pem_x509_certificate(b"certdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_der_x509_certificate(b"certdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_pem_x509_crl(b"crldata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.load_der_x509_crl(b"crldata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_pem_x509_csr(b"reqdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_der_x509_csr(b"reqdata")
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.create_x509_csr(object(), b"privatekey", hashes.SHA1())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.create_x509_certificate(
+                object(), b"privatekey", hashes.SHA1()
+            )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.create_x509_crl(
+                object(), b"privatekey", hashes.SHA1()
+            )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
+            backend.create_x509_revoked_certificate(object())

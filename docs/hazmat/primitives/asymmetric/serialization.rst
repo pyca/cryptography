@@ -97,8 +97,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 .. note::
 
     A PEM block which starts with ``-----BEGIN CERTIFICATE-----`` is not a
-    public or private key, it's an :doc:`X.509 Certificate </x509>`. You can
-    load it using :func:`~cryptography.x509.load_pem_x509_certificate` and
+    public or private key, it's an :doc:`X.509 Certificate </x509/index>`. You
+    can load it using :func:`~cryptography.x509.load_pem_x509_certificate` and
     extract the public key with
     :meth:`Certificate.public_key <cryptography.x509.Certificate.public_key>`.
 
@@ -118,7 +118,12 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
         provider.
 
-    :returns: A new instance of a private key.
+    :returns: One of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+        depending on the contents of ``data``.
 
     :raises ValueError: If the PEM data could not be decrypted or if its
         structure could not be decoded successfully.
@@ -136,7 +141,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     .. versionadded:: 0.6
 
     Deserialize a public key from PEM encoded data to one of the supported
-    asymmetric public key types.
+    asymmetric public key types. The PEM encoded data is typically a
+    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
 
     .. doctest::
 
@@ -151,7 +157,13 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
         provider.
 
-    :returns: A new instance of a public key.
+
+    :returns: One of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        depending on the contents of ``data``.
 
     :raises ValueError: If the PEM data's structure could not be decoded
         successfully.
@@ -183,7 +195,12 @@ the rest.
         :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
         provider.
 
-    :returns: A new instance of a private key.
+    :returns: One of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+        depending on the contents of ``data``.
 
     :raises ValueError: If the DER data could not be decrypted or if its
         structure could not be decoded successfully.
@@ -210,7 +227,8 @@ the rest.
     .. versionadded:: 0.8
 
     Deserialize a public key from DER encoded data to one of the supported
-    asymmetric public key types.
+    asymmetric public key types. The DER encoded data is typically a
+    ``subjectPublicKeyInfo`` payload as specified in :rfc:`5280`.
 
     :param bytes data: The DER encoded key data.
 
@@ -218,7 +236,12 @@ the rest.
         :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
         provider.
 
-    :returns: A new instance of a public key.
+    :returns: One of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        depending on the contents of ``data``.
 
     :raises ValueError: If the DER data's structure could not be decoded
         successfully.
@@ -275,7 +298,12 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
         depending on the key's type.
 
-    :returns: A new instance of a public key type.
+    :returns: One of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        depending on the contents of ``data``.
 
     :raises ValueError: If the OpenSSH data could not be properly decoded or
         if the key is not in the proper format.
@@ -337,8 +365,6 @@ Serialization Encodings
 
 .. class:: Encoding
 
-    .. versionadded:: 0.8
-
     An enumeration for encoding types. Used with the ``private_bytes`` method
     available on
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
@@ -353,9 +379,13 @@ Serialization Encodings
 
     .. attribute:: PEM
 
+        .. versionadded:: 0.8
+
         For PEM format. This is a base64 format with delimiters.
 
     .. attribute:: DER
+
+        .. versionadded:: 0.9
 
         For DER format. This is a binary format.
 

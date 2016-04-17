@@ -8,6 +8,8 @@ import sys
 import types
 import warnings
 
+import pytest
+
 from cryptography.utils import deprecated
 
 
@@ -45,3 +47,42 @@ class TestDeprecated(object):
         assert msg2.message.args == ("more deprecated text",)
 
         assert "Y" in dir(mod)
+
+    def test_deleting_deprecated_members(self, monkeypatch):
+        mod = types.ModuleType("TestDeprecated/test_deprecated")
+        monkeypatch.setitem(sys.modules, mod.__name__, mod)
+        mod.X = deprecated(
+            value=1,
+            module_name=mod.__name__,
+            message="deprecated message text",
+            warning_class=DeprecationWarning
+        )
+        mod.Y = deprecated(
+            value=2,
+            module_name=mod.__name__,
+            message="more deprecated text",
+            warning_class=PendingDeprecationWarning,
+        )
+        mod = sys.modules[mod.__name__]
+        mod.Z = 3
+
+        with warnings.catch_warnings(record=True) as log:
+            warnings.simplefilter("always", PendingDeprecationWarning)
+            warnings.simplefilter("always", DeprecationWarning)
+            del mod.X
+            del mod.Y
+            del mod.Z
+
+        [msg1, msg2] = log
+        assert msg1.category is DeprecationWarning
+        assert msg1.message.args == ("deprecated message text",)
+
+        assert msg2.category is PendingDeprecationWarning
+        assert msg2.message.args == ("more deprecated text",)
+
+        assert "X" not in dir(mod)
+        assert "Y" not in dir(mod)
+        assert "Z" not in dir(mod)
+
+        with pytest.raises(AttributeError):
+            del mod.X

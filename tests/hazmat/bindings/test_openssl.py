@@ -6,8 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _get_libraries, _get_windows_libraries
+    Binding, _OpenSSLErrorWithText, _openssl_assert, _verify_openssl_version
 )
 
 
@@ -91,8 +92,8 @@ class TestOpenSSL(object):
 
     def test_add_engine_more_than_once(self):
         b = Binding()
-        res = b.lib.Cryptography_add_osrandom_engine()
-        assert res == 2
+        b._register_osrandom_engine()
+        assert b.lib.ERR_get_error() == 0
 
     def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
@@ -134,17 +135,49 @@ class TestOpenSSL(object):
         assert resp == expected_options
         assert b.lib.SSL_get_mode(ssl) == expected_options
 
-    def test_libraries(self, monkeypatch):
-        assert _get_libraries("darwin") == ["ssl", "crypto"]
-        monkeypatch.setenv('PYCA_WINDOWS_LINK_TYPE', 'static')
-        assert "ssleay32mt" in _get_libraries("win32")
+    def test_conditional_removal(self):
+        b = Binding()
+        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10000000:
+            assert b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
+            assert b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
+        else:
+            with pytest.raises(AttributeError):
+                b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
 
-    def test_windows_static_dynamic_libraries(self):
-        assert "ssleay32mt" in _get_windows_libraries("static")
+            with pytest.raises(AttributeError):
+                b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
 
-        assert "ssleay32mt" in _get_windows_libraries("")
+        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
+            assert b.lib.CMAC_Init
+        else:
+            with pytest.raises(AttributeError):
+                b.lib.CMAC_Init
 
-        assert "ssleay32" in _get_windows_libraries("dynamic")
+    def test_openssl_assert_error_on_stack(self):
+        b = Binding()
+        b.lib.ERR_put_error(
+            b.lib.ERR_LIB_EVP,
+            b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+            b"",
+            -1
+        )
+        with pytest.raises(InternalError) as exc_info:
+            _openssl_assert(b.lib, False)
 
-        with pytest.raises(ValueError):
-            _get_windows_libraries("notvalid")
+        assert exc_info.value.err_code == [_OpenSSLErrorWithText(
+            code=101183626,
+            lib=b.lib.ERR_LIB_EVP,
+            func=b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            reason=b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+            reason_text=(
+                b'error:0607F08A:digital envelope routines:EVP_EncryptFinal_'
+                b'ex:data not multiple of block length'
+            )
+        )]
+
+    def test_verify_openssl_version(self, monkeypatch):
+        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_098", raising=False)
+        with pytest.raises(RuntimeError):
+            # OpenSSL 0.9.8zg
+            _verify_openssl_version(0x9081DF)
