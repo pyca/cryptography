@@ -43,7 +43,7 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
 OS random engine
 ----------------
 
-OpenSSL uses a user-space CSPRNG that is seeded from system random (
+By default OpenSSL uses a user-space CSPRNG that is seeded from system random (
 ``/dev/urandom`` or ``CryptGenRandom``). This CSPRNG is not reseeded
 automatically when a process calls ``fork()``. This can result in situations
 where two different processes can return similar or identical keys and
