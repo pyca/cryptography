@@ -32,8 +32,8 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global 3.5.1
             ;;
         pypy*)
-            pyenv install pypy-4.0.1
-            pyenv global pypy-4.0.1
+            pyenv install pypy-$PYPY_VERSION
+            pyenv global pypy-$PYPY_VERSION
             ;;
         pypy3)
             pyenv install pypy3-2.4.0
@@ -54,8 +54,8 @@ else
         PYENV_ROOT="$HOME/.pyenv"
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
-        pyenv install pypy-4.0.1
-        pyenv global pypy-4.0.1
+        pyenv install pypy-$PYPY_VERSION
+        pyenv global pypy-$PYPY_VERSION
     fi
     if [[ "${OPENSSL}" == "0.9.8" ]]; then
         # We use 0.9.8l rather than zh because we have some branches for
