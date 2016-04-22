@@ -23,6 +23,8 @@ matrix:
         - python: pypy
           env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
         - python: pypy
+          env: TOXENV=pypy PYPY_VERSION=4.0.1
+        - python: pypy
           env: TOXENV=pypy PYPY_VERSION=5.1
         - python: 2.7
           env: TOXENV=py27 OPENSSL=1.0.0
