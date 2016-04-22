@@ -176,4 +176,4 @@ epub_theme = 'epub'
 
 # Retry requests in the linkcheck builder so that we're resillient against
 # transient network errors.
-linkcheck_retries = 3
+linkcheck_retries = 2
