@@ -38,7 +38,6 @@ int CRYPTO_mem_ctrl(int);
 MACROS = """
 /* CRYPTO_cleanup_all_ex_data became a macro in 1.1.0 */
 void CRYPTO_cleanup_all_ex_data(void);
-
 /* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
    have become macros that are no ops */
 int CRYPTO_num_locks(void);
