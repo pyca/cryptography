@@ -13,6 +13,16 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
     $ pip install --requirement dev-requirements.txt
     $ pip install --editable .
 
+On OS X:
+
+If you have installed OpenSSL via Homebrew you may need to set ``CFLAGS`` and  ``LDFLAGS`` environment variables before installing the ``dev-requirements.txt`` otherwise pip may fail with include errors. For example:
+
+.. code-block:: console
+
+    $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install --requirement ./dev-requirements.txt
+
+Generally:
+
 You will also need to install ``enchant`` using your system's package manager
 to check spelling in the documentation.
 
