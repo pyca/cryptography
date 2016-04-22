@@ -21,7 +21,7 @@ matrix:
         - python: 3.5
           env: TOXENV=py35
         - python: pypy
-          env: TOXENV=pypy PYPY_VERSION=2.6.1
+          env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
         - python: pypy
           env: TOXENV=pypy PYPY_VERSION=5.1
         - python: 2.7
