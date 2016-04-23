@@ -15,13 +15,13 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
 On OS X:
 
-You must have installed OpenSSL via Homebrew or MacPorts and must set ``CFLAGS`` and ``LDFLAGS`` environment variables before installing the ``dev-requirements.txt`` otherwise pip may fail with include errors. For example with Homebrew:
+You must have installed `OpenSSL`_ via `Homebrew`_ or `MacPorts`_ and must set ``CFLAGS`` and ``LDFLAGS`` environment variables before installing the ``dev-requirements.txt`` otherwise pip will fail with include errors. For example with `Homebrew`_:
 
 .. code-block:: console
 
     $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install --requirement ./dev-requirements.txt
 
-Alternatively for a static build you can specify ``CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the absolulte path for the OpenSSL libraries before calling pip.
+Alternatively for a static build you can specify ``CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the absolulte path for the `OpenSSL`_ libraries before calling pip.
 
 Generally:
 
@@ -96,6 +96,9 @@ Use `tox`_ to build the documentation. For example:
 The HTML documentation index can now be found at
 ``docs/_build/html/index.html``.
 
+.. _`Homebrew`: http://brew.sh
+.. _`MacPorts`: https://www.macports.org
+.. _`OpenSSL`: https://openssl.org
 .. _`pytest`: https://pypi.python.org/pypi/pytest
 .. _`tox`: https://pypi.python.org/pypi/tox
 .. _`virtualenv`: https://pypi.python.org/pypi/virtualenv
