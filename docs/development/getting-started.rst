@@ -15,11 +15,13 @@ dependencies, install ``cryptography`` in ``editable`` mode. For example:
 
 On OS X:
 
-If you have installed OpenSSL via Homebrew you may need to set ``CFLAGS`` and  ``LDFLAGS`` environment variables before installing the ``dev-requirements.txt`` otherwise pip may fail with include errors. For example:
+You must have installed OpenSSL via Homebrew or MacPorts and must set ``CFLAGS`` and ``LDFLAGS`` environment variables before installing the ``dev-requirements.txt`` otherwise pip may fail with include errors. For example with Homebrew:
 
 .. code-block:: console
 
     $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install --requirement ./dev-requirements.txt
+
+Alternatively for a static build you can specify ``CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the absolulte path for the OpenSSL libraries before calling pip.
 
 Generally:
 
