@@ -28,6 +28,7 @@ static const int EVP_CTRL_GCM_SET_TAG;
 static const int Cryptography_HAS_GCM;
 static const int Cryptography_HAS_PBKDF2_HMAC;
 static const int Cryptography_HAS_PKEY_CTX;
+static const int Cryptography_HAS_BLAKE2;
 """
 
 FUNCTIONS = """
@@ -169,6 +170,9 @@ int Cryptography_EVP_PKEY_encrypt(EVP_PKEY_CTX *ctx, unsigned char *out,
 int Cryptography_EVP_PKEY_decrypt(EVP_PKEY_CTX *ctx, unsigned char *out,
                                   size_t *outlen, const unsigned char *in,
                                   size_t inlen);
+
+const EVP_MD *EVP_blake2b(void);
+const EVP_MD *EVP_blake2s(void);
 """
 
 CUSTOMIZATIONS = """
@@ -251,4 +255,11 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
     EVP_MD_CTX_free(ctx);
 #endif
 }
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(OPENSSL_NO_BLAKE2)
+static const int Cryptography_HAS_BLAKE2 = 1;
+#else
+const EVP_MD *(*EVP_blake2b)(void) = NULL;
+const EVP_MD *(*EVP_blake2s)(void) = NULL;
+static const int Cryptography_HAS_BLAKE2 = 0;
+#endif
 """
