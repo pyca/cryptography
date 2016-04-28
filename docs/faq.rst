@@ -54,6 +54,6 @@ environment variable. Please note that this is *temporary* and will be removed
 in ``cryptography`` 1.5.
 
 .. _`NaCl`: https://nacl.cr.yp.to/
-.. _`PyNaCl`: https://pynacl.readthedocs.org
-.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.org/en/develop/configuration-directives/WSGIApplicationGroup.html
+.. _`PyNaCl`: https://pynacl.readthedocs.io
+.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
 .. _`issue`: https://github.com/pyca/cryptography/issues

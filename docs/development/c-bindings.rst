@@ -3,7 +3,7 @@ C bindings
 
 C bindings are bindings to C libraries, using cffi_ whenever possible.
 
-.. _cffi: https://cffi.readthedocs.org
+.. _cffi: https://cffi.readthedocs.io
 
 Bindings live in :py:mod:`cryptography.hazmat.bindings`.
 

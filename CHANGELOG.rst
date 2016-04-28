@@ -647,4 +647,4 @@ Changelog
 * Initial release.
 
 .. _`master`: https://github.com/pyca/cryptography/
-.. _`cffi`: https://cffi.readthedocs.org/en/latest/
+.. _`cffi`: https://cffi.readthedocs.io/
