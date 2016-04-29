@@ -11,37 +11,8 @@ INCLUDES = """
 TYPES = """
 typedef struct bio_st BIO;
 typedef void bio_info_cb(BIO *, int, const char *, int, long, long);
-struct bio_method_st {
-    int type;
-    const char *name;
-    int (*bwrite)(BIO *, const char *, int);
-    int (*bread)(BIO *, char *, int);
-    int (*bputs)(BIO *, const char *);
-    int (*bgets)(BIO *, char *, int);
-    long (*ctrl)(BIO *, int, long, void *);
-    int (*create)(BIO *);
-    int (*destroy)(BIO *);
-    long (*callback_ctrl)(BIO *, int, bio_info_cb *);
-    ...;
-};
-typedef struct bio_method_st BIO_METHOD;
-struct bio_st {
-    BIO_METHOD *method;
-    long (*callback)(struct bio_st *, int, const char *, int, long, long);
-    char *cb_arg;
-    int init;
-    int shutdown;
-    int flags;
-    int retry_reason;
-    int num;
-    void *ptr;
-    struct bio_st *next_bio;
-    struct bio_st *prev_bio;
-    int references;
-    unsigned long num_read;
-    unsigned long num_write;
-    ...;
-};
+typedef ... bio_st;
+typedef ... BIO_METHOD;
 typedef ... BUF_MEM;
 
 static const int BIO_TYPE_MEM;
@@ -87,8 +58,6 @@ static const int BIO_TYPE_FILTER;
 """
 
 FUNCTIONS = """
-BIO *BIO_new(BIO_METHOD *);
-int BIO_set(BIO *, BIO_METHOD *);
 int BIO_free(BIO *);
 void BIO_vfree(BIO *);
 void BIO_free_all(BIO *);
@@ -96,15 +65,10 @@ BIO *BIO_push(BIO *, BIO *);
 BIO *BIO_pop(BIO *);
 BIO *BIO_next(BIO *);
 BIO *BIO_find_type(BIO *, int);
-BIO_METHOD *BIO_s_mem(void);
-BIO_METHOD *BIO_s_file(void);
 BIO *BIO_new_file(const char *, const char *);
 BIO *BIO_new_fp(FILE *, int);
-BIO_METHOD *BIO_s_fd(void);
 BIO *BIO_new_fd(int, int);
-BIO_METHOD *BIO_s_socket(void);
 BIO *BIO_new_socket(int, int);
-BIO_METHOD *BIO_s_null(void);
 long BIO_ctrl(BIO *, int, long, void *);
 long BIO_callback_ctrl(
     BIO *,
@@ -118,11 +82,19 @@ int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
-BIO_METHOD *BIO_f_null(void);
-BIO_METHOD *BIO_f_buffer(void);
 """
 
 MACROS = """
+/* These added const to BIO_METHOD in 1.1.0 */
+BIO *BIO_new(BIO_METHOD *);
+int BIO_set(BIO *, BIO_METHOD *);
+BIO_METHOD *BIO_s_mem(void);
+BIO_METHOD *BIO_s_file(void);
+BIO_METHOD *BIO_s_fd(void);
+BIO_METHOD *BIO_s_socket(void);
+BIO_METHOD *BIO_s_null(void);
+BIO_METHOD *BIO_f_null(void);
+BIO_METHOD *BIO_f_buffer(void);
 /* BIO_new_mem_buf became const void * in 1.0.2g */
 BIO *BIO_new_mem_buf(void *, int);
 long BIO_set_fd(BIO *, long, int);
