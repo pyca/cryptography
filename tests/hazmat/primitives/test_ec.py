@@ -223,6 +223,30 @@ def test_ec_public_numbers_repr():
     assert repr(pn) == "<EllipticCurvePublicNumbers(curve=secp256r1, x=2, y=3>"
 
 
+def test_ec_public_numbers_hash():
+    pn1 = ec.EllipticCurvePublicNumbers(2, 3, ec.SECP256R1())
+    pn2 = ec.EllipticCurvePublicNumbers(2, 3, ec.SECP256R1())
+    pn3 = ec.EllipticCurvePublicNumbers(1, 3, ec.SECP256R1())
+
+    assert hash(pn1) == hash(pn2)
+    assert hash(pn1) != hash(pn3)
+
+
+def test_ec_private_numbers_hash():
+    numbers1 = ec.EllipticCurvePrivateNumbers(
+        1, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
+    )
+    numbers2 = ec.EllipticCurvePrivateNumbers(
+        1, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
+    )
+    numbers3 = ec.EllipticCurvePrivateNumbers(
+        2, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
+    )
+
+    assert hash(numbers1) == hash(numbers2)
+    assert hash(numbers1) != hash(numbers3)
+
+
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECWithNumbers(object):
     @pytest.mark.parametrize(
