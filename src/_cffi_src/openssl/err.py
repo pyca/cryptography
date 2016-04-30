@@ -239,7 +239,6 @@ static const int SSL_AD_HANDSHAKE_FAILURE;
 """
 
 FUNCTIONS = """
-void ERR_free_strings(void);
 char *ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
 const char *ERR_lib_error_string(unsigned long);
@@ -266,6 +265,9 @@ int ERR_get_next_error_library(void);
 """
 
 MACROS = """
+/* ERR_free_strings became a macro in 1.1.0 */
+void ERR_free_strings(void);
+
 unsigned long ERR_PACK(int, int, int);
 int ERR_GET_LIB(unsigned long);
 int ERR_GET_FUNC(unsigned long);

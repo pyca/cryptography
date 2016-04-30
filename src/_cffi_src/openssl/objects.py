@@ -24,10 +24,11 @@ int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
 int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
 ASN1_OBJECT *OBJ_dup(const ASN1_OBJECT *);
 int OBJ_create(const char *, const char *, const char *);
-void OBJ_cleanup(void);
 """
 
 MACROS = """
+/* OBJ_cleanup became a macro in 1.1.0 */
+void OBJ_cleanup(void);
 """
 
 CUSTOMIZATIONS = """
