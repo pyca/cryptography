@@ -60,14 +60,6 @@ int RSA_padding_add_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
                                int, const unsigned char *, int);
 int RSA_padding_check_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
                                  int, int, const unsigned char *, int);
-"""
-
-MACROS = """
-int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
-int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
-int EVP_PKEY_CTX_set_rsa_mgf1_md(EVP_PKEY_CTX *, EVP_MD *);
-
-int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 
 /* added in 1.1.0 when the RSA struct was opaqued */
 int RSA_set0_key(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);
@@ -76,6 +68,14 @@ int RSA_set0_crt_params(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);
 void RSA_get0_key(const RSA *, BIGNUM **, BIGNUM **, BIGNUM **);
 void RSA_get0_factors(const RSA *, BIGNUM **, BIGNUM **);
 void RSA_get0_crt_params(const RSA *, BIGNUM **, BIGNUM **, BIGNUM **);
+"""
+
+MACROS = """
+int EVP_PKEY_CTX_set_rsa_padding(EVP_PKEY_CTX *, int);
+int EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_PKEY_CTX *, int);
+int EVP_PKEY_CTX_set_rsa_mgf1_md(EVP_PKEY_CTX *, EVP_MD *);
+
+int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
 """
 
 CUSTOMIZATIONS = """
