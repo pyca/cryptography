@@ -35,6 +35,12 @@ int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
              DSA *);
 int DSA_verify(int, const unsigned char *, int, const unsigned char *, int,
                DSA *);
+
+/* added in 1.1.0 to access the opaque struct */
+void DSA_get0_pqg(const DSA *, BIGNUM **, BIGNUM **, BIGNUM **);
+int DSA_set0_pqg(DSA *, BIGNUM *, BIGNUM *, BIGNUM *);
+void DSA_get0_key(const DSA *, BIGNUM **, BIGNUM **);
+int DSA_set0_key(DSA *, BIGNUM *, BIGNUM *);
 """
 
 MACROS = """
@@ -42,11 +48,6 @@ MACROS = """
 DSA *DSAparams_dup(DSA *);
 int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
                                int *, unsigned long *, BN_GENCB *);
-/* added in 1.1.0 to access the opaque struct */
-void DSA_get0_pqg(const DSA *, BIGNUM **, BIGNUM **, BIGNUM **);
-int DSA_set0_pqg(DSA *, BIGNUM *, BIGNUM *, BIGNUM *);
-void DSA_get0_key(const DSA *, BIGNUM **, BIGNUM **);
-int DSA_set0_key(DSA *, BIGNUM *, BIGNUM *);
 """
 
 CUSTOMIZATIONS = """
