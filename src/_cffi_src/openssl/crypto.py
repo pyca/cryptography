@@ -38,11 +38,12 @@ void CRYPTO_free(void *);
 int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on(void);
 void CRYPTO_mem_leaks(struct bio_st *);
-void CRYPTO_cleanup_all_ex_data(void);
-
 """
 
 MACROS = """
+/* CRYPTO_cleanup_all_ex_data became a macro in 1.1.0 */
+void CRYPTO_cleanup_all_ex_data(void);
+
 /* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. These functions
    have become macros that are no ops */
 int CRYPTO_num_locks(void);
@@ -55,8 +56,6 @@ const char *SSLeay_version(int);
 /* these functions were added to replace the SSLeay functions in 1.1.0 */
 unsigned long OpenSSL_version_num(void);
 const char *OpenSSL_version(int);
-
-void CRYPTO_add(int *, int, int);
 
 /* this is a macro in 1.1.0 */
 void OPENSSL_free(void *);
