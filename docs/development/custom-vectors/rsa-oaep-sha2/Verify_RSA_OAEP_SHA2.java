@@ -228,7 +228,7 @@ class TestVectorLoader {
 public class Verify_RSA_OAEP_SHA2 {
 
     public enum SHAHash {
-        SHA224, SHA256, SHA384, SHA512
+        SHA1, SHA224, SHA256, SHA384, SHA512
     }
 
     private SHAHash m_mgf1_hash;
@@ -258,6 +258,10 @@ public class Verify_RSA_OAEP_SHA2 {
 
         switch (alg_hash) {
 
+        case SHA1:
+            cipher = Cipher.getInstance("RSA/ECB/OAEPwithSHA1andMGF1Padding", "BC");
+            break;
+
         case SHA224:
             cipher = Cipher.getInstance("RSA/ECB/OAEPwithSHA-224andMGF1Padding", "BC");
             break;
@@ -283,6 +287,9 @@ public class Verify_RSA_OAEP_SHA2 {
 
         switch (mgf1_hash) {
 
+        case SHA1:
+            mgf1 = MGF1ParameterSpec.SHA1;
+            break;
         case SHA224:
             mgf1 = MGF1ParameterSpec.SHA224;
             break;
@@ -308,6 +315,10 @@ public class Verify_RSA_OAEP_SHA2 {
         OAEPParameterSpec oaep_spec = null;
 
         switch (alg_hash) {
+
+        case SHA1:
+            oaep_spec = new OAEPParameterSpec("SHA1", "MGF1", mgf1_spec, PSource.PSpecified.DEFAULT);
+            break;
 
         case SHA224:
             oaep_spec = new OAEPParameterSpec("SHA-224", "MGF1", mgf1_spec, PSource.PSpecified.DEFAULT);
@@ -367,6 +378,10 @@ public class Verify_RSA_OAEP_SHA2 {
             // to verify for each
             for (SHAHash mgf1_hash : SHAHash.values()) {
                 for (SHAHash alg_hash : SHAHash.values()) {
+                    if (mgf1_hash.name().toLowerCase().equals("sha1") &&
+                        alg_hash.name().toLowerCase().equals("sha1")) {
+                        continue;
+                    }
                     String filename = "oaep-" + mgf1_hash.name().toLowerCase() +
                                           "-" + alg_hash.name().toLowerCase() + ".txt";
 

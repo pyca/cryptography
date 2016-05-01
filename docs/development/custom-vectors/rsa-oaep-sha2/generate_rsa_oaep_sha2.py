@@ -108,12 +108,19 @@ oaep_path = os.path.join(
     "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "oaep-vect.txt"
 )
 hashalgs = [
+    hashes.SHA1(),
     hashes.SHA224(),
     hashes.SHA256(),
     hashes.SHA384(),
     hashes.SHA512(),
 ]
 for hashtuple in itertools.product(hashalgs, hashalgs):
+    if (
+        isinstance(hashtuple[0], hashes.SHA1) and
+        isinstance(hashtuple[1], hashes.SHA1)
+    ):
+        continue
+
     write_file(
         build_vectors(hashtuple[0], hashtuple[1], oaep_path),
         "oaep-{0}-{1}.txt".format(hashtuple[0].name, hashtuple[1].name)
