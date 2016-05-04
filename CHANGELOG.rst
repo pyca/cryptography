@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.3.2 - 2016-05-04
+~~~~~~~~~~~~~~~~~~
+
+* Updated Windows and OS X wheels to be compiled against OpenSSL 1.0.2h.
+* Fixed an issue preventing ``cryptography`` from compiling against
+  LibreSSL 2.3.x.
+
 1.3.1 - 2016-03-21
 ~~~~~~~~~~~~~~~~~~
 
