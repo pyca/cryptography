@@ -208,16 +208,16 @@ class _X509ExtensionParser(object):
             try:
                 handler = self.handlers[oid]
             except KeyError:
+                data = backend._lib.X509_EXTENSION_get_data(ext)
+                backend.openssl_assert(data != backend._ffi.NULL)
+                der = backend._ffi.buffer(data.data, data.length)[:]
                 if critical:
                     raise x509.UnsupportedExtension(
                         "Critical extension {0} is not currently supported"
-                        .format(oid), oid
+                        .format(oid), oid, der
                     )
                 else:
                     # Dump the DER payload into an UnrecognizedExtension object
-                    data = backend._lib.X509_EXTENSION_get_data(ext)
-                    backend.openssl_assert(data != backend._ffi.NULL)
-                    der = backend._ffi.buffer(data.data, data.length)[:]
                     unrecognized = x509.UnrecognizedExtension(oid, der)
                     extensions.append(
                         x509.Extension(oid, critical, unrecognized)

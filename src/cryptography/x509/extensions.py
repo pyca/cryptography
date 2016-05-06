@@ -70,9 +70,10 @@ class DuplicateExtension(Exception):
 
 
 class UnsupportedExtension(Exception):
-    def __init__(self, msg, oid):
+    def __init__(self, msg, oid, value):
         super(UnsupportedExtension, self).__init__(msg)
         self.oid = oid
+        self.value = value
 
 
 class ExtensionNotFound(Exception):
