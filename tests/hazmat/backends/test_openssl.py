@@ -207,52 +207,29 @@ class TestOpenSSL(object):
         assert backend._ffi.buffer(buf)[0:length] == sample_data
 
 
+
+
 class TestOpenSSLRandomEngine(object):
+
+    def setup(self):
+        # The default RAND engine is global and shared between
+        # tests. We store the current default in setup, and restore it
+        # in teardown. This also implicitly tests that the default
+        # engine is osrandom.
+        e = backend._lib.ENGINE_get_default_RAND()
+        self.default_engine_name = backend._lib.ENGINE_get_name(e)
+
     def teardown_method(self, method):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
+
+        # First check that osrandom was actually the default before the test.
+        assert self.default_engine_name == backend._binding._osrandom_engine_name
+
         backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._binding._osrandom_engine_name
-
-    def test_osrandom_engine_is_default(self, tmpdir):
-        engine_printer = textwrap.dedent(
-            """
-            import sys
-            from cryptography.hazmat.backends.openssl.backend import backend
-
-            e = backend._lib.ENGINE_get_default_RAND()
-            name = backend._lib.ENGINE_get_name(e)
-            sys.stdout.write(backend._ffi.string(name).decode('ascii'))
-            res = backend._lib.ENGINE_free(e)
-            assert res == 1
-            """
-        )
-        engine_name = tmpdir.join('engine_name')
-
-        # If we're running tests via ``python setup.py test`` in a clean
-        # environment then all of our dependencies are going to be installed
-        # into either the current directory or the .eggs directory. However the
-        # subprocess won't know to activate these dependencies, so we'll get it
-        # to do so by passing our entire sys.path into the subprocess via the
-        # PYTHONPATH environment variable.
-        env = os.environ.copy()
-        env["PYTHONPATH"] = os.pathsep.join(sys.path)
-
-        with engine_name.open('w') as out:
-            subprocess.check_call(
-                [sys.executable, "-c", engine_printer],
-                env=env,
-                stdout=out,
-                stderr=subprocess.PIPE,
-            )
-
-        osrandom_engine_name = backend._ffi.string(
-            backend._binding._osrandom_engine_name
-        )
-
-        assert engine_name.read().encode('ascii') == osrandom_engine_name
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
