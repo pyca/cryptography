@@ -6,9 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import os
-import subprocess
-import sys
-import textwrap
 
 import pytest
 
@@ -208,7 +205,6 @@ class TestOpenSSL(object):
 
 
 
-
 class TestOpenSSLRandomEngine(object):
 
     def setup(self):
@@ -224,12 +220,13 @@ class TestOpenSSLRandomEngine(object):
         # for all these tests.
 
         # First check that osrandom was actually the default before the test.
-        assert self.default_engine_name == backend._binding._osrandom_engine_name
+        osrandom_engine_name = backend._binding._osrandom_engine_name
+        assert self.default_engine_name == osrandom_engine_name
 
         backend.activate_osrandom_engine()
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
-        assert name == backend._binding._osrandom_engine_name
+        assert name == osrandom_engine_name
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
