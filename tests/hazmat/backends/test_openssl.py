@@ -204,7 +204,6 @@ class TestOpenSSL(object):
         assert backend._ffi.buffer(buf)[0:length] == sample_data
 
 
-
 class TestOpenSSLRandomEngine(object):
 
     def setup(self):
