@@ -430,5 +430,9 @@ CONDITIONAL_NAMES = {
         "CRYPTO_READ",
         "CRYPTO_LOCK_SSL",
         "CRYPTO_lock",
-    ]
+    ],
+    "Cryptography_HAS_BLAKE2": [
+        "EVP_blake2b",
+        "EVP_blake2s",
+    ],
 }
