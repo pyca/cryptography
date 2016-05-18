@@ -9,7 +9,7 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    PEMSerializationBackend, RSABackend, X509Backend, DHBackend
 )
 
 
@@ -24,6 +24,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(PEMSerializationBackend)
 @utils.register_interface(X509Backend)
+@utils.register_interface(DHBackend)
 class MultiBackend(object):
     name = "multibackend"
 
@@ -408,4 +409,58 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm(
             "This backend does not support X.509.",
             _Reasons.UNSUPPORTED_X509
+        )
+
+    def generate_dh_parameters(self, generator, key_size):
+        for b in self._filtered_backends(DHBackend):
+            return b.generate_dh_parameters(generator, key_size)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
+    def load_dh_parameter_numbers(self, numbers):
+        for b in self._filtered_backends(DHBackend):
+            return b.load_dh_parameter_numbers(numbers)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
+    def generate_dh_private_key(self, parameters):
+        for b in self._filtered_backends(DHBackend):
+            return b.generate_dh_private_key(parameters)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
+    def load_dh_private_numbers(self, numbers):
+        for b in self._filtered_backends(DHBackend):
+            return b.load_dh_private_numbers(numbers)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
+    def load_dh_public_numbers(self, numbers):
+        for b in self._filtered_backends(DHBackend):
+            return b.load_dh_public_numbers(numbers)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
+
+    def generate_dh_private_key_and_parameters(self, generator, key_size):
+        for b in self._filtered_backends(DHBackend):
+            return b.generate_dh_private_key_and_parameters( generator, key_size)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
         )
