@@ -1,29 +1,92 @@
-language: c
-os:
-    - osx
-    - linux
-compiler:
-    - clang
-    - gcc
-env:
-    matrix:
-        - TOXENV=py26
-        - TOXENV=py27
-        - TOXENV=py32
-        - TOXENV=py33
-        - TOXENV=py34
-        - TOXENV=pypy
-        - TOXENV=pypy3
-        - TOXENV=py26 OPENSSL=0.9.8
-        - TOXENV=py27 OPENSSL=0.9.8
-        - TOXENV=py32 OPENSSL=0.9.8
-        - TOXENV=py33 OPENSSL=0.9.8
-        - TOXENV=py34 OPENSSL=0.9.8
-        - TOXENV=pypy OPENSSL=0.9.8
-        - TOXENV=pypy3 OPENSSL=0.9.8
-        - TOXENV=docs
-        - TOXENV=pep8
-        - TOXENV=py3pep8
+sudo: false
+
+language: python
+
+cache:
+    directories:
+        - $HOME/.cache/pip
+        - $HOME/ossl-098l
+        - $HOME/ossl-100t
+
+matrix:
+    include:
+        - python: 2.6 # these are just to make travis's UI a bit prettier
+          env: TOXENV=py26
+        - python: 2.7
+          env: TOXENV=py27
+        - python: 3.3
+          env: TOXENV=py33
+        - python: 3.4
+          env: TOXENV=py34
+        - python: 3.5
+          env: TOXENV=py35
+        - python: pypy
+          env: TOXENV=pypy-nocoverage PYPY_VERSION=2.6.1
+        - python: pypy
+          env: TOXENV=pypy PYPY_VERSION=4.0.1
+        - python: pypy
+          env: TOXENV=pypy PYPY_VERSION=5.1
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=1.0.0
+        - python: 3.5
+          env: TOXENV=py35 OPENSSL=1.0.0
+        - python: 2.6
+          env: TOXENV=py26 OPENSSL=0.9.8
+        - python: 2.7
+          env: TOXENV=py27 OPENSSL=0.9.8
+        - python: 3.3
+          env: TOXENV=py33 OPENSSL=0.9.8
+        - python: 3.4
+          env: TOXENV=py34 OPENSSL=0.9.8
+        - python: 3.5
+          env: TOXENV=py35 OPENSSL=0.9.8
+        - python: pypy
+          env: TOXENV=pypy OPENSSL=0.9.8 PYPY_VERSION=5.1
+        - python: 2.7
+          env: TOXENV=docs
+          addons:
+              apt:
+                  packages:
+                      - libenchant-dev
+        - python: 2.7
+          env: TOXENV=pep8
+        - python: 3.4
+          env: TOXENV=py3pep8
+        - language: generic
+          os: osx
+          # 7.1 is OS X 10.10.x
+          # see: https://docs.travis-ci.com/user/languages/objective-c/#Supported-OS-X-iOS-SDK-versions
+          osx_image: xcode7.1
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode7.1
+          env: TOXENV=py33 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode7.1
+          env: TOXENV=py34 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode7.1
+          env: TOXENV=py35 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode7.1
+          env: TOXENV=pypy-nocoverage CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 PYPY_VERSION=5.1
+        - language: generic
+          os: osx
+          osx_image: xcode7.1
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=0
+        - language: generic
+          os: osx
+          # 7.2 is OS X 10.11.x
+          osx_image: xcode7.2
+          env: TOXENV=py27 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
+        - language: generic
+          os: osx
+          osx_image: xcode7.2
+          env: TOXENV=docs CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1
 
 install:
     - ./.travis/install.sh
@@ -32,7 +95,7 @@ script:
     - ./.travis/run.sh
 
 after_success:
-    - source ~/.venv/bin/activate && coveralls
+    - ./.travis/upload_coverage.sh
 
 notifications:
     irc:
@@ -42,29 +105,3 @@ notifications:
         skip_join: true
     webhooks:
         - https://buildtimetrend.herokuapp.com/travis
-
-matrix:
-    exclude:
-        # excluding pypy3 from linux configs until the ubuntu ppa has pypy3 available.
-        - os: linux
-          env: TOXENV=pypy3
-        - os: linux
-          env: TOXENV=pypy3 OPENSSL=0.9.8
-        - os: osx
-          compiler: gcc
-        - os: osx
-          env: TOXENV=pep8
-          compiler: clang
-        - os: osx
-          env: TOXENV=py3pep8
-          compiler: clang
-
-        - os: linux
-          env: TOXENV=docs
-          compiler: clang
-        - os: linux
-          env: TOXENV=pep8
-          compiler: clang
-        - os: linux
-          env: TOXENV=py3pep8
-          compiler: clang

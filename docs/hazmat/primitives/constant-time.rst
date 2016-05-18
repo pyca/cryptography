@@ -40,4 +40,4 @@ about the timing attacks on KeyCzar and Java's ``MessageDigest.isEqual()``.
                        ``bytes``.
 
 
-.. _`Coda Hale's blog post`: http://codahale.com/a-lesson-in-timing-attacks/
+.. _`Coda Hale's blog post`: https://codahale.com/a-lesson-in-timing-attacks/

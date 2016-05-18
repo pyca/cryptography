@@ -8,9 +8,6 @@ import pretend
 
 import pytest
 
-import six
-
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -19,14 +16,8 @@ from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
 from ..backends.test_multibackend import DummyHMACBackend
+from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class UnsupportedDummyHash(object):
-    name = "unsupported-dummy-hash"
-    block_size = None
-    digest_size = None
 
 
 @pytest.mark.supported(
@@ -45,7 +36,7 @@ class TestHMAC(object):
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update(six.u("\u00FC"))
+            h.update(u"\u00FC")
 
     def test_copy_backend_object(self):
         backend = DummyHMACBackend([hashes.SHA1])
@@ -93,11 +84,11 @@ class TestHMAC(object):
     def test_verify_reject_unicode(self, backend):
         h = hmac.HMAC(b'', hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.verify(six.u(''))
+            h.verify(u'')
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            hmac.HMAC(b"key", UnsupportedDummyHash(), backend)
+            hmac.HMAC(b"key", DummyHashAlgorithm(), backend)
 
 
 def test_invalid_backend():

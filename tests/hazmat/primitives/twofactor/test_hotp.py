@@ -8,10 +8,11 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidToken, _Reasons
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.backends.interfaces import HMACBackend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hashes import MD5, SHA1
+from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import HOTP
 
 from ....utils import (
@@ -90,6 +91,19 @@ class TestHOTP(object):
 
         with pytest.raises(TypeError):
             HOTP(secret, b"foo", SHA1(), backend)
+
+    def test_get_provisioning_uri(self, backend):
+        secret = b"12345678901234567890"
+        hotp = HOTP(secret, 6, SHA1(), backend)
+
+        assert hotp.get_provisioning_uri("Alice Smith", 1, None) == (
+            "otpauth://hotp/Alice%20Smith?digits=6&secret=GEZDGNBV"
+            "GY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&counter=1")
+
+        assert hotp.get_provisioning_uri("Alice Smith", 1, 'Foo') == (
+            "otpauth://hotp/Foo:Alice%20Smith?digits=6&secret=GEZD"
+            "GNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=Foo"
+            "&counter=1")
 
 
 def test_invalid_backend():

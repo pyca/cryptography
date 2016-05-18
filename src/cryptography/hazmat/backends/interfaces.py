@@ -212,7 +212,13 @@ class EllipticCurveBackend(object):
     @abc.abstractmethod
     def load_elliptic_curve_private_numbers(self, numbers):
         """
-        Return an EllipticCurvePublicKey provider using the given numbers.
+        Return an EllipticCurvePrivateKey provider using the given numbers.
+        """
+
+    @abc.abstractmethod
+    def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
+        """
+        Returns whether the exchange algorithm is supported by this backend.
         """
 
 
@@ -274,6 +280,32 @@ class X509Backend(object):
         Load an X.509 CSR from PEM encoded data.
         """
 
+    @abc.abstractmethod
+    def create_x509_csr(self, builder, private_key, algorithm):
+        """
+        Create and sign an X.509 CSR from a CSR builder object.
+        """
+
+    @abc.abstractmethod
+    def create_x509_certificate(self, builder, private_key, algorithm):
+        """
+        Create and sign an X.509 certificate from a CertificateBuilder object.
+        """
+
+    @abc.abstractmethod
+    def create_x509_crl(self, builder, private_key, algorithm):
+        """
+        Create and sign an X.509 CertificateRevocationList from a
+        CertificateRevocationListBuilder object.
+        """
+
+    @abc.abstractmethod
+    def create_x509_revoked_certificate(self, builder):
+        """
+        Create a RevokedCertificate object from a RevokedCertificateBuilder
+        object.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DHBackend(object):
@@ -313,3 +345,15 @@ class DHBackend(object):
         """
         Returns a DHParameters provider.
         """
+    #
+    # @abc.abstractmethod
+    # def dh_exchange_algorithm_supported(self, exchange_algorithm):
+    #     """
+    #     Returns whether the exchange algorithm is supported by this backend.
+    #     """
+    #
+    # @abc.abstractmethod
+    # def dh_parameters_supported(self, p, g):
+    #     """
+    #     Returns whether the backend supports DH with these parameter values.
+    #     """

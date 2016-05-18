@@ -26,7 +26,7 @@ class HKDF(object):
 
         self._algorithm = algorithm
 
-        if not isinstance(salt, bytes) and salt is not None:
+        if not (salt is None or isinstance(salt, bytes)):
             raise TypeError("salt must be bytes.")
 
         if salt is None:
@@ -77,7 +77,7 @@ class HKDFExpand(object):
 
         self._length = length
 
-        if not isinstance(info, bytes) and info is not None:
+        if not (info is None or isinstance(info, bytes)):
             raise TypeError("info must be bytes.")
 
         if info is None:

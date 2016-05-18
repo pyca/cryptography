@@ -21,9 +21,11 @@ from .utils import (
     check_backend_support, load_cryptrec_vectors,
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
-    load_hash_vectors, load_kasvs_dh_vectors, load_nist_vectors,
+    load_hash_vectors, load_kasvs_dh_vectors,
+    load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    raises_unsupported_algorithm, select_backends, skip_if_empty
+    load_x963_vectors, raises_unsupported_algorithm, select_backends,
+    skip_if_empty
 )
 
 
@@ -84,7 +86,7 @@ def test_check_backend_support_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: False, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": supported},
+    item = pretend.stub(keywords={"supported": [supported]},
                         funcargs={"backend": True})
     with pytest.raises(pytest.skip.Exception) as exc_info:
         check_backend_support(item)
@@ -95,7 +97,7 @@ def test_check_backend_support_no_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: True, "skip_message": "Nope"}
     )
-    item = pretend.stub(keywords={"supported": supported},
+    item = pretend.stub(keywords={"supported": [supported]},
                         funcargs={"backend": True})
     assert check_backend_support(item) is None
 
@@ -3042,6 +3044,544 @@ d518475576730ed528779366568e46b7dd4ed787cb72d0733c93
     ]
 
     assert expected == load_kasvs_dh_vectors(vector_data)
+
+
+def test_load_kasvs_ecdh_vectors_empty_vector_data():
+    assert [] == load_kasvs_ecdh_vectors([])
+
+
+def test_load_kasvs_ecdh_vectors():
+    vector_data = textwrap.dedent("""
+    #  CAVS 11.0
+    #  Parameter set(s) supported: EA EB EC ED EE
+    #  CAVSid: CAVSid (in hex: 434156536964)
+    #  IUTid: In hex: a1b2c3d4e5
+    [EA]
+
+    [Curve selected:  P-192]
+    [SHA(s) supported (Used for hashing Z):  SHA1]
+    [EB]
+
+    [Curve selected:  P-224]
+    [SHA(s) supported (Used for hashing Z):  SHA224]
+    [EC]
+
+    [Curve selected:  P-256]
+    [SHA(s) supported (Used for hashing Z):  SHA256]
+    [ED]
+
+    [Curve selected:  P-384]
+    [SHA(s) supported (Used for hashing Z):  SHA384]
+    [EE]
+
+    [Curve selected:  P-521]
+    [SHA(s) supported (Used for hashing Z):  SHA512]
+    #  Generated on Thu Mar 17 19:46:10 2011
+
+
+
+    [EA - SHA1]
+
+
+    COUNT = 0
+    dsCAVS = f70c297a683d6b7ef82b5af7349606c4447c8b4fc6fa5e80
+    QsCAVSx = f7b5061fb557e516c50abf541d97dbfd76ca7172b22cf590
+    QsCAVSy = 135e15e21f9e85c76205fd148a92ac19f9e6243ddab322d1
+    dsIUT = a5b4bbad57f101ca48021cb7440cd681a9d40cd51b99d917
+    QsIUTx = 79a77fcb18a32cdb59ed5d87740f29e8565d649dbf01ce86
+    QsIUTy = f7187efaa0b1573f1fb00905d46810b880bf738b4c720bb7
+    Z = 26382468d721761e14a87dc3bee67340095c6455962d1ba3
+    CAVSHashZZ = af52ba700d3bbba7ce2916d6b729422c26c32364
+    Result = P (0 - Correct)
+
+
+
+    COUNT = 2
+    dsCAVS = 5f909dcb0ccce58c82fada748c47297579e6a981b5518a96
+    QsCAVSx = 537f1ecfda0e366de393a9bc8188fcc280311bffefe21ecf
+    QsCAVSy = a1fa1f98498d65f2754caff4e5303a4066a5ff89fde95381
+    dsIUT = 3357aa7f47f3e09421602cc12cdce4434c68e330d44de05e
+    QsIUTx = 6a33d43d9c72173eabc7a771a5687748c4774c62762e96ec
+    QsIUTy = 8033f238b3abc69470aad4be8dbe4f60a2fd50207626c56a
+    Z = 3153034f6617326f19c35be8c99a0585431adf09d2f8e0fd
+    CAVSHashZZ = f8414e30c2d382e28d2a57a2447fdc203baa416b
+    Result = F (8 - Z changed )
+
+
+
+    COUNT = 8
+    dsCAVS = 8fcfaf0524cc868fad20e50410a2205319f1327308d98dc8
+    QsCAVSx = 9b0243d80a9e328738080fb4d46bc450243d0efb7ead0c92
+    QsCAVSy = ad5bebad7f03849693071537f60ef858cad214123beee7c7
+    dsIUT = bba95dac90289cb68ca2b006f9757219b70579c299ad7a7d
+    QsIUTx = 7733dc0cb365cd6312724196b9b4eb491fd4d2e31b9afdb1
+    QsIUTy = 92ffa3722acc5b94d772258ba2d471b06c0f53f56fcd8662
+    Z = 0f3c6e4a29a08296ae730f56a1ebf819ea2edfa6f0434e40
+    CAVSHashZZ = c124545eed4b83a799e7e90371d806b5684a1bd2
+    Result = P (13 - Z value should have leading 0 nibble )
+
+
+    [EB - SHA224]
+
+
+    COUNT = 0
+    dsCAVS = e53a88af7cf8ce6bf13c8b9ad191494e37a6acc1368c71f4306e39e5
+    QsCAVSx = 3a24217c4b957fea922eec9d9ac52d5cb4b3fcd95efde1e4fa0dd6e2
+    QsCAVSy = 775b94025a808eb6f4af14ea4b57dca576c35373c6dc198b15b981df
+    dsIUT = 09f51e302c6a0fe6ff48f34c208c6af91e70f65f88102e6fcab9af4a
+    QsIUTx = c5d5706ccd7424c74fd616e699865af96e56f39adea6aa059e5092b5
+    QsIUTy = f0729077bb602404d56d2f7e2ba5bb2f383df4a5425567881ff0165d
+    Z = b1259ceedfb663d9515089cf727e7024fb3d86cbcec611b4ba0b4ab6
+    CAVSHashZZ = 8b21fd05a4b50e401908cd8f26757f5c57f22b69f170aa7381f8596d
+    Result = P (0 - Correct)
+
+
+
+    [EC - SHA256]
+
+
+    COUNT = 0
+    dsCAVS = 305dfb4a8850cc59280891147baf457bfe5e2bae984571634a77dc8d3472fa9b
+    QsCAVSx = 202cb5a224e6c2a84e624094486edf04116c8d68ec1f4a0e0ed9ee090e1a900b
+    QsCAVSy = cacf3a5789bb33954be600425d62d9eae5371f90f88167258814213e4a4f4b1a
+    dsIUT = 72cc52808f294b64b6f7233c3d2f5d96cc1d29287320e39e1c151deef0bc14eb
+    QsIUTx = 49a768c9a4ca56e374f685dd76a461b1016c59dcded2c8d8cbd9f23ca453831f
+    QsIUTy = b1e3bb9b5f12a3b5ae788535d4554bd8c46e0e6130075e4e437d3854cf8f1c34
+    Z = c0147c3c2691b450b5edc08b51aea224d9f4359ff67aab6da3146f396dbceaea
+    CAVSHashZZ = ea9ffd54511979ab8c4b387784972cbd05fc5fd4ff78e048b0026557b56a5\
+1dd
+    Result = F (2 - CAVS's Static public key Y fails PKV 5.6.2.5)
+
+
+
+    [ED - SHA384]
+
+
+    COUNT = 0
+    dsCAVS = 0e5c98ff2d2a3aab14ad0067b60dbe64e4f541ab5bed11c5a0c55ae1e60b51ff5\
+faaf377837977d80cbfdc33c2ff542b
+    QsCAVSx = d1bf2ac21637d66d6398aac01dcd56ac6f065fb45d1f6f16747bab9e9b01b463\
+0b59b20927aea147355bf41838acb482
+    QsCAVSy = 4c9e23f1c5a41647d094086bf4ed31708651f21d996c47780688ac10f77deee2\
+e43b5241b6caecd2fd5444bc50472e0e
+    dsIUT = f865418473e5bf7d2e1bbcd9bd5a9270c003a9dd35e778133ca59fcab4bb64fe24\
+d6800e7047bdd033abc8bfa8db35b5
+    QsIUTx = 32b72ab9b558249dcbc6cbade234f58e4f7aa5d3f6420ea99a5f997e8c2a91fb7\
+fd83779d0d2169428683771c745fd1a
+    QsIUTy = c749e02a3719bb56bf1dfc4ba3820309c01ab6e84cb29db7cdd80f127233f5295\
+687f8178f3a8704c1063b84c2ee472f
+    Z = a781430e6078a179df3f9ee27cd8fdc6188f161b6c4ccc4053ef6c6ca6fc222946883a\
+53c06db08f0a020023ced055aa
+    CAVSHashZZ = ccb70d0adbabe4d8956519db0d536605cbb366aed58fc55718f56ae3648fa\
+5c9ee7bae56cc463587cb74e2f9c6ace1cb
+    Result = P (0 - Correct)
+
+
+
+    [EE - SHA512]
+
+
+    COUNT = 0
+    dsCAVS = 0000002fef62381162942889a6094a6bb9ac1f4ddf66d9cda9f618232d31b90c5\
+0d7da78a47ed91d40cae946898571db972dc294b109815f38feee9eaac0d5f7c3250728
+    QsCAVSx = 0000004b05ffa025113390797f2736174aa1c784f4dd34e764ee40d40e4d2442\
+677ebea3498086c9473e5c92789cbdb02bb327bbd61d58690f6a83d9ca73bccbde37dec4
+    QsCAVSy = 0000004da67cffc98070b82af61feba78787efefb13bd810d80ff92304788e49\
+a4e5b634b3565474a8ecb1615d7b1b77a7a27875adb73a8a5d8f3f84e5e8b744cda250b0
+    dsIUT = 00000311a5e520e238141527671a38cb6f776d96a9f82ef70dffa11dc0895f4060\
+f1abbb9ad6fd259e4a7beaf5f7266ea1bb45bcbfebfda2705e5c551e710fb1d745f57e
+    QsIUTx = 0000010ba3778cb2cc965834c0a9593adc6a222692656d657fb0d15293edf0ab3\
+3762384a96a16fddea7540b7ccbcca46ec4ac9bcf95fdb5aa18e158aab4d91981bd733e
+    QsIUTy = 0000018522df93ddd636e5bc94daecdc600fa241686ec18634fd30b7cbdfdc9ff\
+ba1166ac08df34a31896f6fad191414929261ebd7187afb72919f8a0c926be37f99c1e5
+    Z = 01a5e4b31be4b1346e53906b6767b1fe94ec1a8a5abc28fb6f01518c056959af3bc933\
+5dddab178b52318cc5512559931b8dc18de0ce810c2c7f15769d7ce70e719c
+    CAVSHashZZ = d2d6538feb65d609f377b81a027dc800eed07b69c0e9eedb243369202ed47\
+f47021022a6c9b45ed791d09d9540eb81ea065fc1959eca365001ee39928c343d75
+    Result = F (7 - IUT's Static private key d changed-prikey validity)
+
+
+
+    """).splitlines()
+
+    expected = [
+        {'errno': 0,
+         'fail': False,
+         'COUNT': 0,
+         'CAVS': {
+             'd': int("f70c297a683d6b7ef82b5af7349606c4447c8b4fc6fa5e80", 16),
+             'x': int("f7b5061fb557e516c50abf541d97dbfd76ca7172b22cf590", 16),
+             'y': int("135e15e21f9e85c76205fd148a92ac19f9e6243ddab322d1", 16)},
+         'IUT': {
+             'd': int("a5b4bbad57f101ca48021cb7440cd681a9d40cd51b99d917", 16),
+             'x': int("79a77fcb18a32cdb59ed5d87740f29e8565d649dbf01ce86", 16),
+             'y': int("f7187efaa0b1573f1fb00905d46810b880bf738b4c720bb7", 16)},
+         'Z': int("26382468d721761e14a87dc3bee67340095c6455962d1ba3", 16),
+         'curve': 'secp192r1'},
+
+        {'errno': 8,
+         'fail': True,
+         'COUNT': 2,
+         'CAVS': {
+             'd': int("5f909dcb0ccce58c82fada748c47297579e6a981b5518a96", 16),
+             'x': int("537f1ecfda0e366de393a9bc8188fcc280311bffefe21ecf", 16),
+             'y': int("a1fa1f98498d65f2754caff4e5303a4066a5ff89fde95381", 16)},
+         'IUT': {
+             'd': int("3357aa7f47f3e09421602cc12cdce4434c68e330d44de05e", 16),
+             'x': int("6a33d43d9c72173eabc7a771a5687748c4774c62762e96ec", 16),
+             'y': int("8033f238b3abc69470aad4be8dbe4f60a2fd50207626c56a", 16)},
+         'Z': int("3153034f6617326f19c35be8c99a0585431adf09d2f8e0fd", 16),
+         'curve': 'secp192r1'},
+
+        {'errno': 13,
+         'fail': False,
+         'COUNT': 8,
+         'CAVS': {
+             'd': int("8fcfaf0524cc868fad20e50410a2205319f1327308d98dc8", 16),
+             'x': int("9b0243d80a9e328738080fb4d46bc450243d0efb7ead0c92", 16),
+             'y': int("ad5bebad7f03849693071537f60ef858cad214123beee7c7", 16)},
+         'IUT': {
+             'd': int("bba95dac90289cb68ca2b006f9757219b70579c299ad7a7d", 16),
+             'x': int("7733dc0cb365cd6312724196b9b4eb491fd4d2e31b9afdb1", 16),
+             'y': int("92ffa3722acc5b94d772258ba2d471b06c0f53f56fcd8662", 16)},
+         'Z': int("0f3c6e4a29a08296ae730f56a1ebf819ea2edfa6f0434e40", 16),
+         'curve': 'secp192r1'},
+
+        {'errno': 0,
+         'fail': False,
+         'COUNT': 0,
+         'CAVS': {
+             'd': int("e53a88af7cf8ce6bf13c8b9ad191494e37a6acc1368c71f4"
+                      "306e39e5", 16),
+             'x': int("3a24217c4b957fea922eec9d9ac52d5cb4b3fcd95efde1e4"
+                      "fa0dd6e2", 16),
+             'y': int("775b94025a808eb6f4af14ea4b57dca576c35373c6dc198b"
+                      "15b981df", 16)},
+         'IUT': {
+             'd': int("09f51e302c6a0fe6ff48f34c208c6af91e70f65f88102e6f"
+                      "cab9af4a", 16),
+             'x': int("c5d5706ccd7424c74fd616e699865af96e56f39adea6aa05"
+                      "9e5092b5", 16),
+             'y': int("f0729077bb602404d56d2f7e2ba5bb2f383df4a542556788"
+                      "1ff0165d", 16)},
+         'Z': int("b1259ceedfb663d9515089cf727e7024fb3d86cbcec611b4"
+                  "ba0b4ab6", 16),
+         'curve': 'secp224r1'},
+
+        {'errno': 2,
+         'fail': True,
+         'COUNT': 0,
+         'CAVS': {
+             'd': int("305dfb4a8850cc59280891147baf457bfe5e2bae98457163"
+                      "4a77dc8d3472fa9b", 16),
+             'x': int("202cb5a224e6c2a84e624094486edf04116c8d68ec1f4a0e"
+                      "0ed9ee090e1a900b", 16),
+             'y': int("cacf3a5789bb33954be600425d62d9eae5371f90f8816725"
+                      "8814213e4a4f4b1a", 16)},
+         'IUT': {
+             'd': int("72cc52808f294b64b6f7233c3d2f5d96cc1d29287320e39e"
+                      "1c151deef0bc14eb", 16),
+             'x': int("49a768c9a4ca56e374f685dd76a461b1016c59dcded2c8d8"
+                      "cbd9f23ca453831f", 16),
+             'y': int("b1e3bb9b5f12a3b5ae788535d4554bd8c46e0e6130075e4e"
+                      "437d3854cf8f1c34", 16)},
+         'Z': int("c0147c3c2691b450b5edc08b51aea224d9f4359ff67aab6d"
+                  "a3146f396dbceaea", 16),
+         'curve': 'secp256r1'},
+
+        {'errno': 0,
+         'fail': False,
+         'COUNT': 0,
+         'CAVS': {
+             'd': int("0e5c98ff2d2a3aab14ad0067b60dbe64e4f541ab5bed11c5"
+                      "a0c55ae1e60b51ff5faaf377837977d80cbfdc33c2ff542b", 16),
+             'x': int("d1bf2ac21637d66d6398aac01dcd56ac6f065fb45d1f6f16"
+                      "747bab9e9b01b4630b59b20927aea147355bf41838acb482", 16),
+             'y': int("4c9e23f1c5a41647d094086bf4ed31708651f21d996c4778"
+                      "0688ac10f77deee2e43b5241b6caecd2fd5444bc50472e0e", 16)},
+         'IUT': {
+             'd': int("f865418473e5bf7d2e1bbcd9bd5a9270c003a9dd35e77813"
+                      "3ca59fcab4bb64fe24d6800e7047bdd033abc8bfa8db35b5", 16),
+             'x': int("32b72ab9b558249dcbc6cbade234f58e4f7aa5d3f6420ea9"
+                      "9a5f997e8c2a91fb7fd83779d0d2169428683771c745fd1a", 16),
+             'y': int("c749e02a3719bb56bf1dfc4ba3820309c01ab6e84cb29db7"
+                      "cdd80f127233f5295687f8178f3a8704c1063b84c2ee472f", 16)},
+         'Z': int("a781430e6078a179df3f9ee27cd8fdc6188f161b6c4ccc40"
+                  "53ef6c6ca6fc222946883a53c06db08f0a020023ced055aa", 16),
+         'curve': 'secp384r1'},
+
+        {'errno': 7,
+         'fail': True,
+         'COUNT': 0,
+         'CAVS': {
+             'd': int("0000002fef62381162942889a6094a6bb9ac1f4ddf66d9cd"
+                      "a9f618232d31b90c50d7da78a47ed91d40cae946898571db"
+                      "972dc294b109815f38feee9eaac0d5f7c3250728", 16),
+             'x': int("0000004b05ffa025113390797f2736174aa1c784f4dd34e7"
+                      "64ee40d40e4d2442677ebea3498086c9473e5c92789cbdb0"
+                      "2bb327bbd61d58690f6a83d9ca73bccbde37dec4", 16),
+             'y': int("0000004da67cffc98070b82af61feba78787efefb13bd810"
+                      "d80ff92304788e49a4e5b634b3565474a8ecb1615d7b1b77"
+                      "a7a27875adb73a8a5d8f3f84e5e8b744cda250b0", 16)},
+         'IUT': {
+             'd': int("00000311a5e520e238141527671a38cb6f776d96a9f82ef7"
+                      "0dffa11dc0895f4060f1abbb9ad6fd259e4a7beaf5f7266e"
+                      "a1bb45bcbfebfda2705e5c551e710fb1d745f57e", 16),
+             'x': int("0000010ba3778cb2cc965834c0a9593adc6a222692656d65"
+                      "7fb0d15293edf0ab33762384a96a16fddea7540b7ccbcca4"
+                      "6ec4ac9bcf95fdb5aa18e158aab4d91981bd733e", 16),
+             'y': int("0000018522df93ddd636e5bc94daecdc600fa241686ec186"
+                      "34fd30b7cbdfdc9ffba1166ac08df34a31896f6fad191414"
+                      "929261ebd7187afb72919f8a0c926be37f99c1e5", 16)},
+         'Z': int("01a5e4b31be4b1346e53906b6767b1fe94ec1a8a5abc28fb"
+                  "6f01518c056959af3bc9335dddab178b52318cc551255993"
+                  "1b8dc18de0ce810c2c7f15769d7ce70e719c", 16),
+         'curve': 'secp521r1'}
+    ]
+
+    assert expected == load_kasvs_ecdh_vectors(vector_data)
+
+
+def test_load_kasvs_ecdh_kdf_vectors():
+    vector_data = textwrap.dedent("""
+    #  Parameter set(s) supported: EB EC ED EE
+    #  CAVSid: CAVSid (in hex: 434156536964)
+    #  IUTid: In hex: a1b2c3d4e5
+    [EB]
+
+    [Curve selected:  P-224]
+    [SHA(s) supported (Used in the KDF function):  SHA224 SHA256 SHA384 SHA512]
+    [MAC algorithm supported:  HMAC]
+    [HMAC SHAs supported:  SHA512]
+    [HMACKeySize(in bits):  112]
+    [HMAC Tag length(in bits):  64]
+
+    #  Generated on Mon Dec 22 11:45:18 2014
+
+
+
+    [EB - SHA224]
+
+
+    COUNT = 50
+    dsCAVS = 540904b67b3716823dd621ed72ad3dbc615887b4f56f910b78a57199
+    QsCAVSx = 28e5f3a72d8f6b8499dd1bcdfceafcecec68a0d715789bcf4b55fe15
+    QsCAVSy = 8c8006a7da7c1a19f5328d7e865522b0c0dfb9a29b2c46dc96590d2a
+    Nonce = 4eefb2a29a0e89c3898a7affdfa60dd7
+    dsIUT = 5e717ae889fc8d67be11c2ebe1a7d3550051448d68a040b2dee8e327
+    QsIUTx = ae7f3db340b647d61713f5374c019f1be2b28573cb6219bb7b747223
+    QsIUTy = 800e6bffcf97c15864ec6e5673fb83359b45f89b8a26a27f6f3dfbff
+    NonceDKMIUT = bb7f1b40d14ebd70443393990b57
+    OI = a1b2c3d4e5bb7f1b40d14ebd70443393990b574341565369645b1582daab9cc6c30d6\
+1fdcf1cdfc7e9a304651e0fdb
+    CAVSTag = 84de198c3a958c62
+    Z = 43f23b2c760d686fc99cc008b63aea92f866e224265af60d2d8ae540
+    MacData = 5374616e646172642054657374204d6573736167654eefb2a29a0e89c3898a7a\
+ffdfa60dd7
+    DKM = ad65fa2d12541c3a21f3cd223efb
+    Result = F (12 - Tag changed )
+    """).splitlines()
+
+    expected = [
+        {'errno': 12,
+         'fail': True,
+         'COUNT': 50,
+         'CAVS': {
+             'd': int("540904b67b3716823dd621ed72ad3dbc615887b4f56f910b"
+                      "78a57199", 16),
+             'x': int("28e5f3a72d8f6b8499dd1bcdfceafcecec68a0d715789bcf"
+                      "4b55fe15", 16),
+             'y': int("8c8006a7da7c1a19f5328d7e865522b0c0dfb9a29b2c46dc"
+                      "96590d2a", 16)},
+         'IUT': {
+             'd': int("5e717ae889fc8d67be11c2ebe1a7d3550051448d68a040b2"
+                      "dee8e327", 16),
+             'x': int("ae7f3db340b647d61713f5374c019f1be2b28573cb6219bb"
+                      "7b747223", 16),
+             'y': int("800e6bffcf97c15864ec6e5673fb83359b45f89b8a26a27f"
+                      "6f3dfbff", 16)},
+         'OI': int("a1b2c3d4e5bb7f1b40d14ebd70443393990b574341565369"
+                   "645b1582daab9cc6c30d61fdcf1cdfc7e9a304651e0fdb", 16),
+         'Z': int("43f23b2c760d686fc99cc008b63aea92f866e224265af60d"
+                  "2d8ae540", 16),
+         'DKM': int("ad65fa2d12541c3a21f3cd223efb", 16),
+         'curve': 'secp224r1'}
+    ]
+
+    assert expected == load_kasvs_ecdh_vectors(vector_data)
+
+
+def test_load_x963_vectors():
+    vector_data = textwrap.dedent("""
+    # CAVS 12.0
+    # 'ANS X9.63-2001' information for sample
+
+    [SHA-1]
+    [shared secret length = 192]
+    [SharedInfo length = 0]
+    [key data length = 128]
+
+    COUNT = 0
+    Z = 1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd
+    SharedInfo =
+        Counter = 00000001
+        Hash input 1 = 1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd00000001
+        K1 = bf71dffd8f4d99223936beb46fee8ccc60439b7e
+    key_data = bf71dffd8f4d99223936beb46fee8ccc
+
+    COUNT = 1
+    Z = 5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab1
+    SharedInfo =
+        Counter = 00000001
+        Hash input 1 = 5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab100000001
+        K1 = ec3e224446bfd7b3be1df404104af953c1b2d0f5
+    key_data = ec3e224446bfd7b3be1df404104af953
+
+    [SHA-512]
+    [shared secret length = 521]
+    [SharedInfo length = 128]
+    [key data length = 1024]
+
+    COUNT = 0
+    Z = 00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb369348b8150739\
+2f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d
+    SharedInfo = e3b5b4c1b0d5cf1d2b3a2f9937895d31
+        Counter = 00000001
+        Hash input 1 = 00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9ad\
+b369348b81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d0\
+0000001e3b5b4c1b0d5cf1d2b3a2f9937895d31
+        K1 = 4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7fa733633d6\
+e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee20800226
+        Counter = 00000002
+        Hash input 2 = 00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9ad\
+b369348b81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d0\
+0000002e3b5b4c1b0d5cf1d2b3a2f9937895d31
+        K2 = 7089dbf351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1\
+a59b4106cf2dbbc0ab2aa8e2efa7b17902d34276951ceccab87f9661c3e8816
+    key_data = 4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7fa733633\
+d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089dbf351f3f\
+5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2aa8e2ef\
+a7b17902d34276951ceccab87f9661c3e8816
+    """).splitlines()
+
+    assert load_x963_vectors(vector_data) == [
+        {"hash": "SHA-1", "count": 0,
+         "shared_secret_length": 192,
+         "Z": "1c7d7b5f0597b03d06a018466ed1a93e30ed4b04dc64ccdd",
+         "sharedinfo_length": 0,
+         "key_data_length": 128,
+         "key_data": "bf71dffd8f4d99223936beb46fee8ccc"},
+        {"hash": "SHA-1", "count": 1,
+         "shared_secret_length": 192,
+         "Z": "5ed096510e3fcf782ceea98e9737993e2b21370f6cda2ab1",
+         "sharedinfo_length": 0,
+         "key_data_length": 128,
+         "key_data": "ec3e224446bfd7b3be1df404104af953"},
+        {"hash": "SHA-512", "count": 0,
+         "shared_secret_length": 521,
+         "Z": "00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb369348b\
+81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d",
+         "sharedinfo_length": 128,
+         "sharedinfo": "e3b5b4c1b0d5cf1d2b3a2f9937895d31",
+         "key_data_length": 1024,
+         "key_data": "4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7f\
+a733633d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089db\
+f351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2\
+aa8e2efa7b17902d34276951ceccab87f9661c3e8816"},
+    ]
+
+
+def test_load_kbkdf_vectors():
+    vector_data = textwrap.dedent("""
+    # CAVS 14.4
+    # "SP800-108 - KDF" information for "test1"
+    # KDF Mode Supported: Counter Mode
+    # Location of counter tested: (Before Fixed Input Data)\
+( After Fixed Input Data)(In Middle of Fixed Input Data before Context)
+    # PRFs tested: CMAC with key sizes:	AES128  AES192  AES256  TDES2  TDES3\
+HMAC with key sizes:	SHA1  SHA224  SHA256  SHA384  SHA512
+    # Generated on Tue Apr 23 12:20:16 2013
+
+    [PRF=HMAC_SHA1]
+    [CTRLOCATION=BEFORE_FIXED]
+    [RLEN=8_BITS]
+
+    COUNT=0
+    L = 128
+    KI = 00a39bd547fb88b2d98727cf64c195c61e1cad6c
+    FixedInputDataByteLen = 60
+    FixedInputData = 98132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc30056f68\
+76f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242
+        Binary rep of i = 01
+        instring = 0198132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc30056f68\
+76f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242
+    KO = 0611e1903609b47ad7a5fc2c82e47702
+
+    COUNT=1
+    L = 128
+    KI = a39bdf744ed7e33fdec060c8736e9725179885a8
+    FixedInputDataByteLen = 60
+    FixedInputData = af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591e182\
+35019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832
+        Binary rep of i = 01
+        instring = 01af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591e182\
+35019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832
+    KO = 51dc4668947e3685099bc3b5f8527468
+
+    [PRF=HMAC_SHA224]
+    [CTRLOCATION=AFTER_FIXED]
+    [RLEN=8_BITS]
+
+    COUNT=0
+    L = 128
+    KI = ab56556b107a3a79fe084df0f1bb3ad049a6cc1490f20da4b3df282c
+    FixedInputDataByteLen = 60
+    FixedInputData = 7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91ee\
+b5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7
+        Binary rep of i = 01
+        instring = 7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91eeb5\
+730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701
+    KO = b8894c6133a46701909b5c8a84322dec
+    """).splitlines()
+
+    assert load_nist_kbkdf_vectors(vector_data) == [
+        {'prf': 'hmac_sha1',
+         'ctrlocation': 'before_fixed',
+         'rlen': 8,
+         'l': 128,
+         'ki': b'00a39bd547fb88b2d98727cf64c195c61e1cad6c',
+         'fixedinputdatabytelen': b'60',
+         'fixedinputdata': b'98132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc\
+30056f6876f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242',
+         'binary rep of i': b'01',
+         'instring': b'0198132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc3005\
+6f6876f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242',
+         'ko': b'0611e1903609b47ad7a5fc2c82e47702'},
+        {'prf': 'hmac_sha1',
+         'ctrlocation': 'before_fixed',
+         'rlen': 8,
+         'l': 128,
+         'ki': b'a39bdf744ed7e33fdec060c8736e9725179885a8',
+         'fixedinputdatabytelen': b'60',
+         'fixedinputdata': b'af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9\
+c591e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832',
+         'binary rep of i': b'01',
+         'instring': b'01af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591\
+e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832',
+         'ko': b'51dc4668947e3685099bc3b5f8527468'},
+        {'prf': 'hmac_sha224',
+         'ctrlocation': 'after_fixed',
+         'rlen': 8,
+         'l': 128,
+         'ki': b'ab56556b107a3a79fe084df0f1bb3ad049a6cc1490f20da4b3df282c',
+         'fixedinputdatabytelen': b'60',
+         'fixedinputdata': b'7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43\
+aa1b91eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7',
+         'binary rep of i': b'01',
+         'instring': b'7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91\
+eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701',
+         'ko': b'b8894c6133a46701909b5c8a84322dec'}
+    ]
 
 
 def test_vector_version():

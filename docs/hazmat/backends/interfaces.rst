@@ -133,12 +133,14 @@ A specific ``backend`` may provide one or more of these interfaces.
         :returns: ``True`` if the specified ``algorithm`` is supported for HMAC
             by this backend, otherwise ``False``.
 
-    .. method:: create_hmac_ctx(algorithm)
+    .. method:: create_hmac_ctx(key, algorithm)
 
         Create a
         :class:`~cryptography.hazmat.primitives.hashes.HashContext` that
         uses the specified ``algorithm`` to calculate a hash-based message
         authentication code.
+
+        :param bytes key: Secret key as ``bytes``.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
@@ -518,3 +520,166 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: An instance of
             :class:`~cryptography.x509.CertificateSigningRequest`.
+
+    .. method:: load_der_x509_csr(data)
+
+        .. versionadded:: 0.9
+
+        :param bytes data: DER formatted certificate signing request data.
+
+        :returns: An instance of
+            :class:`~cryptography.x509.CertificateSigningRequest`.
+
+    .. method:: create_x509_csr(builder, private_key, algorithm)
+
+        .. versionadded:: 1.0
+
+        :param builder: An instance of
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the request.  When the request is
+            signed by a certificate authority, the private key's associated
+            public key will be stored in the resulting certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the request signature.
+
+        :returns: A new instance of
+            :class:`~cryptography.x509.CertificateSigningRequest`.
+
+    .. method:: create_x509_certificate(builder, private_key, algorithm)
+
+        .. versionadded:: 1.0
+
+        :param builder: An instance of
+            :class:`~cryptography.x509.CertificateBuilder`.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the certificate.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the certificate signature.
+
+        :returns: A new instance of :class:`~cryptography.x509.Certificate`.
+
+    .. method:: create_x509_crl(builder, private_key, algorithm)
+
+        .. versionadded:: 1.2
+
+        :param builder: An instance of
+            :class:`~cryptography.x509.CertificateRevocationListBuilder`.
+
+        :param private_key: The
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            that will be used to sign the CRL.
+
+        :param algorithm: The
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            that will be used to generate the CRL signature.
+
+        :returns: A new instance of
+            :class:`~cryptography.x509.CertificateRevocationList`.
+
+    .. method:: create_x509_revoked_certificate(builder)
+
+        .. versionadded:: 1.2
+
+        :param builder: An instance of RevokedCertificateBuilder.
+
+        :returns: A new instance of
+            :class:`~cryptography.x509.RevokedCertificate`.
+
+.. class:: DHBackend
+
+    .. versionadded:: 0.9
+
+    A backend with methods for doing Diffie-Hellman key exchange.
+
+    .. method:: generate_dh_parameters(key_size)
+
+        :param int key_size: The bit length of the prime modulus to generate.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+            provider.
+
+        :raises ValueError: If ``key_size`` is not at least 512.
+
+    .. method:: generate_dh_private_key(parameters)
+
+        :param parameters: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+            provider.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
+            provider.
+
+    .. method:: generate_dh_private_key_and_parameters(self, key_size)
+
+        :param int key_size: The bit length of the prime modulus to generate.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
+            provider.
+
+        :raises ValueError: If ``key_size`` is not at least 512.
+
+    .. method:: load_dh_private_numbers(numbers)
+
+        :param numbers: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`
+            instance.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
+            provider.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
+
+    .. method:: load_dh_public_numbers(numbers)
+
+        :param numbers: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
+            instance.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`
+            provider.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
+
+    .. method:: load_dh_parameter_numbers(numbers)
+
+        :param numbers: A
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`
+            instance.
+
+        :return: A new instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+            provider.
+
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+            when any backend specific criteria are not met.
+
+    .. method:: dh_parameters_supported(p, g)
+
+        :param int p: The p value of the DH key.
+
+        :param int g: The g value of the DH key.
+
+        :returns: ``True`` if the given values of ``p`` and ``g`` are supported
+            by this backend, otherwise ``False``.

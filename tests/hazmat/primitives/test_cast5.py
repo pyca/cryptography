@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.CAST5("\x00" * 16), modes.ECB()
+        algorithms.CAST5(b"\x00" * 16), modes.ECB()
     ),
     skip_message="Does not support CAST5 ECB",
 )
@@ -35,7 +35,7 @@ class TestCAST5ModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.CAST5("\x00" * 16), modes.CBC("\x00" * 8)
+        algorithms.CAST5(b"\x00" * 16), modes.CBC(b"\x00" * 8)
     ),
     skip_message="Does not support CAST5 CBC",
 )
@@ -52,7 +52,7 @@ class TestCAST5ModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.CAST5("\x00" * 16), modes.OFB("\x00" * 8)
+        algorithms.CAST5(b"\x00" * 16), modes.OFB(b"\x00" * 8)
     ),
     skip_message="Does not support CAST5 OFB",
 )
@@ -69,7 +69,7 @@ class TestCAST5ModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.CAST5("\x00" * 16), modes.CFB("\x00" * 8)
+        algorithms.CAST5(b"\x00" * 16), modes.CFB(b"\x00" * 8)
     ),
     skip_message="Does not support CAST5 CFB",
 )
@@ -86,7 +86,7 @@ class TestCAST5ModeCFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.CAST5("\x00" * 16), modes.CTR("\x00" * 8)
+        algorithms.CAST5(b"\x00" * 16), modes.CTR(b"\x00" * 8)
     ),
     skip_message="Does not support CAST5 CTR",
 )

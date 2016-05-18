@@ -1,15 +1,6 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-# implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is dual licensed under the terms of the Apache License, Version
+# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+# for complete details.
 
 from __future__ import absolute_import, division, print_function
 
@@ -136,16 +127,16 @@ class TestDH(object):
         assert isinstance(public, dh.DHPublicKey)
         assert public.key_size == key_size
 
-        if isinstance(parameters, dh.DHParametersWithNumbers):
+        if isinstance(parameters, dh.DHParametersWithSerialization):
             parameter_numbers = parameters.parameter_numbers()
             assert isinstance(parameter_numbers, dh.DHParameterNumbers)
             assert bit_length(parameter_numbers.p) == key_size
 
-        if isinstance(public, dh.DHPublicKeyWithNumbers):
+        if isinstance(public, dh.DHPublicKeyWithSerialization):
             assert isinstance(public.public_numbers(), dh.DHPublicNumbers)
             assert isinstance(public.parameters(), dh.DHParameters)
 
-        if isinstance(key, dh.DHPrivateKeyWithNumbers):
+        if isinstance(key, dh.DHPrivateKeyWithSerialization):
             assert isinstance(key.private_numbers(), dh.DHPrivateNumbers)
             assert isinstance(key.parameters(), dh.DHParameters)
 

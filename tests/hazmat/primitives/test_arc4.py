@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.ARC4("\x00" * 16), None
+        algorithms.ARC4(b"\x00" * 16), None
     ),
     skip_message="Does not support ARC4",
 )
@@ -35,6 +35,7 @@ class TestARC4(object):
             "rfc-6229-128.txt",
             "rfc-6229-192.txt",
             "rfc-6229-256.txt",
+            "arc4.txt"
         ],
         lambda key, **kwargs: algorithms.ARC4(binascii.unhexlify(key)),
     )

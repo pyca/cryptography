@@ -20,7 +20,7 @@ from ...utils import (
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Camellia("\x00" * 16), modes.ECB()
+        algorithms.Camellia(b"\x00" * 16), modes.ECB()
     ),
     skip_message="Does not support Camellia ECB",
 )
@@ -41,7 +41,7 @@ class TestCamelliaModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Camellia("\x00" * 16), modes.CBC("\x00" * 16)
+        algorithms.Camellia(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support Camellia CBC",
 )
@@ -58,7 +58,7 @@ class TestCamelliaModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Camellia("\x00" * 16), modes.OFB("\x00" * 16)
+        algorithms.Camellia(b"\x00" * 16), modes.OFB(b"\x00" * 16)
     ),
     skip_message="Does not support Camellia OFB",
 )
@@ -75,7 +75,7 @@ class TestCamelliaModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Camellia("\x00" * 16), modes.CFB("\x00" * 16)
+        algorithms.Camellia(b"\x00" * 16), modes.CFB(b"\x00" * 16)
     ),
     skip_message="Does not support Camellia CFB",
 )

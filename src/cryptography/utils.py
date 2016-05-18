@@ -5,12 +5,16 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
+import binascii
 import inspect
+import struct
 import sys
 import warnings
 
 
-DeprecatedIn08 = DeprecationWarning
+# the functions deprecated in 1.0 are on an arbitrarily extended deprecation
+# cycle and should not be removed until we agree on when that cycle ends.
+DeprecatedIn10 = DeprecationWarning
 
 
 def read_only_property(name):
@@ -25,8 +29,44 @@ def register_interface(iface):
     return register_decorator
 
 
+if hasattr(int, "from_bytes"):
+    int_from_bytes = int.from_bytes
+else:
+    def int_from_bytes(data, byteorder, signed=False):
+        assert byteorder == 'big'
+        assert not signed
+
+        if len(data) % 4 != 0:
+            data = (b'\x00' * (4 - (len(data) % 4))) + data
+
+        result = 0
+
+        while len(data) > 0:
+            digit, = struct.unpack('>I', data[:4])
+            result = (result << 32) + digit
+            # TODO: this is quadratic in the length of data
+            data = data[4:]
+
+        return result
+
+
+def int_to_bytes(integer, length=None):
+    hex_string = '%x' % integer
+    if length is None:
+        n = len(hex_string)
+    else:
+        n = length * 2
+    return binascii.unhexlify(hex_string.zfill(n + (n & 1)))
+
+
 class InterfaceNotImplemented(Exception):
     pass
+
+
+if hasattr(inspect, "signature"):
+    signature = inspect.signature
+else:
+    signature = inspect.getargspec
 
 
 def verify_interface(iface, klass):
@@ -38,13 +78,13 @@ def verify_interface(iface, klass):
         if isinstance(getattr(iface, method), abc.abstractproperty):
             # Can't properly verify these yet.
             continue
-        spec = inspect.getargspec(getattr(iface, method))
-        actual = inspect.getargspec(getattr(klass, method))
-        if spec != actual:
+        sig = signature(getattr(iface, method))
+        actual = signature(getattr(klass, method))
+        if sig != actual:
             raise InterfaceNotImplemented(
                 "{0}.{1}'s signature differs from the expected. Expected: "
                 "{2!r}. Received: {3!r}".format(
-                    klass, method, spec, actual
+                    klass, method, sig, actual
                 )
             )
 
@@ -77,6 +117,13 @@ class _ModuleWithDeprecations(object):
 
     def __setattr__(self, attr, value):
         setattr(self._module, attr, value)
+
+    def __delattr__(self, attr):
+        obj = getattr(self._module, attr)
+        if isinstance(obj, _DeprecatedValue):
+            warnings.warn(obj.message, obj.warning_class, stacklevel=2)
+
+        delattr(self._module, attr)
 
     def __dir__(self):
         return ["_module"] + dir(self._module)

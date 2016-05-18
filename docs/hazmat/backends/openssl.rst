@@ -43,7 +43,7 @@ Red Hat Enterprise Linux 5) and greater. Earlier versions may work but are
 OS random engine
 ----------------
 
-OpenSSL uses a user-space CSPRNG that is seeded from system random (
+By default OpenSSL uses a user-space CSPRNG that is seeded from system random (
 ``/dev/urandom`` or ``CryptGenRandom``). This CSPRNG is not reseeded
 automatically when a process calls ``fork()``. This can result in situations
 where two different processes can return similar or identical keys and
@@ -79,6 +79,6 @@ seeded from the same pool as ``/dev/random``.
 
 
 .. _`OpenSSL`: https://www.openssl.org/
-.. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_keys_.28Debian-specific.29
+.. _`initializing the RNG`: https://en.wikipedia.org/wiki/OpenSSL#Predictable_private_keys_.28Debian-specific.29
 .. _`Yarrow`: https://en.wikipedia.org/wiki/Yarrow_algorithm
 .. _`Microsoft documentation`: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379942(v=vs.85).aspx

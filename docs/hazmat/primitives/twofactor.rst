@@ -11,6 +11,11 @@ Currently, it contains an algorithm for generating and verifying
 one time password values based on Hash-based message authentication
 codes (HMAC).
 
+.. class:: InvalidToken
+
+    This is raised when the verify method of a one time password function's
+    computed token does not match the expected token.
+
 .. currentmodule:: cryptography.hazmat.primitives.twofactor.hotp
 
 .. class:: HOTP(key, length, algorithm, backend)
@@ -66,8 +71,22 @@ codes (HMAC).
 
         :param bytes hotp: The one time password value to validate.
         :param int counter: The counter value to validate against.
-        :raises cryptography.exceptions.InvalidToken: This is raised when the
-            supplied HOTP does not match the expected HOTP.
+        :raises cryptography.hazmat.primitives.twofactor.InvalidToken: This
+             is raised when the supplied HOTP does not match the expected HOTP.
+
+    .. method:: get_provisioning_uri(account_name, counter, issuer)
+
+        .. versionadded:: 1.0
+
+        :param account_name: The display name of account, such as
+            ``'Alice Smith'`` or ``'alice@example.com'``.
+        :type account_name: :term:`text`
+        :param issuer: The optional display name of issuer. This is typically
+            the provider or service the user wants to access using the OTP
+            token.
+        :type issuer: :term:`text` or `None`
+        :param int counter: The current value of counter.
+        :return: A URI string.
 
 Throttling
 ~~~~~~~~~~
@@ -164,5 +183,42 @@ similar to the following code.
 
         :param bytes totp: The one time password value to validate.
         :param int time: The time value to validate against.
-        :raises cryptography.exceptions.InvalidToken: This is raised when the
-            supplied TOTP does not match the expected TOTP.
+        :raises cryptography.hazmat.primitives.twofactor.InvalidToken: This
+             is raised when the supplied TOTP does not match the expected TOTP.
+
+    .. method:: get_provisioning_uri(account_name, issuer)
+
+        .. versionadded:: 1.0
+
+        :param account_name: The display name of account, such as
+            ``'Alice Smith'`` or ``'alice@example.com'``.
+        :type: :term:`text`
+        :param issuer: The optional display name of issuer. This is typically
+            the provider or service the user wants to access using the OTP
+            token.
+        :type issuer: :term:`text` or `None`
+        :return: A URI string.
+
+Provisioning URI
+~~~~~~~~~~~~~~~~
+
+The provisioning URI of HOTP and TOTP is not actual the part of RFC 4226 and
+RFC 6238, but a `spec of Google Authenticator`_. It is widely supported by web
+sites and mobile applications which are using Two-Factor authentication.
+
+For generating a provisioning URI, you could use the ``get_provisioning_uri``
+method of HOTP/TOTP instances.
+
+.. code-block:: python
+
+    counter = 5
+    account_name = 'alice@example.com'
+    issuer_name = 'Example Inc'
+
+    hotp_uri = hotp.get_provisioning_uri(account_name, counter, issuer_name)
+    totp_uri = totp.get_provisioning_uri(account_name, issuer_name)
+
+A common usage is encoding the provisioning URI into QR code and guiding users
+to scan it with Two-Factor authentication applications in their mobile devices.
+
+.. _`spec of Google Authenticator`: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
