@@ -112,6 +112,10 @@ class TestDH(object):
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 511, backend)
 
+    def test_dh_parameters_supported(self, backend):
+        assert backend.dh_parameters_supported(23, 5)
+        assert not backend.dh_parameters_supported(23, 18)
+
     def test_generate_dh(self, backend):
         generator = 2
         key_size = 512

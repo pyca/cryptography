@@ -1786,6 +1786,20 @@ class Backend(object):
 
         return _DHParameters(self, dh_cdata)
 
+    def dh_parameters_supported(self, p, g):
+        dh_cdata = self._lib.DH_new()
+        assert dh_cdata != self._ffi.NULL
+        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
+
+        dh_cdata.p = self._int_to_bn(p)
+        dh_cdata.g = self._int_to_bn(g)
+
+        codes = self._ffi.new("int[]", 1)
+        res = self._lib.DH_check(dh_cdata, codes)
+        assert res == 1
+
+        return codes[0] == 0
+
 
 class GetCipherByName(object):
     def __init__(self, fmt):

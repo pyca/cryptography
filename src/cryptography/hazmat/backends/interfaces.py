@@ -345,15 +345,9 @@ class DHBackend(object):
         """
         Returns a DHParameters provider.
         """
-    #
-    # @abc.abstractmethod
-    # def dh_exchange_algorithm_supported(self, exchange_algorithm):
-    #     """
-    #     Returns whether the exchange algorithm is supported by this backend.
-    #     """
-    #
-    # @abc.abstractmethod
-    # def dh_parameters_supported(self, p, g):
-    #     """
-    #     Returns whether the backend supports DH with these parameter values.
-    #     """
+
+    @abc.abstractmethod
+    def dh_parameters_supported(self, p, g):
+        """
+        Returns whether the backend supports DH with these parameter values.
+        """

@@ -464,3 +464,12 @@ class MultiBackend(object):
             "This backend does not support Diffie-Hellman",
             _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
         )
+
+    def dh_parameters_supported(self, p, g):
+        for b in self._filtered_backends(DHBackend):
+            return b.dh_parameters_supported(p, g)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support Diffie-Hellman",
+            _Reasons.UNSUPPORTED_DIFFIE_HELLMAN
+        )
