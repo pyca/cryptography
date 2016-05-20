@@ -91,11 +91,6 @@ Key interfaces
 
     .. versionadded:: 0.9
 
-
-.. class:: DHParametersWithNumbers
-
-    .. versionadded:: 0.8
-
     Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
     .. method:: parameter_numbers()
@@ -130,17 +125,6 @@ Key interfaces
 
     .. versionadded:: 0.9
 
-    .. method:: exchange()
-
-        :returns: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.KeyExchangeContext`
-            provider.
-
-
-.. class:: DHPrivateKeyWithNumbers
-
-    .. versionadded:: 0.8
-
     Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
     .. method:: private_numbers()
@@ -148,6 +132,12 @@ Key interfaces
         Return the numbers that make up this private key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
+
+    .. method:: exchange()
+
+        :returns: An instance of a
+            :class:`~cryptography.hazmat.primitives.asymmetric.KeyExchangeContext`
+            provider.
 
 
 .. class:: DHPublicKey
@@ -167,7 +157,7 @@ Key interfaces
 
 .. class:: DHPublicKeyWithSerialization
 
-    .. versionadded:: 0.8
+    .. versionadded:: 0.9
 
     Inherits from :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
 

@@ -375,8 +375,6 @@ class Backend(object):
         """
         assert bn is None or bn != self._ffi.NULL
 
-        assert (bn is None) or (bn is not None and bn != self._ffi.NULL)
-
         if bn is None:
             bn = self._ffi.NULL
 
