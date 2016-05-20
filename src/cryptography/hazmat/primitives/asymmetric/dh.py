@@ -177,12 +177,3 @@ class DHPublicKeyWithSerialization(DHPublicKey):
         """
         Returns a DHPublicNumbers.
         """
-
-
-@six.add_metaclass(abc.ABCMeta)
-class KeyExchangeContext(object):
-    @abc.abstractmethod
-    def agree(self, public_value):
-        """
-        Returns the agreed key.
-        """

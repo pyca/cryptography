@@ -6,6 +6,28 @@ Diffie-Hellman key exchange
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.dh
 
 
+Exchange Algorithm
+~~~~~~~~~~~~~~~~~~
+
+    For most applications the ``shared_key`` should be passed to a key
+    derivation function.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives.asymmetric import dh
+        >>> parameters = dh.generate_parameters(2, 512, default_backend())
+        >>> private_key = parameters.generate_private_key()
+        >>> peer_public_key = parameters.generate_private_key().public_key()
+        >>> shared_key = private_key.exchange(peer_public_key)
+
+    DHE (or EDH), the ephemeral form of this exchange, is **strongly
+    preferred** over simple DH and provides `forward secrecy`_ when used.
+    You must generate a new private key using :func:`generate_private_key` for
+    each :meth:`~DHPrivateKeyWithSerialization.exchange` when performing an DHE key
+    exchange.
+
+
 Numbers
 ~~~~~~~
 
@@ -133,11 +155,14 @@ Key interfaces
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
 
-    .. method:: exchange()
+    .. method:: exchange(peer_public_key)
 
-        :returns: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.KeyExchangeContext`
-            provider.
+        .. versionadded:: 1.4
+
+        :param DHPublicKeyWithSerialization peer_public_key: The public key for the
+            peer.
+
+        :return bytes: The agreed key.
 
 
 .. class:: DHPublicKey
@@ -166,3 +191,6 @@ Key interfaces
         Return the numbers that make up this public key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+
+
+.. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy

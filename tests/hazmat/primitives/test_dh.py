@@ -151,20 +151,23 @@ class TestDH(object):
         key1 = parameters.generate_private_key()
         key2 = parameters.generate_private_key()
 
-        exch = key1.exchange()
-        symkey1 = exch.agree(key2.public_key().public_numbers().y)
+        symkey1 = key1.exchange(key2.public_key())
         assert symkey1
         assert len(symkey1) == 512 // 8
 
-        exch = key2.exchange()
-        symkey2 = exch.agree(key1.public_key().public_numbers().y)
+        symkey2 = key2.exchange(key1.public_key())
         assert symkey1 == symkey2
 
     def test_bad_tls_exchange(self, backend):
-        parameters = dh.generate_parameters(2, 512, backend)
-        key1 = parameters.generate_private_key()
+        parameters1 = dh.generate_parameters(2, 512, backend)
+        key1 = parameters1.generate_private_key()
 
-        exch = key1.exchange()
+        parameters2 = dh.generate_parameters(2, 512, backend)
+        key2 = parameters2.generate_private_key()
 
-        with pytest.raises(ValueError):
-            exch.agree(1)
+        symkey1 = key1.exchange(key2.public_key())
+        assert symkey1
+
+        symkey2 = key2.exchange(key1.public_key())
+
+        assert symkey1 != symkey2

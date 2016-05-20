@@ -30,15 +30,3 @@ Signature Interfaces
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
-
-
-Key exchange interfaces
-=======================
-
-.. class:: KeyExchangeContext
-
-    .. versionadded:: 0.8
-
-    .. method:: agree(public_value)
-
-        :return bytes: The agreed key.

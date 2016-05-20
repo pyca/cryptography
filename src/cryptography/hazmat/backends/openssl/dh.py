@@ -50,16 +50,28 @@ class _DHParameters(object):
         return self._backend.generate_dh_private_key(self)
 
 
+def _handle_dh_compute_key_error(errors, backend):
+    lib = backend._lib
+
+    assert errors[0][1:] == (
+        lib.ERR_LIB_DH,
+        lib.DH_F_COMPUTE_KEY,
+        lib.DH_R_INVALID_PUBKEY
+    )
+
+    raise ValueError("Public key value is invalid for this exchange.")
+
+
 @utils.register_interface(dh.DHPrivateKeyWithSerialization)
 class _DHPrivateKey(object):
     def __init__(self, backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
-        self._key_size = self._backend._lib.DH_size(dh_cdata) * 8
+        self._key_size = self._backend._lib.DH_size(dh_cdata)
 
     @property
     def key_size(self):
-        return self._key_size
+        return self._key_size * 8
 
     def private_numbers(self):
         return dh.DHPrivateNumbers(
@@ -73,8 +85,28 @@ class _DHPrivateKey(object):
             x=self._backend._bn_to_int(self._dh_cdata.priv_key)
         )
 
-    def exchange(self):
-        return _DHKeyExchangeContext(self)
+    def exchange(self, peer_public_key):
+
+        buf = self._backend._ffi.new("char[]", self._key_size)
+        res = self._backend._lib.DH_compute_key(
+            buf,
+            self._backend._int_to_bn(peer_public_key.public_numbers().y),
+            self._dh_cdata
+        )
+
+        if res == -1:
+            errors = self._backend._consume_errors()
+            return _handle_dh_compute_key_error(errors, self._backend)
+        else:
+            assert res >= 1
+
+            key = self._backend._ffi.buffer(buf)[:res]
+            pad = self._key_size - len(key)
+
+            if pad > 0:
+                key = (b"\x00" * pad) + key
+
+            return key
 
     def public_key(self):
         dh_cdata = self._backend._lib.DH_new()
@@ -89,59 +121,6 @@ class _DHPrivateKey(object):
 
     def parameters(self):
         return _dh_cdata_to_parameters(self._dh_cdata, self._backend)
-
-
-def _handle_dh_compute_key_error(errors, backend):
-    lib = backend._lib
-
-    assert errors[0][1:] == (
-        lib.ERR_LIB_DH,
-        lib.DH_F_COMPUTE_KEY,
-        lib.DH_R_INVALID_PUBKEY
-    )
-
-    raise ValueError("Public key value is invalid for this exchange.")
-
-
-def _agree_key(private_key, public_value, backend):
-    lib = backend._lib
-    ffi = backend._ffi
-
-    key_size = lib.DH_size(private_key._dh_cdata)
-
-    buf = ffi.new("char[]", key_size)
-    res = lib.DH_compute_key(
-        buf,
-        backend._int_to_bn(public_value),
-        private_key._dh_cdata
-    )
-
-    if res == -1:
-        errors = backend._consume_errors()
-        return _handle_dh_compute_key_error(errors, backend)
-    else:
-        assert res >= 1
-
-        key = ffi.buffer(buf)[:res]
-        pad = key_size - len(key)
-
-        if pad > 0:
-            key = (b"\x00" * pad) + key
-
-        return key
-
-
-class _DHKeyExchangeContext(object):
-    def __init__(self, private_key):
-        self._private_key = private_key
-        self._backend = private_key._backend
-
-    def agree(self, public_value):
-        return _agree_key(
-            self._private_key,
-            public_value,
-            self._backend
-        )
 
 
 @utils.register_interface(dh.DHPublicKeyWithSerialization)
