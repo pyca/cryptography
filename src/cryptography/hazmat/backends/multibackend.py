@@ -7,9 +7,9 @@ from __future__ import absolute_import, division, print_function
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
-    CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
-    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend, DHBackend
+    CMACBackend, CipherBackend, DERSerializationBackend, DHBackend,
+    DSABackend, EllipticCurveBackend, HMACBackend, HashBackend,
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
 )
 
 
@@ -458,7 +458,8 @@ class MultiBackend(object):
 
     def generate_dh_private_key_and_parameters(self, generator, key_size):
         for b in self._filtered_backends(DHBackend):
-            return b.generate_dh_private_key_and_parameters( generator, key_size)
+            return b.generate_dh_private_key_and_parameters(generator,
+                                                            key_size)
 
         raise UnsupportedAlgorithm(
             "This backend does not support Diffie-Hellman",
