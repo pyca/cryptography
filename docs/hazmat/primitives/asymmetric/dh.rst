@@ -23,7 +23,7 @@ Exchange Algorithm
 
     DHE (or EDH), the ephemeral form of this exchange, is **strongly
     preferred** over simple DH and provides `forward secrecy`_ when used.
-    You must generate a new private key using :func:`generate_private_key` for
+    You must generate a new private key using :func:`~DHParameters.generate_private_key` for
     each :meth:`~DHPrivateKeyWithSerialization.exchange` when performing an DHE key
     exchange.
 
