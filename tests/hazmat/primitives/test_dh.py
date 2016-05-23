@@ -161,13 +161,22 @@ class TestDH(object):
     def test_bad_tls_exchange(self, backend):
         parameters1 = dh.generate_parameters(2, 512, backend)
         key1 = parameters1.generate_private_key()
+        pub_key1 = key1.public_key()
 
         parameters2 = dh.generate_parameters(2, 512, backend)
         key2 = parameters2.generate_private_key()
+        pub_key2 = key2.public_key()
 
-        symkey1 = key1.exchange(key2.public_key())
-        assert symkey1
+        if pub_key2.public_numbers().y >= parameters1.parameter_numbers().p:
+            with pytest.raises(ValueError):
+                key1.exchange(pub_key2)
+        elif pub_key1.public_numbers().y >= parameters2.parameter_numbers().p:
+            with pytest.raises(ValueError):
+                key2.exchange(pub_key1)
+        else:
+            symkey1 = key1.exchange(pub_key2)
+            assert symkey1
 
-        symkey2 = key2.exchange(key1.public_key())
+            symkey2 = key2.exchange(pub_key1)
 
-        assert symkey1 != symkey2
+            assert symkey1 != symkey2
