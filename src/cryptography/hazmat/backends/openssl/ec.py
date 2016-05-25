@@ -40,6 +40,26 @@ def _truncate_digest_for_ecdsa(ec_key_cdata, digest, backend):
     return _truncate_digest(digest, order_bits)
 
 
+def _point_to_public_key(backend, group, point):
+    "Converts an EC_POINT to an EllipticCurvePublicKey."
+
+    backend.openssl_assert(group != backend._ffi.NULL)
+    backend.openssl_assert(point != backend._ffi.NULL)
+
+    ec_key = backend._lib.EC_KEY_new()
+    backend.openssl_assert(ec_key != backend._ffi.NULL)
+    ec_key = backend._ffi.gc(ec_key, backend._lib.EC_KEY_free)
+
+    res = backend._lib.EC_KEY_set_group(ec_key, group)
+    backend.openssl_assert(res == 1)
+
+    res = backend._lib.EC_KEY_set_public_key(ec_key, point)
+    backend.openssl_assert(res == 1)
+
+    evp_pkey = backend._ec_cdata_to_evp_pkey(ec_key)
+    return _EllipticCurvePublicKey(backend, ec_key, evp_pkey)
+
+
 def _ec_key_curve_sn(backend, ec_key):
     group = backend._lib.EC_KEY_get0_group(ec_key)
     backend.openssl_assert(group != backend._ffi.NULL)
@@ -302,3 +322,118 @@ class _EllipticCurvePublicKey(object):
             self._evp_pkey,
             None
         )
+
+    def __eq__(self, public_key):
+        sg = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        self._backend.openssl_assert(sg != self._backend._ffi.NULL)
+
+        sp = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        self._backend.openssl_assert(sp != self._backend._ffi.NULL)
+
+        og = self._backend._lib.EC_KEY_get0_group(public_key._ec_key)
+        self._backend.openssl_assert(og != self._backend._ffi.NULL)
+
+        op = self._backend._lib.EC_KEY_get0_public_key(public_key._ec_key)
+        self._backend.openssl_assert(op != self._backend._ffi.NULL)
+
+        with self._backend._tmp_bn_ctx() as bn_ctx:
+            sgn = self._backend._lib.EC_GROUP_get_curve_name(sg)
+            ogn = self._backend._lib.EC_GROUP_get_curve_name(og)
+            res = self._backend._lib.EC_POINT_cmp(sg, sp, op, bn_ctx)
+
+        return not ((sgn != ogn) | (res != 0))
+
+    def __neg__(self):
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        self._backend.openssl_assert(group != self._backend._ffi.NULL)
+
+        point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        self._backend.openssl_assert(point != self._backend._ffi.NULL)
+
+        inv = self._backend._lib.EC_POINT_dup(point, group)
+        self._backend.openssl_assert(inv != self._backend._ffi.NULL)
+        inv = self._backend._ffi.gc(inv, self._backend._lib.EC_POINT_free)
+
+        with self._backend._tmp_bn_ctx() as bn_ctx:
+            res = self._backend._lib.EC_POINT_invert(group, inv, bn_ctx)
+            self._backend.openssl_assert(res == 1)
+
+        return _point_to_public_key(self._backend, group, inv)
+
+    def __add__(self, public_key):
+        sg = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        self._backend.openssl_assert(sg != self._backend._ffi.NULL)
+
+        sp = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        self._backend.openssl_assert(sp != self._backend._ffi.NULL)
+
+        og = self._backend._lib.EC_KEY_get0_group(public_key._ec_key)
+        self._backend.openssl_assert(og != self._backend._ffi.NULL)
+
+        op = self._backend._lib.EC_KEY_get0_public_key(public_key._ec_key)
+        self._backend.openssl_assert(op != self._backend._ffi.NULL)
+
+        sum = self._backend._lib.EC_POINT_new(sg)
+        self._backend.openssl_assert(sum != self._backend._ffi.NULL)
+        sum = self._backend._ffi.gc(sum, self._backend._lib.EC_POINT_free)
+
+        with self._backend._tmp_bn_ctx() as bn_ctx:
+            sgn = self._backend._lib.EC_GROUP_get_curve_name(sg)
+            ogn = self._backend._lib.EC_GROUP_get_curve_name(og)
+            self._backend.openssl_assert(sgn == ogn)
+
+            res = self._backend._lib.EC_POINT_add(sg, sum, sp, op, bn_ctx)
+            self._backend.openssl_assert(res == 1)
+
+        return _point_to_public_key(self._backend, sg, sum)
+
+    def __sub__(self, public_key):
+        return self + -public_key
+
+    def _multiply(self, bignum):
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        self._backend.openssl_assert(group != self._backend._ffi.NULL)
+
+        point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
+        self._backend.openssl_assert(point != self._backend._ffi.NULL)
+
+        prod = self._backend._lib.EC_POINT_new(group)
+        self._backend.openssl_assert(prod != self._backend._ffi.NULL)
+        prod = self._backend._ffi.gc(prod, self._backend._lib.EC_POINT_free)
+
+        with self._backend._tmp_bn_ctx() as bn_ctx:
+            res = self._backend._lib.EC_POINT_mul(
+                group, prod, self._backend._ffi.NULL, point, bignum, bn_ctx
+            )
+            self._backend.openssl_assert(res == 1)
+
+        return _point_to_public_key(self._backend, group, prod)
+
+    def __mul__(self, private_key):
+        mult = self._backend._lib.EC_KEY_get0_private_key(private_key._ec_key)
+        self._backend.openssl_assert(mult != self._backend._ffi.NULL)
+
+        return self._multiply(mult)
+
+    def __truediv__(self, private_key):
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        self._backend.openssl_assert(group != self._backend._ffi.NULL)
+
+        prv = self._backend._lib.EC_KEY_get0_private_key(private_key._ec_key)
+        self._backend.openssl_assert(prv != self._backend._ffi.NULL)
+
+        order = self._backend._lib.BN_new()
+        self._backend.openssl_assert(order != self._backend._ffi.NULL)
+        order = self._backend._ffi.gc(order, self._backend._lib.BN_free)
+
+        with self._backend._tmp_bn_ctx() as bn_ctx:
+            res = self._backend._lib.EC_GROUP_get_order(group, order, bn_ctx)
+            self._backend.openssl_assert(res == 1)
+
+            inv = self._backend._lib.BN_mod_inverse(
+                self._backend._ffi.NULL, prv, order, bn_ctx
+            )
+            self._backend.openssl_assert(inv != self._backend._ffi.NULL)
+            inv = self._backend._ffi.gc(inv, self._backend._lib.BN_free)
+
+        return self._multiply(inv)

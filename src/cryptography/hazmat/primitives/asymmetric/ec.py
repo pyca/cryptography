@@ -104,6 +104,46 @@ class EllipticCurvePublicKey(object):
         Returns the key serialized as bytes.
         """
 
+    @abc.abstractmethod
+    def __eq__(self, public_key):
+        """
+        Returns True if the specified EllipticCurvePublicKey equals this key.
+        """
+
+    @abc.abstractmethod
+    def __neg__(self):
+        """
+        Returns an EllipticCurvePublicKey that is the inverse of this key.
+        """
+
+    @abc.abstractmethod
+    def __add__(self, public_key):
+        """
+        Returns an EllipticCurvePublicKey that is the sum of this key and
+        another EllipticCurvePublicKey.
+        """
+
+    @abc.abstractmethod
+    def __sub__(self, public_key):
+        """
+        Returns an EllipticCurvePublicKey that is the difference of this key
+        and another EllipticCurvePublicKey.
+        """
+
+    @abc.abstractmethod
+    def __mul__(self, private_key):
+        """
+        Returns an EllipticCurvePublicKey that is the product of this key and
+        an EllipticCurvePrivateKey.
+        """
+
+    @abc.abstractmethod
+    def __truediv__(self, private_key):
+        """
+        Returns an EllipticCurvePublicKey that is the quotient of this key and
+        an EllipticCurvePrivateKey.
+        """
+
 
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 

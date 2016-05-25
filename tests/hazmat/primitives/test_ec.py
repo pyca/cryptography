@@ -871,6 +871,100 @@ class TestECDSAVerification(object):
 
 
 @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
+class TestMath(object):
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDH",
+                "KASValidityTest_ECCStaticUnified_NOKC_ZZOnly_init.fax"),
+            load_kasvs_ecdh_vectors
+        )
+    )
+    def test_multiply_and_divide_with_vectors(self, backend, vector):
+        _skip_exchange_algorithm_unsupported(
+            backend, ec.ECDH(), ec._CURVE_TYPES[vector['curve']]
+        )
+
+        key_numbers = vector['IUT']
+        private_numbers = ec.EllipticCurvePrivateNumbers(
+            key_numbers['d'],
+            ec.EllipticCurvePublicNumbers(
+                key_numbers['x'],
+                key_numbers['y'],
+                ec._CURVE_TYPES[vector['curve']]()
+            )
+        )
+        # Errno 5 and 6 indicates a bad public key, this doesn't test the ECDH
+        # code at all
+        if vector['fail'] and vector['errno'] in [5, 6]:
+            with pytest.raises(ValueError):
+                private_numbers.private_key(backend)
+            return
+        else:
+            private_key = private_numbers.private_key(backend)
+
+        peer_numbers = vector['CAVS']
+        public_numbers = ec.EllipticCurvePublicNumbers(
+            peer_numbers['x'],
+            peer_numbers['y'],
+            ec._CURVE_TYPES[vector['curve']]()
+        )
+        # Errno 1 and 2 indicates a bad public key, this doesn't test the ECDH
+        # code at all
+        if vector['fail'] and vector['errno'] in [1, 2]:
+            with pytest.raises(ValueError):
+                public_numbers.public_key(backend)
+            return
+        else:
+            peer_pubkey = public_numbers.public_key(backend)
+
+        z = peer_pubkey * private_key
+
+        # At this point fail indicates that one of the underlying keys was
+        # changed. This results in a non-matching derived key.
+        if vector['fail']:
+            assert z.public_numbers().x != vector['Z']
+        else:
+            assert z.public_numbers().x == vector['Z']
+
+        assert z / private_key == peer_pubkey
+
+    @pytest.mark.parametrize("curve_type", ec._CURVE_TYPES.values())
+    def test_add_and_subtract(self, backend, curve_type):
+        _skip_curve_unsupported(backend, curve_type())
+
+        prv = ec.generate_private_key(curve_type(), backend)
+        pub1 = prv.public_key()
+        pub2 = pub1 + pub1
+        pub3 = pub1 + pub1 + pub1
+
+        assert pub1 + pub1 == pub2
+        assert pub1 + pub1 != pub1
+        assert pub1 + pub1 != pub3
+
+        assert pub1 + pub2 == pub3
+        assert pub1 + pub2 != pub1
+        assert pub1 + pub2 != pub2
+
+        assert pub3 - pub2 == pub1
+        assert pub3 - pub2 != pub2
+        assert pub3 - pub2 != pub3
+
+        assert pub3 - pub1 == pub2
+        assert pub3 - pub1 != pub1
+        assert pub3 - pub1 != pub3
+
+        assert pub2 + pub2 - pub1 == pub3
+        assert pub2 + pub2 - pub1 != pub1
+        assert pub2 + pub2 - pub1 != pub2
+
+        assert pub1 + pub3 - pub2 == pub2
+        assert pub1 + pub3 - pub2 != pub1
+        assert pub1 + pub3 - pub2 != pub3
+
+
+@pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
 class TestECDH(object):
     @pytest.mark.parametrize(
         "vector",
