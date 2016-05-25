@@ -6,6 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 import datetime
 import os
+import subprocess
+import sys
+import textwrap
 
 import pytest
 
@@ -226,6 +229,46 @@ class TestOpenSSLRandomEngine(object):
         current_default = backend._lib.ENGINE_get_default_RAND()
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == osrandom_engine_name
+
+    @pytest.mark.skipif(sys.executable is None,
+                        reason="No Python interpreter available.")
+    def test_osrandom_engine_is_default(self, tmpdir):
+        engine_printer = textwrap.dedent(
+            """
+            import sys
+            from cryptography.hazmat.backends.openssl.backend import backend
+
+            e = backend._lib.ENGINE_get_default_RAND()
+            name = backend._lib.ENGINE_get_name(e)
+            sys.stdout.write(backend._ffi.string(name).decode('ascii'))
+            res = backend._lib.ENGINE_free(e)
+            assert res == 1
+            """
+        )
+        engine_name = tmpdir.join('engine_name')
+
+        # If we're running tests via ``python setup.py test`` in a clean
+        # environment then all of our dependencies are going to be installed
+        # into either the current directory or the .eggs directory. However the
+        # subprocess won't know to activate these dependencies, so we'll get it
+        # to do so by passing our entire sys.path into the subprocess via the
+        # PYTHONPATH environment variable.
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
+
+        with engine_name.open('w') as out:
+            subprocess.check_call(
+                [sys.executable, "-c", engine_printer],
+                env=env,
+                stdout=out,
+                stderr=subprocess.PIPE,
+            )
+
+        osrandom_engine_name = backend._ffi.string(
+            backend._binding._osrandom_engine_name
+        )
+
+        assert engine_name.read().encode('ascii') == osrandom_engine_name
 
     def test_osrandom_sanity_check(self):
         # This test serves as a check against catastrophic failure.
