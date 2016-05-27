@@ -18,6 +18,8 @@ import pytest
 
 import six
 
+import pytz
+
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.interfaces import (
@@ -1745,6 +1747,14 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.serial_number(20)
 
+    def test_aware_not_valid_after(self):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        cert_builder = x509.CertificateBuilder().not_valid_after(time)
+        assert cert_builder._not_valid_after == utc_time
+
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(104204304504)
@@ -1766,6 +1776,14 @@ class TestCertificateBuilder(object):
             builder.not_valid_after(
                 datetime.datetime.now()
             )
+
+    def test_aware_not_valid_before(self):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        cert_builder = x509.CertificateBuilder().not_valid_before(time)
+        assert cert_builder._not_valid_before == utc_time
 
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):

@@ -447,6 +447,10 @@ class CertificateBuilder(object):
             raise TypeError('Expecting datetime object.')
         if self._not_valid_before is not None:
             raise ValueError('The not valid before may only be set once.')
+        if time.tzinfo is not None:
+            offset = time.utcoffset()
+            offset = offset if offset else datetime.timedelta()
+            time = time.replace(tzinfo=None) - offset
         if time <= _UNIX_EPOCH:
             raise ValueError('The not valid before date must be after the unix'
                              ' epoch (1970 January 1).')
@@ -469,6 +473,10 @@ class CertificateBuilder(object):
             raise TypeError('Expecting datetime object.')
         if self._not_valid_after is not None:
             raise ValueError('The not valid after may only be set once.')
+        if time.tzinfo is not None:
+            offset = time.utcoffset()
+            offset = offset if offset else datetime.timedelta()
+            time = time.replace(tzinfo=None) - offset
         if time <= _UNIX_EPOCH:
             raise ValueError('The not valid after date must be after the unix'
                              ' epoch (1970 January 1).')
