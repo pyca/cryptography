@@ -120,6 +120,14 @@ Loading Certificates
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+        >>> cert.serial
+        2
+
 .. function:: load_der_x509_certificate(data, backend)
 
     .. versionadded:: 0.7
@@ -135,14 +143,6 @@ Loading Certificates
         interface.
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-    >>> cert.serial
-    2
 
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,6 +164,15 @@ Loading Certificate Revocation Lists
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
+        >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+        True
+
 .. function:: load_der_x509_crl(data, backend)
 
     .. versionadded:: 1.1
@@ -179,15 +188,6 @@ Loading Certificate Revocation Lists
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
-    >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
-    True
 
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -210,6 +210,15 @@ Loading Certificate Signing Requests
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
+        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+        True
+
 .. function:: load_der_x509_csr(data, backend)
 
     .. versionadded:: 0.9
@@ -225,15 +234,6 @@ Loading Certificate Signing Requests
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
-    >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
-    True
 
 X.509 Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~
