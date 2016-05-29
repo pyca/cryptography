@@ -136,7 +136,7 @@ class TestExtFernet192(object):
         ("secret", "now", "iv", "src", "token"), "generate_192.json",
     )
     def test_generate(self, secret, now, iv, src, token, backend):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = ExtFernet192(secret.encode("ascii"), backend=backend)
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
@@ -149,7 +149,7 @@ class TestExtFernet192(object):
     )
     def test_verify(self, secret, now, src, ttl_sec, token, backend,
                     monkeypatch):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = ExtFernet192(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
@@ -158,36 +158,36 @@ class TestExtFernet192(object):
     @json_parametrize(("secret", "token", "now", "ttl_sec"),
                       "invalid_192.json")
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = ExtFernet192(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_invalid_start_byte(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
     def test_timestamp_too_short(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x21abc"))
 
     def test_non_base64_token(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00")
 
     def test_unicode(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
         with pytest.raises(TypeError):
             f.encrypt(u"")
         with pytest.raises(TypeError):
             f.decrypt(u"")
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
         pt = b"encrypt me"
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
@@ -197,12 +197,12 @@ class TestExtFernet192(object):
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+        f = ExtFernet192(ExtFernet192.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message
 
     def test_bad_key(self, backend):
         with pytest.raises(ValueError):
-            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+            ExtFernet192(base64.urlsafe_b64encode(b"abc"), backend=backend)
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
@@ -219,7 +219,7 @@ class TestExtFernet256(object):
         ("secret", "now", "iv", "src", "token"), "generate_256.json",
     )
     def test_generate(self, secret, now, iv, src, token, backend):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = ExtFernet256(secret.encode("ascii"), backend=backend)
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             calendar.timegm(iso8601.parse_date(now).utctimetuple()),
@@ -232,7 +232,7 @@ class TestExtFernet256(object):
     )
     def test_verify(self, secret, now, src, ttl_sec, token, backend,
                     monkeypatch):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = ExtFernet256(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
@@ -241,36 +241,36 @@ class TestExtFernet256(object):
     @json_parametrize(("secret", "token", "now", "ttl_sec"),
                       "invalid_256.json")
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = ExtFernet256(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
         monkeypatch.setattr(time, "time", lambda: current_time)
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_invalid_start_byte(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
     def test_timestamp_too_short(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x41abc"))
 
     def test_non_base64_token(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00")
 
     def test_unicode(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
         with pytest.raises(TypeError):
             f.encrypt(u"")
         with pytest.raises(TypeError):
             f.decrypt(u"")
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
         pt = b"encrypt me"
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
@@ -280,12 +280,12 @@ class TestExtFernet256(object):
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
     def test_roundtrips(self, message, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+        f = ExtFernet256(ExtFernet256.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message
 
     def test_bad_key(self, backend):
         with pytest.raises(ValueError):
-            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+            ExtFernet256(base64.urlsafe_b64encode(b"abc"), backend=backend)
 
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
