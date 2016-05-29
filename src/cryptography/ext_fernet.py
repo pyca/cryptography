@@ -36,12 +36,12 @@ class ExtFernet192(FernetBase):
             raise ValueError(
                 "Fernet192 key must be 48 url-safe base64-encoded bytes."
             )
-        super().__init_(key, backend)
+        super(self.__class__, self).__init__(key, backend)
         self._version = b"\x21"
 
     @classmethod
     def generate_key(cls):
-        return super().generate_key(192)
+        return FernetBase.generate_key(192)
 
 
 class ExtFernet256(FernetBase):
@@ -61,9 +61,9 @@ class ExtFernet256(FernetBase):
             raise ValueError(
                 "Fernet256 key must be 64 url-safe base64-encoded bytes."
             )
-        super().__init_(key, backend)
+        super(self.__class__, self).__init__(key, backend)
         self._version = b"\x41"
 
     @classmethod
     def generate_key(cls):
-        return super().generate_key(256)
+        return FernetBase.generate_key(256)
