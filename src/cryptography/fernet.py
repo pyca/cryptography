@@ -40,7 +40,8 @@ class FernetBase(object):
         key_bytes = len(key) // 2
         if key_size not in algorithms.AES.key_sizes:
             raise ValueError(
-                "Fernet key must be 32 or 48 or 64 url-safe base64-encoded bytes."
+                "Fernet key must be 32 or 48 or 64 url-safe"
+                " base64-encoded bytes."
             )
 
         self._signing_key = key[:key_bytes]
@@ -183,9 +184,9 @@ class ExtFernet192(FernetBase):
 
     The version byte differs from standard Fernet to distinguish this format.
     The low 5 bits indicate the version of standard Fernet the extended version
-    is based on, with 0x1 indicating Fernet version 0x80. The high 3 bits indicate
-    the encryption key length, with binary 001 (0x1) indicating 192-bit AES.
-    This yields a version byte of 0x21 (binary 00100001).
+    is based on, with 0x1 indicating Fernet version 0x80. The high 3 bits
+    indicate the encryption key length, with binary 001 (0x1) indicating
+    192-bit AES. This yields a version byte of 0x21 (binary 00100001).
     """
 
     def __init__(self, key, backend=None):
@@ -208,9 +209,9 @@ class ExtFernet256(FernetBase):
 
     The version byte differs from standard Fernet to distinguish this format.
     The low 5 bits indicate the version of standard Fernet the extended version
-    is based on, with 0x1 indicating Fernet version 0x80. The high 3 bits indicate
-    the encryption key length, with binary 010 (0x2) indicating 256-bit AES.
-    This yields a version byte of 0x41 (binary 01000001).
+    is based on, with 0x1 indicating Fernet version 0x80. The high 3 bits
+    indicate the encryption key length, with binary 010 (0x2) indicating
+    256-bit AES. This yields a version byte of 0x41 (binary 01000001).
     """
 
     def __init__(self, key, backend=None):
