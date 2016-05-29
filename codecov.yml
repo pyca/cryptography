@@ -1,8 +1,9 @@
+comment: false
 coverage:
-  status:
-    patch:
-      default:
-        target: '100'
-    project:
-      default:
-        target: '100'
+    status:
+        patch:
+            default:
+                target: '100'
+        project:
+            default:
+                target: '100'
