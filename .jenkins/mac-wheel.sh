@@ -16,6 +16,9 @@ if [[ "${label}" == "10.10" ]]; then
         py27)
             PYTHON=/usr/bin/python2.7
             ;;
+        py27u)
+            PYTHON=python2.7
+            ;;
         py33)
             PYTHON=python3.3
             ;;
@@ -49,11 +52,7 @@ printenv
 
 virtualenv .venv -p $PYTHON
 source .venv/bin/activate
-if [[ "${TOXENV}" == "pypy" ]]; then
-    pip install -U wheel # upgrade wheel to latest before we use it to build the wheel
-else
-    pip install -U wheel==0.26.0 # handles 2.7 SOABI issue for users on pip < 8.1
-fi
+pip install -U wheel # upgrade wheel to latest before we use it to build the wheel
 CRYPTOGRAPHY_OSX_NO_LINK_FLAGS="1" LDFLAGS="/usr/local/opt/openssl/lib/libcrypto.a /usr/local/opt/openssl/lib/libssl.a" CFLAGS="-I/usr/local/opt/openssl/include" pip wheel cryptography --wheel-dir=wheelhouse --no-use-wheel
 pip install -f wheelhouse cryptography --no-index
 python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
