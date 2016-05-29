@@ -48,6 +48,7 @@ def test_default_backend():
         algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES CBC",
+    # TODO additional tests for AES192 and AES256?
 )
 class TestFernet(object):
     @json_parametrize(
@@ -155,7 +156,8 @@ class TestExtFernet192(object):
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
 
-    @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid_192.json")
+    @json_parametrize(("secret", "token", "now", "ttl_sec"),
+                      "invalid_192.json")
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
@@ -171,7 +173,7 @@ class TestExtFernet192(object):
     def test_timestamp_too_short(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
-            f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
+            f.decrypt(base64.urlsafe_b64encode(b"\x21abc"))
 
     def test_non_base64_token(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
@@ -208,9 +210,9 @@ class TestExtFernet192(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 48), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES CBC",
+    skip_message="Does not support AES192 CBC",
 )
 class TestExtFernet256(object):
     # TODO Test ExtFernet256 class
@@ -237,7 +239,8 @@ class TestExtFernet256(object):
         payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
         assert payload == src.encode("ascii")
 
-    @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid_256.json")
+    @json_parametrize(("secret", "token", "now", "ttl_sec"),
+                      "invalid_256.json")
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
         current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
@@ -253,7 +256,7 @@ class TestExtFernet256(object):
     def test_timestamp_too_short(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(InvalidToken):
-            f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
+            f.decrypt(base64.urlsafe_b64encode(b"\x41abc"))
 
     def test_non_base64_token(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
@@ -290,9 +293,9 @@ class TestExtFernet256(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 64), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES CBC",
+    skip_message="Does not support AES256 CBC",
 )
 class TestMultiFernet(object):
     def test_encrypt(self, backend):
