@@ -35,7 +35,8 @@ class FernetBase(object):
         if backend is None:
             backend = default_backend()
 
-        key_size = len(key) * 4 # key size in bytes = len(key) * 8 bits/byte / 2 keys
+        # key size in bytes = len(key) * 8 bits/byte / 2 keys
+        key_size = len(key) * 4
         key_bytes = len(key) // 2
         if key_size not in algorithms.AES.key_sizes:
             raise ValueError(
@@ -45,7 +46,8 @@ class FernetBase(object):
         self._signing_key = key[:key_bytes]
         self._encryption_key = key[key_bytes:]
         self._backend = backend
-        self._version = b"\x00" # Base class has an invalid version byte
+        # Base class has an invalid version byte
+        self._version = b"\x00"
 
     @classmethod
     def generate_key(cls, key_bits):
@@ -53,7 +55,8 @@ class FernetBase(object):
             raise ValueError(
                 "Fernet key must be 128 or 192 or 256 bits."
             )
-        key_bytes = key_bits // 4 # Need random bytes for 2 keys at 8 bits/byte/key
+        # Need random bytes for 2 keys at 8 bits/byte/key
+        key_bytes = key_bits // 4
         return base64.urlsafe_b64encode(os.urandom(key_bytes))
 
     def encrypt(self, data):
@@ -166,7 +169,8 @@ class Fernet(FernetBase):
                 "Fernet key must be 32 url-safe base64-encoded bytes."
             )
         super(self.__class__, self).__init__(key, backend)
-        self._version = b"\x80" # Overwrite the version byte FernetBase's __init__ set
+        # Overwrite the version byte FernetBase's __init__ set
+        self._version = b"\x80"
 
     @classmethod
     def generate_key(cls):
