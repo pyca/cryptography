@@ -309,7 +309,7 @@ setup(
     tests_require=test_requirements,
     extras_require={
         "test": test_requirements,
-        "docs-test": [
+        "docstest": [
             "doc8",
             "pyenchant",
             "readme_renderer",
@@ -317,7 +317,7 @@ setup(
             "sphinx_rtd_theme",
             "sphinxcontrib-spelling",
         ],
-        "pep8-test": [
+        "pep8test": [
             "flake8",
             "flake8-import-order",
             "pep8-naming",
