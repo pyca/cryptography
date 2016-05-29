@@ -130,6 +130,170 @@ class TestFernet(object):
     ),
     skip_message="Does not support AES CBC",
 )
+class TestExtFernet192(object):
+    # TODO test ExtFernet192 class
+    @json_parametrize(
+        ("secret", "now", "iv", "src", "token"), "generate_192.json",
+    )
+    def test_generate(self, secret, now, iv, src, token, backend):
+        f = Fernet(secret.encode("ascii"), backend=backend)
+        actual_token = f._encrypt_from_parts(
+            src.encode("ascii"),
+            calendar.timegm(iso8601.parse_date(now).utctimetuple()),
+            b"".join(map(six.int2byte, iv))
+        )
+        assert actual_token == token.encode("ascii")
+
+    @json_parametrize(
+        ("secret", "now", "src", "ttl_sec", "token"), "verify_192.json",
+    )
+    def test_verify(self, secret, now, src, ttl_sec, token, backend,
+                    monkeypatch):
+        f = Fernet(secret.encode("ascii"), backend=backend)
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+        assert payload == src.encode("ascii")
+
+    @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid_192.json")
+    def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
+        f = Fernet(secret.encode("ascii"), backend=backend)
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        with pytest.raises(InvalidToken):
+            f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+
+    def test_invalid_start_byte(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b"\x81"))
+
+    def test_timestamp_too_short(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
+
+    def test_non_base64_token(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(b"\x00")
+
+    def test_unicode(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(TypeError):
+            f.encrypt(u"")
+        with pytest.raises(TypeError):
+            f.decrypt(u"")
+
+    def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        pt = b"encrypt me"
+        token = f.encrypt(pt)
+        ts = "1985-10-26T01:20:01-07:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.decrypt(token, ttl=None) == pt
+
+    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
+    def test_roundtrips(self, message, backend):
+        f = Fernet(Fernet.generate_key(), backend=backend)
+        assert f.decrypt(f.encrypt(message)) == message
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+    ),
+    skip_message="Does not support AES CBC",
+)
+class TestExtFernet256(object):
+    # TODO Test ExtFernet256 class
+    @json_parametrize(
+        ("secret", "now", "iv", "src", "token"), "generate_256.json",
+    )
+    def test_generate(self, secret, now, iv, src, token, backend):
+        f = Fernet(secret.encode("ascii"), backend=backend)
+        actual_token = f._encrypt_from_parts(
+            src.encode("ascii"),
+            calendar.timegm(iso8601.parse_date(now).utctimetuple()),
+            b"".join(map(six.int2byte, iv))
+        )
+        assert actual_token == token.encode("ascii")
+
+    @json_parametrize(
+        ("secret", "now", "src", "ttl_sec", "token"), "verify_256.json",
+    )
+    def test_verify(self, secret, now, src, ttl_sec, token, backend,
+                    monkeypatch):
+        f = Fernet(secret.encode("ascii"), backend=backend)
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+        assert payload == src.encode("ascii")
+
+    @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid_256.json")
+    def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
+        f = Fernet(secret.encode("ascii"), backend=backend)
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        with pytest.raises(InvalidToken):
+            f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+
+    def test_invalid_start_byte(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b"\x81"))
+
+    def test_timestamp_too_short(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
+
+    def test_non_base64_token(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(InvalidToken):
+            f.decrypt(b"\x00")
+
+    def test_unicode(self, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        with pytest.raises(TypeError):
+            f.encrypt(u"")
+        with pytest.raises(TypeError):
+            f.decrypt(u"")
+
+    def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        pt = b"encrypt me"
+        token = f.encrypt(pt)
+        ts = "1985-10-26T01:20:01-07:00"
+        current_time = calendar.timegm(iso8601.parse_date(ts).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.decrypt(token, ttl=None) == pt
+
+    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
+    def test_roundtrips(self, message, backend):
+        f = Fernet(Fernet.generate_key(), backend=backend)
+        assert f.decrypt(f.encrypt(message)) == message
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            Fernet(base64.urlsafe_b64encode(b"abc"), backend=backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+    ),
+    skip_message="Does not support AES CBC",
+)
 class TestMultiFernet(object):
     def test_encrypt(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
