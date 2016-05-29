@@ -16,9 +16,9 @@ from pyasn1_modules import rfc2459
 
 import pytest
 
-import six
-
 import pytz
+
+import six
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
