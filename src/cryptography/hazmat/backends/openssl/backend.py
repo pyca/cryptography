@@ -617,14 +617,29 @@ class Backend(object):
 
         return _DSAParameters(self, ctx)
 
-    def generate_dsa_private_key(self, parameters):
-        ctx = self._lib.DSA_new()
-        self.openssl_assert(ctx != self._ffi.NULL)
-        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
-        ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
-        ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
+    def _dup_dsa_params(self, dsa_cdata):
+        dsa_cdata_dup = self._lib.DSA_new()
+        self.openssl_assert(dsa_cdata_dup != self._ffi.NULL)
+        dsa_cdata_dup = self._ffi.gc(dsa_cdata_dup, self._lib.DSA_free)
+        p = self._ffi.new("BIGNUM **")
+        q = self._ffi.new("BIGNUM **")
+        g = self._ffi.new("BIGNUM **")
+        self._lib.DSA_get0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(p[0] != self._ffi.NULL)
+        self.openssl_assert(q[0] != self._ffi.NULL)
+        self.openssl_assert(g[0] != self._ffi.NULL)
+        p_dup = self._lib.BN_dup(p[0])
+        q_dup = self._lib.BN_dup(q[0])
+        g_dup = self._lib.BN_dup(g[0])
+        self.openssl_assert(p_dup != self._ffi.NULL)
+        self.openssl_assert(q_dup != self._ffi.NULL)
+        self.openssl_assert(g_dup != self._ffi.NULL)
+        res = self._lib.DSA_set0_pqg(dsa_cdata_dup, p_dup, q_dup, g_dup)
+        self.openssl_assert(res == 1)
+        return dsa_cdata_dup
 
+    def generate_dsa_private_key(self, parameters):
+        ctx = self._dup_dsa_params(parameters._dsa_cdata)
         self._lib.DSA_generate_key(ctx)
         evp_pkey = self._dsa_cdata_to_evp_pkey(ctx)
 
@@ -634,6 +649,12 @@ class Backend(object):
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
 
+    def _dsa_cdata_set_values(self, dsa_cdata, p, q, g, pub_key, priv_key):
+        res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(res == 1)
+        res = self._lib.DSA_set0_key(dsa_cdata, pub_key, priv_key)
+        self.openssl_assert(res == 1)
+
     def load_dsa_private_numbers(self, numbers):
         dsa._check_dsa_private_numbers(numbers)
         parameter_numbers = numbers.public_numbers.parameter_numbers
@@ -642,11 +663,12 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(parameter_numbers.p)
-        dsa_cdata.q = self._int_to_bn(parameter_numbers.q)
-        dsa_cdata.g = self._int_to_bn(parameter_numbers.g)
-        dsa_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
-        dsa_cdata.priv_key = self._int_to_bn(numbers.x)
+        p = self._int_to_bn(parameter_numbers.p)
+        q = self._int_to_bn(parameter_numbers.q)
+        g = self._int_to_bn(parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.public_numbers.y)
+        priv_key = self._int_to_bn(numbers.x)
+        self._dsa_cdata_set_values(dsa_cdata, p, q, g, pub_key, priv_key)
 
         evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
 
@@ -658,10 +680,12 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(numbers.parameter_numbers.p)
-        dsa_cdata.q = self._int_to_bn(numbers.parameter_numbers.q)
-        dsa_cdata.g = self._int_to_bn(numbers.parameter_numbers.g)
-        dsa_cdata.pub_key = self._int_to_bn(numbers.y)
+        p = self._int_to_bn(numbers.parameter_numbers.p)
+        q = self._int_to_bn(numbers.parameter_numbers.q)
+        g = self._int_to_bn(numbers.parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.y)
+        priv_key = self._ffi.NULL
+        self._dsa_cdata_set_values(dsa_cdata, p, q, g, pub_key, priv_key)
 
         evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
 
@@ -673,9 +697,11 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(numbers.p)
-        dsa_cdata.q = self._int_to_bn(numbers.q)
-        dsa_cdata.g = self._int_to_bn(numbers.g)
+        p = self._int_to_bn(numbers.p)
+        q = self._int_to_bn(numbers.q)
+        g = self._int_to_bn(numbers.g)
+        res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(res == 1)
 
         return _DSAParameters(self, dsa_cdata)
 
