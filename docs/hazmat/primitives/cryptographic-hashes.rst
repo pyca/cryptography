@@ -91,7 +91,7 @@ SHA-1
 
     SHA-1 is a cryptographic hash function standardized by NIST. It produces an
     160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
-    vulnerable to practical collision attacks, though no actual collissions are
+    vulnerable to practical collision attacks, though no actual collisions are
     publicly known.
 
 SHA-2 family
