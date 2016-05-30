@@ -8,6 +8,7 @@ Changelog
 
 * Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
   will need to upgrade.
+* Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC`.
 
 1.3.2 - 2016-05-04
 ~~~~~~~~~~~~~~~~~~
