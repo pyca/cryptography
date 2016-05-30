@@ -20,7 +20,7 @@ Changelog
   methods to ECDSA keys.
 * Switched back to the older callback model on Python 3.5 in order to mitigate
   the locking callback problem with OpenSSL <1.1.0.
-* :class:`~cryptography.x509.CertificateBuilder` now also accepts aware
+* :class:`~cryptography.x509.CertificateBuilder` now also accepts timezone aware
   ``datetime`` objects for
   :meth:`~cryptography.x509.CertificateBuilder.not_valid_before` and
   :meth:`~cryptography.x509.CertificateBuilder.not_valid_after`
