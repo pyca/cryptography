@@ -51,7 +51,7 @@ class FernetBase(object):
         self._version = b"\x00"
 
     @classmethod
-    def generate_key(cls, key_bits):
+    def _generate_key_of_length(cls, key_bits):
         if key_bits not in algorithms.AES.key_sizes:
             raise ValueError(
                 "Fernet key must be 128 or 192 or 256 bits."
@@ -175,7 +175,7 @@ class Fernet(FernetBase):
 
     @classmethod
     def generate_key(cls):
-        return FernetBase.generate_key(128)
+        return cls._generate_key_of_length(128)
 
 
 class ExtFernet192(FernetBase):
@@ -200,7 +200,7 @@ class ExtFernet192(FernetBase):
 
     @classmethod
     def generate_key(cls):
-        return FernetBase.generate_key(192)
+        return cls._generate_key_of_length(192)
 
 
 class ExtFernet256(FernetBase):
@@ -225,4 +225,4 @@ class ExtFernet256(FernetBase):
 
     @classmethod
     def generate_key(cls):
-        return FernetBase.generate_key(256)
+        return cls._generate_key_of_length(256)

@@ -16,7 +16,8 @@ import pytest
 
 import six
 
-from cryptography.fernet import Fernet, InvalidToken, MultiFernet
+from cryptography.fernet import ExtFernet192, ExtFernet256, Fernet
+from cryptography.fernet import InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
@@ -165,29 +166,34 @@ class TestExtFernet192(object):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_invalid_start_byte(self, backend):
-        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48),
+                         backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
     def test_timestamp_too_short(self, backend):
-        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48),
+                         backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x21abc"))
 
     def test_non_base64_token(self, backend):
-        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48),
+                         backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00")
 
     def test_unicode(self, backend):
-        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48),
+                         backend=backend)
         with pytest.raises(TypeError):
             f.encrypt(u"")
         with pytest.raises(TypeError):
             f.decrypt(u"")
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
-        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48), backend=backend)
+        f = ExtFernet192(base64.urlsafe_b64encode(b"\x00" * 48),
+                         backend=backend)
         pt = b"encrypt me"
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
@@ -248,29 +254,34 @@ class TestExtFernet256(object):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
     def test_invalid_start_byte(self, backend):
-        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64),
+                         backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
     def test_timestamp_too_short(self, backend):
-        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64),
+                         backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x41abc"))
 
     def test_non_base64_token(self, backend):
-        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64),
+                         backend=backend)
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00")
 
     def test_unicode(self, backend):
-        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64),
+                         backend=backend)
         with pytest.raises(TypeError):
             f.encrypt(u"")
         with pytest.raises(TypeError):
             f.decrypt(u"")
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
-        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64), backend=backend)
+        f = ExtFernet256(base64.urlsafe_b64encode(b"\x00" * 64),
+                         backend=backend)
         pt = b"encrypt me"
         token = f.encrypt(pt)
         ts = "1985-10-26T01:20:01-07:00"
