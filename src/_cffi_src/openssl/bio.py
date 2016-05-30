@@ -82,8 +82,6 @@ int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
 int BIO_puts(BIO *, const char *);
-BIO_METHOD *BIO_f_null(void);
-BIO_METHOD *BIO_f_buffer(void);
 
 int BIO_method_type(const BIO *);
 """
