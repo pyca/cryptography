@@ -391,19 +391,21 @@ def kbkdf_counter_mode_test(backend, params):
         'hmac_sha512': hashes.SHA512,
     }
 
-    supportd_counter_locations = {
+    supported_counter_locations = {
         "before_fixed": CounterLocation.BeforeFixed,
         "after_fixed": CounterLocation.AfterFixed,
     }
 
     algorithm = supported_algorithms.get(params.get('prf'))
     if algorithm is None or not backend.hmac_supported(algorithm()):
-        pytest.skip('Does not support algorithm')
+        pytest.skip("KBKDF does not support algorithm: {0}".format(
+            params.get('prf')
+        ))
 
-    ctr_loc = supportd_counter_locations.get(params.get("ctrlocation"))
+    ctr_loc = supported_counter_locations.get(params.get("ctrlocation"))
     if ctr_loc is None or not isinstance(ctr_loc, CounterLocation):
-        pytest.skip("Does not support counter location".format(
-            location=params.get('ctrlocation')
+        pytest.skip("Does not support counter location: {0}".format(
+            params.get('ctrlocation')
         ))
 
     ctrkdf = KBKDFHMAC(
