@@ -15,7 +15,6 @@ import warnings
 # the functions deprecated in 1.0 are on an arbitrarily extended deprecation
 # cycle and should not be removed until we agree on when that cycle ends.
 DeprecatedIn10 = DeprecationWarning
-DeprecatedIn12 = PendingDeprecationWarning
 
 
 def read_only_property(name):
@@ -45,6 +44,7 @@ else:
         while len(data) > 0:
             digit, = struct.unpack('>I', data[:4])
             result = (result << 32) + digit
+            # TODO: this is quadratic in the length of data
             data = data[4:]
 
         return result
@@ -117,6 +117,13 @@ class _ModuleWithDeprecations(object):
 
     def __setattr__(self, attr, value):
         setattr(self._module, attr, value)
+
+    def __delattr__(self, attr):
+        obj = getattr(self._module, attr)
+        if isinstance(obj, _DeprecatedValue):
+            warnings.warn(obj.message, obj.warning_class, stacklevel=2)
+
+        delattr(self._module, attr)
 
     def __dir__(self):
         return ["_module"] + dir(self._module)

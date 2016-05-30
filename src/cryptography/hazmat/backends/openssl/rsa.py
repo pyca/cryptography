@@ -120,6 +120,10 @@ def _handle_rsa_enc_dec_error(backend, key):
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_01,
             backend._lib.RSA_R_BLOCK_TYPE_IS_NOT_02,
             backend._lib.RSA_R_OAEP_DECODING_ERROR,
+            # Though this error looks similar to the
+            # RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE, this occurs on decrypts,
+            # rather then on encrypts
+            backend._lib.RSA_R_DATA_TOO_LARGE_FOR_MODULUS,
         ]
         if backend._lib.Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR:
             decoding_errors.append(backend._lib.RSA_R_PKCS_DECODING_ERROR)
@@ -370,11 +374,9 @@ class _RSAPrivateKey(object):
         return _enc_dec_rsa(self._backend, self, ciphertext, padding)
 
     def public_key(self):
-        ctx = self._backend._lib.RSA_new()
+        ctx = self._backend._lib.RSAPublicKey_dup(self._rsa_cdata)
         self._backend.openssl_assert(ctx != self._backend._ffi.NULL)
         ctx = self._backend._ffi.gc(ctx, self._backend._lib.RSA_free)
-        ctx.e = self._backend._lib.BN_dup(self._rsa_cdata.e)
-        ctx.n = self._backend._lib.BN_dup(self._rsa_cdata.n)
         res = self._backend._lib.RSA_blinding_on(ctx, self._backend._ffi.NULL)
         self._backend.openssl_assert(res == 1)
         evp_pkey = self._backend._rsa_cdata_to_evp_pkey(ctx)

@@ -120,6 +120,14 @@ Loading Certificates
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+        >>> cert.serial
+        2
+
 .. function:: load_der_x509_certificate(data, backend)
 
     .. versionadded:: 0.7
@@ -135,14 +143,6 @@ Loading Certificates
         interface.
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-    >>> cert.serial
-    2
 
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,6 +164,15 @@ Loading Certificate Revocation Lists
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
+        >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+        True
+
 .. function:: load_der_x509_crl(data, backend)
 
     .. versionadded:: 1.1
@@ -179,15 +188,6 @@ Loading Certificate Revocation Lists
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateRevocationList`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> crl = x509.load_pem_x509_crl(pem_crl_data, default_backend())
-    >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
-    True
 
 Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -210,6 +210,15 @@ Loading Certificate Signing Requests
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
 
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
+        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
+        True
+
 .. function:: load_der_x509_csr(data, backend)
 
     .. versionadded:: 0.9
@@ -225,15 +234,6 @@ Loading Certificate Signing Requests
 
     :returns: An instance of
         :class:`~cryptography.x509.CertificateSigningRequest`.
-
-.. doctest::
-
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.backends import default_backend
-    >>> from cryptography.hazmat.primitives import hashes
-    >>> csr = x509.load_pem_x509_csr(pem_req_data, default_backend())
-    >>> isinstance(csr.signature_hash_algorithm, hashes.SHA1)
-    True
 
 X.509 Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -760,6 +760,12 @@ X.509 CSR (Certificate Signing Request) Object
         hashed and then signed by the private key (corresponding to the public
         key embedded in the CSR). This data may be used to validate the CSR
         signature.
+
+    .. attribute:: is_signature_valid
+
+        .. versionadded:: 1.3
+
+        Returns True if the CSR signature is correct, False otherwise.
 
 X.509 Certificate Revocation List Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1535,6 +1541,13 @@ X.509 Extensions
 
         .. versionadded:: 1.0
 
+        .. note::
+
+            This method should be used if the issuer certificate does not
+            contain a :class:`~cryptography.x509.SubjectKeyIdentifier`.
+            Otherwise, use
+            :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier`.
+
         Creates a new AuthorityKeyIdentifier instance using the public key
         provided to generate the appropriate digest. This should be the
         **issuer's public key**. The resulting object will contain
@@ -1560,6 +1573,37 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
+            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
+
+    .. classmethod:: from_issuer_subject_key_identifier(ski)
+
+        .. versionadded:: 1.3
+
+        .. note::
+            This method should be used if the issuer certificate contains a
+            :class:`~cryptography.x509.SubjectKeyIdentifier`.  Otherwise, use
+            :meth:`~cryptography.x509.AuthorityKeyIdentifier.from_issuer_public_key`.
+
+        Creates a new AuthorityKeyIdentifier instance using the
+        SubjectKeyIdentifier from the issuer certificate. The resulting object
+        will contain
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.key_identifier`, but
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.authority_cert_issuer`
+        and
+        :attr:`~cryptography.x509.AuthorityKeyIdentifier.authority_cert_serial_number`
+        will be None.
+
+        :param ski: The
+            :class:`~cryptography.x509.SubjectKeyIdentifier` from the issuer
+            certificate.
+
+        .. doctest::
+
+            >>> from cryptography import x509
+            >>> from cryptography.hazmat.backends import default_backend
+            >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+            >>> ski = issuer_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
+            >>> x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(ski)
             <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
 .. class:: SubjectKeyIdentifier(digest)
@@ -1859,6 +1903,44 @@ X.509 Extensions
     .. attribute:: skip_certs
 
         :type: int
+
+.. class:: PolicyConstraints
+
+    .. versionadded:: 1.3
+
+    The policy constraints extension is used to inhibit policy mapping or
+    require that each certificate in a chain contain an acceptable policy
+    identifier. For more information about the use of this extension see
+    :rfc:`5280`.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.POLICY_CONSTRAINTS`.
+
+    .. attribute:: require_explicit_policy
+
+        :type: int or None
+
+        If this field is not None, the value indicates the number of additional
+        certificates that may appear in the chain before an explicit policy is
+        required for the entire path. When an explicit policy is required, it
+        is necessary for all certificates in the chain to contain an acceptable
+        policy identifier in the certificate policies extension.  An
+        acceptable policy identifier is the identifier of a policy required
+        by the user of the certification path or the identifier of a policy
+        that has been declared equivalent through policy mapping.
+
+    .. attribute:: inhibit_policy_mapping
+
+        :type: int or None
+
+        If this field is not None, the value indicates the number of additional
+        certificates that may appear in the chain before policy mapping is no
+        longer permitted.  For example, a value of one indicates that policy
+        mapping may be processed in certificates issued by the subject of this
+        certificate, but not in additional certificates in the chain.
 
 .. class:: CRLNumber(crl_number)
 
@@ -2391,6 +2473,12 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"2.5.29.20"``. The identifier for
         the ``CRLNumber`` extension type. This extension only has meaning
         for certificate revocation lists.
+
+    .. attribute:: POLICY_CONSTRAINTS
+
+        Corresponds to the dotted string ``"2.5.29.36"``. The identifier for the
+        :class:`~cryptography.x509.PolicyConstraints` extension type.
+
 
 .. class:: CRLEntryExtensionOID
 

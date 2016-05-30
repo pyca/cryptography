@@ -9,27 +9,13 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef struct dh_st {
-    /* Prime number (shared) */
-    BIGNUM *p;
-    /* Generator of Z_p (shared) */
-    BIGNUM *g;
-    /* Private DH value x */
-    BIGNUM *priv_key;
-    /* Public DH value g^x */
-    BIGNUM *pub_key;
-    /* X9.42/RFC 2631 */
-    BIGNUM *q;
-    BIGNUM *j;
-    ...;
-} DH;
+typedef ... DH;
 """
 
 FUNCTIONS = """
 DH *DH_new(void);
 void DH_free(DH *);
 int DH_size(const DH *);
-DH *DH_generate_parameters(int, int, void (*)(int, int, void *), void *);
 int DH_check(const DH *, int *);
 int DH_check_pub_key(const DH *, const BIGNUM *, int *);
 int DH_generate_key(DH *);

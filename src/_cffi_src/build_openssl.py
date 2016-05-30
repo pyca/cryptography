@@ -37,21 +37,17 @@ def _osx_libraries(build_static):
         return ["ssl", "crypto"]
 
 
-_OSX_PRE_INCLUDE = """
-#ifdef __APPLE__
-#include <AvailabilityMacros.h>
-#define __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+_PRE_INCLUDE = """
+#include <openssl/opensslv.h>
+/*
+    LibreSSL removed e_os2.h from the public headers so we'll only include it
+    if we're using vanilla OpenSSL.
+*/
+#if !defined(LIBRESSL_VERSION_NUMBER)
+#include <openssl/e_os2.h>
 #endif
-"""
-
-_OSX_POST_INCLUDE = """
-#ifdef __APPLE__
-#undef DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER \
-    __ORIG_DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#if defined(_WIN32)
+#include <windows.h>
 #endif
 """
 
@@ -66,7 +62,6 @@ ffi = build_ffi_for_binding(
         "bio",
         "cmac",
         "cms",
-        "conf",
         "crypto",
         "dh",
         "dsa",
@@ -79,6 +74,7 @@ ffi = build_ffi_for_binding(
         "hmac",
         "nid",
         "objects",
+        "ocsp",
         "opensslv",
         "pem",
         "pkcs12",
@@ -92,8 +88,7 @@ ffi = build_ffi_for_binding(
         "pkcs7",
         "callbacks",
     ],
-    pre_include=_OSX_PRE_INCLUDE,
-    post_include=_OSX_POST_INCLUDE,
+    pre_include=_PRE_INCLUDE,
     libraries=_get_openssl_libraries(sys.platform),
     extra_link_args=extra_link_args(compiler_type()),
 )

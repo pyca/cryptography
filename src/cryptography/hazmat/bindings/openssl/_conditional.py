@@ -86,8 +86,6 @@ CONDITIONAL_NAMES = {
         "EC_KEY_get_enc_flags",
         "EC_KEY_set_enc_flags",
         "EC_KEY_set_conv_form",
-        "EC_KEY_get_key_method_data",
-        "EC_KEY_insert_key_method_data",
         "EC_KEY_set_asn1_flag",
         "EC_KEY_precompute_mult",
         "EC_KEY_generate_key",
@@ -168,9 +166,6 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_ECDH": [
         "ECDH_compute_key",
-        "ECDH_get_ex_new_index",
-        "ECDH_set_ex_data",
-        "ECDH_get_ex_data",
     ],
     "Cryptography_HAS_ECDSA": [
         "ECDSA_SIG_new",
@@ -185,13 +180,6 @@ CONDITIONAL_NAMES = {
         "ECDSA_sign_ex",
         "ECDSA_verify",
         "ECDSA_size",
-        "ECDSA_OpenSSL",
-        "ECDSA_set_default_method",
-        "ECDSA_get_default_method",
-        "ECDSA_set_method",
-        "ECDSA_get_ex_new_index",
-        "ECDSA_set_ex_data",
-        "ECDSA_get_ex_data",
     ],
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
@@ -215,6 +203,12 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC_CODES": [
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
+    ],
+    "Cryptography_HAS_TLSEXT_ERROR_CODES": [
+        "SSL_TLSEXT_ERR_OK",
+        "SSL_TLSEXT_ERR_ALERT_WARNING",
+        "SSL_TLSEXT_ERR_ALERT_FATAL",
+        "SSL_TLSEXT_ERR_NOACK",
     ],
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
@@ -261,6 +255,9 @@ CONDITIONAL_NAMES = {
     ],
     "Cryptography_HAS_MGF1_MD": [
         "EVP_PKEY_CTX_set_rsa_mgf1_md",
+    ],
+    "Cryptography_HAS_RSA_OAEP_MD": [
+        "EVP_PKEY_CTX_set_rsa_oaep_md",
     ],
     "Cryptography_HAS_TLSv1_1": [
         "SSL_OP_NO_TLSv1_1",
@@ -360,6 +357,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
         "SSL_CTX_set_client_cert_engine",
     ],
+    "Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS": [
+        "SSL_CTX_clear_options",
+    ],
     "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
@@ -411,4 +411,24 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ],
+    "Cryptography_HAS_AES_CTR128_ENCRYPT": [
+        "AES_ctr128_encrypt",
+    ],
+    "Cryptography_HAS_SSL_ST": [
+        "SSL_ST_BEFORE",
+        "SSL_ST_OK",
+        "SSL_ST_INIT",
+        "SSL_ST_RENEGOTIATE",
+    ],
+    "Cryptography_HAS_TLS_ST": [
+        "TLS_ST_BEFORE",
+        "TLS_ST_OK",
+    ],
+    "Cryptography_HAS_LOCKING_CALLBACKS": [
+        "CRYPTO_LOCK",
+        "CRYPTO_UNLOCK",
+        "CRYPTO_READ",
+        "CRYPTO_LOCK_SSL",
+        "CRYPTO_lock",
+    ]
 }

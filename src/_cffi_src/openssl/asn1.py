@@ -24,6 +24,7 @@ struct asn1_string_st {
 typedef struct asn1_string_st ASN1_OCTET_STRING;
 typedef struct asn1_string_st ASN1_IA5STRING;
 typedef struct asn1_string_st ASN1_BIT_STRING;
+typedef struct asn1_string_st ASN1_TIME;
 typedef ... ASN1_OBJECT;
 typedef struct asn1_string_st ASN1_STRING;
 typedef struct asn1_string_st ASN1_UTF8STRING;
@@ -33,9 +34,6 @@ typedef ... ASN1_ENUMERATED;
 typedef ... ASN1_ITEM;
 typedef ... ASN1_VALUE;
 
-typedef struct {
-    ...;
-} ASN1_TIME;
 typedef ... ASN1_ITEM_EXP;
 
 typedef ... ASN1_UTCTIME;
@@ -155,4 +153,10 @@ ASN1_TYPE *d2i_ASN1_TYPE(ASN1_TYPE **, const unsigned char **, long);
 """
 
 CUSTOMIZATIONS = """
+/* This macro is removed in 1.1.0. We re-add it if required to support
+   pyOpenSSL versions older than whatever resolves
+   https://github.com/pyca/pyopenssl/issues/431 */
+#if !defined(M_ASN1_TIME_dup)
+#define M_ASN1_TIME_dup(a) (ASN1_TIME *)ASN1_STRING_dup((const ASN1_STRING *)a)
+#endif
 """

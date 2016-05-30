@@ -2228,6 +2228,90 @@ class TestAccessDescription(object):
         assert ad != ad3
         assert ad != object()
 
+    def test_hash(self):
+        ad = x509.AccessDescription(
+            AuthorityInformationAccessOID.OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad2 = x509.AccessDescription(
+            AuthorityInformationAccessOID.OCSP,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        ad3 = x509.AccessDescription(
+            AuthorityInformationAccessOID.CA_ISSUERS,
+            x509.UniformResourceIdentifier(u"http://ocsp.domain.com")
+        )
+        assert hash(ad) == hash(ad2)
+        assert hash(ad) != hash(ad3)
+
+
+class TestPolicyConstraints(object):
+    def test_invalid_explicit_policy(self):
+        with pytest.raises(TypeError):
+            x509.PolicyConstraints("invalid", None)
+
+    def test_invalid_inhibit_policy(self):
+        with pytest.raises(TypeError):
+            x509.PolicyConstraints(None, "invalid")
+
+    def test_both_none(self):
+        with pytest.raises(ValueError):
+            x509.PolicyConstraints(None, None)
+
+    def test_repr(self):
+        pc = x509.PolicyConstraints(0, None)
+
+        assert repr(pc) == (
+            u"<PolicyConstraints(require_explicit_policy=0, inhibit_policy_ma"
+            u"pping=None)>"
+        )
+
+    def test_eq(self):
+        pc = x509.PolicyConstraints(2, 1)
+        pc2 = x509.PolicyConstraints(2, 1)
+        assert pc == pc2
+
+    def test_ne(self):
+        pc = x509.PolicyConstraints(2, 1)
+        pc2 = x509.PolicyConstraints(2, 2)
+        pc3 = x509.PolicyConstraints(3, 1)
+        assert pc != pc2
+        assert pc != pc3
+        assert pc != object()
+
+
+@pytest.mark.requires_backend_interface(interface=RSABackend)
+@pytest.mark.requires_backend_interface(interface=X509Backend)
+class TestPolicyConstraintsExtension(object):
+    def test_inhibit_policy_mapping(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "department-of-state-root.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.POLICY_CONSTRAINTS,
+        )
+        assert ext.critical is True
+
+        assert ext.value == x509.PolicyConstraints(
+            require_explicit_policy=None, inhibit_policy_mapping=0,
+        )
+
+    def test_require_explicit_policy(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "policy_constraints_explicit.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.POLICY_CONSTRAINTS
+        )
+        assert ext.critical is True
+        assert ext.value == x509.PolicyConstraints(
+            require_explicit_policy=1, inhibit_policy_mapping=None,
+        )
+
 
 class TestAuthorityInformationAccess(object):
     def test_invalid_descriptions(self):
@@ -2547,6 +2631,28 @@ class TestAuthorityKeyIdentifierExtension(object):
         )
         aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(
             issuer_cert.public_key()
+        )
+        assert ext.value == aki
+
+    def test_from_issuer_subject_key_identifier(self, backend):
+        issuer_cert = _load_cert(
+            os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
+        )
+        ski = issuer_cert.extensions.get_extension_for_class(
+            x509.SubjectKeyIdentifier
+        )
+        aki = x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(
+            ski
         )
         assert ext.value == aki
 
@@ -3381,6 +3487,13 @@ class TestInhibitAnyPolicy(object):
         iap2 = x509.InhibitAnyPolicy(4)
         assert iap != iap2
         assert iap != object()
+
+    def test_hash(self):
+        iap = x509.InhibitAnyPolicy(1)
+        iap2 = x509.InhibitAnyPolicy(1)
+        iap3 = x509.InhibitAnyPolicy(4)
+        assert hash(iap) == hash(iap2)
+        assert hash(iap) != hash(iap3)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)

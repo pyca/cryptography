@@ -22,10 +22,10 @@ from .utils import (
     load_fips_dsa_key_pair_vectors, load_fips_dsa_sig_vectors,
     load_fips_ecdsa_key_pair_vectors, load_fips_ecdsa_signing_vectors,
     load_hash_vectors, load_kasvs_dh_vectors,
-    load_kasvs_ecdh_vectors, load_nist_vectors,
+    load_kasvs_ecdh_vectors, load_nist_kbkdf_vectors, load_nist_vectors,
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
-    load_x963_vectors,
-    raises_unsupported_algorithm, select_backends, skip_if_empty
+    load_x963_vectors, raises_unsupported_algorithm, select_backends,
+    skip_if_empty
 )
 
 
@@ -3488,6 +3488,99 @@ a7b17902d34276951ceccab87f9661c3e8816
 a733633d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089db\
 f351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2\
 aa8e2efa7b17902d34276951ceccab87f9661c3e8816"},
+    ]
+
+
+def test_load_kbkdf_vectors():
+    vector_data = textwrap.dedent("""
+    # CAVS 14.4
+    # "SP800-108 - KDF" information for "test1"
+    # KDF Mode Supported: Counter Mode
+    # Location of counter tested: (Before Fixed Input Data)\
+( After Fixed Input Data)(In Middle of Fixed Input Data before Context)
+    # PRFs tested: CMAC with key sizes:	AES128  AES192  AES256  TDES2  TDES3\
+HMAC with key sizes:	SHA1  SHA224  SHA256  SHA384  SHA512
+    # Generated on Tue Apr 23 12:20:16 2013
+
+    [PRF=HMAC_SHA1]
+    [CTRLOCATION=BEFORE_FIXED]
+    [RLEN=8_BITS]
+
+    COUNT=0
+    L = 128
+    KI = 00a39bd547fb88b2d98727cf64c195c61e1cad6c
+    FixedInputDataByteLen = 60
+    FixedInputData = 98132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc30056f68\
+76f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242
+        Binary rep of i = 01
+        instring = 0198132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc30056f68\
+76f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242
+    KO = 0611e1903609b47ad7a5fc2c82e47702
+
+    COUNT=1
+    L = 128
+    KI = a39bdf744ed7e33fdec060c8736e9725179885a8
+    FixedInputDataByteLen = 60
+    FixedInputData = af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591e182\
+35019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832
+        Binary rep of i = 01
+        instring = 01af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591e182\
+35019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832
+    KO = 51dc4668947e3685099bc3b5f8527468
+
+    [PRF=HMAC_SHA224]
+    [CTRLOCATION=AFTER_FIXED]
+    [RLEN=8_BITS]
+
+    COUNT=0
+    L = 128
+    KI = ab56556b107a3a79fe084df0f1bb3ad049a6cc1490f20da4b3df282c
+    FixedInputDataByteLen = 60
+    FixedInputData = 7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91ee\
+b5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7
+        Binary rep of i = 01
+        instring = 7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91eeb5\
+730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701
+    KO = b8894c6133a46701909b5c8a84322dec
+    """).splitlines()
+
+    assert load_nist_kbkdf_vectors(vector_data) == [
+        {'prf': 'hmac_sha1',
+         'ctrlocation': 'before_fixed',
+         'rlen': 8,
+         'l': 128,
+         'ki': b'00a39bd547fb88b2d98727cf64c195c61e1cad6c',
+         'fixedinputdatabytelen': b'60',
+         'fixedinputdata': b'98132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc\
+30056f6876f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242',
+         'binary rep of i': b'01',
+         'instring': b'0198132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc3005\
+6f6876f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242',
+         'ko': b'0611e1903609b47ad7a5fc2c82e47702'},
+        {'prf': 'hmac_sha1',
+         'ctrlocation': 'before_fixed',
+         'rlen': 8,
+         'l': 128,
+         'ki': b'a39bdf744ed7e33fdec060c8736e9725179885a8',
+         'fixedinputdatabytelen': b'60',
+         'fixedinputdata': b'af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9\
+c591e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832',
+         'binary rep of i': b'01',
+         'instring': b'01af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591\
+e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832',
+         'ko': b'51dc4668947e3685099bc3b5f8527468'},
+        {'prf': 'hmac_sha224',
+         'ctrlocation': 'after_fixed',
+         'rlen': 8,
+         'l': 128,
+         'ki': b'ab56556b107a3a79fe084df0f1bb3ad049a6cc1490f20da4b3df282c',
+         'fixedinputdatabytelen': b'60',
+         'fixedinputdata': b'7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43\
+aa1b91eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7',
+         'binary rep of i': b'01',
+         'instring': b'7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91\
+eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701',
+         'ko': b'b8894c6133a46701909b5c8a84322dec'}
     ]
 
 

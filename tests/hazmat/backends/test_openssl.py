@@ -24,9 +24,14 @@ from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm, Cipher, CipherAlgorithm
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR, Mode
+from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..primitives.test_ec import _skip_curve_unsupported
+from ...doubles import (
+    DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
+)
+from ...test_x509 import _load_cert
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -42,32 +47,6 @@ class TestLibreSkip(object):
     def test_skip_yes(self):
         with pytest.raises(pytest.skip.Exception):
             skip_if_libre_ssl(u"LibreSSL 2.1.6")
-
-
-@utils.register_interface(Mode)
-class DummyMode(object):
-    name = "dummy-mode"
-
-    def validate_for_algorithm(self, algorithm):
-        pass
-
-
-@utils.register_interface(CipherAlgorithm)
-class DummyCipher(object):
-    name = "dummy-cipher"
-    key_size = None
-
-
-@utils.register_interface(padding.AsymmetricPadding)
-class DummyPadding(object):
-    name = "dummy-cipher"
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHash(object):
-    name = "dummy-hash"
-    block_size = None
-    digest_size = None
 
 
 class DummyMGF(object):
@@ -108,12 +87,12 @@ class TestOpenSSL(object):
     def test_nonexistent_cipher(self, mode):
         b = Backend()
         b.register_cipher_adapter(
-            DummyCipher,
+            DummyCipherAlgorithm,
             type(mode),
             lambda backend, cipher, mode: backend._ffi.NULL
         )
         cipher = Cipher(
-            DummyCipher(), mode, backend=b,
+            DummyCipherAlgorithm(), mode, backend=b,
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
@@ -200,7 +179,16 @@ class TestOpenSSL(object):
 
 
 class TestOpenSSLRandomEngine(object):
-    def teardown_method(self, method):
+    def setup(self):
+        # The default RAND engine is global and shared between
+        # tests. We make sure that the default engine is osrandom
+        # before we start each test and restore the global state to
+        # that engine in teardown.
+        current_default = backend._lib.ENGINE_get_default_RAND()
+        name = backend._lib.ENGINE_get_name(current_default)
+        assert name == backend._binding._osrandom_engine_name
+
+    def teardown(self):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
         backend.activate_osrandom_engine()
@@ -208,6 +196,8 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._binding._osrandom_engine_name
 
+    @pytest.mark.skipif(sys.executable is None,
+                        reason="No Python interpreter available.")
     def test_osrandom_engine_is_default(self, tmpdir):
         engine_printer = textwrap.dedent(
             """
@@ -236,7 +226,8 @@ class TestOpenSSLRandomEngine(object):
             subprocess.check_call(
                 [sys.executable, "-c", engine_printer],
                 env=env,
-                stdout=out
+                stdout=out,
+                stderr=subprocess.PIPE,
             )
 
         osrandom_engine_name = backend._ffi.string(
@@ -321,11 +312,11 @@ class TestOpenSSLRSA(object):
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(
-            padding.PSS(mgf=padding.MGF1(DummyHash()), salt_length=0)
+            padding.PSS(mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0)
         ) is False
 
     def test_rsa_padding_unsupported(self):
-        assert backend.rsa_padding_supported(DummyPadding()) is False
+        assert backend.rsa_padding_supported(DummyAsymmetricPadding()) is False
 
     def test_rsa_padding_supported_pkcs1v15(self):
         assert backend.rsa_padding_supported(padding.PKCS1v15()) is True
@@ -396,12 +387,8 @@ class TestOpenSSLRSA(object):
 
 class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
-        @utils.register_interface(BlockCipherAlgorithm)
-        class FakeAlgorithm(object):
-            block_size = 64
-
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            backend.create_cmac_ctx(FakeAlgorithm())
+            backend.create_cmac_ctx(DummyCipherAlgorithm())
 
 
 class TestOpenSSLSignX509Certificate(object):
@@ -409,7 +396,9 @@ class TestOpenSSLSignX509Certificate(object):
         private_key = RSA_KEY_2048.private_key(backend)
 
         with pytest.raises(TypeError):
-            backend.create_x509_certificate(object(), private_key, DummyHash())
+            backend.create_x509_certificate(
+                object(), private_key, DummyHashAlgorithm()
+            )
 
 
 class TestOpenSSLSignX509CertificateRevocationList(object):
@@ -437,10 +426,11 @@ class TestOpenSSLSerializationWithOpenSSL(object):
 
     def test_pem_password_cb(self):
         password = b'abcdefg'
+        buf_size = len(password) + 1
         ffi_cb, userdata = backend._pem_password_cb(password)
         handle = backend._ffi.new_handle(userdata)
-        buf = backend._ffi.new('char *')
-        assert ffi_cb(buf, len(password) + 1, False, handle) == len(password)
+        buf = backend._ffi.new('char[]', buf_size)
+        assert ffi_cb(buf, buf_size, False, handle) == len(password)
         assert userdata.called == 1
         assert backend._ffi.string(buf, len(password)) == password
 
@@ -507,3 +497,23 @@ class TestRSAPEMSerialization(object):
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password)
             )
+
+
+class TestGOSTCertificate(object):
+    @pytest.mark.skipif(
+        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
+        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
+    )
+    def test_numeric_string_x509_name_entry(self):
+        cert = _load_cert(
+            os.path.join("x509", "e-trust.ru.der"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+        with pytest.raises(ValueError) as exc:
+            cert.subject
+
+        # We assert on the message in this case because if the certificate
+        # fails to load it will also raise a ValueError and this test could
+        # erroneously pass.
+        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"

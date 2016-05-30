@@ -8,21 +8,14 @@ import pretend
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.backends.interfaces import HashBackend
 from cryptography.hazmat.primitives import hashes
 
 from .utils import generate_base_hash_test
 from ..backends.test_multibackend import DummyHashBackend
+from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class UnsupportedDummyHash(object):
-    name = "unsupported-dummy-hash"
-    block_size = None
-    digest_size = None
 
 
 @pytest.mark.requires_backend_interface(interface=HashBackend)
@@ -59,7 +52,7 @@ class TestHashContext(object):
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            hashes.Hash(UnsupportedDummyHash(), backend)
+            hashes.Hash(DummyHashAlgorithm(), backend)
 
 
 @pytest.mark.supported(

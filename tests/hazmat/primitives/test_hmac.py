@@ -8,7 +8,6 @@ import pretend
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -17,14 +16,8 @@ from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import generate_base_hmac_test
 from ..backends.test_multibackend import DummyHMACBackend
+from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class UnsupportedDummyHash(object):
-    name = "unsupported-dummy-hash"
-    block_size = None
-    digest_size = None
 
 
 @pytest.mark.supported(
@@ -95,7 +88,7 @@ class TestHMAC(object):
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            hmac.HMAC(b"key", UnsupportedDummyHash(), backend)
+            hmac.HMAC(b"key", DummyHashAlgorithm(), backend)
 
 
 def test_invalid_backend():

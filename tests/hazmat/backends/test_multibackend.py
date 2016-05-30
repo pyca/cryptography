@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
 from cryptography import utils
 from cryptography.exceptions import (
     UnsupportedAlgorithm, _Reasons
@@ -19,6 +21,10 @@ from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from ...utils import raises_unsupported_algorithm
+
+
+class DummyBackend(object):
+    pass
 
 
 @utils.register_interface(CipherBackend)
@@ -226,6 +232,10 @@ class DummyX509Backend(object):
 
 
 class TestMultiBackend(object):
+    def test_raises_error_with_empty_list(self):
+        with pytest.raises(ValueError):
+            MultiBackend([])
+
     def test_ciphers(self):
         backend = MultiBackend([
             DummyHashBackend([]),
@@ -310,7 +320,7 @@ class TestMultiBackend(object):
 
         backend.load_rsa_public_numbers("public_numbers")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
@@ -353,7 +363,7 @@ class TestMultiBackend(object):
         backend.load_dsa_public_numbers("numbers")
         backend.load_dsa_parameter_numbers("numbers")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(
             _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
         ):
@@ -491,7 +501,7 @@ class TestMultiBackend(object):
         backend.load_pem_private_key(b"keydata", None)
         backend.load_pem_public_key(b"keydata")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_pem_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
@@ -503,7 +513,7 @@ class TestMultiBackend(object):
         backend.load_der_private_key(b"keydata", None)
         backend.load_der_public_key(b"keydata")
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             backend.load_der_private_key(b"keydata", None)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
@@ -523,7 +533,7 @@ class TestMultiBackend(object):
         backend.create_x509_crl(object(), b"privatekey", hashes.SHA1())
         backend.create_x509_revoked_certificate(object())
 
-        backend = MultiBackend([])
+        backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.load_pem_x509_certificate(b"certdata")
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):

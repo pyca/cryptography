@@ -22,7 +22,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.TripleDES("\x00" * 8), modes.CBC("\x00" * 8)
+        algorithms.TripleDES(b"\x00" * 8), modes.CBC(b"\x00" * 8)
     ),
     skip_message="Does not support TripleDES CBC",
 )
@@ -59,7 +59,7 @@ class TestTripleDESModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.TripleDES("\x00" * 8), modes.OFB("\x00" * 8)
+        algorithms.TripleDES(b"\x00" * 8), modes.OFB(b"\x00" * 8)
     ),
     skip_message="Does not support TripleDES OFB",
 )
@@ -96,7 +96,7 @@ class TestTripleDESModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.TripleDES("\x00" * 8), modes.CFB("\x00" * 8)
+        algorithms.TripleDES(b"\x00" * 8), modes.CFB(b"\x00" * 8)
     ),
     skip_message="Does not support TripleDES CFB",
 )
@@ -133,7 +133,7 @@ class TestTripleDESModeCFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.TripleDES("\x00" * 8), modes.CFB8("\x00" * 8)
+        algorithms.TripleDES(b"\x00" * 8), modes.CFB8(b"\x00" * 8)
     ),
     skip_message="Does not support TripleDES CFB8",
 )

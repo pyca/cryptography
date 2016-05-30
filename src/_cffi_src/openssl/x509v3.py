@@ -34,6 +34,7 @@ typedef ... Cryptography_STACK_OF_POLICYINFO;
 typedef ... Cryptography_STACK_OF_ASN1_INTEGER;
 typedef ... Cryptography_STACK_OF_GENERAL_SUBTREE;
 typedef ... EXTENDED_KEY_USAGE;
+typedef ... CONF;
 
 typedef struct {
     X509 *issuer_cert;
@@ -77,6 +78,11 @@ typedef struct {
     Cryptography_STACK_OF_GENERAL_SUBTREE *permittedSubtrees;
     Cryptography_STACK_OF_GENERAL_SUBTREE *excludedSubtrees;
 } NAME_CONSTRAINTS;
+
+typedef struct {
+    ASN1_INTEGER *requireExplicitPolicy;
+    ASN1_INTEGER *inhibitPolicyMapping;
+} POLICY_CONSTRAINTS;
 
 
 typedef struct {
@@ -199,6 +205,9 @@ int Cryptography_i2d_NAME_CONSTRAINTS(NAME_CONSTRAINTS *, unsigned char **);
 
 OTHERNAME *OTHERNAME_new(void);
 void OTHERNAME_free(OTHERNAME *);
+
+POLICY_CONSTRAINTS *POLICY_CONSTRAINTS_new(void);
+void POLICY_CONSTRAINTS_free(POLICY_CONSTRAINTS *);
 
 void *X509V3_set_ctx_nodb(X509V3_CTX *);
 

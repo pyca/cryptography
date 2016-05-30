@@ -20,19 +20,20 @@ int RAND_status(void);
 const char *RAND_file_name(char *, size_t);
 int RAND_load_file(const char *, long);
 int RAND_write_file(const char *);
-void RAND_cleanup(void);
 int RAND_bytes(unsigned char *, int);
-int RAND_pseudo_bytes(unsigned char *, int);
 """
 
 MACROS = """
+/* RAND_cleanup became a macro in 1.1.0 */
+void RAND_cleanup(void);
+
 int RAND_egd(const char *);
 int RAND_egd_bytes(const char *, int);
 int RAND_query_egd_bytes(const char *, unsigned char *, int);
 """
 
 CUSTOMIZATIONS = """
-#if defined(LIBRESSL_VERSION_NUMBER)
+#if defined(LIBRESSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER >= 0x10100000L
 static const long Cryptography_HAS_EGD = 0;
 int (*RAND_egd)(const char *) = NULL;
 int (*RAND_egd_bytes)(const char *, int) = NULL;

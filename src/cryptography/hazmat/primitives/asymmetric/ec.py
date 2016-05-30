@@ -302,6 +302,9 @@ class EllipticCurvePublicNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        return hash((self.x, self.y, self.curve.name, self.curve.key_size))
+
     def __repr__(self):
         return (
             "<EllipticCurvePublicNumbers(curve={0.curve.name}, x={0.x}, "
@@ -340,6 +343,9 @@ class EllipticCurvePrivateNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.private_value, self.public_numbers))
 
 
 class ECDH(object):

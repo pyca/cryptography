@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidKey, _Reasons
 )
@@ -14,14 +13,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
-
-
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHash(object):
-    name = "dummy-hash"
-    block_size = None
-    digest_size = None
 
 
 class TestPBKDF2HMAC(object):
@@ -43,7 +36,9 @@ class TestPBKDF2HMAC(object):
 
     def test_unsupported_algorithm(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            PBKDF2HMAC(DummyHash(), 20, b"salt", 10, default_backend())
+            PBKDF2HMAC(
+                DummyHashAlgorithm(), 20, b"salt", 10, default_backend()
+            )
 
     def test_invalid_key(self):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, default_backend())

@@ -19,9 +19,10 @@ from cryptography.x509.extensions import (
     DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
     ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
     InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
-    NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
-    ReasonFlags, SubjectAlternativeName, SubjectKeyIdentifier,
-    UnrecognizedExtension, UnsupportedExtension, UserNotice
+    NameConstraints, NoticeReference, OCSPNoCheck, PolicyConstraints,
+    PolicyInformation, ReasonFlags, SubjectAlternativeName,
+    SubjectKeyIdentifier, UnrecognizedExtension, UnsupportedExtension,
+    UserNotice
 )
 from cryptography.x509.general_name import (
     DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
@@ -30,7 +31,7 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, NameAttribute
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, CRLEntryExtensionOID, CRLExtensionOID,
+    AuthorityInformationAccessOID, CRLEntryExtensionOID,
     CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
     ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
 )
@@ -165,9 +166,9 @@ __all__ = [
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "_GENERAL_NAMES",
-    "CRLExtensionOID",
     "CertificateIssuer",
     "CRLReason",
     "InvalidityDate",
     "UnrecognizedExtension",
+    "PolicyConstraints",
 ]

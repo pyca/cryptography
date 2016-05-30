@@ -39,8 +39,8 @@ OpenSSL releases:
 
 .. warning::
     OpenSSL versions 0.9.8 and 1.0.0 are no longer supported by the OpenSSL
-    project. A future version of cryptography will drop support for these
-    releases.
+    project. Cryptography 1.4 has dropped support for OpenSSL 0.9.8, see the
+    :doc:`FAQ </faq>` for more details.
 
 On Windows
 ----------
@@ -183,8 +183,13 @@ dependencies.
 Building cryptography on OS X
 -----------------------------
 
+.. note::
+
+    If installation gives a ``fatal error: 'openssl/aes.h' file not found``
+    see the :doc:`FAQ </faq>` for information about how to fix this issue.
+
 The wheel package on OS X is a statically linked build (as of 1.0.1) so for
-users with pip 1.5 or above you only need one step:
+users with pip 8 or above you only need one step:
 
 .. code-block:: console
 
@@ -268,7 +273,7 @@ information, consult `Greg Wilson's blog post`_ on the subject.
 .. _`MacPorts`: https://www.macports.org
 .. _`openssl-release`: https://jenkins.cryptography.io/job/openssl-release/
 .. _`bug in conda`: https://github.com/conda/conda-recipes/issues/110
-.. _`Greg Wilson's blog post`: http://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
+.. _`Greg Wilson's blog post`: https://software-carpentry.org/blog/2014/04/mr-biczo-was-right.html
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _openssl.org: https://openssl.org/source/
 .. _`wheel cache`: https://pip.pypa.io/en/stable/reference/pip_install/#caching

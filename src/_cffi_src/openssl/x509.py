@@ -36,6 +36,8 @@ typedef struct {
     ...;
 } X509_CINF;
 
+/* TODO: opaque X509_EXTENSION. Cryptography no longer depends on it being
+   non-opaque but pyOpenSSL needs a release where it doesn't depend on this */
 typedef struct {
     ASN1_OBJECT *object;
     ASN1_BOOLEAN critical;
@@ -152,12 +154,6 @@ X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 X509_EXTENSION *X509_get_ext(X509 *, int);
 int X509_get_ext_by_NID(X509 *, int, int);
 
-/* CRYPTO_EX_DATA */
-int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
-                          CRYPTO_EX_free *);
-int X509_set_ex_data(X509 *, int, void *);
-void *X509_get_ex_data(X509 *, int);
-
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
@@ -270,11 +266,21 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+/* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
+int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
+                          CRYPTO_EX_free *);
+int X509_set_ex_data(X509 *, int, void *);
+void *X509_get_ex_data(X509 *, int);
+
 X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
 
 int i2d_X509_CINF(X509_CINF *, unsigned char **);
 int i2d_X509_CRL_INFO(X509_CRL_INFO *, unsigned char **);
 int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
+
+/* new in 1.0.2 */
+int i2d_re_X509_tbs(X509 *, unsigned char **);
+void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
 
 long X509_get_version(X509 *);
 
@@ -347,9 +353,46 @@ ASN1_OBJECT *sk_ASN1_OBJECT_value(Cryptography_STACK_OF_ASN1_OBJECT *, int);
 void sk_ASN1_OBJECT_free(Cryptography_STACK_OF_ASN1_OBJECT *);
 Cryptography_STACK_OF_ASN1_OBJECT *sk_ASN1_OBJECT_new_null(void);
 int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
+
+/* these functions were added in 1.1.0 */
+ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *);
+ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *);
+void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_CRL *crl);
+int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
+int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
+void X509_REQ_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509_REQ *);
 """
 
 CUSTOMIZATIONS = """
+/* Added in 1.0.2 beta but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x_x509.c version 1.0.2 */
+void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                         const X509 *x)
+{
+    if (psig)
+        *psig = x->signature;
+    if (palg)
+        *palg = x->sig_alg;
+}
+#endif
+/* Added in 1.0.2 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10002003L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x_x509.c */
+int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
+{
+    /* in 1.0.2+ this function also sets x->cert_info->enc.modified = 1
+       but older OpenSSLs don't have the enc ASN1_ENCODING member in the
+       X509 struct.  Setting modified to 1 marks the encoding
+       (x->cert_info->enc.enc) as invalid, but since the entire struct isn't
+       present we don't care. */
+    return i2d_X509_CINF(x->cert_info, pp);
+}
+#endif
+
 /* OpenSSL 0.9.8e does not have this definition. */
 #if OPENSSL_VERSION_NUMBER <= 0x0090805fL
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
@@ -375,4 +418,43 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
     return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
 }
 
+/* Added in 1.1.0 but we need it in all versions now due to the great
+   opaquing. */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+/* from x509/x509_req.c */
+void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_REQ *req)
+{
+    if (psig != NULL)
+        *psig = req->signature;
+    if (palg != NULL)
+        *palg = req->sig_alg;
+}
+int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
+{
+    req->req_info->enc.modified = 1;
+    return i2d_X509_REQ_INFO(req->req_info, pp);
+}
+int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
+    crl->crl->enc.modified = 1;
+    return i2d_X509_CRL_INFO(crl->crl, pp);
+}
+
+void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
+                             X509_CRL *crl)
+{
+    if (psig != NULL)
+        *psig = crl->signature;
+    if (palg != NULL)
+        *palg = crl->sig_alg;
+}
+ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *x)
+{
+    return x->revocationDate;
+}
+ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *x)
+{
+    return x->serialNumber;
+}
+#endif
 """

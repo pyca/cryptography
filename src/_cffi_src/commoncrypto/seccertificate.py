@@ -5,16 +5,15 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#include <openssl/conf.h>
+#include <Security/SecCertificate.h>
 """
 
 TYPES = """
-typedef ... CONF;
+typedef ... *SecCertificateRef;
 """
 
 FUNCTIONS = """
-void OPENSSL_config(const char *);
-void OPENSSL_no_config(void);
+SecCertificateRef SecCertificateCreateWithData(CFAllocatorRef, CFDataRef);
 """
 
 MACROS = """

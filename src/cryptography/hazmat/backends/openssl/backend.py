@@ -6,7 +6,6 @@ from __future__ import absolute_import, division, print_function
 
 import calendar
 import collections
-import datetime
 import itertools
 from contextlib import contextmanager
 
@@ -32,8 +31,7 @@ from cryptography.hazmat.backends.openssl.ec import (
 from cryptography.hazmat.backends.openssl.encode_asn1 import (
     _CRL_ENTRY_EXTENSION_ENCODE_HANDLERS,
     _CRL_EXTENSION_ENCODE_HANDLERS, _EXTENSION_ENCODE_HANDLERS,
-    _encode_asn1_int_gc, _encode_asn1_str_gc, _encode_name_gc,
-    _txt2obj_gc,
+    _encode_asn1_int_gc, _encode_asn1_str_gc, _encode_name_gc, _txt2obj_gc,
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
@@ -180,7 +178,7 @@ class Backend(object):
         Example: OpenSSL 1.0.1e 11 Feb 2013
         """
         return self._ffi.string(
-            self._lib.SSLeay_version(self._lib.SSLEAY_VERSION)
+            self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
         ).decode("ascii")
 
     def create_hmac_ctx(self, key, algorithm):
@@ -567,14 +565,29 @@ class Backend(object):
 
         return _DSAParameters(self, ctx)
 
-    def generate_dsa_private_key(self, parameters):
-        ctx = self._lib.DSA_new()
-        self.openssl_assert(ctx != self._ffi.NULL)
-        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
-        ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
-        ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
+    def _dup_dsa_params(self, dsa_cdata):
+        dsa_cdata_dup = self._lib.DSA_new()
+        self.openssl_assert(dsa_cdata_dup != self._ffi.NULL)
+        dsa_cdata_dup = self._ffi.gc(dsa_cdata_dup, self._lib.DSA_free)
+        p = self._ffi.new("BIGNUM **")
+        q = self._ffi.new("BIGNUM **")
+        g = self._ffi.new("BIGNUM **")
+        self._lib.DSA_get0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(p[0] != self._ffi.NULL)
+        self.openssl_assert(q[0] != self._ffi.NULL)
+        self.openssl_assert(g[0] != self._ffi.NULL)
+        p_dup = self._lib.BN_dup(p[0])
+        q_dup = self._lib.BN_dup(q[0])
+        g_dup = self._lib.BN_dup(g[0])
+        self.openssl_assert(p_dup != self._ffi.NULL)
+        self.openssl_assert(q_dup != self._ffi.NULL)
+        self.openssl_assert(g_dup != self._ffi.NULL)
+        res = self._lib.DSA_set0_pqg(dsa_cdata_dup, p_dup, q_dup, g_dup)
+        self.openssl_assert(res == 1)
+        return dsa_cdata_dup
 
+    def generate_dsa_private_key(self, parameters):
+        ctx = self._dup_dsa_params(parameters._dsa_cdata)
         self._lib.DSA_generate_key(ctx)
         evp_pkey = self._dsa_cdata_to_evp_pkey(ctx)
 
@@ -584,6 +597,12 @@ class Backend(object):
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
 
+    def _dsa_cdata_set_values(self, dsa_cdata, p, q, g, pub_key, priv_key):
+        res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(res == 1)
+        res = self._lib.DSA_set0_key(dsa_cdata, pub_key, priv_key)
+        self.openssl_assert(res == 1)
+
     def load_dsa_private_numbers(self, numbers):
         dsa._check_dsa_private_numbers(numbers)
         parameter_numbers = numbers.public_numbers.parameter_numbers
@@ -592,11 +611,12 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(parameter_numbers.p)
-        dsa_cdata.q = self._int_to_bn(parameter_numbers.q)
-        dsa_cdata.g = self._int_to_bn(parameter_numbers.g)
-        dsa_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
-        dsa_cdata.priv_key = self._int_to_bn(numbers.x)
+        p = self._int_to_bn(parameter_numbers.p)
+        q = self._int_to_bn(parameter_numbers.q)
+        g = self._int_to_bn(parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.public_numbers.y)
+        priv_key = self._int_to_bn(numbers.x)
+        self._dsa_cdata_set_values(dsa_cdata, p, q, g, pub_key, priv_key)
 
         evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
 
@@ -608,10 +628,12 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(numbers.parameter_numbers.p)
-        dsa_cdata.q = self._int_to_bn(numbers.parameter_numbers.q)
-        dsa_cdata.g = self._int_to_bn(numbers.parameter_numbers.g)
-        dsa_cdata.pub_key = self._int_to_bn(numbers.y)
+        p = self._int_to_bn(numbers.parameter_numbers.p)
+        q = self._int_to_bn(numbers.parameter_numbers.q)
+        g = self._int_to_bn(numbers.parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.y)
+        priv_key = self._ffi.NULL
+        self._dsa_cdata_set_values(dsa_cdata, p, q, g, pub_key, priv_key)
 
         evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
 
@@ -623,9 +645,11 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(numbers.p)
-        dsa_cdata.q = self._int_to_bn(numbers.q)
-        dsa_cdata.g = self._int_to_bn(numbers.g)
+        p = self._int_to_bn(numbers.p)
+        q = self._int_to_bn(numbers.q)
+        g = self._int_to_bn(numbers.g)
+        res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(res == 1)
 
         return _DSAParameters(self, dsa_cdata)
 
@@ -875,6 +899,31 @@ class Backend(object):
     def _create_x509_extensions(self, extensions, handlers, x509_obj,
                                 add_func, gc):
         for i, extension in enumerate(extensions):
+            x509_extension = self._create_x509_extension(
+                handlers, extension
+            )
+            self.openssl_assert(x509_extension != self._ffi.NULL)
+
+            if gc:
+                x509_extension = self._ffi.gc(
+                    x509_extension, self._lib.X509_EXTENSION_free
+                )
+            res = add_func(x509_obj, x509_extension, i)
+            self.openssl_assert(res >= 1)
+
+    def _create_x509_extension(self, handlers, extension):
+        if isinstance(extension.value, x509.UnrecognizedExtension):
+            obj = _txt2obj_gc(self, extension.oid.dotted_string)
+            value = _encode_asn1_str_gc(
+                self, extension.value.value, len(extension.value.value)
+            )
+            return self._lib.X509_EXTENSION_create_by_OBJ(
+                self._ffi.NULL,
+                obj,
+                1 if extension.critical else 0,
+                value
+            )
+        else:
             try:
                 encode = handlers[extension.oid]
             except KeyError:
@@ -882,21 +931,37 @@ class Backend(object):
                     'Extension not supported: {0}'.format(extension.oid)
                 )
 
-            pp, r = encode(self, extension.value)
-            obj = _txt2obj_gc(self, extension.oid.dotted_string)
-            x509_extension = self._lib.X509_EXTENSION_create_by_OBJ(
-                self._ffi.NULL,
-                obj,
-                1 if extension.critical else 0,
-                _encode_asn1_str_gc(self, pp[0], r)
+            ext_struct = encode(self, extension.value)
+            nid = self._lib.OBJ_txt2nid(
+                extension.oid.dotted_string.encode("ascii")
             )
-            self.openssl_assert(x509_extension != self._ffi.NULL)
-            if gc:
-                x509_extension = self._ffi.gc(
-                    x509_extension, self._lib.X509_EXTENSION_free
+            backend.openssl_assert(nid != self._lib.NID_undef)
+            x509_extension = self._lib.X509V3_EXT_i2d(
+                nid, 1 if extension.critical else 0, ext_struct
+            )
+            if (
+                x509_extension == self._ffi.NULL and
+                extension.oid == x509.OID_CERTIFICATE_ISSUER
+            ):
+                # This path exists to support OpenSSL 0.9.8, which does not
+                # know how to encode a CERTIFICATE_ISSUER for CRLs. Once we
+                # drop 0.9.8 support we can remove this.
+                self._consume_errors()
+                pp = backend._ffi.new("unsigned char **")
+                r = self._lib.i2d_GENERAL_NAMES(ext_struct, pp)
+                backend.openssl_assert(r > 0)
+                pp = backend._ffi.gc(
+                    pp,
+                    lambda pointer: backend._lib.OPENSSL_free(pointer[0])
                 )
-            res = add_func(x509_obj, x509_extension, i)
-            self.openssl_assert(res >= 1)
+                obj = _txt2obj_gc(self, extension.oid.dotted_string)
+                return self._lib.X509_EXTENSION_create_by_OBJ(
+                    self._ffi.NULL,
+                    obj,
+                    1 if extension.critical else 0,
+                    _encode_asn1_str_gc(self, pp[0], r)
+                )
+            return x509_extension
 
     def create_x509_revoked_certificate(self, builder):
         if not isinstance(builder, x509.RevokedCertificateBuilder):
@@ -910,11 +975,14 @@ class Backend(object):
             x509_revoked, serial_number
         )
         self.openssl_assert(res == 1)
-        res = self._lib.ASN1_TIME_set(
-            x509_revoked.revocationDate,
+        rev_date = self._lib.ASN1_TIME_set(
+            self._ffi.NULL,
             calendar.timegm(builder._revocation_date.timetuple())
         )
-        self.openssl_assert(res != self._ffi.NULL)
+        self.openssl_assert(rev_date != self._ffi.NULL)
+        rev_date = self._ffi.gc(rev_date, self._lib.ASN1_TIME_free)
+        res = self._lib.X509_REVOKED_set_revocationDate(x509_revoked, rev_date)
+        self.openssl_assert(res == 1)
         # add CRL entry extensions
         self._create_x509_extensions(
             extensions=builder._extensions,
@@ -1530,55 +1598,6 @@ class Backend(object):
         res = write_bio(bio, key)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
-
-    def _asn1_integer_to_int(self, asn1_int):
-        bn = self._lib.ASN1_INTEGER_to_BN(asn1_int, self._ffi.NULL)
-        self.openssl_assert(bn != self._ffi.NULL)
-        bn = self._ffi.gc(bn, self._lib.BN_free)
-        return self._bn_to_int(bn)
-
-    def _asn1_string_to_bytes(self, asn1_string):
-        return self._ffi.buffer(asn1_string.data, asn1_string.length)[:]
-
-    def _asn1_string_to_ascii(self, asn1_string):
-        return self._asn1_string_to_bytes(asn1_string).decode("ascii")
-
-    def _asn1_string_to_utf8(self, asn1_string):
-        buf = self._ffi.new("unsigned char **")
-        res = self._lib.ASN1_STRING_to_UTF8(buf, asn1_string)
-        self.openssl_assert(res >= 0)
-        self.openssl_assert(buf[0] != self._ffi.NULL)
-        buf = self._ffi.gc(
-            buf, lambda buffer: self._lib.OPENSSL_free(buffer[0])
-        )
-        return self._ffi.buffer(buf[0], res)[:].decode('utf8')
-
-    def _asn1_to_der(self, asn1_type):
-        buf = self._ffi.new("unsigned char **")
-        res = self._lib.i2d_ASN1_TYPE(asn1_type, buf)
-        self.openssl_assert(res >= 0)
-        self.openssl_assert(buf[0] != self._ffi.NULL)
-        buf = self._ffi.gc(
-            buf, lambda buffer: self._lib.OPENSSL_free(buffer[0])
-        )
-        return self._ffi.buffer(buf[0], res)[:]
-
-    def _parse_asn1_time(self, asn1_time):
-        self.openssl_assert(asn1_time != self._ffi.NULL)
-        generalized_time = self._lib.ASN1_TIME_to_generalizedtime(
-            asn1_time, self._ffi.NULL
-        )
-        self.openssl_assert(generalized_time != self._ffi.NULL)
-        generalized_time = self._ffi.gc(
-            generalized_time, self._lib.ASN1_GENERALIZEDTIME_free
-        )
-        return self._parse_asn1_generalized_time(generalized_time)
-
-    def _parse_asn1_generalized_time(self, generalized_time):
-        time = self._asn1_string_to_ascii(
-            self._ffi.cast("ASN1_STRING *", generalized_time)
-        )
-        return datetime.datetime.strptime(time, "%Y%m%d%H%M%SZ")
 
 
 class GetCipherByName(object):

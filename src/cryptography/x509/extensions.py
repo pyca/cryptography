@@ -17,6 +17,8 @@ import six
 
 from cryptography import utils
 from cryptography.hazmat.primitives import constant_time, serialization
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.x509.general_name import GeneralName, IPAddress, OtherName
 from cryptography.x509.name import Name
 from cryptography.x509.oid import (
@@ -32,23 +34,32 @@ class _SubjectPublicKeyInfo(univ.Sequence):
 
 
 def _key_identifier_from_public_key(public_key):
-    # This is a very slow way to do this.
-    serialized = public_key.public_bytes(
-        serialization.Encoding.DER,
-        serialization.PublicFormat.SubjectPublicKeyInfo
-    )
-    spki, remaining = decoder.decode(
-        serialized, asn1Spec=_SubjectPublicKeyInfo()
-    )
-    assert not remaining
-    # the univ.BitString object is a tuple of bits. We need bytes and
-    # pyasn1 really doesn't want to give them to us. To get it we'll
-    # build an integer and convert that to bytes.
-    bits = 0
-    for bit in spki.getComponentByName("subjectPublicKey"):
-        bits = bits << 1 | bit
+    if isinstance(public_key, RSAPublicKey):
+        data = public_key.public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.PKCS1,
+        )
+    elif isinstance(public_key, EllipticCurvePublicKey):
+        data = public_key.public_numbers().encode_point()
+    else:
+        # This is a very slow way to do this.
+        serialized = public_key.public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        spki, remaining = decoder.decode(
+            serialized, asn1Spec=_SubjectPublicKeyInfo()
+        )
+        assert not remaining
+        # the univ.BitString object is a tuple of bits. We need bytes and
+        # pyasn1 really doesn't want to give them to us. To get it we'll
+        # build an integer and convert that to bytes.
+        bits = 0
+        for bit in spki.getComponentByName("subjectPublicKey"):
+            bits = bits << 1 | bit
 
-    data = utils.int_to_bytes(bits)
+        data = utils.int_to_bytes(bits)
+
     return hashlib.sha1(data).digest()
 
 
@@ -191,6 +202,14 @@ class AuthorityKeyIdentifier(object):
             authority_cert_serial_number=None
         )
 
+    @classmethod
+    def from_issuer_subject_key_identifier(cls, ski):
+        return cls(
+            key_identifier=ski.value.digest,
+            authority_cert_issuer=None,
+            authority_cert_serial_number=None
+        )
+
     def __repr__(self):
         return (
             "<AuthorityKeyIdentifier(key_identifier={0.key_identifier!r}, "
@@ -312,6 +331,9 @@ class AccessDescription(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash((self.access_method, self.access_location))
 
     access_method = utils.read_only_property("_access_method")
     access_location = utils.read_only_property("_access_location")
@@ -484,6 +506,62 @@ class ReasonFlags(Enum):
     privilege_withdrawn = "privilegeWithdrawn"
     aa_compromise = "aACompromise"
     remove_from_crl = "removeFromCRL"
+
+
+@utils.register_interface(ExtensionType)
+class PolicyConstraints(object):
+    oid = ExtensionOID.POLICY_CONSTRAINTS
+
+    def __init__(self, require_explicit_policy, inhibit_policy_mapping):
+        if require_explicit_policy is not None and not isinstance(
+            require_explicit_policy, six.integer_types
+        ):
+            raise TypeError(
+                "require_explicit_policy must be a non-negative integer or "
+                "None"
+            )
+
+        if inhibit_policy_mapping is not None and not isinstance(
+            inhibit_policy_mapping, six.integer_types
+        ):
+            raise TypeError(
+                "inhibit_policy_mapping must be a non-negative integer or None"
+            )
+
+        if inhibit_policy_mapping is None and require_explicit_policy is None:
+            raise ValueError(
+                "At least one of require_explicit_policy and "
+                "inhibit_policy_mapping must not be None"
+            )
+
+        self._require_explicit_policy = require_explicit_policy
+        self._inhibit_policy_mapping = inhibit_policy_mapping
+
+    def __repr__(self):
+        return (
+            u"<PolicyConstraints(require_explicit_policy={0.require_explicit"
+            u"_policy}, inhibit_policy_mapping={0.inhibit_policy_"
+            u"mapping})>".format(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, PolicyConstraints):
+            return NotImplemented
+
+        return (
+            self.require_explicit_policy == other.require_explicit_policy and
+            self.inhibit_policy_mapping == other.inhibit_policy_mapping
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    require_explicit_policy = utils.read_only_property(
+        "_require_explicit_policy"
+    )
+    inhibit_policy_mapping = utils.read_only_property(
+        "_inhibit_policy_mapping"
+    )
 
 
 @utils.register_interface(ExtensionType)
@@ -689,6 +767,9 @@ class InhibitAnyPolicy(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __hash__(self):
+        return hash(self.skip_certs)
 
     skip_certs = utils.read_only_property("_skip_certs")
 

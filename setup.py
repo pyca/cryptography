@@ -37,7 +37,7 @@ requirements = [
     "idna>=2.0",
     "pyasn1>=0.1.8",
     "six>=1.4.1",
-    "setuptools>=1.0",
+    "setuptools>=11.3",
 ]
 setup_requirements = []
 
@@ -57,14 +57,15 @@ else:
     requirements.append("cffi>=1.4.1")
     setup_requirements.append("cffi>=1.4.1")
 
-# If you add a new dep here you probably need to add it in the tox.ini as well
 test_requirements = [
     "pytest",
     "pretend",
     "iso8601",
-    "hypothesis",
     "pyasn1_modules",
 ]
+if sys.version_info[:2] > (2, 6):
+    test_requirements.append("hypothesis>=1.11.4")
+
 
 # If there's no vectors locally that probably means we are in a tarball and
 # need to go and get the matching vectors package from PyPi
@@ -301,13 +302,27 @@ setup(
     ],
 
     package_dir={"": "src"},
-    packages=find_packages(
-        where="src", exclude=["_cffi_src", "_cffi_src.*", "tests", "tests.*"]
-    ),
+    packages=find_packages(where="src", exclude=["_cffi_src", "_cffi_src.*"]),
     include_package_data=True,
 
     install_requires=requirements,
     tests_require=test_requirements,
+    extras_require={
+        "test": test_requirements,
+        "docstest": [
+            "doc8",
+            "pyenchant",
+            "readme_renderer",
+            "sphinx",
+            "sphinx_rtd_theme",
+            "sphinxcontrib-spelling",
+        ],
+        "pep8test": [
+            "flake8",
+            "flake8-import-order",
+            "pep8-naming",
+        ],
+    },
 
     # for cffi
     zip_safe=False,

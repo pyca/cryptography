@@ -13,10 +13,7 @@ INCLUDES = """
 TYPES = """
 static const int Cryptography_HAS_ECDSA;
 
-typedef struct {
-    BIGNUM *r;
-    BIGNUM *s;
-} ECDSA_SIG;
+typedef ... ECDSA_SIG;
 
 typedef ... CRYPTO_EX_new;
 typedef ... CRYPTO_EX_dup;
@@ -44,14 +41,6 @@ int ECDSA_verify(int, const unsigned char *, int, const unsigned char *, int,
                  EC_KEY *);
 int ECDSA_size(const EC_KEY *);
 
-const ECDSA_METHOD *ECDSA_OpenSSL();
-void ECDSA_set_default_method(const ECDSA_METHOD *);
-const ECDSA_METHOD *ECDSA_get_default_method();
-int ECDSA_get_ex_new_index(long, void *, CRYPTO_EX_new *,
-                           CRYPTO_EX_dup *, CRYPTO_EX_free *);
-int ECDSA_set_method(EC_KEY *, const ECDSA_METHOD *);
-int ECDSA_set_ex_data(EC_KEY *, int, void *);
-void *ECDSA_get_ex_data(EC_KEY *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -83,14 +72,6 @@ int (*ECDSA_verify)(int, const unsigned char *, int, const unsigned char *,
                     int, EC_KEY *) = NULL;
 int (*ECDSA_size)(const EC_KEY *) = NULL;
 
-const ECDSA_METHOD* (*ECDSA_OpenSSL)() = NULL;
-void (*ECDSA_set_default_method)(const ECDSA_METHOD *) = NULL;
-const ECDSA_METHOD* (*ECDSA_get_default_method)() = NULL;
-int (*ECDSA_set_method)(EC_KEY *, const ECDSA_METHOD *) = NULL;
-int (*ECDSA_get_ex_new_index)(long, void *, CRYPTO_EX_new *,
-                              CRYPTO_EX_dup *, CRYPTO_EX_free *) = NULL;
-int (*ECDSA_set_ex_data)(EC_KEY *, int, void *) = NULL;
-void* (*ECDSA_get_ex_data)(EC_KEY *, int) = NULL;
 #else
 static const long Cryptography_HAS_ECDSA = 1;
 #endif

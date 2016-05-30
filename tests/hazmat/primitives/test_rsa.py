@@ -11,7 +11,6 @@ import os
 
 import pytest
 
-from cryptography import utils
 from cryptography.exceptions import (
     AlreadyFinalized, InvalidSignature, _Reasons
 )
@@ -27,11 +26,14 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
 from .fixtures_rsa import (
     RSA_KEY_1024, RSA_KEY_1025, RSA_KEY_1026, RSA_KEY_1027, RSA_KEY_1028,
     RSA_KEY_1029, RSA_KEY_1030, RSA_KEY_1031, RSA_KEY_1536, RSA_KEY_2048,
-    RSA_KEY_512, RSA_KEY_512_ALT, RSA_KEY_522, RSA_KEY_599, RSA_KEY_745,
-    RSA_KEY_768,
+    RSA_KEY_2048_ALT, RSA_KEY_512, RSA_KEY_512_ALT, RSA_KEY_522, RSA_KEY_599,
+    RSA_KEY_745, RSA_KEY_768,
 )
 from .utils import (
     _check_rsa_private_numbers, generate_rsa_verification_test
+)
+from ...doubles import (
+    DummyAsymmetricPadding, DummyHashAlgorithm, DummyKeySerializationEncryption
 )
 from ...utils import (
     load_pkcs1_vectors, load_rsa_nist_vectors, load_vectors_from_file,
@@ -39,25 +41,17 @@ from ...utils import (
 )
 
 
-@utils.register_interface(padding.AsymmetricPadding)
-class DummyPadding(object):
-    name = "UNSUPPORTED-PADDING"
-
-
 class DummyMGF(object):
     _salt_length = 0
 
 
-@utils.register_interface(serialization.KeySerializationEncryption)
-class DummyKeyEncryption(object):
-    pass
+def _check_rsa_private_numbers_if_serializable(key):
+    if isinstance(key, rsa.RSAPrivateKeyWithSerialization):
+        _check_rsa_private_numbers(key.private_numbers())
 
 
-@utils.register_interface(hashes.HashAlgorithm)
-class DummyHashAlgorithm(object):
-    name = "dummy-hash"
-    digest_size = 32
-    block_size = 64
+def test_check_rsa_private_numbers_if_serializable():
+    _check_rsa_private_numbers_if_serializable("notserializable")
 
 
 def _flatten_pkcs1_examples(vectors):
@@ -123,7 +117,7 @@ class TestRSA(object):
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
-        _check_rsa_private_numbers(skey.private_numbers())
+        _check_rsa_private_numbers_if_serializable(skey)
         pkey = skey.public_key()
         assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
 
@@ -396,7 +390,7 @@ class TestRSASignature(object):
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.signer(DummyPadding(), hashes.SHA1())
+            private_key.signer(DummyAsymmetricPadding(), hashes.SHA1())
 
     def test_padding_incorrect_type(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
@@ -694,7 +688,9 @@ class TestRSAVerification(object):
         private_key = RSA_KEY_512.private_key(backend)
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            public_key.verifier(b"sig", DummyPadding(), hashes.SHA1())
+            public_key.verifier(
+                b"sig", DummyAsymmetricPadding(), hashes.SHA1()
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1121,7 +1117,7 @@ class TestRSADecryption(object):
     def test_unsupported_padding(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(b"0" * 64, DummyPadding())
+            private_key.decrypt(b"0" * 64, DummyAsymmetricPadding())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1248,6 +1244,44 @@ class TestRSADecryption(object):
                 )
             )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None
+            )
+        ),
+        skip_message="Does not support OAEP."
+    )
+    def test_invalid_oaep_decryption_data_to_large_for_modulus(self, backend):
+        key = RSA_KEY_2048_ALT.private_key(backend)
+
+        ciphertext = (
+            b'\xb1ph\xc0\x0b\x1a|\xe6\xda\xea\xb5\xd7%\x94\x07\xf96\xfb\x96'
+            b'\x11\x9b\xdc4\xea.-\x91\x80\x13S\x94\x04m\xe9\xc5/F\x1b\x9b:\\'
+            b'\x1d\x04\x16ML\xae\xb32J\x01yuA\xbb\x83\x1c\x8f\xf6\xa5\xdbp\xcd'
+            b'\nx\xc7\xf6\x15\xb2/\xdcH\xae\xe7\x13\x13by\r4t\x99\x0fc\x1f\xc1'
+            b'\x1c\xb1\xdd\xc5\x08\xd1\xee\xa1XQ\xb8H@L5v\xc3\xaf\xf2\r\x97'
+            b'\xed\xaa\xe7\xf1\xd4xai\xd3\x83\xd9\xaa9\xbfx\xe1\x87F \x01\xff'
+            b'L\xccv}ae\xb3\xfa\xf2B\xb8\xf9\x04H\x94\x85\xcb\x86\xbb\\ghx!W31'
+            b'\xc7;t\na_E\xc2\x16\xb0;\xa1\x18\t\x1b\xe1\xdb\x80>)\x15\xc6\x12'
+            b'\xcb\xeeg`\x8b\x9b\x1b\x05y4\xb0\x84M6\xcd\xa1\x827o\xfd\x96\xba'
+            b'Z#\x8d\xae\x01\xc9\xf2\xb6\xde\x89{8&eQ\x1e8\x03\x01#?\xb66\\'
+            b'\xad.\xe9\xfa!\x95 c{\xcaz\xe0*\tP\r\x91\x9a)B\xb5\xadN\xf4$\x83'
+            b'\t\xb5u\xab\x19\x99'
+        )
+
+        with pytest.raises(ValueError):
+            key.decrypt(
+                ciphertext,
+                padding.OAEP(
+                    algorithm=hashes.SHA1(),
+                    mgf=padding.MGF1(hashes.SHA1()),
+                    label=None
+                )
+            )
+
     def test_unsupported_oaep_mgf(self, backend):
         private_key = RSA_KEY_512.private_key(backend)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
@@ -1361,7 +1395,7 @@ class TestRSAEncryption(object):
         public_key = private_key.public_key()
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            public_key.encrypt(b"somedata", DummyPadding())
+            public_key.encrypt(b"somedata", DummyAsymmetricPadding())
         with pytest.raises(TypeError):
             public_key.encrypt(b"somedata", padding=object())
 
@@ -1986,7 +2020,7 @@ class TestRSAPrivateKeySerialization(object):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeyEncryption()
+                DummyKeySerializationEncryption()
             )
 
 

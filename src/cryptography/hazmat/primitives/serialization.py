@@ -117,18 +117,8 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
             "Compressed elliptic curve points are not supported"
         )
 
-    # key_size is in bits, and sometimes it's not evenly divisible by 8, so we
-    # add 7 to round up the number of bytes.
-    if len(data) != 1 + 2 * ((curve.key_size + 7) // 8):
-        raise ValueError("Malformed key bytes")
-
-    x = utils.int_from_bytes(
-        data[1:1 + (curve.key_size + 7) // 8], byteorder='big'
-    )
-    y = utils.int_from_bytes(
-        data[1 + (curve.key_size + 7) // 8:], byteorder='big'
-    )
-    return ec.EllipticCurvePublicNumbers(x, y, curve).public_key(backend)
+    numbers = ec.EllipticCurvePublicNumbers.from_encoded_point(curve, data)
+    return numbers.public_key(backend)
 
 
 def _read_next_string(data):
@@ -137,7 +127,13 @@ def _read_next_string(data):
 
     While the RFC calls these strings, in Python they are bytes objects.
     """
+    if len(data) < 4:
+        raise ValueError("Key is not in the proper format")
+
     str_len, = struct.unpack('>I', data[:4])
+    if len(data) < str_len + 4:
+        raise ValueError("Key is not in the proper format")
+
     return data[4:4 + str_len], data[4 + str_len:]
 
 

@@ -44,6 +44,6 @@ lower performance in some situations. In particular parallelism is reduced
 because it has to acquire the GIL whenever any lock operations occur within
 OpenSSL.
 
-.. _`CFFI`: https://cffi.readthedocs.org/
+.. _`CFFI`: https://cffi.readthedocs.io
 .. _`OpenSSL`: https://www.openssl.org/
 .. _`thread safety facilities`: https://www.openssl.org/docs/manmaster/crypto/threads.html

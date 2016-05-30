@@ -13,6 +13,7 @@ static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
+static const int Cryptography_HAS_TLSEXT_ERROR_CODES;
 static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
 
 struct ERR_string_data_st {
@@ -28,6 +29,8 @@ static const int ERR_LIB_PEM;
 static const int ERR_LIB_ASN1;
 static const int ERR_LIB_RSA;
 static const int ERR_LIB_PKCS12;
+static const int ERR_LIB_SSL;
+static const int ERR_LIB_X509;
 
 static const int ASN1_F_ASN1_ENUMERATED_TO_BN;
 static const int ASN1_F_ASN1_EX_C2I;
@@ -92,7 +95,6 @@ static const int ASN1_R_UNKNOWN_MESSAGE_DIGEST_ALGORITHM;
 static const int ASN1_R_UNKNOWN_OBJECT_TYPE;
 static const int ASN1_R_UNKNOWN_PUBLIC_KEY_TYPE;
 static const int ASN1_R_UNKNOWN_TAG;
-static const int ASN1_R_UNKOWN_FORMAT;
 static const int ASN1_R_UNSUPPORTED_ANY_DEFINED_BY_TYPE;
 static const int ASN1_R_UNSUPPORTED_ENCRYPTION_ALGORITHM;
 static const int ASN1_R_UNSUPPORTED_PUBLIC_KEY_TYPE;
@@ -124,15 +126,9 @@ static const int EVP_F_EVP_OPENINIT;
 static const int EVP_F_EVP_PBE_ALG_ADD;
 static const int EVP_F_EVP_PBE_CIPHERINIT;
 static const int EVP_F_EVP_PKCS82PKEY;
-static const int EVP_F_EVP_PKEY2PKCS8_BROKEN;
 static const int EVP_F_EVP_PKEY_COPY_PARAMETERS;
 static const int EVP_F_EVP_PKEY_DECRYPT;
 static const int EVP_F_EVP_PKEY_ENCRYPT;
-static const int EVP_F_EVP_PKEY_GET1_DH;
-static const int EVP_F_EVP_PKEY_GET1_DSA;
-static const int EVP_F_EVP_PKEY_GET1_ECDSA;
-static const int EVP_F_EVP_PKEY_GET1_EC_KEY;
-static const int EVP_F_EVP_PKEY_GET1_RSA;
 static const int EVP_F_EVP_PKEY_NEW;
 static const int EVP_F_EVP_RIJNDAEL;
 static const int EVP_F_EVP_SIGNFINAL;
@@ -204,8 +200,6 @@ static const int PEM_F_PEM_READ;
 static const int PEM_F_PEM_READ_BIO;
 static const int PEM_F_PEM_READ_BIO_PRIVATEKEY;
 static const int PEM_F_PEM_READ_PRIVATEKEY;
-static const int PEM_F_PEM_SEALFINAL;
-static const int PEM_F_PEM_SEALINIT;
 static const int PEM_F_PEM_SIGNFINAL;
 static const int PEM_F_PEM_WRITE;
 static const int PEM_F_PEM_WRITE_BIO;
@@ -235,18 +229,25 @@ static const int PKCS12_F_PKCS12_PBE_CRYPT;
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 
 static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
+static const int RSA_R_DATA_TOO_LARGE_FOR_MODULUS;
 static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
 static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
 static const int RSA_R_PKCS_DECODING_ERROR;
 static const int RSA_R_OAEP_DECODING_ERROR;
 static const int RSA_F_RSA_SIGN;
+
+static const int SSL_TLSEXT_ERR_OK;
+static const int SSL_TLSEXT_ERR_ALERT_WARNING;
+static const int SSL_TLSEXT_ERR_ALERT_FATAL;
+static const int SSL_TLSEXT_ERR_NOACK;
+
+static const int SSL_AD_INTERNAL_ERROR;
+static const int SSL_AD_ACCESS_DENIED;
+static const int SSL_AD_HANDSHAKE_FAILURE;
 """
 
 FUNCTIONS = """
-void ERR_load_crypto_strings(void);
-void ERR_load_SSL_strings(void);
-void ERR_free_strings(void);
 char *ERR_error_string(unsigned long, char *);
 void ERR_error_string_n(unsigned long, char *, size_t);
 const char *ERR_lib_error_string(unsigned long);
@@ -273,6 +274,9 @@ int ERR_get_next_error_library(void);
 """
 
 MACROS = """
+/* ERR_free_strings became a macro in 1.1.0 */
+void ERR_free_strings(void);
+
 unsigned long ERR_PACK(int, int, int);
 int ERR_GET_LIB(unsigned long);
 int ERR_GET_FUNC(unsigned long);
@@ -298,6 +302,16 @@ static const long Cryptography_HAS_EC_CODES = 1;
 static const long Cryptography_HAS_EC_CODES = 0;
 static const int EC_R_UNKNOWN_GROUP = 0;
 static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME = 0;
+#endif
+
+#ifdef SSL_TLSEXT_ERR_OK
+static const int Cryptography_HAS_TLSEXT_ERROR_CODES = 1;
+#else
+static const int Cryptography_HAS_TLSEXT_ERROR_CODES = 0;
+static const int SSL_TLSEXT_ERR_OK = 0;
+static const int SSL_TLSEXT_ERR_ALERT_WARNING = 0;
+static const int SSL_TLSEXT_ERR_ALERT_FATAL = 0;
+static const int SSL_TLSEXT_ERR_NOACK = 0;
 #endif
 
 #ifdef RSA_R_PKCS_DECODING_ERROR

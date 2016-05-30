@@ -18,7 +18,7 @@ from ...utils import load_nist_vectors
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.SEED("\x00" * 16), modes.ECB()
+        algorithms.SEED(b"\x00" * 16), modes.ECB()
     ),
     skip_message="Does not support SEED ECB",
 )
@@ -35,7 +35,7 @@ class TestSEEDModeECB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.SEED("\x00" * 16), modes.CBC("\x00" * 16)
+        algorithms.SEED(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support SEED CBC",
 )
@@ -52,7 +52,7 @@ class TestSEEDModeCBC(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.SEED("\x00" * 16), modes.OFB("\x00" * 16)
+        algorithms.SEED(b"\x00" * 16), modes.OFB(b"\x00" * 16)
     ),
     skip_message="Does not support SEED OFB",
 )
@@ -69,7 +69,7 @@ class TestSEEDModeOFB(object):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.SEED("\x00" * 16), modes.CFB("\x00" * 16)
+        algorithms.SEED(b"\x00" * 16), modes.CFB(b"\x00" * 16)
     ),
     skip_message="Does not support SEED CFB",
 )

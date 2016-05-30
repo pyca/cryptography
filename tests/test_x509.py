@@ -1241,6 +1241,22 @@ class TestRSACertificateRequest(object):
         with pytest.raises(TypeError):
             request.public_bytes('NotAnEncoding')
 
+    def test_signature_invalid(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "invalid_signature.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert not request.is_signature_valid
+
+    def test_signature_valid(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "rsa_sha256.pem"),
+            x509.load_pem_x509_csr,
+            backend
+        )
+        assert request.is_signature_valid
+
     @pytest.mark.parametrize(
         ("request_path", "loader_func", "encoding"),
         [
@@ -2203,6 +2219,54 @@ class TestCertificateBuilder(object):
         )
         assert ext.value == x509.InhibitAnyPolicy(3)
 
+    @pytest.mark.parametrize(
+        "pc",
+        [
+            x509.PolicyConstraints(
+                require_explicit_policy=None,
+                inhibit_policy_mapping=1
+            ),
+            x509.PolicyConstraints(
+                require_explicit_policy=3,
+                inhibit_policy_mapping=1
+            ),
+            x509.PolicyConstraints(
+                require_explicit_policy=0,
+                inhibit_policy_mapping=None
+            ),
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_policy_constraints(self, backend, pc):
+        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            not_valid_before
+        ).not_valid_after(
+            not_valid_after
+        ).public_key(
+            subject_private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            pc, critical=False
+        ).sign(issuer_private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_class(
+            x509.PolicyConstraints
+        )
+        assert ext.critical is False
+        assert ext.value == pc
+
     @pytest.mark.requires_backend_interface(interface=RSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_name_constraints(self, backend):
@@ -2311,6 +2375,39 @@ class TestCertificateBuilder(object):
             ExtensionOID.BASIC_CONSTRAINTS
         )
         assert basic_constraints.value.path_length is None
+
+    @pytest.mark.parametrize(
+        "unrecognized", [
+            x509.UnrecognizedExtension(
+                x509.ObjectIdentifier("1.2.3.4.5"),
+                b"abcdef",
+            )
+        ]
+    )
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_unrecognized_extension(self, backend, unrecognized):
+        private_key = RSA_KEY_2048.private_key(backend)
+
+        cert = x509.CertificateBuilder().subject_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, u'US')])
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        ).public_key(
+            private_key.public_key()
+        ).serial_number(
+            123
+        ).add_extension(
+            unrecognized, critical=False
+        ).sign(private_key, hashes.SHA256(), backend)
+
+        ext = cert.extensions.get_extension_for_oid(unrecognized.oid)
+
+        assert ext.value == unrecognized
 
 
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -3313,6 +3410,20 @@ class TestNameAttribute(object):
             x509.NameAttribute(
                 x509.ObjectIdentifier('2.999.1'),
                 b'bytes'
+            )
+
+    def test_init_bad_country_code_value(self):
+        with pytest.raises(ValueError):
+            x509.NameAttribute(
+                NameOID.COUNTRY_NAME,
+                u'United States'
+            )
+
+        # unicode string of length 2, but > 2 bytes
+        with pytest.raises(ValueError):
+            x509.NameAttribute(
+                NameOID.COUNTRY_NAME,
+                u'\U0001F37A\U0001F37A'
             )
 
     def test_eq(self):

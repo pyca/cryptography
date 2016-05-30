@@ -600,6 +600,155 @@ Different KDFs are suitable for different tasks such as:
         raises an exception if they do not match.
 
 
+.. currentmodule:: cryptography.hazmat.primitives.kdf.kbkdf
+
+.. class:: KBKDFHMAC(algorithm, mode, length, rlen, llen, location,\
+           label, context, fixed, backend)
+
+    .. versionadded:: 1.4
+
+    KBKDF (Key Based Key Derivation Function) is defined by the
+    `NIST SP 800-108`_ document, to be used to derive additional
+    keys from a key that has been established through an automated
+    key-establishment scheme.
+
+    .. warning::
+
+        KBKDFHMAC should not be used for password storage.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.kdf.kbkdf import (
+        ...    CounterLocation, KBKDFHMAC, Mode
+        ... )
+        >>> from cryptography.hazmat.backends import default_backend
+        >>> backend = default_backend()
+        >>> label = b"KBKDF HMAC Label"
+        >>> context = b"KBKDF HMAC Context"
+        >>> kdf = KBKDFHMAC(
+        ...     algorithm=hashes.SHA256(),
+        ...     mode=Mode.CounterMode,
+        ...     length=256,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=CounterLocation.BeforeFixed,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ...     backend=backend
+        ... )
+        >>> key = kdf.derive(b"input key")
+        >>> kdf = KBKDFHMAC(
+        ...     algorithm=hashes.SHA256(),
+        ...     mode=Mode.CounterMode,
+        ...     length=256,
+        ...     rlen=4,
+        ...     llen=4,
+        ...     location=CounterLocation.BeforeFixed,
+        ...     label=label,
+        ...     context=context,
+        ...     fixed=None,
+        ...     backend=backend
+        ... )
+        >>> kdf.verify(b"input key", key)
+
+    :param algorithm: An instance of a
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+        provider
+
+    :param mode: The desired mode of the PRF. A value from the
+      :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` enum.
+
+    :param int length: The desired length of the derived key in bytes.
+
+    :param int rlen: An integer that indicates the length of the binary
+        representation of the counter in bytes.
+
+    :param int llen: An integer that indicates the binary
+        representation of the ``length`` in bytes.
+
+    :param location: The desired location of the counter. A value from the
+      :class:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation` enum.
+
+    :param bytes label: Application specific label information. If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param bytes context: Application specific context information. If ``None``
+        is explicitly passed an empty byte string will be used.
+
+    :param bytes fixed: Instead of specifying ``label`` and ``context`` you
+        may supply your own fixed data. If ``fixed`` is specified, ``label``
+        and ``context`` is ignored.
+
+    :param backend: A cryptography backend
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+        provider.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
+        if the provided ``backend`` does not implement
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
+
+    :raises TypeError: This exception is raised if ``label`` or ``context``
+        is not ``bytes``. Also raised if ``rlen`` or ``llen`` is not ``int``.
+
+    :raises ValueError: This exception is raised if ``rlen`` or ``llen``
+        is greater than 4 or less than 1. This exception is also raised if
+        you specify a ``label`` or ``context`` and ``fixed``.
+
+    .. method:: derive(key_material)
+
+        :param bytes key_material: The input key material.
+        :return bytes: The derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is
+                            not ``bytes``.
+
+        Derives a new key from the input key material.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match.
+
+.. class:: Mode
+
+    An enumeration for the key based key derivative modes.
+
+    .. attribute:: CounterMode
+
+        The output of the PRF is computed with a counter
+        as the iteration variable.
+
+.. class:: CounterLocation
+
+    An enumeration for the key based key derivative counter location.
+
+    .. attribute:: BeforeFixed
+
+        The counter iteration variable will be concatenated before
+        the fixed input data.
+
+    .. attribute:: AfterFixed
+
+        The counter iteration variable will be concatenated after
+        the fixed input data.
+
 Interface
 ~~~~~~~~~
 
@@ -648,6 +797,7 @@ Interface
 
 
 .. _`NIST SP 800-132`: http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
+.. _`NIST SP 800-108`: http://csrc.nist.gov/publications/nistpubs/800-108/sp800-108.pdf
 .. _`NIST SP 800-56Ar2`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
 .. _`SEC 1 v2.0`: http://www.secg.org/sec1-v2.pdf
