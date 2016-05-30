@@ -112,7 +112,7 @@ class KBKDFHMAC(object):
         output = [b'']
 
         # For counter mode, the number of iterations shall not be
-        # larger than 2^r-1, where r ≤ 32 is the binary length of the counter
+        # larger than 2^r-1, where r <= 32 is the binary length of the counter
         # This ensures that the counter values used as an input to the
         # PRF will not repeat during a particular call to the KDF function.
         r_bin = utils.int_to_bytes(1, self._rlen)
