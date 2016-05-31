@@ -51,7 +51,7 @@ class TestFernetBase(object):
 
     def test_key_generation_invalid_invalid(self, backend):
         with pytest.raises(ValueError):
-            k = FernetBase._generate_key_of_length(150)
+            FernetBase._generate_key_of_length(150)
 
     def test_bad_key(self, backend):
         with pytest.raises(ValueError):
