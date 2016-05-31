@@ -523,7 +523,13 @@ class _RSAPrivateKey(object):
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
 
-        self._key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
+        n = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.RSA_get0_key(
+            self._rsa_cdata, n, self._backend._ffi.NULL,
+            self._backend._ffi.NULL
+        )
+        self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
+        self._key_size = self._backend._lib.BN_num_bits(n[0])
 
     key_size = utils.read_only_property("_key_size")
 
@@ -547,16 +553,37 @@ class _RSAPrivateKey(object):
         return _RSAPublicKey(self._backend, ctx, evp_pkey)
 
     def private_numbers(self):
+        n = self._backend._ffi.new("BIGNUM **")
+        e = self._backend._ffi.new("BIGNUM **")
+        d = self._backend._ffi.new("BIGNUM **")
+        p = self._backend._ffi.new("BIGNUM **")
+        q = self._backend._ffi.new("BIGNUM **")
+        dmp1 = self._backend._ffi.new("BIGNUM **")
+        dmq1 = self._backend._ffi.new("BIGNUM **")
+        iqmp = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.RSA_get0_key(self._rsa_cdata, n, e, d)
+        self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(e[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(d[0] != self._backend._ffi.NULL)
+        self._backend._lib.RSA_get0_factors(self._rsa_cdata, p, q)
+        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(q[0] != self._backend._ffi.NULL)
+        self._backend._lib.RSA_get0_crt_params(
+            self._rsa_cdata, dmp1, dmq1, iqmp
+        )
+        self._backend.openssl_assert(dmp1[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(dmq1[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(iqmp[0] != self._backend._ffi.NULL)
         return rsa.RSAPrivateNumbers(
-            p=self._backend._bn_to_int(self._rsa_cdata.p),
-            q=self._backend._bn_to_int(self._rsa_cdata.q),
-            d=self._backend._bn_to_int(self._rsa_cdata.d),
-            dmp1=self._backend._bn_to_int(self._rsa_cdata.dmp1),
-            dmq1=self._backend._bn_to_int(self._rsa_cdata.dmq1),
-            iqmp=self._backend._bn_to_int(self._rsa_cdata.iqmp),
+            p=self._backend._bn_to_int(p[0]),
+            q=self._backend._bn_to_int(q[0]),
+            d=self._backend._bn_to_int(d[0]),
+            dmp1=self._backend._bn_to_int(dmp1[0]),
+            dmq1=self._backend._bn_to_int(dmq1[0]),
+            iqmp=self._backend._bn_to_int(iqmp[0]),
             public_numbers=rsa.RSAPublicNumbers(
-                e=self._backend._bn_to_int(self._rsa_cdata.e),
-                n=self._backend._bn_to_int(self._rsa_cdata.n),
+                e=self._backend._bn_to_int(e[0]),
+                n=self._backend._bn_to_int(n[0]),
             )
         )
 
@@ -577,7 +604,13 @@ class _RSAPublicKey(object):
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
 
-        self._key_size = self._backend._lib.BN_num_bits(self._rsa_cdata.n)
+        n = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.RSA_get0_key(
+            self._rsa_cdata, n, self._backend._ffi.NULL,
+            self._backend._ffi.NULL
+        )
+        self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
+        self._key_size = self._backend._lib.BN_num_bits(n[0])
 
     key_size = utils.read_only_property("_key_size")
 
@@ -593,9 +626,16 @@ class _RSAPublicKey(object):
         return _enc_dec_rsa(self._backend, self, plaintext, padding)
 
     def public_numbers(self):
+        n = self._backend._ffi.new("BIGNUM **")
+        e = self._backend._ffi.new("BIGNUM **")
+        self._backend._lib.RSA_get0_key(
+            self._rsa_cdata, n, e, self._backend._ffi.NULL
+        )
+        self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(e[0] != self._backend._ffi.NULL)
         return rsa.RSAPublicNumbers(
-            e=self._backend._bn_to_int(self._rsa_cdata.e),
-            n=self._backend._bn_to_int(self._rsa_cdata.n),
+            e=self._backend._bn_to_int(e[0]),
+            n=self._backend._bn_to_int(n[0]),
         )
 
     def public_bytes(self, encoding, format):
