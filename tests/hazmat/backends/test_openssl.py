@@ -208,7 +208,6 @@ class TestOpenSSL(object):
 
 
 class TestOpenSSLRandomEngine(object):
-
     def setup(self):
         # The default RAND engine is global and shared between
         # tests. We make sure that the default engine is osrandom
@@ -218,7 +217,7 @@ class TestOpenSSLRandomEngine(object):
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._binding._osrandom_engine_name
 
-    def teardown_method(self, method):
+    def teardown(self):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
         backend.activate_osrandom_engine()
