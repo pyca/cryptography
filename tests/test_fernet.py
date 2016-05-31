@@ -16,7 +16,7 @@ import pytest
 
 import six
 
-from cryptography.fernet import ExtFernet192, ExtFernet256, Fernet
+from cryptography.fernet import ExtFernet192, ExtFernet256, Fernet, FernetBase
 from cryptography.fernet import InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
@@ -44,11 +44,27 @@ def test_default_backend():
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
+class TestFernetBase(object):
+    def test_key_generation_valid_length(self, backend):
+        k = FernetBase._generate_key_of_length(128)
+        assert len(k) == len(base64.urlsafe_b64encode(b"\x00" * 32))
+
+    def test_key_generation_invalid_invalid(self, backend):
+        with pytest.raises(ValueError):
+            k = FernetBase._generate_key_of_length(150)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            FernetBase(base64.urlsafe_b64encode(b"abc"))
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES CBC",
+    skip_message="Does not support AES128 CBC",
 )
 class TestFernet(object):
     @json_parametrize(
@@ -127,12 +143,11 @@ class TestFernet(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 24), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES128 CBC",
+    skip_message="Does not support AES192 CBC",
 )
 class TestExtFernet192(object):
-    # TODO test ExtFernet192 class
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"), "generate_192.json",
     )
@@ -170,12 +185,11 @@ class TestExtFernet192(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 24), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
     skip_message="Does not support AES192 CBC",
 )
 class TestExtFernet256(object):
-    # TODO Test ExtFernet256 class
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"), "generate_256.json",
     )
@@ -213,9 +227,9 @@ class TestExtFernet256(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES256 CBC",
+    skip_message="Does not support AES128 CBC",
 )
 class TestMultiFernet(object):
     def test_encrypt(self, backend):
