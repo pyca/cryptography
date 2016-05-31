@@ -89,8 +89,8 @@ const EVP_MD *EVP_sha512(void);
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
 
-int EVP_PKEY_set1_RSA(EVP_PKEY *, struct rsa_st *);
-int EVP_PKEY_set1_DSA(EVP_PKEY *, struct dsa_st *);
+int EVP_PKEY_set1_RSA(EVP_PKEY *, RSA *);
+int EVP_PKEY_set1_DSA(EVP_PKEY *, DSA *);
 int EVP_PKEY_set1_DH(EVP_PKEY *, DH *);
 
 int EVP_PKEY_get_attr_count(const EVP_PKEY *);
