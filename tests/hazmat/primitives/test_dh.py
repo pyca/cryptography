@@ -116,6 +116,26 @@ class TestDH(object):
         assert backend.dh_parameters_supported(23, 5)
         assert not backend.dh_parameters_supported(23, 18)
 
+    def test_convert_to_serialized(self, backend):
+        parameters = backend.generate_dh_private_key_and_parameters(2, 512)
+
+        private = parameters.private_numbers()
+
+        p = private._public_numbers._parameter_numbers.p
+        g = private._public_numbers._parameter_numbers.g
+
+        params = dh.DHParameterNumbers(p, g)
+        public = dh.DHPublicNumbers(1, params)
+        private = dh.DHPrivateNumbers(2, public)
+
+        serialized_params = params.parameters(backend)
+        serialized_public = public.public_key(backend)
+        serialized_private = private.private_key(backend)
+
+        assert isinstance(serialized_params, dh.DHParametersWithSerialization)
+        assert isinstance(serialized_public, dh.DHPublicKeyWithSerialization)
+        assert isinstance(serialized_private, dh.DHPrivateKeyWithSerialization)
+
     def test_generate_dh(self, backend):
         generator = 2
         key_size = 512
