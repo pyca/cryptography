@@ -32,9 +32,6 @@ class FernetBase(object):
     """
 
     def __init__(self, key, backend=None):
-        if backend is None:
-            backend = default_backend()
-
         # key size in bytes = len(key) * 8 bits/byte / 2 keys
         key_size = len(key) * 4
         key_bytes = len(key) // 2
@@ -43,6 +40,9 @@ class FernetBase(object):
                 "Fernet key must be 32 or 48 or 64 url-safe"
                 " base64-encoded bytes."
             )
+
+        if backend is None:
+            backend = default_backend()
 
         self._signing_key = key[:key_bytes]
         self._encryption_key = key[key_bytes:]
