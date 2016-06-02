@@ -77,9 +77,11 @@ class TestVectorLoader {
         try {
             if (m_reader != null) {
                 m_reader.close();
+                m_reader = null;
             }
             if (m_file_reader != null) {
                 m_file_reader.close();
+                m_file_reader = null;
             }
             m_data = null;
         } catch (IOException e) {
@@ -113,8 +115,9 @@ class TestVectorLoader {
         }
 
         // otherwise it's a new example
-        if (!line.startsWith(EXAMPLE_HEADER))
+        if (!line.startsWith(EXAMPLE_HEADER)) {
             throw new IOException("Test Header Missing");
+        }
         startNewTest(m_reader);
         m_data = new TestVectorData();
 
@@ -160,54 +163,54 @@ class TestVectorLoader {
     private void loadPublicKey(BufferedReader br, TestVectorData data) throws IOException {
         String line = br.readLine();
         if (!line.startsWith(PUB_MODULUS))
-            throw new IOException("Pub Key Modulus Missing");
+            throw new IOException("Public Key Modulus Missing");
         data.pub_key_modulus = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PUB_EXPONENT))
-            throw new IOException("Pub Key Exponent Missing");
+            throw new IOException("Public Key Exponent Missing");
         data.pub_key_exponent = readBigInteger(br);
     }
 
     private void loadPrivateKey(BufferedReader br, TestVectorData data) throws IOException {
         String line = br.readLine();
         if (!line.startsWith(PRIV_MODULUS))
-            throw new IOException("Priv Key Modulus Missing");
+            throw new IOException("Private Key Modulus Missing");
         data.priv_key_modulus = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_PUBLIC_EXPONENT))
-            throw new IOException("Priv Key Public Exponent Missing");
+            throw new IOException("Private Key Public Exponent Missing");
         data.priv_key_public_exponent = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_EXPONENT))
-            throw new IOException("Priv Key Exponent Missing");
+            throw new IOException("Private Key Exponent Missing");
         data.priv_key_exponent = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_PRIME_1))
-            throw new IOException("Priv Key Prime 1 Missing");
+            throw new IOException("Private Key Prime 1 Missing");
         data.priv_key_prime_1 = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_PRIME_2))
-            throw new IOException("Priv Key Prime 2 Missing");
+            throw new IOException("Private Key Prime 2 Missing");
         data.priv_key_prime_2 = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_PRIME_EXPONENT_1))
-            throw new IOException("Priv Key Prime Exp 1 Missing");
+            throw new IOException("Private Key Prime Exponent 1 Missing");
         data.priv_key_prime_exponent_1 = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_PRIME_EXPONENT_2))
-            throw new IOException("Priv Key Prime Exp 2 Missing");
+            throw new IOException("Private Key Prime Exponent 2 Missing");
         data.priv_key_prime_exponent_2 = readBigInteger(br);
 
         line = br.readLine();
         if (!line.startsWith(PRIV_COEFFICIENT))
-            throw new IOException("Priv Key Coefficient Missing");
+            throw new IOException("Private Key Coefficient Missing");
         data.priv_key_coefficient = readBigInteger(br);
     }
 
@@ -225,7 +228,7 @@ class TestVectorLoader {
 
 }
 
-public class Verify_RSA_OAEP_SHA2 {
+public class VerifyRSAOAEPSHA2 {
 
     public enum SHAHash {
         SHA1, SHA224, SHA256, SHA384, SHA512
@@ -237,7 +240,7 @@ public class Verify_RSA_OAEP_SHA2 {
     private PrivateKey m_private_key;
     private AlgorithmParameters m_algo_param;
 
-    Verify_RSA_OAEP_SHA2(SHAHash mgf1_hash, SHAHash alg_hash, TestVectorData test_data) throws Exception {
+    VerifyRSAOAEPSHA2(SHAHash mgf1_hash, SHAHash alg_hash, TestVectorData test_data) throws Exception {
 
         m_mgf1_hash = mgf1_hash;
         m_alg_hash = alg_hash;
@@ -365,7 +368,7 @@ public class Verify_RSA_OAEP_SHA2 {
         Security.addProvider(new BouncyCastleProvider());
 
         // assume current directory if no path given on command line
-        String vector_path = "./";
+        String vector_path = "./vectors/cryptography_vectors/asymmetric/RSA/oaep-custom";
 
         if (args.length > 0) {
             vector_path = args[0];
@@ -394,7 +397,7 @@ public class Verify_RSA_OAEP_SHA2 {
 
                     // load each test in the file and verify
                     while ((test_data = loader.loadNextTest()) != null) {
-                        Verify_RSA_OAEP_SHA2 verify = new Verify_RSA_OAEP_SHA2(mgf1_hash, alg_hash, test_data);
+                        VerifyRSAOAEPSHA2 verify = new VerifyRSAOAEPSHA2(mgf1_hash, alg_hash, test_data);
                         verify.testDecrypt(test_data.plaintext, test_data.ciphertext);
                     }
 

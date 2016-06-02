@@ -25,10 +25,10 @@ A Java 8 program was written using `Bouncy Castle`_ to load and verify the test
 vectors.
 
 
-.. literalinclude:: /development/custom-vectors/rsa-oaep-sha2/Verify_RSA_OAEP_SHA2.java
+.. literalinclude:: /development/custom-vectors/rsa-oaep-sha2/VerifyRSAOAEPSHA2.java
 
-Download link: :download:`Verify_RSA_OAEP_SHA2.java
-</development/custom-vectors/rsa-oaep-sha2/Verify_RSA_OAEP_SHA2.java>`
+Download link: :download:`VerifyRSAOAEPSHA2.java
+</development/custom-vectors/rsa-oaep-sha2/VerifyRSAOAEPSHA2.java>`
 
 Using the Verifier
 ------------------
@@ -39,19 +39,18 @@ using ``jdk-8u77-macosx-x64.dmg``.
 Download the latest `Bouncy Castle`_ JAR.  Initial verification was performed
 using ``bcprov-jdk15on-154.jar``.
 
-Set the CLASSPATH to include the Bouncy Castle jar and the path to
-Verify_RSA_OAEP_SHA2.java and compile the program.
+Set the ``-classpath`` to include the Bouncy Castle jar and the path to
+``VerifyRSAOAEPSHA2.java`` and compile the program.
 
 .. code-block:: console
 
-    $ export CLASSPATH=~/Downloads/bcprov-jdk15on-154.jar:./
-    $ javac Verify_RSA_OAEP_SHA2.java
+    $ javac -classpath ~/Downloads/bcprov-jdk15on-154.jar:./ VerifyRSAOAEPSHA2.java
 
 Finally, run the program with the path to the SHA-2 vectors:
 
 .. code-block:: console
 
-    $ java Verify_RSA_OAEP_SHA2 <path to test vector files>
+    $ java -classpath ~/Downloads/bcprov-jdk15on-154.jar:./ VerifyRSAOAEPSHA2
 
 .. _`Bouncy Castle`: https://www.bouncycastle.org/
 .. _`Java 8 SDK`: https://www.oracle.com/technetwork/java/javase/downloads/index.html
