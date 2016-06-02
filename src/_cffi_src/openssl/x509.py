@@ -281,6 +281,7 @@ int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
 /* new in 1.0.2 */
 int i2d_re_X509_tbs(X509 *, unsigned char **);
 void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
+int X509_get_signature_nid(const X509 *);
 
 long X509_get_version(X509 *);
 
@@ -377,6 +378,12 @@ void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
     if (palg)
         *palg = x->sig_alg;
 }
+
+int X509_get_signature_nid(const X509 *x)
+{
+    return OBJ_obj2nid(x->sig_alg->algorithm);
+}
+
 #endif
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
