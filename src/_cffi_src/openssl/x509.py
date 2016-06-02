@@ -385,11 +385,6 @@ int X509_get_signature_nid(const X509 *x)
     return OBJ_obj2nid(x->sig_alg->algorithm);
 }
 
-X509_ALGOR *X509_get0_tbs_sigalg(X509 *x)
-{
-    return x->cert_info->signature;
-}
-
 #endif
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
@@ -434,6 +429,12 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+
+X509_ALGOR *X509_get0_tbs_sigalg(X509 *x)
+{
+    return x->cert_info->signature;
+}
+
 /* from x509/x509_req.c */
 void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
                              X509_REQ *req)
