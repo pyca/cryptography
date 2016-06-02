@@ -151,18 +151,18 @@ class TestDH(object):
         assert isinstance(public, dh.DHPublicKey)
         assert public.key_size == key_size
 
-        if isinstance(parameters, dh.DHParametersWithSerialization):
-            parameter_numbers = parameters.parameter_numbers()
-            assert isinstance(parameter_numbers, dh.DHParameterNumbers)
-            assert bit_length(parameter_numbers.p) == key_size
+        assert isinstance(parameters, dh.DHParametersWithSerialization)
+        parameter_numbers = parameters.parameter_numbers()
+        assert isinstance(parameter_numbers, dh.DHParameterNumbers)
+        assert bit_length(parameter_numbers.p) == key_size
 
-        if isinstance(public, dh.DHPublicKeyWithSerialization):
-            assert isinstance(public.public_numbers(), dh.DHPublicNumbers)
-            assert isinstance(public.parameters(), dh.DHParameters)
+        assert isinstance(public, dh.DHPublicKeyWithSerialization)
+        assert isinstance(public.public_numbers(), dh.DHPublicNumbers)
+        assert isinstance(public.parameters(), dh.DHParameters)
 
-        if isinstance(key, dh.DHPrivateKeyWithSerialization):
-            assert isinstance(key.private_numbers(), dh.DHPrivateNumbers)
-            assert isinstance(key.parameters(), dh.DHParameters)
+        assert isinstance(key, dh.DHPrivateKeyWithSerialization)
+        assert isinstance(key.private_numbers(), dh.DHPrivateNumbers)
+        assert isinstance(key.parameters(), dh.DHParameters)
 
     def test_tls_exchange(self, backend):
         parameters = dh.generate_parameters(2, 512, backend)
