@@ -387,7 +387,7 @@ int X509_get_signature_nid(const X509 *x)
 
 X509_ALGOR *X509_get0_tbs_sigalg(X509 *x)
 {
-    return x->cert_info.signature;
+    return x->cert_info->signature;
 }
 
 #endif
