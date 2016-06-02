@@ -282,6 +282,7 @@ int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
 int i2d_re_X509_tbs(X509 *, unsigned char **);
 void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
 int X509_get_signature_nid(const X509 *);
+X509_ALGOR *X509_get0_tbs_sigalg(X509 *);
 
 long X509_get_version(X509 *);
 
@@ -382,6 +383,11 @@ void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
 int X509_get_signature_nid(const X509 *x)
 {
     return OBJ_obj2nid(x->sig_alg->algorithm);
+}
+
+X509_ALGOR *X509_get0_tbs_sigalg(X509 *x)
+{
+    return x->cert_info.signature;
 }
 
 #endif
