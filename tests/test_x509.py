@@ -499,7 +499,7 @@ class TestRSACertificate(object):
             backend
         )
 
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always", utils.DeprecatedIn10)
         assert cert.serial == 2
         assert cert.serial_number == 2
 
@@ -510,7 +510,7 @@ class TestRSACertificate(object):
             backend
         )
 
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always", utils.DeprecatedIn10)
         with pytest.deprecated_call():
             cert.serial
 

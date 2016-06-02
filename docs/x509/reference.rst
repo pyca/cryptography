@@ -1573,7 +1573,7 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
-            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority__numbercert_serial_number=None)>
+            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
     .. classmethod:: from_issuer_subject_key_identifier(ski)
 

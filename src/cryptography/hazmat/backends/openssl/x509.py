@@ -61,7 +61,7 @@ class _Certificate(object):
     def serial(self):
         warnings.warn(
             "Certificate serial is deprecated, use serial_number instead.",
-            DeprecationWarning
+            utils.DeprecatedIn10
         )
         return self.serial_number
 
