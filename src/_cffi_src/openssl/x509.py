@@ -188,6 +188,7 @@ int X509_REVOKED_get_ext_count(X509_REVOKED *);
 X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 int X509_REVOKED_add_ext(X509_REVOKED *, X509_EXTENSION*, int);
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
+X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
 
 int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
 
