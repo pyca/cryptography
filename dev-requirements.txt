@@ -4,5 +4,5 @@ invoke
 requests
 tox
 twine
--e .[test,docs-test,pep8-test]
+-e .[test,docstest,pep8test]
 -e vectors
