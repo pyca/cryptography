@@ -125,7 +125,7 @@ Loading Certificates
         >>> from cryptography import x509
         >>> from cryptography.hazmat.backends import default_backend
         >>> cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-        >>> cert.serial
+        >>> cert.serial_number
         2
 
 .. function:: load_der_x509_certificate(data, backend)
@@ -273,7 +273,7 @@ X.509 Certificate Object
             >>> cert.fingerprint(hashes.SHA256())
             '\x86\xd2\x187Gc\xfc\xe7}[+E9\x8d\xb4\x8f\x10\xe5S\xda\x18u\xbe}a\x03\x08[\xac\xa04?'
 
-    .. attribute:: serial
+    .. attribute:: serial_number
 
         :type: int
 
@@ -281,7 +281,7 @@ X.509 Certificate Object
 
         .. doctest::
 
-            >>> cert.serial
+            >>> cert.serial_number
             2
 
     .. method:: public_key()
@@ -1573,7 +1573,7 @@ X.509 Extensions
             >>> from cryptography.hazmat.backends import default_backend
             >>> issuer_cert = x509.load_pem_x509_certificate(pem_data, default_backend())
             >>> x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key())
-            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
+            <AuthorityKeyIdentifier(key_identifier='X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority__numbercert_serial_number=None)>
 
     .. classmethod:: from_issuer_subject_key_identifier(ski)
 
@@ -2197,7 +2197,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.5"``. This is distinct from
         the serial number of the certificate itself (which can be obtained with
-        :func:`~cryptography.x509.Certificate.serial`).
+        :func:`~cryptography.x509.Certificate.serial_number`).
 
     .. attribute:: SURNAME
 
