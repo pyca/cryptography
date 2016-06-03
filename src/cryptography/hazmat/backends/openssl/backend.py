@@ -1728,12 +1728,23 @@ class Backend(object):
                 raise ValueError(
                     "OpenSSH format must be used with OpenSSH encoding"
                 )
-            public_numbers = key.public_numbers()
-            return "ssh-rsa " + base64.b64encode(
-                serialization._ssh_write_string("ssh-rsa") +
-                serialization._ssh_write_mpint(public_numbers.e) +
-                serialization._ssh_write_mpint(public_numbers.n)
-            )
+            if isinstance(key, rsa.RSAPublicKey):
+                public_numbers = key.public_numbers()
+                return b"ssh-rsa " + base64.b64encode(
+                    serialization._ssh_write_string(b"ssh-rsa") +
+                    serialization._ssh_write_mpint(public_numbers.e) +
+                    serialization._ssh_write_mpint(public_numbers.n)
+                )
+            elif isinstance(key, dsa.DSAPublicKey):
+                public_numbers = key.public_numbers()
+                parameter_numbers = public_numbers.parameter_numbers
+                return b"ssh-dss " + base64.b64encode(
+                    serialization._ssh_write_string(b"ssh-dss") +
+                    serialization._ssh_write_mpint(parameter_numbers.p) +
+                    serialization._ssh_write_mpint(parameter_numbers.q) +
+                    serialization._ssh_write_mpint(parameter_numbers.g) +
+                    serialization._ssh_write_mpint(public_numbers.y)
+                )
 
         else:
             raise TypeError(
