@@ -12,7 +12,7 @@ import sys
 import warnings
 
 
-# the functions deprecated in 1.0 and 1.04 are on an arbitrarily extended
+# the functions deprecated in 1.0 and 1.4 are on an arbitrarily extended
 # deprecation cycle and should not be removed until we agree on when that cycle
 # ends.
 DeprecatedIn10 = DeprecationWarning
