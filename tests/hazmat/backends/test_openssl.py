@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import datetime
 import os
 import subprocess
 import sys
@@ -12,7 +11,7 @@ import textwrap
 
 import pytest
 
-from cryptography import utils, x509
+from cryptography import x509
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends.interfaces import RSABackend
 from cryptography.hazmat.backends.openssl.backend import (
@@ -20,14 +19,12 @@ from cryptography.hazmat.backends.openssl.backend import (
 )
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, padding
+from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC, CTR
 
-from ..primitives.fixtures_dsa import DSA_KEY_2048
 from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
-from ..primitives.test_ec import _skip_curve_unsupported
 from ...doubles import (
     DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
 )
@@ -140,35 +137,6 @@ class TestOpenSSL(object):
                                    b"test_openssl.py", -1)
         with pytest.raises(InternalError):
             enc.finalize()
-
-    def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
-        if backend.pbkdf2_hmac_supported(hashes.SHA256()):
-            pytest.skip("Requires an older OpenSSL")
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000f,
-        reason="Requires an older OpenSSL. Must be < 1.0.0"
-    )
-    def test_large_key_size_on_old_openssl(self):
-        with pytest.raises(ValueError):
-            dsa.generate_parameters(2048, backend=backend)
-
-        with pytest.raises(ValueError):
-            dsa.generate_parameters(3072, backend=backend)
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
-        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
-    )
-    def test_large_key_size_on_new_openssl(self):
-        parameters = dsa.generate_parameters(2048, backend)
-        param_num = parameters.parameter_numbers()
-        assert utils.bit_length(param_num.p) == 2048
-        parameters = dsa.generate_parameters(3072, backend)
-        param_num = parameters.parameter_numbers()
-        assert utils.bit_length(param_num.p) == 3072
 
     def test_int_to_bn(self):
         value = (2 ** 4242) - 4242
@@ -339,35 +307,6 @@ class TestOpenSSLRSA(object):
             backend.generate_rsa_private_key(public_exponent=65537,
                                              key_size=256)
 
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
-        private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            private_key.signer(
-                padding.PSS(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA256(),
-                    ),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA1()
-            )
-        public_key = private_key.public_key()
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            public_key.verifier(
-                b"sig",
-                padding.PSS(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA256(),
-                    ),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA1()
-            )
-
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert backend.rsa_padding_supported(
             padding.PSS(mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0)
@@ -443,37 +382,10 @@ class TestOpenSSLRSA(object):
             )
 
 
-@pytest.mark.skipif(
-    backend._lib.OPENSSL_VERSION_NUMBER <= 0x10001000,
-    reason="Requires an OpenSSL version >= 1.0.1"
-)
 class TestOpenSSLCMAC(object):
     def test_unsupported_cipher(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             backend.create_cmac_ctx(DummyCipherAlgorithm())
-
-
-class TestOpenSSLCreateX509CSR(object):
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_unsupported_dsa_keys(self):
-        private_key = DSA_KEY_2048.private_key(backend)
-
-        with pytest.raises(NotImplementedError):
-            backend.create_x509_csr(object(), private_key, hashes.SHA1())
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_unsupported_ec_keys(self):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-
-        with pytest.raises(NotImplementedError):
-            backend.create_x509_csr(object(), private_key, hashes.SHA1())
 
 
 class TestOpenSSLSignX509Certificate(object):
@@ -485,55 +397,6 @@ class TestOpenSSLSignX509Certificate(object):
                 object(), private_key, DummyHashAlgorithm()
             )
 
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_sign_with_dsa_private_key_is_unsupported(self):
-        private_key = DSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateBuilder()
-        builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
-        ).serial_number(
-            1
-        ).public_key(
-            private_key.public_key()
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_sign_with_ec_private_key_is_unsupported(self):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        builder = x509.CertificateBuilder()
-        builder = builder.subject_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
-        ).serial_number(
-            1
-        ).public_key(
-            private_key.public_key()
-        ).not_valid_before(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).not_valid_after(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
-
 
 class TestOpenSSLSignX509CertificateRevocationList(object):
     def test_invalid_builder(self):
@@ -541,43 +404,6 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
 
         with pytest.raises(TypeError):
             backend.create_x509_crl(object(), private_key, hashes.SHA256())
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_sign_with_dsa_private_key_is_unsupported(self):
-        private_key = DSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateRevocationListBuilder()
-        builder = builder.issuer_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
-        ).last_update(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).next_update(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA1(), backend)
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
-        reason="Requires an older OpenSSL. Must be < 1.0.1"
-    )
-    def test_sign_with_ec_private_key_is_unsupported(self):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        builder = x509.CertificateRevocationListBuilder()
-        builder = builder.issuer_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u'US')])
-        ).last_update(
-            datetime.datetime(2002, 1, 1, 12, 1)
-        ).next_update(
-            datetime.datetime(2032, 1, 1, 12, 1)
-        )
-
-        with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA512(), backend)
 
 
 class TestOpenSSLCreateRevokedCertificate(object):
