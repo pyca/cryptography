@@ -833,7 +833,7 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             "tHB+SWD4P+sVJTARSq1mHt8kOIWrPc="
         )
 
-        key = ec.generate_private_key(ec.SECP192R1(), backend)
+        key = ec.generate_private_key(ec.SECP192R1(), backend).public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.OpenSSH,
