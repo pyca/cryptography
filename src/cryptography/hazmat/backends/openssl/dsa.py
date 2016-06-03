@@ -297,6 +297,7 @@ class _DSAPublicKey(object):
         return self._backend._public_key_bytes(
             encoding,
             format,
+            self,
             self._evp_pkey,
             None
         )

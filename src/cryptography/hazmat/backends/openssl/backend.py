@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import calendar
 import collections
 import itertools
@@ -1698,11 +1699,23 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
 
-    def _public_key_bytes(self, encoding, format, evp_pkey, cdata):
+    def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        if format is serialization.PublicFormat.SubjectPublicKeyInfo:
+        if (
+            format is serialization.PublicFormat.OpenSSH or
+            encoding is serialization.Encoding.OpenSSH
+        ):
+            if (
+                format is not serialization.PublicFormat.OpenSSH or
+                encoding is not serialization.Encoding.OpenSSH
+            ):
+                raise ValueError(
+                    "OpenSSH format must be used with OpenSSH encoding"
+                )
+            return self._openssh_public_key_bytes(key)
+        elif format is serialization.PublicFormat.SubjectPublicKeyInfo:
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
             else:
@@ -1731,6 +1744,44 @@ class Backend(object):
         res = write_bio(bio, key)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
+
+    def _openssh_public_key_bytes(self, key):
+        if isinstance(key, rsa.RSAPublicKey):
+            public_numbers = key.public_numbers()
+            return b"ssh-rsa " + base64.b64encode(
+                serialization._ssh_write_string(b"ssh-rsa") +
+                serialization._ssh_write_mpint(public_numbers.e) +
+                serialization._ssh_write_mpint(public_numbers.n)
+            )
+        elif isinstance(key, dsa.DSAPublicKey):
+            public_numbers = key.public_numbers()
+            parameter_numbers = public_numbers.parameter_numbers
+            return b"ssh-dss " + base64.b64encode(
+                serialization._ssh_write_string(b"ssh-dss") +
+                serialization._ssh_write_mpint(parameter_numbers.p) +
+                serialization._ssh_write_mpint(parameter_numbers.q) +
+                serialization._ssh_write_mpint(parameter_numbers.g) +
+                serialization._ssh_write_mpint(public_numbers.y)
+            )
+        else:
+            assert isinstance(key, ec.EllipticCurvePublicKey)
+            public_numbers = key.public_numbers()
+            try:
+                curve_name = {
+                    ec.SECP256R1: b"nistp256",
+                    ec.SECP384R1: b"nistp384",
+                    ec.SECP521R1: b"nistp521",
+                }[type(public_numbers.curve)]
+            except KeyError:
+                raise ValueError(
+                    "Only SECP256R1, SECP384R1, and SECP521R1 curves are "
+                    "supported by the SSH public key format"
+                )
+            return b"ecdsa-sha2-" + curve_name + b" " + base64.b64encode(
+                serialization._ssh_write_string(b"ecdsa-sha2-" + curve_name) +
+                serialization._ssh_write_string(curve_name) +
+                serialization._ssh_write_string(public_numbers.encode_point())
+            )
 
 
 class GetCipherByName(object):
