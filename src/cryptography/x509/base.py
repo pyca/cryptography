@@ -63,12 +63,6 @@ class Certificate(object):
         """
 
     @abc.abstractproperty
-    def serial(self):
-        """
-        Returns certificate serial number
-        """
-
-    @abc.abstractproperty
     def serial_number(self):
         """
         Returns certificate serial number
