@@ -9,6 +9,7 @@ Changelog
 * Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 * Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC`.
+* Added support for ``OpenSSH`` public key serialization.
 
 1.3.4 - 2016-06-03
 ~~~~~~~~~~~~~~~~~~

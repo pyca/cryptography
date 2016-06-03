@@ -360,6 +360,13 @@ Serialization Formats
         Just the public key elements (without the algorithm identifier). This
         format is RSA only, but is used by some older systems.
 
+    .. attribute:: OpenSSH
+
+        .. versionadded:: 1.4
+
+        The public key format used by OpenSSH (e.g. as found in
+        ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
+
 Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -388,6 +395,12 @@ Serialization Encodings
         .. versionadded:: 0.9
 
         For DER format. This is a binary format.
+
+    .. attribute:: OpenSSH
+
+        .. versionadded:: 1.4
+
+        The format used by OpenSSH public keys. This is a text format.
 
 
 Serialization Encryption Types
