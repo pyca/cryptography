@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import operator
+import warnings
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -58,6 +59,14 @@ class _Certificate(object):
 
     @property
     def serial(self):
+        warnings.warn(
+            "Certificate serial is deprecated, use serial_number instead.",
+            utils.DeprecatedIn10
+        )
+        return self.serial_number
+
+    @property
+    def serial_number(self):
         asn1_int = self._backend._lib.X509_get_serialNumber(self._x509)
         self._backend.openssl_assert(asn1_int != self._backend._ffi.NULL)
         return _asn1_integer_to_int(self._backend, asn1_int)
