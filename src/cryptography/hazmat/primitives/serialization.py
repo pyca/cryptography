@@ -157,7 +157,7 @@ def _ssh_write_string(data):
 def _ssh_write_mpint(value):
     data = utils.int_to_bytes(value)
     if six.indexbytes(data, 0) & 0x80:
-        data = "\x00" + data
+        data = b"\x00" + data
     return _ssh_write_string(data)
 
 
