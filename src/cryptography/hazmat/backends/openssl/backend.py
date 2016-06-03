@@ -1745,7 +1745,23 @@ class Backend(object):
                     serialization._ssh_write_mpint(parameter_numbers.g) +
                     serialization._ssh_write_mpint(public_numbers.y)
                 )
-
+            else:
+                assert isinstance(key, ec.EllipticCurvePublicKey)
+                public_numbers = key.public_numbers()
+                curve_name = {
+                    ec.SECP256R1: b"nistp256",
+                    ec.SECP384R1: b"nistp384",
+                    ec.SECP521R1: b"nistp521",
+                }[type(public_numbers.curve)]
+                return b"ecdsa-sha2-" + curve_name + " " + base64.b64encode(
+                    serialization._ssh_write_string(
+                        b"ecdsa-sha2-" + curve_name
+                    ) +
+                    serialization._ssh_write_string(curve_name) +
+                    serialization._ssh_write_string(
+                        public_numbers.encode_point()
+                    )
+                )
         else:
             raise TypeError(
                 "format must be an item from the PublicFormat enum"
