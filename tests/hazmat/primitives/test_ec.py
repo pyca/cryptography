@@ -829,8 +829,8 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         )
         assert ssh_bytes == (
             b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
-            "NTYAAABBBCS8827s9rUZyxZTi/um01+oIlWrwLHOjQxRU9CDAndom00zVAw5BRrIK"
-            "tHB+SWD4P+sVJTARSq1mHt8kOIWrPc="
+            b"NTYAAABBBCS8827s9rUZyxZTi/um01+oIlWrwLHOjQxRU9CDAndom00zVAw5BRrI"
+            b"KtHB+SWD4P+sVJTARSq1mHt8kOIWrPc="
         )
 
         key = ec.generate_private_key(ec.SECP192R1(), backend).public_key()
