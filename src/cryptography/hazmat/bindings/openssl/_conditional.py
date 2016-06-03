@@ -184,9 +184,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
     ],
-    "Cryptography_HAS_REMOVE_THREAD_STATE": [
-        "ERR_remove_thread_state"
-    ],
     "Cryptography_HAS_098H_ERROR_CODES": [
         "ASN1_F_B64_READ_ASN1",
         "ASN1_F_B64_WRITE_ASN1",
