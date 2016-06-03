@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import calendar
 import collections
 import itertools
@@ -1698,7 +1699,7 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
 
-    def _public_key_bytes(self, encoding, format, evp_pkey, cdata):
+    def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
@@ -1722,6 +1723,18 @@ class Backend(object):
                 write_bio = self._lib.i2d_RSAPublicKey_bio
 
             key = cdata
+        elif format is serialization.PublicFormat.OpenSSH:
+            if encoding is not serialization.Encoding.OpenSSH:
+                raise ValueError(
+                    "OpenSSH format must be used with OpenSSH encoding"
+                )
+            public_numbers = key.public_numbers()
+            return "ssh-rsa " + base64.b64encode(
+                serialization._ssh_write_string("ssh-rsa") +
+                serialization._ssh_write_mpint(public_numbers.e) +
+                serialization._ssh_write_mpint(public_numbers.n)
+            )
+
         else:
             raise TypeError(
                 "format must be an item from the PublicFormat enum"

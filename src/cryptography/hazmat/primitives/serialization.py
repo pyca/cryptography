@@ -121,7 +121,7 @@ def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
     return numbers.public_key(backend)
 
 
-def _read_next_string(data):
+def _ssh_read_next_string(data):
     """
     Retrieves the next RFC 4251 string value from the data.
 
@@ -137,7 +137,7 @@ def _read_next_string(data):
     return data[4:4 + str_len], data[4 + str_len:]
 
 
-def _read_next_mpint(data):
+def _ssh_read_next_mpint(data):
     """
     Reads the next mpint from the data.
 
@@ -150,9 +150,21 @@ def _read_next_mpint(data):
     )
 
 
+def _ssh_write_string(data):
+    return struct.pack(">I", len(data)) + data
+
+
+def _ssh_write_mpint(value):
+    data = utils.int_to_bytes(value)
+    if six.indexbytes(data, 0) & 0x80:
+        data = "\x00" + data
+    return _ssh_write_string(data)
+
+
 class Encoding(Enum):
     PEM = "PEM"
     DER = "DER"
+    OpenSSH = "OpenSSH"
 
 
 class PrivateFormat(Enum):
@@ -163,6 +175,7 @@ class PrivateFormat(Enum):
 class PublicFormat(Enum):
     SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
     PKCS1 = "Raw PKCS#1"
+    OpenSSH = "OpenSSH"
 
 
 @six.add_metaclass(abc.ABCMeta)
