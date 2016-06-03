@@ -817,7 +817,9 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
 
     def test_public_bytes_openssh(self, backend):
         key_bytes = load_vectors_from_file(
-            os.path.join("asymmetric", "PEM_Serialization", "ec_public_key.pem"),
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "ec_public_key.pem"
+            ),
             lambda pemfile: pemfile.read(), mode="rb"
         )
         key = serialization.load_pem_public_key(key_bytes, backend)
