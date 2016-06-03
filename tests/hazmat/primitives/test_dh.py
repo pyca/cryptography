@@ -178,6 +178,30 @@ class TestDH(object):
         symkey2 = key2.exchange(key1.public_key())
         assert symkey1 == symkey2
 
+    def test_symmetric_key_padding(self, backend):
+        """
+        This test has specific parameters that produce a symmetric key
+        In length 63 bytes instead 64. We make sure here that we add
+        padding to the key.
+        """
+        p = int("11859949538425015739337467917303613431031019140213666"
+                "129025407300654026585086345323066284800963463204246390"
+                "256567934582260424238844463330887962689642467123")
+        g = 2
+        y = int("32155788395534640648739966373159697798396966919821525"
+                "72238852825117261342483718574508213761865276905503199"
+                "969908098203345481366464874759377454476688391248")
+        x = int("409364065449673443397833358558926598469347813468816037"
+                "268451847116982490733450463194921405069999008617231539"
+                "7147035896687401350877308899732826446337707128")
+        parameters = dh.DHParameterNumbers(p, g)
+        public = dh.DHPublicNumbers(y, parameters)
+        private = dh.DHPrivateNumbers(x, public)
+        key = private.private_key(backend)
+        symkey = key.exchange(public.public_key(backend))
+        assert len(symkey) == 512 // 8
+        assert symkey[:1] == b'\x00'
+
     def test_bad_tls_exchange(self, backend):
         parameters1 = dh.generate_parameters(2, 512, backend)
         key1 = parameters1.generate_private_key()
