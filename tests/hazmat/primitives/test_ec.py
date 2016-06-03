@@ -831,6 +831,13 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
             "tHB+SWD4P+sVJTARSq1mHt8kOIWrPc="
         )
 
+        key = ec.generate_private_key(ec.SECP192R1(), backend)
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.PublicFormat.OpenSSH
+            )
+
     def test_public_bytes_invalid_encoding(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = load_vectors_from_file(

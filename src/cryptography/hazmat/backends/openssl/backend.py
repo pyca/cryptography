@@ -1748,11 +1748,17 @@ class Backend(object):
             else:
                 assert isinstance(key, ec.EllipticCurvePublicKey)
                 public_numbers = key.public_numbers()
-                curve_name = {
-                    ec.SECP256R1: b"nistp256",
-                    ec.SECP384R1: b"nistp384",
-                    ec.SECP521R1: b"nistp521",
-                }[type(public_numbers.curve)]
+                try:
+                    curve_name = {
+                        ec.SECP256R1: b"nistp256",
+                        ec.SECP384R1: b"nistp384",
+                        ec.SECP521R1: b"nistp521",
+                    }[type(public_numbers.curve)]
+                except KeyError:
+                    raise ValueError(
+                        "Only SECP256R1, SECP384R1, and SECP521R1 curves are "
+                        "supported by the SSH public key format"
+                    )
                 return b"ecdsa-sha2-" + curve_name + " " + base64.b64encode(
                     serialization._ssh_write_string(
                         b"ecdsa-sha2-" + curve_name
