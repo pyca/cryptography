@@ -816,6 +816,9 @@ class TestEllipticCurvePEMPublicKeySerialization(object):
         assert serialized == key_bytes
 
     def test_public_bytes_openssh(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP192R1())
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
         key_bytes = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
