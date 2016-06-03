@@ -1845,7 +1845,7 @@ class TestRSAPrimeFactorRecovery(object):
         )
         # Unfortunately there is no convention on which prime should be p
         # and which one q. The function we use always makes p < q, but the
-        # NIST vectors are not so consistent. Accordingly we verify we've
+        # NIST vectors are not so consistent. Accordingly, we verify we've
         # recovered the proper (p, q) by sorting them and asserting on that.
         assert sorted([p, q]) == sorted([private["p"], private["q"]])
 
