@@ -4,6 +4,10 @@ set -e
 set -x
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
+    # output some information about the builder we're on
+    uname -a
+    sw_vers
+
     brew update || brew update
 
     brew outdated openssl || brew upgrade openssl
