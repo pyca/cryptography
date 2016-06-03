@@ -10,6 +10,19 @@ Changelog
   will need to upgrade.
 * Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC`.
 
+1.3.4 - 2016-06-03
+~~~~~~~~~~~~~~~~~~
+
+* Added another OpenSSL function to the bindings to support an upcoming
+  ``pyOpenSSL`` release.
+
+
+1.3.3 - 2016-06-02
+~~~~~~~~~~~~~~~~~~
+
+* Added two new OpenSSL functions to the bindings to support an upcoming
+  ``pyOpenSSL`` release.
+
 1.3.2 - 2016-05-04
 ~~~~~~~~~~~~~~~~~~
 
