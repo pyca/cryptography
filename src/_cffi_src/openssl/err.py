@@ -9,7 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_REMOVE_THREAD_STATE;
 static const int Cryptography_HAS_098H_ERROR_CODES;
 static const int Cryptography_HAS_098C_CAMELLIA_CODES;
 static const int Cryptography_HAS_EC_CODES;
@@ -230,10 +229,6 @@ unsigned long ERR_PACK(int, int, int);
 int ERR_GET_LIB(unsigned long);
 int ERR_GET_FUNC(unsigned long);
 int ERR_GET_REASON(unsigned long);
-/* introduced in 1.0.0 so we have to handle this specially to continue
- * supporting 0.9.8
- */
-void ERR_remove_thread_state(const CRYPTO_THREADID *);
 
 /* These were added in OpenSSL 0.9.8h. When we drop support for RHEL/CentOS 5
    we should be able to move these back to TYPES. */
@@ -250,14 +245,6 @@ static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 """
 
 CUSTOMIZATIONS = """
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-static const long Cryptography_HAS_REMOVE_THREAD_STATE = 1;
-#else
-static const long Cryptography_HAS_REMOVE_THREAD_STATE = 0;
-typedef uint32_t CRYPTO_THREADID;
-void (*ERR_remove_thread_state)(const CRYPTO_THREADID *) = NULL;
-#endif
-
 /* OpenSSL 0.9.8h+ */
 #if OPENSSL_VERSION_NUMBER >= 0x0090808fL
 static const long Cryptography_HAS_098H_ERROR_CODES = 1;
