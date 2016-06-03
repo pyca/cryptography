@@ -2066,7 +2066,7 @@ class TestRSAPEMPublicKeySerialization(object):
         serialized = key.public_bytes(encoding, format)
         assert serialized == key_bytes
 
-    def test_public_bytes_ssh(self, backend):
+    def test_public_bytes_openssh(self, backend):
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
             lambda pemfile: pemfile.read(), mode="rb"
@@ -2082,6 +2082,25 @@ class TestRSAPEMPublicKeySerialization(object):
             b"xmdsTPECSWnHK+HhoaNDFPR3j8jQhVo1laxiqcEhAHegi5cwtFosuJAvSKAFKEvy"
             b"D43si00DQnXWrYHAEQ=="
         )
+
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.PEM, serialization.PublicFormat.OpenSSH
+            )
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.DER, serialization.PublicFormat.OpenSSH
+            )
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.PublicFormat.PKCS1,
+            )
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = RSA_KEY_2048.private_key(backend).public_key()

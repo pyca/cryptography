@@ -1703,7 +1703,19 @@ class Backend(object):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        if format is serialization.PublicFormat.SubjectPublicKeyInfo:
+        if (
+            format is serialization.PublicFormat.OpenSSH or
+            encoding is serialization.Encoding.OpenSSH
+        ):
+            if (
+                format is not serialization.PublicFormat.OpenSSH or
+                encoding is not serialization.Encoding.OpenSSH
+            ):
+                raise ValueError(
+                    "OpenSSH format must be used with OpenSSH encoding"
+                )
+            return self._openssh_public_key_bytes(key)
+        elif format is serialization.PublicFormat.SubjectPublicKeyInfo:
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
             else:
@@ -1723,12 +1735,6 @@ class Backend(object):
                 write_bio = self._lib.i2d_RSAPublicKey_bio
 
             key = cdata
-        elif format is serialization.PublicFormat.OpenSSH:
-            if encoding is not serialization.Encoding.OpenSSH:
-                raise ValueError(
-                    "OpenSSH format must be used with OpenSSH encoding"
-                )
-            return self._openssh_public_key_bytes(key)
         else:
             raise TypeError(
                 "format must be an item from the PublicFormat enum"
