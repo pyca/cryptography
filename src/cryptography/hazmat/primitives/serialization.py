@@ -59,7 +59,7 @@ def load_ssh_public_key(data, backend):
     except TypeError:
         raise ValueError('Key is not in the proper format.')
 
-    inner_key_type, rest = _read_next_string(decoded_data)
+    inner_key_type, rest = _ssh_read_next_string(decoded_data)
 
     if inner_key_type != key_type:
         raise ValueError(
@@ -70,8 +70,8 @@ def load_ssh_public_key(data, backend):
 
 
 def _load_ssh_rsa_public_key(key_type, decoded_data, backend):
-    e, rest = _read_next_mpint(decoded_data)
-    n, rest = _read_next_mpint(rest)
+    e, rest = _ssh_read_next_mpint(decoded_data)
+    n, rest = _ssh_read_next_mpint(rest)
 
     if rest:
         raise ValueError('Key body contains extra bytes.')
@@ -80,10 +80,10 @@ def _load_ssh_rsa_public_key(key_type, decoded_data, backend):
 
 
 def _load_ssh_dss_public_key(key_type, decoded_data, backend):
-    p, rest = _read_next_mpint(decoded_data)
-    q, rest = _read_next_mpint(rest)
-    g, rest = _read_next_mpint(rest)
-    y, rest = _read_next_mpint(rest)
+    p, rest = _ssh_read_next_mpint(decoded_data)
+    q, rest = _ssh_read_next_mpint(rest)
+    g, rest = _ssh_read_next_mpint(rest)
+    y, rest = _ssh_read_next_mpint(rest)
 
     if rest:
         raise ValueError('Key body contains extra bytes.')
@@ -95,8 +95,8 @@ def _load_ssh_dss_public_key(key_type, decoded_data, backend):
 
 
 def _load_ssh_ecdsa_public_key(expected_key_type, decoded_data, backend):
-    curve_name, rest = _read_next_string(decoded_data)
-    data, rest = _read_next_string(rest)
+    curve_name, rest = _ssh_read_next_string(decoded_data)
+    data, rest = _ssh_read_next_string(rest)
 
     if expected_key_type != b"ecdsa-sha2-" + curve_name:
         raise ValueError(
@@ -143,7 +143,7 @@ def _ssh_read_next_mpint(data):
 
     Currently, all mpints are interpreted as unsigned.
     """
-    mpint_data, rest = _read_next_string(data)
+    mpint_data, rest = _ssh_read_next_string(data)
 
     return (
         utils.int_from_bytes(mpint_data, byteorder='big', signed=False), rest
