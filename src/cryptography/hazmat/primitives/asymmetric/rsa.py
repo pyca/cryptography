@@ -40,6 +40,12 @@ class RSAPrivateKey(object):
         The RSAPublicKey associated with this private key.
         """
 
+    @abc.abstractmethod
+    def sign(self, data, padding, algorithm):
+        """
+        Signs the data.
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class RSAPrivateKeyWithSerialization(RSAPrivateKey):
@@ -86,6 +92,12 @@ class RSAPublicKey(object):
     def public_bytes(self, encoding, format):
         """
         Returns the key serialized as bytes.
+        """
+
+    @abc.abstractmethod
+    def verify(self, signature, data, padding, algorithm):
+        """
+        Verifies the signature of the data.
         """
 
 

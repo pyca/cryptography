@@ -611,6 +611,12 @@ class _RSAPrivateKey(object):
             self._rsa_cdata
         )
 
+    def sign(self, data, padding, algorithm):
+        signer = self.signer(padding, algorithm)
+        signer.update(data)
+        signature = signer.finalize()
+        return signature
+
 
 @utils.register_interface(RSAPublicKeyWithSerialization)
 class _RSAPublicKey(object):
@@ -661,3 +667,8 @@ class _RSAPublicKey(object):
             self._evp_pkey,
             self._rsa_cdata
         )
+
+    def verify(self, signature, data, padding, algorithm):
+        verifier = self.verifier(signature, padding, algorithm)
+        verifier.update(data)
+        verifier.verify()

@@ -481,6 +481,17 @@ class TestRSASignature(object):
         signer.update(b"no failure")
         signer.finalize()
 
+    def test_sign(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        pkcs = padding.PKCS1v15()
+        algorithm = hashes.SHA1()
+        signature = private_key.sign(message, pkcs, algorithm)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, pkcs, algorithm)
+        verifier.update(message)
+        verifier.verify()
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 class TestRSAVerification(object):
@@ -835,6 +846,17 @@ class TestRSAVerification(object):
         verifier.update(b"sign me")
         with pytest.raises(InvalidSignature):
             verifier.verify()
+
+    def test_verify(self, backend):
+        private_key = RSA_KEY_512.private_key(backend)
+        message = b"one little message"
+        pkcs = padding.PKCS1v15()
+        algorithm = hashes.SHA1()
+        signer = private_key.signer(pkcs, algorithm)
+        signer.update(message)
+        signature = signer.finalize()
+        public_key = private_key.public_key()
+        public_key.verify(signature, message, pkcs, algorithm)
 
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
