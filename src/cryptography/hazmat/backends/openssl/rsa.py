@@ -43,27 +43,23 @@ def _enc_dec_rsa(backend, key, data, padding):
         padding_enum = backend._lib.RSA_PKCS1_PADDING
     elif isinstance(padding, OAEP):
         padding_enum = backend._lib.RSA_PKCS1_OAEP_PADDING
+
         if not isinstance(padding._mgf, MGF1):
             raise UnsupportedAlgorithm(
                 "Only MGF1 is supported by this backend.",
                 _Reasons.UNSUPPORTED_MGF
             )
 
-        if not isinstance(padding._mgf._algorithm, hashes.SHA1):
+        if not backend.rsa_padding_supported(padding):
             raise UnsupportedAlgorithm(
-                "This backend supports only SHA1 inside MGF1 when "
-                "using OAEP.",
-                _Reasons.UNSUPPORTED_HASH
+                "This combination of padding and hash algorithm is not "
+                "supported by this backend.",
+                _Reasons.UNSUPPORTED_PADDING
             )
 
         if padding._label is not None and padding._label != b"":
             raise ValueError("This backend does not support OAEP labels.")
 
-        if not isinstance(padding._algorithm, hashes.SHA1):
-            raise UnsupportedAlgorithm(
-                "This backend only supports SHA1 when using OAEP.",
-                _Reasons.UNSUPPORTED_HASH
-            )
     else:
         raise UnsupportedAlgorithm(
             "{0} is not supported by this backend.".format(
@@ -73,12 +69,12 @@ def _enc_dec_rsa(backend, key, data, padding):
         )
 
     if backend._lib.Cryptography_HAS_PKEY_CTX:
-        return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum)
+        return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding)
     else:
         return _enc_dec_rsa_098(backend, key, data, padding_enum)
 
 
-def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum):
+def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
     if isinstance(key, _RSAPublicKey):
         init = backend._lib.EVP_PKEY_encrypt_init
         crypt = backend._lib.Cryptography_EVP_PKEY_encrypt
@@ -98,6 +94,21 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum):
     backend.openssl_assert(res > 0)
     buf_size = backend._lib.EVP_PKEY_size(key._evp_pkey)
     backend.openssl_assert(buf_size > 0)
+    if (
+        isinstance(padding, OAEP) and
+        backend._lib.Cryptography_HAS_RSA_OAEP_MD
+    ):
+        mgf1_md = backend._lib.EVP_get_digestbyname(
+            padding._mgf._algorithm.name.encode("ascii"))
+        backend.openssl_assert(mgf1_md != backend._ffi.NULL)
+        res = backend._lib.EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx, mgf1_md)
+        backend.openssl_assert(res > 0)
+        oaep_md = backend._lib.EVP_get_digestbyname(
+            padding._algorithm.name.encode("ascii"))
+        backend.openssl_assert(oaep_md != backend._ffi.NULL)
+        res = backend._lib.EVP_PKEY_CTX_set_rsa_oaep_md(pkey_ctx, oaep_md)
+        backend.openssl_assert(res > 0)
+
     outlen = backend._ffi.new("size_t *", buf_size)
     buf = backend._ffi.new("char[]", buf_size)
     res = crypt(pkey_ctx, buf, outlen, data, len(data))
@@ -184,7 +195,9 @@ class _RSASignatureContext(object):
                 raise ValueError("Digest too large for key size. Use a larger "
                                  "key.")
 
-            if not self._backend._mgf1_hash_supported(padding._mgf._algorithm):
+            if not self._backend._pss_mgf1_hash_supported(
+                padding._mgf._algorithm
+            ):
                 raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1.",
@@ -377,7 +390,9 @@ class _RSAVerificationContext(object):
                     "correct key and digest algorithm."
                 )
 
-            if not self._backend._mgf1_hash_supported(padding._mgf._algorithm):
+            if not self._backend._pss_mgf1_hash_supported(
+                padding._mgf._algorithm
+            ):
                 raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1.",

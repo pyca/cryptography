@@ -585,7 +585,21 @@ class Backend(object):
         userdata = _PasswordUserdata(password=password)
         return _pem_password_cb, userdata
 
-    def _mgf1_hash_supported(self, algorithm):
+    def _oaep_hash_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_RSA_OAEP_MD:
+            return isinstance(
+                algorithm, (
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                )
+            )
+        else:
+            return isinstance(algorithm, hashes.SHA1)
+
+    def _pss_mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
             return self.hash_supported(algorithm)
         else:
@@ -595,9 +609,12 @@ class Backend(object):
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
-            return self._mgf1_hash_supported(padding._mgf._algorithm)
+            return self._pss_mgf1_hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
-            return isinstance(padding._mgf._algorithm, hashes.SHA1)
+            return (
+                self._oaep_hash_supported(padding._mgf._algorithm) and
+                self._oaep_hash_supported(padding._algorithm)
+            )
         else:
             return False
 

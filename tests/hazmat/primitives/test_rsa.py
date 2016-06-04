@@ -65,6 +65,42 @@ def _flatten_pkcs1_examples(vectors):
     return flattened_vectors
 
 
+def _build_oaep_sha2_vectors():
+    base_path = os.path.join("asymmetric", "RSA", "oaep-custom")
+    vectors = []
+    hashalgs = [
+        hashes.SHA1(),
+        hashes.SHA224(),
+        hashes.SHA256(),
+        hashes.SHA384(),
+        hashes.SHA512(),
+    ]
+    for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
+        if mgf1alg.name == "sha1" and oaepalg.name == "sha1":
+            # We need to generate the cartesian product of the permutations
+            # of all the SHAs above, but SHA1/SHA1 is something we already
+            # tested previously and thus did not generate custom vectors for.
+            continue
+
+        examples = _flatten_pkcs1_examples(
+            load_vectors_from_file(
+                os.path.join(
+                    base_path,
+                    "oaep-{0}-{1}.txt".format(
+                        mgf1alg.name, oaepalg.name
+                    )
+                ),
+                load_pkcs1_vectors
+            )
+        )
+        # We've loaded the files, but the loaders don't give us any information
+        # about the mgf1 or oaep hash algorithms. We know this info so we'll
+        # just add that to the end of the tuple
+        for private, public, vector in examples:
+            vectors.append((private, public, vector, mgf1alg, oaepalg))
+    return vectors
+
+
 def _skip_pss_hash_algorithm_unsupported(backend, hash_alg):
     if not backend.rsa_padding_supported(
         padding.PSS(
@@ -1210,6 +1246,44 @@ class TestRSADecryption(object):
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA224()),
+                algorithm=hashes.SHA224(),
+                label=None
+            )
+        ),
+        skip_message="Does not support OAEP using SHA224 MGF1 and SHA224 hash."
+    )
+    @pytest.mark.parametrize(
+        "vector",
+        _build_oaep_sha2_vectors()
+    )
+    def test_decrypt_oaep_sha2_vectors(self, vector, backend):
+        private, public, example, mgf1_alg, hash_alg = vector
+        skey = rsa.RSAPrivateNumbers(
+            p=private["p"],
+            q=private["q"],
+            d=private["private_exponent"],
+            dmp1=private["dmp1"],
+            dmq1=private["dmq1"],
+            iqmp=private["iqmp"],
+            public_numbers=rsa.RSAPublicNumbers(
+                e=private["public_exponent"],
+                n=private["modulus"]
+            )
+        ).private_key(backend)
+        message = skey.decrypt(
+            binascii.unhexlify(example["encryption"]),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=mgf1_alg),
+                algorithm=hash_alg,
+                label=None
+            )
+        )
+        assert message == binascii.unhexlify(example["message"])
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 algorithm=hashes.SHA1(),
                 label=None
@@ -1325,6 +1399,47 @@ class TestRSAEncryption(object):
     def test_rsa_encrypt_oaep(self, key_data, pad, backend):
         private_key = key_data.private_key(backend)
         pt = b"encrypt me!"
+        public_key = private_key.public_key()
+        ct = public_key.encrypt(pt, pad)
+        assert ct != pt
+        assert len(ct) == math.ceil(public_key.key_size / 8.0)
+        recovered_pt = private_key.decrypt(ct, pad)
+        assert recovered_pt == pt
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA512(),
+                label=None
+            )
+        ),
+        skip_message="Does not support OAEP using SHA256 MGF1 and SHA512 hash."
+    )
+    @pytest.mark.parametrize(
+        ("mgf1hash", "oaephash"),
+        itertools.product([
+            hashes.SHA1(),
+            hashes.SHA224(),
+            hashes.SHA256(),
+            hashes.SHA384(),
+            hashes.SHA512(),
+        ], [
+            hashes.SHA1(),
+            hashes.SHA224(),
+            hashes.SHA256(),
+            hashes.SHA384(),
+            hashes.SHA512(),
+        ])
+    )
+    def test_rsa_encrypt_oaep_sha2(self, mgf1hash, oaephash, backend):
+        pad = padding.OAEP(
+            mgf=padding.MGF1(algorithm=mgf1hash),
+            algorithm=oaephash,
+            label=None
+        )
+        private_key = RSA_KEY_2048.private_key(backend)
+        pt = b"encrypt me using sha2 hashes!"
         public_key = private_key.public_key()
         ct = public_key.encrypt(pt, pad)
         assert ct != pt

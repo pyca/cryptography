@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
+import itertools
 import os
 import subprocess
 import sys
@@ -393,6 +394,45 @@ class TestOpenSSLRSA(object):
             ),
         ) is True
 
+    @pytest.mark.skipif(
+        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 0,
+        reason="Requires OpenSSL with rsa_oaep_md (1.0.2+)"
+    )
+    def test_rsa_padding_supported_oaep_sha2_combinations(self):
+        hashalgs = [
+            hashes.SHA1(),
+            hashes.SHA224(),
+            hashes.SHA256(),
+            hashes.SHA384(),
+            hashes.SHA512(),
+        ]
+        for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
+            assert backend.rsa_padding_supported(
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=mgf1alg),
+                    algorithm=oaepalg,
+                    label=None
+                ),
+            ) is True
+
+    def test_rsa_padding_unsupported_oaep_ripemd160_sha1(self):
+        assert backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.RIPEMD160()),
+                algorithm=hashes.SHA1(),
+                label=None
+            ),
+        ) is False
+
+    def test_rsa_padding_unsupported_oaep_sha1_ripemd160(self):
+        assert backend.rsa_padding_supported(
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.RIPEMD160(),
+                label=None
+            ),
+        ) is False
+
     def test_rsa_padding_unsupported_mgf(self):
         assert backend.rsa_padding_supported(
             padding.OAEP(
@@ -406,9 +446,13 @@ class TestOpenSSLRSA(object):
             padding.PSS(mgf=DummyMGF(), salt_length=0)
         ) is False
 
+    @pytest.mark.skipif(
+        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
+        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)"
+    )
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(
@@ -418,14 +462,42 @@ class TestOpenSSLRSA(object):
                 )
             )
 
+    @pytest.mark.skipif(
+        backend._lib.Cryptography_HAS_RSA_OAEP_MD == 1,
+        reason="Requires OpenSSL without rsa_oaep_md (< 1.0.2)"
+    )
     def test_unsupported_oaep_hash_algorithm_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA256(),
+                    label=None
+                )
+            )
+
+    def test_unsupported_mgf1_hash_algorithm_ripemd160_decrypt(self):
+        private_key = RSA_KEY_512.private_key(backend)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
+            private_key.decrypt(
+                b"0" * 64,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.RIPEMD160()),
+                    algorithm=hashes.RIPEMD160(),
+                    label=None
+                )
+            )
+
+    def test_unsupported_mgf1_hash_algorithm_whirlpool_decrypt(self):
+        private_key = RSA_KEY_512.private_key(backend)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
+            private_key.decrypt(
+                b"0" * 64,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.Whirlpool()),
+                    algorithm=hashes.Whirlpool(),
                     label=None
                 )
             )
