@@ -1436,13 +1436,13 @@ class TestRSAEncryption(object):
             hashes.SHA224(),
             hashes.SHA256(),
             hashes.SHA384(),
-            hashes.SHA512()
+            hashes.SHA512(),
         ], [
             hashes.SHA1(),
             hashes.SHA224(),
             hashes.SHA256(),
             hashes.SHA384(),
-            hashes.SHA512()
+            hashes.SHA512(),
         ])
     )
     def test_rsa_encrypt_oaep_sha2(self, mgf1hash, oaephash, backend):

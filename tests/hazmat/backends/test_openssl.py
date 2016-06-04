@@ -399,13 +399,13 @@ class TestOpenSSLRSA(object):
         reason="Requires OpenSSL >= 1.0.2"
     )
     def test_rsa_padding_supported_oaep_sha2_combinations(self):
-        hashalgs = (
+        hashalgs = [
             hashes.SHA1(),
             hashes.SHA224(),
             hashes.SHA256(),
             hashes.SHA384(),
-            hashes.SHA512()
-        )
+            hashes.SHA512(),
+        ]
         for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
             assert backend.rsa_padding_supported(
                 padding.OAEP(
