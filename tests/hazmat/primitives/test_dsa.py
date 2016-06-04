@@ -723,6 +723,10 @@ class TestDSANumbers(object):
 
     def test_repr(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        assert (
+            repr(parameter_numbers) == "<DSAParameterNumbers(p=1, q=2, g=3)>"
+        )
+
         public_numbers = dsa.DSAPublicNumbers(
             y=4,
             parameter_numbers=parameter_numbers
