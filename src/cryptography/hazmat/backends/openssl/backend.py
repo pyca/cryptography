@@ -586,7 +586,7 @@ class Backend(object):
         return _pem_password_cb, userdata
 
     def _oaep_hash_supported(self, algorithm):
-        if self._lib.OpenSSL_version_num() >= 0x10002001:
+        if self._lib.Cryptography_HAS_RSA_OAEP_MD:
             return isinstance(
                 algorithm, (
                     hashes.SHA1,
