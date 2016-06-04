@@ -11,6 +11,11 @@ Changelog
 * Added support for SHA-2 in RSA
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` when using
   OpenSSL 1.0.2 or greater.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+  methods to RSA keys.
 
 
 1.3.4 - 2016-06-03
