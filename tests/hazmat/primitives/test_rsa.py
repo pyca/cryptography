@@ -73,7 +73,7 @@ def _build_oaep_sha2_vectors():
         hashes.SHA224(),
         hashes.SHA256(),
         hashes.SHA384(),
-        hashes.SHA512()
+        hashes.SHA512(),
     ]
     for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
         if mgf1alg.name == "sha1" and oaepalg.name == "sha1":
@@ -93,7 +93,7 @@ def _build_oaep_sha2_vectors():
                 load_pkcs1_vectors
             )
         )
-        # We've loaded the files, but the loaders don't give us any infor
+        # We've loaded the files, but the loaders don't give us any information
         # about the mgf1 or oaep hash algorithms. We know this info so we'll
         # just add that to the end of the tuple
         for private, public, vector in examples:

@@ -593,7 +593,7 @@ class Backend(object):
                     hashes.SHA224,
                     hashes.SHA256,
                     hashes.SHA384,
-                    hashes.SHA512
+                    hashes.SHA512,
                 )
             )
         else:
