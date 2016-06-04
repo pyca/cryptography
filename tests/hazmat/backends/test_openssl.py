@@ -5,11 +5,11 @@
 from __future__ import absolute_import, division, print_function
 
 import datetime
+import itertools
 import os
 import subprocess
 import sys
 import textwrap
-import itertools
 
 import pytest
 
@@ -406,11 +406,11 @@ class TestOpenSSLRSA(object):
             hashes.SHA384(),
             hashes.SHA512()
         )
-        for hash_a, hash_b in itertools.product(hashalgs, hashalgs):
+        for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
             assert backend.rsa_padding_supported(
                 padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hash_a),
-                    algorithm=hash_b,
+                    mgf=padding.MGF1(algorithm=mgf1alg),
+                    algorithm=oaepalg,
                     label=None
                 ),
             ) is True
@@ -452,7 +452,7 @@ class TestOpenSSLRSA(object):
     )
     def test_unsupported_mgf1_hash_algorithm_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(

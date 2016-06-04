@@ -55,7 +55,7 @@ def _enc_dec_rsa(backend, key, data, padding):
                 raise UnsupportedAlgorithm(
                     "OpenSSL < 1.0.2 only supports SHA1 inside MGF1 when "
                     "using OAEP.",
-                    _Reasons.UNSUPPORTED_HASH
+                    _Reasons.UNSUPPORTED_PADDING
                 )
             if not isinstance(padding._algorithm, hashes.SHA1):
                 raise UnsupportedAlgorithm(
@@ -208,7 +208,9 @@ class _RSASignatureContext(object):
                 raise ValueError("Digest too large for key size. Use a larger "
                                  "key.")
 
-            if not self._backend._pss_mgf1_hash_supported(padding._mgf._algorithm):
+            if not self._backend._pss_mgf1_hash_supported(
+                padding._mgf._algorithm
+            ):
                 raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1.",
@@ -401,7 +403,9 @@ class _RSAVerificationContext(object):
                     "correct key and digest algorithm."
                 )
 
-            if not self._backend._pss_mgf1_hash_supported(padding._mgf._algorithm):
+            if not self._backend._pss_mgf1_hash_supported(
+                padding._mgf._algorithm
+            ):
                 raise UnsupportedAlgorithm(
                     "When OpenSSL is older than 1.0.1 then only SHA1 is "
                     "supported with MGF1.",
