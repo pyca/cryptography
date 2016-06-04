@@ -1,15 +1,22 @@
 Changelog
 =========
 
-1.4 - `master`_
-~~~~~~~~~~~~~~~
+1.4 - 2016-06-04
+~~~~~~~~~~~~~~~~
 
-.. note:: This version is not yet released and is under active development.
-
-* Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
-  will need to upgrade.
+* Support for OpenSSL 0.9.8 has been removed. Users on older versions of
+  OpenSSL will need to upgrade.
 * Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC`.
 * Added support for ``OpenSSH`` public key serialization.
+* Added support for SHA-2 in RSA
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` when using
+  OpenSSL 1.0.2 or greater.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+  methods to RSA keys.
+
 
 1.3.4 - 2016-06-03
 ~~~~~~~~~~~~~~~~~~
