@@ -86,6 +86,6 @@ Post-release tasks
 * Send an email to the `mailing list`_ and `python-announce`_ announcing the
   release.
 
+.. _`milestone`: https://github.com/pyca/cryptography/milestones
 .. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`python-announce`: https://mail.python.org/mailman/listinfo/python-announce-list
-.. _`milestone`: https://github.com/pyca/cryptography/milestones
