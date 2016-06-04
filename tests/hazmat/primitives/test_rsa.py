@@ -1259,19 +1259,6 @@ class TestRSADecryption(object):
     )
     def test_decrypt_oaep_sha2_vectors(self, vector, backend):
         private, public, example, mgf1_alg, hash_alg = vector
-        if not backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=mgf1_alg),
-                algorithm=hash_alg,
-                label=None
-            )
-        ):
-            pytest.skip(
-                "Backend does not support MGF1-{0} with {1} hash".format(
-                    mgf1_alg.name, hash_alg.name
-                )
-            )
-
         skey = rsa.RSAPrivateNumbers(
             p=private["p"],
             q=private["q"],

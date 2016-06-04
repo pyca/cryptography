@@ -96,7 +96,7 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
     backend.openssl_assert(buf_size > 0)
     if (
         isinstance(padding, OAEP) and
-        backend._lib.OpenSSL_version_num() >= 0x10002001
+        backend._lib.Cryptography_HAS_RSA_OAEP_MD
     ):
         mgf1_md = backend._lib.EVP_get_digestbyname(
             padding._mgf._algorithm.name.encode("ascii"))
