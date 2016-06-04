@@ -721,6 +721,21 @@ class TestDSANumbers(object):
         with pytest.raises(TypeError):
             dsa.DSAPrivateNumbers(x=None, public_numbers=public_numbers)
 
+    def test_repr(self):
+        parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        assert (
+            repr(parameter_numbers) == "<DSAParameterNumbers(p=1, q=2, g=3)>"
+        )
+
+        public_numbers = dsa.DSAPublicNumbers(
+            y=4,
+            parameter_numbers=parameter_numbers
+        )
+        assert repr(public_numbers) == (
+            "<DSAPublicNumbers(y=4, parameter_numbers=<DSAParameterNumbers(p=1"
+            ", q=2, g=3)>)>"
+        )
+
 
 class TestDSANumberEquality(object):
     def test_parameter_numbers_eq(self):

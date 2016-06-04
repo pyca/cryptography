@@ -166,6 +166,13 @@ class DSAParameterNumbers(object):
     def __ne__(self, other):
         return not self == other
 
+    def __repr__(self):
+        return (
+            "<DSAParameterNumbers(p={self.p}, q={self.q}, g={self.g})>".format(
+                self=self
+            )
+        )
+
 
 class DSAPublicNumbers(object):
     def __init__(self, y, parameter_numbers):
@@ -197,6 +204,12 @@ class DSAPublicNumbers(object):
 
     def __ne__(self, other):
         return not self == other
+
+    def __repr__(self):
+        return (
+            "<DSAPublicNumbers(y={self.y}, "
+            "parameter_numbers={self.parameter_numbers})>".format(self=self)
+        )
 
 
 class DSAPrivateNumbers(object):
