@@ -728,8 +728,8 @@ class TestDSANumbers(object):
             parameter_numbers=parameter_numbers
         )
         assert repr(public_numbers) == (
-            "<DSAPublicNumbers(y=4, parameter_numbers=<DSAParameterNumbers(p=1,"
-            " q=2, g=3)>)>"
+            "<DSAPublicNumbers(y=4, parameter_numbers=<DSAParameterNumbers(p=1"
+            ", q=2, g=3)>)>"
         )
 
 
