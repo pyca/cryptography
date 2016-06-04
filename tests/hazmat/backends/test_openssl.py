@@ -468,7 +468,7 @@ class TestOpenSSLRSA(object):
     )
     def test_unsupported_oaep_hash_algorithm_decrypt(self):
         private_key = RSA_KEY_512.private_key(backend)
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(
                 b"0" * 64,
                 padding.OAEP(
