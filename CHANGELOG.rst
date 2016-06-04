@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.4 - 2016-06-03
+1.4 - 2016-06-04
 ~~~~~~~~~~~~~~~~
 
 * Support for OpenSSL 0.9.8 has been removed. Users on older versions of
