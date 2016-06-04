@@ -41,9 +41,9 @@ Generation
 
     Generate DSA parameters using the provided ``backend``.
 
-    :param int key_size: The length of the modulus in bits. It should be
-        either 1024, 2048 or 3072. For keys generated in 2015 this should
-        be `at least 2048`_ (See page 41).  Note that some applications
+    :param int key_size: The length of :attr:`~DSAParameterNumbers.q`. It
+        should be either 1024, 2048 or 3072. For keys generated in 2015 this
+        should be `at least 2048`_ (See page 41).  Note that some applications
         (such as SSH) have not yet gained support for larger key sizes
         specified in FIPS 186-3 and are still restricted to only the
         1024-bit keys specified in FIPS 186-2.
@@ -287,7 +287,7 @@ Key interfaces
 
         :type: int
 
-        The bit length of the modulus.
+        The bit length of :attr:`~DSAParameterNumbers.q`.
 
 
 .. class:: DSAPrivateKeyWithSerialization
@@ -344,7 +344,7 @@ Key interfaces
 
         :type: int
 
-        The bit length of the modulus.
+        The bit length of :attr:`~DSAParameterNumbers.q`.
 
     .. method:: parameters()
 
