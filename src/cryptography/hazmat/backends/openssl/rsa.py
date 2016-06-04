@@ -50,19 +50,6 @@ def _enc_dec_rsa(backend, key, data, padding):
                 _Reasons.UNSUPPORTED_MGF
             )
 
-        if backend._lib.OpenSSL_version_num() < 0x10002001:
-            if not isinstance(padding._mgf._algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "OpenSSL < 1.0.2 only supports SHA1 inside MGF1 when "
-                    "using OAEP.",
-                    _Reasons.UNSUPPORTED_PADDING
-                )
-            if not isinstance(padding._algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "OpenSSL < 1.0.2 only supports SHA1 when using OAEP.",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-
         if not backend.rsa_padding_supported(padding):
             raise UnsupportedAlgorithm(
                 "This combination of padding and hash algorithm is not "
