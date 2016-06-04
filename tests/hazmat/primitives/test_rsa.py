@@ -65,35 +65,39 @@ def _flatten_pkcs1_examples(vectors):
     return flattened_vectors
 
 
-def _add_hash_mgf1_to_vectors(vectors, mgf1_alg, hash_alg):
-    for i in range(len(vectors)):
-        vector = vectors[i]
-        vectors[i] = (vector[0], vector[1], vector[2], mgf1_alg, hash_alg)
-
-    return vectors
-
-
-def _build_oaep_vectors(hashalgs):
+def _build_oaep_sha2_vectors():
     base_path = os.path.join("asymmetric", "RSA", "oaep-custom")
     vectors = []
-    for hashtuple in itertools.product(hashalgs, hashalgs):
-        vectors.extend(
-            _add_hash_mgf1_to_vectors(
-                _flatten_pkcs1_examples(
-                    load_vectors_from_file(
-                        os.path.join(
-                            base_path,
-                            "oaep-{0}-{1}.txt".format(
-                                hashtuple[0].name, hashtuple[1].name
-                            )
-                        ),
-                        load_pkcs1_vectors
+    hashalgs = [
+        hashes.SHA1(),
+        hashes.SHA224(),
+        hashes.SHA256(),
+        hashes.SHA384(),
+        hashes.SHA512()
+    ]
+    for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
+        if mgf1alg.name == "sha1" and oaepalg.name == "sha1":
+            # We need to generate the cartesian product of the permutations
+            # of all the SHAs above, but SHA1/SHA1 is something we already
+            # tested previously and thus did not generate custom vectors for.
+            continue
+
+        examples = _flatten_pkcs1_examples(
+            load_vectors_from_file(
+                os.path.join(
+                    base_path,
+                    "oaep-{0}-{1}.txt".format(
+                        mgf1alg.name, oaepalg.name
                     )
                 ),
-                hashtuple[0],
-                hashtuple[1]
+                load_pkcs1_vectors
             )
         )
+        # We've loaded the files, but the loaders don't give us any infor
+        # about the mgf1 or oaep hash algorithms. We know this info so we'll
+        # just add that to the end of the tuple
+        for private, public, vector in examples:
+            vectors.append((private, public, vector, mgf1alg, oaepalg))
     return vectors
 
 
@@ -1251,9 +1255,7 @@ class TestRSADecryption(object):
     )
     @pytest.mark.parametrize(
         "vector",
-        _build_oaep_vectors([
-            hashes.SHA224(), hashes.SHA256(), hashes.SHA384(), hashes.SHA512()
-        ])
+        _build_oaep_sha2_vectors()
     )
     def test_decrypt_oaep_sha2_vectors(self, vector, backend):
         private, public, example, mgf1_alg, hash_alg = vector
@@ -1428,19 +1430,25 @@ class TestRSAEncryption(object):
         skip_message="Does not support OAEP using SHA256 MGF1 and SHA512 hash."
     )
     @pytest.mark.parametrize(
-        "hash_a, hash_b",
+        ("mgf1hash", "oaephash"),
         itertools.product([
-            hashes.SHA1(), hashes.SHA224(), hashes.SHA256(),
-            hashes.SHA384(), hashes.SHA512()
-        ], repeat=2)
+            hashes.SHA1(),
+            hashes.SHA224(),
+            hashes.SHA256(),
+            hashes.SHA384(),
+            hashes.SHA512()
+        ], [
+            hashes.SHA1(),
+            hashes.SHA224(),
+            hashes.SHA256(),
+            hashes.SHA384(),
+            hashes.SHA512()
+        ])
     )
-    def test_rsa_encrypt_oaep_sha2(self, hash_a, hash_b, backend):
-        if isinstance(hash_a, hashes.SHA1) and isinstance(hash_b, hashes.SHA1):
-            return  # Skip SHA-1 with SHA-1, this is checked by other tests
-
+    def test_rsa_encrypt_oaep_sha2(self, mgf1hash, oaephash, backend):
         pad = padding.OAEP(
-            mgf=padding.MGF1(algorithm=hash_a),
-            algorithm=hash_b,
+            mgf=padding.MGF1(algorithm=mgf1hash),
+            algorithm=oaephash,
             label=None
         )
         private_key = RSA_KEY_2048.private_key(backend)

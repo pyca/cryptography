@@ -585,28 +585,19 @@ class Backend(object):
         userdata = _PasswordUserdata(password=password)
         return _pem_password_cb, userdata
 
-    def _get_oaep_supported_padding_algorithms(backend):
-        # Verified test Vectors for OAEP only cover SHA-1 and SHA-2 currently
-        # with OpenSSL >= 1.0.2.
-        if backend._lib.OpenSSL_version_num() >= 0x10002001:
-            _oaep_supported_padding_algorithms = (
-                hashes.SHA1,
-                hashes.SHA224,
-                hashes.SHA256,
-                hashes.SHA384,
-                hashes.SHA512
+    def _oaep_hash_supported(self, algorithm):
+        if self._lib.OpenSSL_version_num() >= 0x10002001:
+            return isinstance(
+                algorithm, (
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512
+                )
             )
         else:
-            _oaep_supported_padding_algorithms = ( hashes.SHA1, )
-
-        return _oaep_supported_padding_algorithms
-
-    def _oaep_hash_supported(self, algorithm):
-        return (
-            isinstance(algorithm,
-                self._get_oaep_supported_padding_algorithms()) and
-            self.hash_supported(algorithm)
-        )
+            return isinstance(algorithm, hashes.SHA1)
 
     def _pss_mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
