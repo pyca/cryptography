@@ -22,8 +22,8 @@ class _HashContext(object):
             ctx = self._backend._ffi.gc(
                 ctx, self._backend._lib.Cryptography_EVP_MD_CTX_free
             )
-            evp_md = self._backend._lib.EVP_get_digestbyname(
-                algorithm.name.encode("ascii"))
+            name = self._backend._build_openssl_digest_name(algorithm)
+            evp_md = self._backend._lib.EVP_get_digestbyname(name)
             if evp_md == self._backend._ffi.NULL:
                 raise UnsupportedAlgorithm(
                     "{0} is not a supported hash on this backend.".format(

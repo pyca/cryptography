@@ -161,3 +161,43 @@ class MD5(object):
     name = "md5"
     digest_size = 16
     block_size = 64
+
+
+@utils.register_interface(HashAlgorithm)
+class BLAKE2b(object):
+    name = "blake2b"
+    digest_size = None
+    _max_digest_size = 64
+    _min_digest_size = 1
+    block_size = 128
+
+    def __init__(self, digest_size):
+        if (
+            digest_size > self._max_digest_size or
+            digest_size < self._min_digest_size
+        ):
+            raise ValueError("Digest size must be {0}-{1}".format(
+                self._min_digest_size, self._max_digest_size)
+            )
+
+        self.digest_size = digest_size
+
+
+@utils.register_interface(HashAlgorithm)
+class BLAKE2s(object):
+    name = "blake2s"
+    block_size = 64
+    digest_size = None
+    _max_digest_size = 32
+    _min_digest_size = 1
+
+    def __init__(self, digest_size):
+        if (
+            digest_size > self._max_digest_size or
+            digest_size < self._min_digest_size
+        ):
+            raise ValueError("Digest size must be {0}-{1}".format(
+                self._min_digest_size, self._max_digest_size)
+            )
+
+        self.digest_size = digest_size

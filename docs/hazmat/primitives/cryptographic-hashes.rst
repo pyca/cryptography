@@ -117,6 +117,35 @@ SHA-2 family
     SHA-512 is a cryptographic hash function from the SHA-2 family and is
     standardized by NIST. It produces a 512-bit message digest.
 
+BLAKE2
+~~~~~~
+
+`BLAKE2`_ is a cryptographic hash function specified in :rfc:`7693`. It supports
+keying, personalization, and salting.
+
+.. note::
+
+    As of OpenSSL 1.1.0 BLAKE2 is only supported as an unkeyed hash with no
+    personalization or salting features.
+
+.. class:: BLAKE2b(digest_size)
+
+    BLAKE2b is optimized for 64-bit platforms and produces an 1 to 64-byte
+    message digest.
+
+    :param int digest_size: The desired size of the hash output in bytes.
+
+    :raises ValueError: If the digest_size is invalid.
+
+.. class:: BLAKE2s(digest_size)
+
+    BLAKE2s is optimized for 8 to 32-bit platforms and produces a
+    1 to 32-byte message digest.
+
+    :param int digest_size: The desired size of the hash output in bytes.
+
+    :raises ValueError: If the digest_size is invalid.
+
 RIPEMD160
 ~~~~~~~~~
 
@@ -193,3 +222,4 @@ Interfaces
 
 
 .. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
+.. _`BLAKE2`: https://blake2.net
