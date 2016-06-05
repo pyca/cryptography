@@ -60,6 +60,14 @@ int RSA_padding_add_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
                                int, const unsigned char *, int);
 int RSA_padding_check_PKCS1_OAEP(unsigned char *, int, const unsigned char *,
                                  int, int, const unsigned char *, int);
+
+/* added in 1.1.0 when the RSA struct was opaqued */
+int RSA_set0_key(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);
+int RSA_set0_factors(RSA *, BIGNUM *, BIGNUM *);
+int RSA_set0_crt_params(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);
+void RSA_get0_key(const RSA *, BIGNUM **, BIGNUM **, BIGNUM **);
+void RSA_get0_factors(const RSA *, BIGNUM **, BIGNUM **);
+void RSA_get0_crt_params(const RSA *, BIGNUM **, BIGNUM **, BIGNUM **);
 """
 
 MACROS = """
@@ -91,5 +99,116 @@ static const long Cryptography_HAS_RSA_OAEP_MD = 1;
 #else
 static const long Cryptography_HAS_RSA_OAEP_MD = 0;
 int (*EVP_PKEY_CTX_set_rsa_oaep_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
+#endif
+
+/* These functions were added in OpenSSL 1.1.0-pre5 (beta2) */
+#if OPENSSL_VERSION_NUMBER < 0x10100005 || defined(LIBRESSL_VERSION_NUMBER)
+int RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d)
+{
+    /* If the fields in r are NULL, the corresponding input
+     * parameters MUST be non-NULL for n and e.  d may be
+     * left NULL (in case only the public key is used).
+     *
+     * It is an error to give the results from get0 on r
+     * as input parameters.
+     */
+    if (n == r->n || e == r->e
+        || (r->d != NULL && d == r->d))
+        return 0;
+
+    if (n != NULL) {
+        BN_free(r->n);
+        r->n = n;
+    }
+    if (e != NULL) {
+        BN_free(r->e);
+        r->e = e;
+    }
+    if (d != NULL) {
+        BN_free(r->d);
+        r->d = d;
+    }
+
+    return 1;
+}
+
+int RSA_set0_factors(RSA *r, BIGNUM *p, BIGNUM *q)
+{
+    /* If the fields in r are NULL, the corresponding input
+     * parameters MUST be non-NULL.
+     *
+     * It is an error to give the results from get0 on r
+     * as input parameters.
+     */
+    if (p == r->p || q == r->q)
+        return 0;
+
+    if (p != NULL) {
+        BN_free(r->p);
+        r->p = p;
+    }
+    if (q != NULL) {
+        BN_free(r->q);
+        r->q = q;
+    }
+
+    return 1;
+}
+
+int RSA_set0_crt_params(RSA *r, BIGNUM *dmp1, BIGNUM *dmq1, BIGNUM *iqmp)
+{
+    /* If the fields in r are NULL, the corresponding input
+     * parameters MUST be non-NULL.
+     *
+     * It is an error to give the results from get0 on r
+     * as input parameters.
+     */
+    if (dmp1 == r->dmp1 || dmq1 == r->dmq1 || iqmp == r->iqmp)
+        return 0;
+
+    if (dmp1 != NULL) {
+        BN_free(r->dmp1);
+        r->dmp1 = dmp1;
+    }
+    if (dmq1 != NULL) {
+        BN_free(r->dmq1);
+        r->dmq1 = dmq1;
+    }
+    if (iqmp != NULL) {
+        BN_free(r->iqmp);
+        r->iqmp = iqmp;
+    }
+
+    return 1;
+}
+
+void RSA_get0_key(const RSA *r, BIGNUM **n, BIGNUM **e, BIGNUM **d)
+{
+    if (n != NULL)
+        *n = r->n;
+    if (e != NULL)
+        *e = r->e;
+    if (d != NULL)
+        *d = r->d;
+}
+
+void RSA_get0_factors(const RSA *r, BIGNUM **p, BIGNUM **q)
+{
+    if (p != NULL)
+        *p = r->p;
+    if (q != NULL)
+        *q = r->q;
+}
+
+void RSA_get0_crt_params(const RSA *r,
+                         BIGNUM **dmp1, BIGNUM **dmq1, BIGNUM **iqmp)
+{
+    if (dmp1 != NULL)
+        *dmp1 = r->dmp1;
+    if (dmq1 != NULL)
+        *dmq1 = r->dmq1;
+    if (iqmp != NULL)
+        *iqmp = r->iqmp;
+}
 #endif
 """

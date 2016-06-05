@@ -25,8 +25,7 @@ class _DSSSigValue(univ.Sequence):
 def decode_rfc6979_signature(signature):
     warnings.warn(
         "decode_rfc6979_signature is deprecated and will "
-        "be removed in a future version, use decode_dss_signature instead "
-        "instead.",
+        "be removed in a future version, use decode_dss_signature instead.",
         utils.DeprecatedIn10,
         stacklevel=2
     )
@@ -52,8 +51,7 @@ def decode_dss_signature(signature):
 def encode_rfc6979_signature(r, s):
     warnings.warn(
         "encode_rfc6979_signature is deprecated and will "
-        "be removed in a future version, use encode_dss_signature instead "
-        "instead.",
+        "be removed in a future version, use encode_dss_signature instead.",
         utils.DeprecatedIn10,
         stacklevel=2
     )

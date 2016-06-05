@@ -27,7 +27,7 @@ You must have installed `OpenSSL`_ via `Homebrew`_ or `MacPorts`_ and must set
 ``CFLAGS`` and ``LDFLAGS`` environment variables before installing the
 ``dev-requirements.txt`` otherwise pip will fail with include errors.
 
-For example with `Homebrew`_:
+For example, with `Homebrew`_:
 
 .. code-block:: console
 

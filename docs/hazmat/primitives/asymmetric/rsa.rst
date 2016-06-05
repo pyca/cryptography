@@ -153,6 +153,20 @@ secure hash function and padding:
     >>> signer.update(message)
     >>> signature = signer.finalize()
 
+There is a shortcut to sign sufficiently short messages directly:
+
+.. doctest::
+
+    >>> message = b"A message I want to sign"
+    >>> signature = private_key.sign(
+    ...     message,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     hashes.SHA256()
+    ... )
+
 Valid paddings for signatures are
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` and
 :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`. ``PSS``
@@ -189,6 +203,20 @@ a public key to use in verification using
 
 If the signature does not match, ``verify()`` will raise an
 :class:`~cryptography.exceptions.InvalidSignature` exception.
+
+There is a shortcut to verify sufficiently short messages directly:
+
+.. doctest::
+
+    >>> public_key.verify(
+    ...     signature,
+    ...     message,
+    ...     padding.PSS(
+    ...         mgf=padding.MGF1(hashes.SHA256()),
+    ...         salt_length=padding.PSS.MAX_LENGTH
+    ...     ),
+    ...     hashes.SHA256()
+    ... )
 
 Encryption
 ~~~~~~~~~~
@@ -486,7 +514,8 @@ Key interfaces
 
         .. versionadded:: 0.3
 
-        Sign data which can be verified later by others using the public key.
+        Get signer to sign data which can be verified later by others using
+        the public key.
 
         :param padding: An instance of a
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
@@ -524,6 +553,25 @@ Key interfaces
         :type: int
 
         The bit length of the modulus.
+
+    .. method:: sign(data, padding, algorithm)
+
+        .. versionadded:: 1.4
+
+        Sign one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes data: The message string to sign.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            provider.
+
+        :return: bytes: Signature.
 
 
 .. class:: RSAPrivateKeyWithSerialization
@@ -580,8 +628,8 @@ Key interfaces
 
         .. versionadded:: 0.3
 
-        Verify data was signed by the private key associated with this public
-        key.
+        Get verifier to verify data was signed by the private key associated
+        with this public key.
 
         :param bytes signature: The signature to verify.
 
@@ -644,6 +692,28 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+    .. method:: verify(signature, data, padding, algorithm)
+
+        .. versionadded:: 1.4
+
+        Verify one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes signature: The signature to verify.
+
+        :param bytes data: The message string that was signed.
+
+        :param padding: An instance of an
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
+            provider.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            provider.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
 
 
 .. class:: RSAPublicKeyWithSerialization

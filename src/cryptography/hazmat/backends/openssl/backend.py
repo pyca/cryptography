@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import base64
 import calendar
 import collections
 import itertools
@@ -433,14 +434,20 @@ class Backend(object):
         rsa_cdata = self._lib.RSA_new()
         self.openssl_assert(rsa_cdata != self._ffi.NULL)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        rsa_cdata.p = self._int_to_bn(numbers.p)
-        rsa_cdata.q = self._int_to_bn(numbers.q)
-        rsa_cdata.d = self._int_to_bn(numbers.d)
-        rsa_cdata.dmp1 = self._int_to_bn(numbers.dmp1)
-        rsa_cdata.dmq1 = self._int_to_bn(numbers.dmq1)
-        rsa_cdata.iqmp = self._int_to_bn(numbers.iqmp)
-        rsa_cdata.e = self._int_to_bn(numbers.public_numbers.e)
-        rsa_cdata.n = self._int_to_bn(numbers.public_numbers.n)
+        p = self._int_to_bn(numbers.p)
+        q = self._int_to_bn(numbers.q)
+        d = self._int_to_bn(numbers.d)
+        dmp1 = self._int_to_bn(numbers.dmp1)
+        dmq1 = self._int_to_bn(numbers.dmq1)
+        iqmp = self._int_to_bn(numbers.iqmp)
+        e = self._int_to_bn(numbers.public_numbers.e)
+        n = self._int_to_bn(numbers.public_numbers.n)
+        res = self._lib.RSA_set0_factors(rsa_cdata, p, q)
+        self.openssl_assert(res == 1)
+        res = self._lib.RSA_set0_key(rsa_cdata, n, e, d)
+        self.openssl_assert(res == 1)
+        res = self._lib.RSA_set0_crt_params(rsa_cdata, dmp1, dmq1, iqmp)
+        self.openssl_assert(res == 1)
         res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
         self.openssl_assert(res == 1)
         evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
@@ -452,9 +459,9 @@ class Backend(object):
         rsa_cdata = self._lib.RSA_new()
         self.openssl_assert(rsa_cdata != self._ffi.NULL)
         rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        rsa_cdata.e = self._int_to_bn(numbers.e)
-        rsa_cdata.n = self._int_to_bn(numbers.n)
-        res = self._lib.RSA_blinding_on(rsa_cdata, self._ffi.NULL)
+        e = self._int_to_bn(numbers.e)
+        n = self._int_to_bn(numbers.n)
+        res = self._lib.RSA_set0_key(rsa_cdata, n, e, self._ffi.NULL)
         self.openssl_assert(res == 1)
         evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
 
@@ -583,7 +590,21 @@ class Backend(object):
         userdata = _PasswordUserdata(password=password)
         return _pem_password_cb, userdata
 
-    def _mgf1_hash_supported(self, algorithm):
+    def _oaep_hash_supported(self, algorithm):
+        if self._lib.Cryptography_HAS_RSA_OAEP_MD:
+            return isinstance(
+                algorithm, (
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                )
+            )
+        else:
+            return isinstance(algorithm, hashes.SHA1)
+
+    def _pss_mgf1_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_MGF1_MD:
             return self.hash_supported(algorithm)
         else:
@@ -593,9 +614,12 @@ class Backend(object):
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
-            return self._mgf1_hash_supported(padding._mgf._algorithm)
+            return self._pss_mgf1_hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
-            return isinstance(padding._mgf._algorithm, hashes.SHA1)
+            return (
+                self._oaep_hash_supported(padding._mgf._algorithm) and
+                self._oaep_hash_supported(padding._algorithm)
+            )
         else:
             return False
 
@@ -622,14 +646,29 @@ class Backend(object):
 
         return _DSAParameters(self, ctx)
 
-    def generate_dsa_private_key(self, parameters):
-        ctx = self._lib.DSA_new()
-        self.openssl_assert(ctx != self._ffi.NULL)
-        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
-        ctx.p = self._lib.BN_dup(parameters._dsa_cdata.p)
-        ctx.q = self._lib.BN_dup(parameters._dsa_cdata.q)
-        ctx.g = self._lib.BN_dup(parameters._dsa_cdata.g)
+    def _dup_dsa_params(self, dsa_cdata):
+        dsa_cdata_dup = self._lib.DSA_new()
+        self.openssl_assert(dsa_cdata_dup != self._ffi.NULL)
+        dsa_cdata_dup = self._ffi.gc(dsa_cdata_dup, self._lib.DSA_free)
+        p = self._ffi.new("BIGNUM **")
+        q = self._ffi.new("BIGNUM **")
+        g = self._ffi.new("BIGNUM **")
+        self._lib.DSA_get0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(p[0] != self._ffi.NULL)
+        self.openssl_assert(q[0] != self._ffi.NULL)
+        self.openssl_assert(g[0] != self._ffi.NULL)
+        p_dup = self._lib.BN_dup(p[0])
+        q_dup = self._lib.BN_dup(q[0])
+        g_dup = self._lib.BN_dup(g[0])
+        self.openssl_assert(p_dup != self._ffi.NULL)
+        self.openssl_assert(q_dup != self._ffi.NULL)
+        self.openssl_assert(g_dup != self._ffi.NULL)
+        res = self._lib.DSA_set0_pqg(dsa_cdata_dup, p_dup, q_dup, g_dup)
+        self.openssl_assert(res == 1)
+        return dsa_cdata_dup
 
+    def generate_dsa_private_key(self, parameters):
+        ctx = self._dup_dsa_params(parameters._dsa_cdata)
         self._lib.DSA_generate_key(ctx)
         evp_pkey = self._dsa_cdata_to_evp_pkey(ctx)
 
@@ -639,6 +678,12 @@ class Backend(object):
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
 
+    def _dsa_cdata_set_values(self, dsa_cdata, p, q, g, pub_key, priv_key):
+        res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(res == 1)
+        res = self._lib.DSA_set0_key(dsa_cdata, pub_key, priv_key)
+        self.openssl_assert(res == 1)
+
     def load_dsa_private_numbers(self, numbers):
         dsa._check_dsa_private_numbers(numbers)
         parameter_numbers = numbers.public_numbers.parameter_numbers
@@ -647,11 +692,12 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(parameter_numbers.p)
-        dsa_cdata.q = self._int_to_bn(parameter_numbers.q)
-        dsa_cdata.g = self._int_to_bn(parameter_numbers.g)
-        dsa_cdata.pub_key = self._int_to_bn(numbers.public_numbers.y)
-        dsa_cdata.priv_key = self._int_to_bn(numbers.x)
+        p = self._int_to_bn(parameter_numbers.p)
+        q = self._int_to_bn(parameter_numbers.q)
+        g = self._int_to_bn(parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.public_numbers.y)
+        priv_key = self._int_to_bn(numbers.x)
+        self._dsa_cdata_set_values(dsa_cdata, p, q, g, pub_key, priv_key)
 
         evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
 
@@ -663,10 +709,12 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(numbers.parameter_numbers.p)
-        dsa_cdata.q = self._int_to_bn(numbers.parameter_numbers.q)
-        dsa_cdata.g = self._int_to_bn(numbers.parameter_numbers.g)
-        dsa_cdata.pub_key = self._int_to_bn(numbers.y)
+        p = self._int_to_bn(numbers.parameter_numbers.p)
+        q = self._int_to_bn(numbers.parameter_numbers.q)
+        g = self._int_to_bn(numbers.parameter_numbers.g)
+        pub_key = self._int_to_bn(numbers.y)
+        priv_key = self._ffi.NULL
+        self._dsa_cdata_set_values(dsa_cdata, p, q, g, pub_key, priv_key)
 
         evp_pkey = self._dsa_cdata_to_evp_pkey(dsa_cdata)
 
@@ -678,9 +726,11 @@ class Backend(object):
         self.openssl_assert(dsa_cdata != self._ffi.NULL)
         dsa_cdata = self._ffi.gc(dsa_cdata, self._lib.DSA_free)
 
-        dsa_cdata.p = self._int_to_bn(numbers.p)
-        dsa_cdata.q = self._int_to_bn(numbers.q)
-        dsa_cdata.g = self._int_to_bn(numbers.g)
+        p = self._int_to_bn(numbers.p)
+        q = self._int_to_bn(numbers.q)
+        g = self._int_to_bn(numbers.g)
+        res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
+        self.openssl_assert(res == 1)
 
         return _DSAParameters(self, dsa_cdata)
 
@@ -1671,11 +1721,23 @@ class Backend(object):
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
 
-    def _public_key_bytes(self, encoding, format, evp_pkey, cdata):
+    def _public_key_bytes(self, encoding, format, key, evp_pkey, cdata):
         if not isinstance(encoding, serialization.Encoding):
             raise TypeError("encoding must be an item from the Encoding enum")
 
-        if format is serialization.PublicFormat.SubjectPublicKeyInfo:
+        if (
+            format is serialization.PublicFormat.OpenSSH or
+            encoding is serialization.Encoding.OpenSSH
+        ):
+            if (
+                format is not serialization.PublicFormat.OpenSSH or
+                encoding is not serialization.Encoding.OpenSSH
+            ):
+                raise ValueError(
+                    "OpenSSH format must be used with OpenSSH encoding"
+                )
+            return self._openssh_public_key_bytes(key)
+        elif format is serialization.PublicFormat.SubjectPublicKeyInfo:
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_PUBKEY
             else:
@@ -1704,6 +1766,44 @@ class Backend(object):
         res = write_bio(bio, key)
         self.openssl_assert(res == 1)
         return self._read_mem_bio(bio)
+
+    def _openssh_public_key_bytes(self, key):
+        if isinstance(key, rsa.RSAPublicKey):
+            public_numbers = key.public_numbers()
+            return b"ssh-rsa " + base64.b64encode(
+                serialization._ssh_write_string(b"ssh-rsa") +
+                serialization._ssh_write_mpint(public_numbers.e) +
+                serialization._ssh_write_mpint(public_numbers.n)
+            )
+        elif isinstance(key, dsa.DSAPublicKey):
+            public_numbers = key.public_numbers()
+            parameter_numbers = public_numbers.parameter_numbers
+            return b"ssh-dss " + base64.b64encode(
+                serialization._ssh_write_string(b"ssh-dss") +
+                serialization._ssh_write_mpint(parameter_numbers.p) +
+                serialization._ssh_write_mpint(parameter_numbers.q) +
+                serialization._ssh_write_mpint(parameter_numbers.g) +
+                serialization._ssh_write_mpint(public_numbers.y)
+            )
+        else:
+            assert isinstance(key, ec.EllipticCurvePublicKey)
+            public_numbers = key.public_numbers()
+            try:
+                curve_name = {
+                    ec.SECP256R1: b"nistp256",
+                    ec.SECP384R1: b"nistp384",
+                    ec.SECP521R1: b"nistp521",
+                }[type(public_numbers.curve)]
+            except KeyError:
+                raise ValueError(
+                    "Only SECP256R1, SECP384R1, and SECP521R1 curves are "
+                    "supported by the SSH public key format"
+                )
+            return b"ecdsa-sha2-" + curve_name + b" " + base64.b64encode(
+                serialization._ssh_write_string(b"ecdsa-sha2-" + curve_name) +
+                serialization._ssh_write_string(curve_name) +
+                serialization._ssh_write_string(public_numbers.encode_point())
+            )
 
     def generate_dh_parameters(self, generator, key_size):
         if key_size < 512:

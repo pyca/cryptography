@@ -1,13 +1,41 @@
 Changelog
 =========
 
-1.4 - `master`_
+1.5 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
-* Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
-  will need to upgrade.
+
+1.4 - 2016-06-04
+~~~~~~~~~~~~~~~~
+
+* Support for OpenSSL 0.9.8 has been removed. Users on older versions of
+  OpenSSL will need to upgrade.
+* Added :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC`.
+* Added support for ``OpenSSH`` public key serialization.
+* Added support for SHA-2 in RSA
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` when using
+  OpenSSL 1.0.2 or greater.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+  methods to RSA keys.
+
+
+1.3.4 - 2016-06-03
+~~~~~~~~~~~~~~~~~~
+
+* Added another OpenSSL function to the bindings to support an upcoming
+  ``pyOpenSSL`` release.
+
+
+1.3.3 - 2016-06-02
+~~~~~~~~~~~~~~~~~~
+
+* Added two new OpenSSL functions to the bindings to support an upcoming
+  ``pyOpenSSL`` release.
 
 1.3.2 - 2016-05-04
 ~~~~~~~~~~~~~~~~~~

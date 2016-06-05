@@ -8,6 +8,7 @@ import binascii
 import datetime
 import ipaddress
 import os
+import warnings
 
 from pyasn1.codec.der import decoder
 
@@ -486,10 +487,34 @@ class TestRSACertificate(object):
             backend
         )
         assert isinstance(cert, x509.Certificate)
-        assert cert.serial == 11559813051657483483
+        assert cert.serial_number == 11559813051657483483
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"2b619ed04bfc9c3b08eb677d272192286a0947a8"
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
+
+    def test_cert_serial_number(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", utils.DeprecatedIn10)
+            assert cert.serial == 2
+            assert cert.serial_number == 2
+
+    def test_cert_serial_warning(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+            backend
+        )
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", utils.DeprecatedIn10)
+            with pytest.deprecated_call():
+                cert.serial
 
     def test_load_der_cert(self, backend):
         cert = _load_cert(
@@ -498,7 +523,7 @@ class TestRSACertificate(object):
             backend
         )
         assert isinstance(cert, x509.Certificate)
-        assert cert.serial == 2
+        assert cert.serial_number == 2
         fingerprint = binascii.hexlify(cert.fingerprint(hashes.SHA1()))
         assert fingerprint == b"6f49779533d565e8b7c1062503eab41492c38e4d"
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
@@ -734,7 +759,7 @@ class TestRSACertificate(object):
 
         assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
-        assert cert.serial == 2
+        assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert cert.version is x509.Version.v3
@@ -909,7 +934,7 @@ class TestRSACertificate(object):
         # We should recover what we had to start with.
         assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
-        assert cert.serial == 2
+        assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert cert.version is x509.Version.v3
@@ -932,7 +957,7 @@ class TestRSACertificate(object):
         # We should recover what we had to start with.
         assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
-        assert cert.serial == 2
+        assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert cert.version is x509.Version.v3

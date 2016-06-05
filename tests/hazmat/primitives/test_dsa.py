@@ -721,6 +721,21 @@ class TestDSANumbers(object):
         with pytest.raises(TypeError):
             dsa.DSAPrivateNumbers(x=None, public_numbers=public_numbers)
 
+    def test_repr(self):
+        parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
+        assert (
+            repr(parameter_numbers) == "<DSAParameterNumbers(p=1, q=2, g=3)>"
+        )
+
+        public_numbers = dsa.DSAPublicNumbers(
+            y=4,
+            parameter_numbers=parameter_numbers
+        )
+        assert repr(public_numbers) == (
+            "<DSAPublicNumbers(y=4, parameter_numbers=<DSAParameterNumbers(p=1"
+            ", q=2, g=3)>)>"
+        )
+
 
 class TestDSANumberEquality(object):
     def test_parameter_numbers_eq(self):
@@ -1017,6 +1032,29 @@ class TestDSAPEMPublicKeySerialization(object):
             encoding, serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         assert serialized == key_bytes
+
+    def test_public_bytes_openssh(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pub.pem"),
+            lambda pemfile: pemfile.read(), mode="rb"
+        )
+        key = serialization.load_pem_public_key(key_bytes, backend)
+
+        ssh_bytes = key.public_bytes(
+            serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
+        )
+        assert ssh_bytes == (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBAKoJMMwUWCUiHK/6KKwolBlqJ4M95ewhJweR"
+            b"aJQgd3Si57I4sNNvGySZosJYUIPrAUMpJEGNhn+qIS3RBx1NzrJ4J5StOTzAik1K"
+            b"2n9o1ug5pfzTS05ALYLLioy0D+wxkRv5vTYLA0yqy0xelHmSVzyekAmcGw8FlAyr"
+            b"5dLeSaFnAAAAFQCtwOhps28KwBOmgf301ImdaYIEUQAAAIEAjGtFia+lOk0QSL/D"
+            b"RtHzhsp1UhzPct2qJRKGiA7hMgH/SIkLv8M9ebrK7HHnp3hQe9XxpmQi45QVvgPn"
+            b"EUG6Mk9bkxMZKRgsiKn6QGKDYGbOvnS1xmkMfRARBsJAq369VOTjMB/Qhs5q2ski"
+            b"+ycTorCIfLoTubxozlz/8kHNMkYAAACAKyYOqX3GoSrpMsZA5989j/BKigWgMk+N"
+            b"Xxsj8V+hcP8/QgYRJO/yWGyxG0moLc3BuQ/GqE+xAQnLZ9tdLalxrq8Xvl43KEVj"
+            b"5MZNnl/ISAJYsxnw3inVTYNQcNnih5FNd9+BSR9EI7YtqYTrP0XrKin86l2uUlrG"
+            b"q2vM4Ev99bY="
+        )
 
     def test_public_bytes_invalid_encoding(self, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()

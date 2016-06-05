@@ -44,6 +44,7 @@ Custom asymmetric vectors
     :maxdepth: 1
 
     custom-vectors/secp256k1
+    custom-vectors/rsa-oaep-sha2
 
 * ``asymmetric/PEM_Serialization/ec_private_key.pem`` and
   ``asymmetric/DER_Serialization/ec_private_key.der`` - Contains an Elliptic

@@ -11,8 +11,6 @@ INCLUDES = """
 TYPES = """
 static const long Cryptography_HAS_LOCKING_CALLBACKS;
 
-typedef ... CRYPTO_THREADID;
-
 static const int SSLEAY_VERSION;
 static const int SSLEAY_CFLAGS;
 static const int SSLEAY_PLATFORM;
@@ -34,7 +32,6 @@ static const int CRYPTO_LOCK_SSL;
 """
 
 FUNCTIONS = """
-void CRYPTO_free(void *);
 int CRYPTO_mem_ctrl(int);
 int CRYPTO_is_mem_check_on(void);
 void CRYPTO_mem_leaks(struct bio_st *);

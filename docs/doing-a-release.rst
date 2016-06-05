@@ -76,6 +76,7 @@ Post-release tasks
 * Update the version number to the next major (e.g. ``0.5.dev1``) in
   ``cryptography/__about__.py`` and
   ``vectors/cryptography_vectors/__about__.py``.
+* Close the `milestone`_ for the previous release on GitHub.
 * Add new :doc:`/changelog` entry with next version and note that it is under
   active development
 * Send a pull request with these items
@@ -85,5 +86,6 @@ Post-release tasks
 * Send an email to the `mailing list`_ and `python-announce`_ announcing the
   release.
 
+.. _`milestone`: https://github.com/pyca/cryptography/milestones
 .. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`python-announce`: https://mail.python.org/mailman/listinfo/python-announce-list
