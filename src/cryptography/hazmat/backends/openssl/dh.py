@@ -49,7 +49,8 @@ class _DHParameters(object):
     def parameter_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, self._backend._ffi.NULL, g)
+        self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                       p, self._backend._ffi.NULL, g)
         assert p[0] != self._backend._ffi.NULL
         assert g[0] != self._backend._ffi.NULL
         return dh.DHParameterNumbers(
@@ -87,7 +88,8 @@ class _DHPrivateKey(object):
     def private_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, self._backend._ffi.NULL, g)
+        self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                       p, self._backend._ffi.NULL, g)
         assert p[0] != self._backend._ffi.NULL
         assert g[0] != self._backend._ffi.NULL
         pub_key = self._backend._ffi.new("BIGNUM **")
@@ -138,7 +140,8 @@ class _DHPrivateKey(object):
 
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, self._backend._ffi.NULL, g)
+        self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                       p, self._backend._ffi.NULL, g)
         assert p[0] != self._backend._ffi.NULL
         assert g[0] != self._backend._ffi.NULL
         p_dup = self._backend._lib.BN_dup(p[0])
@@ -146,15 +149,20 @@ class _DHPrivateKey(object):
         assert p_dup != self._backend._ffi.NULL
         assert g_dup != self._backend._ffi.NULL
         pub_key = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_key(self._dh_cdata, pub_key, self._backend._ffi.NULL)
+        self._backend._lib.DH_get0_key(self._dh_cdata,
+                                       pub_key, self._backend._ffi.NULL)
         assert pub_key[0] != self._backend._ffi.NULL
         pub_key_dup = self._backend._lib.BN_dup(pub_key[0])
         assert pub_key_dup != self._backend._ffi.NULL
 
-        res = self._backend._lib.DH_set0_pqg(dh_cdata, p_dup, self._backend._ffi.NULL, g_dup)
+        res = self._backend._lib.DH_set0_pqg(dh_cdata,
+                                             p_dup,
+                                             self._backend._ffi.NULL, g_dup)
         assert res == 1
 
-        res = self._backend._lib.DH_set0_key(dh_cdata, pub_key_dup, self._backend._ffi.NULL)
+        res = self._backend._lib.DH_set0_key(dh_cdata,
+                                             pub_key_dup,
+                                             self._backend._ffi.NULL)
         assert res == 1
 
         return _DHPublicKey(self._backend, dh_cdata)
@@ -177,11 +185,13 @@ class _DHPublicKey(object):
     def public_numbers(self):
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_pqg(self._dh_cdata, p, self._backend._ffi.NULL, g)
+        self._backend._lib.DH_get0_pqg(self._dh_cdata,
+                                       p, self._backend._ffi.NULL, g)
         assert p[0] != self._backend._ffi.NULL
         assert g[0] != self._backend._ffi.NULL
         pub_key = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DH_get0_key(self._dh_cdata, pub_key, self._backend._ffi.NULL)
+        self._backend._lib.DH_get0_key(self._dh_cdata,
+                                       pub_key, self._backend._ffi.NULL)
         assert pub_key[0] != self._backend._ffi.NULL
         return dh.DHPublicNumbers(
             parameter_numbers=dh.DHParameterNumbers(
