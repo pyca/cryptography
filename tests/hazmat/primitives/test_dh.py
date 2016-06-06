@@ -136,6 +136,13 @@ class TestDH(object):
         assert isinstance(serialized_public, dh.DHPublicKeyWithSerialization)
         assert isinstance(serialized_private, dh.DHPrivateKeyWithSerialization)
 
+        params = dh.DHParameterNumbers(23, 18)
+        public = dh.DHPublicNumbers(1, params)
+        private = dh.DHPrivateNumbers(2, public)
+
+        with pytest.raises(ValueError):
+            private.private_key(backend)
+
     def test_generate_dh(self, backend):
         generator = 2
         key_size = 512
