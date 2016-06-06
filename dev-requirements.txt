@@ -1,7 +1,6 @@
 clint
 coverage
 invoke
-pytz
 requests
 tox
 twine

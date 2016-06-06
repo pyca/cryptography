@@ -20,10 +20,10 @@ Changelog
   methods to ECDSA keys.
 * Switched back to the older callback model on Python 3.5 in order to mitigate
   the locking callback problem with OpenSSL <1.1.0.
-* :class:`~cryptography.x509.CertificateBuilder` now also accepts timezone
-  aware ``datetime`` objects for
-  :meth:`~cryptography.x509.CertificateBuilder.not_valid_before` and
-  :meth:`~cryptography.x509.CertificateBuilder.not_valid_after`
+* :class:`~cryptography.x509.CertificateBuilder`,
+  :class:`~cryptography.x509.CertificateRevocationListBuilder`, and
+  :class:`~cryptography.x509.RevokedCertificateBuilder` now accept timezone
+  aware ``datetime`` objects as method arguments
 
 
 1.4 - 2016-06-04
