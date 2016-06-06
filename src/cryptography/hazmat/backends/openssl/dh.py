@@ -22,20 +22,20 @@ def _dh_cdata_to_parameters(dh_cdata, backend):
     ffi = backend._ffi
 
     param_cdata = lib.DH_new()
-    assert param_cdata != ffi.NULL
+    backend.openssl_assert(param_cdata != ffi.NULL)
     param_cdata = ffi.gc(param_cdata, lib.DH_free)
 
     p = ffi.new("BIGNUM **")
     g = ffi.new("BIGNUM **")
     lib.DH_get0_pqg(dh_cdata, p, ffi.NULL, g)
-    assert p[0] != ffi.NULL
-    assert g[0] != ffi.NULL
+    backend.openssl_assert(p[0] != ffi.NULL)
+    backend.openssl_assert(g[0] != ffi.NULL)
     p_dup = lib.BN_dup(p[0])
     g_dup = lib.BN_dup(g[0])
-    assert p_dup != ffi.NULL
-    assert g_dup != ffi.NULL
+    backend.openssl_assert(p_dup != ffi.NULL)
+    backend.openssl_assert(g_dup != ffi.NULL)
     res = lib.DH_set0_pqg(param_cdata, p_dup, ffi.NULL, g_dup)
-    assert res == 1
+    backend.openssl_assert(res == 1)
 
     return _DHParameters(backend, param_cdata)
 
@@ -51,8 +51,8 @@ class _DHParameters(object):
         g = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_pqg(self._dh_cdata,
                                        p, self._backend._ffi.NULL, g)
-        assert p[0] != self._backend._ffi.NULL
-        assert g[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
         return dh.DHParameterNumbers(
             p=self._backend._bn_to_int(p[0]),
             g=self._backend._bn_to_int(g[0])
@@ -65,11 +65,11 @@ class _DHParameters(object):
 def _handle_dh_compute_key_error(errors, backend):
     lib = backend._lib
 
-    assert errors[0][1:] == (
+    backend.openssl_assert(errors[0][1:] == (
         lib.ERR_LIB_DH,
         lib.DH_F_COMPUTE_KEY,
         lib.DH_R_INVALID_PUBKEY
-    )
+    ))
 
     raise ValueError("Public key value is invalid for this exchange.")
 
@@ -90,13 +90,13 @@ class _DHPrivateKey(object):
         g = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_pqg(self._dh_cdata,
                                        p, self._backend._ffi.NULL, g)
-        assert p[0] != self._backend._ffi.NULL
-        assert g[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
         pub_key = self._backend._ffi.new("BIGNUM **")
         priv_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata, pub_key, priv_key)
-        assert pub_key[0] != self._backend._ffi.NULL
-        assert priv_key[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(pub_key[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(priv_key[0] != self._backend._ffi.NULL)
         return dh.DHPrivateNumbers(
             public_numbers=dh.DHPublicNumbers(
                 parameter_numbers=dh.DHParameterNumbers(
@@ -121,7 +121,7 @@ class _DHPrivateKey(object):
             errors = self._backend._consume_errors()
             return _handle_dh_compute_key_error(errors, self._backend)
         else:
-            assert res >= 1
+            self._backend.openssl_assert(res >= 1)
 
             key = self._backend._ffi.buffer(buf)[:res]
             pad = self._key_size - len(key)
@@ -133,7 +133,7 @@ class _DHPrivateKey(object):
 
     def public_key(self):
         dh_cdata = self._backend._lib.DH_new()
-        assert dh_cdata != self._backend._ffi.NULL
+        self._backend.openssl_assert(dh_cdata != self._backend._ffi.NULL)
         dh_cdata = self._backend._ffi.gc(
             dh_cdata, self._backend._lib.DH_free
         )
@@ -142,28 +142,28 @@ class _DHPrivateKey(object):
         g = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_pqg(self._dh_cdata,
                                        p, self._backend._ffi.NULL, g)
-        assert p[0] != self._backend._ffi.NULL
-        assert g[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
         p_dup = self._backend._lib.BN_dup(p[0])
         g_dup = self._backend._lib.BN_dup(g[0])
-        assert p_dup != self._backend._ffi.NULL
-        assert g_dup != self._backend._ffi.NULL
+        self._backend.openssl_assert(p_dup != self._backend._ffi.NULL)
+        self._backend.openssl_assert(g_dup != self._backend._ffi.NULL)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata,
                                        pub_key, self._backend._ffi.NULL)
-        assert pub_key[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(pub_key[0] != self._backend._ffi.NULL)
         pub_key_dup = self._backend._lib.BN_dup(pub_key[0])
-        assert pub_key_dup != self._backend._ffi.NULL
+        self._backend.openssl_assert(pub_key_dup != self._backend._ffi.NULL)
 
         res = self._backend._lib.DH_set0_pqg(dh_cdata,
                                              p_dup,
                                              self._backend._ffi.NULL, g_dup)
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
 
         res = self._backend._lib.DH_set0_key(dh_cdata,
                                              pub_key_dup,
                                              self._backend._ffi.NULL)
-        assert res == 1
+        self._backend.openssl_assert(res == 1)
 
         return _DHPublicKey(self._backend, dh_cdata)
 
@@ -187,12 +187,12 @@ class _DHPublicKey(object):
         g = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_pqg(self._dh_cdata,
                                        p, self._backend._ffi.NULL, g)
-        assert p[0] != self._backend._ffi.NULL
-        assert g[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
+        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
         pub_key = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.DH_get0_key(self._dh_cdata,
                                        pub_key, self._backend._ffi.NULL)
-        assert pub_key[0] != self._backend._ffi.NULL
+        self._backend.openssl_assert(pub_key[0] != self._backend._ffi.NULL)
         return dh.DHPublicNumbers(
             parameter_numbers=dh.DHParameterNumbers(
                 p=self._backend._bn_to_int(p[0]),

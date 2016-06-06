@@ -1810,7 +1810,7 @@ class Backend(object):
             raise ValueError("DH key_size must be at least 512 bits")
 
         dh_param_cdata = self._lib.DH_new()
-        assert dh_param_cdata != self._ffi.NULL
+        self.openssl_assert(dh_param_cdata != self._ffi.NULL)
         dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
 
         res = self._lib.DH_generate_parameters_ex(
@@ -1819,29 +1819,29 @@ class Backend(object):
             generator,
             self._ffi.NULL
         )
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         return _DHParameters(self, dh_param_cdata)
 
     def generate_dh_private_key(self, parameters):
         dh_key_cdata = self._lib.DH_new()
-        assert dh_key_cdata != self._ffi.NULL
+        self.openssl_assert(dh_key_cdata != self._ffi.NULL)
         dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
 
         p = self._ffi.new("BIGNUM **")
         g = self._ffi.new("BIGNUM **")
         self._lib.DH_get0_pqg(parameters._dh_cdata, p, self._ffi.NULL, g)
-        assert p[0] != self._ffi.NULL
-        assert g[0] != self._ffi.NULL
+        self.openssl_assert(p[0] != self._ffi.NULL)
+        self.openssl_assert(g[0] != self._ffi.NULL)
         p_dup = self._lib.BN_dup(p[0])
         g_dup = self._lib.BN_dup(g[0])
-        assert p_dup != self._ffi.NULL
-        assert g_dup != self._ffi.NULL
+        self.openssl_assert(p_dup != self._ffi.NULL)
+        self.openssl_assert(g_dup != self._ffi.NULL)
         res = self._lib.DH_set0_pqg(dh_key_cdata, p_dup, self._ffi.NULL, g_dup)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         res = self._lib.DH_generate_key(dh_key_cdata)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         return _DHPrivateKey(self, dh_key_cdata)
 
@@ -1853,7 +1853,7 @@ class Backend(object):
         parameter_numbers = numbers.public_numbers.parameter_numbers
 
         dh_cdata = self._lib.DH_new()
-        assert dh_cdata != self._ffi.NULL
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
 
         p = self._int_to_bn(parameter_numbers.p)
@@ -1862,14 +1862,14 @@ class Backend(object):
         priv_key = self._int_to_bn(numbers.x)
 
         res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
         res = self._lib.DH_check(dh_cdata, codes)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         if codes[0] != 0:
             raise ValueError("DH private numbers did not pass safety checks.")
@@ -1878,7 +1878,7 @@ class Backend(object):
 
     def load_dh_public_numbers(self, numbers):
         dh_cdata = self._lib.DH_new()
-        assert dh_cdata != self._ffi.NULL
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
 
         parameter_numbers = numbers.parameter_numbers
@@ -1888,40 +1888,40 @@ class Backend(object):
         pub_key = self._int_to_bn(numbers.y)
 
         res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         return _DHPublicKey(self, dh_cdata)
 
     def load_dh_parameter_numbers(self, numbers):
         dh_cdata = self._lib.DH_new()
-        assert dh_cdata != self._ffi.NULL
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
 
         p = self._int_to_bn(numbers.p)
         g = self._int_to_bn(numbers.g)
 
         res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         return _DHParameters(self, dh_cdata)
 
     def dh_parameters_supported(self, p, g):
         dh_cdata = self._lib.DH_new()
-        assert dh_cdata != self._ffi.NULL
+        self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
 
         p = self._int_to_bn(p)
         g = self._int_to_bn(g)
 
         res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
         res = self._lib.DH_check(dh_cdata, codes)
-        assert res == 1
+        self.openssl_assert(res == 1)
 
         return codes[0] == 0
 
