@@ -13,7 +13,9 @@ from contextlib import contextmanager
 import six
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import (
+    UnnecessaryPassphrase, UnsupportedAlgorithm, _Reasons
+)
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
@@ -1177,10 +1179,7 @@ class Backend(object):
         if key != self._ffi.NULL:
             key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
-                raise TypeError(
-                    "Password was given but private key is not encrypted."
-                )
-
+                raise UnnecessaryPassphrase()
             return key
         else:
             self._consume_errors()
@@ -1196,9 +1195,7 @@ class Backend(object):
             self.openssl_assert(key != self._ffi.NULL)
             key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
-                raise TypeError(
-                    "Password was given but private key is not encrypted."
-                )
+                raise UnnecessaryPassphrase()
             return key
         else:
             self._consume_errors()
@@ -1317,9 +1314,7 @@ class Backend(object):
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
         if password is not None and userdata.called == 0:
-            raise TypeError(
-                "Password was given but private key is not encrypted.")
-
+            raise UnnecessaryPassphrase()
         assert (
             (password is not None and userdata.called == 1) or
             password is None

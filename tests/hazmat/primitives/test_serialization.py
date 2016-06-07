@@ -11,7 +11,9 @@ import textwrap
 
 import pytest
 
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import (
+    UnnecessaryPassphrase, UnsupportedAlgorithm, _Reasons
+)
 from cryptography.hazmat.backends.interfaces import (
     DERSerializationBackend, DSABackend, EllipticCurveBackend,
     PEMSerializationBackend, RSABackend
@@ -131,7 +133,7 @@ class TestDERSerialization(object):
         key_file = os.path.join("asymmetric", *key_path)
         password = b"this password will not be used"
 
-        with pytest.raises(TypeError):
+        with pytest.raises(UnnecessaryPassphrase):
             load_vectors_from_file(
                 key_file,
                 lambda derfile: load_der_private_key(
@@ -484,7 +486,7 @@ class TestPEMSerialization(object):
         key_file = os.path.join("asymmetric", *key_path)
         password = b"this password will not be used"
 
-        with pytest.raises(TypeError):
+        with pytest.raises(UnnecessaryPassphrase):
             load_vectors_from_file(
                 key_file,
                 lambda pemfile: load_pem_private_key(

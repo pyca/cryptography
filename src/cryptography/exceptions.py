@@ -54,3 +54,8 @@ class InternalError(Exception):
 
 class InvalidKey(Exception):
     pass
+
+
+class UnnecessaryPassphrase(Exception):
+    def __str__(self):
+        return "Password was given but key is not encrypted"
