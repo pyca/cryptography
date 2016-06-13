@@ -17,14 +17,31 @@ from cryptography import x509
 from cryptography.hazmat.backends.interfaces import (
     DSABackend, EllipticCurveBackend, RSABackend, X509Backend
 )
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.x509 import DNSName, NameConstraints, SubjectAlternativeName
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID, ExtendedKeyUsageOID, ExtensionOID,
     NameOID, ObjectIdentifier
 )
 
+from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048
 from .hazmat.primitives.test_ec import _skip_curve_unsupported
 from .test_x509 import _load_cert
+
+
+def _make_certbuilder(private_key):
+    name = x509.Name(
+        [x509.NameAttribute(NameOID.COMMON_NAME, u'example.org')])
+    return (
+        x509.CertificateBuilder()
+            .subject_name(name)
+            .issuer_name(name)
+            .public_key(private_key.public_key())
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(1999, 1, 1))
+            .not_valid_after(datetime.datetime(2020, 1, 1))
+    )
 
 
 class TestExtension(object):
@@ -2141,6 +2158,19 @@ class TestRSASubjectAlternativeNameExtension(object):
         othernames = ext.value.get_values_for_type(x509.OtherName)
         assert othernames == [expected]
 
+    def test_certbuilder(self, backend):
+        sans = [u'*.example.org', u'*.\xf5\xe4\xf6\xfc.example.com',
+                u'foobar.example.net']
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = _make_certbuilder(private_key)
+        builder = builder.add_extension(
+            SubjectAlternativeName(list(map(DNSName, sans))), True)
+
+        cert = builder.sign(private_key, hashes.SHA1(), backend)
+        result = [x.value for x in cert.extensions.get_extension_for_class(
+            SubjectAlternativeName).value]
+        assert result == sans
+
 
 @pytest.mark.requires_backend_interface(interface=RSABackend)
 @pytest.mark.requires_backend_interface(interface=X509Backend)
@@ -2888,6 +2918,20 @@ class TestNameConstraintsExtension(object):
             cert.extensions.get_extension_for_oid(
                 ExtensionOID.NAME_CONSTRAINTS
             )
+
+    def test_certbuilder(self, backend):
+        permitted = [u'.example.org', u'.\xf5\xe4\xf6\xfc.example.com',
+                     u'foobar.example.net']
+        private_key = RSA_KEY_2048.private_key(backend)
+        builder = _make_certbuilder(private_key)
+        builder = builder.add_extension(
+            NameConstraints(permitted_subtrees=list(map(DNSName, permitted)),
+                            excluded_subtrees=[]), True)
+
+        cert = builder.sign(private_key, hashes.SHA1(), backend)
+        result = [x.value for x in cert.extensions.get_extension_for_class(
+            NameConstraints).value.permitted_subtrees]
+        assert result == permitted
 
 
 class TestDistributionPoint(object):
