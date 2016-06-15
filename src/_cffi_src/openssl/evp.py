@@ -180,7 +180,7 @@ const long EVP_CTRL_GCM_GET_TAG = -1;
 const long EVP_CTRL_GCM_SET_TAG = -1;
 const long EVP_CTRL_GCM_SET_IVLEN = -1;
 #endif
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+
 const long Cryptography_HAS_PBKDF2_HMAC = 1;
 const long Cryptography_HAS_PKEY_CTX = 1;
 
@@ -198,31 +198,7 @@ int Cryptography_EVP_PKEY_decrypt(EVP_PKEY_CTX *ctx, unsigned char *out,
                                   size_t inlen) {
     return EVP_PKEY_decrypt(ctx, out, outlen, in, inlen);
 }
-#else
-const long Cryptography_HAS_PBKDF2_HMAC = 0;
-int (*PKCS5_PBKDF2_HMAC)(const char *, int, const unsigned char *, int, int,
-                         const EVP_MD *, int, unsigned char *) = NULL;
-const long Cryptography_HAS_PKEY_CTX = 0;
-typedef void EVP_PKEY_CTX;
-int (*EVP_PKEY_CTX_set_signature_md)(EVP_PKEY_CTX *, const EVP_MD *) = NULL;
-int (*EVP_PKEY_sign_init)(EVP_PKEY_CTX *) = NULL;
-int (*EVP_PKEY_sign)(EVP_PKEY_CTX *, unsigned char *, size_t *,
-                     const unsigned char *, size_t) = NULL;
-int (*EVP_PKEY_verify_init)(EVP_PKEY_CTX *) = NULL;
-int (*EVP_PKEY_verify)(EVP_PKEY_CTX *, const unsigned char *, size_t,
-                       const unsigned char *, size_t) = NULL;
-EVP_PKEY_CTX *(*EVP_PKEY_CTX_new)(EVP_PKEY *, ENGINE *) = NULL;
-EVP_PKEY_CTX *(*EVP_PKEY_CTX_new_id)(int, ENGINE *) = NULL;
-EVP_PKEY_CTX *(*EVP_PKEY_CTX_dup)(EVP_PKEY_CTX *) = NULL;
-void (*EVP_PKEY_CTX_free)(EVP_PKEY_CTX *) = NULL;
-int (*EVP_PKEY_encrypt_init)(EVP_PKEY_CTX *) = NULL;
-int (*EVP_PKEY_decrypt_init)(EVP_PKEY_CTX *) = NULL;
-int (*Cryptography_EVP_PKEY_encrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
-                                     const unsigned char *, size_t) = NULL;
-int (*Cryptography_EVP_PKEY_decrypt)(EVP_PKEY_CTX *, unsigned char *, size_t *,
-                                     const unsigned char *, size_t) = NULL;
-int (*EVP_PKEY_id)(const EVP_PKEY *) = NULL;
-#endif
+
 #ifdef OPENSSL_NO_EC
 int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;

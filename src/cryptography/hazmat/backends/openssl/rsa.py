@@ -68,10 +68,7 @@ def _enc_dec_rsa(backend, key, data, padding):
             _Reasons.UNSUPPORTED_PADDING
         )
 
-    if backend._lib.Cryptography_HAS_PKEY_CTX:
-        return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding)
-    else:
-        return _enc_dec_rsa_098(backend, key, data, padding_enum)
+    return _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding)
 
 
 def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
@@ -118,22 +115,6 @@ def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
     return backend._ffi.buffer(buf)[:outlen[0]]
 
 
-def _enc_dec_rsa_098(backend, key, data, padding_enum):
-    if isinstance(key, _RSAPublicKey):
-        crypt = backend._lib.RSA_public_encrypt
-    else:
-        crypt = backend._lib.RSA_private_decrypt
-
-    key_size = backend._lib.RSA_size(key._rsa_cdata)
-    backend.openssl_assert(key_size > 0)
-    buf = backend._ffi.new("unsigned char[]", key_size)
-    res = crypt(len(data), data, buf, key._rsa_cdata, padding_enum)
-    if res < 0:
-        _handle_rsa_enc_dec_error(backend, key)
-
-    return backend._ffi.buffer(buf)[:res]
-
-
 def _handle_rsa_enc_dec_error(backend, key):
     errors = backend._consume_errors()
     assert errors
@@ -177,11 +158,8 @@ class _RSASignatureContext(object):
         self._backend.openssl_assert(self._pkey_size > 0)
 
         if isinstance(padding, PKCS1v15):
-            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-                self._finalize_method = self._finalize_pkey_ctx
-                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
-            else:
-                self._finalize_method = self._finalize_pkcs1
+            self._finalize_method = self._finalize_pkey_ctx
+            self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
@@ -204,11 +182,8 @@ class _RSASignatureContext(object):
                     _Reasons.UNSUPPORTED_HASH
                 )
 
-            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-                self._finalize_method = self._finalize_pkey_ctx
-                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
-            else:
-                self._finalize_method = self._finalize_pss
+            self._finalize_method = self._finalize_pkey_ctx
+            self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
             raise UnsupportedAlgorithm(
                 "{0} is not supported by this backend.".format(padding.name),
@@ -370,11 +345,8 @@ class _RSAVerificationContext(object):
         self._backend.openssl_assert(self._pkey_size > 0)
 
         if isinstance(padding, PKCS1v15):
-            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-                self._verify_method = self._verify_pkey_ctx
-                self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
-            else:
-                self._verify_method = self._verify_pkcs1
+            self._verify_method = self._verify_pkey_ctx
+            self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
                 raise UnsupportedAlgorithm(
@@ -399,11 +371,8 @@ class _RSAVerificationContext(object):
                     _Reasons.UNSUPPORTED_HASH
                 )
 
-            if self._backend._lib.Cryptography_HAS_PKEY_CTX:
-                self._verify_method = self._verify_pkey_ctx
-                self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
-            else:
-                self._verify_method = self._verify_pss
+            self._verify_method = self._verify_pkey_ctx
+            self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
             raise UnsupportedAlgorithm(
                 "{0} is not supported by this backend.".format(padding.name),
