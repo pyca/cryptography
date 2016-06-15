@@ -274,50 +274,25 @@ class Backend(object):
         return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            return self.hmac_supported(algorithm)
-        else:
-            # OpenSSL < 1.0.0 has an explicit PBKDF2-HMAC-SHA1 function,
-            # so if the PBKDF2_HMAC function is missing we only support
-            # SHA1 via PBKDF2_HMAC_SHA1.
-            return isinstance(algorithm, hashes.SHA1)
+        return self.hmac_supported(algorithm)
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         buf = self._ffi.new("char[]", length)
-        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            evp_md = self._lib.EVP_get_digestbyname(
-                algorithm.name.encode("ascii"))
-            self.openssl_assert(evp_md != self._ffi.NULL)
-            res = self._lib.PKCS5_PBKDF2_HMAC(
-                key_material,
-                len(key_material),
-                salt,
-                len(salt),
-                iterations,
-                evp_md,
-                length,
-                buf
-            )
-            self.openssl_assert(res == 1)
-        else:
-            if not isinstance(algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "This version of OpenSSL only supports PBKDF2HMAC with "
-                    "SHA1.",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-            res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
-                key_material,
-                len(key_material),
-                salt,
-                len(salt),
-                iterations,
-                length,
-                buf
-            )
-            self.openssl_assert(res == 1)
-
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii"))
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        res = self._lib.PKCS5_PBKDF2_HMAC(
+            key_material,
+            len(key_material),
+            salt,
+            len(salt),
+            iterations,
+            evp_md,
+            length,
+            buf
+        )
+        self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
     def _consume_errors(self):

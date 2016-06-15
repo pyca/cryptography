@@ -215,9 +215,6 @@ CONDITIONAL_NAMES = {
         "EVP_CTRL_GCM_SET_TAG",
         "EVP_CTRL_GCM_SET_IVLEN",
     ],
-    "Cryptography_HAS_PBKDF2_HMAC": [
-        "PKCS5_PBKDF2_HMAC"
-    ],
     "Cryptography_HAS_ECDSA_SHA2_NIDS": [
         "NID_ecdsa_with_SHA224",
         "NID_ecdsa_with_SHA256",
