@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _OpenSSLErrorWithText, _openssl_assert, _verify_openssl_version
+    Binding, _OpenSSLErrorWithText, _openssl_assert
 )
 
 
