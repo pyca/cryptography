@@ -217,21 +217,7 @@ class Binding(object):
 
 
 def _verify_openssl_version(version):
-    if version < 0x10000000:
-        if os.environ.get("CRYPTOGRAPHY_ALLOW_OPENSSL_098"):
-            warnings.warn(
-                "OpenSSL version 0.9.8 is no longer supported by the OpenSSL "
-                "project, please upgrade. The next version of cryptography "
-                "will completely remove support for it.",
-                DeprecationWarning
-            )
-        else:
-            raise RuntimeError(
-                "You are linking against OpenSSL 0.9.8, which is no longer "
-                "support by the OpenSSL project. You need to upgrade to a "
-                "newer version of OpenSSL."
-            )
-    elif version < 0x10001000:
+    if version < 0x10001000:
         warnings.warn(
             "OpenSSL versions less than 1.0.1 are no longer supported by the "
             "OpenSSL project, please upgrade. A future version of "
