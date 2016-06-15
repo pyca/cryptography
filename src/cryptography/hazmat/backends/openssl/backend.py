@@ -219,7 +219,7 @@ class Backend(object):
         self._cipher_registry[cipher_cls, mode_cls] = adapter
 
     def _register_default_ciphers(self):
-        for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8]:
+        for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8, GCM]:
             self.register_cipher_adapter(
                 AES,
                 mode_cls,
@@ -267,11 +267,6 @@ class Backend(object):
             ARC4,
             type(None),
             GetCipherByName("rc4")
-        )
-        self.register_cipher_adapter(
-            AES,
-            GCM,
-            GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}")
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
