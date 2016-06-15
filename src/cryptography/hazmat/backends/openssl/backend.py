@@ -1087,19 +1087,10 @@ class Backend(object):
     def load_der_private_key(self, data, password):
         # OpenSSL has a function called d2i_AutoPrivateKey that can simplify
         # this. Unfortunately it doesn't properly support PKCS8 on OpenSSL
-        # 0.9.8 so we can't use it. Instead we sequentially try to load it 3
+        # 0.9.8 so we can't use it. Instead we sequentially try to load it 2
         # different ways. First we'll try to load it as a traditional key
         bio_data = self._bytes_to_bio(data)
         key = self._evp_pkey_from_der_traditional_key(bio_data, password)
-        if not key:
-            # Okay so it's not a traditional key. Let's try
-            # PKCS8 unencrypted. OpenSSL 0.9.8 can't load unencrypted
-            # PKCS8 keys using d2i_PKCS8PrivateKey_bio so we do this instead.
-            # Reset the memory BIO so we can read the data again.
-            res = self._lib.BIO_reset(bio_data.bio)
-            self.openssl_assert(res == 1)
-            key = self._evp_pkey_from_der_unencrypted_pkcs8(bio_data, password)
-
         if key:
             return self._evp_pkey_to_private_key(key)
         else:
@@ -1121,24 +1112,6 @@ class Backend(object):
                     "Password was given but private key is not encrypted."
                 )
 
-            return key
-        else:
-            self._consume_errors()
-            return None
-
-    def _evp_pkey_from_der_unencrypted_pkcs8(self, bio_data, password):
-        info = self._lib.d2i_PKCS8_PRIV_KEY_INFO_bio(
-            bio_data.bio, self._ffi.NULL
-        )
-        info = self._ffi.gc(info, self._lib.PKCS8_PRIV_KEY_INFO_free)
-        if info != self._ffi.NULL:
-            key = self._lib.EVP_PKCS82PKEY(info)
-            self.openssl_assert(key != self._ffi.NULL)
-            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
-            if password is not None:
-                raise TypeError(
-                    "Password was given but private key is not encrypted."
-                )
             return key
         else:
             self._consume_errors()
