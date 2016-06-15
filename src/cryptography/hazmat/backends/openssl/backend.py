@@ -19,7 +19,9 @@ from cryptography.hazmat.backends.interfaces import (
     EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
     PEMSerializationBackend, RSABackend, X509Backend
 )
-from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
+from cryptography.hazmat.backends.openssl.ciphers import (
+    _AESCTRCipherContext, _CipherContext
+)
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey
@@ -194,7 +196,12 @@ class Backend(object):
         return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher, mode):
-        return self._evp_cipher_supported(cipher, mode)
+        if self._evp_cipher_supported(cipher, mode):
+            return True
+        elif isinstance(mode, CTR) and isinstance(cipher, AES):
+            return True
+        else:
+            return False
 
     def _evp_cipher_supported(self, cipher, mode):
         try:
@@ -268,10 +275,24 @@ class Backend(object):
         )
 
     def create_symmetric_encryption_ctx(self, cipher, mode):
-        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
+                not self._evp_cipher_supported(cipher, mode)):
+            # This is needed to provide support for AES CTR mode in OpenSSL
+            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
+            # extended life ends 2020).
+            return _AESCTRCipherContext(self, cipher, mode)
+        else:
+            return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
 
     def create_symmetric_decryption_ctx(self, cipher, mode):
-        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        if (isinstance(mode, CTR) and isinstance(cipher, AES) and
+                not self._evp_cipher_supported(cipher, mode)):
+            # This is needed to provide support for AES CTR mode in OpenSSL
+            # 0.9.8. It can be removed when we drop 0.9.8 support (RHEL 5
+            # extended life ends 2020).
+            return _AESCTRCipherContext(self, cipher, mode)
+        else:
+            return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
         return self.hmac_supported(algorithm)

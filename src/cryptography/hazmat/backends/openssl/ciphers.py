@@ -177,3 +177,37 @@ class _CipherContext(object):
         self._backend.openssl_assert(res != 0)
 
     tag = utils.read_only_property("_tag")
+
+
+@utils.register_interface(ciphers.CipherContext)
+class _AESCTRCipherContext(object):
+    """
+    This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
+    be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
+    """
+    def __init__(self, backend, cipher, mode):
+        self._backend = backend
+
+        self._key = self._backend._ffi.new("AES_KEY *")
+        res = self._backend._lib.AES_set_encrypt_key(
+            cipher.key, len(cipher.key) * 8, self._key
+        )
+        self._backend.openssl_assert(res == 0)
+        self._ecount = self._backend._ffi.new("char[]", 16)
+        self._nonce = self._backend._ffi.new("char[16]", mode.nonce)
+        self._num = self._backend._ffi.new("unsigned int *", 0)
+
+    def update(self, data):
+        buf = self._backend._ffi.new("unsigned char[]", len(data))
+        self._backend._lib.AES_ctr128_encrypt(
+            data, buf, len(data), self._key, self._nonce,
+            self._ecount, self._num
+        )
+        return self._backend._ffi.buffer(buf)[:]
+
+    def finalize(self):
+        self._key = None
+        self._ecount = None
+        self._nonce = None
+        self._num = None
+        return b""
