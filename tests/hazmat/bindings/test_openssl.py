@@ -175,9 +175,3 @@ class TestOpenSSL(object):
                 b'ex:data not multiple of block length'
             )
         )]
-
-    def test_verify_openssl_version(self, monkeypatch):
-        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_098", raising=False)
-        with pytest.raises(RuntimeError):
-            # OpenSSL 0.9.8zg
-            _verify_openssl_version(0x9081DF)
