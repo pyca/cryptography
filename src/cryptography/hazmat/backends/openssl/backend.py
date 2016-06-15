@@ -597,12 +597,6 @@ class Backend(object):
         if key_size not in (1024, 2048, 3072):
             raise ValueError("Key size must be 1024 or 2048 or 3072 bits.")
 
-        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
-                key_size > 1024):
-            raise ValueError(
-                "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
-                "support larger key sizes.")
-
         ctx = self._lib.DSA_new()
         self.openssl_assert(ctx != self._ffi.NULL)
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
@@ -711,16 +705,10 @@ class Backend(object):
         return evp_pkey
 
     def dsa_hash_supported(self, algorithm):
-        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return isinstance(algorithm, hashes.SHA1)
-        else:
-            return self.hash_supported(algorithm)
+        return self.hash_supported(algorithm)
 
     def dsa_parameters_supported(self, p, q, g):
-        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160
-        else:
-            return True
+        return True
 
     def cmac_algorithm_supported(self, algorithm):
         return (
