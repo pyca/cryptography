@@ -753,10 +753,11 @@ class TestGOSTCertificate(object):
             x509.load_der_x509_certificate,
             backend
         )
-        with pytest.raises(ValueError) as exc:
-            cert.subject
-
-        # We assert on the message in this case because if the certificate
-        # fails to load it will also raise a ValueError and this test could
-        # erroneously pass.
-        assert str(exc.value) == "Unsupported ASN1 string type. Type: 18"
+        oid = x509.ObjectIdentifier(u'1.2.643.3.131.1.1')
+        assert cert.subject.get_attributes_for_oid(oid) == [
+            x509.NameAttribute(oid, u'007710474375')
+        ]
+        oid = x509.ObjectIdentifier(u'1.2.643.100.1')
+        assert cert.subject.get_attributes_for_oid(oid) == [
+            x509.NameAttribute(oid, u'1047702026701')
+        ]
