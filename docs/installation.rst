@@ -13,7 +13,7 @@ Supported platforms
 Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 2.6+ on these operating systems.
 
-* x86-64 CentOS 7.x, 6.4 and CentOS 5.x
+* x86-64 CentOS 7.x, 6.4
 * x86-64 FreeBSD 10
 * OS X 10.11 El Capitan, 10.10 Yosemite, 10.9 Mavericks, 10.8 Mountain Lion,
   and 10.7 Lion
@@ -28,8 +28,6 @@ Currently we test ``cryptography`` on Python 2.6, 2.7, 3.3, 3.4, 3.5, and PyPy
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 0.9.8e-fips-rhel5`` (``RHEL/CentOS 5``)
-* ``OpenSSL 0.9.8k``
 * ``OpenSSL 1.0.0-fips`` (``RHEL/CentOS 6.4``)
 * ``OpenSSL 1.0.1``
 * ``OpenSSL 1.0.1e-fips`` (``RHEL/CentOS 7``)
@@ -38,9 +36,8 @@ OpenSSL releases:
 * ``OpenSSL 1.0.2-latest``
 
 .. warning::
-    OpenSSL versions 0.9.8 and 1.0.0 are no longer supported by the OpenSSL
-    project. Cryptography 1.4 has dropped support for OpenSSL 0.9.8, see the
-    :doc:`FAQ </faq>` for more details.
+    OpenSSL 1.0.0 is no longer supported by the OpenSSL project. Cryptography
+    will drop support for it in a future release.
 
 On Windows
 ----------
