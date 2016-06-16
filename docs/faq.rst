@@ -40,8 +40,8 @@ If you have no other libraries using OpenSSL in your process, or they do not
 appear to be at fault, it's possible that this is a bug in ``cryptography``.
 Please file an `issue`_ with instructions on how to reproduce it.
 
-Installed cryptography with OpenSSL 0.9.8 fails
------------------------------------------------
+Installing cryptography with OpenSSL 0.9.8 fails
+------------------------------------------------
 
 The OpenSSL project has dropped support for the 0.9.8 release series. Since it
 is no longer receiving security patches from upstream, ``cryptography`` is also
