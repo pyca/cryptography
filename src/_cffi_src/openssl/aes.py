@@ -29,9 +29,8 @@ int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
 """
 
 MACROS = """
-/* The ctr128_encrypt function is only useful in 0.9.8. You should use EVP for
-   this in 1.0.0+. It is defined in macros because the function signature
-   changed after 0.9.8 */
+/* The ctr128_encrypt function is only useful in 1.0.0. We can use EVP for
+   this in 1.0.1+. */
 void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
                         const size_t, const AES_KEY *,
                         unsigned char[], unsigned char[], unsigned int *);
