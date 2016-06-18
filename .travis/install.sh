@@ -57,14 +57,8 @@ else
         pyenv install "pypy-$PYPY_VERSION"
         pyenv global "pypy-$PYPY_VERSION"
     fi
-    if [[ "${OPENSSL}" == "0.9.8" ]]; then
-        # We use 0.9.8l rather than zh because we have some branches for
-        # handling < 0.9.8m that won't be exercised with a newer OpenSSL.
-        # (RHEL5 is 0.9.8e with patches, but while that's in jenkins we don't
-        # get coverage data from it).
-        OPENSSL_VERSION_NUMBER="0.9.8l"
-        OPENSSL_DIR="ossl-098l"
-    elif [[ "${OPENSSL}" == "1.0.0" ]]; then
+
+    if [[ "${OPENSSL}" == "1.0.0" ]]; then
         OPENSSL_VERSION_NUMBER="1.0.0t"
         OPENSSL_DIR="ossl-100t"
     fi

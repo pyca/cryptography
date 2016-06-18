@@ -101,15 +101,6 @@ class _CipherContext(object):
         self._ctx = ctx
 
     def update(self, data):
-        # OpenSSL 0.9.8e has an assertion in its EVP code that causes it
-        # to SIGABRT if you call update with an empty byte string. This can be
-        # removed when we drop support for 0.9.8e (CentOS/RHEL 5). This branch
-        # should be taken only when length is zero and mode is not GCM because
-        # AES GCM can return improper tag values if you don't call update
-        # with empty plaintext when authenticating AAD for ...reasons.
-        if len(data) == 0 and not isinstance(self._mode, modes.GCM):
-            return b""
-
         buf = self._backend._ffi.new("unsigned char[]",
                                      len(data) + self._block_size - 1)
         outlen = self._backend._ffi.new("int *")
@@ -182,8 +173,9 @@ class _CipherContext(object):
 @utils.register_interface(ciphers.CipherContext)
 class _AESCTRCipherContext(object):
     """
-    This is needed to provide support for AES CTR mode in OpenSSL 0.9.8. It can
-    be removed when we drop 0.9.8 support (RHEL5 extended life ends 2020).
+    This is needed to provide support for AES CTR mode in OpenSSL 1.0.0. It can
+    be removed when we drop 1.0.0 support (RHEL 6.4 is the only thing that
+    ships it).
     """
     def __init__(self, backend, cipher, mode):
         self._backend = backend
