@@ -351,9 +351,6 @@ CONDITIONAL_NAMES = {
         "X509_V_FLAG_EXTENDED_CRL_SUPPORT",
         "X509_V_FLAG_USE_DELTAS",
     ],
-    "Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE": [
-        "X509_V_FLAG_CHECK_SS_SIGNATURE",
-    ],
     "Cryptography_HAS_SET_CERT_CB": [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",

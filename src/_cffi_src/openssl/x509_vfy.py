@@ -291,11 +291,6 @@ static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT = 0;
 static const long X509_V_FLAG_USE_DELTAS = 0;
 #endif
 
-/* OpenSSL 0.9.8recent+ */
-#ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
 static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 1;
-#else
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
-static const long X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 #endif
 """
