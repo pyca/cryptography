@@ -49,6 +49,10 @@ dropping support for it. To fix this issue you should upgrade to a newer
 version of OpenSSL (1.0.1 or later). This may require you to upgrade to a newer
 operating system.
 
+In ``cryptography`` 1.4, you can set the ``CRYPTOGRAPHY_ALLOW_OPENSSL_098``
+environment variable. Please note that this is *temporary* and is removed in
+``cryptography`` 1.5.
+
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
 .. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
