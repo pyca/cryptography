@@ -26,15 +26,14 @@ int AES_wrap_key(AES_KEY *, const unsigned char *, unsigned char *,
                  const unsigned char *, unsigned int);
 int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
                    const unsigned char *, unsigned int);
-"""
-
-MACROS = """
 /* The ctr128_encrypt function is only useful in 1.0.0. We can use EVP for
    this in 1.0.1+. */
 void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
-                        const size_t, const AES_KEY *,
-                        unsigned char[], unsigned char[], unsigned int *);
+                        size_t, const AES_KEY *, unsigned char[],
+                        unsigned char[], unsigned int *);
+"""
 
+MACROS = """
 """
 
 CUSTOMIZATIONS = """
