@@ -180,28 +180,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE_CRYPTODEV": [
         "ENGINE_load_cryptodev"
     ],
-    "Cryptography_HAS_098H_ERROR_CODES": [
-        "ASN1_F_B64_READ_ASN1",
-        "ASN1_F_B64_WRITE_ASN1",
-        "ASN1_F_SMIME_READ_ASN1",
-        "ASN1_F_SMIME_TEXT",
-        "ASN1_R_NO_CONTENT_TYPE",
-        "ASN1_R_NO_MULTIPART_BODY_FAILURE",
-        "ASN1_R_NO_MULTIPART_BOUNDARY",
-    ],
-    "Cryptography_HAS_098C_CAMELLIA_CODES": [
-        "EVP_F_CAMELLIA_INIT_KEY",
-        "EVP_R_CAMELLIA_KEY_SETUP_FAILED"
-    ],
     "Cryptography_HAS_EC_CODES": [
         "EC_R_UNKNOWN_GROUP",
         "EC_F_EC_GROUP_NEW_BY_CURVE_NAME"
-    ],
-    "Cryptography_HAS_TLSEXT_ERROR_CODES": [
-        "SSL_TLSEXT_ERR_OK",
-        "SSL_TLSEXT_ERR_ALERT_WARNING",
-        "SSL_TLSEXT_ERR_ALERT_FATAL",
-        "SSL_TLSEXT_ERR_NOACK",
     ],
     "Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR": [
         "RSA_R_PKCS_DECODING_ERROR"
