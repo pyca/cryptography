@@ -26,9 +26,7 @@ else
         PATH="$PYENV_ROOT/bin:$PATH"
         eval "$(pyenv init -)"
     fi
-    if [[ "${OPENSSL}" == "0.9.8" ]]; then
-        OPENSSL_DIR="ossl-098l"
-    elif [[ "${OPENSSL}" == "1.0.0" ]]; then
+    if [[ "${OPENSSL}" == "1.0.0" ]]; then
         OPENSSL_DIR="ossl-100t"
     fi
 
