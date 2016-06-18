@@ -22,9 +22,6 @@ static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 
@@ -265,10 +262,4 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
 #endif
-
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 1;
-
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 1;
-
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 1;
 """
