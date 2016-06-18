@@ -52,6 +52,10 @@ static const int ASN1_F_LONG_C2I;
 static const int ASN1_F_OID_MODULE_INIT;
 static const int ASN1_F_PARSE_TAGGING;
 static const int ASN1_F_PKCS5_PBE_SET;
+static const int ASN1_F_B64_READ_ASN1;
+static const int ASN1_F_B64_WRITE_ASN1;
+static const int ASN1_F_SMIME_READ_ASN1;
+static const int ASN1_F_SMIME_TEXT;
 
 static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
 static const int ASN1_R_BUFFER_TOO_SMALL;
@@ -73,6 +77,9 @@ static const int ASN1_R_UNSUPPORTED_ANY_DEFINED_BY_TYPE;
 static const int ASN1_R_UNSUPPORTED_PUBLIC_KEY_TYPE;
 static const int ASN1_R_UNSUPPORTED_TYPE;
 static const int ASN1_R_WRONG_TAG;
+static const int ASN1_R_NO_CONTENT_TYPE;
+static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
+static const int ASN1_R_NO_MULTIPART_BOUNDARY;
 
 static const int DH_F_COMPUTE_KEY;
 
@@ -100,6 +107,7 @@ static const int EVP_F_PKCS5_PBE_KEYIVGEN;
 static const int EVP_F_PKCS5_V2_PBE_KEYIVGEN;
 static const int EVP_F_RC2_MAGIC_TO_METH;
 static const int EVP_F_RC5_CTRL;
+static const int EVP_F_CAMELLIA_INIT_KEY;
 
 static const int EVP_R_AES_KEY_SETUP_FAILED;
 static const int EVP_R_BAD_DECRYPT;
@@ -125,6 +133,7 @@ static const int EVP_R_UNSUPPORTED_KEYLENGTH;
 static const int EVP_R_UNSUPPORTED_SALT_TYPE;
 static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int EVP_R_WRONG_FINAL_BLOCK_LENGTH;
+static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 
 static const int EC_F_EC_GROUP_NEW_BY_CURVE_NAME;
 
@@ -190,16 +199,6 @@ static const int SSL_TLSEXT_ERR_NOACK;
 static const int SSL_AD_INTERNAL_ERROR;
 static const int SSL_AD_ACCESS_DENIED;
 static const int SSL_AD_HANDSHAKE_FAILURE;
-
-static const int ASN1_F_B64_READ_ASN1;
-static const int ASN1_F_B64_WRITE_ASN1;
-static const int ASN1_F_SMIME_READ_ASN1;
-static const int ASN1_F_SMIME_TEXT;
-static const int ASN1_R_NO_CONTENT_TYPE;
-static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
-static const int ASN1_R_NO_MULTIPART_BOUNDARY;
-static const int EVP_F_CAMELLIA_INIT_KEY;
-static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
 """
 
 FUNCTIONS = """
