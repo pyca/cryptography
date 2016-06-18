@@ -215,27 +215,6 @@ CONDITIONAL_NAMES = {
         "EVP_CTRL_GCM_SET_TAG",
         "EVP_CTRL_GCM_SET_IVLEN",
     ],
-    "Cryptography_HAS_PBKDF2_HMAC": [
-        "PKCS5_PBKDF2_HMAC"
-    ],
-    "Cryptography_HAS_PKEY_CTX": [
-        "EVP_PKEY_CTX_new",
-        "EVP_PKEY_CTX_new_id",
-        "EVP_PKEY_CTX_dup",
-        "EVP_PKEY_CTX_free",
-        "EVP_PKEY_sign",
-        "EVP_PKEY_sign_init",
-        "EVP_PKEY_verify",
-        "EVP_PKEY_verify_init",
-        "Cryptography_EVP_PKEY_encrypt",
-        "EVP_PKEY_encrypt_init",
-        "Cryptography_EVP_PKEY_decrypt",
-        "EVP_PKEY_decrypt_init",
-        "EVP_PKEY_CTX_set_signature_md",
-        "EVP_PKEY_id",
-        "EVP_PKEY_CTX_set_rsa_padding",
-        "EVP_PKEY_CTX_set_rsa_pss_saltlen",
-    ],
     "Cryptography_HAS_ECDSA_SHA2_NIDS": [
         "NID_ecdsa_with_SHA224",
         "NID_ecdsa_with_SHA256",

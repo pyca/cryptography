@@ -8,7 +8,7 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
-    Binding, _OpenSSLErrorWithText, _openssl_assert, _verify_openssl_version
+    Binding, _OpenSSLErrorWithText, _openssl_assert
 )
 
 
@@ -137,15 +137,6 @@ class TestOpenSSL(object):
 
     def test_conditional_removal(self):
         b = Binding()
-        if b.lib.OPENSSL_VERSION_NUMBER >= 0x10000000:
-            assert b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
-            assert b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
-        else:
-            with pytest.raises(AttributeError):
-                b.lib.X509_V_ERR_DIFFERENT_CRL_SCOPE
-
-            with pytest.raises(AttributeError):
-                b.lib.X509_V_ERR_CRL_PATH_VALIDATION_ERROR
 
         if b.lib.OPENSSL_VERSION_NUMBER >= 0x10001000:
             assert b.lib.CMAC_Init
@@ -175,9 +166,3 @@ class TestOpenSSL(object):
                 b'ex:data not multiple of block length'
             )
         )]
-
-    def test_verify_openssl_version(self, monkeypatch):
-        monkeypatch.delenv("CRYPTOGRAPHY_ALLOW_OPENSSL_098", raising=False)
-        with pytest.raises(RuntimeError):
-            # OpenSSL 0.9.8zg
-            _verify_openssl_version(0x9081DF)

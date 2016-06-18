@@ -290,50 +290,25 @@ class Backend(object):
             return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
 
     def pbkdf2_hmac_supported(self, algorithm):
-        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            return self.hmac_supported(algorithm)
-        else:
-            # OpenSSL < 1.0.0 has an explicit PBKDF2-HMAC-SHA1 function,
-            # so if the PBKDF2_HMAC function is missing we only support
-            # SHA1 via PBKDF2_HMAC_SHA1.
-            return isinstance(algorithm, hashes.SHA1)
+        return self.hmac_supported(algorithm)
 
     def derive_pbkdf2_hmac(self, algorithm, length, salt, iterations,
                            key_material):
         buf = self._ffi.new("char[]", length)
-        if self._lib.Cryptography_HAS_PBKDF2_HMAC:
-            evp_md = self._lib.EVP_get_digestbyname(
-                algorithm.name.encode("ascii"))
-            self.openssl_assert(evp_md != self._ffi.NULL)
-            res = self._lib.PKCS5_PBKDF2_HMAC(
-                key_material,
-                len(key_material),
-                salt,
-                len(salt),
-                iterations,
-                evp_md,
-                length,
-                buf
-            )
-            self.openssl_assert(res == 1)
-        else:
-            if not isinstance(algorithm, hashes.SHA1):
-                raise UnsupportedAlgorithm(
-                    "This version of OpenSSL only supports PBKDF2HMAC with "
-                    "SHA1.",
-                    _Reasons.UNSUPPORTED_HASH
-                )
-            res = self._lib.PKCS5_PBKDF2_HMAC_SHA1(
-                key_material,
-                len(key_material),
-                salt,
-                len(salt),
-                iterations,
-                length,
-                buf
-            )
-            self.openssl_assert(res == 1)
-
+        evp_md = self._lib.EVP_get_digestbyname(
+            algorithm.name.encode("ascii"))
+        self.openssl_assert(evp_md != self._ffi.NULL)
+        res = self._lib.PKCS5_PBKDF2_HMAC(
+            key_material,
+            len(key_material),
+            salt,
+            len(salt),
+            iterations,
+            evp_md,
+            length,
+            buf
+        )
+        self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
     def _consume_errors(self):
@@ -617,12 +592,6 @@ class Backend(object):
         if key_size not in (1024, 2048, 3072):
             raise ValueError("Key size must be 1024 or 2048 or 3072 bits.")
 
-        if (self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f and
-                key_size > 1024):
-            raise ValueError(
-                "Key size must be 1024 because OpenSSL < 1.0.0 doesn't "
-                "support larger key sizes.")
-
         ctx = self._lib.DSA_new()
         self.openssl_assert(ctx != self._ffi.NULL)
         ctx = self._ffi.gc(ctx, self._lib.DSA_free)
@@ -731,16 +700,10 @@ class Backend(object):
         return evp_pkey
 
     def dsa_hash_supported(self, algorithm):
-        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return isinstance(algorithm, hashes.SHA1)
-        else:
-            return self.hash_supported(algorithm)
+        return self.hash_supported(algorithm)
 
     def dsa_parameters_supported(self, p, q, g):
-        if self._lib.OPENSSL_VERSION_NUMBER < 0x1000000f:
-            return utils.bit_length(p) <= 1024 and utils.bit_length(q) <= 160
-        else:
-            return True
+        return True
 
     def cmac_algorithm_supported(self, algorithm):
         return (
@@ -1049,32 +1012,9 @@ class Backend(object):
                 extension.oid.dotted_string.encode("ascii")
             )
             backend.openssl_assert(nid != self._lib.NID_undef)
-            x509_extension = self._lib.X509V3_EXT_i2d(
+            return self._lib.X509V3_EXT_i2d(
                 nid, 1 if extension.critical else 0, ext_struct
             )
-            if (
-                x509_extension == self._ffi.NULL and
-                extension.oid == x509.OID_CERTIFICATE_ISSUER
-            ):
-                # This path exists to support OpenSSL 0.9.8, which does not
-                # know how to encode a CERTIFICATE_ISSUER for CRLs. Once we
-                # drop 0.9.8 support we can remove this.
-                self._consume_errors()
-                pp = backend._ffi.new("unsigned char **")
-                r = self._lib.i2d_GENERAL_NAMES(ext_struct, pp)
-                backend.openssl_assert(r > 0)
-                pp = backend._ffi.gc(
-                    pp,
-                    lambda pointer: backend._lib.OPENSSL_free(pointer[0])
-                )
-                obj = _txt2obj_gc(self, extension.oid.dotted_string)
-                return self._lib.X509_EXTENSION_create_by_OBJ(
-                    self._ffi.NULL,
-                    obj,
-                    1 if extension.critical else 0,
-                    _encode_asn1_str_gc(self, pp[0], r)
-                )
-            return x509_extension
 
     def create_x509_revoked_certificate(self, builder):
         if not isinstance(builder, x509.RevokedCertificateBuilder):
@@ -1142,19 +1082,10 @@ class Backend(object):
     def load_der_private_key(self, data, password):
         # OpenSSL has a function called d2i_AutoPrivateKey that can simplify
         # this. Unfortunately it doesn't properly support PKCS8 on OpenSSL
-        # 0.9.8 so we can't use it. Instead we sequentially try to load it 3
+        # 0.9.8 so we can't use it. Instead we sequentially try to load it 2
         # different ways. First we'll try to load it as a traditional key
         bio_data = self._bytes_to_bio(data)
         key = self._evp_pkey_from_der_traditional_key(bio_data, password)
-        if not key:
-            # Okay so it's not a traditional key. Let's try
-            # PKCS8 unencrypted. OpenSSL 0.9.8 can't load unencrypted
-            # PKCS8 keys using d2i_PKCS8PrivateKey_bio so we do this instead.
-            # Reset the memory BIO so we can read the data again.
-            res = self._lib.BIO_reset(bio_data.bio)
-            self.openssl_assert(res == 1)
-            key = self._evp_pkey_from_der_unencrypted_pkcs8(bio_data, password)
-
         if key:
             return self._evp_pkey_to_private_key(key)
         else:
@@ -1176,24 +1107,6 @@ class Backend(object):
                     "Password was given but private key is not encrypted."
                 )
 
-            return key
-        else:
-            self._consume_errors()
-            return None
-
-    def _evp_pkey_from_der_unencrypted_pkcs8(self, bio_data, password):
-        info = self._lib.d2i_PKCS8_PRIV_KEY_INFO_bio(
-            bio_data.bio, self._ffi.NULL
-        )
-        info = self._ffi.gc(info, self._lib.PKCS8_PRIV_KEY_INFO_free)
-        if info != self._ffi.NULL:
-            key = self._lib.EVP_PKCS82PKEY(info)
-            self.openssl_assert(key != self._ffi.NULL)
-            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
-            if password is not None:
-                raise TypeError(
-                    "Password was given but private key is not encrypted."
-                )
             return key
         else:
             self._consume_errors()
@@ -1416,13 +1329,6 @@ class Backend(object):
 
         # We only support ECDSA right now.
         if not isinstance(signature_algorithm, ec.ECDSA):
-            return False
-
-        # Before 0.9.8m OpenSSL can't cope with digests longer than the curve.
-        if (
-            self._lib.OPENSSL_VERSION_NUMBER < 0x009080df and
-            curve.key_size < signature_algorithm.algorithm.digest_size * 8
-        ):
             return False
 
         return self.elliptic_curve_supported(curve)
