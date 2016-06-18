@@ -211,12 +211,6 @@ CONDITIONAL_NAMES = {
         "EVP_CTRL_GCM_SET_TAG",
         "EVP_CTRL_GCM_SET_IVLEN",
     ],
-    "Cryptography_HAS_ECDSA_SHA2_NIDS": [
-        "NID_ecdsa_with_SHA224",
-        "NID_ecdsa_with_SHA256",
-        "NID_ecdsa_with_SHA384",
-        "NID_ecdsa_with_SHA512",
-    ],
     "Cryptography_HAS_EGD": [
         "RAND_egd",
         "RAND_egd_bytes",
