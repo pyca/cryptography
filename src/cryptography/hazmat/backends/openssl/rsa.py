@@ -158,7 +158,6 @@ class _RSASignatureContext(object):
         self._backend.openssl_assert(self._pkey_size > 0)
 
         if isinstance(padding, PKCS1v15):
-            self._finalize_method = self._finalize_pkey_ctx
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
@@ -182,7 +181,6 @@ class _RSASignatureContext(object):
                     _Reasons.UNSUPPORTED_HASH
                 )
 
-            self._finalize_method = self._finalize_pkey_ctx
             self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
             raise UnsupportedAlgorithm(
@@ -202,9 +200,6 @@ class _RSASignatureContext(object):
             self._algorithm.name.encode("ascii"))
         self._backend.openssl_assert(evp_md != self._backend._ffi.NULL)
 
-        return self._finalize_method(evp_md)
-
-    def _finalize_pkey_ctx(self, evp_md):
         pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
             self._private_key._evp_pkey, self._backend._ffi.NULL
         )
@@ -289,7 +284,6 @@ class _RSAVerificationContext(object):
         self._backend.openssl_assert(self._pkey_size > 0)
 
         if isinstance(padding, PKCS1v15):
-            self._verify_method = self._verify_pkey_ctx
             self._padding_enum = self._backend._lib.RSA_PKCS1_PADDING
         elif isinstance(padding, PSS):
             if not isinstance(padding._mgf, MGF1):
@@ -315,7 +309,6 @@ class _RSAVerificationContext(object):
                     _Reasons.UNSUPPORTED_HASH
                 )
 
-            self._verify_method = self._verify_pkey_ctx
             self._padding_enum = self._backend._lib.RSA_PKCS1_PSS_PADDING
         else:
             raise UnsupportedAlgorithm(
@@ -335,9 +328,6 @@ class _RSAVerificationContext(object):
             self._algorithm.name.encode("ascii"))
         self._backend.openssl_assert(evp_md != self._backend._ffi.NULL)
 
-        self._verify_method(evp_md)
-
-    def _verify_pkey_ctx(self, evp_md):
         pkey_ctx = self._backend._lib.EVP_PKEY_CTX_new(
             self._public_key._evp_pkey, self._backend._ffi.NULL
         )
