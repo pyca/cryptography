@@ -76,7 +76,7 @@ class TestOpenSSL(object):
         assert backend.cipher_supported(None, None) is False
 
     def test_aes_ctr_always_available(self):
-        # AES CTR should always be available in both 0.9.8 and 1.0.0+
+        # AES CTR should always be available, even in 1.0.0.
         assert backend.cipher_supported(AES(b"\x00" * 16),
                                         CTR(b"\x00" * 16)) is True
 
