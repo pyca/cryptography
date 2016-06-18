@@ -9,10 +9,6 @@ from __future__ import absolute_import, division, print_function
 # cffi supports #if in cdef
 
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_AES_WRAP": [
-        "AES_wrap_key",
-        "AES_unwrap_key",
-    ],
     "Cryptography_HAS_CMAC": [
         "CMAC_CTX_new",
         "CMAC_Init",
