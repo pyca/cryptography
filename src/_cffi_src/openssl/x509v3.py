@@ -14,11 +14,8 @@ INCLUDES = """
  * together with another opaque typedef for the same name in the TYPES section.
  * Note that the result is an opaque type.
  */
-#if OPENSSL_VERSION_NUMBER >= 0x10000000
 typedef LHASH_OF(CONF_VALUE) Cryptography_LHASH_OF_CONF_VALUE;
-#else
-typedef LHASH Cryptography_LHASH_OF_CONF_VALUE;
-#endif
+
 typedef STACK_OF(ACCESS_DESCRIPTION) Cryptography_STACK_OF_ACCESS_DESCRIPTION;
 typedef STACK_OF(DIST_POINT) Cryptography_STACK_OF_DIST_POINT;
 typedef STACK_OF(POLICYQUALINFO) Cryptography_STACK_OF_POLICYQUALINFO;
