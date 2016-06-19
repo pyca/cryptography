@@ -184,11 +184,10 @@ def _decode_crl_number(backend, ext):
 
 
 class _X509ExtensionParser(object):
-    def __init__(self, ext_count, get_ext, handlers, unsupported_exts=None):
+    def __init__(self, ext_count, get_ext, handlers):
         self.ext_count = ext_count
         self.get_ext = get_ext
         self.handlers = handlers
-        self.unsupported_exts = unsupported_exts
 
     def parse(self, backend, x509_obj):
         extensions = []
@@ -223,19 +222,13 @@ class _X509ExtensionParser(object):
                         x509.Extension(oid, critical, unrecognized)
                     )
             else:
-                # For extensions which are not supported by OpenSSL we pass the
-                # extension object directly to the parsing routine so it can
-                # be decoded manually.
-                if self.unsupported_exts and oid in self.unsupported_exts:
-                    ext_data = ext
-                else:
-                    ext_data = backend._lib.X509V3_EXT_d2i(ext)
-                    if ext_data == backend._ffi.NULL:
-                        backend._consume_errors()
-                        raise ValueError(
-                            "The {0} extension is invalid and can't be "
-                            "parsed".format(oid)
-                        )
+                ext_data = backend._lib.X509V3_EXT_d2i(ext)
+                if ext_data == backend._ffi.NULL:
+                    backend._consume_errors()
+                    raise ValueError(
+                        "The {0} extension is invalid and can't be "
+                        "parsed".format(oid)
+                    )
 
                 value = handler(backend, ext_data)
                 extensions.append(x509.Extension(oid, critical, value))
@@ -646,31 +639,11 @@ def _decode_invalidity_date(backend, inv_date):
     )
 
 
-def _decode_cert_issuer(backend, ext):
-    """
-    This handler decodes the CertificateIssuer entry extension directly
-    from the X509_EXTENSION object. This is necessary because this entry
-    extension is not directly supported by OpenSSL 0.9.8.
-    """
-
-    data_ptr_ptr = backend._ffi.new("const unsigned char **")
-    value = backend._lib.X509_EXTENSION_get_data(ext)
-    data_ptr_ptr[0] = value.data
-    gns = backend._lib.d2i_GENERAL_NAMES(
-        backend._ffi.NULL, data_ptr_ptr, value.length
-    )
-
-    # Check the result of d2i_GENERAL_NAMES() is valid. Usually this is covered
-    # in _X509ExtensionParser but since we are responsible for decoding this
-    # entry extension ourselves, we have to this here.
-    if gns == backend._ffi.NULL:
-        backend._consume_errors()
-        raise ValueError(
-            "The {0} extension is corrupted and can't be parsed".format(
-                CRLEntryExtensionOID.CERTIFICATE_ISSUER))
-
+def _decode_cert_issuer(backend, gns):
+    gns = backend._ffi.cast("GENERAL_NAMES *", gns)
     gns = backend._ffi.gc(gns, backend._lib.GENERAL_NAMES_free)
-    return x509.CertificateIssuer(_decode_general_names(backend, gns))
+    general_names = _decode_general_names(backend, gns)
+    return x509.CertificateIssuer(general_names)
 
 
 def _asn1_to_der(backend, asn1_type):
@@ -765,10 +738,6 @@ _REVOKED_EXTENSION_HANDLERS = {
     CRLEntryExtensionOID.CERTIFICATE_ISSUER: _decode_cert_issuer,
 }
 
-_REVOKED_UNSUPPORTED_EXTENSIONS = set([
-    CRLEntryExtensionOID.CERTIFICATE_ISSUER,
-])
-
 _CRL_EXTENSION_HANDLERS = {
     ExtensionOID.CRL_NUMBER: _decode_crl_number,
     ExtensionOID.AUTHORITY_KEY_IDENTIFIER: _decode_authority_key_identifier,
@@ -794,7 +763,6 @@ _REVOKED_CERTIFICATE_EXTENSION_PARSER = _X509ExtensionParser(
     ext_count=lambda backend, x: backend._lib.X509_REVOKED_get_ext_count(x),
     get_ext=lambda backend, x, i: backend._lib.X509_REVOKED_get_ext(x, i),
     handlers=_REVOKED_EXTENSION_HANDLERS,
-    unsupported_exts=_REVOKED_UNSUPPORTED_EXTENSIONS
 )
 
 _CRL_EXTENSION_PARSER = _X509ExtensionParser(
