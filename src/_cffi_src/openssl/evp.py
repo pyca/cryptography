@@ -154,7 +154,6 @@ int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
                     const unsigned char *, size_t);
 int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
 int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
-int EVP_PKEY_id(const EVP_PKEY *);
 
 /* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
    we should move these back to FUNCTIONS. */
