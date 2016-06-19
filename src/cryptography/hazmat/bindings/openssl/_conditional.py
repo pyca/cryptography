@@ -48,11 +48,6 @@ CONDITIONAL_NAMES = {
         "CMS_USE_KEYID",
         "CMS_DEBUG_DECRYPT",
     ],
-    "Cryptography_HAS_CMS_BIO_FUNCTIONS": [
-        "BIO_new_CMS",
-        "i2d_CMS_bio_stream",
-        "PEM_write_bio_CMS_stream",
-    ],
     "Cryptography_HAS_EC": [
         "OPENSSL_EC_NAMED_CURVE",
         "EC_GROUP_new",

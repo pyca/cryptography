@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER >= 0x0090808fL
+#if !defined(OPENSSL_NO_CMS)
 #include <openssl/cms.h>
 #endif
 """
@@ -65,17 +65,9 @@ CMS_SignerInfo *CMS_add1_signer(CMS_ContentInfo *, X509 *, EVP_PKEY *,
 """
 
 CUSTOMIZATIONS = """
-#if !defined(OPENSSL_NO_CMS) && OPENSSL_VERSION_NUMBER >= 0x0090808fL
+#if !defined(OPENSSL_NO_CMS)
 static const long Cryptography_HAS_CMS = 1;
-#if OPENSSL_VERSION_NUMBER < 0x10000000L
-static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 0;
-/* These functions were added in 1.0.0 */
-BIO *(*BIO_new_CMS)(BIO *, CMS_ContentInfo *) = NULL;
-int (*i2d_CMS_bio_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
-int (*PEM_write_bio_CMS_stream)(BIO *, CMS_ContentInfo *, BIO *, int) = NULL;
-#else
 static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 1;
-#endif
 #else
 static const long Cryptography_HAS_CMS = 0;
 static const long Cryptography_HAS_CMS_BIO_FUNCTIONS = 0;
