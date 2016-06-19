@@ -197,9 +197,6 @@ CONDITIONAL_NAMES = {
         "RAND_egd_bytes",
         "RAND_query_egd_bytes",
     ],
-    "Cryptography_HAS_PSS_PADDING": [
-        "RSA_PKCS1_PSS_PADDING",
-    ],
     "Cryptography_HAS_MGF1_MD": [
         "EVP_PKEY_CTX_set_rsa_mgf1_md",
     ],

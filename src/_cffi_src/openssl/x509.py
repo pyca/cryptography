@@ -402,10 +402,6 @@ int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 }
 #endif
 
-/* OpenSSL 0.9.8e does not have this definition. */
-#if OPENSSL_VERSION_NUMBER <= 0x0090805fL
-typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
-#endif
 #ifdef OPENSSL_NO_EC
 int (*i2d_EC_PUBKEY)(EC_KEY *, unsigned char **) = NULL;
 EC_KEY *(*d2i_EC_PUBKEY)(EC_KEY **, const unsigned char **, long) = NULL;
