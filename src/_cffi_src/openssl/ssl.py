@@ -649,14 +649,7 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET = 0;
 const long SSL_OP_NO_TICKET = 0;
 #endif
 
-/* OpenSSL 0.9.8f+ */
-#if OPENSSL_VERSION_NUMBER >= 0x00908070L
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
-#else
-static const long Cryptography_HAS_SSL_SET_SSL_CTX = 0;
-static const long TLSEXT_NAMETYPE_host_name = 0;
-SSL_CTX *(*SSL_set_SSL_CTX)(SSL *, SSL_CTX *) = NULL;
-#endif
 
 /* NetBSD shipped without including d1_meth.c. This workaround checks to see
    if the version of NetBSD we're currently running on is old enough to
@@ -753,24 +746,9 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
 long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
-/* Added in 0.9.8i */
-#if OPENSSL_VERSION_NUMBER < 0x0090809fL
-int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
-static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
-# else
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
-#endif
 
-/* SSL_CTX_clear_options() and SSL_clear_options() were first added in
- * OpenSSL 0.9.8m but do not appear in some 0.9.9-dev versions such the
- * 0.9.9 from "May 2008" that NetBSD 5.0 uses. */
-#if OPENSSL_VERSION_NUMBER >= 0x009080dfL && \
-    OPENSSL_VERSION_NUMBER != 0x00909000L
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
-#else
-unsigned long (*SSL_CTX_clear_options)(SSL_CTX *, unsigned long) = NULL;
-static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 0;
-#endif
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */

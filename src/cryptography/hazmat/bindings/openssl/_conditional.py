@@ -254,11 +254,6 @@ CONDITIONAL_NAMES = {
         "SSL_OP_NO_TICKET",
     ],
 
-    "Cryptography_HAS_SSL_SET_SSL_CTX": [
-        "SSL_set_SSL_CTX",
-        "TLSEXT_NAMETYPE_host_name",
-    ],
-
     "Cryptography_HAS_NETBSD_D1_METH": [
         "DTLSv1_method",
     ],
@@ -293,12 +288,6 @@ CONDITIONAL_NAMES = {
         "SSL_get_server_tmp_key",
     ],
 
-    "Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE": [
-        "SSL_CTX_set_client_cert_engine",
-    ],
-    "Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS": [
-        "SSL_CTX_clear_options",
-    ],
     "Cryptography_HAS_102_VERIFICATION_ERROR_CODES": [
         'X509_V_ERR_SUITE_B_INVALID_VERSION',
         'X509_V_ERR_SUITE_B_INVALID_ALGORITHM',
