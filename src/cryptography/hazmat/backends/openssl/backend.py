@@ -1078,10 +1078,10 @@ class Backend(object):
                 self._handle_key_loading_error()
 
     def load_der_private_key(self, data, password):
-        # OpenSSL has a function called d2i_AutoPrivateKey that can simplify
-        # this. Unfortunately it doesn't properly support PKCS8 on OpenSSL
-        # 0.9.8 so we can't use it. Instead we sequentially try to load it 2
-        # different ways. First we'll try to load it as a traditional key
+        # OpenSSL has a function called d2i_AutoPrivateKey that in theory
+        # handles this automatically, however it doesn't handle encrypted
+        # private keys. Instead we try to load the key two different ways.
+        # First we'll try to load it as a traditional key.
         bio_data = self._bytes_to_bio(data)
         key = self._evp_pkey_from_der_traditional_key(bio_data, password)
         if key:
