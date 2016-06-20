@@ -180,6 +180,7 @@ SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
 int SSL_set_fd(SSL *, int);
 SSL_CTX *SSL_get_SSL_CTX(const SSL *);
+SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 BIO *SSL_get_rbio(const SSL *);
 BIO *SSL_get_wbio(const SSL *);
 void SSL_set_bio(SSL *, BIO *, BIO *);
@@ -245,6 +246,9 @@ X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
+
+void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
+void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
@@ -374,14 +378,6 @@ long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
 long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
 long SSL_session_reused(SSL *);
-
-/* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
-   we should move these back to FUNCTIONS. */
-void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
-void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
-/* This function does not exist in 0.9.8e. Once we drop support for
-   RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
-SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
 /* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
  * versions some special handling of these is necessary.
