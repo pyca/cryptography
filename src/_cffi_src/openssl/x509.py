@@ -175,6 +175,8 @@ int X509_REQ_digest(const X509_REQ *, const EVP_MD *,
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print(BIO *, X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
+int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
+X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
@@ -333,11 +335,6 @@ int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
 int X509_set_notBefore(X509 *, ASN1_TIME *);
 int X509_set_notAfter(X509 *, ASN1_TIME *);
 
-/* These use STACK_OF(X509_EXTENSION) in 0.9.8e. Once we drop support for
-   RHEL/CentOS 5 we should move these back to FUNCTIONS. */
-int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
-X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
-
 int i2d_EC_PUBKEY(EC_KEY *, unsigned char **);
 EC_KEY *d2i_EC_PUBKEY(EC_KEY **, const unsigned char **, long);
 EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
@@ -402,10 +399,6 @@ int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 }
 #endif
 
-/* OpenSSL 0.9.8e does not have this definition. */
-#if OPENSSL_VERSION_NUMBER <= 0x0090805fL
-typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
-#endif
 #ifdef OPENSSL_NO_EC
 int (*i2d_EC_PUBKEY)(EC_KEY *, unsigned char **) = NULL;
 EC_KEY *(*d2i_EC_PUBKEY)(EC_KEY **, const unsigned char **, long) = NULL;

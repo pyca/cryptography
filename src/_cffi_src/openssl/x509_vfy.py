@@ -22,9 +22,6 @@ static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
 static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
 static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES;
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS;
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE;
 
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 
@@ -264,38 +261,5 @@ static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
 #else
 static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
 static const long X509_V_FLAG_TRUSTED_FIRST = 0;
-#endif
-
-/* OpenSSL 1.0.0+ verification error codes */
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 1;
-#else
-static const long Cryptography_HAS_100_VERIFICATION_ERROR_CODES = 0;
-static const long X509_V_ERR_DIFFERENT_CRL_SCOPE = 0;
-static const long X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE = 0;
-static const long X509_V_ERR_PERMITTED_VIOLATION = 0;
-static const long X509_V_ERR_EXCLUDED_VIOLATION = 0;
-static const long X509_V_ERR_SUBTREE_MINMAX = 0;
-static const long X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE = 0;
-static const long X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX = 0;
-static const long X509_V_ERR_UNSUPPORTED_NAME_SYNTAX = 0;
-static const long X509_V_ERR_CRL_PATH_VALIDATION_ERROR = 0;
-#endif
-
-/* OpenSSL 1.0.0+ verification parameters */
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 1;
-#else
-static const long Cryptography_HAS_100_VERIFICATION_PARAMS = 0;
-static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT = 0;
-static const long X509_V_FLAG_USE_DELTAS = 0;
-#endif
-
-/* OpenSSL 0.9.8recent+ */
-#ifdef X509_V_FLAG_CHECK_SS_SIGNATURE
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 1;
-#else
-static const long Cryptography_HAS_X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
-static const long X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 #endif
 """

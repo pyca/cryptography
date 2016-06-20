@@ -180,6 +180,7 @@ SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
 int SSL_set_fd(SSL *, int);
 SSL_CTX *SSL_get_SSL_CTX(const SSL *);
+SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 BIO *SSL_get_rbio(const SSL *);
 BIO *SSL_get_wbio(const SSL *);
 void SSL_set_bio(SSL *, BIO *, BIO *);
@@ -246,6 +247,9 @@ int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
+void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
+void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
+
 /*  SSL_SESSION */
 void SSL_SESSION_free(SSL_SESSION *);
 
@@ -256,6 +260,8 @@ int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
+
+const char *SSL_get_servername(const SSL *, const int);
 """
 
 MACROS = """
@@ -358,10 +364,6 @@ int SSL_version(const SSL *);
 void *SSL_CTX_get_ex_data(const SSL_CTX *, int);
 void *SSL_get_ex_data(const SSL *, int);
 
-/* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
- * earlier versions some special handling of these is necessary.
- */
-const char *SSL_get_servername(const SSL *, const int);
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
@@ -369,9 +371,6 @@ void SSL_CTX_set_tlsext_servername_callback(
 void SSL_CTX_set_tlsext_servername_arg(
     SSL_CTX *, void *);
 
-/* These were added in OpenSSL 0.9.8h, but since version testing in OpenSSL
-   is fraught with peril thanks to OS distributions we check some constants
-   to determine if they are supported or not */
 long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
 long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
 long SSL_set_tlsext_status_type(SSL *, long);
@@ -379,14 +378,6 @@ long SSL_CTX_set_tlsext_status_cb(SSL_CTX *, int(*)(SSL *, void *));
 long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 
 long SSL_session_reused(SSL *);
-
-/* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
-   we should move these back to FUNCTIONS. */
-void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
-void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
-/* This function does not exist in 0.9.8e. Once we drop support for
-   RHEL/CentOS 5 this can be moved back to FUNCTIONS. */
-SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
 
 /* NPN APIs were introduced in OpenSSL 1.0.1.  To continue to support earlier
  * versions some special handling of these is necessary.
@@ -534,17 +525,7 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *session,
 }
 #endif
 
-/** Secure renegotiation is supported in OpenSSL >= 0.9.8m
- *  But some Linux distributions have back ported some features.
- */
-#ifndef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-static const long Cryptography_HAS_SECURE_RENEGOTIATION = 0;
-long (*SSL_get_secure_renegotiation_support)(SSL *) = NULL;
-const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
-const long SSL_OP_LEGACY_SERVER_CONNECT = 0;
-#else
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
-#endif
 
 /* Cryptography now compiles out all SSLv2 bindings. This exists to allow
  * clients that use it to check for SSLv2 support to keep functioning as
@@ -561,41 +542,10 @@ SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 static const long Cryptography_HAS_SSL3_METHOD = 1;
 #endif
 
-#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
-#else
-static const long Cryptography_HAS_TLSEXT_HOSTNAME = 0;
-void (*SSL_set_tlsext_host_name)(SSL *, char *) = NULL;
-const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
-void (*SSL_CTX_set_tlsext_servername_callback)(
-    SSL_CTX *,
-    int (*)(const SSL *, int *, void *)) = NULL;
-void (*SSL_CTX_set_tlsext_servername_arg)(
-    SSL_CTX *, void *) = NULL;
-#endif
-
-#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
-#else
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 0;
-long (*SSL_CTX_set_tlsext_status_cb)(SSL_CTX *, int(*)(SSL *, void *)) = NULL;
-long (*SSL_CTX_set_tlsext_status_arg)(SSL_CTX *, void *) = NULL;
-#endif
-
-#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
-#else
-static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 0;
-long (*SSL_set_tlsext_status_ocsp_resp)(SSL *, unsigned char *, int) = NULL;
-long (*SSL_get_tlsext_status_ocsp_resp)(SSL *, const unsigned char **) = NULL;
-#endif
-
-#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
-#else
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 0;
-long (*SSL_set_tlsext_status_type)(SSL *, long) = NULL;
-#endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
@@ -649,14 +599,7 @@ static const long Cryptography_HAS_SSL_OP_NO_TICKET = 0;
 const long SSL_OP_NO_TICKET = 0;
 #endif
 
-/* OpenSSL 0.9.8f+ */
-#if OPENSSL_VERSION_NUMBER >= 0x00908070L
 static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
-#else
-static const long Cryptography_HAS_SSL_SET_SSL_CTX = 0;
-static const long TLSEXT_NAMETYPE_host_name = 0;
-SSL_CTX *(*SSL_set_SSL_CTX)(SSL *, SSL_CTX *) = NULL;
-#endif
 
 /* NetBSD shipped without including d1_meth.c. This workaround checks to see
    if the version of NetBSD we're currently running on is old enough to
@@ -753,24 +696,9 @@ static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
 long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
 #endif
 
-/* Added in 0.9.8i */
-#if OPENSSL_VERSION_NUMBER < 0x0090809fL
-int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
-static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 0;
-# else
 static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
-#endif
 
-/* SSL_CTX_clear_options() and SSL_clear_options() were first added in
- * OpenSSL 0.9.8m but do not appear in some 0.9.9-dev versions such the
- * 0.9.9 from "May 2008" that NetBSD 5.0 uses. */
-#if OPENSSL_VERSION_NUMBER >= 0x009080dfL && \
-    OPENSSL_VERSION_NUMBER != 0x00909000L
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
-#else
-unsigned long (*SSL_CTX_clear_options)(SSL_CTX *, unsigned long) = NULL;
-static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 0;
-#endif
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */

@@ -30,6 +30,7 @@ DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
 int DSA_generate_key(DSA *);
 DSA *DSA_new(void);
 void DSA_free(DSA *);
+DSA *DSAparams_dup(DSA *);
 int DSA_size(const DSA *);
 int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
              DSA *);
@@ -44,8 +45,6 @@ int DSA_set0_key(DSA *, BIGNUM *, BIGNUM *);
 """
 
 MACROS = """
-/* DSAparams_dup is a macro in 0.9.8 */
-DSA *DSAparams_dup(DSA *);
 int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
                                int *, unsigned long *, BN_GENCB *);
 """

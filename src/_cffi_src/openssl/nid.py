@@ -9,8 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_ECDSA_SHA2_NIDS;
-
 static const int NID_undef;
 static const int NID_dsa;
 static const int NID_dsaWithSHA;
@@ -226,14 +224,4 @@ MACROS = """
 """
 
 CUSTOMIZATIONS = """
-/* OpenSSL 0.9.8g+ */
-#if OPENSSL_VERSION_NUMBER >= 0x0090807fL
-static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 1;
-#else
-static const long Cryptography_HAS_ECDSA_SHA2_NIDS = 0;
-static const int NID_ecdsa_with_SHA224 = 0;
-static const int NID_ecdsa_with_SHA256 = 0;
-static const int NID_ecdsa_with_SHA384 = 0;
-static const int NID_ecdsa_with_SHA512 = 0;
-#endif
 """

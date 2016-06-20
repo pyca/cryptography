@@ -76,7 +76,7 @@ class TestOpenSSL(object):
         assert backend.cipher_supported(None, None) is False
 
     def test_aes_ctr_always_available(self):
-        # AES CTR should always be available in both 0.9.8 and 1.0.0+
+        # AES CTR should always be available, even in 1.0.0.
         assert backend.cipher_supported(AES(b"\x00" * 16),
                                         CTR(b"\x00" * 16)) is True
 
@@ -142,27 +142,6 @@ class TestOpenSSL(object):
         with pytest.raises(InternalError):
             enc.finalize()
 
-    def test_derive_pbkdf2_raises_unsupported_on_old_openssl(self):
-        if backend.pbkdf2_hmac_supported(hashes.SHA256()):
-            pytest.skip("Requires an older OpenSSL")
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            backend.derive_pbkdf2_hmac(hashes.SHA256(), 10, b"", 1000, b"")
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000000f,
-        reason="Requires an older OpenSSL. Must be < 1.0.0"
-    )
-    def test_large_key_size_on_old_openssl(self):
-        with pytest.raises(ValueError):
-            dsa.generate_parameters(2048, backend=backend)
-
-        with pytest.raises(ValueError):
-            dsa.generate_parameters(3072, backend=backend)
-
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
-        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
-    )
     def test_large_key_size_on_new_openssl(self):
         parameters = dsa.generate_parameters(2048, backend)
         param_num = parameters.parameter_numbers()
@@ -743,10 +722,6 @@ class TestRSAPEMSerialization(object):
 
 
 class TestGOSTCertificate(object):
-    @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER < 0x1000000f,
-        reason="Requires a newer OpenSSL. Must be >= 1.0.0"
-    )
     def test_numeric_string_x509_name_entry(self):
         cert = _load_cert(
             os.path.join("x509", "e-trust.ru.der"),
