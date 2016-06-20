@@ -74,10 +74,10 @@ def _enc_dec_rsa(backend, key, data, padding):
 def _enc_dec_rsa_pkey_ctx(backend, key, data, padding_enum, padding):
     if isinstance(key, _RSAPublicKey):
         init = backend._lib.EVP_PKEY_encrypt_init
-        crypt = backend._lib.Cryptography_EVP_PKEY_encrypt
+        crypt = backend._lib.EVP_PKEY_encrypt
     else:
         init = backend._lib.EVP_PKEY_decrypt_init
-        crypt = backend._lib.Cryptography_EVP_PKEY_decrypt
+        crypt = backend._lib.EVP_PKEY_decrypt
 
     pkey_ctx = backend._lib.EVP_PKEY_CTX_new(
         key._evp_pkey, backend._ffi.NULL
