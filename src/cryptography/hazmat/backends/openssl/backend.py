@@ -485,7 +485,7 @@ class Backend(object):
         pointer.
         """
 
-        key_type = self._lib.Cryptography_EVP_PKEY_id(evp_pkey)
+        key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
@@ -512,7 +512,7 @@ class Backend(object):
         pointer.
         """
 
-        key_type = self._lib.Cryptography_EVP_PKEY_id(evp_pkey)
+        key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
             rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
@@ -1552,7 +1552,7 @@ class Backend(object):
         else:
             raise ValueError("Unsupported encryption type")
 
-        key_type = self._lib.Cryptography_EVP_PKEY_id(evp_pkey)
+        key_type = self._lib.EVP_PKEY_id(evp_pkey)
         if encoding is serialization.Encoding.PEM:
             if format is serialization.PrivateFormat.PKCS8:
                 write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
@@ -1641,9 +1641,7 @@ class Backend(object):
             key = evp_pkey
         elif format is serialization.PublicFormat.PKCS1:
             # Only RSA is supported here.
-            assert self._lib.Cryptography_EVP_PKEY_id(
-                evp_pkey
-            ) == self._lib.EVP_PKEY_RSA
+            assert self._lib.EVP_PKEY_id(evp_pkey) == self._lib.EVP_PKEY_RSA
             if encoding is serialization.Encoding.PEM:
                 write_bio = self._lib.PEM_write_bio_RSAPublicKey
             else:

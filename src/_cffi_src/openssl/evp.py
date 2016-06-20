@@ -110,6 +110,7 @@ int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
 EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
 
+int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
 /* in 1.1.0 _create and _destroy were renamed to _new and _free. The following
@@ -153,7 +154,6 @@ int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
                     const unsigned char *, size_t);
 int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
 int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
-int EVP_PKEY_id(const EVP_PKEY *);
 
 /* The following were macros in 0.9.8e. Once we drop support for RHEL/CentOS 5
    we should move these back to FUNCTIONS. */
@@ -204,15 +204,11 @@ int (*EVP_PKEY_assign_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 EC_KEY *(*EVP_PKEY_get1_EC_KEY)(EVP_PKEY *) = NULL;
 int (*EVP_PKEY_set1_EC_KEY)(EVP_PKEY *, EC_KEY *) = NULL;
 #endif
-/* EVP_PKEY_id is not available on 0.9.8 so we'll define our own. This can
-   be removed when we remove 0.9.8 support. */
+
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
-    #if OPENSSL_VERSION_NUMBER >= 0x10000000L
-        return EVP_PKEY_id(key);
-    #else
-        return key->type;
-    #endif
+    return EVP_PKEY_id(key);
 }
+
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
     return EVP_MD_CTX_create();
