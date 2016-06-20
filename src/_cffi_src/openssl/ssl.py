@@ -256,6 +256,8 @@ int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
+
+const char *SSL_get_servername(const SSL *, const int);
 """
 
 MACROS = """
@@ -358,10 +360,6 @@ int SSL_version(const SSL *);
 void *SSL_CTX_get_ex_data(const SSL_CTX *, int);
 void *SSL_get_ex_data(const SSL *, int);
 
-/* SNI APIs were introduced in OpenSSL 1.0.0.  To continue to support
- * earlier versions some special handling of these is necessary.
- */
-const char *SSL_get_servername(const SSL *, const int);
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
@@ -369,9 +367,6 @@ void SSL_CTX_set_tlsext_servername_callback(
 void SSL_CTX_set_tlsext_servername_arg(
     SSL_CTX *, void *);
 
-/* These were added in OpenSSL 0.9.8h, but since version testing in OpenSSL
-   is fraught with peril thanks to OS distributions we check some constants
-   to determine if they are supported or not */
 long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
 long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
 long SSL_set_tlsext_status_type(SSL *, long);
@@ -534,17 +529,7 @@ size_t SSL_SESSION_get_master_key(const SSL_SESSION *session,
 }
 #endif
 
-/** Secure renegotiation is supported in OpenSSL >= 0.9.8m
- *  But some Linux distributions have back ported some features.
- */
-#ifndef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-static const long Cryptography_HAS_SECURE_RENEGOTIATION = 0;
-long (*SSL_get_secure_renegotiation_support)(SSL *) = NULL;
-const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION = 0;
-const long SSL_OP_LEGACY_SERVER_CONNECT = 0;
-#else
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
-#endif
 
 /* Cryptography now compiles out all SSLv2 bindings. This exists to allow
  * clients that use it to check for SSLv2 support to keep functioning as
@@ -561,41 +546,10 @@ SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
 static const long Cryptography_HAS_SSL3_METHOD = 1;
 #endif
 
-#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
 static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
-#else
-static const long Cryptography_HAS_TLSEXT_HOSTNAME = 0;
-void (*SSL_set_tlsext_host_name)(SSL *, char *) = NULL;
-const char* (*SSL_get_servername)(const SSL *, const int) = NULL;
-void (*SSL_CTX_set_tlsext_servername_callback)(
-    SSL_CTX *,
-    int (*)(const SSL *, int *, void *)) = NULL;
-void (*SSL_CTX_set_tlsext_servername_arg)(
-    SSL_CTX *, void *) = NULL;
-#endif
-
-#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
-#else
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 0;
-long (*SSL_CTX_set_tlsext_status_cb)(SSL_CTX *, int(*)(SSL *, void *)) = NULL;
-long (*SSL_CTX_set_tlsext_status_arg)(SSL_CTX *, void *) = NULL;
-#endif
-
-#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP
 static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
-#else
-static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 0;
-long (*SSL_set_tlsext_status_ocsp_resp)(SSL *, unsigned char *, int) = NULL;
-long (*SSL_get_tlsext_status_ocsp_resp)(SSL *, const unsigned char **) = NULL;
-#endif
-
-#ifdef SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE
 static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
-#else
-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 0;
-long (*SSL_set_tlsext_status_type)(SSL *, long) = NULL;
-#endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;

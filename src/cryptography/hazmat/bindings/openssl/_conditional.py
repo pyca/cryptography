@@ -218,26 +218,6 @@ CONDITIONAL_NAMES = {
         "SSLv3_server_method",
     ],
 
-    "Cryptography_HAS_TLSEXT_HOSTNAME": [
-        "SSL_set_tlsext_host_name",
-        "SSL_get_servername",
-        "SSL_CTX_set_tlsext_servername_callback",
-    ],
-
-    "Cryptography_HAS_TLSEXT_STATUS_REQ_CB": [
-        "SSL_CTX_set_tlsext_status_cb",
-        "SSL_CTX_set_tlsext_status_arg"
-    ],
-
-    "Cryptography_HAS_STATUS_REQ_OCSP_RESP": [
-        "SSL_set_tlsext_status_ocsp_resp",
-        "SSL_get_tlsext_status_ocsp_resp",
-    ],
-
-    "Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE": [
-        "SSL_set_tlsext_status_type",
-    ],
-
     "Cryptography_HAS_RELEASE_BUFFERS": [
         "SSL_MODE_RELEASE_BUFFERS",
     ],
@@ -263,12 +243,6 @@ CONDITIONAL_NAMES = {
         "SSL_CTX_set_next_proto_select_cb",
         "SSL_select_next_proto",
         "SSL_get0_next_proto_negotiated",
-    ],
-
-    "Cryptography_HAS_SECURE_RENEGOTIATION": [
-        "SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION",
-        "SSL_OP_LEGACY_SERVER_CONNECT",
-        "SSL_get_secure_renegotiation_support",
     ],
 
     "Cryptography_HAS_ALPN": [
