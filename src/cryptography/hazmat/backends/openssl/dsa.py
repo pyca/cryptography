@@ -181,23 +181,11 @@ class _DSAPrivateKey(object):
         return _DSAPublicKey(self._backend, dsa_cdata, evp_pkey)
 
     def parameters(self):
-        dsa_cdata = self._backend._lib.DSA_new()
+        dsa_cdata = self._backend._lib.DSAparams_dup(self._dsa_cdata)
         self._backend.openssl_assert(dsa_cdata != self._backend._ffi.NULL)
         dsa_cdata = self._backend._ffi.gc(
             dsa_cdata, self._backend._lib.DSA_free
         )
-        p = self._backend._ffi.new("BIGNUM **")
-        q = self._backend._ffi.new("BIGNUM **")
-        g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DSA_get0_pqg(self._dsa_cdata, p, q, g)
-        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
-        self._backend.openssl_assert(q[0] != self._backend._ffi.NULL)
-        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
-        p_dup = self._backend._lib.BN_dup(p[0])
-        q_dup = self._backend._lib.BN_dup(q[0])
-        g_dup = self._backend._lib.BN_dup(g[0])
-        res = self._backend._lib.DSA_set0_pqg(dsa_cdata, p_dup, q_dup, g_dup)
-        self._backend.openssl_assert(res == 1)
         return _DSAParameters(self._backend, dsa_cdata)
 
     def private_bytes(self, encoding, format, encryption_algorithm):
@@ -256,23 +244,10 @@ class _DSAPublicKey(object):
         )
 
     def parameters(self):
-        dsa_cdata = self._backend._lib.DSA_new()
-        self._backend.openssl_assert(dsa_cdata != self._backend._ffi.NULL)
+        dsa_cdata = self._backend._lib.DSAparams_dup(self._dsa_cdata)
         dsa_cdata = self._backend._ffi.gc(
             dsa_cdata, self._backend._lib.DSA_free
         )
-        p = self._backend._ffi.new("BIGNUM **")
-        q = self._backend._ffi.new("BIGNUM **")
-        g = self._backend._ffi.new("BIGNUM **")
-        self._backend._lib.DSA_get0_pqg(self._dsa_cdata, p, q, g)
-        self._backend.openssl_assert(p[0] != self._backend._ffi.NULL)
-        self._backend.openssl_assert(q[0] != self._backend._ffi.NULL)
-        self._backend.openssl_assert(g[0] != self._backend._ffi.NULL)
-        p_dup = self._backend._lib.BN_dup(p[0])
-        q_dup = self._backend._lib.BN_dup(q[0])
-        g_dup = self._backend._lib.BN_dup(g[0])
-        res = self._backend._lib.DSA_set0_pqg(dsa_cdata, p_dup, q_dup, g_dup)
-        self._backend.openssl_assert(res == 1)
         return _DSAParameters(self._backend, dsa_cdata)
 
     def public_bytes(self, encoding, format):
