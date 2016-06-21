@@ -1985,10 +1985,11 @@ class TestRSAPrimeFactorRecovery(object):
             private["private_exponent"]
         )
         # Unfortunately there is no convention on which prime should be p
-        # and which one q. The function we use always makes p < q, but the
+        # and which one q. The function we use always makes p > q, but the
         # NIST vectors are not so consistent. Accordingly, we verify we've
         # recovered the proper (p, q) by sorting them and asserting on that.
         assert sorted([p, q]) == sorted([private["p"], private["q"]])
+        assert p > q
 
     def test_invalid_recover_prime_factors(self):
         with pytest.raises(ValueError):

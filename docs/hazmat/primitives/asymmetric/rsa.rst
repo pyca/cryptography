@@ -509,7 +509,9 @@ this without having to do the math themselves.
     .. note::
 
         When recovering prime factors this algorithm will always return ``p``
-        and ``q`` such that ``p < q``.
+        and ``q`` such that ``p > q``. Note: before 1.5, this function always
+        returned ``p`` and ``q`` such that ``p < q``. It was changed because
+        libraries commonly require ``p > q``.
 
     :return: A tuple ``(p, q)``
 
