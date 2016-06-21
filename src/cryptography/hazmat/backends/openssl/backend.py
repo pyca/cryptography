@@ -603,29 +603,10 @@ class Backend(object):
 
         return _DSAParameters(self, ctx)
 
-    def _dup_dsa_params(self, dsa_cdata):
-        dsa_cdata_dup = self._lib.DSA_new()
-        self.openssl_assert(dsa_cdata_dup != self._ffi.NULL)
-        dsa_cdata_dup = self._ffi.gc(dsa_cdata_dup, self._lib.DSA_free)
-        p = self._ffi.new("BIGNUM **")
-        q = self._ffi.new("BIGNUM **")
-        g = self._ffi.new("BIGNUM **")
-        self._lib.DSA_get0_pqg(dsa_cdata, p, q, g)
-        self.openssl_assert(p[0] != self._ffi.NULL)
-        self.openssl_assert(q[0] != self._ffi.NULL)
-        self.openssl_assert(g[0] != self._ffi.NULL)
-        p_dup = self._lib.BN_dup(p[0])
-        q_dup = self._lib.BN_dup(q[0])
-        g_dup = self._lib.BN_dup(g[0])
-        self.openssl_assert(p_dup != self._ffi.NULL)
-        self.openssl_assert(q_dup != self._ffi.NULL)
-        self.openssl_assert(g_dup != self._ffi.NULL)
-        res = self._lib.DSA_set0_pqg(dsa_cdata_dup, p_dup, q_dup, g_dup)
-        self.openssl_assert(res == 1)
-        return dsa_cdata_dup
-
     def generate_dsa_private_key(self, parameters):
-        ctx = self._dup_dsa_params(parameters._dsa_cdata)
+        ctx = self._lib.DSAparams_dup(parameters._dsa_cdata)
+        self.openssl_assert(ctx != self._ffi.NULL)
+        ctx = self._ffi.gc(ctx, self._lib.DSA_free)
         self._lib.DSA_generate_key(ctx)
         evp_pkey = self._dsa_cdata_to_evp_pkey(ctx)
 
