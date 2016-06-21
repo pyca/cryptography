@@ -98,6 +98,19 @@ const EVP_MD *EVP_sha512(void);
 int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
                            int, unsigned char *);
 
+EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
+EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
+void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
+int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
+int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
+                  const unsigned char *, size_t);
+int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
+int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
+                    const unsigned char *, size_t);
+int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
+int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
+
 int EVP_PKEY_set1_RSA(EVP_PKEY *, RSA *);
 int EVP_PKEY_set1_DSA(EVP_PKEY *, DSA *);
 int EVP_PKEY_set1_DH(EVP_PKEY *, DH *);
@@ -148,21 +161,6 @@ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
                       const EVP_MD *, int, unsigned char *);
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
-
-/* These aren't macros, but must be in this section because they're not
-   available in 0.9.8. */
-EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
-EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
-EVP_PKEY_CTX *EVP_PKEY_CTX_dup(EVP_PKEY_CTX *);
-void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
-int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
-int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
-                  const unsigned char *, size_t);
-int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
-int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
-                    const unsigned char *, size_t);
-int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
-int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
 """
 
 CUSTOMIZATIONS = """

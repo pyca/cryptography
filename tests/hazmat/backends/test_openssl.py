@@ -43,7 +43,7 @@ def skip_if_libre_ssl(openssl_version):
 
 class TestLibreSkip(object):
     def test_skip_no(self):
-        assert skip_if_libre_ssl(u"OpenSSL 0.9.8zf 19 Mar 2015") is None
+        assert skip_if_libre_ssl(u"OpenSSL 1.0.2h  3 May 2016") is None
 
     def test_skip_yes(self):
         with pytest.raises(pytest.skip.Exception):
