@@ -476,15 +476,15 @@ this without having to do the math themselves.
 
     .. versionadded:: 0.4
 
-    Computes the ``dmp1`` parameter from the RSA private exponent and prime
-    ``p``.
+    Computes the ``dmp1`` parameter from the RSA private exponent (``d``) and
+    prime ``p``.
 
 .. function:: rsa_crt_dmq1(private_exponent, q)
 
     .. versionadded:: 0.4
 
-    Computes the ``dmq1`` parameter from the RSA private exponent and prime
-    ``q``.
+    Computes the ``dmq1`` parameter from the RSA private exponent (``d``) and
+    prime ``q``.
 
 .. function:: rsa_recover_prime_factors(n, e, d)
 
