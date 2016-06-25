@@ -91,9 +91,9 @@ Key dumping
 The ``serialization`` module contains method for loading keys from ``bytes``.
 To dump a ``key`` object to ``bytes``, you must call the appropriate bytes on
 the key object. Documentation for these methods in found in the
-:module:`~cryptography.hazmat.primitives.asymmetric.rsa`,
-:module:`~cryptography.hazmat.primitives.asymmetric.dsa`, and
-:module:`~cryptography.hazmat.primitives.asymmetric.ec` module documentation.
+:mod:`~cryptography.hazmat.primitives.asymmetric.rsa`,
+:mod:`~cryptography.hazmat.primitives.asymmetric.dsa`, and
+:mod:`~cryptography.hazmat.primitives.asymmetric.ec` module documentation.
 
 PEM
 ~~~
