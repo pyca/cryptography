@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, rsa
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS
+    AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS, calculate_max_pss_salt_length
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateKeyWithSerialization, RSAPublicKeyWithSerialization
@@ -26,7 +26,7 @@ def _get_rsa_pss_salt_length(pss, key, hash_algorithm):
     salt = pss._salt_length
 
     if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
-        return rsa.calculate_max_pss_salt_length(key, hash_algorithm)
+        return calculate_max_pss_salt_length(key, hash_algorithm)
     else:
         return salt
 

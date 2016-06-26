@@ -330,6 +330,18 @@ Padding
     :class:`OAEP` should be preferred for encryption and :class:`PSS` should be
     preferred for signatures.
 
+
+.. function:: calculate_pss_max_salt_length(key, hash_algorithm)
+
+    :param key: An RSA public or private key.
+    :param hash_algorithm: A
+        :class:`cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+    :returns int: The computed salt length.
+
+    Computes the length of the salt that :class:`PSS` will use if
+    :data:`PSS.MAX_LENGTH` is used.
+
+
 Mask generation functions
 -------------------------
 

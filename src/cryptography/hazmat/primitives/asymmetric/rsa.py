@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-import math
 from fractions import gcd
 
 import six
@@ -260,14 +259,6 @@ def rsa_recover_prime_factors(n, e, d):
     assert r == 0
 
     return (p, q)
-
-
-def calculate_max_pss_salt_length(key, hash_algorithm):
-    # bit length - 1 per RFC 3447
-    emlen = int(math.ceil((key.key_size - 1) / 8.0))
-    salt_length = emlen - hash_algorithm.digest_size - 2
-    assert salt_length >= 0
-    return salt_length
 
 
 class RSAPrivateNumbers(object):
