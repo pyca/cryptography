@@ -1081,6 +1081,10 @@ class TestRSAPKCS1Verification(object):
 
 
 class TestPSS(object):
+    def test_calculate_max_pss_salt_length(self):
+        with pytest.raises(TypeError):
+            padding.calculate_max_pss_salt_length(object(), hashes.SHA256())
+
     def test_invalid_salt_length_not_integer(self):
         with pytest.raises(TypeError):
             padding.PSS(
