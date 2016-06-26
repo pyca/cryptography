@@ -331,7 +331,7 @@ Padding
     preferred for signatures.
 
 
-.. function:: calculate_pss_max_salt_length(key, hash_algorithm)
+.. function:: calculate_max_pss_salt_length(key, hash_algorithm)
 
     :param key: An RSA public or private key.
     :param hash_algorithm: A
