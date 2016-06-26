@@ -9,17 +9,7 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef struct rsa_st {
-    BIGNUM *n;
-    BIGNUM *e;
-    BIGNUM *d;
-    BIGNUM *p;
-    BIGNUM *q;
-    BIGNUM *dmp1;
-    BIGNUM *dmq1;
-    BIGNUM *iqmp;
-    ...;
-} RSA;
+typedef ... RSA;
 typedef ... BN_GENCB;
 static const int RSA_PKCS1_PADDING;
 static const int RSA_SSLV23_PADDING;
