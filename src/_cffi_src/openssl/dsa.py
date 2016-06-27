@@ -13,8 +13,6 @@ typedef ... DSA;
 """
 
 FUNCTIONS = """
-DSA *DSA_generate_parameters(int, unsigned char *, int, int *, unsigned long *,
-                             void (*)(int, int, void *), void *);
 int DSA_generate_key(DSA *);
 DSA *DSA_new(void);
 void DSA_free(DSA *);
