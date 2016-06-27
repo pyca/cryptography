@@ -571,7 +571,7 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             provider.
 
-        :return: bytes: Signature.
+        :return bytes: Signature.
 
 
 .. class:: RSAPrivateKeyWithSerialization
