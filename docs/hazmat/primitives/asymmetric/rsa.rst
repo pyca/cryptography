@@ -333,6 +333,8 @@ Padding
 
 .. function:: calculate_max_pss_salt_length(key, hash_algorithm)
 
+    .. versionadded:: 1.5
+
     :param key: An RSA public or private key.
     :param hash_algorithm: A
         :class:`cryptography.hazmat.primitives.hashes.HashAlgorithm`.
