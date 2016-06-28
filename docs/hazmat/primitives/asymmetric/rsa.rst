@@ -330,6 +330,20 @@ Padding
     :class:`OAEP` should be preferred for encryption and :class:`PSS` should be
     preferred for signatures.
 
+
+.. function:: calculate_max_pss_salt_length(key, hash_algorithm)
+
+    .. versionadded:: 1.5
+
+    :param key: An RSA public or private key.
+    :param hash_algorithm: A
+        :class:`cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+    :returns int: The computed salt length.
+
+    Computes the length of the salt that :class:`PSS` will use if
+    :data:`PSS.MAX_LENGTH` is used.
+
+
 Mask generation functions
 -------------------------
 
@@ -341,11 +355,10 @@ Mask generation functions
         Removed the deprecated ``salt_length`` parameter.
 
     MGF1 (Mask Generation Function 1) is used as the mask generation function
-    in :class:`PSS` padding. It takes a hash algorithm and a salt length.
+    in :class:`PSS` and :class:`OAEP` padding. It takes a hash algorithm.
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
 Numbers
 ~~~~~~~

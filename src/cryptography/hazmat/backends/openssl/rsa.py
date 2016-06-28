@@ -15,22 +15,18 @@ from cryptography.hazmat.primitives.asymmetric import (
     AsymmetricSignatureContext, AsymmetricVerificationContext, rsa
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS
+    AsymmetricPadding, MGF1, OAEP, PKCS1v15, PSS, calculate_max_pss_salt_length
 )
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateKeyWithSerialization, RSAPublicKeyWithSerialization
 )
 
 
-def _get_rsa_pss_salt_length(pss, key_size, digest_size):
+def _get_rsa_pss_salt_length(pss, key, hash_algorithm):
     salt = pss._salt_length
 
     if salt is MGF1.MAX_LENGTH or salt is PSS.MAX_LENGTH:
-        # bit length - 1 per RFC 3447
-        emlen = int(math.ceil((key_size - 1) / 8.0))
-        salt_length = emlen - digest_size - 2
-        assert salt_length >= 0
-        return salt_length
+        return calculate_max_pss_salt_length(key, hash_algorithm)
     else:
         return salt
 
@@ -220,8 +216,8 @@ class _RSASignatureContext(object):
                 pkey_ctx,
                 _get_rsa_pss_salt_length(
                     self._padding,
-                    self._private_key.key_size,
-                    self._hash_ctx.algorithm.digest_size
+                    self._private_key,
+                    self._hash_ctx.algorithm,
                 )
             )
             self._backend.openssl_assert(res > 0)
@@ -348,8 +344,8 @@ class _RSAVerificationContext(object):
                 pkey_ctx,
                 _get_rsa_pss_salt_length(
                     self._padding,
-                    self._public_key.key_size,
-                    self._hash_ctx.algorithm.digest_size
+                    self._public_key,
+                    self._hash_ctx.algorithm,
                 )
             )
             self._backend.openssl_assert(res > 0)
