@@ -79,6 +79,16 @@ provider.
     >>> signer.update(data)
     >>> signature = signer.finalize()
 
+There is a shortcut to sign sufficiently short messages directly:
+
+.. doctest::
+
+    >>> data = b"this is some data I'd like to sign"
+    >>> signature = private_key.sign(
+    ...     data,
+    ...     hashes.SHA256()
+    ... )
+
 The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
 described in :rfc:`3279`. This can be decoded using
 :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
@@ -101,6 +111,16 @@ You can get a public key object with
     >>> verifier = public_key.verifier(signature, hashes.SHA256())
     >>> verifier.update(data)
     >>> verifier.verify()
+
+There is a shortcut to verify sufficiently short messages directly:
+
+.. doctest::
+
+    >>> public_key.verify(
+    ...     signature,
+    ...     data,
+    ...     hashes.SHA256()
+    ... )
 
 ``verifier()`` takes the signature in the same format as is returned by
 ``signer.finalize()``.
@@ -289,6 +309,21 @@ Key interfaces
 
         The bit length of :attr:`~DSAParameterNumbers.q`.
 
+    .. method:: sign(data, algorithm)
+
+        .. versionadded:: 1.5
+
+        Sign one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes data: The message string to sign.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            provider.
+
+        :return: bytes: Signature.
+
 
 .. class:: DSAPrivateKeyWithSerialization
 
@@ -399,6 +434,24 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+    .. method:: verify(signature, data, algorithm)
+
+        .. versionadded:: 1.5
+
+        Verify one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes signature: The signature to verify.
+
+        :param bytes data: The message string that was signed.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            provider.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
 
 
 .. class:: DSAPublicKeyWithSerialization
