@@ -8,6 +8,11 @@ Changelog
 
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.padding.calculate_max_pss_salt_length`.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey.verify`
+  methods to DSA keys.
 
 
 1.4 - 2016-06-04
