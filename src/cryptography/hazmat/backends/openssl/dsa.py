@@ -197,6 +197,11 @@ class _DSAPrivateKey(object):
             self._dsa_cdata
         )
 
+    def sign(self, data, algorithm):
+        signer = self.signer(algorithm)
+        signer.update(data)
+        return signer.finalize()
+
 
 @utils.register_interface(dsa.DSAPublicKeyWithSerialization)
 class _DSAPublicKey(object):
@@ -263,3 +268,8 @@ class _DSAPublicKey(object):
             self._evp_pkey,
             None
         )
+
+    def verify(self, signature, data, algorithm):
+        verifier = self.verifier(signature, algorithm)
+        verifier.update(data)
+        verifier.verify()

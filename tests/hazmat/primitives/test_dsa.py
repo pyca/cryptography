@@ -606,6 +606,16 @@ class TestDSAVerification(object):
         with pytest.raises(AlreadyFinalized):
             verifier.update(b"more data")
 
+    def test_verify(self, backend):
+        message = b"one little message"
+        algorithm = hashes.SHA1()
+        private_key = DSA_KEY_1024.private_key(backend)
+        signer = private_key.signer(algorithm)
+        signer.update(message)
+        signature = signer.finalize()
+        public_key = private_key.public_key()
+        public_key.verify(signature, message, algorithm)
+
 
 @pytest.mark.requires_backend_interface(interface=DSABackend)
 class TestDSASignature(object):
@@ -660,6 +670,16 @@ class TestDSASignature(object):
             signer.finalize()
         with pytest.raises(AlreadyFinalized):
             signer.update(b"more data")
+
+    def test_sign(self, backend):
+        private_key = DSA_KEY_1024.private_key(backend)
+        message = b"one little message"
+        algorithm = hashes.SHA1()
+        signature = private_key.sign(message, algorithm)
+        public_key = private_key.public_key()
+        verifier = public_key.verifier(signature, algorithm)
+        verifier.update(message)
+        verifier.verify()
 
 
 class TestDSANumbers(object):
