@@ -136,9 +136,6 @@ typedef ... SSL_CTX;
 typedef struct {
     int master_key_length;
     unsigned char master_key[...];
-    unsigned int session_id_length;
-    unsigned char session_id[...];
-    unsigned int sid_ctx_length;
     unsigned char sid_ctx[...];
     ...;
 } SSL_SESSION;
@@ -150,8 +147,6 @@ typedef struct {
 } SSL3_STATE;
 
 typedef struct {
-    int version;
-    int type;
     SSL3_STATE *s3;
     SSL_SESSION *session;
     ...;
