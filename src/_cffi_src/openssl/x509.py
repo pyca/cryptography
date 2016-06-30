@@ -38,20 +38,13 @@ typedef struct {
 
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
+typedef ... X509_REQ;
 typedef ... X509_REQ_INFO;
-
-typedef struct {
-    X509_REQ_INFO *req_info;
-    X509_ALGOR *sig_alg;
-    ASN1_BIT_STRING *signature;
-    ...;
-} X509_REQ;
 
 typedef struct {
     ASN1_INTEGER *serialNumber;
     ASN1_TIME *revocationDate;
     X509_EXTENSIONS *extensions;
-    int sequence;
     ...;
 } X509_REVOKED;
 
@@ -62,13 +55,10 @@ typedef struct {
 
 typedef struct {
     X509_CRL_INFO *crl;
-    X509_ALGOR *sig_alg;
-    ASN1_BIT_STRING *signature;
     ...;
 } X509_CRL;
 
 typedef struct {
-    X509_ALGOR *sig_alg;
     X509_CINF *cert_info;
     ASN1_BIT_STRING *signature;
     ...;
