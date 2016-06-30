@@ -13,6 +13,11 @@ Changelog
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey.verify`
   methods to DSA keys.
+* Added "one shot"
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.sign`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
+  methods to ECDSA keys.
 
 
 1.4 - 2016-06-04
