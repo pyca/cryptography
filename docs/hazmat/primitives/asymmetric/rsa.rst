@@ -710,8 +710,8 @@ Key interfaces
 
         .. versionadded:: 1.4
 
-        Verify one block of data which can be verified later by others using the
-        public key.
+        Verify one block of data was signed by the private key
+        associated with this public key.
 
         :param bytes signature: The signature to verify.
 
