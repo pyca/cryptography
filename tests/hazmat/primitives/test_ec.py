@@ -504,6 +504,7 @@ class TestECDSAVectors(object):
             verifier.verify()
 
     def test_sign(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         message = b"one little message"
         algorithm = ec.ECDSA(hashes.SHA1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
@@ -514,6 +515,7 @@ class TestECDSAVectors(object):
         verifier.verify()
 
     def test_verify(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         message = b"one little message"
         algorithm = ec.ECDSA(hashes.SHA1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
