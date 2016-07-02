@@ -381,8 +381,8 @@ Key Interfaces
         The signature is formatted as DER-encoded bytes, as specified in
         :rfc:`3279`.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
@@ -420,8 +420,8 @@ Key Interfaces
 
         :param bytes data: The message string to sign.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :return bytes: Signature.
 
@@ -479,8 +479,8 @@ Key Interfaces
         :param bytes signature: The signature to verify. DER encoded as
             specified in :rfc:`3279`.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
@@ -525,8 +525,8 @@ Key Interfaces
 
         :param bytes data: The message string that was signed.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
