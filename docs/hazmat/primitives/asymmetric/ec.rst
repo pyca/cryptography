@@ -423,7 +423,7 @@ Key Interfaces
         :param signature_algorithm: An instance of a
             :class:`EllipticCurveSignatureAlgorithm` provider.
 
-        :return: bytes: Signature.
+        :return bytes: Signature.
 
 
 .. class:: EllipticCurvePrivateKeyWithSerialization
