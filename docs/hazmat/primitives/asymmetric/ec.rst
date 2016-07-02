@@ -48,6 +48,16 @@ Elliptic Curve Signature Algorithms
         >>> signer.update(b" to sign")
         >>> signature = signer.finalize()
 
+    There is a shortcut to sign sufficiently short messages directly:
+
+    .. doctest::
+
+        >>> data = b"this is some data I'd like to sign"
+        >>> signature = private_key.sign(
+        ...     data,
+        ...     ec.ECDSA(hashes.SHA256())
+        ... )
+
     The ``signature`` is a ``bytes`` object, whose contents is DER encoded as
     described in :rfc:`3279`. This can be decoded using
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
@@ -371,8 +381,8 @@ Key Interfaces
         The signature is formatted as DER-encoded bytes, as specified in
         :rfc:`3279`.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
@@ -400,6 +410,20 @@ Key Interfaces
         :return: :class:`EllipticCurvePublicKey`
 
         The EllipticCurvePublicKey object for this private key.
+
+    .. method:: sign(data, signature_algorithm)
+
+        .. versionadded:: 1.5
+
+        Sign one block of data which can be verified later by others using the
+        public key.
+
+        :param bytes data: The message string to sign.
+
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
+
+        :return bytes: Signature.
 
 
 .. class:: EllipticCurvePrivateKeyWithSerialization
@@ -455,8 +479,8 @@ Key Interfaces
         :param bytes signature: The signature to verify. DER encoded as
             specified in :rfc:`3279`.
 
-        :param signature_algorithm: An instance of a
-            :class:`EllipticCurveSignatureAlgorithm` provider.
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
@@ -489,6 +513,23 @@ Key Interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
+
+    .. method:: verify(signature, data, signature_algorithm)
+
+        .. versionadded:: 1.5
+
+        Verify one block of data was signed by the private key associated
+        with this public key.
+
+        :param bytes signature: The signature to verify.
+
+        :param bytes data: The message string that was signed.
+
+        :param signature_algorithm: An instance of
+            :class:`EllipticCurveSignatureAlgorithm`.
+
+        :raises cryptography.exceptions.InvalidSignature: If the signature does
+            not validate.
 
 
 .. class:: EllipticCurvePublicKeyWithSerialization

@@ -62,6 +62,12 @@ class EllipticCurvePrivateKey(object):
         The EllipticCurve that this key is on.
         """
 
+    @abc.abstractproperty
+    def sign(self, data, signature_algorithm):
+        """
+        Signs the data
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
@@ -102,6 +108,12 @@ class EllipticCurvePublicKey(object):
     def public_bytes(self, encoding, format):
         """
         Returns the key serialized as bytes.
+        """
+
+    @abc.abstractmethod
+    def verify(self, signature, data, signature_algorithm):
+        """
+        Verifies the signature of the data.
         """
 
 
