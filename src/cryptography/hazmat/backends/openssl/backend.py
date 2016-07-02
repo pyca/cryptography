@@ -699,7 +699,7 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             if isinstance(private_key, _DSAPrivateKey):
                 raise NotImplementedError(
                     "Certificate signing requests aren't implemented for DSA"
@@ -777,7 +777,7 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             if isinstance(private_key, _DSAPrivateKey):
                 raise NotImplementedError(
                     "Certificate signatures aren't implemented for DSA"
@@ -869,7 +869,7 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
-        if self._lib.OPENSSL_VERSION_NUMBER <= 0x10001000:
+        if self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             if isinstance(private_key, _DSAPrivateKey):
                 raise NotImplementedError(
                     "CRL signatures aren't implemented for DSA"
