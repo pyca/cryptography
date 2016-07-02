@@ -41,7 +41,7 @@ int DH_generate_parameters_ex(DH *, int, int, BN_GENCB *);
 
 CUSTOMIZATIONS = """
 /* These functions were added in OpenSSL 1.1.0-pre5 (beta2) */
-#if OPENSSL_VERSION_NUMBER < 0x10100005 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110PRE5 || defined(LIBRESSL_VERSION_NUMBER)
 void DH_get0_pqg(const DH *dh,
                  const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
 {

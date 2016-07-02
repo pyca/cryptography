@@ -38,7 +38,7 @@ void AES_ctr128_encrypt(const unsigned char *, unsigned char *,
 
 CUSTOMIZATIONS = """
 static const long Cryptography_HAS_AES_WRAP = 1;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
 static const int Cryptography_HAS_AES_CTR128_ENCRYPT = 0;
 void (*AES_ctr128_encrypt)(const unsigned char *, unsigned char *,
                            size_t, const AES_KEY *,

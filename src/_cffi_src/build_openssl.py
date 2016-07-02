@@ -56,6 +56,9 @@ ffi = build_ffi_for_binding(
     module_name="_openssl",
     module_prefix="_cffi_src.openssl.",
     modules=[
+        # This goes first so we can define some cryptography-wide symbols.
+        "cryptography",
+
         "aes",
         "asn1",
         "bignum",
