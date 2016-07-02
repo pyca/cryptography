@@ -309,7 +309,7 @@ class TestCertificateRevocationListBuilder(object):
     @pytest.mark.requires_backend_interface(interface=DSABackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_sign_dsa_key(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
         private_key = DSA_KEY_2048.private_key(backend)
         invalidity_date = x509.InvalidityDate(
@@ -355,7 +355,7 @@ class TestCertificateRevocationListBuilder(object):
     @pytest.mark.requires_backend_interface(interface=EllipticCurveBackend)
     @pytest.mark.requires_backend_interface(interface=X509Backend)
     def test_sign_ec_key_unsupported(self, backend):
-        if backend._lib.OPENSSL_VERSION_NUMBER < 0x10001000:
+        if backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101:
             pytest.skip("Requires a newer OpenSSL. Must be >= 1.0.1")
         _skip_curve_unsupported(backend, ec.SECP256R1())
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)

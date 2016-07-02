@@ -320,7 +320,7 @@ class TestOpenSSLRSA(object):
                                              key_size=256)
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x1000100f,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_non_sha1_pss_mgf1_hash_algorithm_on_old_openssl(self):
@@ -495,7 +495,7 @@ class TestOpenSSLRSA(object):
 
 
 @pytest.mark.skipif(
-    backend._lib.OPENSSL_VERSION_NUMBER <= 0x10001000,
+    backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_101,
     reason="Requires an OpenSSL version >= 1.0.1"
 )
 class TestOpenSSLCMAC(object):
@@ -506,7 +506,7 @@ class TestOpenSSLCMAC(object):
 
 class TestOpenSSLCreateX509CSR(object):
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_unsupported_dsa_keys(self):
@@ -516,7 +516,7 @@ class TestOpenSSLCreateX509CSR(object):
             backend.create_x509_csr(object(), private_key, hashes.SHA1())
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_unsupported_ec_keys(self):
@@ -537,7 +537,7 @@ class TestOpenSSLSignX509Certificate(object):
             )
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_dsa_private_key_is_unsupported(self):
@@ -561,7 +561,7 @@ class TestOpenSSLSignX509Certificate(object):
             builder.sign(private_key, hashes.SHA512(), backend)
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_ec_private_key_is_unsupported(self):
@@ -594,7 +594,7 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
             backend.create_x509_crl(object(), private_key, hashes.SHA256())
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_dsa_private_key_is_unsupported(self):
@@ -612,7 +612,7 @@ class TestOpenSSLSignX509CertificateRevocationList(object):
             builder.sign(private_key, hashes.SHA1(), backend)
 
     @pytest.mark.skipif(
-        backend._lib.OPENSSL_VERSION_NUMBER >= 0x10001000,
+        backend._lib.CRYPTOGRAPHY_OPENSSL_101_OR_GREATER,
         reason="Requires an older OpenSSL. Must be < 1.0.1"
     )
     def test_sign_with_ec_private_key_is_unsupported(self):
