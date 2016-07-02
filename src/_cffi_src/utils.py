@@ -11,9 +11,8 @@ from distutils.dist import Distribution
 from cffi import FFI
 
 
-def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
-                          post_include="", libraries=[], extra_compile_args=[],
-                          extra_link_args=[]):
+def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
+                          extra_compile_args=[], extra_link_args=[]):
     """
     Modules listed in ``modules`` should have the following attributes:
 
@@ -49,9 +48,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, pre_include="",
     #   int foo(int);
     #   int foo(short);
     verify_source = "\n".join(
-        [pre_include] +
         includes +
-        [post_include] +
         functions +
         customizations
     )

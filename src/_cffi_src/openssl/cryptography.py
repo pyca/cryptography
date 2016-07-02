@@ -5,6 +5,18 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
+#include <openssl/opensslv.h>
+/*
+    LibreSSL removed e_os2.h from the public headers so we'll only include it
+    if we're using vanilla OpenSSL.
+*/
+#if !defined(LIBRESSL_VERSION_NUMBER)
+#include <openssl/e_os2.h>
+#endif
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 #define CRYPTOGRAPHY_OPENSSL_101_OR_GREATER \
     (OPENSSL_VERSION_NUMBER >= 0x10001000)
 #define CRYPTOGRAPHY_OPENSSL_102_OR_GREATER \
