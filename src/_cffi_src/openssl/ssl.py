@@ -471,9 +471,9 @@ int SSL_SESSION_set1_id_context(SSL_SESSION *s, const unsigned char *sid_ctx,
 }
 #endif
 
-/* Added in 1.0.2 but we need it in all versions now due to the great
+/* Added in 1.0.2beta1 but we need it in all versions now due to the great
    opaquing. */
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102BETA1 || defined(LIBRESSL_VERSION_NUMBER)
 /* from ssl/ssl_lib.c */
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
