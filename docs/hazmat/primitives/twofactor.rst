@@ -57,6 +57,9 @@ codes (HMAC).
         this flag is set to False, the application develop should implement
         additional checks of the key length before passing it into
         :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
+
+        .. versionadded:: 1.5
+
     :raises ValueError: This is raised if the provided ``key`` is shorter than
         128 bits or if the ``length`` parameter is not 6, 7 or 8.
     :raises TypeError: This is raised if the provided ``algorithm`` is not
@@ -177,6 +180,8 @@ similar to the following code.
         this flag is set to False, the application develop should implement
         additional checks of the key length before passing it into
         :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
+
+        .. versionadded:: 1.5
     :raises ValueError: This is raised if the provided ``key`` is shorter than
         128 bits or if the ``length`` parameter is not 6, 7 or 8.
     :raises TypeError: This is raised if the provided ``algorithm`` is not
