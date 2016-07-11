@@ -187,14 +187,14 @@ int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
 }
 
 EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
     return EVP_MD_CTX_create();
 #else
     return EVP_MD_CTX_new();
 #endif
 }
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
     EVP_MD_CTX_destroy(ctx);
 #else
     EVP_MD_CTX_free(ctx);

@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 INCLUDES = """
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+#if CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
 #include <openssl/cmac.h>
 #endif
 """
@@ -28,8 +28,9 @@ void CMAC_CTX_free(CMAC_CTX *);
 """
 
 CUSTOMIZATIONS = """
-#if OPENSSL_VERSION_NUMBER < 0x10001000L
-
+#if CRYPTOGRAPHY_OPENSSL_101_OR_GREATER
+static const long Cryptography_HAS_CMAC = 1;
+#else
 static const long Cryptography_HAS_CMAC = 0;
 typedef void CMAC_CTX;
 CMAC_CTX *(*CMAC_CTX_new)(void) = NULL;
@@ -39,7 +40,5 @@ int (*CMAC_Update)(CMAC_CTX *, const void *, size_t) = NULL;
 int (*CMAC_Final)(CMAC_CTX *, unsigned char *, size_t *) = NULL;
 int (*CMAC_CTX_copy)(CMAC_CTX *, const CMAC_CTX *) = NULL;
 void (*CMAC_CTX_free)(CMAC_CTX *) = NULL;
-#else
-static const long Cryptography_HAS_CMAC = 1;
 #endif
 """

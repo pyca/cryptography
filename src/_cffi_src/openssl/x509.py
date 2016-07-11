@@ -350,7 +350,7 @@ void X509_REQ_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509_REQ *);
 CUSTOMIZATIONS = """
 /* Added in 1.0.2 beta but we need it in all versions now due to the great
    opaquing. */
-#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
 /* from x509/x_x509.c version 1.0.2 */
 void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
                          const X509 *x)
@@ -367,9 +367,10 @@ int X509_get_signature_nid(const X509 *x)
 }
 
 #endif
-/* Added in 1.0.2 but we need it in all versions now due to the great
+
+/* Added in 1.0.2beta3 but we need it in all versions now due to the great
    opaquing. */
-#if OPENSSL_VERSION_NUMBER < 0x10002003L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102BETA3 || defined(LIBRESSL_VERSION_NUMBER)
 /* from x509/x_x509.c */
 int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
 {
@@ -405,7 +406,7 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
 
 /* Added in 1.1.0 but we need it in all versions now due to the great
    opaquing. */
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
 
 X509_ALGOR *X509_get0_tbs_sigalg(X509 *x)
 {

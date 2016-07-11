@@ -451,7 +451,7 @@ long SSL_CTX_sess_cache_full(SSL_CTX *);
 CUSTOMIZATIONS = """
 /* Added in 1.0.1 but we need it in all versions now due to the great
    opaquing. */
-#if OPENSSL_VERSION_NUMBER < 0x1000100fL
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_101
 /* from ssl.h */
 #define SSL_F_SSL_SESSION_SET1_ID_CONTEXT 312
 #define SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG 273
@@ -470,17 +470,19 @@ int SSL_SESSION_set1_id_context(SSL_SESSION *s, const unsigned char *sid_ctx,
     return 1;
 }
 #endif
+
 /* Added in 1.0.2 but we need it in all versions now due to the great
    opaquing. */
-#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
 /* from ssl/ssl_lib.c */
 const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
     return ctx->method;
 }
 #endif
+
 /* Added in 1.1.0 in the great opaquing, but we need to define it for older
    OpenSSLs. Such is our burden. */
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
 /* from ssl/ssl_lib.c */
 size_t SSL_get_client_random(const SSL *ssl, unsigned char *out, size_t outlen)
 {
@@ -619,7 +621,7 @@ static const long Cryptography_HAS_NETBSD_D1_METH = 1;
  * addition to a definition check. NPN was added in 1.0.1: for any version
  * before that, there is no compatibility.
  */
-#if defined(OPENSSL_NO_NEXTPROTONEG) || OPENSSL_VERSION_NUMBER < 0x1000100fL
+#if defined(OPENSSL_NO_NEXTPROTONEG) || CRYPTOGRAPHY_OPENSSL_LESS_THAN_101
 static const long Cryptography_HAS_NEXTPROTONEG = 0;
 void (*SSL_CTX_set_next_protos_advertised_cb)(SSL_CTX *,
                                               int (*)(SSL *,
@@ -646,7 +648,7 @@ static const long Cryptography_HAS_NEXTPROTONEG = 1;
 #endif
 
 /* ALPN was added in OpenSSL 1.0.2. */
-#if OPENSSL_VERSION_NUMBER < 0x10002001L && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !defined(LIBRESSL_VERSION_NUMBER)
 int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
                                const unsigned char *,
                                unsigned) = NULL;
@@ -668,7 +670,7 @@ static const long Cryptography_HAS_ALPN = 1;
 #endif
 
 /* SSL_CTX_set_cert_cb was added in OpenSSL 1.0.2. */
-#if OPENSSL_VERSION_NUMBER < 0x10002001L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 || defined(LIBRESSL_VERSION_NUMBER)
 void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
 void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
 static const long Cryptography_HAS_SET_CERT_CB = 0;
@@ -697,7 +699,7 @@ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_SSL_ST = 1;
 #else
 static const long Cryptography_HAS_SSL_ST = 0;
@@ -706,7 +708,7 @@ static const long SSL_ST_OK = 0;
 static const long SSL_ST_INIT = 0;
 static const long SSL_ST_RENEGOTIATE = 0;
 #endif
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && !defined(LIBRESSL_VERSION_NUMBER)
 static const long Cryptography_HAS_TLS_ST = 1;
 #else
 static const long Cryptography_HAS_TLS_ST = 0;
