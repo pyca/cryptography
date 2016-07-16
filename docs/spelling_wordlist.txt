@@ -72,3 +72,5 @@ unpadding
 Verisign
 wildcard
 Xcode
+Google
+Authenticator
