@@ -16,7 +16,8 @@ import pytest
 
 import six
 
-from cryptography.fernet import Fernet, InvalidToken, MultiFernet
+from cryptography.fernet import ExtFernet192, ExtFernet256, Fernet, FernetBase
+from cryptography.fernet import InvalidToken, MultiFernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.interfaces import CipherBackend, HMACBackend
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
@@ -43,11 +44,27 @@ def test_default_backend():
 
 @pytest.mark.requires_backend_interface(interface=CipherBackend)
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
+class TestFernetBase(object):
+    def test_key_generation_valid_length(self, backend):
+        k = FernetBase._generate_key_of_length(128)
+        assert len(k) == len(base64.urlsafe_b64encode(b"\x00" * 32))
+
+    def test_key_generation_invalid_invalid(self, backend):
+        with pytest.raises(ValueError):
+            FernetBase._generate_key_of_length(150)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            FernetBase(base64.urlsafe_b64encode(b"abc"))
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES CBC",
+    skip_message="Does not support AES128 CBC",
 )
 class TestFernet(object):
     @json_parametrize(
@@ -126,9 +143,93 @@ class TestFernet(object):
 @pytest.mark.requires_backend_interface(interface=HMACBackend)
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES(b"\x00" * 24), modes.CBC(b"\x00" * 16)
+    ),
+    skip_message="Does not support AES192 CBC",
+)
+class TestExtFernet192(object):
+    @json_parametrize(
+        ("secret", "now", "iv", "src", "token"), "generate_192.json",
+    )
+    def test_generate(self, secret, now, iv, src, token, backend):
+        f = ExtFernet192(secret.encode("ascii"), backend=backend)
+        actual_token = f._encrypt_from_parts(
+            src.encode("ascii"),
+            calendar.timegm(iso8601.parse_date(now).utctimetuple()),
+            b"".join(map(six.int2byte, iv))
+        )
+        assert actual_token == token.encode("ascii")
+
+    @json_parametrize(
+        ("secret", "now", "src", "ttl_sec", "token"), "verify_192.json",
+    )
+    def test_verify(self, secret, now, src, ttl_sec, token, backend,
+                    monkeypatch):
+        f = ExtFernet192(secret.encode("ascii"), backend=backend)
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+        assert payload == src.encode("ascii")
+
+    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
+    def test_roundtrips(self, message, backend):
+        f = ExtFernet192(ExtFernet192.generate_key(), backend=backend)
+        assert f.decrypt(f.encrypt(message)) == message
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            ExtFernet192(base64.urlsafe_b64encode(b"abc"), backend=backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
         algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
     ),
-    skip_message="Does not support AES CBC",
+    skip_message="Does not support AES192 CBC",
+)
+class TestExtFernet256(object):
+    @json_parametrize(
+        ("secret", "now", "iv", "src", "token"), "generate_256.json",
+    )
+    def test_generate(self, secret, now, iv, src, token, backend):
+        f = ExtFernet256(secret.encode("ascii"), backend=backend)
+        actual_token = f._encrypt_from_parts(
+            src.encode("ascii"),
+            calendar.timegm(iso8601.parse_date(now).utctimetuple()),
+            b"".join(map(six.int2byte, iv))
+        )
+        assert actual_token == token.encode("ascii")
+
+    @json_parametrize(
+        ("secret", "now", "src", "ttl_sec", "token"), "verify_256.json",
+    )
+    def test_verify(self, secret, now, src, ttl_sec, token, backend,
+                    monkeypatch):
+        f = ExtFernet256(secret.encode("ascii"), backend=backend)
+        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        payload = f.decrypt(token.encode("ascii"), ttl=ttl_sec)
+        assert payload == src.encode("ascii")
+
+    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
+    def test_roundtrips(self, message, backend):
+        f = ExtFernet256(ExtFernet256.generate_key(), backend=backend)
+        assert f.decrypt(f.encrypt(message)) == message
+
+    def test_bad_key(self, backend):
+        with pytest.raises(ValueError):
+            ExtFernet256(base64.urlsafe_b64encode(b"abc"), backend=backend)
+
+
+@pytest.mark.requires_backend_interface(interface=CipherBackend)
+@pytest.mark.requires_backend_interface(interface=HMACBackend)
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
+    ),
+    skip_message="Does not support AES128 CBC",
 )
 class TestMultiFernet(object):
     def test_encrypt(self, backend):
