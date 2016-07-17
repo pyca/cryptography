@@ -29,3 +29,4 @@ PGP key fingerprints are enclosed in parentheses.
 * Phoebe Queen <foibey@gmail.com> (10D4 7741 AB65 50F4 B264 3888 DA40 201A 072B C1FA)
 * Google Inc.
 * Amaury Forgeot d'Arc <amauryfa@google.com>
+* Todd Knarr <tknarr@silverglass.org>
