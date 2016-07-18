@@ -52,7 +52,7 @@ codes (HMAC).
         provider.
     :param enforce_key_length: A boolean flag defaulting to True that toggles
         whether a minimum key length of 128 bits is enforced. This exists to
-        work around the fact that as documented in `Issue #2915`, the
+        work around the fact that as documented in `Issue #2915`_, the
         Google Authenticator PAM module by default generates 80 bit keys. If
         this flag is set to False, the application develop should implement
         additional checks of the key length before passing it into
@@ -175,7 +175,7 @@ similar to the following code.
         provider.
     :param enforce_key_length: A boolean flag defaulting to True that toggles
         whether a minimum key length of 128 bits is enforced. This exists to
-        work around the fact that as documented in `Issue #2915`, the
+        work around the fact that as documented in `Issue #2915`_, the
         Google Authenticator PAM module by default generates 80 bit keys. If
         this flag is set to False, the application develop should implement
         additional checks of the key length before passing it into
