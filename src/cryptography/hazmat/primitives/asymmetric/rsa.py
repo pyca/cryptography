@@ -257,7 +257,7 @@ def rsa_recover_prime_factors(n, e, d):
     # Found !
     q, r = divmod(n, p)
     assert r == 0
-
+    p, q = sorted((p, q), reverse=True)
     return (p, q)
 
 
