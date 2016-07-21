@@ -124,9 +124,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
     :param bytes password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -163,9 +162,8 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     :param bytes data: The PEM encoded key data.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PEMSerializationBackend`.
 
 
     :returns: One of
@@ -201,9 +199,8 @@ the rest.
     :param bytes password: The password to use to decrypt the data. Should
         be ``None`` if the private key is not encrypted.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -242,9 +239,8 @@ the rest.
 
     :param bytes data: The DER encoded key data.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DERSerializationBackend`.
 
     :returns: One of
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
@@ -302,7 +298,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     :param bytes data: The OpenSSH encoded key data.
 
-    :param backend: A backend providing
+    :param backend: A backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`,
         :class:`~cryptography.hazmat.backends.interfaces.DSABackend`, or
         :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`

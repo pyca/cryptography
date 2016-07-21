@@ -82,9 +82,8 @@ Key interfaces
         Generate a DH private key. This method can be used to generate many
         new private keys from a single set of parameters.
 
-        :return: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
-            provider.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
 
 
 .. class:: DHParametersWithSerialization
@@ -97,7 +96,8 @@ Key interfaces
 
         Return the numbers that make up this set of parameters.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
 
 
 .. class:: DHPrivateKey
@@ -112,13 +112,15 @@ Key interfaces
 
         Return the public key associated with this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
 
     .. method:: parameters()
 
         Return the parameters associated with this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
 
 .. class:: DHPrivateKeyWithSerialization
@@ -131,7 +133,8 @@ Key interfaces
 
         Return the numbers that make up this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
 
 
 .. class:: DHPublicKey
@@ -146,7 +149,8 @@ Key interfaces
 
         Return the parameters associated with this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
 
 .. class:: DHPublicKeyWithSerialization
@@ -159,4 +163,5 @@ Key interfaces
 
         Return the numbers that make up this public key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.

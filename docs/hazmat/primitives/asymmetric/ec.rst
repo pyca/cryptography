@@ -12,13 +12,12 @@ Elliptic curve cryptography
 
     Generate a new private key on ``curve`` for use with ``backend``.
 
-    :param curve: A :class:`EllipticCurve` provider.
+    :param curve: An instance of :class:`EllipticCurve`.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
-    :returns: A new instance of a :class:`EllipticCurvePrivateKey` provider.
+    :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
 Elliptic Curve Signature Algorithms
@@ -31,9 +30,8 @@ Elliptic Curve Signature Algorithms
     The ECDSA signature algorithm first standardized in NIST publication
     `FIPS 186-3`_, and later in `FIPS 186-4`_.
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     .. doctest::
 
@@ -88,12 +86,10 @@ Elliptic Curve Signature Algorithms
         Convert a collection of numbers into a private key suitable for doing
         actual cryptographic operations.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
-        :returns: A new instance of a :class:`EllipticCurvePrivateKey`
-            provider.
+        :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
 
 .. class:: EllipticCurvePublicNumbers(x, y, curve)
@@ -125,12 +121,10 @@ Elliptic Curve Signature Algorithms
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.EllipticCurveBackend`.
 
-        :returns: A new instance of a :class:`EllipticCurvePublicKey`
-            provider.
+        :returns: A new instance of :class:`EllipticCurvePublicKey`.
 
     .. method:: encode_point()
 
@@ -217,7 +211,7 @@ Currently `cryptography` only supports NIST curves, none of which are
 considered "safe" by the `SafeCurves`_ project run by Daniel J. Bernstein and
 Tanja Lange.
 
-All named curves are providers of :class:`EllipticCurve`.
+All named curves are instances of :class:`EllipticCurve`.
 
 .. class:: SECT571K1
 
