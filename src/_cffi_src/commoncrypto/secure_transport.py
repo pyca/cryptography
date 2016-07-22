@@ -43,8 +43,7 @@ typedef enum {
 } SSLProtocol;
 
 typedef UInt32 SSLCipherSuite;
-enum
-{
+enum {
    SSL_NULL_WITH_NULL_NULL =               0x0000,
    SSL_RSA_WITH_NULL_MD5 =                 0x0001,
    SSL_RSA_WITH_NULL_SHA =                 0x0002,
@@ -76,8 +75,7 @@ enum
    SSL_FORTEZZA_DMS_WITH_NULL_SHA =        0x001C,
    SSL_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA =0x001D,
 
-   /* TLS addenda using AES,
-   per RFC 3268 */
+   /* TLS addenda using AES, per RFC 3268 */
    TLS_RSA_WITH_AES_128_CBC_SHA      =     0x002F,
    TLS_DH_DSS_WITH_AES_128_CBC_SHA   =     0x0030,
    TLS_DH_RSA_WITH_AES_128_CBC_SHA   =     0x0031,
@@ -91,8 +89,7 @@ enum
    TLS_DHE_RSA_WITH_AES_256_CBC_SHA  =     0x0039,
    TLS_DH_anon_WITH_AES_256_CBC_SHA  =     0x003A,
 
-   /* ECDSA addenda,
-   RFC 4492 */
+   /* ECDSA addenda, RFC 4492 */
    TLS_ECDH_ECDSA_WITH_NULL_SHA           =    0xC001,
    TLS_ECDH_ECDSA_WITH_RC4_128_SHA        =    0xC002,
    TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA   =    0xC003,
@@ -119,8 +116,7 @@ enum
    TLS_ECDH_anon_WITH_AES_128_CBC_SHA     =    0xC018,
    TLS_ECDH_anon_WITH_AES_256_CBC_SHA     =    0xC019,
 
-   /* TLS 1.2 addenda,
-   RFC 5246 */
+   /* TLS 1.2 addenda, RFC 5246 */
    /* Initial state. */
    TLS_NULL_WITH_NULL_NULL                   = 0x0000,
 
@@ -134,8 +130,8 @@ enum
    TLS_RSA_WITH_AES_128_CBC_SHA256           = 0x003C,
    TLS_RSA_WITH_AES_256_CBC_SHA256           = 0x003D,
 
-   /* Server-authenticated (and optionally client-authenticated )
-   Diffie-Hellman. */
+   /* Server-authenticated (and optionally client-authenticated)
+      Diffie-Hellman. */
    TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA          = 0x000D,
    TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA          = 0x0010,
    TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA         = 0x0013,
@@ -155,8 +151,8 @@ enum
    TLS_DH_anon_WITH_AES_128_CBC_SHA256       = 0x006C,
    TLS_DH_anon_WITH_AES_256_CBC_SHA256       = 0x006D,
 
-   /* Addenda from rfc 5288 AES Galois Counter Mode (GCM ) Cipher Suites
-   for TLS. */
+   /* Addenda from rfc 5288 AES Galois Counter Mode (GCM) Cipher Suites
+      for TLS. */
    TLS_RSA_WITH_AES_128_GCM_SHA256           = 0x009C,
    TLS_RSA_WITH_AES_256_GCM_SHA384           = 0x009D,
    TLS_DHE_RSA_WITH_AES_128_GCM_SHA256       = 0x009E,
@@ -171,7 +167,7 @@ enum
    TLS_DH_anon_WITH_AES_256_GCM_SHA384       = 0x00A7,
 
    /* Addenda from rfc 5289  Elliptic Curve Cipher Suites with
-   HMAC SHA-256/384. */
+      HMAC SHA-256/384. */
    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256   = 0xC023,
    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384   = 0xC024,
    TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256    = 0xC025,
@@ -182,7 +178,7 @@ enum
    TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384      = 0xC02A,
 
    /* Addenda from rfc 5289  Elliptic Curve Cipher Suites with
-   SHA-256/384 and AES Galois Counter Mode (GCM ) */
+      SHA-256/384 and AES Galois Counter Mode (GCM) */
    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256   = 0xC02B,
    TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384   = 0xC02C,
    TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256    = 0xC02D,
@@ -266,10 +262,8 @@ enum {
     errSSLLast                  = -9849     /* end of range, to be deleted */
 };
 
-typedef OSStatus (*SSLReadFunc) (SSLConnectionRef, void *, size_t *);
-typedef OSStatus (*SSLWriteFunc) (SSLConnectionRef,
-                                  const void *,
-                                  size_t *);
+typedef OSStatus (*SSLReadFunc)(SSLConnectionRef, void *, size_t *);
+typedef OSStatus (*SSLWriteFunc)(SSLConnectionRef, const void *, size_t *);
 """
 
 FUNCTIONS = """
@@ -277,9 +271,7 @@ OSStatus SSLSetConnection(SSLContextRef, SSLConnectionRef);
 OSStatus SSLGetConnection(SSLContextRef, SSLConnectionRef *);
 OSStatus SSLSetSessionOption(SSLContextRef, SSLSessionOption, Boolean);
 OSStatus SSLGetSessionOption(SSLContextRef, SSLSessionOption, Boolean *);
-OSStatus SSLSetIOFuncs(SSLContextRef,
-                       SSLReadFunc,
-                       SSLWriteFunc);
+OSStatus SSLSetIOFuncs(SSLContextRef, SSLReadFunc, SSLWriteFunc);
 OSStatus SSLSetClientSideAuthenticate(SSLContextRef, SSLAuthenticate);
 
 OSStatus SSLHandshake(SSLContextRef);
@@ -294,9 +286,7 @@ OSStatus SSLClose(SSLContextRef);
 
 OSStatus SSLGetNumberSupportedCiphers(SSLContextRef, size_t *);
 OSStatus SSLGetSupportedCiphers(SSLContextRef, SSLCipherSuite *, size_t *);
-OSStatus SSLSetEnabledCiphers(SSLContextRef,
-                              const SSLCipherSuite *,
-                              size_t);
+OSStatus SSLSetEnabledCiphers(SSLContextRef, const SSLCipherSuite *, size_t);
 OSStatus SSLGetNumberEnabledCiphers(SSLContextRef, size_t *);
 OSStatus SSLGetEnabledCiphers(SSLContextRef, SSLCipherSuite *, size_t *);
 OSStatus SSLGetNegotiatedCipher(SSLContextRef, SSLCipherSuite *);
