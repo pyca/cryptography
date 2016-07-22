@@ -141,6 +141,7 @@ def keywords_with_side_effects(argv):
         '-q', '--quiet',
         '-v', '--verbose',
         '-V', '--version',
+        '-k', '--keep-temp',
         '--author',
         '--author-email',
         '--classifiers',
