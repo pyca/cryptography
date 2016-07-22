@@ -13,8 +13,21 @@ typedef ... *SSLContextRef;
 typedef const void *SSLConnectionRef;
 
 typedef enum {
+    kSSLServerSide,
+    kSSLClientSide
+} SSLProtocolSide;
+
+typedef enum {
+    kSSLStreamType,
+    kSSLDatagramType
+} SSLConnectionType;
+
+typedef enum {
     kSSLSessionOptionBreakOnServerAuth,
     kSSLSessionOptionBreakOnCertRequested,
+    kSSLSessionOptionBreakOnClientAuth,
+    kSSLSessionOptionFalseStart,
+    kSSLSessionOptionSendOneByteRecord
 } SSLSessionOption;
 
 typedef enum {
@@ -35,6 +48,9 @@ typedef enum {
     kSSLProtocolUnknown = 0,
     kSSLProtocol3       = 2,
     kTLSProtocol1       = 4,
+    kTLSProtocol11      = 7,
+    kTLSProtocol12      = 8,
+    kDTLSProtocol1      = 9,
     /* DEPRECATED on iOS */
     kSSLProtocol2       = 1,
     kSSLProtocol3Only   = 3,
@@ -261,12 +277,24 @@ enum {
     errSSLBadConfiguration      = -9848,
     errSSLLast                  = -9849     /* end of range, to be deleted */
 };
+
+typedef OSStatus (*SSLReadFunc) (SSLConnectionRef, void *, size_t *);
+typedef OSStatus (*SSLWriteFunc) (SSLConnectionRef,
+                                  const void *,
+                                  size_t *);
 """
 
 FUNCTIONS = """
+
+SSLContextRef SSLCreateContext(CFAllocatorRef,
+                               SSLProtocolSide,
+                               SSLConnectionType);
+
 OSStatus SSLSetConnection(SSLContextRef, SSLConnectionRef);
 OSStatus SSLGetConnection(SSLContextRef, SSLConnectionRef *);
 OSStatus SSLSetSessionOption(SSLContextRef, SSLSessionOption, Boolean);
+OSStatus SSLGetSessionOption(SSLContextRef, SSLSessionOption, Boolean *);
+OSStatus SSLSetIOFuncs(SSLContextRef, SSLReadFunc, SSLWriteFunc);
 OSStatus SSLSetClientSideAuthenticate(SSLContextRef, SSLAuthenticate);
 
 OSStatus SSLHandshake(SSLContextRef);
@@ -299,6 +327,13 @@ OSStatus SSLCopyPeerTrust(SSLContextRef, SecTrustRef *trust);
 OSStatus SSLSetPeerDomainName(SSLContextRef, const char *, size_t);
 OSStatus SSLGetPeerDomainNameLength(SSLContextRef, size_t *);
 OSStatus SSLGetPeerDomainName(SSLContextRef, char *, size_t *);
+
+extern "Python" OSStatus python_read_func(SSLConnectionRef,
+                                          void *,
+                                          size_t*);
+extern "Python" OSStatus python_write_func(SSLConnectionRef,
+                                           void *,
+                                           size_t*);
 """
 
 MACROS = """
