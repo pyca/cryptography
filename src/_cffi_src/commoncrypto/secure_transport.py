@@ -155,26 +155,6 @@ enum
    TLS_DH_anon_WITH_AES_128_CBC_SHA256       = 0x006C,
    TLS_DH_anon_WITH_AES_256_CBC_SHA256       = 0x006D,
 
-   /* Addendum from RFC 4279,
-   TLS PSK */
-   TLS_PSK_WITH_RC4_128_SHA                  = 0x008A,
-   TLS_PSK_WITH_3DES_EDE_CBC_SHA             = 0x008B,
-   TLS_PSK_WITH_AES_128_CBC_SHA              = 0x008C,
-   TLS_PSK_WITH_AES_256_CBC_SHA              = 0x008D,
-   TLS_DHE_PSK_WITH_RC4_128_SHA              = 0x008E,
-   TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA         = 0x008F,
-   TLS_DHE_PSK_WITH_AES_128_CBC_SHA          = 0x0090,
-   TLS_DHE_PSK_WITH_AES_256_CBC_SHA          = 0x0091,
-   TLS_RSA_PSK_WITH_RC4_128_SHA              = 0x0092,
-   TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA         = 0x0093,
-   TLS_RSA_PSK_WITH_AES_128_CBC_SHA          = 0x0094,
-   TLS_RSA_PSK_WITH_AES_256_CBC_SHA          = 0x0095,
-
-   /* RFC 4785 - Pre-Shared Key (PSK ) Ciphersuites with NULL Encryption */
-   TLS_PSK_WITH_NULL_SHA                     = 0x002C,
-   TLS_DHE_PSK_WITH_NULL_SHA                 = 0x002D,
-   TLS_RSA_PSK_WITH_NULL_SHA                 = 0x002E,
-
    /* Addenda from rfc 5288 AES Galois Counter Mode (GCM ) Cipher Suites
    for TLS. */
    TLS_RSA_WITH_AES_128_GCM_SHA256           = 0x009C,
@@ -189,26 +169,6 @@ enum
    TLS_DH_DSS_WITH_AES_256_GCM_SHA384        = 0x00A5,
    TLS_DH_anon_WITH_AES_128_GCM_SHA256       = 0x00A6,
    TLS_DH_anon_WITH_AES_256_GCM_SHA384       = 0x00A7,
-
-   /* RFC 5487 - PSK with SHA-256/384 and AES GCM */
-   TLS_PSK_WITH_AES_128_GCM_SHA256           = 0x00A8,
-   TLS_PSK_WITH_AES_256_GCM_SHA384           = 0x00A9,
-   TLS_DHE_PSK_WITH_AES_128_GCM_SHA256       = 0x00AA,
-   TLS_DHE_PSK_WITH_AES_256_GCM_SHA384       = 0x00AB,
-   TLS_RSA_PSK_WITH_AES_128_GCM_SHA256       = 0x00AC,
-   TLS_RSA_PSK_WITH_AES_256_GCM_SHA384       = 0x00AD,
-   TLS_PSK_WITH_AES_128_CBC_SHA256           = 0x00AE,
-   TLS_PSK_WITH_AES_256_CBC_SHA384           = 0x00AF,
-   TLS_PSK_WITH_NULL_SHA256                  = 0x00B0,
-   TLS_PSK_WITH_NULL_SHA384                  = 0x00B1,
-   TLS_DHE_PSK_WITH_AES_128_CBC_SHA256       = 0x00B2,
-   TLS_DHE_PSK_WITH_AES_256_CBC_SHA384       = 0x00B3,
-   TLS_DHE_PSK_WITH_NULL_SHA256              = 0x00B4,
-   TLS_DHE_PSK_WITH_NULL_SHA384              = 0x00B5,
-   TLS_RSA_PSK_WITH_AES_128_CBC_SHA256       = 0x00B6,
-   TLS_RSA_PSK_WITH_AES_256_CBC_SHA384       = 0x00B7,
-   TLS_RSA_PSK_WITH_NULL_SHA256              = 0x00B8,
-   TLS_RSA_PSK_WITH_NULL_SHA384              = 0x00B9,
 
    /* Addenda from rfc 5289  Elliptic Curve Cipher Suites with
    HMAC SHA-256/384. */
