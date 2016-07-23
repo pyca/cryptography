@@ -25,7 +25,6 @@ ffi = build_ffi_for_binding(
         "secpolicy",
         "sectransform",
         "sectrust",
-        "secure_transport",
     ],
     extra_link_args=[
         "-framework", "Security", "-framework", "CoreFoundation"
