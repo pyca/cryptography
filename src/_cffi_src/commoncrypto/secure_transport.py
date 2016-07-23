@@ -261,17 +261,12 @@ enum {
     errSSLBadConfiguration      = -9848,
     errSSLLast                  = -9849     /* end of range, to be deleted */
 };
-
-typedef OSStatus (*SSLReadFunc)(SSLConnectionRef, void *, size_t *);
-typedef OSStatus (*SSLWriteFunc)(SSLConnectionRef, const void *, size_t *);
 """
 
 FUNCTIONS = """
 OSStatus SSLSetConnection(SSLContextRef, SSLConnectionRef);
 OSStatus SSLGetConnection(SSLContextRef, SSLConnectionRef *);
 OSStatus SSLSetSessionOption(SSLContextRef, SSLSessionOption, Boolean);
-OSStatus SSLGetSessionOption(SSLContextRef, SSLSessionOption, Boolean *);
-OSStatus SSLSetIOFuncs(SSLContextRef, SSLReadFunc, SSLWriteFunc);
 OSStatus SSLSetClientSideAuthenticate(SSLContextRef, SSLAuthenticate);
 
 OSStatus SSLHandshake(SSLContextRef);
