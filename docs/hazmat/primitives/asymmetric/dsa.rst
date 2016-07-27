@@ -24,12 +24,11 @@ Generation
         specified in FIPS 186-3 and are still restricted to only the
         1024-bit keys specified in FIPS 186-2.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
-    :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-        provider.
+    :return: An instance of
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the provided ``backend`` does not implement
@@ -48,12 +47,11 @@ Generation
         specified in FIPS 186-3 and are still restricted to only the
         1024-bit keys specified in FIPS 186-2.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
-    :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
-        provider.
+    :return: An instance of
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the provided ``backend`` does not implement
@@ -63,7 +61,7 @@ Signing
 ~~~~~~~
 
 Using a :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-provider.
+instance.
 
 .. doctest::
 
@@ -97,7 +95,7 @@ Verification
 ~~~~~~~~~~~~
 
 Verification is performed using a
-:class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` provider.
+:class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey` instance.
 You can get a public key object with
 :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
 :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
@@ -157,13 +155,11 @@ Numbers
 
     .. method:: parameters(backend)
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`
-            provider.
+        :returns: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAParameters`.
 
 .. class:: DSAPublicNumbers(y, parameter_numbers)
 
@@ -186,13 +182,11 @@ Numbers
 
     .. method:: public_key(backend)
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
-            provider.
+        :returns: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 
 .. class:: DSAPrivateNumbers(x, public_numbers)
 
@@ -220,13 +214,11 @@ Numbers
 
     .. method:: private_key(backend)
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-            provider.
+        :returns: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
 Key interfaces
 ~~~~~~~~~~~~~~
@@ -244,9 +236,8 @@ Key interfaces
         Generate a DSA private key. This method can be used to generate many
         new private keys from a single set of parameters.
 
-        :return: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-            provider.
+        :return: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
 
 .. class:: DSAParametersWithNumbers
@@ -292,13 +283,11 @@ Key interfaces
         The signature is formatted as DER-encoded bytes, as specified in
         :rfc:`3279`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
@@ -318,9 +307,8 @@ Key interfaces
 
         :param bytes data: The message string to sign.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :return bytes: Signature.
 
@@ -397,13 +385,11 @@ Key interfaces
         :param bytes signature: The signature to verify. DER encoded as
             specified in :rfc:`3279`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.DSABackend`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
@@ -446,9 +432,8 @@ Key interfaces
 
         :param bytes data: The message string that was signed.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.

@@ -44,7 +44,7 @@ mathematical properties`_.
         `at least 2048`_ (See page 41). It must not be less than 512.
         Some backends may have additional limitations.
 
-    :param backend: A backend which provides
+    :param backend: A backend which implements
         :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
     :return: An instance of
@@ -311,9 +311,8 @@ Padding
     :param mgf: A mask generation function object. At this time the only
         supported MGF is :class:`MGF1`.
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param bytes label: A label to apply. This is a rarely used field and
         should typically be set to ``None`` or ``b""``, which are equivalent.
@@ -389,13 +388,11 @@ is unavailable.
 
     .. method:: public_key(backend)
 
-        :param backend: A
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
+        :param backend: An instance of
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
-        :returns: A new instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
-            provider.
+        :returns: A new instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
 
 .. class:: RSAPrivateNumbers(p, q, d, dmp1, dmq1, iqmp, public_numbers)
 
@@ -458,13 +455,11 @@ is unavailable.
 
     .. method:: private_key(backend)
 
-        :param backend: A new instance of a
-            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`
-            provider.
+        :param backend: A new instance of
+            :class:`~cryptography.hazmat.backends.interfaces.RSABackend`.
 
-        :returns: A
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-            provider.
+        :returns: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
 
 Handling partial RSA private keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -532,13 +527,11 @@ Key interfaces
         Get signer to sign data which can be verified later by others using
         the public key.
 
-        :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricSignatureContext`
@@ -551,9 +544,8 @@ Key interfaces
 
         :param bytes ciphertext: The ciphertext to decrypt.
 
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :return bytes: Decrypted data.
 
@@ -578,13 +570,11 @@ Key interfaces
 
         :param bytes data: The message string to sign.
 
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :return bytes: Signature.
 
@@ -648,13 +638,11 @@ Key interfaces
 
         :param bytes signature: The signature to verify.
 
-        :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :returns:
             :class:`~cryptography.hazmat.primitives.asymmetric.AsymmetricVerificationContext`
@@ -667,9 +655,8 @@ Key interfaces
 
         :param bytes plaintext: The plaintext to encrypt.
 
-        :param padding: An instance of a
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
         :return bytes: Encrypted data.
 
@@ -719,13 +706,11 @@ Key interfaces
 
         :param bytes data: The message string that was signed.
 
-        :param padding: An instance of an
-            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`
-            provider.
+        :param padding: An instance of
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.AsymmetricPadding`.
 
-        :param algorithm: An instance of a
-            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            provider.
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
