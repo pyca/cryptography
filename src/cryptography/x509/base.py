@@ -425,10 +425,13 @@ class CertificateBuilder(object):
             raise TypeError('Serial number must be of integral type.')
         if self._serial_number is not None:
             raise ValueError('The serial number may only be set once.')
-        if number < 0:
-            raise ValueError('The serial number should be non-negative.')
-        if utils.bit_length(number) > 160:  # As defined in RFC 5280
-            raise ValueError('The serial number should not be more than 160 '
+        if number <= 0:
+            raise ValueError('The serial number should be positive.')
+
+        # ASN.1 integers are always signed, so most significant bit must be
+        # zero.
+        if utils.bit_length(number) >= 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than 159 '
                              'bits.')
         return CertificateBuilder(
             self._issuer_name, self._subject_name,
@@ -635,10 +638,13 @@ class RevokedCertificateBuilder(object):
             raise TypeError('Serial number must be of integral type.')
         if self._serial_number is not None:
             raise ValueError('The serial number may only be set once.')
-        if number < 0:
-            raise ValueError('The serial number should be non-negative.')
-        if utils.bit_length(number) > 160:  # As defined in RFC 5280
-            raise ValueError('The serial number should not be more than 160 '
+        if number <= 0:
+            raise ValueError('The serial number should be positive')
+
+        # ASN.1 integers are always signed, so most significant bit must be
+        # zero.
+        if utils.bit_length(number) >= 160:  # As defined in RFC 5280
+            raise ValueError('The serial number should not be more than 159 '
                              'bits.')
         return RevokedCertificateBuilder(
             number, self._revocation_date, self._extensions
