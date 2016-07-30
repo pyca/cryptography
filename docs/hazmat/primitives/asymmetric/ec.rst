@@ -415,7 +415,7 @@ Key Interfaces
         :param bytes data: The message string to sign.
 
         :param signature_algorithm: An instance of
-            :class:`EllipticCurveSignatureAlgorithm`.
+            :class:`EllipticCurveSignatureAlgorithm`, such as :class:`ECDSA`.
 
         :return bytes: Signature.
 
