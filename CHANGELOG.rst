@@ -55,8 +55,6 @@ Changelog
 
 * Added two new OpenSSL functions to the bindings to support an upcoming
   ``pyOpenSSL`` release.
-* Support for OpenSSL 0.9.8 has been removed. Users on older version of OpenSSL
-  will need to upgrade.
 
 1.3.2 - 2016-05-04
 ~~~~~~~~~~~~~~~~~~
