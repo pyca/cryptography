@@ -43,14 +43,14 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
     :param algorithms: A
         :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm`
-        provider such as those described
+        instance such as those described
         :ref:`below <symmetric-encryption-algorithms>`.
     :param mode: A :class:`~cryptography.hazmat.primitives.ciphers.modes.Mode`
-        provider such as those described
+        instance such as those described
         :ref:`below <symmetric-encryption-modes>`.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.CipherBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -60,7 +60,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
         :return: An encrypting
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
-            provider.
+            instance.
 
         If the backend doesn't support the requested combination of ``cipher``
         and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
@@ -70,7 +70,7 @@ in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
 
         :return: A decrypting
             :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`
-            provider.
+            instance.
 
         If the backend doesn't support the requested combination of ``cipher``
         and ``mode`` an :class:`~cryptography.exceptions.UnsupportedAlgorithm`
@@ -473,7 +473,7 @@ Interfaces
     :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`) the result will
     conform to the ``AEADCipherContext`` and ``CipherContext`` interfaces. If
     it is an encryption context it will additionally be an
-    ``AEADEncryptionContext`` provider. ``AEADCipherContext`` contains an
+    ``AEADEncryptionContext`` instance. ``AEADCipherContext`` contains an
     additional method :meth:`authenticate_additional_data` for adding
     additional authenticated but unencrypted data (see note below). You should
     call this before calls to ``update``. When you are done call ``finalize``

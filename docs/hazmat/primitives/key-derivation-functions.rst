@@ -68,9 +68,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> kdf.verify(b"my great password", key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
     :param int length: The desired length of the derived key. Maximum is
         (2\ :sup:`32` - 1) * ``algorithm.digest_size``.
     :param bytes salt: A salt. `NIST SP 800-132`_ recommends 128-bits or
@@ -80,9 +79,8 @@ Different KDFs are suitable for different tasks such as:
         takes. Higher numbers help mitigate brute force attacks against derived
         keys. See OWASP's `Password Storage Cheat Sheet`_ for more
         detailed recommendations if you intend to use this for password storage.
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.PBKDF2HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -168,9 +166,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> hkdf.verify(b"input key", key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param int length: The desired length of the derived key. Maximum is
         ``255 * (algorithm.digest_size // 8)``.
@@ -188,9 +185,8 @@ Different KDFs are suitable for different tasks such as:
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -269,9 +265,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> hkdf.verify(key_material, key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param int length: The desired length of the derived key. Maximum is
         ``255 * (algorithm.digest_size // 8)``.
@@ -279,9 +274,8 @@ Different KDFs are suitable for different tasks such as:
     :param bytes info: Application specific context information.  If ``None``
         is explicitly passed an empty byte string will be used.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -361,9 +355,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> ckdf.verify(b"input key", key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param int length: The desired length of the derived key in bytes.
         Maximum is ``hashlen * (2^32 -1)``.
@@ -371,9 +364,8 @@ Different KDFs are suitable for different tasks such as:
     :param bytes otherinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.HashBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if the provided ``backend`` does not implement
@@ -448,9 +440,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> ckdf.verify(b"input key", key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param int length: The desired length of the derived key in bytes. Maximum
         is ``hashlen * (2^32 -1)``.
@@ -466,9 +457,8 @@ Different KDFs are suitable for different tasks such as:
     :param bytes otherinfo: Application specific context information.
         If ``None`` is explicitly passed an empty byte string will be used.
 
-    :param backend: A
-        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-        provider.
+    :param backend: An instance of
+        :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
@@ -549,9 +539,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> xkdf.verify(b"input key", key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param int length: The desired length of the derived key in bytes.
         Maximum is ``hashlen * (2^32 -1)``.
@@ -561,7 +550,7 @@ Different KDFs are suitable for different tasks such as:
 
     :param backend: A cryptography backend
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if the provided ``backend`` does not implement
@@ -654,9 +643,8 @@ Different KDFs are suitable for different tasks such as:
         ... )
         >>> kdf.verify(b"input key", key)
 
-    :param algorithm: An instance of a
-        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
     :param mode: The desired mode of the PRF. A value from the
       :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` enum.
@@ -684,7 +672,7 @@ Different KDFs are suitable for different tasks such as:
 
     :param backend: A cryptography backend
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if the provided ``backend`` does not implement
