@@ -54,6 +54,10 @@ class NameAttribute(object):
 
 class Name(object):
     def __init__(self, attributes):
+        attributes = list(attributes)
+        if not all(isinstance(x, NameAttribute) for x in attributes):
+            raise TypeError("attributes must be a list of NameAttribute")
+
         self._attributes = attributes
 
     def get_attributes_for_oid(self, oid):
