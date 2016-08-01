@@ -563,11 +563,12 @@ This sample demonstrates how to generate a private key and serialize it.
 
     >>> private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
 
-    >>> private_key.private_bytes(
+    >>> serialized_private = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword)
+        encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
         )
+    >>> print(serialized_private)
     >>> '-----BEGIN ENCRYPTED PRIVATE KEY-----'  # the rest of the key follows
 
 You can also serialize the key without a password, by relying on :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
@@ -578,10 +579,11 @@ The public key is serialized as follows:
 .. doctest::
 
     >>> public_key = private_key.public_key()
-    >>> public_key.public_bytes(
+    >>> serialized_public = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
+    >>> print(serialized_public)
     >>> '-----BEGIN PUBLIC KEY-----'  # followed by the key itself
 
 This is the part that you would normally share with your peers or publish online.
@@ -590,7 +592,19 @@ This is the part that you would normally share with your peers or publish online
 Deserialization
 ~~~~~~~~~~~~~~~
 
-TODO
+This extends the sample in the previous section, assuming that the variables ``serialized_private`` and ``serialized_public`` contain the respective keys in PEM format.
+
+.. doctest::
+
+    >>> loaded_public_key = serialization.load_pem_public_key(
+        serialized_public,
+        backend=default_backend()
+        )
+
+    >>> loaded_private_key = serialization.load_pem_private_key(
+        password=b'testpassword',  # or password=None, if in plain text
+        backend=default_backend()
+        )
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
