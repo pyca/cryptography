@@ -61,6 +61,24 @@ Elliptic Curve Signature Algorithms
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
 
+Verification
+~~~~~~~~~~~~
+
+    This example extends the sample from the previous section. Verification requires the public key, the signature itself, the signed data and knowledge of the hashing algorithm that was used when producing the signature.
+
+    .. doctest::
+
+    >>> public_key = private_key.public_key()
+    >>> verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA256()))
+    >>> verifier.update(b"this is some data I'd like")
+    >>> verifier.update(b" to sign")
+    >>> verifier.verify()
+
+    The last call will either return ``True`` or raise an :class:`~cryptography.exceptions.InvalidSignature` exception.
+
+    Although in this case the public key was derived from the private one, in a typical setting you will not possess the private key. The **deserialization** section explains how to load the public key from other sources.
+
+
 
 .. class:: EllipticCurvePrivateNumbers(private_value, public_numbers)
 
@@ -531,6 +549,51 @@ Key Interfaces
     .. versionadded:: 0.6
 
     Alias for :class:`EllipticCurvePublicKey`.
+
+
+
+Serialization
+~~~~~~~~~~~~~
+
+This sample shows how to generate a private key and serialize it.
+
+
+.. doctest::
+
+    >>> from cryptography.hazmat.backends import default_backend
+    >>> from cryptography.hazmat.primitives import hashes
+    >>> from cryptography.hazmat.primitives.asymmetric import ec
+    >>> from cryptography.hazmat.primitives import serialization
+
+    >>> private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
+
+
+    >>> private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword)
+        )
+    >>> '-----BEGIN ENCRYPTED PRIVATE KEY-----'  # the rest of the key follows
+
+    If you want to serialize the key without a password, by relying on :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+
+.. doctest::
+
+    >>> public_key = private_key.public_key()
+    >>> public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+    >>> '-----BEGIN PUBLIC KEY-----'  # followed by the key itself
+
+    This is the part that you would normally share with your peers or publish online.
+
+
+Deserialization
+~~~~~~~~~~~~~~~
+
+TODO
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
