@@ -68,6 +68,7 @@ Elliptic Curve Signature Algorithms
     >>> verifier.update(b"this is some data I'd like")
     >>> verifier.update(b" to sign")
     >>> verifier.verify()
+    True
 
     The last call will either return ``True`` or raise an :class:`~cryptography.exceptions.InvalidSignature` exception.
 
@@ -568,8 +569,8 @@ This sample demonstrates how to generate a private key and serialize it.
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
         )
-    >>> print(serialized_private)
-    >>> '-----BEGIN ENCRYPTED PRIVATE KEY-----'  # the rest of the key follows
+    >>> print(serialized_private.splitlines[0])
+    '-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
 You can also serialize the key without a password, by relying on :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
 
@@ -583,8 +584,8 @@ The public key is serialized as follows:
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
-    >>> print(serialized_public)
-    >>> '-----BEGIN PUBLIC KEY-----'  # followed by the key itself
+    >>> print(serialized_public.splitlines[0])
+    '-----BEGIN PUBLIC KEY-----'
 
 This is the part that you would normally share with your peers or publish online.
 
