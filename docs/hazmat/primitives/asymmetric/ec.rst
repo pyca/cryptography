@@ -565,10 +565,10 @@ This sample demonstrates how to generate a private key and serialize it.
     >>> private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
 
     >>> serialized_private = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
-        )
+    ...     encoding=serialization.Encoding.PEM,
+    ...     format=serialization.PrivateFormat.PKCS8,
+    ...     encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
+    ...     )
     >>> print(serialized_private.splitlines[0])
     '-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
@@ -581,9 +581,9 @@ The public key is serialized as follows:
 
     >>> public_key = private_key.public_key()
     >>> serialized_public = public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
+    ...     encoding=serialization.Encoding.PEM,
+    ...     format=serialization.PublicFormat.SubjectPublicKeyInfo
+    ...     )
     >>> print(serialized_public.splitlines[0])
     '-----BEGIN PUBLIC KEY-----'
 
@@ -598,14 +598,14 @@ This extends the sample in the previous section, assuming that the variables ``s
 .. doctest::
 
     >>> loaded_public_key = serialization.load_pem_public_key(
-        serialized_public,
-        backend=default_backend()
-        )
+    ...    serialized_public,
+    ...    backend=default_backend()
+    ...    )
 
     >>> loaded_private_key = serialization.load_pem_private_key(
-        password=b'testpassword',  # or password=None, if in plain text
-        backend=default_backend()
-        )
+    ...     password=b'testpassword',  # or password=None, if in plain text
+    ...    backend=default_backend()
+    ...    )
 
 
 .. _`FIPS 186-3`: http://csrc.nist.gov/publications/fips/fips186-3/fips_186-3.pdf
