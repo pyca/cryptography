@@ -1675,7 +1675,7 @@ X.509 Extensions
 
     .. method:: get_values_for_type(type)
 
-        :param type: A :class:`GeneralName` provider. This is one of the
+        :param type: A :class:`GeneralName` instance. This is one of the
             :ref:`general name classes <general_name_classes>`.
 
         :returns: A list of values extracted from the matched general names.
@@ -1716,7 +1716,7 @@ X.509 Extensions
 
     .. method:: get_values_for_type(type)
 
-        :param type: A :class:`GeneralName` provider. This is one of the
+        :param type: A :class:`GeneralName` instance. This is one of the
             :ref:`general name classes <general_name_classes>`.
 
         :returns: A list of values extracted from the matched general names.

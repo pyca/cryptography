@@ -18,6 +18,8 @@ Changelog
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.verify`
   methods to ECDSA keys.
+* Switched back to the older callback model on Python 3.5 in order to mitigate
+  the locking callback problem with OpenSSL <1.1.0.
 
 
 1.4 - 2016-06-04

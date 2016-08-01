@@ -45,13 +45,13 @@ multiple of the block size.
 
         :returns: A padding
             :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
-            provider.
+            instance.
 
     .. method:: unpadder()
 
         :returns: An unpadding
             :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
-            provider.
+            instance.
 
 
 .. class:: ANSIX923(block_size)
@@ -88,13 +88,13 @@ multiple of the block size.
 
         :returns: A padding
             :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
-            provider
+            instance.
 
     .. method:: unpadder()
 
         :returns: An unpadding
             :class:`~cryptography.hazmat.primitives.padding.PaddingContext`
-            provider.
+            instance.
 
 
 .. class:: PaddingContext

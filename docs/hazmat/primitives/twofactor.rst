@@ -46,10 +46,10 @@ codes (HMAC).
     :param int length: Length of generated one time password as ``int``.
     :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
-        provider.
+        instance.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-        provider.
+        instance.
     :param enforce_key_length: A boolean flag defaulting to True that toggles
         whether a minimum key length of 128 bits is enforced. This exists to
         work around the fact that as documented in `Issue #2915`_, the
@@ -168,11 +168,11 @@ similar to the following code.
     :param int length: Length of generated one time password as ``int``.
     :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
-        provider.
+        instance.
     :param int time_step: The time step size. The recommended size is 30.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HMACBackend`
-        provider.
+        instance.
     :param enforce_key_length: A boolean flag defaulting to True that toggles
         whether a minimum key length of 128 bits is enforced. This exists to
         work around the fact that as documented in `Issue #2915`_, the

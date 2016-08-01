@@ -40,11 +40,11 @@ Message digests
 
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        provider such as those described in
+        instance such as those described in
         :ref:`below <cryptographic-hash-algorithms>`.
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.HashBackend`
-        provider.
+        instance.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``backend`` does not implement
