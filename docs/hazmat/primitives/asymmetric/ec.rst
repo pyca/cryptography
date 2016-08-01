@@ -572,7 +572,8 @@ This sample demonstrates how to generate a private key and serialize it.
     >>> serialized_private.splitlines()[0]
     '-----BEGIN ENCRYPTED PRIVATE KEY-----'
 
-You can also serialize the key without a password, by relying on :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+You can also serialize the key without a password, by relying on
+:class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
 
 The public key is serialized as follows:
 
@@ -587,13 +588,15 @@ The public key is serialized as follows:
     >>> serialized_public.splitlines()[0]
     '-----BEGIN PUBLIC KEY-----'
 
-This is the part that you would normally share with your peers or publish online.
+This is the part that you would normally share with the rest of the world.
 
 
 Deserialization
 ~~~~~~~~~~~~~~~
 
-This extends the sample in the previous section, assuming that the variables ``serialized_private`` and ``serialized_public`` contain the respective keys in PEM format.
+This extends the sample in the previous section, assuming that the variables
+``serialized_private`` and ``serialized_public`` contain the respective keys
+in PEM format.
 
 .. doctest::
 
