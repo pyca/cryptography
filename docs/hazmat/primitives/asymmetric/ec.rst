@@ -603,7 +603,8 @@ This extends the sample in the previous section, assuming that the variables ``s
     ...    )
 
     >>> loaded_private_key = serialization.load_pem_private_key(
-    ...     password=b'testpassword',  # or password=None, if in plain text
+    ...    serialized_private,
+    ...    password=b'testpassword',  # or password=None, if in plain text
     ...    backend=default_backend()
     ...    )
 
