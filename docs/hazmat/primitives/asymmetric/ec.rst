@@ -61,12 +61,7 @@ Elliptic Curve Signature Algorithms
     :func:`~cryptography.hazmat.primitives.asymmetric.utils.decode_dss_signature`.
 
 
-Verification
-~~~~~~~~~~~~
-
-    This example extends the sample from the previous section. Verification requires the public key, the signature itself, the signed data and knowledge of the hashing algorithm that was used when producing the signature.
-
-    .. doctest::
+    Verification requires the public key, the signature itself, the signed data and knowledge of the hashing algorithm that was used when producing the signature:
 
     >>> public_key = private_key.public_key()
     >>> verifier = public_key.verifier(signature, ec.ECDSA(hashes.SHA256()))
@@ -76,7 +71,8 @@ Verification
 
     The last call will either return ``True`` or raise an :class:`~cryptography.exceptions.InvalidSignature` exception.
 
-    Although in this case the public key was derived from the private one, in a typical setting you will not possess the private key. The **deserialization** section explains how to load the public key from other sources.
+    .. NOTE::
+        Although in this case the public key was derived from the private one, in a typical setting you will not possess the private key. The Deserialization_ section explains how to load the public key from other sources.
 
 
 
@@ -555,7 +551,7 @@ Key Interfaces
 Serialization
 ~~~~~~~~~~~~~
 
-This sample shows how to generate a private key and serialize it.
+This sample demonstrates how to generate a private key and serialize it.
 
 
 .. doctest::
@@ -567,7 +563,6 @@ This sample shows how to generate a private key and serialize it.
 
     >>> private_key = ec.generate_private_key(ec.SECP384R1(), default_backend())
 
-
     >>> private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
@@ -575,7 +570,9 @@ This sample shows how to generate a private key and serialize it.
         )
     >>> '-----BEGIN ENCRYPTED PRIVATE KEY-----'  # the rest of the key follows
 
-    If you want to serialize the key without a password, by relying on :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+You can also serialize the key without a password, by relying on :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+The public key is serialized as follows:
 
 
 .. doctest::
@@ -587,7 +584,7 @@ This sample shows how to generate a private key and serialize it.
         )
     >>> '-----BEGIN PUBLIC KEY-----'  # followed by the key itself
 
-    This is the part that you would normally share with your peers or publish online.
+This is the part that you would normally share with your peers or publish online.
 
 
 Deserialization
