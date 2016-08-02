@@ -358,6 +358,15 @@ def _encode_subject_key_identifier(backend, ski):
     return _encode_asn1_str_gc(backend, ski.digest, len(ski.digest))
 
 
+def _idna_encode(value):
+    # Retain prefixes '*.' for common/alt names and '.' for name constraints
+    for prefix in ['*.', '.']:
+        if value.startswith(prefix):
+            value = value[len(prefix):]
+            return prefix.encode('ascii') + idna.encode(value)
+    return idna.encode(value)
+
+
 def _encode_general_name(backend, name):
     if isinstance(name, x509.DNSName):
         gn = backend._lib.GENERAL_NAME_new()
@@ -366,11 +375,7 @@ def _encode_general_name(backend, name):
 
         ia5 = backend._lib.ASN1_IA5STRING_new()
         backend.openssl_assert(ia5 != backend._ffi.NULL)
-
-        if name.value.startswith(u"*."):
-            value = b"*." + idna.encode(name.value[2:])
-        else:
-            value = idna.encode(name.value)
+        value = _idna_encode(name.value)
 
         res = backend._lib.ASN1_STRING_set(ia5, value, len(value))
         backend.openssl_assert(res == 1)
