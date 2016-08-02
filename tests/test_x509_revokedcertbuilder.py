@@ -21,10 +21,37 @@ class TestRevokedCertificateBuilder(object):
         with pytest.raises(ValueError):
             x509.RevokedCertificateBuilder().serial_number(-1)
 
+    def test_serial_number_must_be_positive(self):
+        with pytest.raises(ValueError):
+            x509.RevokedCertificateBuilder().serial_number(0)
+
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_minimal_serial_number(self, backend):
+        revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
+        builder = x509.RevokedCertificateBuilder().serial_number(
+            1
+        ).revocation_date(
+            revocation_date
+        )
+
+        revoked_certificate = builder.build(backend)
+        assert revoked_certificate.serial_number == 1
+
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_biggest_serial_number(self, backend):
+        revocation_date = datetime.datetime(2002, 1, 1, 12, 1)
+        builder = x509.RevokedCertificateBuilder().serial_number(
+            (1 << 159) - 1
+        ).revocation_date(
+            revocation_date
+        )
+
+        revoked_certificate = builder.build(backend)
+        assert revoked_certificate.serial_number == (1 << 159) - 1
+
     def test_serial_number_must_be_less_than_160_bits_long(self):
         with pytest.raises(ValueError):
-            # 2 raised to the 160th power is actually 161 bits
-            x509.RevokedCertificateBuilder().serial_number(2 ** 160)
+            x509.RevokedCertificateBuilder().serial_number(1 << 159)
 
     def test_set_serial_number_twice(self):
         builder = x509.RevokedCertificateBuilder().serial_number(3)

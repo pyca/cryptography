@@ -1689,12 +1689,55 @@ class TestCertificateBuilder(object):
 
     def test_serial_number_must_be_non_negative(self):
         with pytest.raises(ValueError):
-            x509.CertificateBuilder().serial_number(-10)
+            x509.CertificateBuilder().serial_number(-1)
+
+    def test_serial_number_must_be_positive(self):
+        with pytest.raises(ValueError):
+            x509.CertificateBuilder().serial_number(0)
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_minimal_serial_number(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            1
+        ).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        cert = builder.sign(subject_private_key, hashes.SHA256(), backend)
+        assert cert.serial_number == 1
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_biggest_serial_number(self, backend):
+        subject_private_key = RSA_KEY_2048.private_key(backend)
+        builder = x509.CertificateBuilder().serial_number(
+            (1 << 159) - 1
+        ).subject_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).issuer_name(x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, u'RU'),
+        ])).public_key(
+            subject_private_key.public_key()
+        ).not_valid_before(
+            datetime.datetime(2002, 1, 1, 12, 1)
+        ).not_valid_after(
+            datetime.datetime(2030, 12, 31, 8, 30)
+        )
+        cert = builder.sign(subject_private_key, hashes.SHA256(), backend)
+        assert cert.serial_number == (1 << 159) - 1
 
     def test_serial_number_must_be_less_than_160_bits_long(self):
         with pytest.raises(ValueError):
-            # 2 raised to the 160th power is actually 161 bits
-            x509.CertificateBuilder().serial_number(2 ** 160)
+            x509.CertificateBuilder().serial_number(1 << 159)
 
     def test_serial_number_may_only_be_set_once(self):
         builder = x509.CertificateBuilder().serial_number(10)
