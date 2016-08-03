@@ -15,7 +15,7 @@ from cryptography.x509.ocsp import OCSPRequest, Request, _OIDS_TO_HASH
 
 
 @utils.register_interface(Request)
-class Request(object):
+class _Request(object):
     def __init__(self, backend, ocsp_request, request):
         self._backend = backend
         self._ocsp_request = ocsp_request
@@ -88,7 +88,7 @@ class _OCSPRequest(object):
             self._ocsp_request, idx
         )
         self._backend.openssl_assert(request != self._backend._ffi.NULL)
-        return Request(self._backend, self._ocsp_request, request)
+        return _Request(self._backend, self._ocsp_request, request)
 
     def __iter__(self):
         for i in range(len(self)):
