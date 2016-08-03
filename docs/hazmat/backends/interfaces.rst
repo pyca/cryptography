@@ -652,3 +652,16 @@ A specific ``backend`` may provide one or more of these interfaces.
 
         :returns: ``True`` if the given values of ``p`` and ``g`` are supported
             by this backend, otherwise ``False``.
+
+
+.. class:: OCSPBackend
+
+    .. versionadded:: 1.5
+
+    A backend with methods for working with OCSP data.
+
+    .. method:: load_der_ocsp_request(data)
+
+        :param bytes data: DER formatted OCSP request data.
+
+        :returns: An instance of :class:`~cryptography.x509.ocsp.OCSPRequest`.

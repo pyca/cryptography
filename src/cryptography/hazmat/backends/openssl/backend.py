@@ -16,8 +16,8 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
-    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    EllipticCurveBackend, HMACBackend, HashBackend, OCSPBackend,
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.openssl.ciphers import (
     _AESCTRCipherContext, _CipherContext
@@ -36,6 +36,7 @@ from cryptography.hazmat.backends.openssl.encode_asn1 import (
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
+from cryptography.hazmat.backends.openssl.ocsp import _OCSPRequest
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
@@ -110,6 +111,7 @@ def _pem_password_cb(buf, size, writing, userdata_handle):
 @utils.register_interface(EllipticCurveBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
+@utils.register_interface(OCSPBackend)
 @utils.register_interface(PBKDF2HMACBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(PEMSerializationBackend)
@@ -1370,6 +1372,13 @@ class Backend(object):
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
         return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+
+    def load_der_ocsp_request(self, data):
+        mem_bio = self._bytes_to_bio(data)
+        request = self._lib.d2i_OCSP_REQUEST_bio(mem_bio.bio, self._ffi.NULL)
+        self.openssl_assert(request != self._ffi.NULL)
+        request = self._ffi.gc(request, self._lib.OCSP_REQUEST_free)
+        return _OCSPRequest(self, request)
 
     def elliptic_curve_exchange_algorithm_supported(self, algorithm, curve):
         return (

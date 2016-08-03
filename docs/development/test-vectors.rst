@@ -269,6 +269,8 @@ Custom X.509 Vectors
   is an unknown OID (``1.3.6.1.4.1.8432.1.1.2``).
 * ``policy_constraints_explicit.pem`` - A self-signed certificate containing
   a ``policyConstraints`` extension with a ``requireExplicitPolicy`` value.
+* ``req-sha1.der`` - An OCSP request containing a single request and using SHA1
+  as the hash algorithm.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

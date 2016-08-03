@@ -8,8 +8,8 @@ from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
-    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    EllipticCurveBackend, HMACBackend, HashBackend, OCSPBackend,
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
 )
 
 
@@ -18,6 +18,7 @@ from cryptography.hazmat.backends.interfaces import (
 @utils.register_interface(DERSerializationBackend)
 @utils.register_interface(HashBackend)
 @utils.register_interface(HMACBackend)
+@utils.register_interface(OCSPBackend)
 @utils.register_interface(PBKDF2HMACBackend)
 @utils.register_interface(RSABackend)
 @utils.register_interface(DSABackend)
@@ -408,4 +409,13 @@ class MultiBackend(object):
         raise UnsupportedAlgorithm(
             "This backend does not support X.509.",
             _Reasons.UNSUPPORTED_X509
+        )
+
+    def load_der_ocsp_request(self, data):
+        for b in self._filtered_backends(OCSPBackend):
+            return b.load_der_ocsp_request(data)
+
+        raise UnsupportedAlgorithm(
+            "This backend does not support OCSP.",
+            _Reasons.UNSUPPORTED_OCSP
         )

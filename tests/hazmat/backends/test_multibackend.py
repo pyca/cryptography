@@ -12,8 +12,8 @@ from cryptography.exceptions import (
 )
 from cryptography.hazmat.backends.interfaces import (
     CMACBackend, CipherBackend, DERSerializationBackend, DSABackend,
-    EllipticCurveBackend, HMACBackend, HashBackend, PBKDF2HMACBackend,
-    PEMSerializationBackend, RSABackend, X509Backend
+    EllipticCurveBackend, HMACBackend, HashBackend, OCSPBackend,
+    PBKDF2HMACBackend, PEMSerializationBackend, RSABackend, X509Backend
 )
 from cryptography.hazmat.backends.multibackend import MultiBackend
 from cryptography.hazmat.primitives import cmac, hashes, hmac
@@ -228,6 +228,12 @@ class DummyX509Backend(object):
         pass
 
     def create_x509_revoked_certificate(self, builder):
+        pass
+
+
+@utils.register_interface(OCSPBackend)
+class DummyOCSPBackend(object):
+    def load_der_ocsp_request(self, data):
         pass
 
 
@@ -558,3 +564,11 @@ class TestMultiBackend(object):
             )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_X509):
             backend.create_x509_revoked_certificate(object())
+
+    def test_ocsp_backend(self):
+        backend = MultiBackend([DummyOCSPBackend()])
+        backend.load_der_ocsp_request(b"ocspreqdata")
+
+        backend = MultiBackend([DummyBackend()])
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_OCSP):
+            backend.load_der_ocsp_request(b"ocspreqdata")

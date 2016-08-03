@@ -357,3 +357,10 @@ class DHBackend(object):
         """
         Returns whether the backend supports DH with these parameter values.
         """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class OCSPBackend(object):
+    @abc.abstractmethod
+    def load_der_ocsp_request(self, data):
+        """ Parses a DER encoded OCSP request and returns the parsed object """
