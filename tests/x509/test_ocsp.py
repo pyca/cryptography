@@ -14,7 +14,7 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509 import ocsp
 
-from .utils import load_vectors_from_file
+from ..utils import load_vectors_from_file
 
 
 def _load_data(filename, loader, backend):
@@ -29,7 +29,7 @@ def _load_data(filename, loader, backend):
 class TestOCSPRequest(object):
     def test_load_request_one_item(self, backend):
         req = _load_data(
-            os.path.join("x509", "ocspreq.der"),
+            os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
             backend
         )

@@ -16,9 +16,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import AuthorityInformationAccessOID, NameOID
 
-from .hazmat.primitives.fixtures_dsa import DSA_KEY_2048
-from .hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
-from .hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
+from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..hazmat.primitives.test_ec import _skip_curve_unsupported
 
 
 class TestCertificateRevocationListBuilder(object):

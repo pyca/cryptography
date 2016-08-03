@@ -32,8 +32,8 @@ from ..primitives.test_ec import _skip_curve_unsupported
 from ...doubles import (
     DummyAsymmetricPadding, DummyCipherAlgorithm, DummyHashAlgorithm, DummyMode
 )
-from ...test_x509 import _load_cert
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
+from ...x509.test_x509 import _load_cert
 
 
 def skip_if_libre_ssl(openssl_version):
