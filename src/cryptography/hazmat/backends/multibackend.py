@@ -12,6 +12,19 @@ from cryptography.hazmat.backends.interfaces import (
     PEMSerializationBackend, RSABackend, ScryptBackend, X509Backend
 )
 
+try:
+	from cryptography.hazmat.backends.commoncrypto.backend import backend as be_cc
+except ImportError:
+	be_cc = None
+
+try:
+	from cryptography.hazmat.backends.openssl.backend import backend as be_ossl
+except ImportError:
+	be_ossl = None
+
+found_backends = [ be for be in (be_cc, be_ossl) if be is not None ]
+
+
 
 @utils.register_interface(CMACBackend)
 @utils.register_interface(CipherBackend)
@@ -30,11 +43,14 @@ class MultiBackend(object):
 
     def __init__(self, backends):
         if len(backends) == 0:
-            raise ValueError(
-                "Multibackend cannot be initialized with no backends. If you "
-                "are seeing this error when trying to use default_backend() "
-                "please try uninstalling and reinstalling cryptography."
-            )
+			if len(found_backends) == 0:
+				raise ValueError(
+					"Multibackend cannot be initialized with no backends. If you "
+					"are seeing this error when trying to use default_backend() "
+					"please try uninstalling and reinstalling cryptography."
+				)
+			else:
+				backends = found_backends
 
         self._backends = backends
 
