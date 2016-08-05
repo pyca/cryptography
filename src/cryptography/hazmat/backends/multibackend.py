@@ -52,7 +52,7 @@ class MultiBackend(object):
             else:
                 backends = found_backends
 
-      self._backends = backends
+        self._backends = backends
 
     def _filtered_backends(self, interface):
         for b in self._backends:
