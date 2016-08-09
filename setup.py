@@ -311,7 +311,7 @@ setup(
         "test": test_requirements,
         "docstest": [
             "doc8",
-            "pyenchant==1.6.6",
+            "pyenchant",
             "readme_renderer",
             "sphinx",
             "sphinx_rtd_theme",
