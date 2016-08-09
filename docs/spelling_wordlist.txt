@@ -13,6 +13,7 @@ ciphertext
 committer
 committers
 conda
+Cryptanalysis
 crypto
 cryptographic
 cryptographically
@@ -20,12 +21,15 @@ Debian
 decrypt
 decrypted
 decrypting
+DER
 deserialize
 deserialized
 Diffie
 Diffie
+disambiguating
 Django
 Docstrings
+El
 Encodings
 Fernet
 fernet
@@ -59,6 +63,7 @@ preprocessors
 pseudorandom
 pyOpenSSL
 relicensed
+responder
 runtime
 Schneier
 scrypt
@@ -71,6 +76,8 @@ Ubuntu
 unencrypted
 unpadded
 unpadding
+verifier
+Verifier
 Verisign
 wildcard
 Xcode
