@@ -192,7 +192,7 @@ users with pip 8 or above you only need one step:
 
     $ pip install cryptography
 
-If you want to build cryptography yourself or are on an older OS X version
+If you want to build cryptography yourself or are on an older OS X version,
 cryptography requires the presence of a C compiler, development headers, and
 the proper libraries. On OS X much of this is provided by Apple's Xcode
 development tools.  To install the Xcode command line tools (on OS X 10.9+)
