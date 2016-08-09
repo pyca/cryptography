@@ -40,6 +40,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
             pyenv global pypy3-2.4.0
             ;;
         docs)
+            brew install enchant
             curl -O https://bootstrap.pypa.io/get-pip.py
             python get-pip.py --user
             ;;
