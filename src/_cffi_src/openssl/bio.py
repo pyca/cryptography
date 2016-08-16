@@ -88,7 +88,6 @@ int BIO_method_type(const BIO *);
 MACROS = """
 /* These added const to BIO_METHOD in 1.1.0 */
 BIO *BIO_new(BIO_METHOD *);
-int BIO_set(BIO *, BIO_METHOD *);
 BIO_METHOD *BIO_s_mem(void);
 BIO_METHOD *BIO_s_file(void);
 BIO_METHOD *BIO_s_fd(void);
