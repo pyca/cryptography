@@ -1475,7 +1475,9 @@ class Backend(object):
             check_y = self._lib.BN_CTX_get(bn_ctx)
 
             res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            self.openssl_assert(res == 1)
+            if res != 1:
+                self._consume_errors()
+                raise ValueError("EC point not on curve")
 
             res = get_func(group, point, check_x, check_y, bn_ctx)
             self.openssl_assert(res == 1)
