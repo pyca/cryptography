@@ -35,7 +35,7 @@ codes (HMAC).
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.hotp import HOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
-        >>> key = os.urandom(16)
+        >>> key = os.urandom(20)
         >>> hotp = HOTP(key, 6, SHA1(), backend=default_backend())
         >>> hotp_value = hotp.generate(0)
         >>> hotp.verify(hotp_value, 0)
@@ -156,7 +156,7 @@ similar to the following code.
         >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives.twofactor.totp import TOTP
         >>> from cryptography.hazmat.primitives.hashes import SHA1
-        >>> key = os.urandom(16)
+        >>> key = os.urandom(20)
         >>> totp = TOTP(key, 8, SHA1(), 30, backend=default_backend())
         >>> time_value = time.time()
         >>> totp_value = totp.generate(time_value)
