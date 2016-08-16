@@ -124,20 +124,14 @@ ASN1_TIME *X509_gmtime_adj(ASN1_TIME *, long);
 
 unsigned long X509_subject_name_hash(X509 *);
 
-X509_NAME *X509_get_subject_name(X509 *);
 int X509_set_subject_name(X509 *, X509_NAME *);
 
-X509_NAME *X509_get_issuer_name(X509 *);
 int X509_set_issuer_name(X509 *, X509_NAME *);
 
-int X509_get_ext_count(X509 *);
 int X509_add_ext(X509 *, X509_EXTENSION *, int);
 X509_EXTENSION *X509_delete_ext(X509 *, int);
 X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
-X509_EXTENSION *X509_get_ext(X509 *, int);
-int X509_get_ext_by_NID(X509 *, int, int);
 
-int X509_EXTENSION_get_critical(X509_EXTENSION *);
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
 X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
@@ -169,8 +163,6 @@ void X509_REVOKED_free(X509_REVOKED *);
 
 int X509_REVOKED_set_serialNumber(X509_REVOKED *, ASN1_INTEGER *);
 
-int X509_REVOKED_get_ext_count(X509_REVOKED *);
-X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
 int X509_REVOKED_add_ext(X509_REVOKED *, X509_EXTENSION*, int);
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
 X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
@@ -179,11 +171,9 @@ int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
 
 X509_CRL *X509_CRL_new(void);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
-X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
 int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
 int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
 int X509_CRL_cmp(const X509_CRL *, const X509_CRL *);
-int X509_CRL_get_ext_count(X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_set_version(X509_CRL *, long);
@@ -252,6 +242,24 @@ void PKCS8_PRIV_KEY_INFO_free(PKCS8_PRIV_KEY_INFO *);
 """
 
 MACROS = """
+/* These became const X509 in 1.1.0 */
+int X509_get_ext_count(X509 *);
+X509_EXTENSION *X509_get_ext(X509 *, int);
+int X509_get_ext_by_NID(X509 *, int, int);
+X509_NAME *X509_get_subject_name(X509 *);
+X509_NAME *X509_get_issuer_name(X509 *);
+
+/* This became const X509_EXTENSION * in 1.1.0 */
+int X509_EXTENSION_get_critical(X509_EXTENSION *);
+
+/* This became const X509_REVOKED * in 1.1.0 */
+int X509_REVOKED_get_ext_count(X509_REVOKED *);
+X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
+
+/* This became const X509_CRL * in 1.1.0 */
+X509_EXTENSION *X509_CRL_get_ext(X509_CRL *, int);
+int X509_CRL_get_ext_count(X509_CRL *);
+
 /* these CRYPTO_EX_DATA functions became macros in 1.1.0 */
 int X509_get_ex_new_index(long, void *, CRYPTO_EX_new *, CRYPTO_EX_dup *,
                           CRYPTO_EX_free *);

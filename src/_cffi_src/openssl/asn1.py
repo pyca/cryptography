@@ -53,7 +53,6 @@ void ASN1_OBJECT_free(ASN1_OBJECT *);
 
 /*  ASN1 OBJECT IDENTIFIER */
 ASN1_OBJECT *d2i_ASN1_OBJECT(ASN1_OBJECT **, const unsigned char **, long);
-int i2d_ASN1_OBJECT(ASN1_OBJECT *, unsigned char **);
 
 /*  ASN1 STRING */
 ASN1_STRING *ASN1_STRING_new(void);
@@ -61,8 +60,6 @@ ASN1_STRING *ASN1_STRING_type_new(int);
 void ASN1_STRING_free(ASN1_STRING *);
 unsigned char *ASN1_STRING_data(ASN1_STRING *);
 int ASN1_STRING_set(ASN1_STRING *, const void *, int);
-int ASN1_STRING_type(ASN1_STRING *);
-int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
 
 /*  ASN1 OCTET STRING */
 ASN1_OCTET_STRING *ASN1_OCTET_STRING_new(void);
@@ -110,6 +107,11 @@ int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
 """
 
 MACROS = """
+/* These became const ASN1_* in 1.1.0 */
+int i2d_ASN1_OBJECT(ASN1_OBJECT *, unsigned char **);
+int ASN1_STRING_type(ASN1_STRING *);
+int ASN1_STRING_to_UTF8(unsigned char **, ASN1_STRING *);
+
 ASN1_UTF8STRING *ASN1_UTF8STRING_new(void);
 void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
 
