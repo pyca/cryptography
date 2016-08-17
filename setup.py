@@ -62,6 +62,7 @@ test_requirements = [
     "pretend",
     "iso8601",
     "pyasn1_modules",
+    "pytz",
 ]
 if sys.version_info[:2] > (2, 6):
     test_requirements.append("hypothesis>=1.11.4")

@@ -16,6 +16,8 @@ from pyasn1_modules import rfc2459
 
 import pytest
 
+import pytz
+
 import six
 
 from cryptography import utils, x509
@@ -1745,6 +1747,30 @@ class TestCertificateBuilder(object):
         with pytest.raises(ValueError):
             builder.serial_number(20)
 
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_aware_not_valid_after(self, backend):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert_builder = x509.CertificateBuilder().not_valid_after(time)
+        cert_builder = cert_builder.subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_before(
+            utc_time - datetime.timedelta(days=365)
+        )
+
+        cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_after == utc_time
+
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(104204304504)
@@ -1766,6 +1792,30 @@ class TestCertificateBuilder(object):
             builder.not_valid_after(
                 datetime.datetime.now()
             )
+
+    @pytest.mark.requires_backend_interface(interface=RSABackend)
+    @pytest.mark.requires_backend_interface(interface=X509Backend)
+    def test_aware_not_valid_before(self, backend):
+        time = datetime.datetime(2012, 1, 16, 22, 43)
+        tz = pytz.timezone("US/Pacific")
+        time = tz.localize(time)
+        utc_time = datetime.datetime(2012, 1, 17, 6, 43)
+        private_key = RSA_KEY_2048.private_key(backend)
+        cert_builder = x509.CertificateBuilder().not_valid_before(time)
+        cert_builder = cert_builder.subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, u'US')])
+        ).serial_number(
+            1
+        ).public_key(
+            private_key.public_key()
+        ).not_valid_after(
+            utc_time + datetime.timedelta(days=366)
+        )
+
+        cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
+        assert cert.not_valid_before == utc_time
 
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):
