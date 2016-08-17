@@ -5,7 +5,6 @@ language: python
 cache:
     directories:
         - $HOME/.cache/pip
-        - $HOME/ossl-098l
         - $HOME/ossl-100t
 
 matrix:
