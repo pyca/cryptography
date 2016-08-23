@@ -71,6 +71,30 @@ Numbers
         The public value.
 
 
+Group parameters
+~~~~~~~~~~~~~~~~
+
+.. function:: generate_parameters(generator, key_size, backend)
+
+    .. versionadded:: 0.9
+
+    Generate a new DH parameter group for use with ``backend``.
+
+    :param generator: The :class:`int` to use as a generator. Often
+        2 or 5.
+
+    :param key_size: The bit length of the prime modulus to generate.
+
+    :param backend: A
+        :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
+        provider.
+
+    :returns: DH parameters as a new instance of
+        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+
+    :raises ValueError: If ``key_size`` is not at least 512.
+
+
 .. class:: DHParameterNumbers(p, g)
 
     .. versionadded:: 0.8
@@ -89,9 +113,6 @@ Numbers
 
         The generator value.
 
-
-Key interfaces
-~~~~~~~~~~~~~~
 
 .. class:: DHParameters
 
@@ -122,6 +143,9 @@ Key interfaces
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
 
+
+Key interfaces
+~~~~~~~~~~~~~~
 
 .. class:: DHPrivateKey
 
