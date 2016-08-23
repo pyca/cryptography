@@ -343,7 +343,8 @@ class DHBackend(object):
     @abc.abstractmethod
     def load_dh_parameter_numbers(self, numbers):
         """
-        Returns a DHParameters provider.
+        Returns a DHParameters provider with parameters as a
+        DHParameterNumbers object.
         """
 
     @abc.abstractmethod
