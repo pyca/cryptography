@@ -145,7 +145,7 @@ Key interfaces
         :param DHPublicKeyWithSerialization peer_public_key: The public key for the
             peer.
 
-        :return bytes: The agreed key.
+        :return bytes: The agreed key. The bytes are ordered in 'big' endian.
 
 
 .. class:: DHPrivateNumbers(x, public_numbers)
