@@ -6,28 +6,46 @@ Diffie-Hellman key exchange
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.dh
 
 
+`Diffie-Hellman key exchange`_ (D–H) is a method that allows two parties
+to jointly agree on a shared secret using an insecure channel.
+
+
 Exchange Algorithm
 ~~~~~~~~~~~~~~~~~~
 
-    For most applications the ``shared_key`` should be passed to a key
-    derivation function.
+For most applications the ``shared_key`` should be passed to a key
+derivation function.
 
-    .. doctest::
+.. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
-        >>> from cryptography.hazmat.primitives.asymmetric import dh
-        >>> parameters = dh.generate_parameters(generator=2, key_size=2048,
-        ...                                     backend=default_backend())
-        >>> private_key = parameters.generate_private_key()
-        >>> peer_public_key = parameters.generate_private_key().public_key()
-        >>> shared_key = private_key.exchange(peer_public_key)
+    >>> from cryptography.hazmat.backends import default_backend
+    >>> from cryptography.hazmat.primitives.asymmetric import dh
+    >>> parameters = dh.generate_parameters(generator=2, key_size=2048,
+    ...                                     backend=default_backend())
+    >>> private_key = parameters.generate_private_key()
+    >>> peer_public_key = parameters.generate_private_key().public_key()
+    >>> shared_key = private_key.exchange(peer_public_key)
 
-    DHE (or EDH), the ephemeral form of this exchange, is **strongly
-    preferred** over simple DH and provides `forward secrecy`_ when used.
-    You must generate a new private key using :func:`~DHParameters.generate_private_key` for
-    each :meth:`~DHPrivateKeyWithSerialization.exchange` when performing an DHE key
-    exchange.
+DHE (or EDH), the ephemeral form of this exchange, is **strongly
+preferred** over simple DH and provides `forward secrecy`_ when used.
+You must generate a new private key using :func:`~DHParameters.generate_private_key` for
+each :meth:`~DHPrivateKeyWithSerialization.exchange` when performing an DHE key
+exchange.
 
+To assemble a :class:`~DHParameters` and a :class:`~DHPublicKey` from
+primitive integers, you must first create the
+:class:`~DHParameterNumbers` and :class:`~DHPublicNumbers` objects. For
+example if **p**, **g**, and **y** are :class:`int` objects received from a
+peer::
+
+    pn = dh.DHParameterNumbers(p, g)
+    parameters = pn.parameters(default_backend())
+    peer_public_numbers = dh.DHPublicNumbers(y, pn)
+    peer_public_key = peer_public_numbers.public_key(default_backend())
+
+
+See also the :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
+api for additional functionality.
 
 Group parameters
 ~~~~~~~~~~~~~~~~
@@ -215,4 +233,5 @@ Key interfaces
         The public value.
 
 
+.. _`Diffie-Hellman key exchange`: https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange
 .. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
