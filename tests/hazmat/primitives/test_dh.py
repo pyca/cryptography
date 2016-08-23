@@ -185,6 +185,21 @@ class TestDH(object):
         symkey2 = key2.exchange(key1.public_key())
         assert symkey1 == symkey2
 
+    def test_tls_exchange_algorithm(self, backend):
+        parameters = dh.generate_parameters(2, 512, backend)
+
+        key1 = parameters.generate_private_key()
+        key2 = parameters.generate_private_key()
+
+        shared_key_bytes = key2.exchange(key1.public_key())
+        symkey = int.from_bytes(shared_key_bytes, 'big')
+
+        symkey_manual = pow(key1.public_key().public_numbers().y,
+                            key2.private_numbers().x,
+                            parameters.parameter_numbers().p)
+
+        assert symkey == symkey_manual
+
     def test_symmetric_key_padding(self, backend):
         """
         This test has specific parameters that produce a symmetric key
