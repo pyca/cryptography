@@ -29,48 +29,6 @@ Exchange Algorithm
     exchange.
 
 
-Numbers
-~~~~~~~
-
-.. class:: DHPrivateNumbers(x, public_numbers)
-
-    .. versionadded:: 0.8
-
-    The collection of integers that make up a Diffie-Hellman private key.
-
-    .. attribute:: public_numbers
-
-        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
-
-        The :class:`DHPublicNumbers` which makes up the DH public
-        key associated with this DH private key.
-
-    .. attribute:: x
-
-        :type: int
-
-        The private value.
-
-
-.. class:: DHPublicNumbers(y, parameter_numbers)
-
-    .. versionadded:: 0.8
-
-    The collection of integers that make up a Diffie-Hellman public key.
-
-     .. attribute:: parameter_numbers
-
-        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`
-
-        The parameters for this DH group.
-
-    .. attribute:: y
-
-        :type: int
-
-        The public value.
-
-
 Group parameters
 ~~~~~~~~~~~~~~~~
 
@@ -93,25 +51,6 @@ Group parameters
         :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
     :raises ValueError: If ``key_size`` is not at least 512.
-
-
-.. class:: DHParameterNumbers(p, g)
-
-    .. versionadded:: 0.8
-
-    The collection of integers that define a Diffie-Hellman group.
-
-    .. attribute:: p
-
-        :type: int
-
-        The prime modulus value.
-
-    .. attribute:: g
-
-        :type: int
-
-        The generator value.
 
 
 .. class:: DHParameters
@@ -142,6 +81,25 @@ Group parameters
         Return the numbers that make up this set of parameters.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+
+
+.. class:: DHParameterNumbers(p, g)
+
+    .. versionadded:: 0.8
+
+    The collection of integers that define a Diffie-Hellman group.
+
+    .. attribute:: p
+
+        :type: int
+
+        The prime modulus value.
+
+    .. attribute:: g
+
+        :type: int
+
+        The generator value.
 
 
 Key interfaces
@@ -190,6 +148,26 @@ Key interfaces
         :return bytes: The agreed key.
 
 
+.. class:: DHPrivateNumbers(x, public_numbers)
+
+    .. versionadded:: 0.8
+
+    The collection of integers that make up a Diffie-Hellman private key.
+
+    .. attribute:: public_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
+
+        The :class:`DHPublicNumbers` which makes up the DH public
+        key associated with this DH private key.
+
+    .. attribute:: x
+
+        :type: int
+
+        The private value.
+
+
 .. class:: DHPublicKey
 
     .. versionadded:: 0.9
@@ -216,6 +194,25 @@ Key interfaces
         Return the numbers that make up this public key.
 
         :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+
+
+.. class:: DHPublicNumbers(y, parameter_numbers)
+
+    .. versionadded:: 0.8
+
+    The collection of integers that make up a Diffie-Hellman public key.
+
+     .. attribute:: parameter_numbers
+
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`
+
+        The parameters for this DH group.
+
+    .. attribute:: y
+
+        :type: int
+
+        The public value.
 
 
 .. _`forward secrecy`: https://en.wikipedia.org/wiki/Forward_secrecy
