@@ -429,8 +429,8 @@ const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
 }
 
 /* from x509/x509_req.c */
-void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
-                             const X509_ALGOR **)
+void X509_REQ_get0_signature(const X509_REQ *req, const ASN1_BIT_STRING **psig,
+                             const X509_ALGOR **palg)
 {
     if (psig != NULL)
         *psig = req->signature;
