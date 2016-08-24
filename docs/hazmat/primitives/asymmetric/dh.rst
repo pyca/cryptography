@@ -45,7 +45,7 @@ peer::
 
 
 See also the :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
-api for additional functionality.
+API for additional functionality.
 
 Group parameters
 ~~~~~~~~~~~~~~~~
@@ -63,7 +63,7 @@ Group parameters
 
     :param backend: A
         :class:`~cryptography.hazmat.backends.interfaces.DHBackend`
-        provider.
+        instance.
 
     :returns: DH parameters as a new instance of
         :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
@@ -85,7 +85,7 @@ Group parameters
 
         :return: A
             :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
-            provider.
+            instance.
 
 
 .. class:: DHParametersWithSerialization

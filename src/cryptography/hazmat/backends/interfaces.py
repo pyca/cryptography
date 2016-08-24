@@ -331,20 +331,19 @@ class DHBackend(object):
     @abc.abstractmethod
     def load_dh_private_numbers(self, numbers):
         """
-        Returns a DHPrivateKey provider.
+        Load a DHPrivateKey from DHPrivateNumbers
         """
 
     @abc.abstractmethod
     def load_dh_public_numbers(self, numbers):
         """
-        Returns a DHPublicKey provider.
+        Load a DHPublicKey from DHPublicNumbers.
         """
 
     @abc.abstractmethod
     def load_dh_parameter_numbers(self, numbers):
         """
-        Returns a DHParameters provider with parameters as a
-        DHParameterNumbers object.
+        Load DHParameters from DHParameterNumbers.
         """
 
     @abc.abstractmethod
