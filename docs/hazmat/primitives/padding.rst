@@ -39,7 +39,7 @@ multiple of the block size.
     :param block_size: The size of the block in bits that the data is being
                        padded to.
     :raises ValueError: Raised if block size is not a multiple of 8 or is not
-        between 0 and 255 inclusive.
+        between 0 and 2040 inclusive.
 
     .. method:: padder()
 
@@ -82,7 +82,7 @@ multiple of the block size.
     :param block_size: The size of the block in bits that the data is being
         padded to.
     :raises ValueError: Raised if block size is not a multiple of 8 or is not
-        between 0 and 255 inclusive.
+        between 0 and 2040 inclusive.
 
     .. method:: padder()
 
