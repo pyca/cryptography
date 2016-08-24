@@ -67,7 +67,6 @@ int EVP_MD_size(const EVP_MD *);
 EVP_PKEY *EVP_PKEY_new(void);
 void EVP_PKEY_free(EVP_PKEY *);
 int EVP_PKEY_type(int);
-int EVP_PKEY_bits(EVP_PKEY *);
 int EVP_PKEY_size(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
 DSA *EVP_PKEY_get1_DSA(EVP_PKEY *);
@@ -117,7 +116,6 @@ int EVP_PKEY_set1_DH(EVP_PKEY *, DH *);
 
 int EVP_PKEY_get_attr_count(const EVP_PKEY *);
 int EVP_PKEY_get_attr_by_NID(const EVP_PKEY *, int, int);
-int EVP_PKEY_get_attr_by_OBJ(const EVP_PKEY *, ASN1_OBJECT *, int);
 X509_ATTRIBUTE *EVP_PKEY_get_attr(const EVP_PKEY *, int);
 X509_ATTRIBUTE *EVP_PKEY_delete_attr(EVP_PKEY *, int);
 int EVP_PKEY_add1_attr(EVP_PKEY *, X509_ATTRIBUTE *);
@@ -130,8 +128,6 @@ int EVP_PKEY_add1_attr_by_txt(EVP_PKEY *, const char *, int,
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
-EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
-
 int EVP_PKEY_id(const EVP_PKEY *);
 int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
 
@@ -143,6 +139,12 @@ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 """
 
 MACROS = """
+/* PKCS8_PRIV_KEY_INFO * became const in 1.1.0 */
+EVP_PKEY *EVP_PKCS82PKEY(PKCS8_PRIV_KEY_INFO *);
+
+/* EVP_PKEY * became const in 1.1.0 */
+int EVP_PKEY_bits(EVP_PKEY *);
+
 /* became a macro in 1.1.0 */
 void EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *);
 
