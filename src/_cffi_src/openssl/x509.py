@@ -134,9 +134,6 @@ X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
 
 ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
 void X509_EXTENSION_free(X509_EXTENSION *);
-X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
-                                             ASN1_OBJECT *, int,
-                                             ASN1_OCTET_STRING *);
 
 int i2d_X509(X509 *, unsigned char **);
 
@@ -249,6 +246,12 @@ int X509_get_ext_by_NID(X509 *, int, int);
 X509_NAME *X509_get_subject_name(X509 *);
 X509_NAME *X509_get_issuer_name(X509 *);
 
+/* This became const ASN1_OBJECT * in 1.1.0 */
+X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
+                                             ASN1_OBJECT *, int,
+                                             ASN1_OCTET_STRING *);
+
+
 /* This became const X509_EXTENSION * in 1.1.0 */
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 
@@ -274,9 +277,12 @@ int i2d_X509_REQ_INFO(X509_REQ_INFO *, unsigned char **);
 
 /* new in 1.0.2 */
 int i2d_re_X509_tbs(X509 *, unsigned char **);
-void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
 int X509_get_signature_nid(const X509 *);
-X509_ALGOR *X509_get0_tbs_sigalg(X509 *);
+
+const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
+
+/* in 1.1.0 becomes const ASN1_BIT_STRING, const X509_ALGOR */
+void X509_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509 *);
 
 long X509_get_version(X509 *);
 
@@ -346,13 +352,14 @@ Cryptography_STACK_OF_ASN1_OBJECT *sk_ASN1_OBJECT_new_null(void);
 int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
 
 /* these functions were added in 1.1.0 */
-ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *);
-ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *);
-void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
-                             X509_CRL *crl);
+const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
+const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
+void X509_CRL_get0_signature(const X509_CRL *, const ASN1_BIT_STRING **,
+                             const X509_ALGOR **);
 int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
 int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
-void X509_REQ_get0_signature(ASN1_BIT_STRING **, X509_ALGOR **, X509_REQ *);
+void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
+                             const X509_ALGOR **);
 """
 
 CUSTOMIZATIONS = """
@@ -416,14 +423,14 @@ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
    opaquing. */
 #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(LIBRESSL_VERSION_NUMBER)
 
-X509_ALGOR *X509_get0_tbs_sigalg(X509 *x)
+const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
 {
     return x->cert_info->signature;
 }
 
 /* from x509/x509_req.c */
-void X509_REQ_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
-                             X509_REQ *req)
+void X509_REQ_get0_signature(const X509_REQ *req, const ASN1_BIT_STRING **psig,
+                             const X509_ALGOR **palg)
 {
     if (psig != NULL)
         *psig = req->signature;
@@ -440,19 +447,19 @@ int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
     return i2d_X509_CRL_INFO(crl->crl, pp);
 }
 
-void X509_CRL_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg,
-                             X509_CRL *crl)
+void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING **psig,
+                             const X509_ALGOR **palg)
 {
     if (psig != NULL)
         *psig = crl->signature;
     if (palg != NULL)
         *palg = crl->sig_alg;
 }
-ASN1_TIME *X509_REVOKED_get0_revocationDate(X509_REVOKED *x)
+const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *x)
 {
     return x->revocationDate;
 }
-ASN1_INTEGER *X509_REVOKED_get0_serialNumber(X509_REVOKED *x)
+const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
 {
     return x->serialNumber;
 }
