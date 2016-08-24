@@ -227,7 +227,6 @@ X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
                                              ASN1_OBJECT *, int,
                                              ASN1_OCTET_STRING *);
 
-
 /* This became const X509_EXTENSION * in 1.1.0 */
 int X509_EXTENSION_get_critical(X509_EXTENSION *);
 
@@ -330,8 +329,8 @@ int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
 /* these functions were added in 1.1.0 */
 const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
 const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
-void X509_CRL_get0_signature(const X509_CRL *, const ASN1_BIT_STRING **,
-                             const X509_ALGOR **);
+void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING **psig,
+                             const X509_ALGOR **palg);
 int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
 int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
 void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
