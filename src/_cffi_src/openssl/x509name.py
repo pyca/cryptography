@@ -25,28 +25,32 @@ FUNCTIONS = """
 X509_NAME *X509_NAME_new(void);
 void X509_NAME_free(X509_NAME *);
 
-X509_NAME_ENTRY *X509_NAME_get_entry(X509_NAME *, int);
-ASN1_OBJECT *X509_NAME_ENTRY_get_object(X509_NAME_ENTRY *);
-ASN1_STRING *X509_NAME_ENTRY_get_data(X509_NAME_ENTRY *);
 unsigned long X509_NAME_hash(X509_NAME *);
 
 int i2d_X509_NAME(X509_NAME *, unsigned char **);
 int X509_NAME_add_entry_by_txt(X509_NAME *, const char *, int,
                                const unsigned char *, int, int, int);
-int X509_NAME_add_entry_by_NID(X509_NAME *, int, int, unsigned char *,
-                               int, int, int);
 X509_NAME_ENTRY *X509_NAME_delete_entry(X509_NAME *, int);
 void X509_NAME_ENTRY_free(X509_NAME_ENTRY *);
 int X509_NAME_get_index_by_NID(X509_NAME *, int, int);
 int X509_NAME_cmp(const X509_NAME *, const X509_NAME *);
-char *X509_NAME_oneline(X509_NAME *, char *, int);
 X509_NAME *X509_NAME_dup(X509_NAME *);
-int X509_NAME_add_entry(X509_NAME *, X509_NAME_ENTRY *, int, int);
 """
 
 MACROS = """
-/* This became const X509_NAME * in 1.1.0 */
+/* These became const X509_NAME * in 1.1.0 */
 int X509_NAME_entry_count(X509_NAME *);
+X509_NAME_ENTRY *X509_NAME_get_entry(X509_NAME *, int);
+char *X509_NAME_oneline(X509_NAME *, char *, int);
+
+/* These became const X509_NAME_ENTRY * in 1.1.0 */
+ASN1_OBJECT *X509_NAME_ENTRY_get_object(X509_NAME_ENTRY *);
+ASN1_STRING *X509_NAME_ENTRY_get_data(X509_NAME_ENTRY *);
+int X509_NAME_add_entry(X509_NAME *, X509_NAME_ENTRY *, int, int);
+
+/* this became const unsigned char * in 1.1.0 */
+int X509_NAME_add_entry_by_NID(X509_NAME *, int, int, unsigned char *,
+                               int, int, int);
 
 /* These became const ASN1_OBJECT * in 1.1.0 */
 X509_NAME_ENTRY *X509_NAME_ENTRY_create_by_OBJ(X509_NAME_ENTRY **,
